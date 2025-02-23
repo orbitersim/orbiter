@@ -43,7 +43,7 @@ const char *THGROUPSTR[NTHGROUP] = {
 	"RCS_BANKLEFT","RCS_BANKRIGHT",
 	"RCS_RIGHT","RCS_LEFT",
 	"RCS_UP","RCS_DOWN",
-	"RCS_FORWARD","RCS_BACK"	
+	"RCS_FORWARD","RCS_BACK"
 };
 
 static double Tofs = 0.0;
@@ -184,7 +184,7 @@ void Vessel::FRecorder_Save (bool force)
 			ofs << "CRD " << (frec_last.crd == 0 ? "CARTESIAN" : "POLAR") << endl;
 			frec_last.ref = ref = cbody;
 		}
-	} 
+	}
 
 	// attitude data
 	ref = frec_att_last.ref;
@@ -246,7 +246,7 @@ void Vessel::FRecorder_Save (bool force)
 				frec_att_last_syst = td.SysT1;
 				frec_att_last.simt = td.SimT1;
 			}
-		
+
 		}
 		if (ref != sp.ref) {
 			char cbuf[256];
@@ -370,7 +370,7 @@ bool Vessel::FRecorder_Read (const char *scname)
 	}
 
 	FRecorder_Clear();
-	
+
 	int nbuf = 0, nbuf_att = 0, frm = 0, crd = 0, attfrm = 0;
 	double simt, x, y, z, vx, vy, vz;
 	const CelestialBody *ref = g_psys->GetGravObj(0);
@@ -535,7 +535,7 @@ void Vessel::FRecorder_Play ()
 
 		sv->pos += frec[cfrec].ref->s1->pos;
 		sv->vel += frec[cfrec].ref->s1->vel;
-	
+
 		// attitude
 		if (td.SimT1 < frec_att[nfrec_att-1].simt) {
 
@@ -923,7 +923,7 @@ void Orbiter::FRecorder_Play ()
 					g_pOrbiter->Timejump(tgtmjd, PROP_ORBITAL_FIXEDSURF);
 				}
 			} else if (!_strnicmp (s, "ENDSESSION", 10)) {
-				if (hRenderWnd) PostMessage (hRenderWnd->StopgapWin32Handle(), WM_CLOSE, 0, 0);
+				if (hRenderWnd) PostMessage (hRenderWnd->Win32Handle(), WM_CLOSE, 0, 0);
 			}
 		}
 		*FRsys_stream >> frec_sys_simt; // read time for next event
@@ -935,7 +935,7 @@ void Orbiter::FRecorder_Play ()
 }
 
 void Orbiter::FRecorder_ToggleEditor ()
-{	
+{
 	DlgPlaybackEditor *m_DlgPlaybackEditor = g_pOrbiter->DlgMgr()->EnsureEntry<DlgPlaybackEditor>();
 	const char *playbackdir = pState->PlaybackDir();
 	m_DlgPlaybackEditor->Load(playbackdir);

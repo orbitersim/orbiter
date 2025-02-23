@@ -41,7 +41,7 @@ Panel2D::Panel2D (int _id, Pane *_pane, double scale)
 	mstate = 0;
 
 	if (g_pOrbiter->IsFullscreen()) cwnd = 0;
-	else                            cwnd = g_pOrbiter->GetRenderWnd()->StopgapWin32Handle();
+	else                            cwnd = g_pOrbiter->GetRenderWnd()->Win32Handle();
 
 	for (i = 0; i < 4; i++)
 		connect[i] = -1;
@@ -139,7 +139,7 @@ void Panel2D::SetActiveScale (double scale, bool force)
 	if      (shiftflag & PANEL_ATTACH_BOTTOM) y0 = max (y0, viewH-tgtH);
 	else if (shiftflag & PANEL_ATTACH_TOP)    y0 = min (y0, 0.0);
 
-	if (panelscale == 1.0) { // pixel alignment 
+	if (panelscale == 1.0) { // pixel alignment
 		x0 = floor(x0+0.5);
 		y0 = floor(y0+0.5);
 	}

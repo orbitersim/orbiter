@@ -704,8 +704,8 @@ Orbiter::CreateRenderWindow(Config *pCfg, const char *scenario)
 
 	if (gclient) {
 		// GDI resources - NOT VALID FOR ALL CLIENTS!
-		InitializeGDIResources (hRenderWnd->StopgapWin32Handle());
-		pDlgMgr = new DialogManager (this, hRenderWnd->StopgapWin32Handle());
+		InitializeGDIResources (hRenderWnd->Win32Handle());
+		pDlgMgr = new DialogManager (this, hRenderWnd->Win32Handle());
 
 		// global dialog resources
 		g_select = new Select(); TRACENEW
@@ -1908,7 +1908,7 @@ void Orbiter::EndTimeStep (bool running)
 
 	// check for termination of demo mode
 	if (SessionLimitReached())
-		if (hRenderWnd) PostMessage(hRenderWnd->StopgapWin32Handle(), WM_CLOSE, 0, 0);
+		if (hRenderWnd) PostMessage(hRenderWnd->Win32Handle(), WM_CLOSE, 0, 0);
 		else CloseSession();
 }
 
@@ -2381,7 +2381,7 @@ void Orbiter::KbdInputBuffered_System (char *kstate, DIDEVICEOBJECTDATA *dod, DW
 			if (bPlayback) EndPlayback();
 			else ToggleRecorder ();
 		} else if (keymap.IsLogicalKey (key, kstate, OAPI_LKEY_Quit)) {
-			if (hRenderWnd) PostMessage (hRenderWnd->StopgapWin32Handle(), WM_CLOSE, 0, 0);
+			if (hRenderWnd) PostMessage (hRenderWnd->Win32Handle(), WM_CLOSE, 0, 0);
 		} else if (keymap.IsLogicalKey (key, kstate, OAPI_LKEY_SelectPrevVessel)) {
 			if (g_pfocusobj) SetFocusObject (g_pfocusobj);
 		}
@@ -2789,7 +2789,7 @@ bool Orbiter::RemoveGraphicsClient (oapi::GraphicsClient *gc)
 
 bool Orbiter::RegisterWindow (HINSTANCE hInstance, HWND hWnd, DWORD flag)
 {
-	return (pDlgMgr ? (pDlgMgr->AddWindow (hInstance, hWnd, hRenderWnd->StopgapWin32Handle(), flag) != NULL) : NULL);
+	return (pDlgMgr ? (pDlgMgr->AddWindow (hInstance, hWnd, hRenderWnd->Win32Handle(), flag) != NULL) : NULL);
 }
 
 void Orbiter::UpdateDeallocationProgress()
@@ -2809,12 +2809,12 @@ HWND Orbiter::OpenDialogEx (int id, DLGPROC pDlg, DWORD flag, void *context)
 
 HWND Orbiter::OpenDialog (HINSTANCE hInstance, int id, DLGPROC pDlg, void *context)
 {
-	return (pDlgMgr ? pDlgMgr->OpenDialog (hInstance, id, hRenderWnd->StopgapWin32Handle(), pDlg, context) : NULL);
+	return (pDlgMgr ? pDlgMgr->OpenDialog (hInstance, id, hRenderWnd->Win32Handle(), pDlg, context) : NULL);
 }
 
 HWND Orbiter::OpenDialogEx (HINSTANCE hInstance, int id, DLGPROC pDlg, DWORD flag, void *context)
 {
-	return (pDlgMgr ? pDlgMgr->OpenDialogEx (hInstance, id, hRenderWnd->StopgapWin32Handle(), pDlg, flag, context) : NULL);
+	return (pDlgMgr ? pDlgMgr->OpenDialogEx (hInstance, id, hRenderWnd->Win32Handle(), pDlg, flag, context) : NULL);
 }
 
 void Orbiter::OpenHelp (const HELPCONTEXT *hcontext)

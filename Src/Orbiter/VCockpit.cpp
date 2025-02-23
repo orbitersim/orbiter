@@ -34,7 +34,7 @@ VirtualCockpit::VirtualCockpit (int _id, const Pane *_pane)
 	if (g_pOrbiter->IsFullscreen())
 		cwnd = 0;
 	else
-		cwnd = g_pOrbiter->GetRenderWnd()->StopgapWin32Handle();
+		cwnd = g_pOrbiter->GetRenderWnd()->Win32Handle();
 	for (i = 0; i < 4; i++)
 		connect[i] = -1;
 }

@@ -3,10 +3,7 @@
 
 #include <SDL3/SDL.h>
 #include <string>
-
-#ifdef _WIN32
-typedef struct HWND__ *HWND;
-#endif
+#include <windows.h>
 
 namespace sdl {
 
@@ -26,13 +23,11 @@ public:
 
   [[nodiscard]] SDL_Window *Inner() const { return m_inner; }
 
-#ifdef _WIN32
-  [[nodiscard]] HWND StopgapWin32Handle() const {
+  [[nodiscard]] HWND Win32Handle() const {
     return (HWND)SDL_GetPointerProperty(SDL_GetWindowProperties(m_inner),
                                         SDL_PROP_WINDOW_WIN32_HWND_POINTER,
                                         nullptr);
   }
-#endif
 
 private:
   SDL_Window *m_inner = nullptr;

@@ -49,7 +49,7 @@ public:
 	DlgType *MakeEntry (HINSTANCE hInst = 0, void *context = 0)
 	{
 		if (!hInst) hInst = g_pOrbiter->GetInstance();
-		HWND hParent = g_pOrbiter->GetRenderWnd()->StopgapWin32Handle();
+		HWND hParent = g_pOrbiter->GetRenderWnd()->Win32Handle();
 		DlgType *pDlg = new DlgType (hInst, hParent, context);
 		AddEntry (pDlg);
 		return pDlg;

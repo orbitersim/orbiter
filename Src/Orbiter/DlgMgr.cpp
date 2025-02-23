@@ -320,7 +320,7 @@ INT_PTR OrbiterDefDialogProc (HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam
 	case WM_SETCURSOR:
 		// implements "focus follows mouse" behaviour
 		if (!g_pOrbiter->StickyFocus() && g_pOrbiter->Cfg()->CfgUIPrm.MouseFocusMode == 2 && GetFocus() != hDlg &&
-			!IsChild (hDlg, GetFocus()) && GetParent (hDlg) == g_pOrbiter->GetRenderWnd()->StopgapWin32Handle()) {
+			!IsChild (hDlg, GetFocus()) && GetParent (hDlg) == g_pOrbiter->GetRenderWnd()->Win32Handle()) {
 				SetFocus (hDlg);
 				return FALSE;
 		}
@@ -409,7 +409,7 @@ DWORD WINAPI DlgThreadProc (void *data)
 // ====================================================================
 // End tread management
 // ====================================================================
-// 
+//
 // ====================================================================
 // ImGui
 // ====================================================================
@@ -421,7 +421,7 @@ const ImWchar* GetGlyphRangesOrbiter()
 	static const ImWchar ranges[] =
 	{
 		0x0020, 0x00FF, // Basic Latin + Latin Supplement
-		0x00A0, 0x02D9, // Polish characters 
+		0x00A0, 0x02D9, // Polish characters
 		0x0393, 0x03C2, // Greek characters
 		0x221A, 0x221A, // √
 		0x222B, 0x222B, // ∫
@@ -439,7 +439,7 @@ static void ImGuiSetStyle(bool bStyleDark_,  float alpha_)
     ImGui::StyleColorsClassic();
 	ImGui::StyleColorsLight();
     ImGuiStyle& style = ImGui::GetStyle();
-        
+
     style.Alpha = 1.0f;
     style.FrameRounding = 3.0f;
     style.WindowRounding = 3.0f;
@@ -544,13 +544,13 @@ void DialogManager::InitImGui()
 	icons_config.MergeMode = true;
 	icons_config.PixelSnapH = true;
 	icons_config.FontDataOwnedByAtlas = false;
-	
+
 	const CFG_FONTPRM &prm = g_pOrbiter->Cfg()->CfgFontPrm;
 	defaultFont = io.Fonts->AddFontFromFileTTF(prm.ImGui_FontName, prm.ImGui_FontSize, &config, ImGui::GetIO().Fonts->GetGlyphRangesJapanese());
 	io.Fonts->AddFontFromFileTTF("fa-solid-900.ttf", prm.ImGui_FontSize, &icons_config, icons_ranges);
 	monoFont = io.Fonts->AddFontFromFileTTF("Cousine-Regular.ttf", prm.ImGui_FontSize, &config, ImGui::GetIO().Fonts->GetGlyphRangesJapanese());
 	io.Fonts->Build();
-	
+
 
 	ImGui_ImplWin32_Init(hWnd);
 	gc->clbkImGuiInit();
@@ -574,7 +574,7 @@ void DialogManager::ImGuiNewFrame()
 	ImGui::NewFrame();
 
 	//ImGui::ShowDemoWindow();
-	
+
 	// Render notifications
 	ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 5.f); // Round borders
 //	ImGui::PushStyleColor(ImGuiCol_WindowBg, ImVec4(43.f / 255.f, 43.f / 255.f, 43.f / 255.f, 240.f / 255.f)); // Background color
@@ -634,7 +634,7 @@ void ImGuiDialog::Display() {
 	if (!active) OnClose();
 }
 
-/* 
+/*
 Notification handling, borrowed heavily from https://github.com/patrickcjk/imgui-notify
 Added:
 - permanent discardable notifications
@@ -741,7 +741,7 @@ struct Notification
 		} else if(elapsed > FADE_TIME + duration) { // disappearing
 			color.w = 1.0f - (elapsed - FADE_TIME - duration) / FADE_TIME;
 		} else { // steady
-			color.w = 1.0; 
+			color.w = 1.0;
 		}
 
 		if(h < height) {
