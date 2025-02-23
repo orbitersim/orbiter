@@ -90,44 +90,44 @@ Camera::~Camera ()
 	ClearPresets();
 }
 
-bool Camera::ProcessMouse (UINT event, DWORD state, DWORD x, DWORD y, const char *kstate)
+bool Camera::ProcessMouse (const SDL_Event &event, DWORD x, DWORD y, const char *kstate)
 {
-	if (event != WM_MOUSEWHEEL)
+	if (event.type != SDL_EVENT_MOUSE_WHEEL)
 		mx = (int)x, my = (int)y;
 
-	switch (event) {
-	case WM_LBUTTONDOWN:
-		mbdown[0] = true;
-		return true;
-	case WM_RBUTTONDOWN:
-		mbdown[1] = true;
-		g_pOrbiter->InitRotationMode();
-		return true;
-	case WM_LBUTTONUP:
-		if (mbdown[0]) {
-			mbdown[0] = false;
-			return true;
-		}
-		break;
-	case WM_RBUTTONUP:
-		if (mbdown[1]) {
-			mbdown[1] = false;
-			g_pOrbiter->ExitRotationMode();
-			return true;
-		}
-		break;
-	case WM_MOUSEWHEEL:
-		if (KEYMOD_CONTROL(kstate)) {
-		}
-		else {
-			short zDelta = (short)HIWORD(state);
-			if (external_view)
-				ShiftDist(-zDelta*0.001);
-			else
-				g_pOrbiter->IncFOV(zDelta*(-2.0 / 120.0*RAD));
-		} return true;
-		break;
-	}
+    if (event.type == SDL_EVENT_MOUSE_BUTTON_DOWN && event.button.button == SDL_BUTTON_LEFT) {
+        mbdown[0] = true;
+        return true;
+    }
+    if (event.type == SDL_EVENT_MOUSE_BUTTON_DOWN && event.button.button == SDL_BUTTON_RIGHT) {
+        mbdown[1] = true;
+        g_pOrbiter->InitRotationMode();
+        return true;
+    }
+    if (event.type == SDL_EVENT_MOUSE_BUTTON_UP && event.button.button == SDL_BUTTON_LEFT) {
+        if (mbdown[0]) {
+            mbdown[0] = false;
+            return true;
+        }
+    }
+    if (event.type == SDL_EVENT_MOUSE_BUTTON_UP && event.button.button == SDL_BUTTON_RIGHT) {
+        if (mbdown[1]) {
+            mbdown[1] = false;
+            g_pOrbiter->ExitRotationMode();
+            return true;
+        }
+    }
+    if (event.type == SDL_EVENT_MOUSE_WHEEL) {
+        if (!KEYMOD_CONTROL(kstate)) {
+            double zDelta = event.wheel.y * 120.0;
+            if (external_view)
+                ShiftDist(-zDelta*0.001);
+            else
+                g_pOrbiter->IncFOV(zDelta*(-2.0 / 120.0*RAD));
+            return true;
+        }
+    }
+
 	return false;
 }
 
@@ -1326,7 +1326,7 @@ void Camera::UpdateProjectionMatrix ()
     //pDev->SetTransform (D3DTRANSFORMSTATE_PROJECTION, &proj_mat);
 }
 
-void Camera::InitState (const char *scn, Body *default_target)
+void Camera::InitState (const fs::path& scn, Body *default_target)
 {
 	// set defaults
 	target = default_target;
@@ -1335,10 +1335,8 @@ void Camera::InitState (const char *scn, Body *default_target)
 	ap = (external_view ? &ap_ext : &ap_int);
 
 	// read state from scenario file
-	if (scn) {
-		ifstream ifs (g_pOrbiter->ScnPath(scn));
-		if (ifs) Read (ifs);
-	}
+    ifstream ifs (scn);
+	if (ifs) Read (ifs);
 	Body *newtgt = target; target = NULL;
 	int mode = (external_view ? 1:0); external_view = true;
 	Attach (newtgt, mode);

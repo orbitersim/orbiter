@@ -373,9 +373,11 @@ bool Orbiter::Create()
 	pConfig->Load(MasterConfigFile);
 	cfgpath = std::string(pConfig->CfgDirPrm.ConfigDir);
 
-	// validate configuration
-    if (SDL_GetJoystickNameForID(pConfig->CfgJoystickPrm.Joy_idx) == nullptr)
-        pConfig->CfgJoystickPrm.Joy_idx = 0;
+    if (FAILED (hr = pDI->Create (hInst))) return hr;
+
+	// // validate configuration
+    //    if (SDL_GetJoystickNameForID(pConfig->CfgJoystickPrm.Joy_idx) == nullptr)
+    //        pConfig->CfgJoystickPrm.Joy_idx = 0;
 
 	// Read key mapping from file (or write default keymap)
 	if (!keymap.Read ("keymap.cfg")) keymap.Write ("keymap.cfg");
@@ -650,7 +652,7 @@ OPC_Proc Orbiter::FindModuleProc (HINSTANCE hDLL, const char *procname)
 // Name: Launch()
 // Desc: Launch simulator
 //-----------------------------------------------------------------------------
-VOID Orbiter::Launch (const char *scenario)
+VOID Orbiter::Launch (const fs::path& scenario)
 {
 	PrintModules();
 
@@ -659,7 +661,7 @@ VOID Orbiter::Launch (const char *scenario)
 	pConfig->Write (); // save current settings
 	m_pLaunchpad->WriteExtraParams ();
 
-	if (!have_state && !pState->Read (ScnPath (scenario))) {
+	if (!have_state && !pState->Read(scenario)) {
 		LOGOUT_ERR ("Scenario not found: %s", scenario);
 		TerminateOnError();
 	}
@@ -676,7 +678,7 @@ VOID Orbiter::Launch (const char *scenario)
 // Desc: Create the window used for rendering the scene
 //-----------------------------------------------------------------------------
 std::shared_ptr<sdl::UnmanagedWindow>
-Orbiter::CreateRenderWindow(Config *pCfg, const char *scenario)
+Orbiter::CreateRenderWindow(Config *pCfg, const fs::path& scenario)
 {
 	DWORD i;
 
@@ -698,8 +700,18 @@ Orbiter::CreateRenderWindow(Config *pCfg, const char *scenario)
 	}
 
 	if (hRenderWnd) {
-		bActive = true;
-		plZ4 = 1; // invalidate
+        pDI->SetRenderWindow(hRenderWnd->Win32Handle());
+	    bActive = true;
+
+	    // Create keyboard device
+	    if (!pDI->CreateKbdDevice ()) {
+	        CloseSession ();
+	        return 0;
+	    }
+
+	    // Create joystick device
+	    if (pDI->CreateJoyDevice ())
+	        plZ4 = 1; // invalidate
 	}
 
 	if (gclient) {
@@ -721,7 +733,7 @@ Orbiter::CreateRenderWindow(Config *pCfg, const char *scenario)
 	}
 
 	// read simulation environment state
-	strcpy (ScenarioName, scenario);
+	strcpy (ScenarioName, fs::relative(scenario, "./Scenarios").u8string().c_str());
 	g_qsaveid = 0;
 	launch_tick = 3;
 	if (pCfg->CfgDebugPrm.TimerMode == 2) use_fine_counter = FALSE;
@@ -747,7 +759,7 @@ Orbiter::CreateRenderWindow(Config *pCfg, const char *scenario)
 	LOGOUT("Finished initialising world");
 	ms_prev = timeGetTime () - 1; // make sure SimDT > 0 for first frame
 
-	g_psys->InitState (ScnPath (scenario).u8string().c_str());
+	g_psys->InitState (scenario);
 
 	g_focusobj = 0;
 	Vessel *vfocus = g_psys->GetVessel (pState->Focus());
@@ -786,7 +798,7 @@ Orbiter::CreateRenderWindow(Config *pCfg, const char *scenario)
 	for (auto it = m_Plugin.begin(); it != m_Plugin.end(); it++) {
 		void (*opcLoadState)(FILEHANDLE) = (void(*)(FILEHANDLE))SDL_LoadFunction(reinterpret_cast<SDL_SharedObject*>(it->hDLL), "opcLoadState");
 		if (opcLoadState) {
-			ifstream ifs(ScnPath(scenario));
+			ifstream ifs(scenario);
 			std::string str = "BEGIN_" + it->sName;
 			if (FindLine(ifs, str.c_str())) {
 				opcLoadState((FILEHANDLE)&ifs);
@@ -815,7 +827,7 @@ Orbiter::CreateRenderWindow(Config *pCfg, const char *scenario)
 	}
 
 	if (g_pane) {
-		g_pane->InitState (ScnPath (scenario).u8string().c_str());
+		g_pane->InitState (scenario);
 		LOGOUT ("Finished initialising panels");
 	}
 
@@ -978,12 +990,16 @@ void Orbiter::BroadcastGlobalInit ()
 HRESULT Orbiter::Render3DEnvironment (bool hidedialogs)
 {
 	if (gclient) {
-		if(!hidedialogs)
-			pDlgMgr->ImGuiNewFrame();
+		if(!hidedialogs) {
+		    WithImCtx _ = pDlgMgr->PushLocal();
+		    pDlgMgr->ImGuiNewFrame();
+		}
 		gclient->clbkRenderScene ();
 		Output2DData ();
-		if(!hidedialogs)
-			gclient->clbkImGuiRenderDrawData();
+		if(!hidedialogs) {
+		    WithImCtx _ = pDlgMgr->PushLocal();
+		    gclient->clbkImGuiRenderDrawData();
+		}
 		gclient->clbkDisplayFrame ();
 	}
     return S_OK;
@@ -1003,94 +1019,79 @@ void Orbiter::ScreenToClient (POINT *pt) const
 // Name: Run()
 // Desc: Message-processing loop. Idle time is used to render the scene.
 //-----------------------------------------------------------------------------
-void Orbiter::Run ()
-{
-	if (!pConfig->CfgCmdlinePrm.LaunchScenario.empty())
-		Launch (pConfig->CfgCmdlinePrm.LaunchScenario.c_str());
+void Orbiter::Run() {
+    if (!pConfig->CfgCmdlinePrm.LaunchScenario.empty())
+        Launch(pConfig->CfgCmdlinePrm.LaunchScenario.c_str());
 
-	SDL_Event event = {};
-	bool hadEvent;
-	while (!ShouldQuit()) {
-		// Use PollMessage() if the app is active, so we can use idle time to
-		// render the scene. Else, use GetMessage() to avoid eating CPU time.
-		if (bSession) {
-			hadEvent = SDL_PollEvent(&event);
-		} else {
-			hadEvent = SDL_WaitEvent(&event);
-		}
-
-		if (hadEvent) {
-			bool consumed = false;
-			if (m_pLaunchpad) {
-				consumed = consumed || m_pLaunchpad->ConsumeEvent(event);
-			}
-			if (!consumed) {
-				printf("TODO: %d\n", event.type);
-			}
-
-			if (ShouldQuit()) break;
-		} else {
-			assert(false && "TODO");
-		}
-
-		if (m_pLaunchpad) {
-			m_pLaunchpad->RenderFrame();
-		}
-	}
-
-	/*
-	// otherwise wait for the user to make a selection from the scenario
-	// list in the launchpad dialog
-
-	while (WM_QUIT != msg.message) {
-
-        // Use PeekMessage() if the app is active, so we can use idle time to
+    SDL_Event event = {};
+    bool hadEvent;
+    bool bpCanRender = true;
+    while (!ShouldQuit()) {
+        // Use PollMessage() if the app is active, so we can use idle time to
         // render the scene. Else, use GetMessage() to avoid eating CPU time.
-		if (bSession) {
-            bGotMsg = PeekMessage (&msg, NULL, 0U, 0U, PM_REMOVE);
-		} else {
-            bGotMsg = GetMessage (&msg, NULL, 0U, 0U);
-		}
-        if (bGotMsg) {
-			if (!m_pLaunchpad || !m_pLaunchpad->ConsumeMessage(&msg)) {
-				TranslateMessage (&msg);
-				DispatchMessage (&msg);
-			}
-		} else {
-			if (bSession) {
-				if (bAllowInput) bActive = true, bAllowInput = false;
-				if (BeginTimeStep (bRunning)) {
-					UpdateWorld();
-					EndTimeStep (bRunning);
-					if (bVisible) {
-						if (bActive) UserInput ();
-						bRenderOnce = TRUE;
-					}
-					if (bRunning && bCapture) {
-						CaptureVideoFrame ();
-					}
-				}
-				if (m_pConsole)
-					m_pConsole->ParseCmd();
-			}
+        if (bSession) {
+            hadEvent = SDL_PollEvent(&event);
+        } else {
+            hadEvent = SDL_WaitEvent(&event);
         }
-		if (bRenderOnce && bVisible) {
-			if (FAILED (Render3DEnvironment ()))
-				if (hRenderWnd) DestroyWindow (hRenderWnd);
-			bRenderOnce = FALSE;
-		}
 
-		if (bSession) {
-			bCanRender = TRUE;
-			if (bCanRender && !bpCanRender)
-				RestoreDeviceObjects ();
-			bpCanRender = bCanRender;
-		} else
-			bpCanRender = TRUE;
-		}
+        if (hadEvent) {
+            bool consumed = false;
+            if (m_pLaunchpad.get() != nullptr && m_pLaunchpad->IsActive()) {
+                consumed = consumed || m_pLaunchpad->ConsumeEvent(event);
+            }
+
+            if (gclient && hRenderWnd.get() != nullptr) {
+                consumed = consumed || pDlgMgr->ConsumeEvent(event, bShouldQuit);
+                consumed = consumed || gclient->RenderWndProc(event, bShouldQuit);
+            }
+
+            if (ShouldQuit())
+                break;
+        } else {
+            if (bSession) {
+                bActive = hRenderWnd.get() != nullptr && bVisible &&
+                          (SDL_GetKeyboardFocus() == hRenderWnd->Inner());
+                if (bAllowInput)
+                    bActive = true, bAllowInput = false;
+                if (BeginTimeStep(bRunning)) {
+                    UpdateWorld();
+                    EndTimeStep(bRunning);
+                    if (bVisible) {
+                        if (bActive)
+                            UserInput();
+                        bRenderOnce = true;
+                    }
+                    if (bRunning && bCapture) {
+                        CaptureVideoFrame();
+                    }
+                }
+                if (m_pConsole)
+                    m_pConsole->ParseCmd();
+            }
+        }
+
+        if (bRenderOnce && bVisible) {
+            // TODO: what should replace this?
+            if (FAILED(Render3DEnvironment())) {}
+            // if (hRenderWnd)
+            //     DestroyWindow(hRenderWnd);
+            bRenderOnce = false;
+        }
+
+        if (bSession) {
+            bool bCanRender = true;
+            if (bCanRender && !bpCanRender)
+                RestoreDeviceObjects();
+            bpCanRender = bCanRender;
+        } else {
+            bpCanRender = true;
+        }
+
+        if (m_pLaunchpad.get() != nullptr && m_pLaunchpad->IsActive()) {
+            m_pLaunchpad->RenderFrame();
+        }
     }
-	hRenderWnd = NULL;
-    return msg.wParam;*/
 }
 
 void Orbiter::SingleFrame ()
@@ -1141,41 +1142,28 @@ void Orbiter::InitRotationMode ()
 {
 	bKeepFocus = true;
 
-	// Checks if the cursor is already hidden
-	if (g_iCursorShowCount == 0) {
-		g_iCursorShowCount = ShowCursor(FALSE);
-	}
+    if (g_iCursorShowCount == 0) {
+        g_iCursorShowCount -= 1;
+        SDL_HideCursor();
+    }
 
-	// TODO
-	// SetCapture (hRenderWnd);
-	//
-	// // Limit cursor to render window confines, so we don't miss the button up event
-	// if (!bFullscreen && hRenderWnd) {
-	// 	RECT rClient;
-	// 	GetClientRect (hRenderWnd, &rClient);
-	// 	POINT pLeftTop = {rClient.left, rClient.top};
-	// 	POINT pRightBottom = {rClient.right, rClient.bottom};
-	// 	ClientToScreen (hRenderWnd, &pLeftTop);
-	// 	ClientToScreen (hRenderWnd, &pRightBottom);
-	// 	RECT rScreen = {pLeftTop.x, pLeftTop.y, pRightBottom.x, pRightBottom.y};
-	// 	ClipCursor (&rScreen);
-	// }
+    if (hRenderWnd) {
+        SDL_SetWindowRelativeMouseMode(hRenderWnd->Inner(), true);
+    }
 }
 
 void Orbiter::ExitRotationMode ()
 {
 	bKeepFocus = false;
-	ReleaseCapture ();
 
-	// Checks if the cursor is already hidden
-	if (g_iCursorShowCount < 0) {
-		g_iCursorShowCount = ShowCursor (TRUE);
-	}
+    if (g_iCursorShowCount < 0) {
+        SDL_ShowCursor();
+        g_iCursorShowCount += 1;
+    }
 
-	// Release cursor from render window confines
-	if (!bFullscreen && hRenderWnd) {
-		ClipCursor (NULL);
-	}
+    if (hRenderWnd) {
+        SDL_SetWindowRelativeMouseMode(hRenderWnd->Inner(), false);
+    }
 }
 
 void Orbiter::OnOptionChanged(DWORD cat, DWORD item)
@@ -2088,7 +2076,8 @@ HRESULT Orbiter::UserInput ()
 	    (g_select && g_select->IsActive())) skipkbd = true;
 
 	if (didev = GetDInput()->GetKbdDevice()) {
-		ImGuiIO& io = ImGui::GetIO();
+	    WithImCtx _ = pDlgMgr->PushLocal();
+	    ImGuiIO& io = ImGui::GetIO();
 		// keyboard input: immediate key interpretation
 		hr = didev->GetDeviceState (sizeof(buffer), &buffer);
 		if ((hr == DIERR_NOTACQUIRED || hr == DIERR_INPUTLOST) && SUCCEEDED (didev->Acquire()))
@@ -2530,32 +2519,32 @@ void Orbiter::UserJoyInput_OnRunning (DIJOYSTATE2 *js)
 	}
 }
 
-bool Orbiter::MouseEvent (UINT event, DWORD state, DWORD x, DWORD y)
+bool Orbiter::MouseEvent (const SDL_Event &event, DWORD x, DWORD y)
 {
 	// Prioritizes mouse handling while in rotation mode
 	if (g_pOrbiter->StickyFocus()) {
-		if (event == WM_MOUSEMOVE) return false; // may be lifted later
-		if (g_camera->ProcessMouse(event, state, x, y, simkstate)) return true;
+		if (event.type == SDL_EVENT_MOUSE_MOTION) return false; // may be lifted later
+		if (g_camera->ProcessMouse(event, x, y, simkstate)) return true;
 	}
 
-	if (g_pane->MIBar() && g_pane->MIBar()->ProcessMouse (event, state, x, y)) return true;
-	if (BroadcastMouseEvent (event, state, x, y)) return true;
-	if (event == WM_MOUSEMOVE) return false; // may be lifted later
+	if (g_pane->MIBar() && g_pane->MIBar()->ProcessMouse (event, x, y)) return true;
+	if (BroadcastMouseEvent (event, x, y)) return true;
+	if (event.type == SDL_EVENT_MOUSE_MOTION) return false; // may be lifted later
 
 	if (bRunning) {
-		if (g_pane->ProcessMouse_OnRunning (event, state, x, y, simkstate)) return true;
+		if (g_pane->ProcessMouse_OnRunning (event, x, y, simkstate)) return true;
 	}
-	if (g_pane->ProcessMouse_System(event, state, x, y, simkstate)) return true;
-	if (g_camera->ProcessMouse (event, state, x, y, simkstate)) return true;
+	if (g_pane->ProcessMouse_System(event, x, y, simkstate)) return true;
+	if (g_camera->ProcessMouse (event, x, y, simkstate)) return true;
 	return false;
 }
 
-bool Orbiter::BroadcastMouseEvent (UINT event, DWORD state, DWORD x, DWORD y)
+bool Orbiter::BroadcastMouseEvent (const SDL_Event &event, DWORD x, DWORD y)
 {
 	bool consume = false;
 
 	for (auto it = m_Plugin.begin(); it != m_Plugin.end(); it++)
-		if (it->pModule && it->pModule->clbkProcessMouse(event, state, x, y))
+		if (it->pModule && it->pModule->clbkProcessMouse(event, x, y))
 			consume = true;
 
 	return consume;
@@ -2592,142 +2581,26 @@ void Orbiter::BroadcastBufferedKeyboardEvent (char *kstate, DIDEVICEOBJECTDATA *
 // Desc: Render window message handler
 //-----------------------------------------------------------------------------
 
-LRESULT Orbiter::MsgProc (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
+bool Orbiter::MsgProc (const SDL_Event &event, bool &wantsOut)
 {
-	if (ImGui_ImplWin32_WndProcHandler(hWnd, uMsg, wParam, lParam))
-		return 0;
+    // TODO: get DlgMgr working again
+	// if (ImGui_ImplWin32_WndProcHandler(hWnd, uMsg, wParam, lParam))
+	// 	return 0;
 
-	switch (uMsg) {
-
-	case WM_ACTIVATE:
-		bActive = (wParam != WA_INACTIVE);
-		return 0;
-
-	// *** User Keyboard Input ***
-	case WM_CHAR:
-	case WM_KEYDOWN:
-		if (ImGuiIO& io = ImGui::GetIO(); io.WantCaptureKeyboard) {
-			return 0;
-		}
-
-		break;
-
-	// Mouse event handler
-	case WM_LBUTTONDOWN:
-	case WM_RBUTTONDOWN:
-	case WM_LBUTTONUP:
-	case WM_RBUTTONUP: {
-		if (ImGuiIO& io = ImGui::GetIO(); io.WantCaptureMouse) {
-			return 0;
-		}
-
-		if (MouseEvent(uMsg, wParam, LOWORD(lParam), HIWORD(lParam)))
-			break; //return 0;
-		} break;
-	case WM_MOUSEWHEEL: {
-		if (ImGuiIO& io = ImGui::GetIO(); io.WantCaptureMouse) {
-			return 0;
-		}
-
-		int x = LOWORD(lParam);
-		int y = HIWORD(lParam);
-		if (!bFullscreen) {
-			POINT pt = { x, y };
-			ScreenToClient(&pt); // for some reason this message passes screen coordinates
-			x = pt.x;
-			y = pt.y;
-		}
-		if (MouseEvent(uMsg, wParam, x, y))
-			break; //return 0;
-		} break;
-	case WM_MOUSEMOVE: {
-			if (ImGuiIO& io = ImGui::GetIO(); io.WantCaptureMouse) {
-				return 0;
-			}
-
-			int x = LOWORD(lParam);
-			int y = HIWORD(lParam);
-			MouseEvent(uMsg, wParam, x, y);
-			if (!bKeepFocus && pConfig->CfgUIPrm.MouseFocusMode != 0 && GetFocus() != hWnd) {
-				if (GetWindowThreadProcessId(hWnd, NULL) == GetWindowThreadProcessId(GetFocus(), NULL))
-					SetFocus(hWnd);
-			}
-		}
-		return 0;
-
-#ifdef UNDEF
-		// These messages could be intercepted to suspend the simulation
-		// during resizing and menu operations. Not a good idea for real-time
-		// applications though
-    case WM_ENTERMENULOOP:  // Pause the app when menus are displayed
-        Pause (TRUE);
-        break;
-
-    case WM_EXITMENULOOP:   // Resume when menu is closed
-        Pause (FALSE);
-        break;
-
-    case WM_ENTERSIZEMOVE:  // Pause during resizing or moving
-        if (m_bRunning) Suspend ();
-        break;
-
-    case WM_EXITSIZEMOVE:   // Resume after resizing or moving
-        if (m_bRunning) Resume ();
-        break;
-#endif
-
-    case WM_GETMINMAXINFO:
-        ((MINMAXINFO*)lParam)->ptMinTrackSize.x = 100;
-        ((MINMAXINFO*)lParam)->ptMinTrackSize.y = 100;
-        break;
-
-    case WM_POWERBROADCAST:
-        switch (wParam) {
-        case PBT_APMQUERYSUSPEND:
-            // At this point, the app should save any data for open
-            // network connections, files, etc.., and prepare to go into
-            // a suspended mode.
-			Freeze (true);
-			return TRUE;
-
-        case PBT_APMRESUMESUSPEND:
-            // At this point, the app should recover any data, network
-            // connections, files, etc.., and resume running from when
-            // the app was suspended.
-			Freeze (false);
-			return TRUE;
-        }
-        break;
-
-    case WM_COMMAND:
-        switch (LOWORD(wParam)) {
-		case SC_MONITORPOWER:
-			// Prevent potential crashes when the monitor powers down
-			return 1;
-
-        case IDM_EXIT:
-            // Recieved key/menu command to exit render window
-            SendMessage (hWnd, WM_CLOSE, 0, 0);
-            return 0;
-        }
-        break;
-
-	case WM_NCHITTEST:
-        // Prevent the user from selecting the menu in fullscreen mode
-        if (IsFullscreen()) return HTCLIENT;
-        break;
-
-		// shutdown options
-	case WM_CLOSE:
-		PreCloseSession();
-		DestroyWindow (hWnd);
-		return 0;
-
-	case WM_DESTROY:
-		CloseSession ();
-        break;
-	}
-    return DefWindowProc (hWnd, uMsg, wParam, lParam);
+    if (event.type == SDL_EVENT_MOUSE_BUTTON_UP || event.type == SDL_EVENT_MOUSE_BUTTON_DOWN) {
+        if (MouseEvent(event, static_cast<DWORD>(event.button.x), static_cast<DWORD>(event.button.y)))
+            return true;
+    } else if (event.type == SDL_EVENT_MOUSE_WHEEL) {
+        if (MouseEvent(event, static_cast<DWORD>(event.wheel.mouse_x), static_cast<DWORD>(event.wheel.mouse_y)))
+            return true;
+    } else if (event.type == SDL_EVENT_MOUSE_MOTION) {
+        if (MouseEvent(event, static_cast<DWORD>(event.motion.x), static_cast<DWORD>(event.motion.y)))
+            return true;
+        // TODO
+        // if (!bKeepFocus && pConfig->CfgUIPrm.MouseFocusMode != 0 && SDL_GetMouseFocus() != hRenderWnd->Inner()) {
+        //     SetFocus(hWnd);
+    }
+    return false;
 }
 
 //-----------------------------------------------------------------------------

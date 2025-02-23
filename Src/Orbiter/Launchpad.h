@@ -53,7 +53,7 @@ class LaunchpadDialog2 {
 
     void AddTab(std::unique_ptr<LaunchpadTab2> tab);
 
-    void EnableLaunchButton(bool enable) const;
+    void LaunchOrbiter();
 
     bool ConsumeEvent(const SDL_Event &event) const;
 
@@ -83,6 +83,7 @@ class LaunchpadDialog2 {
 
     void Show();
 
+    bool IsActive() const { return m_active; };
   private:
     LaunchpadDialog2() = default;
 

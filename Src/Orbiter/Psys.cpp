@@ -64,7 +64,7 @@ void PlanetarySystem::Clear ()
 	supervessels.clear();
 }
 
-void PlanetarySystem::InitState (const char *fname)
+void PlanetarySystem::InitState (const fs::path& fname)
 {
 	char cbuf[256], *pc, *pd;
 	ifstream ifs (fname);
@@ -169,7 +169,7 @@ bool PlanetarySystem::Read (char *fname, const Config* config, OutputLoadStatusC
 	int i;
 	DWORD j;
 	char cbuf[256], label[128];
-	
+
 	ifstream ifs (config->ConfigPath(fname));
 	if (!ifs) return false;
 	Clear();
@@ -339,7 +339,7 @@ bool PlanetarySystem::DelBody (Body *_body)
 
 	//if (bodies[i]->s0) bodies[i]->s0 = NULL; // s0 is used in vessels destructor due to undocking of
 	//if (bodies[i]->s1) bodies[i]->s1 = NULL; // vessels before deletion.
-	
+
 	delete bodies[i]; // delete actual bodies/vessels
 
 	std::iter_swap(bodies.begin() + i, bodies.end() - 1);
@@ -583,7 +583,7 @@ Vector SingleGacc_perturbation (const Vector &rpos, const CelestialBody *body)
 	Vector dg;
 
 	if (body->UseComplexGravity() && body->usePines()) {
-		
+
 		//Rotate position vector into the planet's local frame
 		Matrix rot = body->GRot();
 		Vector lpos = -tmul(rot,rpos)/1000.0;
@@ -591,7 +591,7 @@ Vector SingleGacc_perturbation (const Vector &rpos, const CelestialBody *body)
 		//Convert to right-handed
 		double temp_y;
 		temp_y = lpos.y;
-		lpos.y = lpos.z; 
+		lpos.y = lpos.z;
 		lpos.z = temp_y;
 
 		unsigned int maxDegreeOrder = body->GetPinesCutoff();
@@ -609,7 +609,7 @@ Vector SingleGacc_perturbation (const Vector &rpos, const CelestialBody *body)
 
 		//rotate back into global frame
 		dg = mul(rot, dg) * 1000.0;
-		
+
 		//Useful debug string. Make sure you only have one vessel in your scenerio if you us it...
 		//double radial = dg.length() * 100000.0 * dotp(rpos.unit(), dg.unit());
 		//sprintf(DBG_MSG, "<%lf %lf %lf> Magnitude: %lf mGal Radial: %lf Radialness: %lf", dg.x * 100000.0, dg.y * 100000.0, dg.z * 100000.0, dg.length()*100000.0, radial,  dotp(rpos.unit(), dg.unit()));
@@ -697,7 +697,7 @@ Vector PlanetarySystem::Gacc_intermediate (const Vector &gpos, double n, const B
 {
 	Vector acc;
 	DWORD i, j;
-	
+
 	if (gfd) { // use body's source list
 		for (j = 0; j < gfd->ngrav; j++) {
 			i = gfd->gravidx[j];

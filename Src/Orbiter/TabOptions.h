@@ -16,7 +16,7 @@ namespace orbiter {
 
 	class OptionsTab : public orbiter::LaunchpadTab2, public OptionsPageContainer {
 	public:
-		explicit OptionsTab(const orbiter::LaunchpadDialog2* lp);
+		explicit OptionsTab(orbiter::LaunchpadDialog2* lp);
 
 		void GetConfig(const Config *cfg) override;
 		void SetConfig(Config* cfg) override;

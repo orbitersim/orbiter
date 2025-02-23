@@ -525,23 +525,7 @@ public:
 	 */
 	ScreenAnnotation* clbkCreateAnnotation();
 
-	/**
-	 * \brief Render window message handler
-	 *
-	 * Derived classes should also call the base class method to allow
-	 * default message processing.
-	 * \param hWnd render window handle
-	 * \param uMsg Windows message identifier
-	 * \param wParam WPARAM message parameter
-	 * \param lParam LPARAM message parameter
-	 * \return The return value depends on the message being processed.
-	 * \note This is the standard Windows message handler for the render
-	 *   window.
-	 * \note This method currently intercepts only the WM_CLOSE and WM_DESTROY
-	 *   messages, and passes everything else to the Orbiter core message
-	 *   handler.
-	 */
-	LRESULT RenderWndProc (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
+	bool RenderWndProc(const SDL_Event &event, bool &wantsOut) override;
 
 	/**
 	 * \brief Message handler for 'video' tab in Orbiter Launchpad dialog
@@ -1047,7 +1031,6 @@ public:
     	return "D3D9Client module by Jarmo Nikkanen and Peter Schneider";
     }
 
-	HWND				GetRenderWindow () const { return hRenderWnd; }
 	CD3DFramework9 *    GetFramework() const { return pFramework; }
 	Scene *             GetScene() const { return scene; }
 	MeshManager *       GetMeshMgr() const { return meshmgr; }
@@ -1075,7 +1058,7 @@ public:
 	bool				IsGenericProcEnabled(DWORD id) const;
 	void				SetScenarioName(const std::string &path) { scenarioName = path; };
 	void				HackFriendlyHack();
-	void				PickTerrain(DWORD uMsg, int xpos, int ypos);
+	void				PickTerrain(Uint32 uMsg, int xpos, int ypos);
 	DEVMESHHANDLE		GetDevMesh(MESHHANDLE hMesh);
 	HANDLE				GetMainThread() const {	return hMainThread;	}
 
@@ -1123,7 +1106,7 @@ protected:
 	 * \note Derived classes should perform any required per-session
 	 *   initialisation of the 3D render environment here.
 	 */
-	std::shared_ptr<sdl::UnmanagedWindow> clbkCreateRenderWindow ();
+	std::shared_ptr<sdl::UnmanagedWindow> clbkCreateRenderWindow () override;
 
 	/**
 	 * \brief Simulation startup finalisation
@@ -1320,7 +1303,7 @@ private:
 	const char *            pCustomSplashScreen;
 	DWORD                   pSplashTextColor;
 
-	HWND hRenderWnd;        // render window handle
+	std::shared_ptr<sdl::UnmanagedWindow> hRenderWnd; // render window handle
 
 	bool bControlPanel;
 	bool bScatterUpdate;

@@ -17,7 +17,7 @@ using namespace std;
 
 //-----------------------------------------------------------------------------
 
-orbiter::ScenarioTab::ScenarioTab(const LaunchpadDialog2 *lp)
+orbiter::ScenarioTab::ScenarioTab(LaunchpadDialog2 *lp)
     : LaunchpadTab2(lp, "Scenarios"), img_folder1(nullptr),
       img_folder2(nullptr), img_scn1(nullptr), tree(ScenarioTreeItem()),
       startPaused(false) {
@@ -64,6 +64,9 @@ void orbiter::ScenarioTab::RenderTree(
         if (selected && !prev_selected) {
             selection = tree.item.path;
             ScenarioChanged();
+        }
+        if (ImGui::IsMouseDoubleClicked(ImGuiMouseButton_Left)) {
+            m_lp->LaunchOrbiter();
         }
         ImGui::SameLine();
         ImGui::Image(selected ? tree.item.selIcon->TexID()
@@ -116,6 +119,10 @@ void orbiter::ScenarioTab::OnDraw(WithLpImCtx &ctx) {
                       ImGuiWindowFlags_HorizontalScrollbar);
     ImGui::Markdown(ctx, desc, loadedImages);
     ImGui::EndChild();
+    if (ImGui::Button("Launch Orbiter")) {
+        m_lp->LaunchOrbiter();
+    }
+    ImGui::SameLine();
     if (ImGui::Button("Save current...")) {
         if (fs::exists(m_lp->App()->ScnPath("(Current state)"))) {
             ImGui::OpenPopup("Save Scenario##SaveScn");

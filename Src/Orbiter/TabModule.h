@@ -27,7 +27,7 @@ public:
     std::vector<ModuleInfo> items;
   };
 
-  explicit ModuleTab(const LaunchpadDialog2 *lp);
+  explicit ModuleTab(LaunchpadDialog2 *lp);
   ~ModuleTab() override;
 
   void GetConfig(const Config *cfg) override;

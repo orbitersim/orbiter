@@ -10,46 +10,40 @@
 #define __TABVIDEO_H
 
 #include "LpadTab.h"
-#include <filesystem>
 namespace fs = std::filesystem;
 
 namespace orbiter {
 
-	class DefVideoTab : public LaunchpadTab {
+	class DefVideoTab : public LaunchpadTab2 {
 	public:
-		DefVideoTab(const LaunchpadDialog* lp);
-		~DefVideoTab();
+		explicit DefVideoTab(LaunchpadDialog2* lp);
+		~DefVideoTab() override;
 
-		void Create();
+		void OnGraphicsClientLoaded(oapi::GraphicsClient* gc, std::string_view moduleName);
 
-		BOOL OnInitDialog(HWND hWnd, WPARAM wParam, LPARAM lParam);
-
-		void OnGraphicsClientLoaded(oapi::GraphicsClient* gc, const PSTR moduleName);
-
-		void SetConfig(Config* cfg);
-
-		bool OpenHelp();
-
-		BOOL OnMessage(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
-
+		void SetConfig(Config* cfg) override;
 	protected:
-		void ShowInterface(HWND hTab, bool show);
+		void EnumerateClients();
 
-		void EnumerateClients(HWND hTab);
-
-		void ScanDir(HWND hTab, const fs::path &dir);
+		void ScanDir(const fs::path &dir);
 		// scan directory dir (relative to Orbiter root) for graphics clients
 		// and enter them in the combo box
 
-		void SelectClientIndex(UINT idx);
+		void SelectClientIndex(size_t idx);
 
-		void SetInfoString(PCSTR str);
-
-		static INT_PTR CALLBACK InfoProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
-
+		void OnDraw(WithLpImCtx &ctx) override;
 	private:
-		UINT idxClient;
-		char* strInfo;
+		std::string m_info;
+		std::vector<std::shared_ptr<LpImage>> m_loadedImages;
+		struct GcEntry {
+			fs::path path;
+			std::string name;
+			std::string mdinfo;
+			std::string category;
+		};
+		static GcEntry LoadInfoFile(const fs::path& path);
+		std::vector<GcEntry> m_gcs;
+		size_t m_selgc; // N.B.: 0 is always the "console" GC
 	};
 
 }

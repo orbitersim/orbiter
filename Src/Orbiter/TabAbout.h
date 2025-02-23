@@ -15,7 +15,7 @@ namespace orbiter {
 
 	class AboutTab : public LaunchpadTab2 {
 	public:
-		explicit AboutTab(const LaunchpadDialog2* lp);
+		explicit AboutTab(LaunchpadDialog2* lp);
 
 		void OnDraw(WithLpImCtx &ctx) override;
 	private:

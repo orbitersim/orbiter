@@ -2106,4 +2106,6 @@ OAPIFUNC bool oapiRegisterGraphicsClient (oapi::GraphicsClient *gc);
 
 OAPIFUNC bool oapiUnregisterGraphicsClient (oapi::GraphicsClient *gc);
 
+OAPIFUNC oapi::WithImCtx oapiPushDialogImCtx();
+
 #endif // !__GRAPHICSAPI_H

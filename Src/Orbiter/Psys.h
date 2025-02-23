@@ -34,7 +34,7 @@ public:
 	void Clear ();
 	// Remove all objects from the system
 
-	void InitState (const char *fname);
+	void InitState (const fs::path& fname);
 	// Init psys from a scenario file
 
 	void PostCreation ();

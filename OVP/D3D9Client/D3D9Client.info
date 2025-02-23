@@ -1,0 +1,7 @@
+BEGIN_DESC
+# D3D9 Graphics Client
+**Do not use with Orbiter.exe!**
+
+A render engine plugin for Orbiter_ng.
+END_DESC
+CATEGORY Graphics engines

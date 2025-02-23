@@ -12,7 +12,7 @@
 //-----------------------------------------------------------------------------
 // AboutTab class
 
-orbiter::AboutTab::AboutTab(const LaunchpadDialog2 *lp)
+orbiter::AboutTab::AboutTab(LaunchpadDialog2 *lp)
     : LaunchpadTab2(lp, "About"), savedWidth(0) {
     icon =
         std::make_shared<LpImage>(lp->Win(), "Textures/OrbiterCore/Icon64.png");

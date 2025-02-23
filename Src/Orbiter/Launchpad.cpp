@@ -70,7 +70,7 @@ orbiter::LaunchpadDialog2::LaunchpadDialog2(Orbiter *app, bool startvideotab)
     AddTab(std::move(std::make_unique<ScenarioTab>(this)));
     AddTab(std::move(std::make_unique<OptionsTab>(this)));
     AddTab(std::move(std::make_unique<ModuleTab>(this)));
-    // Video tab
+    AddTab(std::move(std::make_unique<DefVideoTab>(this)));
     // Extra tab
     AddTab(std::move(std::make_unique<AboutTab>(this)));
 
@@ -161,8 +161,18 @@ orbiter::LaunchpadDialog2::GetTab(unsigned int i) const {
     return {m_tabList[i].get()};
 }
 
-// TODO
-void orbiter::LaunchpadDialog2::EnableLaunchButton(bool enable) const {}
+void orbiter::LaunchpadDialog2::LaunchOrbiter() {
+    if (m_app->HasSession())
+        return;
+    UpdateConfig();
+    const auto scnTab = dynamic_cast<ScenarioTab*>(GetTab(0));
+    auto path = scnTab->GetSelected();
+    if (fs::is_directory(path)) {
+        return;
+    }
+    m_app->Launch(path);
+    Hide();
+}
 
 size_t orbiter::LaunchpadDialog2::RegisterExtraParam(LaunchpadItem *item,
                                                      size_t parent) {
@@ -245,7 +255,7 @@ bool orbiter::LaunchpadDialog::Create(bool startvideotab) {
         // AddTab (new ScenarioTab (this));
         // AddTab(new OptionsTab(this));
         // AddTab(new ModuleTab(this));
-        AddTab(new DefVideoTab(this));
+        // AddTab(new DefVideoTab(this));
         AddTab(pExtra = new ExtraTab(this));
         // AddTab(new AboutTab(this));
         InitTabControl(hDlg);

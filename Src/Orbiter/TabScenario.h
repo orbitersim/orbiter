@@ -25,13 +25,14 @@ struct ScenarioTreeItem {
 
 class ScenarioTab : public orbiter::LaunchpadTab2 {
 public:
-  explicit ScenarioTab(const orbiter::LaunchpadDialog2 *lp);
+  explicit ScenarioTab(orbiter::LaunchpadDialog2 *lp);
 
   void GetConfig(const Config *cfg) override;
   void SetConfig(Config *cfg) override;
 
   void OnDraw(WithLpImCtx &ctx) override;
 
+  const fs::path& GetSelected() const { return selection; };
 protected:
   void RefreshList(bool preserveSelection);
   // refresh the scenario list

@@ -71,17 +71,16 @@ public:
 	~Orbiter ();
 
     bool Create ();
-	VOID Launch (const char *scenario);
+	VOID Launch (const fs::path& scenario);
 	void CloseApp (bool fast_shutdown = false);
 	int GetVersion() const;
-        std::shared_ptr<sdl::UnmanagedWindow>
-        CreateRenderWindow(Config *pCfg, const char *scenario);
+	std::shared_ptr<sdl::UnmanagedWindow> CreateRenderWindow(Config *pCfg, const fs::path& scenario);
 	void PreCloseSession();
 	void CloseSession ();
 	void GetRenderParameters ();
 	bool InitializeWorld (char *name);
 	void ScreenToClient (POINT *pt) const;
-	LRESULT MsgProc (HWND, UINT, WPARAM, LPARAM);
+	bool MsgProc (const SDL_Event &event, bool &wantsOut);
 	HRESULT Render3DEnvironment(bool hidedialogs = false);
 	VOID Output2DData ();
 	void OutputLoadStatus (const char *msg, int line);
@@ -189,6 +188,7 @@ public:
 	inline State*  PState() const { return pState; }
 	inline bool    IsActive() const { return bActive; } // temporary
 	inline bool    IsRunning() const { return bRunning; }
+	inline bool    HasSession() const { return bSession; }
 	inline bool    UseStencil() const { return bUseStencil; }
 	inline void    SetFastExit (bool fexit) { bFastExit = fexit; }
 	inline bool    UseHtmlInline() { return (pConfig->CfgDebugPrm.bHtmlScnDesc == 1 || pConfig->CfgDebugPrm.bHtmlScnDesc == 2 && !bWINEenv); }
@@ -337,8 +337,8 @@ protected:
 	void KbdInputBuffered_OnRunning  (char *kstate, DIDEVICEOBJECTDATA *dod, DWORD n);
 	void UserJoyInput_System (DIJOYSTATE2 *js);
 	void UserJoyInput_OnRunning (DIJOYSTATE2 *js);
-	bool MouseEvent (UINT event, DWORD state, DWORD x, DWORD y);
-	bool BroadcastMouseEvent (UINT event, DWORD state, DWORD x, DWORD y);
+	bool MouseEvent (const SDL_Event &event, DWORD x, DWORD y);
+	bool BroadcastMouseEvent (const SDL_Event &event, DWORD x, DWORD y);
 	bool BroadcastImmediateKeyboardEvent (char *kstate);
 	void BroadcastBufferedKeyboardEvent (char *kstate, DIDEVICEOBJECTDATA *dod, DWORD n);
 

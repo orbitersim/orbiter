@@ -659,7 +659,7 @@ void GraphicsClient::InitRenderWnd(
 
 bool GraphicsClient::RenderWndProc(const SDL_Event &event,
                                    bool &wantsOut) {
-    return false;
+    return g_pOrbiter->MsgProc(event, wantsOut);
 }
 
 // ======================================================================
@@ -1005,7 +1005,7 @@ DLLEXPORT ImCtxBase::ImCtxBase(Orbiter *app, ImGuiContext *context)
     IMGUI_CHECKVERSION();
 #endif
     const auto savedContext = ImGui::GetCurrentContext();
-    ImGui::SetCurrentContext(savedContext);
+    ImGui::SetCurrentContext(m_context);
 
     ImGuiIO &io = ImGui::GetIO();
     if (!m_app->IsFullscreen())
@@ -1076,4 +1076,8 @@ DLLEXPORT ImCtxBase::~ImCtxBase() {
     ImGui::DestroyContext();
     if (savedContext)
         ImGui::SetCurrentContext(savedContext);
+}
+
+DLLEXPORT WithImCtx oapiPushDialogImCtx() {
+    return g_pOrbiter->DlgMgr()->PushLocal();
 }

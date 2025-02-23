@@ -11,7 +11,7 @@
 
 //=============================================================================
 
-orbiter::OptionsTab::OptionsTab(const LaunchpadDialog2 *lp)
+orbiter::OptionsTab::OptionsTab(LaunchpadDialog2 *lp)
     : LaunchpadTab2(lp, "Options"),
       OptionsPageContainer(OptionsPageContainer::LAUNCHPAD, lp->Cfg()) {
     CreatePages();

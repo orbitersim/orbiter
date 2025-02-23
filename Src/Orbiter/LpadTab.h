@@ -25,7 +25,7 @@ namespace orbiter {
 
 	class LaunchpadTab2 {
 	public:
-		LaunchpadTab2(const LaunchpadDialog2 *lp, const char* title) : m_lp(lp), m_cfg(lp->Cfg()), m_title(title) {};
+		LaunchpadTab2(LaunchpadDialog2 *lp, const char* title) : m_lp(lp), m_cfg(lp->Cfg()), m_title(title) {};
 		virtual ~LaunchpadTab2() {};
 
 		LaunchpadTab2(const LaunchpadTab2&) = delete;
@@ -39,7 +39,7 @@ namespace orbiter {
 		virtual void SetConfig(Config* cfg) {}
 		virtual void OnDraw(WithLpImCtx& ctx) = 0;
 	protected:
-		const LaunchpadDialog2* m_lp;
+		LaunchpadDialog2* m_lp;
 		Config* m_cfg;
 
 	private:

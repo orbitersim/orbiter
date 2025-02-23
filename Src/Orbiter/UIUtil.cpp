@@ -41,11 +41,11 @@ LpImCtx::~LpImCtx() {
 LpImage::LpImage(const WithLpImCtx &ctx, const std::string_view path)
     : LpImage(ctx->Win(), path) {};
 
-bool EventIsKeyboard(Uint32 type) {
+static bool EventIsKeyboard(Uint32 type) {
     return type >= SDL_EVENT_KEY_UP && type < SDL_EVENT_MOUSE_MOTION;
 }
 
-bool EventIsMouse(Uint32 type) {
+static bool EventIsMouse(Uint32 type) {
     return type >= SDL_EVENT_MOUSE_MOTION &&
            type < SDL_EVENT_JOYSTICK_AXIS_MOTION;
 }
@@ -54,7 +54,7 @@ bool LpImCtx::ConsumeEvent(const SDL_Event &event, bool &wantsOut) {
     bool consumed = ImGui_ImplSDL3_ProcessEvent(&event);
     ImGuiIO &io = ImGui::GetIO();
     if ((io.WantCaptureMouse && EventIsMouse(event.type)) ||
-        (io.WantCaptureMouse && EventIsKeyboard(event.type))) {
+        (io.WantCaptureKeyboard && EventIsKeyboard(event.type))) {
         consumed = true;
     }
     if (event.type == SDL_EVENT_QUIT ||

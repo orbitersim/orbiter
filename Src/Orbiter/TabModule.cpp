@@ -20,7 +20,7 @@ extern char DBG_MSG[256];
 
 //-----------------------------------------------------------------------------
 
-orbiter::ModuleTab::ModuleTab(const LaunchpadDialog2 *lp)
+orbiter::ModuleTab::ModuleTab(LaunchpadDialog2 *lp)
     : LaunchpadTab2(lp, "Modules") {}
 
 //-----------------------------------------------------------------------------

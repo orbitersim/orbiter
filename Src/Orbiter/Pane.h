@@ -32,7 +32,7 @@ class Vessel;
 
 struct MFDspec {        // panel MFD specs
 	Instrument *instr;  // pointer to MFD instance
-	int lastmode;       // last MFD mode 
+	int lastmode;       // last MFD mode
 	bool exist;         // MFD present?
 	bool active;        // MFD switched on?
 	double upDTscale;   // refresh interval scale
@@ -92,9 +92,11 @@ public:
 	bool MFDConsumeKeyBuffered (int id, DWORD key);
 	// Process a buffered key for MFD id
 
-	bool ProcessMouse_System(UINT event, DWORD state, DWORD x, DWORD y, const char *kstate);
+	bool ProcessMouse_System(const SDL_Event &event, DWORD x, DWORD y,
+                                 const char *kstate);
 
-	bool ProcessMouse_OnRunning (UINT event, DWORD state, DWORD x, DWORD y, const char *kstate);
+	bool ProcessMouse_OnRunning (const SDL_Event &event, DWORD x, DWORD y,
+                                    const char *kstate);
 	// Process a mouse click/release
 
 	void SetFOV (double _fov);
@@ -252,7 +254,7 @@ public:
 	void ScreenToGlobal (int x, int y, Vector &glob) const;
 	// return global direction corresponding to screen coordinate x,y
 
-	void InitState (const char *scn);
+	void InitState (const fs::path& scn);
 	bool Read (std::ifstream &ifs);
 	void Write (std::ostream &ofs) const;
 
