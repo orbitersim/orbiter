@@ -910,9 +910,6 @@ public:
 	 * \note Non-GDI clients should not overload this method.
 	 */
 	virtual HFONT GetGDIFont () const { return 0; }
-
-	virtual int Width() const { return 0; }
-	virtual int Height() const { return 0; }
 };
 
 
