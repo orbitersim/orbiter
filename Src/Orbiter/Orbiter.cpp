@@ -1019,18 +1019,18 @@ void Orbiter::Run() {
         Launch(pConfig->CfgCmdlinePrm.LaunchScenario.c_str());
 
     SDL_Event event = {};
+	MSG msg;
+	PeekMessage (&msg, NULL, 0U, 0U, PM_NOREMOVE);
+
     bool hadEvent;
     bool bpCanRender = true;
-    while (!ShouldQuit()) {
-        // Use PollMessage() if the app is active, so we can use idle time to
-        // render the scene. Else, use GetMessage() to avoid eating CPU time.
-        if (bSession) {
-            hadEvent = SDL_PollEvent(&event);
-        } else {
-            hadEvent = SDL_WaitEvent(&event);
-        }
-
-        if (hadEvent) {
+    while (!ShouldQuit() && msg.message != WM_QUIT) {
+		if (PeekMessage(&msg, NULL, 0U, 0U, PM_REMOVE)) {
+    		if (!m_pLaunchpad || !m_pLaunchpad->ConsumeMessage(&msg)) {
+    			TranslateMessage (&msg);
+    			DispatchMessage (&msg);
+    		}
+    	} else if (SDL_PollEvent(&event)) {
             bool consumed = false;
 
             if (gclient && hRenderWnd != nullptr) {
