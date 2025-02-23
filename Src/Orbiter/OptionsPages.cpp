@@ -513,6 +513,16 @@ void OptionsPage_UI::OnDraw(oapi::WithImCtx &ctx) {
         }
         ImGui::EndCombo();
     }
+    ImGui::AlignTextToFramePadding();
+    ImGui::TextUnformatted("UI font size:");
+    ImGui::SameLine();
+    ImGui::PushItemWidth(128.0f);
+    ImGui::InputFloat("##UIFontSize", &Cfg()->CfgFontPrm.ImGui_FontSize, 0.5f, 1.0f, "%.1f");
+    // These seem like reasonable limits. If anyone complains, we can change 'em I guess.
+    Cfg()->CfgFontPrm.ImGui_FontSize = std::clamp(Cfg()->CfgFontPrm.ImGui_FontSize, 1.0f, 200.0f);
+    // I tried to get it to work without a restart... but it crashes for mysterious reasons. Feel free to fix, anyone!
+    ImGui::SameLine();
+    ImGui::TextUnformatted("(This option requires a restart of the Launchpad to take effect)");
 }
 
 OptionsPage_Joystick::OptionsPage_Joystick(OptionsPageContainer *container)
