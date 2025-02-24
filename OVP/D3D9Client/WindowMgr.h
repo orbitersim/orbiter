@@ -121,11 +121,11 @@ public:
 	Node *		FindClosest(vector<Node*> &vis, Node *pPar, int yval);
 	Node *		FindNode(HWND hDlg);
 	DWORD		GetAutoColor();
-
+	
 	WindowManager *GetWM() const { return pMgr; }
 
 	vector<Node*> wList;
-
+	
 private:
 
 	class		WindowManager *pMgr;
@@ -198,7 +198,7 @@ public:
 	HBITMAP		GetBitmap(int id) const;
 	HFONT		GetAppTitleFont() const { return hAppFont; }
 	HFONT		GetSubTitleFont() const { return hSubFont; }
-
+	
 
 	// ===============================================================================================
 	//
@@ -236,7 +236,7 @@ public:
 	Conf		cfg;
 
 private:
-
+	
 	tInsert		qInsert;
 	vector<SideBar*> sbList;
 	SideBar *	sbDrag;

@@ -2197,7 +2197,7 @@ DLLEXPORT void *oapiGetDialogContext (HWND hDlg)
 
 DLLEXPORT bool oapiRegisterWindow (HINSTANCE hDLLInst, HWND hWnd, DWORD flag)
 {
-	return g_pOrbiter->RegisterWindow (hDLLInst, hWnd, flag);
+	return g_pOrbiter->RegisterWindow (hDLLInst, hWnd, flag); 
 }
 
 DLLEXPORT bool oapiAddTitleButton (DWORD msgid, HBITMAP hBmp, DWORD flag)

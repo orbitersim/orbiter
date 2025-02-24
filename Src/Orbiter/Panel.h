@@ -92,7 +92,7 @@ public:
 
 private:
 	inline int AreaIndex (int aid) const
-	{
+	{ 
 		for (int i = 0; i < narea; i++) if (area[i]->id == aid) return i;
 		return -1;
 	}

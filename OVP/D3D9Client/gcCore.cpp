@@ -100,8 +100,8 @@ DLLCLBK void gcBindCoreMethod(void** ppFnc, const char* name)
 // Custom SwapChain Interface
 // ===============================================================================================
 //
-HSWAP gcCore::RegisterSwap(HWND hWnd, HSWAP hData, int AA)
-{
+HSWAP gcCore::RegisterSwap(HWND hWnd, HSWAP hData, int AA) 
+{ 
 	gcSwap * pData = (gcSwap*)hData;
 
 	D3DPRESENT_PARAMETERS pp;
@@ -129,7 +129,7 @@ HSWAP gcCore::RegisterSwap(HWND hWnd, HSWAP hData, int AA)
 	{
 		if (!pData) pData = new gcSwap();
 		else pData->Release();
-
+		
 		LPDIRECT3DSURFACE9 pBack = NULL;
 		HR(pSwap->GetBackBuffer(0, D3DBACKBUFFER_TYPE_MONO, &pBack));
 
@@ -151,23 +151,23 @@ HSWAP gcCore::RegisterSwap(HWND hWnd, HSWAP hData, int AA)
 
 // ===============================================================================================
 //
-void gcCore::FlipSwap(HSWAP hSwap)
-{
+void gcCore::FlipSwap(HSWAP hSwap) 
+{ 
 	HR(((gcSwap*)hSwap)->pSwap->Present(0, 0, 0, 0, 0));
 }
 
 
 // ===============================================================================================
 //
-SURFHANDLE gcCore::GetRenderTarget(HSWAP hSwap)
-{
+SURFHANDLE gcCore::GetRenderTarget(HSWAP hSwap) 
+{ 
 	return ((gcSwap*)hSwap)->hSurf;
 }
 
 // ===============================================================================================
 //
-void gcCore::ReleaseSwap(HSWAP hSwap)
-{
+void gcCore::ReleaseSwap(HSWAP hSwap) 
+{ 
 	if (hSwap) delete ((gcSwap*)hSwap);
 }
 

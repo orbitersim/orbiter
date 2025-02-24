@@ -57,11 +57,11 @@ Pane::Pane (oapi::GraphicsClient *gclient, std::shared_ptr<sdl::UnmanagedWindow>
 	panel2d   = 0;
 	panel     = 0;
 	vcockpit  = 0;
-
+	
 	if (gc) mibar = new MenuInfoBar (this);
 	else    mibar = NULL;
 
-
+	
 	i = g_pOrbiter->Cfg()->CfgInstrumentPrm.bMfdPow2;
 	if (i == 2) {
 		DWORD val;
@@ -192,7 +192,7 @@ bool Pane::SetPanelMode (int pmode, bool force)
 
 	if (pmode == panelmode && !force) return true; // nothing to do
 	panelmode = pmode;
-
+	
 	Vessel::UnsetCameraMovement();
 
 	for (i = 0; i < MAXMFD; i++) {
@@ -907,7 +907,7 @@ bool Pane::OpenMFD (INT_PTR id, int type, ifstream *ifs)
 	// Try to create a new mode with this key
 	Instrument *newinstr = 0;
 	if (ifs || type != MFD_NONE) {
-		newinstr = (ifs ?
+		newinstr = (ifs ? 
 			Instrument::Create (*ifs, this, id, spec, g_focusobj) :
 			Instrument::Create (type, this, id, spec, g_focusobj) );
 		if (!newinstr) return false; // no mode found

@@ -82,7 +82,7 @@ struct _D3D9Stats
 		DWORD TexChanges;	///< Number of texture changes
 		DWORD MtrlChanges;	///< Number of material changes
 	} Mesh;					///< Mesh related statistics
-
+			
 	struct {
 		D3D9Time Update;		///< clbkUpdate
 		D3D9Time Scene;			///< clbkRenderScene
@@ -141,7 +141,7 @@ namespace oapi {
 // The DX9 render client for Orbiter
 // ==============================================================
 
-class D3D9Client : public GraphicsClient
+class D3D9Client : public GraphicsClient 
 {
 
 	friend class ::Scene;	// <= likes to call Render2DOverlay()

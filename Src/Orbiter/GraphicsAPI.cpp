@@ -66,7 +66,7 @@ GraphicsClient::GraphicsClient (HINSTANCE hInstance): Module (hInstance)
     );
 	if (hr != S_OK)
 		m_pIWICFactory = NULL;
-
+		
 }
 
 // ======================================================================
@@ -427,7 +427,7 @@ HBITMAP ReadImageFromDecoder (IWICImagingFactory *m_pIWICFactory, IWICBitmapDeco
 HBITMAP GraphicsClient::ReadImageFromMemory (BYTE *pBuf, DWORD nBuf, UINT w, UINT h)
 {
 	IWICBitmapDecoder *piDecoder = NULL;
-
+	
 	IWICStream *piStream;
 	m_pIWICFactory->CreateStream(&piStream);
 	piStream->InitializeFromMemory(pBuf,nBuf);

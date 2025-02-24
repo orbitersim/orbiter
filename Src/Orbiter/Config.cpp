@@ -344,7 +344,7 @@ bool GetItemString (istream &is, const char *label, char *val)
 	while (is.getline (cbuf, 512)) {
 		cl = trim_string(cbuf);
 		if (!_stricmp(cl, "END_PARSE")) return false;
-
+		
 		for (i = 0; cl[i] && cl[i] != '='; i++);
 		cv = (cl[i] ? cl+(i+1) : cl+i);
 		for (cl[i--] = '\0'; i >= 0 && (cl[i] == ' ' || cl[i] == '\t'); i--)
@@ -976,7 +976,7 @@ BOOL Config::Write (const char *fname) const
 		ofs << "LPadRect = " << rLaunchpad.left << ' ' << rLaunchpad.top
 			<< ' ' << rLaunchpad.right << ' ' << rLaunchpad.bottom << '\n';
 
-	if (strcmp (CfgDirPrm.ConfigDir, CfgDirPrm_default.ConfigDir) ||
+	if (strcmp (CfgDirPrm.ConfigDir, CfgDirPrm_default.ConfigDir) || 
 		strcmp (CfgDirPrm.MeshDir, CfgDirPrm_default.MeshDir) ||
 		strcmp (CfgDirPrm.TextureDir, CfgDirPrm_default.TextureDir) ||
 		strcmp (CfgDirPrm.HightexDir, CfgDirPrm_default.HightexDir) ||

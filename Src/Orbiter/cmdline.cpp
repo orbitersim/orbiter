@@ -92,7 +92,7 @@ bool CommandLine::ParseNextOption(const char*& cmdLine, bool& groupKey, Option& 
 	else {
 		cmdLine = endKey; // advance command line pointer
 	}
-
+	
 	// Parse value, if present
 	while (*cmdLine == ' ' || *cmdLine == '\t') cmdLine++; // skip whitespace
 	if (*cmdLine == '\0' || *cmdLine == '-') { // end of options or next item is key: no value

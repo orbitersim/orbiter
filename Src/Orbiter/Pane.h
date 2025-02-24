@@ -32,7 +32,7 @@ class Vessel;
 
 struct MFDspec {        // panel MFD specs
 	Instrument *instr;  // pointer to MFD instance
-	int lastmode;       // last MFD mode
+	int lastmode;       // last MFD mode 
 	bool exist;         // MFD present?
 	bool active;        // MFD switched on?
 	double upDTscale;   // refresh interval scale

@@ -583,7 +583,7 @@ void MenuInfoBar::Update (double t)
 		case CAMERA_GLOBALFRAME:      strcpy (cbuf, "track (global frame)"); break;
 		case CAMERA_TARGETTOOBJECT:   strcpy (cbuf, "target to "); strcat (cbuf, g_camera->GetDirRef()->Name()); break;
 		case CAMERA_TARGETFROMOBJECT: strcpy (cbuf, "target from "); strcat (cbuf, g_camera->GetDirRef()->Name()); break;
-		case CAMERA_GROUNDOBSERVER:
+		case CAMERA_GROUNDOBSERVER:   
 			strcpy (cbuf, "ground ");
 			strcat (cbuf, g_camera->GroundObserver_TargetLock() ? "(tgt-lock)" : "(free)");
 			break;

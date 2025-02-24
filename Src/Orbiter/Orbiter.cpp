@@ -63,7 +63,7 @@ extern IMGUI_IMPL_API LRESULT ImGui_ImplWin32_WndProcHandler(HWND hWnd, UINT msg
 
 //#define OUTPUT_TEXTURE_INFO
 
-#define KEYDOWN(name,key) (name[key] & 0x80)
+#define KEYDOWN(name,key) (name[key] & 0x80) 
 
 const int MAX_TEXTURE_BUFSIZE = 8000000;
 // Texture manager buffer size. Should be determined from
@@ -186,7 +186,7 @@ int main(int argc, char **argv) {
     // If we're not running from actual console, hide the window
     if (ConsoleManager::IsConsoleExclusive())
         ConsoleManager::ShowConsole(false);
-
+    
     SetEnvironmentVars();
 	g_pOrbiter = new Orbiter; // application instance
 
@@ -254,10 +254,10 @@ bool Orbiter::InitializeWorld (char *name)
 	g_camera->ResizeViewport (viewW, viewH);
 	if (g_psys) delete g_psys;
 
-	auto outputCallback = [](const char* msg, int line, void* callbackContext)
-	{
+	auto outputCallback = [](const char* msg, int line, void* callbackContext) 
+	{ 
 		Orbiter* _this = static_cast<Orbiter*>(callbackContext);
-		_this->OutputLoadStatus(msg, line);
+		_this->OutputLoadStatus(msg, line); 
 	};
 
 	g_psys = new PlanetarySystem(name, pConfig, outputCallback, this); TRACENEW
@@ -410,7 +410,7 @@ bool Orbiter::Create()
 		hBk = CreateDialog (hInst, MAKEINTRESOURCE(IDD_DEMOBK), NULL, BkMsgProc);
 		ShowWindow (hBk, SW_MAXIMIZE);
 	}
-
+	
 	// Create the "launchpad" main dialog window
 	m_pLaunchpad = new orbiter::LaunchpadDialog (this); TRACENEW
 	m_pLaunchpad->Create (bStartVideoTab);
@@ -438,7 +438,7 @@ bool Orbiter::Create()
 		ActivateRoughType();
 
 	memstat = new MemStat;
-
+	
 	return true;
 }
 
@@ -579,7 +579,7 @@ HINSTANCE Orbiter::LoadModule (const char *path, const char *name)
 		}
 	}
 
-	// Can't initialize DirectX in DllMain(), let's do it over here (jarmonik 28.12.2023)
+	// Can't initialize DirectX in DllMain(), let's do it over here (jarmonik 28.12.2023) 
 	if (hDLL) {
 		if (register_module == gclient && gclient != NULL) {
 			if (gclient->clbkInitialise() == false) {
@@ -587,7 +587,7 @@ HINSTANCE Orbiter::LoadModule (const char *path, const char *name)
 				RemoveGraphicsClient(gclient);
 				FreeLibrary(hDLL);
 				LOGOUT_ERR("Client Initialization Failed. Unloading  %s", name);
-				hDLL = NULL;
+				hDLL = NULL;		
 				return NULL;
 			}
 		}
@@ -691,7 +691,7 @@ Orbiter::CreateRenderWindow(Config *pCfg, const char* scenario)
 	LOGOUT("**** Creating simulation session");
 
 	m_pLaunchpad->Hide(); // hide launchpad dialog while the render window is visible
-
+	
 	if (gclient) {
 		if(pState->SplashScreen())
 			gclient->clbkSetSplashScreen(pState->SplashScreen(), pState->SplashColor());
@@ -966,7 +966,7 @@ void Orbiter::GetRenderParameters ()
 	gclient->clbkGetViewportSize (&viewW, &viewH);
 	viewBPP = (gclient->clbkGetRenderParam (RP_COLOURDEPTH, &val) ? val:0);
 	bFullscreen = gclient->clbkFullscreenMode();
-	bUseStencil = (pConfig->CfgDevPrm.bTryStencil &&
+	bUseStencil = (pConfig->CfgDevPrm.bTryStencil && 
 		gclient->clbkGetRenderParam (RP_STENCILDEPTH, &val) && val >= 1);
 }
 
@@ -1605,7 +1605,7 @@ oapi::ScreenAnnotation *Orbiter::CreateAnnotation (bool exclusive, double size, 
 	if (!gclient) return NULL;
 	oapi::ScreenAnnotation *sn = gclient->clbkCreateAnnotation();
 	if (!sn) return NULL;
-
+	
 	sn->SetSize (size);
 	VECTOR3 c = { (col      & 0xFF)/256.0,
 		         ((col>>8 ) & 0xFF)/256.0,
@@ -2073,7 +2073,7 @@ HRESULT Orbiter::UserInput ()
 		hr = didev->GetDeviceState (sizeof(buffer), &buffer);
 		if ((hr == DIERR_NOTACQUIRED || hr == DIERR_INPUTLOST) && SUCCEEDED (didev->Acquire()))
 			hr = didev->GetDeviceState (sizeof(buffer), &buffer);
-
+	
 		// Direct input bypasses the proc loop so we skip it here
 		if (SUCCEEDED (hr) && !io.WantCaptureKeyboard)
 			for (i = 0; i < 256; i++)

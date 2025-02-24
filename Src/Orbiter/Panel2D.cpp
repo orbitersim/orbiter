@@ -139,7 +139,7 @@ void Panel2D::SetActiveScale (double scale, bool force)
 	if      (shiftflag & PANEL_ATTACH_BOTTOM) y0 = max (y0, viewH-tgtH);
 	else if (shiftflag & PANEL_ATTACH_TOP)    y0 = min (y0, 0.0);
 
-	if (panelscale == 1.0) { // pixel alignment
+	if (panelscale == 1.0) { // pixel alignment 
 		x0 = floor(x0+0.5);
 		y0 = floor(y0+0.5);
 	}

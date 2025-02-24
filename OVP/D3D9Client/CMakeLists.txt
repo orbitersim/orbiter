@@ -241,7 +241,7 @@ add_dependencies(D3D9Client
 )
 
 install(TARGETS D3D9Client
-	LIBRARY
+	LIBRARY	
 	DESTINATION ${ORBITER_INSTALL_PLUGIN_DIR}
 )
 

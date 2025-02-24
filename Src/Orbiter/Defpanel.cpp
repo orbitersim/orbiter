@@ -91,7 +91,7 @@ DefaultPanel::DefaultPanel (Pane *_pane, int cidx): pane(_pane)
 
 	rcsmode = -1;
 	rcsdispmode = 1;
-
+	
 	mfdFont = NULL;
 	mfdPen = NULL;
 
@@ -248,7 +248,7 @@ void DefaultPanel::SetGeometry ()
 			Idx[i*6+j] = i*4+idx[j];
 	}
 	navgrp = mesh.AddGroup (Vtx, nVtx, Idx, nIdx, 0, 0);
-
+	
 	// engine status display
 	Vtx = new NTVERTEX[nVtx = 27*4];
 	Idx = new WORD[nIdx = 27*6];

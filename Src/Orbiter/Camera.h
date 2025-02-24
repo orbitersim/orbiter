@@ -58,7 +58,7 @@ class Camera {
 public:
 	Camera (double _nearplane = 1.0, double _farplane = 1e8);
 	// Create a camera with given y-aperture [rad] and viewing fustrum limits
-
+	
 	~Camera();
 
 	void SetCMode (const CameraMode *cm);
@@ -75,7 +75,7 @@ public:
 
 	inline bool IsExternal () const { return external_view; }
 	inline bool IsInternal () const { return !external_view; }
-
+	
 	bool IsCockpitForward () const;
 	// Return true if we are in cockpit mode and the camera points forward (+z)
 
@@ -177,7 +177,7 @@ public:
 
 	void Drag (const Vector &gshift);
 	// Displace camera by 'gshift' (global coords) from its
-	// 'natural' position. The camera will automatically
+	// 'natural' position. The camera will automatically 
 	// gradually move back (external camera mode only)
 
 	void GroundObserverShift (double dx, double dz, double dh);

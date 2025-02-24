@@ -127,7 +127,7 @@ typedef void *HDC;
 /**
  * File path for celestial sphere background textures
  * \par Parameter type:
- *   const std::filesystem::path*
+ *   *char
  */
 #define CFGPRM_CSPHERETEXTURE 0x0013
 
@@ -202,7 +202,7 @@ typedef void *HDC;
 /**
  * Path to background star texture
  * \par Parameter type:
- *   const std::filesystem::path*
+ *   *char
  */
 #define CFGPRM_CSPHERESTARTEXTURE 0x001D
 
@@ -533,7 +533,7 @@ public:
 	 * \param str Text string to print
 	 */
 	virtual void clbkDebugString(const char *str) {}
-
+	
 	/**
 	 * \brief Texture request
 	 *
@@ -917,7 +917,7 @@ public:
 	 * \brief returns a list of popup windows owned by the render window.
 	 * \param [out] hPopupWnd on exit, points to a list of window handles
 	 * \return Number of entries in the list.
-	 * \note The list returned by this method contains the handles of
+	 * \note The list returned by this method contains the handles of 
 	 *   popup windows that are to be rendered on top of the render viewport
 	 *   (e.g. dialog boxes).
 	 * \note A client can use this list if it requires a special method of
@@ -1102,7 +1102,7 @@ public:
 
 	/**
 	 * \brief Create a surface for texturing, as a blitting source, etc.
-	 *
+	 * 
 	 * Surfaces are used for offscreen bitmap and texture manipulation,
 	 * blitting and rendering.
 	 * Derived classes should create a device-specific surface, and
@@ -1427,7 +1427,7 @@ public:
 	 */
 	virtual Font *clbkCreateFont (int height, bool prop, const char *face, FontStyle style = FontStyle::FONT_NORMAL, int orientation = 0) const { return NULL; }
 	virtual Font* clbkCreateFontEx (int height, char* face, int width = 0, int weight = 400, FontStyle style = FontStyle::FONT_NORMAL, float spacing = 0.0f) const { return NULL; }
-
+		
 	/**
 	 * \brief De-allocate a font resource.
 	 * \param font pointer to font resource
@@ -1502,7 +1502,7 @@ public:
 	// @}
 
 	/**
-	 * \brief Constructs a synthetic elevation grid for a tile by interpolating
+	 * \brief Constructs a synthetic elevation grid for a tile by interpolating 
 	 *   ancestor elevation data
 	 * \param emgr elevation manager handle (retrieve with oapiElevationManager)
 	 * \param [in] ilat patch latitude index
@@ -1694,7 +1694,7 @@ protected:
 
 	/**
 	 * \brief Change the default splash screen
-	 *
+	 * 
 	 * Called before clbkCreateRenderWindow to override the default splash screen
 	 * image and text color.
 	 *

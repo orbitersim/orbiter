@@ -410,7 +410,7 @@ DWORD WINAPI DlgThreadProc (void *data)
 // ====================================================================
 // End tread management
 // ====================================================================
-//
+// 
 // ====================================================================
 // ImGui
 // ====================================================================
@@ -422,7 +422,7 @@ const ImWchar* GetGlyphRangesOrbiter()
 	static const ImWchar ranges[] =
 	{
 		0x0020, 0x00FF, // Basic Latin + Latin Supplement
-		0x00A0, 0x02D9, // Polish characters
+		0x00A0, 0x02D9, // Polish characters 
 		0x0393, 0x03C2, // Greek characters
 		0x221A, 0x221A, // √
 		0x222B, 0x222B, // ∫
@@ -563,7 +563,7 @@ void ImGuiDialog::Display() {
 	if (!active) OnClose();
 }
 
-/*
+/* 
 Notification handling, borrowed heavily from https://github.com/patrickcjk/imgui-notify
 Added:
 - permanent discardable notifications
@@ -670,7 +670,7 @@ struct Notification
 		} else if(elapsed > FADE_TIME + duration) { // disappearing
 			color.w = 1.0f - (elapsed - FADE_TIME - duration) / FADE_TIME;
 		} else { // steady
-			color.w = 1.0;
+			color.w = 1.0; 
 		}
 
 		if(h < height) {

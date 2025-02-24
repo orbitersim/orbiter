@@ -5,7 +5,7 @@
 // class Panel2D
 // Vessel cockpit represented by 2D instrument panels
 //
-// This replaces the 'Panel' class. It represents the panels with
+// This replaces the 'Panel' class. It represents the panels with 
 // textured 3D billboards instead of bitmap overlays
 // =======================================================================
 
@@ -168,7 +168,7 @@ protected:
 	 * \return area list index (>= 0) or -1 if area doesn't exist
 	 */
 	inline int AreaIndex (int aid) const
-	{
+	{ 
 		for (int i = 0; i < narea; i++) if (area[i]->id == aid) return i;
 		return -1;
 	}
