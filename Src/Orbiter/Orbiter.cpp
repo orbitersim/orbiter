@@ -2579,9 +2579,6 @@ bool Orbiter::MsgProc (const SDL_Event &event, bool &wantsOut)
     } else if (event.type == SDL_EVENT_MOUSE_MOTION) {
         if (MouseEvent(event, static_cast<DWORD>(event.motion.x), static_cast<DWORD>(event.motion.y)))
             return true;
-        // TODO
-        // if (!bKeepFocus && pConfig->CfgUIPrm.MouseFocusMode != 0 && SDL_GetMouseFocus() != hRenderWnd->Inner()) {
-        //     SetFocus(hWnd);
     }
     return false;
 }
