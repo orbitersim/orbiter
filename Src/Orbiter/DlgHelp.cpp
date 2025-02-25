@@ -18,7 +18,7 @@ void DlgHelp::OnDraw() {}
 void DlgHelp::OpenHelp(const HELPCONTEXT *hc)
 {
 	char buf[256];
-	HWND hWnd = (HWND)(ImGui::GetMainViewport()->PlatformHandle);
+	HWND hWnd = (HWND)(ImGui::GetMainViewport()->PlatformHandleRaw);
 	if(hc->topic)
 		snprintf(buf, 256, "%s::%s", hc->helpfile, hc->topic);
 	else
