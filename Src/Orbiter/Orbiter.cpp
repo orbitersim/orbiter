@@ -1014,18 +1014,20 @@ void Orbiter::Run() {
     if (!pConfig->CfgCmdlinePrm.LaunchScenario.empty())
         Launch(pConfig->CfgCmdlinePrm.LaunchScenario.c_str());
 
-    SDL_Event event = {};
+	SDL_Event event = {};
 	MSG msg;
 	PeekMessage (&msg, NULL, 0U, 0U, PM_NOREMOVE);
 
     bool hadEvent;
     bool bpCanRender = true;
     while (!ShouldQuit() && msg.message != WM_QUIT) {
-		if (PeekMessage(&msg, NULL, 0U, 0U, PM_REMOVE)) {
+    	if (PeekMessage(&msg, NULL, 0U, 0U, PM_REMOVE)) {
     		if (!m_pLaunchpad || !m_pLaunchpad->ConsumeMessage(&msg)) {
     			TranslateMessage (&msg);
     			DispatchMessage (&msg);
     		}
+    		if (m_pLaunchpad && (msg.message == WM_CLOSE || msg.message == WM_DESTROY) && msg.hwnd == m_pLaunchpad->hDlg)
+    			break;
     	} else if (SDL_PollEvent(&event)) {
             bool consumed = false;
 
@@ -1060,10 +1062,9 @@ void Orbiter::Run() {
         }
 
         if (bRenderOnce && bVisible) {
-            // TODO: what should replace this?
-            if (FAILED(Render3DEnvironment())) {}
-            // if (hRenderWnd)
-            //     DestroyWindow(hRenderWnd);
+            if (FAILED(Render3DEnvironment())) {
+	            g_pOrbiter->CloseSession();
+            }
             bRenderOnce = false;
         }
 
@@ -2569,10 +2570,6 @@ void Orbiter::BroadcastBufferedKeyboardEvent (char *kstate, DIDEVICEOBJECTDATA *
 
 bool Orbiter::MsgProc (const SDL_Event &event, bool &wantsOut)
 {
-    // TODO: get DlgMgr working again
-	// if (ImGui_ImplWin32_WndProcHandler(hWnd, uMsg, wParam, lParam))
-	// 	return 0;
-
     if (event.type == SDL_EVENT_MOUSE_BUTTON_UP || event.type == SDL_EVENT_MOUSE_BUTTON_DOWN) {
         if (MouseEvent(event, static_cast<DWORD>(event.button.x), static_cast<DWORD>(event.button.y)))
             return true;
