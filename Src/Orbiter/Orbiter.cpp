@@ -985,16 +985,12 @@ void Orbiter::BroadcastGlobalInit ()
 HRESULT Orbiter::Render3DEnvironment (bool hidedialogs)
 {
 	if (gclient) {
-		if(!hidedialogs) {
-		    WithImCtx _ = pDlgMgr->PushLocal();
+		if(!hidedialogs)
 		    pDlgMgr->ImGuiNewFrame();
-		}
 		gclient->clbkRenderScene ();
 		Output2DData ();
-		if(!hidedialogs) {
-		    WithImCtx _ = pDlgMgr->PushLocal();
+		if(!hidedialogs)
 		    gclient->clbkImGuiRenderDrawData();
-		}
 		gclient->clbkDisplayFrame ();
 	}
     return S_OK;
@@ -2067,7 +2063,6 @@ HRESULT Orbiter::UserInput ()
 	    (g_select && g_select->IsActive())) skipkbd = true;
 
 	if (didev = GetDInput()->GetKbdDevice()) {
-	    WithImCtx _ = pDlgMgr->PushLocal();
 	    ImGuiIO& io = ImGui::GetIO();
 		// keyboard input: immediate key interpretation
 		hr = didev->GetDeviceState (sizeof(buffer), &buffer);

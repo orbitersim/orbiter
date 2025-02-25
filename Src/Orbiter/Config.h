@@ -255,11 +255,10 @@ struct CFG_DEMOPRM {
 };
 
 struct CFG_FONTPRM {
-	float  dlgFont_Scale;		      // font scaling factor
-	char   dlgFont1_Face[64];	      // dialog font face name
-	float  ImGui_FontSize;		      // Font size for ImGui dialogs
-	char   ImGui_FontName[256];	      // Font name (file: `{FontName}-{Weight}.ttf`) where
-	                                  // Weight is `Regular`, `Italic`, `Bold`, or `BoldItalic`
+	float  dlgFont_Scale;		// font scaling factor
+	char   dlgFont1_Face[64];	// dialog font face name
+	float  ImGui_FontSize;		// Font size for ImGui dialogs
+	char   ImGui_FontFile[256];	// Font file for ImGui default font
 };
 
 struct CFG_CAMERAPRM {
@@ -316,7 +315,7 @@ bool GetItemVector (std::istream &is, const char *label, Vector &val);
 bool GetItemVECTOR (std::istream &is, const char *label, VECTOR3 &val);
 
 bool FindLine      (std::istream &is, const char *line);
-// scans stream 'is' from beginning for a line beginning with 'line' 
+// scans stream 'is' from beginning for a line beginning with 'line'
 // and leaves file pointer on the beginning of the next line
 // return value is false if line is not found
 

@@ -22,10 +22,10 @@ struct DIALOGENTRY {
 	struct DIALOGENTRY *prev, *next;
 };
 
-class DialogManager : public oapi::ImCtxBase {
+class DialogManager {
 public:
 	DialogManager(Orbiter *orbiter, HWND hAppWnd);
-	~DialogManager() override;
+	~DialogManager();
 
 	void Init (HWND hAppWnd);
 	void Clear ();
@@ -222,15 +222,12 @@ public:
 
 	void ImGuiNewFrame();
 	ImFont *GetFont(ImGuiFont f);
+	bool ConsumeEvent(const SDL_Event &event, bool &wantsOut);
 private:
 	void InitImGui();
 	void ShutdownImGui();
-protected:
-	friend Orbiter;
-	// this only handles event handling for the case where WinAPI is *not* used.
-	bool ConsumeEvent(const SDL_Event &event, bool &wantsOut) override;
-	bool BeginFrame() override;
-	void EndFrame() override;
+	ImFont *defaultFont;
+	ImFont *monoFont;
 };
 
 INT_PTR OrbiterDefDialogProc (HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam);

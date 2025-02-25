@@ -70,27 +70,20 @@ public:
 		ImGui::PushItemWidth(150.0);
 		ImGui::SeparatorText("Post Processing Configuration");
 
-	    auto min = 0.0; auto max = 1.0; auto def = 0.5;
-		ImGui::SliderScalarReset("Light glow intensity", ImGuiDataType_Double, sizeof(double), &Config->GFXIntensity, &min, &max, &def, "%1.2f");
-	    min = 0.0; max = 1.0; def = 0.8;
-		ImGui::SliderScalarReset("Light glow distance", ImGuiDataType_Double, sizeof(double), &Config->GFXDistance, &min, &max, &def, "%1.2f");
-        min = 0.5; max = 2.0; def = 1.1;
-	    ImGui::SliderScalarReset("Glow threshold", ImGuiDataType_Double, sizeof(double), &Config->GFXThreshold, &min, &max, &def, "%1.2f");
-        min = 0.3; max = 2.5; def = 1.0;
-	    ImGui::SliderScalarReset("Gamma", ImGuiDataType_Double, sizeof(double), &Config->GFXGamma, &min, &max, &def, "%1.2f");
+
+		ImGui::SliderFloatReset("Light glow intensity", &Config->GFXIntensity, 0.0f, 1.0f, 0.5f, "%1.2f");
+		ImGui::SliderFloatReset("Light glow distance", &Config->GFXDistance, 0.0f, 1.0f, 0.8f, "%1.2f");
+		ImGui::SliderFloatReset("Glow threshold", &Config->GFXThreshold, 0.5f, 2.0f, 1.1f, "%1.2f");
+		ImGui::SliderFloatReset("Gamma", &Config->GFXGamma, 0.3f, 2.5f, 1.0f, "%1.2f");
 
 		ImGui::SeparatorText("Light Configuration");
 
-	    min = 0.5; max = 2.5; def = 1.2;
-		ImGui::SliderScalarReset("Sunlight Intensity", ImGuiDataType_Double, sizeof(double), &Config->GFXSunIntensity, &min, &max, &def, "%1.2f");
-	    min = 0.01; max = 2.0; def = 0.7;
-		ImGui::SliderScalarReset("Indirect Lighting", ImGuiDataType_Double, sizeof(double), &Config->PlanetGlow, &min, &max, &def, "%1.2f");
-	    min = 0.001; max = 1.0; def = 0.5;
-		ImGui::SliderScalarReset("Local Lights Max", ImGuiDataType_Double, sizeof(double), &Config->GFXLocalMax, &min, &max, &def, "%1.2f");
-	    min = 0.001; max = 1.0; def = 0.5;
-		ImGui::SliderScalarReset("Sun Glare Intensity", ImGuiDataType_Double, sizeof(double), &Config->GFXGlare, &min, &max, &def, "%1.2f");
+		ImGui::SliderFloatReset("Sunlight Intensity", &Config->GFXSunIntensity, 0.5f, 2.5f, 1.2f, "%1.2f");
+		ImGui::SliderFloatReset("Indirect Lighting", &Config->PlanetGlow, 0.01f, 2.0f, 0.7f, "%1.2f");
+		ImGui::SliderFloatReset("Local Lights Max", &Config->GFXLocalMax, 0.001f, 1.0f, 0.5f, "%1.2f");
+		ImGui::SliderFloatReset("Sun Glare Intensity", &Config->GFXGlare, 0.001f, 1.0f, 0.5f, "%1.2f");
 
-		if(ImGui::Button("Recreate Sun/Glares")) {
+		if(ImGui::Button("Recrete Sun/Glares")) {
 			g_client->GetScene()->CreateSunGlare();
 		}
 		ImGui::PopItemWidth();
