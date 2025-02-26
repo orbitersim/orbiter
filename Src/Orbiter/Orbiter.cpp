@@ -171,7 +171,7 @@ int main(int argc, char **argv) {
 #ifdef _CRTDBG_MAP_ALLOC
 	_CrtSetDbgFlag(_CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF);
 #endif
-	SDL_Init(SDL_INIT_JOYSTICK | SDL_INIT_EVENTS);
+	SDL_Init(SDL_INIT_VIDEO | SDL_INIT_JOYSTICK | SDL_INIT_EVENTS);
 
 	SDL_SetAppMetadata("OpenOrbiter", SIG7, "uk.ac.ucl.medphys.orbit");
 
@@ -673,7 +673,6 @@ VOID Orbiter::Launch (const char *scenario)
 
 	long m0 = memstat->HeapUsage();
 	CreateRenderWindow (pConfig, scenario);
-	SDL_InitSubSystem(SDL_INIT_VIDEO);
 	simheapsize = memstat->HeapUsage()-m0;
 	SetCursor (hCursor);
 }
@@ -954,7 +953,6 @@ void Orbiter::CloseSession ()
 		}
 	}
 	LOGOUT("**** Closing simulation session");
-	SDL_QuitSubSystem(SDL_INIT_VIDEO);
 }
 
 // =======================================================================
@@ -1017,45 +1015,40 @@ void Orbiter::Run() {
         Launch(pConfig->CfgCmdlinePrm.LaunchScenario.c_str());
 
 	SDL_Event event = {};
-	MSG msg;
-	PeekMessage (&msg, NULL, 0U, 0U, PM_NOREMOVE);
-
-    bool bpCanRender = true;
-    while (!ShouldQuit() && msg.message != WM_QUIT) {
-    	if (PeekMessage(&msg, NULL, 0U, 0U, PM_REMOVE)) {
-    		if (!m_pLaunchpad || !m_pLaunchpad->ConsumeMessage(&msg)) {
-    			TranslateMessage (&msg);
-    			DispatchMessage (&msg);
-    		}
-    		if (msg.message == WM_CLOSE || msg.message == WM_DESTROY || msg.message == WM_QUIT)
-    			break;
-    	} else if (SDL_PollEvent(&event)) {
-            if (gclient && hRenderWnd != nullptr) {
-                bool consumed = pDlgMgr->ConsumeEvent(event, bShouldQuit);
-            	consumed = consumed || pDI->ConsumeEvent(event);
-            	consumed = consumed || gclient->RenderWndProc(event, bShouldQuit);
-            }
-    	} else {
-    		if (bSession) {
-    			bActive = hRenderWnd != nullptr && bVisible &&
-				(SDL_GetKeyboardFocus() == hRenderWnd->Inner());
-    			if (bAllowInput)
-    				bActive = true, bAllowInput = false;
-    			if (BeginTimeStep(bRunning)) {
-    				UpdateWorld();
-    				EndTimeStep(bRunning);
-    				if (bVisible) {
-    					if (bActive)
-    						UserInput();
-    					bRenderOnce = true;
-    				}
-    				if (bRunning && bCapture) {
-    					CaptureVideoFrame();
-    				}
+	bool bpCanRender = true;
+    while (!ShouldQuit()) {
+    	while (SDL_PollEvent(&event)) {
+    		if (gclient && hRenderWnd != nullptr) {
+    			bool consumed = pDlgMgr->ConsumeEvent(event, bShouldQuit);
+	             	consumed = consumed || pDI->ConsumeEvent(event);
+			consumed = consumed || gclient->RenderWndProc(event, bShouldQuit);
+	        }
+	        if (event.type == SDL_EVENT_QUIT) {
+	            bShouldQuit = true;
+	        }
+	    	if (bShouldQuit) {
+		    break;
+	    	}
+    	}
+    	if (bSession) {
+    		bActive = hRenderWnd != nullptr && bVisible &&
+			(SDL_GetKeyboardFocus() == hRenderWnd->Inner());
+    		if (bAllowInput)
+    			bActive = true, bAllowInput = false;
+    		if (BeginTimeStep(bRunning)) {
+    			UpdateWorld();
+    			EndTimeStep(bRunning);
+    			if (bVisible) {
+    				if (bActive)
+    					UserInput();
+    				bRenderOnce = true;
     			}
-    			if (m_pConsole)
-    				m_pConsole->ParseCmd();
+    			if (bRunning && bCapture) {
+    				CaptureVideoFrame();
+    			}
     		}
+    		if (m_pConsole)
+    			m_pConsole->ParseCmd();
     	}
 
         if (bRenderOnce && bVisible) {
@@ -1128,13 +1121,9 @@ void Orbiter::InitRotationMode ()
 {
 	bKeepFocus = true;
 
-    if (g_iCursorShowCount == 0) {
-        g_iCursorShowCount -= 1;
-        SDL_HideCursor();
-    }
-
     if (hRenderWnd) {
         SDL_SetWindowRelativeMouseMode(hRenderWnd->Inner(), true);
+    	SDL_CaptureMouse(true);
     }
 }
 
@@ -1142,13 +1131,9 @@ void Orbiter::ExitRotationMode ()
 {
 	bKeepFocus = false;
 
-    if (g_iCursorShowCount < 0) {
-        SDL_ShowCursor();
-        g_iCursorShowCount += 1;
-    }
-
     if (hRenderWnd) {
         SDL_SetWindowRelativeMouseMode(hRenderWnd->Inner(), false);
+    	SDL_CaptureMouse(false);
     }
 }
 

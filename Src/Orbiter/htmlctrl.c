@@ -1914,8 +1914,9 @@ LRESULT CALLBACK WindowProcDummy(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lPa
 
 void RegisterHtmlCtrl (HINSTANCE hInstance, BOOL active)
 {
-	if (OleInitialize(NULL) == S_OK)
-	{
+	// OleInitialize is already called as part of SDL setup
+	//if (OleInitialize(NULL) == S_OK)
+	//{
 		WNDCLASSEX		wc;
 
 		// Register the class of our window to host the browser. 'WindowProc' is our message handler
@@ -1926,5 +1927,5 @@ void RegisterHtmlCtrl (HINSTANCE hInstance, BOOL active)
 		wc.lpfnWndProc = (active ? WindowProc : WindowProcDummy);
 		wc.lpszClassName = &ClassName[0];
 		RegisterClassEx(&wc);
-	}
+	//}
 }
