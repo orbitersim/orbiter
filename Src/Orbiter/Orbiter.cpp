@@ -673,6 +673,7 @@ VOID Orbiter::Launch (const char *scenario)
 
 	long m0 = memstat->HeapUsage();
 	CreateRenderWindow (pConfig, scenario);
+	SDL_InitSubSystem(SDL_INIT_VIDEO);
 	simheapsize = memstat->HeapUsage()-m0;
 	SetCursor (hCursor);
 }
@@ -953,6 +954,7 @@ void Orbiter::CloseSession ()
 		}
 	}
 	LOGOUT("**** Closing simulation session");
+	SDL_QuitSubSystem(SDL_INIT_VIDEO);
 }
 
 // =======================================================================
@@ -1018,7 +1020,6 @@ void Orbiter::Run() {
 	MSG msg;
 	PeekMessage (&msg, NULL, 0U, 0U, PM_NOREMOVE);
 
-    bool hadEvent;
     bool bpCanRender = true;
     while (!ShouldQuit() && msg.message != WM_QUIT) {
     	if (PeekMessage(&msg, NULL, 0U, 0U, PM_REMOVE)) {
@@ -1026,40 +1027,36 @@ void Orbiter::Run() {
     			TranslateMessage (&msg);
     			DispatchMessage (&msg);
     		}
-    		if (m_pLaunchpad && (msg.message == WM_CLOSE || msg.message == WM_DESTROY) && msg.hwnd == m_pLaunchpad->hDlg)
+    		if (msg.message == WM_CLOSE || msg.message == WM_DESTROY || msg.message == WM_QUIT)
     			break;
     	} else if (SDL_PollEvent(&event)) {
-            bool consumed = false;
-
             if (gclient && hRenderWnd != nullptr) {
-                consumed = consumed || pDlgMgr->ConsumeEvent(event, bShouldQuit);
-                consumed = consumed || gclient->RenderWndProc(event, bShouldQuit);
+                bool consumed = pDlgMgr->ConsumeEvent(event, bShouldQuit);
+            	consumed = consumed || pDI->ConsumeEvent(event);
+            	consumed = consumed || gclient->RenderWndProc(event, bShouldQuit);
             }
-
-            if (ShouldQuit())
-                break;
-        } else {
-            if (bSession) {
-                bActive = hRenderWnd != nullptr && bVisible &&
-                          (SDL_GetKeyboardFocus() == hRenderWnd->Inner());
-                if (bAllowInput)
-                    bActive = true, bAllowInput = false;
-                if (BeginTimeStep(bRunning)) {
-                    UpdateWorld();
-                    EndTimeStep(bRunning);
-                    if (bVisible) {
-                        if (bActive)
-                            UserInput();
-                        bRenderOnce = true;
-                    }
-                    if (bRunning && bCapture) {
-                        CaptureVideoFrame();
-                    }
-                }
-                if (m_pConsole)
-                    m_pConsole->ParseCmd();
-            }
-        }
+    	} else {
+    		if (bSession) {
+    			bActive = hRenderWnd != nullptr && bVisible &&
+				(SDL_GetKeyboardFocus() == hRenderWnd->Inner());
+    			if (bAllowInput)
+    				bActive = true, bAllowInput = false;
+    			if (BeginTimeStep(bRunning)) {
+    				UpdateWorld();
+    				EndTimeStep(bRunning);
+    				if (bVisible) {
+    					if (bActive)
+    						UserInput();
+    					bRenderOnce = true;
+    				}
+    				if (bRunning && bCapture) {
+    					CaptureVideoFrame();
+    				}
+    			}
+    			if (m_pConsole)
+    				m_pConsole->ParseCmd();
+    		}
+    	}
 
         if (bRenderOnce && bVisible) {
             if (FAILED(Render3DEnvironment())) {
@@ -2063,35 +2060,30 @@ HRESULT Orbiter::UserInput ()
 	if ((g_input && g_input->IsActive()) ||
 	    (g_select && g_select->IsActive())) skipkbd = true;
 
-	if (didev = GetDInput()->GetKbdDevice()) {
-	    ImGuiIO& io = ImGui::GetIO();
-		// keyboard input: immediate key interpretation
-		hr = didev->GetDeviceState (sizeof(buffer), &buffer);
-		if ((hr == DIERR_NOTACQUIRED || hr == DIERR_INPUTLOST) && SUCCEEDED (didev->Acquire()))
-			hr = didev->GetDeviceState (sizeof(buffer), &buffer);
-	
-		// Direct input bypasses the proc loop so we skip it here
-		if (SUCCEEDED (hr) && !io.WantCaptureKeyboard)
-			for (i = 0; i < 256; i++)
-				simkstate[i] |= buffer[i];
-		bool consume = BroadcastImmediateKeyboardEvent (simkstate);
-		if (!skipkbd && !consume) {
-			KbdInputImmediate_System (simkstate);
-			if (bRunning) KbdInputImmediate_OnRunning (simkstate);
-		}
+	ImGuiIO& io = ImGui::GetIO();
+	// keyboard input: immediate key interpretation
+	auto numkey = 0;
+	const auto kstate = SDL_GetKeyboardState(&numkey);
+	for (i = 0; i < numkey; i++) {
+		if (i >= sizeof(buffer)) break;
+		buffer[i] = kstate[i] ? 0x80 : 0x00;
+		if (!io.WantCaptureKeyboard)
+			simkstate[i] |= buffer[i];
+	}
 
-		// keyboard input: buffered key events
-		hr = didev->GetDeviceData (sizeof(DIDEVICEOBJECTDATA), dod, &dwItems, 0);
-		if ((hr == DIERR_NOTACQUIRED || hr == DIERR_INPUTLOST) && SUCCEEDED (didev->Acquire()))
-			hr = didev->GetDeviceData (sizeof(DIDEVICEOBJECTDATA), dod, &dwItems, 0);
-		if (SUCCEEDED (hr) && !io.WantCaptureKeyboard) {
-			BroadcastBufferedKeyboardEvent (buffer, dod, dwItems);
-			if (!skipkbd) {
-				KbdInputBuffered_System (buffer, dod, dwItems);
-				if (bRunning) KbdInputBuffered_OnRunning (buffer, dod, dwItems);
-			}
+	bool consume = BroadcastImmediateKeyboardEvent (simkstate);
+	if (!skipkbd && !consume) {
+		KbdInputImmediate_System (simkstate);
+		if (bRunning) KbdInputImmediate_OnRunning (simkstate);
+	}
+	// keyboard input: buffered key events
+	if (!io.WantCaptureKeyboard) {
+		BroadcastBufferedKeyboardEvent (buffer);
+		if (!skipkbd) {
+			KbdInputBuffered_System (buffer);
+			if (bRunning) KbdInputBuffered_OnRunning (buffer);
 		}
-		//if (hr == DI_BUFFEROVERFLOW) MessageBeep (-1);
+		pDI->m_bufferedEvents.clear();
 	}
 
 	for (i = 0; i < 15; i++) ctrlTotal[i] = ctrlKeyboard[i]; // update attitude requests
@@ -2128,9 +2120,9 @@ bool Orbiter::SendKbdBuffered(DWORD key, DWORD *mod, DWORD nmod, bool onRunningO
 	memset (buffer, 0, 256);
 	for (int i = 0; i < nmod; i++)
 		buffer[mod[i]] = 0x80;
-	BroadcastBufferedKeyboardEvent (buffer, &dod, 1);
-	KbdInputBuffered_System (buffer, &dod, 1);
-	KbdInputBuffered_OnRunning (buffer, &dod, 1);
+	BroadcastBufferedKeyboardEvent (buffer);
+	KbdInputBuffered_System (buffer);
+	KbdInputBuffered_OnRunning (buffer);
 	return true;
 }
 
@@ -2327,12 +2319,12 @@ void Orbiter::KbdInputImmediate_OnRunning (char *kstate)
 // Desc: General user keyboard buffered key interpretation. Processes keys
 //       which are also interpreted when simulation is paused
 //-----------------------------------------------------------------------------
-void Orbiter::KbdInputBuffered_System (char *kstate, DIDEVICEOBJECTDATA *dod, DWORD n)
+void Orbiter::KbdInputBuffered_System (char *kstate)
 {
-	for (DWORD i = 0; i < n; i++) {
+	for (const auto& evt : pDI->m_bufferedEvents) {
 
-		if (!(dod[i].dwData & 0x80)) continue; // only process key down events
-		DWORD key = dod[i].dwOfs;
+		if (!evt.down) continue; // only process key down events
+		DWORD key = evt.scancode;
 
 		if (keymap.IsLogicalKey(key, kstate, OAPI_LKEY_Pause))                TogglePause();
 		else if (keymap.IsLogicalKey(key, kstate, OAPI_LKEY_Quicksave))            Quicksave();
@@ -2386,12 +2378,11 @@ void Orbiter::KbdInputBuffered_System (char *kstate, DIDEVICEOBJECTDATA *dod, DW
 // Name: KbdInputBuffered_OnRunning ()
 // Desc: User keyboard buffered key interpretation in running simulation
 //-----------------------------------------------------------------------------
-void Orbiter::KbdInputBuffered_OnRunning (char *kstate, DIDEVICEOBJECTDATA *dod, DWORD n)
+void Orbiter::KbdInputBuffered_OnRunning (char *kstate)
 {
-	for (DWORD i = 0; i < n; i++) {
-
-		DWORD key = dod[i].dwOfs;
-		bool bdown = (dod[i].dwData & 0x80) != 0;
+	for (const auto &evt : pDI->m_bufferedEvents) {
+		DWORD key = evt.scancode;
+		bool bdown = evt.down;
 
 		if (g_focusobj->ConsumeBufferedKey (key, bdown, kstate)) // offer key to vessel for processing
 			continue;
@@ -2413,7 +2404,7 @@ void Orbiter::KbdInputBuffered_OnRunning (char *kstate, DIDEVICEOBJECTDATA *dod,
 
 		} else if (KEYMOD_SHIFT (kstate)) {  // Shift-key combinations (reserved for MFD control)
 
-			int id = (KEYDOWN (kstate, DIK_LSHIFT) ? 0 : 1);
+			int id = (KEYDOWN (kstate, SDL_SCANCODE_LSHIFT) ? 0 : 1);
 			g_pane->MFDConsumeKeyBuffered (id, key);
 
 		} else if (KEYMOD_ALT (kstate)) {    // ALT-Key combinations
@@ -2548,18 +2539,28 @@ bool Orbiter::BroadcastImmediateKeyboardEvent (char *kstate)
 	return consume;
 }
 
-void Orbiter::BroadcastBufferedKeyboardEvent (char *kstate, DIDEVICEOBJECTDATA *dod, DWORD n)
+void Orbiter::BroadcastBufferedKeyboardEvent (char *kstate)
 {
-	for (DWORD i = 0; i < n; i++) {
+	auto evt = pDI->m_bufferedEvents.begin();
+	while (evt != pDI->m_bufferedEvents.end()) {
 		bool consume = false;
-		if (!(dod[i].dwData & 0x80)) continue; // only process key down events
-		DWORD key = dod[i].dwOfs;
+		if (!evt->down) {
+			// only process key down events
+			++evt;
+			continue;
+		}
+		DWORD key = evt->scancode;
 
 		for (auto it = m_Plugin.begin(); it != m_Plugin.end(); it++)
 			if (it->pModule && it->pModule->clbkProcessKeyboardBuffered(key, kstate, bRunning))
 				consume = true;
 
-		if (consume) dod[i].dwData = 0; // remove key from process queue
+		if (consume) {
+			// remove key from process queue
+			evt = pDI->m_bufferedEvents.erase(evt);
+		} else {
+			++evt;
+		}
 	}
 }
 

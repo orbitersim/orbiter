@@ -10,6 +10,9 @@
 
 #include "Di7frame.h"
 
+#include <list>
+#include <SDL3/SDL_events.h>
+
 class DInput {
 	friend class Orbiter;
 
@@ -40,6 +43,8 @@ public:
 		int ThrottleOfs; // throttle data offset
 	};
 
+	bool ConsumeEvent(const SDL_Event &event);
+
 protected:
 	HRESULT SetJoystickProperties ();
 
@@ -48,6 +53,7 @@ private:
 	CDIFramework7 *diframe;
 	JoyProp joyprop;
 	HWND m_hWnd;
+	std::list<SDL_KeyboardEvent> m_bufferedEvents;
 };
 
 #endif // !__INPUT_H

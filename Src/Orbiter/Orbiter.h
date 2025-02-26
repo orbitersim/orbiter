@@ -310,14 +310,14 @@ protected:
 	HRESULT UserInput ();
 	void KbdInputImmediate_System    (char *kstate);
 	void KbdInputImmediate_OnRunning (char *buffer);
-	void KbdInputBuffered_System     (char *kstate, DIDEVICEOBJECTDATA *dod, DWORD n);
-	void KbdInputBuffered_OnRunning  (char *kstate, DIDEVICEOBJECTDATA *dod, DWORD n);
+	void KbdInputBuffered_System     (char *kstate);
+	void KbdInputBuffered_OnRunning  (char *kstate);
 	void UserJoyInput_System (DIJOYSTATE2 *js);
 	void UserJoyInput_OnRunning (DIJOYSTATE2 *js);
 	bool MouseEvent (const SDL_Event &event, DWORD x, DWORD y);
 	bool BroadcastMouseEvent (const SDL_Event &event, DWORD x, DWORD y);
 	bool BroadcastImmediateKeyboardEvent (char *kstate);
-	void BroadcastBufferedKeyboardEvent (char *kstate, DIDEVICEOBJECTDATA *dod, DWORD n);
+	void BroadcastBufferedKeyboardEvent (char *kstate);
 
 	void BroadcastGlobalInit();
 

@@ -248,3 +248,11 @@ HRESULT DInput::SetJoystickProperties ()
 	}
 	return DI_OK;
 }
+
+bool DInput::ConsumeEvent(const SDL_Event &event) {
+	if (event.type == SDL_EVENT_KEY_UP || event.type == SDL_EVENT_KEY_DOWN) {
+		m_bufferedEvents.push_back(event.key);
+		return true;
+	}
+	return false;
+}
