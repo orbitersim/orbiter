@@ -1,9 +1,10 @@
+#define OAPI_IMPLEMENTATION
 #include "SDLWrappers.h"
 
 #include <Log.h>
 #include <stdexcept>
 
-sdl::ManagedWindow::ManagedWindow(const std::string_view title, const int width,
+DLLEXPORT sdl::ManagedWindow::ManagedWindow(const std::string_view title, const int width,
                                   const int height,
                                   const SDL_WindowFlags flags) {
     m_inner = SDL_CreateWindow(title.data(), width, height, flags);
@@ -47,7 +48,7 @@ sdl::ManagedWindow::ManagedWindow(const std::string_view title, const int width,
     };
 }
 
-sdl::ManagedWindow::~ManagedWindow() {
+DLLEXPORT sdl::ManagedWindow::~ManagedWindow() {
     if (m_device && m_inner)
         SDL_ReleaseWindowFromGPUDevice(m_device, m_inner);
     if (m_device)
@@ -56,7 +57,7 @@ sdl::ManagedWindow::~ManagedWindow() {
         SDL_DestroyWindow(m_inner);
 }
 
-sdl::UnmanagedWindow::UnmanagedWindow(const std::string_view title,
+DLLEXPORT sdl::UnmanagedWindow::UnmanagedWindow(const std::string_view title,
                                       const int width, const int height,
                                       const SDL_WindowFlags flags) {
     m_inner = SDL_CreateWindow(title.data(), width, height, flags);
@@ -66,7 +67,7 @@ sdl::UnmanagedWindow::UnmanagedWindow(const std::string_view title,
     }
 }
 
-sdl::UnmanagedWindow::~UnmanagedWindow() {
+DLLEXPORT sdl::UnmanagedWindow::~UnmanagedWindow() {
     if (m_inner)
         SDL_DestroyWindow(m_inner);
 }

@@ -4,10 +4,11 @@
 #include <SDL3/SDL.h>
 #include <string>
 #include <windows.h>
+#include <OrbiterAPI.h>
 
 namespace sdl {
 
-class UnmanagedWindow {
+class OAPIFUNC UnmanagedWindow {
 public:
   UnmanagedWindow(const UnmanagedWindow &) = delete;
   UnmanagedWindow &operator=(const UnmanagedWindow &) = delete;
@@ -33,7 +34,7 @@ private:
   SDL_Window *m_inner = nullptr;
 };
 
-class ManagedWindow {
+class OAPIFUNC ManagedWindow {
 public:
   ManagedWindow(const ManagedWindow &) = delete;
 
