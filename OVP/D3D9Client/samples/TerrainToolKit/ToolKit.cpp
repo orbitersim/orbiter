@@ -1135,7 +1135,7 @@ void ToolKit::clbkMouseClick(int iUser, void *pData)
 // =================================================================================================
 // Orbiter Module Callback
 //
-bool ToolKit::clbkProcessMouse(UINT event, DWORD state, DWORD x, DWORD y)
+bool ToolKit::clbkProcessMouse(const SDL_Event& event, DWORD x, DWORD y)
 {
 	if (!pCore) return false;
 
@@ -1148,7 +1148,7 @@ bool ToolKit::clbkProcessMouse(UINT event, DWORD state, DWORD x, DWORD y)
 	pick.dist = 1e16f;
 	pick.grp_inst = -1;
 
-	if (event == WM_LBUTTONDOWN) {
+	if (event.type == SDL_EVENT_MOUSE_BUTTON_DOWN && event.button.button == SDL_BUTTON_LEFT) {
 		down_corner = -1; // down_corner is the ID of the draggable corner balls
 		if (bImport && hOverlay) {
 			for (int i = 0; i < 4; i++) {
@@ -1160,7 +1160,7 @@ bool ToolKit::clbkProcessMouse(UINT event, DWORD state, DWORD x, DWORD y)
 		}
 	}
 
-	if (event == WM_LBUTTONUP) down_corner = -1;
+	if (event.type == SDL_EVENT_MOUSE_BUTTON_UP && event.button.button == SDL_BUTTON_LEFT) down_corner = -1;
 
 
 	if ((x != xpos || y != ypos) && down_corner >= 0)
