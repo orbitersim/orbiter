@@ -158,7 +158,7 @@ public:
 	// Increase camera field of view by dfov
 
 	// Accessor functions
-	inline HINSTANCE GetInstance() const { return hInst; }
+	inline HINSTANCE GetInstance() const { return hInstance; }
 	inline const std::shared_ptr<sdl::UnmanagedWindow>& GetRenderWnd() const { return hRenderWnd; }
 	inline bool    IsFullscreen() const { return bFullscreen; }
 	inline DWORD   ViewW() const { return viewW; }
@@ -351,7 +351,7 @@ private:
 	DialogManager  *pDlgMgr;
 	orbiter::ConsoleNG* m_pConsole;    // The console window opened when Orbiter server is launched without a graphics client
 	DInput         *pDI;
-	HINSTANCE       hInst;         // orbiter instance handle
+	HINSTANCE       hInstance;         // orbiter instance handle
 	std::shared_ptr<sdl::UnmanagedWindow> hRenderWnd; // render window handle (NULL if no render support)
 	HWND            hBk;           // background window handle (demo mode only)
 	BOOL            bRenderOnce;   // flag for single frame render request

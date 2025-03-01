@@ -301,7 +301,7 @@ Orbiter::Orbiter ()
 		fine_counter_step = 1.0 / freq;
 	}
 
-    hInst           = GetModuleHandle(nullptr);
+    hInstance           = GetModuleHandle(nullptr);
 	pDI             = new DInput(this); TRACENEW
 	pConfig         = new Config; TRACENEW
 	pState          = NULL;
@@ -381,8 +381,8 @@ bool Orbiter::Create()
     pState = new State(); TRACENEW
 
     // Register main dialog window class
-    GetClassInfo (hInst, "#32770", &wndClass); // override default dialog class
-    wndClass.hIcon = LoadIcon (hInst, MAKEINTRESOURCE (IDI_MAIN_ICON));
+    GetClassInfo (hInstance, "#32770", &wndClass); // override default dialog class
+    wndClass.hIcon = LoadIcon (hInstance, MAKEINTRESOURCE (IDI_MAIN_ICON));
     RegisterClass (&wndClass);
 
     // Find out if we are running under Linux/WINE
@@ -392,8 +392,8 @@ bool Orbiter::Create()
     bWINEenv = (ret == ERROR_SUCCESS);
 
     // Register HTML viewer class
-    RegisterHtmlCtrl (hInst, UseHtmlInline());
-    CustomCtrl::RegisterClass (hInst);
+    RegisterHtmlCtrl (hInstance, UseHtmlInline());
+    CustomCtrl::RegisterClass (hInstance);
 
 	if (pConfig->CfgCmdlinePrm.bFastExit)
 		SetFastExit(true);
@@ -401,7 +401,7 @@ bool Orbiter::Create()
 		OpenVideoTab();
 
 	if (pConfig->CfgDemoPrm.bBkImage) {
-		hBk = CreateDialog (hInst, MAKEINTRESOURCE(IDD_DEMOBK), NULL, BkMsgProc);
+		hBk = CreateDialog (hInstance, MAKEINTRESOURCE(IDD_DEMOBK), NULL, BkMsgProc);
 		ShowWindow (hBk, SW_MAXIMIZE);
 	}
 	
@@ -474,7 +474,7 @@ VOID Orbiter::CloseApp (bool fast_shutdown)
 			delete []customcmd;
 			customcmd = NULL;
 		}
-		oapiUnregisterCustomControls (hInst);
+		oapiUnregisterCustomControls (hInstance);
 	}
 	timeEndPeriod (1);
 }
@@ -1391,7 +1391,7 @@ VOID Orbiter::SetFOV (double fov, bool limit_range)
 
 	// update Camera dialog
 	HWND hCamDlg;
-	if (pDlgMgr && (hCamDlg = pDlgMgr->IsEntry (hInst, IDD_CAMERA)))
+	if (pDlgMgr && (hCamDlg = pDlgMgr->IsEntry (hInstance, IDD_CAMERA)))
 		SendMessage (hCamDlg, WM_APP, 0, (LPARAM)&fov);
 }
 
@@ -1408,7 +1408,7 @@ VOID Orbiter::IncFOV (double dfov)
 
 	// update Camera dialog
 	HWND hCamDlg;
-	if (pDlgMgr && (hCamDlg = pDlgMgr->IsEntry (hInst, IDD_CAMERA)))
+	if (pDlgMgr && (hCamDlg = pDlgMgr->IsEntry (hInstance, IDD_CAMERA)))
 		SendMessage (hCamDlg, WM_APP, 0, (LPARAM)&fov);
 }
 
@@ -1486,7 +1486,7 @@ void Orbiter::TogglePlanetariumMode()
 	plnFlag ^= PLN_ENABLE;
 
 	if (pDlgMgr) {
-		DlgOptions* dlg = pDlgMgr->EntryExists<DlgOptions>(hInst);
+		DlgOptions* dlg = pDlgMgr->EntryExists<DlgOptions>(hInstance);
 		if (dlg) dlg->Update();
 	}
 
@@ -1500,7 +1500,7 @@ void Orbiter::ToggleLabelDisplay()
 	mkrFlag ^= MKR_ENABLE;
 
 	if (pDlgMgr) {
-		DlgOptions* dlg = pDlgMgr->EntryExists<DlgOptions>(hInst);
+		DlgOptions* dlg = pDlgMgr->EntryExists<DlgOptions>(hInstance);
 		if (dlg) dlg->Update();
 	}
 }
@@ -1561,7 +1561,7 @@ void Orbiter::EndPlayback ()
 	if (snote_playback) snote_playback->ClearText();
 	bPlayback = false;
 	if (pDlgMgr) {
-		HWND hDlg = pDlgMgr->IsEntry (hInst, IDD_RECPLAY);
+		HWND hDlg = pDlgMgr->IsEntry (hInstance, IDD_RECPLAY);
 		if (hDlg) PostMessage (hDlg, WM_USER+1, 0, 0);
 	}
 	if (g_pane && g_pane->MIBar()) g_pane->MIBar()->SetPlayback(false);
@@ -2626,12 +2626,12 @@ void Orbiter::UpdateDeallocationProgress()
 
 HWND Orbiter::OpenDialog (int id, DLGPROC pDlg, void *context)
 {
-	return OpenDialog (hInst, id, pDlg, context);
+	return OpenDialog (hInstance, id, pDlg, context);
 }
 
 HWND Orbiter::OpenDialogEx (int id, DLGPROC pDlg, DWORD flag, void *context)
 {
-	return OpenDialogEx (hInst, id, pDlg, flag, context);
+	return OpenDialogEx (hInstance, id, pDlg, flag, context);
 }
 
 HWND Orbiter::OpenDialog (HINSTANCE hInstance, int id, DLGPROC pDlg, void *context)
