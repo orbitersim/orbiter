@@ -1071,12 +1071,34 @@ bool WindowManager::MainWindowProc(const SDL_Event &event)
     return false;
 }
 
+bool WindowManager::MainWindowProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
+{
+	static int xpos, ypos;
+	switch (uMsg) {
 
+	case WM_MOUSELEAVE:
+	case WM_MBUTTONDOWN:
+	case WM_LBUTTONDOWN:
+	case WM_LBUTTONUP:
+		return false;
 
+	case WM_KEYDOWN:
+	{
+		return false;
+	}
 
+	case WM_MOUSEWHEEL:
+		return false;
 
+	case WM_MOUSEMOVE:
+		xpos = GET_X_LPARAM(lParam);
+		ypos = GET_Y_LPARAM(lParam);
+		MouseMoved(xpos, ypos);
+		break;
+	}
 
-
+	return false;
+}
 
 // ===============================================================================================
 // SideBar Implementation
@@ -1524,189 +1546,188 @@ LRESULT SideBar::SideBarWndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lPar
 	static int xof, yof;
 	static bool bUpdate = false;
 
-	// HWND hMain = pMgr->GetMainWindow();
-	//
-	// switch(uMsg) {
-	//
-	// case WM_KEYDOWN:
-	// {
-	// 	pMgr->MainWindowProc(hWnd, uMsg, wParam, lParam);
-	// 	break;
-	// }
-	//
-	//
-	// case WM_MOUSEWHEEL:
-	// {
-	// 	if (GetStyle() == gcGUI::DS_FLOAT) break;
-	//
-	// 	int old = rollpos;
-	// 	short d = GET_WHEEL_DELTA_WPARAM(wParam);
-	// 	if (d>0) rollpos += pMgr->cfg.scroll;
-	// 	else rollpos -= pMgr->cfg.scroll;
-	// 	int q = height - wndlen;
-	// 	if (q > 0) q = 0;
-	// 	if (rollpos > 0) rollpos = 0;
-	// 	if (rollpos < q) rollpos = q;
-	// 	if (old != rollpos) Invalidate();
-	// 	break;
-	// }
-	//
-	// case WM_LBUTTONDOWN:
-	// {
-	// 	xpos = GET_X_LPARAM(lParam);
-	// 	ypos = GET_Y_LPARAM(lParam);
-	//
-	// 	for (Node* nd : wList)
-	// 	{
-	// 		Node *pPar = nd->pParent;
-	//
-	// 		if (pPar) {
-	// 			if (pPar->GetSideBar() == this) {
-	// 				if (pPar->bOpen == false) continue;
-	// 			}
-	// 		}
-	//
-	// 		if (PointInside(xpos, ypos, &(nd->trect))) {
-	//
-	// 			if (nd->bClose && PointInside(xpos, ypos, &(nd->crect))) {
-	// 				dnClose = nd;
-	// 			}
-	// 			else {
-	// 				xof = xpos - nd->trect.left;
-	// 				yof = ypos - nd->trect.top;
-	// 				dnNode = nd;
-	// 			}
-	// 			TRACKMOUSEEVENT te; te.cbSize = sizeof(TRACKMOUSEEVENT); te.dwFlags = TME_LEAVE; te.hwndTrack = hBar;
-	// 			TrackMouseEvent(&te);
-	// 			break; // break for
-	// 		}
-	// 	}
-	// 	break;
-	// }
-	//
-	// case WM_LBUTTONUP:
-	// {
-	// 	int xp = GET_X_LPARAM(lParam);
-	// 	int yp = GET_Y_LPARAM(lParam);
-	//
-	// 	SideBar *pDG = pMgr->GetDraged();
-	//
-	// 	if (pDG) {
-	// 		SideBar *pTgt = pMgr->FindDestination();
-	// 		if (pTgt) pTgt->Apply();
-	// 		pMgr->EndDrag();
-	// 		ReleaseCapture();
-	// 		dnNode = NULL;
-	// 		dnClose = NULL;
-	// 		break;
-	// 	}
-	//
-	// 	if (dnNode) {
-	// 		if (dnNode->GetSideBar() == this) {
-	// 			if (PointInside(xp, yp, &(dnNode->trect))) {
-	// 				dnNode->bOpen = !dnNode->bOpen;
-	// 				if (IsFloater()) RescaleWindow();
-	// 				Invalidate();
-	// 				DWORD msg = (dnNode->bOpen ? gcGUI::MSG_OPEN_NODE : gcGUI::MSG_CLOSE_NODE);
-	// 				dnNode->pApp->clbkMessage(msg, dnNode, 0);
-	// 			}
-	// 		}
-	// 	}
-	//
-	// 	if (dnClose) {
-	// 		if (dnClose->GetSideBar() == this) {
-	// 			if (PointInside(xp, yp, &(dnClose->crect))) {
-	// 				if (dnClose->pApp->clbkMessage(gcGUI::MSG_CLOSE_APP, NULL, 0))
-	// 				{
-	// 					pMgr->CloseWindow(dnClose);
-	// 				}
-	// 			}
-	// 		}
-	// 	}
-	//
-	// 	dnNode = NULL;
-	// 	dnClose = NULL;
-	// 	break;
-	// }
-	//
-	//
-	// case WM_MOUSELEAVE:
-	// {
-	// 	dnNode = NULL;
-	// 	dnClose = NULL;
-	// 	break;
-	// }
-	//
-	//
-	// case WM_MOUSEMOVE:
-	// {
-	// 	int dx = abs(GET_X_LPARAM(lParam) - xpos);
-	// 	int dy = abs(GET_Y_LPARAM(lParam) - ypos);
-	// 	int x = GET_X_LPARAM(lParam);
-	// 	int y = GET_Y_LPARAM(lParam);
-	//
-	// 	if (Config->gcGUIMode < 3) {
-	//
-	// 		POINT scp = { x, y };
-	// 		ClientToScreen(hWnd, &scp);
-	//
-	// 		// Begin Moving a Window
-	// 		//
-	// 		if (dnNode && IsFloater() && (GetTopNode() == dnNode) && (dx > 1 || dy > 1))
-	// 		{
-	// 			SetCapture(hBar);
-	// 			pMgr->SetOffset(xof, yof);
-	// 			pMgr->BeginMove(dnNode, scp.x, scp.y);
-	// 			dnNode = NULL;
-	// 			dnClose = NULL;
-	// 			break;
-	// 		}
-	//
-	// 		// Detach a window from a dock
-	// 		//
-	// 		if (Config->gcGUIMode == 1) {
-	// 			if (dnNode && dx > 25) {
-	// 				SetCapture(hBar);
-	// 				pMgr->SetOffset(xof, yof);
-	// 				SideBar* pTgt = pMgr->StartDrag(dnNode, scp.x, scp.y);
-	// 				dnNode = NULL;
-	// 				dnClose = NULL;
-	// 				break;
-	// 			}
-	// 		}
-	//
-	// 		// Move a dragged window and try to insert content into a dock
-	// 		//
-	// 		if (pMgr->GetDraged()) {
-	// 			pMgr->MouseMoved(scp.x, scp.y);
-	// 			pMgr->Drag(scp.x, scp.y);
-	// 			SideBar *pTgt = pMgr->FindDestination();
-	// 			SideBar *pDG = pMgr->GetDraged();
-	// 			if (pTgt) if (pTgt->IsOpen()) {
-	// 				if (pTgt->TryInsert(pDG)) {
-	// 					if (pTgt->GetStyle() == gcGUI::DS_FLOAT) pTgt->RescaleWindow();
-	// 					pTgt->Invalidate();
-	// 					pDG->Invalidate();
-	// 				}
-	// 			}
-	// 			break;
-	// 		}
-	// 	}
-	// 	break;
-	// }
-	//
-	// case WM_PAINT:
-	// 	PaintWindow();
-	// 	break;
-	//
-	// case WM_ERASEBKGND:
-	// 	return 1;
-	//
-	// default:
-	// 	break;
-	// }
-	//
-    // TODO TODO TODO
+	HWND hMain = pMgr->GetMainWindow();
+	
+	switch(uMsg) {
+	
+	case WM_KEYDOWN:
+	{
+		pMgr->MainWindowProc(hWnd, uMsg, wParam, lParam);
+		break;
+	}
+	
+	
+	case WM_MOUSEWHEEL:
+	{
+		if (GetStyle() == gcGUI::DS_FLOAT) break;
+	
+		int old = rollpos;
+		short d = GET_WHEEL_DELTA_WPARAM(wParam);
+		if (d>0) rollpos += pMgr->cfg.scroll;
+		else rollpos -= pMgr->cfg.scroll;
+		int q = height - wndlen;
+		if (q > 0) q = 0;
+		if (rollpos > 0) rollpos = 0;
+		if (rollpos < q) rollpos = q;
+		if (old != rollpos) Invalidate();
+		break;
+	}
+	
+	case WM_LBUTTONDOWN:
+	{
+		xpos = GET_X_LPARAM(lParam);
+		ypos = GET_Y_LPARAM(lParam);
+	
+		for (Node* nd : wList)
+		{
+			Node *pPar = nd->pParent;
+	
+			if (pPar) {
+				if (pPar->GetSideBar() == this) {
+					if (pPar->bOpen == false) continue;
+				}
+			}
+	
+			if (PointInside(xpos, ypos, &(nd->trect))) {
+	
+				if (nd->bClose && PointInside(xpos, ypos, &(nd->crect))) {
+					dnClose = nd;
+				}
+				else {
+					xof = xpos - nd->trect.left;
+					yof = ypos - nd->trect.top;
+					dnNode = nd;
+				}
+				TRACKMOUSEEVENT te; te.cbSize = sizeof(TRACKMOUSEEVENT); te.dwFlags = TME_LEAVE; te.hwndTrack = hBar;
+				TrackMouseEvent(&te);
+				break; // break for
+			}
+		}
+		break;
+	}
+	
+	case WM_LBUTTONUP:
+	{
+		int xp = GET_X_LPARAM(lParam);
+		int yp = GET_Y_LPARAM(lParam);
+	
+		SideBar *pDG = pMgr->GetDraged();
+	
+		if (pDG) {
+			SideBar *pTgt = pMgr->FindDestination();
+			if (pTgt) pTgt->Apply();
+			pMgr->EndDrag();
+			ReleaseCapture();
+			dnNode = NULL;
+			dnClose = NULL;
+			break;
+		}
+	
+		if (dnNode) {
+			if (dnNode->GetSideBar() == this) {
+				if (PointInside(xp, yp, &(dnNode->trect))) {
+					dnNode->bOpen = !dnNode->bOpen;
+					if (IsFloater()) RescaleWindow();
+					Invalidate();
+					DWORD msg = (dnNode->bOpen ? gcGUI::MSG_OPEN_NODE : gcGUI::MSG_CLOSE_NODE);
+					dnNode->pApp->clbkMessage(msg, dnNode, 0);
+				}
+			}
+		}
+	
+		if (dnClose) {
+			if (dnClose->GetSideBar() == this) {
+				if (PointInside(xp, yp, &(dnClose->crect))) {
+					if (dnClose->pApp->clbkMessage(gcGUI::MSG_CLOSE_APP, NULL, 0))
+					{
+						pMgr->CloseWindow(dnClose);
+					}
+				}
+			}
+		}
+	
+		dnNode = NULL;
+		dnClose = NULL;
+		break;
+	}
+	
+	
+	case WM_MOUSELEAVE:
+	{
+		dnNode = NULL;
+		dnClose = NULL;
+		break;
+	}
+	
+	
+	case WM_MOUSEMOVE:
+	{
+		int dx = abs(GET_X_LPARAM(lParam) - xpos);
+		int dy = abs(GET_Y_LPARAM(lParam) - ypos);
+		int x = GET_X_LPARAM(lParam);
+		int y = GET_Y_LPARAM(lParam);
+	
+		if (Config->gcGUIMode < 3) {
+	
+			POINT scp = { x, y };
+			ClientToScreen(hWnd, &scp);
+	
+			// Begin Moving a Window
+			//
+			if (dnNode && IsFloater() && (GetTopNode() == dnNode) && (dx > 1 || dy > 1))
+			{
+				SetCapture(hBar);
+				pMgr->SetOffset(xof, yof);
+				pMgr->BeginMove(dnNode, scp.x, scp.y);
+				dnNode = NULL;
+				dnClose = NULL;
+				break;
+			}
+	
+			// Detach a window from a dock
+			//
+			if (Config->gcGUIMode == 1) {
+				if (dnNode && dx > 25) {
+					SetCapture(hBar);
+					pMgr->SetOffset(xof, yof);
+					SideBar* pTgt = pMgr->StartDrag(dnNode, scp.x, scp.y);
+					dnNode = NULL;
+					dnClose = NULL;
+					break;
+				}
+			}
+	
+			// Move a dragged window and try to insert content into a dock
+			//
+			if (pMgr->GetDraged()) {
+				pMgr->MouseMoved(scp.x, scp.y);
+				pMgr->Drag(scp.x, scp.y);
+				SideBar *pTgt = pMgr->FindDestination();
+				SideBar *pDG = pMgr->GetDraged();
+				if (pTgt) if (pTgt->IsOpen()) {
+					if (pTgt->TryInsert(pDG)) {
+						if (pTgt->GetStyle() == gcGUI::DS_FLOAT) pTgt->RescaleWindow();
+						pTgt->Invalidate();
+						pDG->Invalidate();
+					}
+				}
+				break;
+			}
+		}
+		break;
+	}
+	
+	case WM_PAINT:
+		PaintWindow();
+		break;
+	
+	case WM_ERASEBKGND:
+		return 1;
+	
+	default:
+		break;
+	}
+	
 	return DefWindowProc(hWnd, uMsg, wParam, lParam);
 }
 

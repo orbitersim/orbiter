@@ -179,6 +179,7 @@ public:
 	// ===============================================================================================
 	//
 	bool		MainWindowProc(const SDL_Event &event);
+	bool            MainWindowProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
 	void		Animate();
 	int			GetWidth() const { return width; }
 	HWND		GetMainWindow() const { return hMainWnd; }

@@ -2000,9 +2000,10 @@ VOID Orbiter::UpdateWorld ()
 	g_bStateUpdate = false;
 
 	if (!KillVessels())  // kill any vessels marked for deletion
-	{}
-	// TODO
-		// if (hRenderWnd) DestroyWindow (hRenderWnd);
+	{
+		// FIXME(@ThePuzzlemaker): I'm not really sure what's the best way to go about this
+		SDL_DestroyWindow(hRenderWnd->Inner());
+	}
 
 	//g_texmanager->OutputInfo();
 }
