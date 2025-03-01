@@ -395,8 +395,6 @@ private:
 	bool            bRoughType;    // font-smoothing disabled?
 	bool            bShouldQuit;
 
-	std::string currentScenario;
-
 	// Manual joystick/keyboard attitude inputs
 	DWORD ctrlJoystick[15];
 	DWORD ctrlKeyboard[15];
