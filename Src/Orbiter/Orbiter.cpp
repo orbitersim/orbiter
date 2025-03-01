@@ -375,12 +375,6 @@ bool Orbiter::Create()
 	pConfig->Load(MasterConfigFile);
 	strcpy (cfgpath, pConfig->CfgDirPrm.ConfigDir);   cfglen = strlen (cfgpath);
 
-    if (FAILED (hr = pDI->Create (hInst))) return false;
-
-	// // validate configuration
-    //    if (SDL_GetJoystickNameForID(pConfig->CfgJoystickPrm.Joy_idx) == nullptr)
-    //        pConfig->CfgJoystickPrm.Joy_idx = 0;
-
 	// Read key mapping from file (or write default keymap)
 	if (!keymap.Read ("keymap.cfg")) keymap.Write ("keymap.cfg");
 
@@ -707,12 +701,6 @@ Orbiter::CreateRenderWindow(Config *pCfg, const char* scenario)
         pDI->SetRenderWindow(hRenderWnd->Win32Handle());
 	    bActive = true;
 
-	    // Create keyboard device
-	    if (!pDI->CreateKbdDevice ()) {
-	        CloseSession ();
-	        return 0;
-	    }
-
 	    // Create joystick device
 	    if (pDI->CreateJoyDevice ())
 	        plZ4 = 1; // invalidate
@@ -848,9 +836,9 @@ Orbiter::CreateRenderWindow(Config *pCfg, const char* scenario)
 
 	// suppress throttle update on launch
 	if (pDI->joyprop.bThrottle && pCfg->CfgJoystickPrm.bThrottleIgnore) {
-		DIJOYSTATE2 js;
+		JoyState js;
 		if (pDI->PollJoystick(&js))
-			plZ4 = *(long*)(((BYTE*)&js) + pDI->joyprop.ThrottleOfs) >> 3;
+			plZ4 = js.throttle;
 	}
 
 	return hRenderWnd;
@@ -2074,7 +2062,7 @@ HRESULT Orbiter::UserInput ()
 	for (i = 0; i < 15; i++) ctrlTotal[i] = ctrlKeyboard[i]; // update attitude requests
 
 	// joystick input
-	DIJOYSTATE2 js;
+	JoyState js;
 	if (pDI->PollJoystick (&js)) {
 		UserJoyInput_System (&js);                  // general joystick functions
 		if (bRunning) UserJoyInput_OnRunning (&js); // joystick vessel control functions
@@ -2409,33 +2397,32 @@ void Orbiter::KbdInputBuffered_OnRunning (char *kstate)
 // Name: UserJoyInput_System ()
 // Desc: General user joystick input (also functional when paused)
 //-----------------------------------------------------------------------------
-void Orbiter::UserJoyInput_System (DIJOYSTATE2 *js)
+void Orbiter::UserJoyInput_System (JoyState *js)
 {
-	if (LOWORD (js->rgdwPOV[0]) != 0xFFFF) {
-		DWORD dir = js->rgdwPOV[0];
+	if (js->hat != SDL_HAT_CENTERED) {
 		if (g_camera->IsExternal()) {  // use the joystick's coolie hat to rotate external camera
-			if (js->rgbButtons[2]) { // shift instrument panel
-				if      (dir <  5000 || dir > 31000) g_camera->Rotate (0,  td.SysDT);
-				else if (dir > 13000 && dir < 23000) g_camera->Rotate (0, -td.SysDT);
-				if      (dir >  4000 && dir < 14000) g_camera->Rotate (-td.SysDT, 0);
-				else if (dir > 22000 && dir < 32000) g_camera->Rotate ( td.SysDT, 0);
+			if (js->btn3) { // shift instrument panel
+				if      ((js->hat & SDL_HAT_UP) != 0)    g_camera->Rotate (0,  td.SysDT);
+				else if ((js->hat & SDL_HAT_DOWN) != 0)  g_camera->Rotate (0, -td.SysDT);
+				if      ((js->hat & SDL_HAT_RIGHT) != 0) g_camera->Rotate (-td.SysDT, 0);
+				else if ((js->hat & SDL_HAT_LEFT) != 0)  g_camera->Rotate ( td.SysDT, 0);
 			} else {
-				if      (dir <  5000 || dir > 31000) g_camera->AddTheta (-td.SysDT);
-				else if (dir > 13000 && dir < 23000) g_camera->AddTheta ( td.SysDT);
-				if      (dir >  4000 && dir < 14000) g_camera->AddPhi   ( td.SysDT);
-				else if (dir > 22000 && dir < 32000) g_camera->AddPhi   (-td.SysDT);
+				if      ((js->hat & SDL_HAT_UP) != 0)    g_camera->AddTheta (-td.SysDT);
+				else if ((js->hat & SDL_HAT_DOWN) != 0)  g_camera->AddTheta ( td.SysDT);
+				if      ((js->hat & SDL_HAT_RIGHT) != 0) g_camera->AddPhi   ( td.SysDT);
+				else if ((js->hat & SDL_HAT_LEFT) != 0)  g_camera->AddPhi   (-td.SysDT);
 			}
 		} else { // internal view
-			if (js->rgbButtons[2]) { // shift instrument panel
-				if      (dir <  5000 || dir > 31000) g_pane->ShiftPanel (0.0,  td.SysDT*pConfig->CfgLogicPrm.PanelScrollSpeed);
-				else if (dir > 13000 && dir < 23000) g_pane->ShiftPanel (0.0, -td.SysDT*pConfig->CfgLogicPrm.PanelScrollSpeed);
-				if      (dir >  4000 && dir < 14000) g_pane->ShiftPanel (-td.SysDT*pConfig->CfgLogicPrm.PanelScrollSpeed, 0.0);
-				else if (dir > 22000 && dir < 32000) g_pane->ShiftPanel ( td.SysDT*pConfig->CfgLogicPrm.PanelScrollSpeed, 0.0);
+			if (js->btn3) { // shift instrument panel
+				if      ((js->hat & SDL_HAT_UP) != 0)    g_pane->ShiftPanel (0.0,  td.SysDT*pConfig->CfgLogicPrm.PanelScrollSpeed);
+				else if ((js->hat & SDL_HAT_DOWN) != 0)  g_pane->ShiftPanel (0.0, -td.SysDT*pConfig->CfgLogicPrm.PanelScrollSpeed);
+				if      ((js->hat & SDL_HAT_RIGHT) != 0) g_pane->ShiftPanel (-td.SysDT*pConfig->CfgLogicPrm.PanelScrollSpeed, 0.0);
+				else if ((js->hat & SDL_HAT_LEFT) != 0)  g_pane->ShiftPanel ( td.SysDT*pConfig->CfgLogicPrm.PanelScrollSpeed, 0.0);
 			} else {                 // rotate camera
-				if      (dir <  5000 || dir > 31000) g_camera->Rotate (0,  td.SysDT, true);
-				else if (dir > 13000 && dir < 23000) g_camera->Rotate (0, -td.SysDT, true);
-				if      (dir >  4000 && dir < 14000) g_camera->Rotate (-td.SysDT, 0, true);
-				else if (dir > 22000 && dir < 32000) g_camera->Rotate ( td.SysDT, 0, true);
+				if      ((js->hat & SDL_HAT_UP) != 0)    g_camera->Rotate (0,  td.SysDT, true);
+				else if ((js->hat & SDL_HAT_DOWN) != 0)  g_camera->Rotate (0, -td.SysDT, true);
+				if      ((js->hat & SDL_HAT_RIGHT) != 0) g_camera->Rotate (-td.SysDT, 0, true);
+				else if ((js->hat & SDL_HAT_LEFT) != 0)  g_camera->Rotate ( td.SysDT, 0, true);
 			}
 		}
 	}
@@ -2445,36 +2432,37 @@ void Orbiter::UserJoyInput_System (DIJOYSTATE2 *js)
 // Name: UserJoyInput_OnRunning ()
 // Desc: User joystick input query for running simulation (ship controls etc.)
 //-----------------------------------------------------------------------------
-void Orbiter::UserJoyInput_OnRunning (DIJOYSTATE2 *js)
+void Orbiter::UserJoyInput_OnRunning (JoyState *js)
 {
 	if (bEnableAtt) {
-		if (js->lX) {
-			if (js->rgbButtons[2]) { // emulate rudder control
-				if (js->lX > 0) ctrlJoystick[THGROUP_ATT_YAWRIGHT] =   js->lX;
-				else            ctrlJoystick[THGROUP_ATT_YAWLEFT]  =  -js->lX;
+		if (js->xAx) {
+			if (js->btn3) { // emulate rudder control
+				if (js->xAx > 0) ctrlJoystick[THGROUP_ATT_YAWRIGHT] =   js->xAx;
+				else             ctrlJoystick[THGROUP_ATT_YAWLEFT]  =  -js->xAx;
 			} else {                 // rotation (bank)
-				if (js->lX > 0) ctrlJoystick[THGROUP_ATT_BANKRIGHT] =  js->lX;
-				else            ctrlJoystick[THGROUP_ATT_BANKLEFT]  = -js->lX;
+				if (js->xAx > 0) ctrlJoystick[THGROUP_ATT_BANKRIGHT] =  js->xAx;
+				else             ctrlJoystick[THGROUP_ATT_BANKLEFT]  = -js->xAx;
 			}
 		}
-		if (js->lY) {                // rotation (pitch) or translation (vertical)
-			if (js->lY > 0) ctrlJoystick[THGROUP_ATT_PITCHUP]   = ctrlJoystick[THGROUP_ATT_UP]    =  js->lY;
-			else            ctrlJoystick[THGROUP_ATT_PITCHDOWN] = ctrlJoystick[THGROUP_ATT_DOWN]  = -js->lY;
+		if (js->yAx) {                // rotation (pitch) or translation (vertical)
+			if (js->yAx > 0) ctrlJoystick[THGROUP_ATT_PITCHUP]   = ctrlJoystick[THGROUP_ATT_UP]    =  js->yAx;
+			else             ctrlJoystick[THGROUP_ATT_PITCHDOWN] = ctrlJoystick[THGROUP_ATT_DOWN]  = -js->yAx;
 		}
-		if (js->lRz) {               // rotation (yaw) or translation (transversal)
-			if (js->lRz > 0) ctrlJoystick[THGROUP_ATT_YAWRIGHT] = ctrlJoystick[THGROUP_ATT_RIGHT] =  js->lRz;
-			else             ctrlJoystick[THGROUP_ATT_YAWLEFT]  = ctrlJoystick[THGROUP_ATT_LEFT]  = -js->lRz;
+		if (js->zRot) {               // rotation (yaw) or translation (transversal)
+			if (js->zRot > 0) ctrlJoystick[THGROUP_ATT_YAWRIGHT] = ctrlJoystick[THGROUP_ATT_RIGHT] =  js->zRot;
+			else              ctrlJoystick[THGROUP_ATT_YAWLEFT]  = ctrlJoystick[THGROUP_ATT_LEFT]  = -js->zRot;
 		}
 	}
 
 	if (pDI->joyprop.bThrottle) { // main thrusters via throttle control
-		long lZ4 = *(long*)(((BYTE*)js)+pDI->joyprop.ThrottleOfs) >> 3;
+		long lZ4 = js->throttle;
 		if (lZ4 != plZ4) {
 			if (ignorefirst) {
-				if (abs(lZ4-plZ4) > 10) ignorefirst = false;
+				if (abs(lZ4-plZ4) > 128) ignorefirst = false;
 				else return;
 			}
-			double th = -0.008 * (plZ4 = lZ4);
+			// Map [-32768, 32767] to [0, 1]
+			double th = -((plZ4 = lZ4) - 32768) / 65536.0;
 			if (th > 1.0) th = 1.0;
 			g_focusobj->SetThrusterGroupLevel (THGROUP_MAIN, th);
 			g_focusobj->SetThrusterGroupLevel (THGROUP_RETRO, 0.0);

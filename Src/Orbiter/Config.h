@@ -223,9 +223,9 @@ struct CFG_DEVPRM {
 
 struct CFG_JOYSTICKPRM {
 	SDL_JoystickID Joy_idx;		    // joystick device index (0=disabled)
-	DWORD    Deadzone;			    // central deadzone range for all axes (0-10000)
+	DWORD    Deadzone;			    // central deadzone range for all axes (0-32768)
 	DWORD    ThrottleAxis;	    	// joystick throttle axis (0=none, 1=z-axis, 2=slider 0, 3=slider 1)
-	DWORD    ThrottleSaturation;	// saturation level for joystick throttle control (0-10000)
+	DWORD    ThrottleSaturation;	// saturation level for joystick throttle control (0-32768)
 	bool     bThrottleIgnore;		// ignore joystick throttle setting on start
 };
 

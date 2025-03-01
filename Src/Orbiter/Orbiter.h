@@ -176,11 +176,6 @@ public:
 	inline void    SetFastExit (bool fexit) { bFastExit = fexit; }
 	inline bool    UseHtmlInline() { return (pConfig->CfgDebugPrm.bHtmlScnDesc == 1 || pConfig->CfgDebugPrm.bHtmlScnDesc == 2 && !bWINEenv); }
 
-	// DirectInput components
-	inline CDIFramework7 *GetDInput() const { return pDI->GetDIFrame(); }
-	inline LPDIRECTINPUTDEVICE8 GetKbdDevice() const { return pDI->GetKbdDevice(); }
-	inline LPDIRECTINPUTDEVICE8 GetJoyDevice() const { return pDI->GetJoyDevice(); }
-
 	// memory monitor
 	MemStat *memstat;
 	long simheapsize; // memory allocated during CreateRenderWindow
@@ -312,8 +307,8 @@ protected:
 	void KbdInputImmediate_OnRunning (char *buffer);
 	void KbdInputBuffered_System     (char *kstate);
 	void KbdInputBuffered_OnRunning  (char *kstate);
-	void UserJoyInput_System (DIJOYSTATE2 *js);
-	void UserJoyInput_OnRunning (DIJOYSTATE2 *js);
+	void UserJoyInput_System (JoyState *js);
+	void UserJoyInput_OnRunning (JoyState *js);
 	bool MouseEvent (const SDL_Event &event, DWORD x, DWORD y);
 	bool BroadcastMouseEvent (const SDL_Event &event, DWORD x, DWORD y);
 	bool BroadcastImmediateKeyboardEvent (char *kstate);

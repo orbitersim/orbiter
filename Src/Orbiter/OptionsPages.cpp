@@ -1147,9 +1147,18 @@ BOOL OptionsPage_UI::OnCommand(HWND hPage, WORD ctrlId, WORD notification, HWND 
 // ======================================================================
 
 OptionsPage_Joystick::OptionsPage_Joystick(OptionsPageContainer* container)
-	: OptionsPage(container)
+	: OptionsPage(container), m_joylist(nullptr), m_njoy(0)
 {
 }
+
+ OptionsPage_Joystick::~OptionsPage_Joystick() {
+	if (m_joylist) {
+		SDL_free(m_joylist);
+		m_joylist = nullptr;
+		m_njoy = 0;
+	}
+}
+
 
 // ----------------------------------------------------------------------
 
@@ -1180,16 +1189,24 @@ void OptionsPage_Joystick::UpdateControls(HWND hPage)
 {
 	char cbuf[256];
 
-	SendDlgItemMessage(hPage, IDC_OPT_JOY_DEVICE, CB_SETCURSEL, (WPARAM)Cfg()->CfgJoystickPrm.Joy_idx, 0);
+	auto joyix = 0;
+	for (int i = 0; i < m_njoy; ++i) {
+		if (Cfg()->CfgJoystickPrm.Joy_idx == m_joylist[i]) {
+			joyix = i + 1;
+			break;
+		}
+	}
+	
+	SendDlgItemMessage(hPage, IDC_OPT_JOY_DEVICE, CB_SETCURSEL, (WPARAM)joyix, 0);
 	SendDlgItemMessage(hPage, IDC_OPT_JOY_THROTTLE, CB_SETCURSEL, (WPARAM)Cfg()->CfgJoystickPrm.ThrottleAxis, 0);
 	SendDlgItemMessage(hPage, IDC_OPT_JOY_INIT, BM_SETCHECK, Cfg()->CfgJoystickPrm.bThrottleIgnore ? BST_CHECKED : BST_UNCHECKED, 0);
 
-	int sat = Cfg()->CfgJoystickPrm.ThrottleSaturation / 10;
+	int sat = Cfg()->CfgJoystickPrm.ThrottleSaturation;
 	oapiSetGaugePos(GetDlgItem(hPage, IDC_OPT_JOY_SAT), sat);
 	sprintf(cbuf, "%d", sat);
 	SetWindowText(GetDlgItem(hPage, IDC_OPT_JOY_STATIC1), cbuf);
 
-	int dz = Cfg()->CfgJoystickPrm.Deadzone / 10;
+	int dz = Cfg()->CfgJoystickPrm.Deadzone;
 	oapiSetGaugePos(GetDlgItem(hPage, IDC_OPT_JOY_DEAD), dz);
 	sprintf(cbuf, "%d", dz);
 	SetWindowText(GetDlgItem(hPage, IDC_OPT_JOY_STATIC2), cbuf);
@@ -1210,21 +1227,19 @@ BOOL OptionsPage_Joystick::OnInitDialog(HWND hPage, WPARAM wParam, LPARAM lParam
 {
 	OptionsPage::OnInitDialog(hPage, wParam, lParam);
 
-	DWORD ndev;
-	DIDEVICEINSTANCE* joylist;
-	g_pOrbiter->GetDInput()->GetJoysticks(&joylist, &ndev);
+	m_joylist = SDL_GetJoysticks(&m_njoy);
 
 	SendDlgItemMessage(hPage, IDC_OPT_JOY_DEVICE, CB_RESETCONTENT, 0, 0);
 	SendDlgItemMessage(hPage, IDC_OPT_JOY_DEVICE, CB_ADDSTRING, 0, (LPARAM)"<Disabled>");
-	for (int i = 0; i < ndev; i++)
-		SendDlgItemMessage(hPage, IDC_OPT_JOY_DEVICE, CB_ADDSTRING, 0, (LPARAM)(joylist[i].tszProductName));
+	for (int i = 0; i < m_njoy; i++)
+		SendDlgItemMessage(hPage, IDC_OPT_JOY_DEVICE, CB_ADDSTRING, 0, (LPARAM)(SDL_GetJoystickNameForID(m_joylist[i])));
 
 	const char* thmode[4] = { "<Keyboard only>", "Z-axis", "Slider 0", "Slider 1" };
 	SendDlgItemMessage(hPage, IDC_OPT_JOY_THROTTLE, CB_RESETCONTENT, 0, 0);
 	for (int i = 0; i < ARRAYSIZE(thmode); i++)
 		SendDlgItemMessage(hPage, IDC_OPT_JOY_THROTTLE, CB_ADDSTRING, 0, (LPARAM)thmode[i]);
 
-	GAUGEPARAM gp = { 0, 1000, GAUGEPARAM::LEFT, GAUGEPARAM::BLACK };
+	GAUGEPARAM gp = { 0, 32768, GAUGEPARAM::LEFT, GAUGEPARAM::BLACK };
 	oapiSetGaugeParams(GetDlgItem(hPage, IDC_OPT_JOY_SAT), &gp);
 	oapiSetGaugeParams(GetDlgItem(hPage, IDC_OPT_JOY_DEAD), &gp);
 
@@ -1239,7 +1254,7 @@ BOOL OptionsPage_Joystick::OnCommand(HWND hPage, WORD ctrlId, WORD notification,
 	case IDC_OPT_JOY_DEVICE:
 		if (notification == CBN_SELCHANGE) {
 			DWORD idx = (DWORD)SendDlgItemMessage(hPage, IDC_OPT_JOY_DEVICE, CB_GETCURSEL, 0, 0);
-			Cfg()->CfgJoystickPrm.Joy_idx = idx;
+			Cfg()->CfgJoystickPrm.Joy_idx = m_joylist[idx - 1];
 			g_pOrbiter->OnOptionChanged(OPTCAT_JOYSTICK, OPTITEM_JOYSTICK_DEVICE);
 			UpdateControls(hPage);
 			return FALSE;
@@ -1276,7 +1291,7 @@ BOOL OptionsPage_Joystick::OnHScroll(HWND hPage, WPARAM wParam, LPARAM lParam)
 		case SB_LINELEFT:
 		case SB_LINERIGHT:
 			val = HIWORD(wParam);
-			Cfg()->CfgJoystickPrm.ThrottleSaturation = val * 10;
+			Cfg()->CfgJoystickPrm.ThrottleSaturation = val;
 			UpdateControls(hPage);
 			g_pOrbiter->OnOptionChanged(OPTCAT_JOYSTICK, OPTITEM_JOYSTICK_PARAM);
 			return 0;
@@ -1288,7 +1303,7 @@ BOOL OptionsPage_Joystick::OnHScroll(HWND hPage, WPARAM wParam, LPARAM lParam)
 		case SB_LINELEFT:
 		case SB_LINERIGHT:
 			val = HIWORD(wParam);
-			Cfg()->CfgJoystickPrm.Deadzone = val * 10;
+			Cfg()->CfgJoystickPrm.Deadzone = val;
 			UpdateControls(hPage);
 			g_pOrbiter->OnOptionChanged(OPTCAT_JOYSTICK, OPTITEM_JOYSTICK_PARAM);
 			return 0;

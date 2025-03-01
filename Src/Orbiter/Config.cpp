@@ -194,9 +194,9 @@ CFG_DEVPRM CfgDevPrm_default = {
 
 CFG_JOYSTICKPRM CfgJoystickPrm_default = {
 	0,			// Joy_idx (joystick device index, 0=disabled)
-	2500,		// Deadzone (neutralise joystick axes within 20% of central position)
+	6500,		// Deadzone (neutralise joystick axes within 20% of central position)
 	1,			// ThrottleAxis (z-axis by default)
-	9500,		// ThrottleSaturation (saturate throttle at the last 5% each end)
+	31100,		// ThrottleSaturation (saturate throttle at the last 5% each end)
 	true		// bThrottleIgnore (ignore throttle setting on simulation start)
 };
 
@@ -543,6 +543,7 @@ bool Config::Load(const char *fname)
 	    for (int joyix = 0; joyix < njoy; joyix++) {
             if (SDL_GetJoystickGUIDForID(joylist[joyix]) == guid) {
                 CfgJoystickPrm.Joy_idx = joylist[joyix];
+            	break;
             }
         }
 	    SDL_free(joylist);
@@ -550,9 +551,9 @@ bool Config::Load(const char *fname)
 	if (GetInt (ifs, "JoystickThrottleAxis", i))
 		CfgJoystickPrm.ThrottleAxis = max (0, min (3, i));
 	if (GetInt (ifs, "JoystickThrottleSaturation", i))
-		CfgJoystickPrm.ThrottleSaturation = max (0, min (10000, i));
+		CfgJoystickPrm.ThrottleSaturation = max (0, min (32768, i));
 	if (GetInt (ifs, "JoystickDeadzone", i))
-		CfgJoystickPrm.Deadzone = max (0, min (10000, i));
+		CfgJoystickPrm.Deadzone = max (0, min (32768, i));
 	GetBool (ifs, "IgnoreThrottleOnStart", CfgJoystickPrm.bThrottleIgnore);
 
 	// planet render parameters
