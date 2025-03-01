@@ -15,7 +15,6 @@
 
 #include <SDL3/SDL_oapi.h>
 #include <stdio.h>
-#include "imgui.h"
 #include <windows.h>
 
 #ifndef _WIN32
