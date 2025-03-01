@@ -144,7 +144,6 @@ set(Orbiter_common_libs
 	$<TARGET_FILE:Orbitersdk>
 	$<TARGET_FILE:DlgCtrl>
 	SDL3::SDL3
-	SDL3_image::SDL3_image
 )
 set(Orbiter_libs
 	dxguid.lib

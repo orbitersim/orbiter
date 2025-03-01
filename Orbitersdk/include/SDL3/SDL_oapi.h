@@ -1,16 +1,23 @@
 #ifndef SDLWRAPPERS_H
 #define SDLWRAPPERS_H
 
+#include <OrbiterAPI.h>
 #include <SDL3/SDL.h>
 #include <string>
 #include <windows.h>
-#include <OrbiterAPI.h>
 
 namespace sdl {
 
+/**
+ * \brief A wrapper for \ref SDL_Window which handles deletion and move.
+ *
+ * It is expected to be used with an external graphics API, e.g. OpenGL, Vulkan,
+ * or DirectX, rather than SDLGPU, hence "unmanaged".
+ */
 class OAPIFUNC UnmanagedWindow {
 public:
   UnmanagedWindow(const UnmanagedWindow &) = delete;
+
   UnmanagedWindow &operator=(const UnmanagedWindow &) = delete;
 
   UnmanagedWindow(UnmanagedWindow &&other) noexcept : m_inner(other.m_inner) {
@@ -19,6 +26,8 @@ public:
 
   UnmanagedWindow(std::string_view title, int width, int height,
                   SDL_WindowFlags flags);
+
+  explicit UnmanagedWindow(SDL_Window *window) : m_inner(window) {}
 
   ~UnmanagedWindow();
 
@@ -34,6 +43,12 @@ private:
   SDL_Window *m_inner = nullptr;
 };
 
+/**
+ * \brief A wrapper for \ref SDL_Window and \ref SDL_GPUDevice which handles
+ * setup, deletion, and move.
+ *
+ * It is expected to be used with SDLGPU, hence "managed".
+ */
 class OAPIFUNC ManagedWindow {
 public:
   ManagedWindow(const ManagedWindow &) = delete;

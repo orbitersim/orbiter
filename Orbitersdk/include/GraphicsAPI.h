@@ -13,7 +13,7 @@
 
 #include "Orbitersdk.h"
 
-#include <SDLWrappers.h>
+#include <SDL3/SDL_oapi.h>
 #include <stdio.h>
 #include "imgui.h"
 #include <windows.h>

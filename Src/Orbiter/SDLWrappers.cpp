@@ -1,5 +1,5 @@
 #define OAPI_IMPLEMENTATION
-#include "SDLWrappers.h"
+#include "SDL3/SDL_oapi.h"
 
 #include <Log.h>
 #include <stdexcept>
