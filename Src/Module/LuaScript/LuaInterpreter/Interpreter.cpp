@@ -4719,7 +4719,7 @@ int Interpreter::oapi_get_windvector(lua_State *L)
 	VECTOR3 gv = oapiGetWindVector(hRef, lng, lat, alt, frame, &windspeed);
 	lua_pushvector(L, gv);
 	lua_pushnumber(L, windspeed);
-	return 1;
+	return 2;
 }
 
 /***
