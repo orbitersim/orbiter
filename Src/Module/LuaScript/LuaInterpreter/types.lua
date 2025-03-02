@@ -282,7 +282,7 @@
 -- @field VTXTEXADDU Add to vertex texture u-coordinates
 -- @field VTXTEXADDV Add to vertex texture v-coordinates
 -- @field VTXTEXADD Add to vertex texture coordinates
--- @table GRP_EDIT
+-- @table GRPEDIT
 
 --- Visibility mode
 -- @field EXTERNAL Only visible in external view

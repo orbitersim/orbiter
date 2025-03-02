@@ -8338,7 +8338,7 @@ or group flags.
 
 The ges table can contain the following fields :
 
-- flags: number (flags, see GRP_EDIT)
+- flags: number (flags, see GRPEDIT)
 - UsrFlag: number (Replacement for group UsrFlag entry)
 - Vtx: ntvertexarray (Replacement for group vertices)
 - nVtx: number (Number of vertices to be replaced. Optional, will use the ntvertexarray size by default)
