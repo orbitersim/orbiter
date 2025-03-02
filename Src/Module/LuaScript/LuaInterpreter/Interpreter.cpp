@@ -3160,7 +3160,7 @@ Reset the properties of a mesh material.
 @function set_materialex
 @tparam handle hMesh mesh handle
 @tparam number matidx material index
-@tparam number matprp material property to be set
+@tparam number matprp material property to be set (see MATPROP)
 @tparam colour col material property value
 @treturn boolean true on success
 */
