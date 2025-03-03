@@ -104,7 +104,7 @@ bool GDIClient::clbkSaveSurfaceToImage (SURFHANDLE surf, const char *fname, Imag
 
 	if (fname == NULL) {
 		// copy device-dependent bitmap to clipboard
-		if (OpenClipboard (GetRenderWindow())) {
+		if (OpenClipboard (GetRenderWindow()->Win32Handle())) {
 		    EmptyClipboard();
 			SetClipboardData(CF_BITMAP,hbm);
 			CloseClipboard(); 

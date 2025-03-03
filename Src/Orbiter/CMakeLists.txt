@@ -3,6 +3,7 @@
 
 # SAFESEH linker flag must be turned off because the DX7 libraries don't support it'
 set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -SAFESEH:NO")
+FetchContent_MakeAvailable(imgui)
 
 # Sources for all Orbiter executable targets
 set(common_src
@@ -109,6 +110,7 @@ set(common_src
 	D3d7util.cpp
 	D3dmath.cpp
 	Di7frame.cpp
+    SDLWrappers.cpp
 # Graphics interface base class for GDI clients
 	${GDICLIENT_DIR}/GDIClient.cpp
 # Utils
@@ -119,6 +121,8 @@ set(common_src
 # Resources
 	Orbiter.rc
 	Orbiter.ico
+	${imgui_SOURCE_DIR}/backends/imgui_impl_win32.cpp
+	${imgui_SOURCE_DIR}/backends/imgui_impl_sdl3.cpp
 )
 
 set(Orbiter_includes
@@ -139,6 +143,7 @@ set(Orbiter_common_libs
 	${HTMLHELP_LIB}
 	$<TARGET_FILE:Orbitersdk>
 	$<TARGET_FILE:DlgCtrl>
+	SDL3::SDL3
 )
 set(Orbiter_libs
 	dxguid.lib
@@ -163,7 +168,7 @@ set_target_properties(Orbiter
 	FOLDER Core
 )
 
-target_include_directories(Orbiter PUBLIC ${Orbiter_includes})
+target_include_directories(Orbiter PUBLIC ${Orbiter_includes} ${imgui_SOURCE_DIR}/ ${imgui_SOURCE_DIR}/backends)
 
 target_link_libraries(Orbiter ${Orbiter_common_libs} ${Orbiter_libs})
 

@@ -8,18 +8,11 @@
 #ifndef __DLGFUNCTION_H
 #define __DLGFUNCTION_H
 
-#include "DialogWin.h"
+#include "OrbiterAPI.h"
 
-class DlgFunction: public DialogWin {
+class DlgFunction : public ImGuiDialog {
 public:
-	DlgFunction (HINSTANCE hInstance, HWND hParent, void *context);
-	BOOL OnInitDialog (HWND hWnd, WPARAM wParam, LPARAM lParam);
-	BOOL OnCommand (HWND hWnd, WORD id, WORD code, HWND hControl);
-
-protected:
-	void ScanFunctions (HWND hDlg);
-	void RunFunction (HWND hDlg);
-	void ShowDescription (HWND hDlg);
+    DlgFunction();
+    void OnDraw() override;
 };
-
 #endif // !__DLGFUNCTION_H

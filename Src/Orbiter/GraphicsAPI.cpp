@@ -4,20 +4,22 @@
 #define STRICT 1
 #define OAPI_IMPLEMENTATION
 
-#include "Orbiter.h"
-#include "Launchpad.h"
-#include "LpadTab.h"
-#include "TabVideo.h"
-#include "Psys.h"
-#include "Pane.h"
-#include "VCockpit.h"
 #include "GraphicsAPI.h"
 #include "DlgMgr.h"
+#include "Launchpad.h"
 #include "Log.h"
+#include "LpadTab.h"
+#include "Orbiter.h"
+#include "Pane.h"
+#include "Psys.h"
+#include "TabVideo.h"
 #include "Util.h"
+#include "VCockpit.h"
 #include "resource.h"
-#include <wincodec.h>
+
+#include <IconsFontAwesome6.h>
 #include <filesystem>
+#include <wincodec.h>
 namespace fs = std::filesystem;
 
 using std::min;
@@ -41,7 +43,6 @@ OAPIFUNC INT_PTR CALLBACK LaunchpadVideoWndProc (HWND hWnd, UINT uMsg, WPARAM wP
 
 GraphicsClient::GraphicsClient (HINSTANCE hInstance): Module (hInstance)
 {
-	hOrbiterInst = g_pOrbiter->GetInstance();
 	VideoData.fullscreen = false;
 	VideoData.forceenum = true;
 	VideoData.trystencil = false;
@@ -81,12 +82,12 @@ GraphicsClient::~GraphicsClient ()
 bool GraphicsClient::clbkInitialise ()
 {
     // Register a window class for the render window
-    WNDCLASS wndClass = {0, ::WndProc, 0, 0, hModule,
-		LoadIcon (g_pOrbiter->GetInstance(), MAKEINTRESOURCE(IDI_MAIN_ICON)),
-		LoadCursor (NULL, IDC_ARROW),
-		(HBRUSH)GetStockObject (WHITE_BRUSH),
-		NULL, strWndClass};
-    RegisterClass (&wndClass);
+    //   WNDCLASS wndClass = {0, ::WndProc, 0, 0, hModule,
+	// LoadIcon (g_pOrbiter->GetInstance(), MAKEINTRESOURCE(IDI_MAIN_ICON)),
+	// LoadCursor (NULL, IDC_ARROW),
+	// (HBRUSH)GetStockObject (WHITE_BRUSH),
+	// NULL, strWndClass};
+    //   RegisterClass (&wndClass);
 
 	if (clbkUseLaunchpadVideoTab() && g_pOrbiter->Launchpad()) {
 		hVid = g_pOrbiter->Launchpad()->GetTab(PG_VID)->TabWnd();
@@ -268,20 +269,17 @@ const void *GraphicsClient::GetConfigParam (DWORD paramtype) const
 
 // ======================================================================
 
-HWND GraphicsClient::clbkCreateRenderWindow ()
-{
-	HWND hWnd;
+std::shared_ptr<sdl::UnmanagedWindow> GraphicsClient::clbkCreateRenderWindow() {
+    std::shared_ptr<sdl::UnmanagedWindow> window;
 
-	if (VideoData.fullscreen) {
-		hWnd = CreateWindow (strWndClass, "", // dummy window
-			WS_POPUP | WS_EX_TOPMOST| WS_VISIBLE,
-			CW_USEDEFAULT, CW_USEDEFAULT, 10, 10, 0, 0, hModule, (LPVOID)this);
-	} else {
-		hWnd = CreateWindow (strWndClass, "",
-			WS_OVERLAPPED | WS_CAPTION | WS_SYSMENU | WS_VISIBLE,
-			CW_USEDEFAULT, CW_USEDEFAULT, VideoData.winw, VideoData.winh, 0, 0, hModule, (LPVOID)this);
-	}
-	return hWnd;
+    if (VideoData.fullscreen) {
+        window = std::make_shared<sdl::UnmanagedWindow>("", 10, 10,
+                                                        SDL_WINDOW_FULLSCREEN);
+    } else {
+        window = std::make_shared<sdl::UnmanagedWindow>("", VideoData.winw,
+                                                        VideoData.winh, 0);
+    }
+    return window;
 }
 
 // ======================================================================
@@ -645,40 +643,25 @@ bool GraphicsClient::clbkCopyBitmap (SURFHANDLE pdds, HBITMAP hbm,
 
 // ======================================================================
 
-HWND GraphicsClient::InitRenderWnd (HWND hWnd)
-{
-	if (!hWnd) { // create a dummy window
-		hWnd = CreateWindow (strWndClass, "",
-			WS_POPUP | WS_VISIBLE,
-			CW_USEDEFAULT, CW_USEDEFAULT, 10, 10, 0, 0, hModule, 0);
-	}
-	SetWindowLongPtr (hWnd, GWLP_USERDATA, (LONG_PTR)this);
-	// store class instance with window for access in the message handler
 
-	char title[256], cbuf[128];
-	extern const TCHAR *g_strAppTitle;
-	strcpy (title, g_strAppTitle);
-	GetWindowText (hWnd, cbuf, 128);
-	if (cbuf[0]) {
-		strcat (title, " ");
-		strcat (title, cbuf);
-	}
-	SetWindowText (hWnd, title);
-	hRenderWnd = hWnd;
-	return hRenderWnd;
+extern const TCHAR* g_strAppTitle;
+
+void GraphicsClient::InitRenderWnd(
+    std::shared_ptr<sdl::UnmanagedWindow> &window) {
+    if (!window) {
+        window = std::make_shared<sdl::UnmanagedWindow>("", 10, 10, 0);
+    }
+
+    auto title = std::string(g_strAppTitle) + " " +
+                 SDL_GetWindowTitle(window->Inner());
+    SDL_SetWindowTitle(window->Inner(), title.c_str());
 }
 
 // ======================================================================
 
-
-LRESULT GraphicsClient::RenderWndProc (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
-{
-	switch (uMsg) {
-	// graphics-specific stuff to go here
-	default:
-		return g_pOrbiter->MsgProc (hWnd, uMsg, wParam, lParam);
-	}
-    return DefWindowProc (hWnd, uMsg, wParam, lParam);
+bool GraphicsClient::RenderWndProc(const SDL_Event &event,
+                                   bool &wantsOut) {
+    return g_pOrbiter->MsgProc(event, wantsOut);
 }
 
 // ======================================================================
@@ -882,18 +865,6 @@ void ScreenAnnotation::Render ()
 
 // ======================================================================
 // Nonmember functions
-
-//-----------------------------------------------------------------------
-// Name: WndProc()
-// Desc: Static msg handler which passes messages from the render window
-//       to the application class.
-//-----------------------------------------------------------------------
-DLLEXPORT LRESULT CALLBACK WndProc (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
-{
-	GraphicsClient *gc = (GraphicsClient*)GetWindowLongPtr (hWnd, GWLP_USERDATA);
-	if (gc) return gc->RenderWndProc (hWnd, uMsg, wParam, lParam);
-	else return DefWindowProc (hWnd, uMsg, wParam, lParam);
-}
 
 // ======================================================================
 

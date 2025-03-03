@@ -20,12 +20,12 @@ public:
 	void operator=(CommandLine const&) = delete;
 
 	const char* CmdLine() const;
-	bool GetOption(UINT id, const std::string** value) const;
+	bool GetOption(unsigned int id, const std::string** value) const;
 
 protected:
 	struct Key {
-		UINT id;
-		PCSTR longName;
+		unsigned int id;
+		const char* longName;
 		char shortName;
 		bool hasArgument;
 	};
@@ -36,9 +36,9 @@ protected:
 	};
 	std::vector<Option> optionList;
 
-	CommandLine(const PSTR cmdLine);
-	void ParseCmdLine(const PSTR cmdLine);
-	bool ParseNextOption(PSTR& cmdLine, bool& groupKey, Option& option);
+	CommandLine(int argc, const char **cmdLine);
+	void ParseCmdLine();
+	bool ParseNextOption(const char*& cmdLine, bool& groupKey, Option& option);
 	void MapKeys();
 	void ApplyOptions();
 	virtual void ApplyOption(const Key* key, const std::string& value) {}
@@ -58,7 +58,7 @@ namespace orbiter {
 	{
 	public:
 		static CommandLine& Instance() { return InstanceImpl(); }
-		static void Parse(Orbiter* pOrbiter, const PSTR cmdLine) { InstanceImpl(pOrbiter, cmdLine); }
+		static void Parse(Orbiter* pOrbiter, int argc, const char **cmdLine) { InstanceImpl(pOrbiter, argc, cmdLine); }
 
 		CommandLine(CommandLine const&) = delete;
 		void operator=(CommandLine const&) = delete;
@@ -83,8 +83,8 @@ namespace orbiter {
 		void PrintHelpAndExit() const;
 
 	private:
-		CommandLine(Orbiter* pOrbiter, const PSTR cmdLine);
-		static CommandLine& InstanceImpl(Orbiter* pOrbiter = 0, const PSTR cmdLine = 0);
+		CommandLine(Orbiter* pOrbiter, int argc, const char **cmdLine);
+		static CommandLine& InstanceImpl(Orbiter* pOrbiter = 0, int argc = 0, const char **cmdLine = 0);
 		Orbiter* m_pOrbiter;
 	};
 

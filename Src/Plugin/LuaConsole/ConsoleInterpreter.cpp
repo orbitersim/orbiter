@@ -41,11 +41,11 @@ void ConsoleInterpreter::term_strout (const char *str, bool iserr)
 		strcpy (cbuf, str);
 		char *s = strtok (cbuf, "\n");
 		while (s) {
-			console->AddLine (s, iserr ? 2:1);
+			console->AddLine (s, iserr ? LineType::LUA_OUT_ERROR:LineType::LUA_OUT);
 			s = strtok (NULL, "\n");
 		}
 		delete []cbuf;
-	} else console->AddLine (str, iserr ? 2:1);
+	} else console->AddLine (str, iserr ? LineType::LUA_OUT_ERROR:LineType::LUA_OUT);
 }
 
 void ConsoleInterpreter::term_clear() {
