@@ -51,7 +51,8 @@ HRESULT CDIFramework7::Create (HINSTANCE hInst)
 	// Check to see whether a joystick is present. If one is, the enumeration
 	// callback will save the joystick's GUID, so we can create it later
 	ZeroMemory (&m_guidJoystick, sizeof (GUID));
-	m_pDI->EnumDevices (DI8DEVTYPE_JOYSTICK, EnumJoysticksCallback,
+	
+	m_pDI->EnumDevices (DI8DEVCLASS_GAMECTRL, EnumJoysticksCallback,
 		(LPVOID)&jList, DIEDFL_ATTACHEDONLY);
 
 	// pick first joystick by default
