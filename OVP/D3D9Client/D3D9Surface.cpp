@@ -113,7 +113,7 @@ SURFHANDLE NatLoadSurface(const char* file, DWORD flags, bool bPath)
 		{
 
 			if (info.ImageFileFormat == D3DXIFF_JPG) info.Format = D3DFMT_X8R8G8B8;
-			if (info.ImageFileFormat == D3DXIFF_PNG) info.Format = D3DFMT_X8R8G8B8;
+			if (info.ImageFileFormat == D3DXIFF_PNG) info.Format = D3DFMT_A8R8G8B8;
 			if (info.ImageFileFormat == D3DXIFF_BMP) info.Format = D3DFMT_X8R8G8B8;
 
 			DWORD Mips = D3DFMT_FROM_FILE;

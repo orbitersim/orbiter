@@ -12,6 +12,7 @@
 #include <list>
 #include "imgui.h"
 class ImGuiDialog;
+enum class ImGuiFont;
 
 class oapi::GraphicsClient;
 extern Orbiter *g_pOrbiter;
@@ -220,10 +221,13 @@ public:
 	}
 
 	void ImGuiNewFrame();
+	ImFont *GetFont(ImGuiFont f);
 private:
 	void InitImGui();
 	void ShutdownImGui();
-};
+	ImFont *defaultFont;
+	ImFont *consoleFont;
+	ImFont *monoFont;};
 
 INT_PTR OrbiterDefDialogProc (HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam);
 

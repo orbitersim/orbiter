@@ -2177,7 +2177,9 @@ DLLEXPORT void oapiCloseDialog (HWND hDlg)
 
 DLLEXPORT void oapiCloseDialog(ImGuiDialog *e)
 {
-	g_pOrbiter->DlgMgr()->DelEntry(e);
+	DialogManager *dmgr = g_pOrbiter->DlgMgr();
+	if(dmgr)
+		dmgr->DelEntry(e);
 }
 
 DLLEXPORT void *oapiGetDialogContext (HWND hDlg)

@@ -3,6 +3,7 @@
 
 #define EXPORT_IMGUI_CONTEXT
 #define OAPI_IMPLEMENTATION
+#define IMGUI_DEFINE_MATH_OPERATORS
 #include <stdio.h>
 #include "OrbiterAPI.h"
 #include "DlgMgr.h"
@@ -10,6 +11,8 @@
 #include "Orbiter.h"
 #include "Log.h"
 #include "imgui.h"
+#include "imgui_internal.h"
+#include "imgui_extras.h"
 #include "imgui_impl_win32.h"
 #include "IconsFontAwesome6.h"
 #include <chrono>
@@ -28,7 +31,7 @@ static int x_fixedframe = GetSystemMetrics (SM_CXFIXEDFRAME);
 static int y_fixedframe = GetSystemMetrics (SM_CYFIXEDFRAME);
 
 static bool doflip = true;
-void RenderNotifications();
+static void RenderNotifications();
 
 // dialog thread messages
 #define TM_OPENDIALOG WM_USER
@@ -430,95 +433,19 @@ const ImWchar* GetGlyphRangesOrbiter()
 	return &ranges[0];
 }
 
-// Styling adapted from https://gist.github.com/dougbinks/8089b4bbaccaaf6fa204236978d165a9
-static void ImGuiSetStyle(bool bStyleDark_,  float alpha_)
+static void ImGuiSetStyle()
 {
-    // Setup Dear ImGui style
-    ImGui::StyleColorsClassic();
-    ImGuiStyle& style = ImGui::GetStyle();
-        
-    style.Alpha = 1.0f;
-    style.FrameRounding = 3.0f;
-    style.WindowRounding = 3.0f;
-    style.ChildRounding = 3.0f;
-    style.PopupRounding = 3.0f;
-    style.ScrollbarRounding = 3.0f;
-    style.GrabRounding = 3.0f;
-    style.TabRounding = 3.0f;
-
-    // light style from Pacôme Danhiez (user itamago) https://github.com/ocornut/imgui/pull/511#issuecomment-175719267
-    style.Colors[ImGuiCol_Text]                  = ImVec4(0.00f, 0.00f, 0.00f, 1.00f);
-    style.Colors[ImGuiCol_TextDisabled]          = ImVec4(0.60f, 0.60f, 0.60f, 1.00f);
-    style.Colors[ImGuiCol_WindowBg]              = ImVec4(0.94f, 0.94f, 0.94f, 0.94f);
-    style.Colors[ImGuiCol_PopupBg]               = ImVec4(1.00f, 1.00f, 1.00f, 0.94f);
-    style.Colors[ImGuiCol_Border]                = ImVec4(0.00f, 0.00f, 0.00f, 0.39f);
-    style.Colors[ImGuiCol_BorderShadow]          = ImVec4(1.00f, 1.00f, 1.00f, 0.10f);
-    style.Colors[ImGuiCol_FrameBg]               = ImVec4(1.00f, 1.00f, 1.00f, 0.94f);
-    style.Colors[ImGuiCol_FrameBgHovered]        = ImVec4(0.26f, 0.59f, 0.98f, 0.40f);
-    style.Colors[ImGuiCol_FrameBgActive]         = ImVec4(0.26f, 0.59f, 0.98f, 0.67f);
-    style.Colors[ImGuiCol_TitleBg]               = ImVec4(0.96f, 0.96f, 0.96f, 1.00f);
-    style.Colors[ImGuiCol_TitleBgCollapsed]      = ImVec4(1.00f, 1.00f, 1.00f, 0.51f);
-    style.Colors[ImGuiCol_TitleBgActive]         = ImVec4(0.82f, 0.82f, 0.82f, 1.00f);
-    style.Colors[ImGuiCol_MenuBarBg]             = ImVec4(0.86f, 0.86f, 0.86f, 1.00f);
-    style.Colors[ImGuiCol_ScrollbarBg]           = ImVec4(0.98f, 0.98f, 0.98f, 0.53f);
-    style.Colors[ImGuiCol_ScrollbarGrab]         = ImVec4(0.69f, 0.69f, 0.69f, 1.00f);
-    style.Colors[ImGuiCol_ScrollbarGrabHovered]  = ImVec4(0.59f, 0.59f, 0.59f, 1.00f);
-    style.Colors[ImGuiCol_ScrollbarGrabActive]   = ImVec4(0.49f, 0.49f, 0.49f, 1.00f);
-    style.Colors[ImGuiCol_CheckMark]             = ImVec4(0.26f, 0.59f, 0.98f, 1.00f);
-    style.Colors[ImGuiCol_SliderGrab]            = ImVec4(0.24f, 0.52f, 0.88f, 1.00f);
-    style.Colors[ImGuiCol_SliderGrabActive]      = ImVec4(0.26f, 0.59f, 0.98f, 1.00f);
-    style.Colors[ImGuiCol_Button]                = ImVec4(0.26f, 0.59f, 0.98f, 0.40f);
-    style.Colors[ImGuiCol_ButtonHovered]         = ImVec4(0.26f, 0.59f, 0.98f, 1.00f);
-    style.Colors[ImGuiCol_ButtonActive]          = ImVec4(0.06f, 0.53f, 0.98f, 1.00f);
-    style.Colors[ImGuiCol_Header]                = ImVec4(0.26f, 0.59f, 0.98f, 0.31f);
-    style.Colors[ImGuiCol_HeaderHovered]         = ImVec4(0.26f, 0.59f, 0.98f, 0.80f);
-    style.Colors[ImGuiCol_HeaderActive]          = ImVec4(0.26f, 0.59f, 0.98f, 1.00f);
-    style.Colors[ImGuiCol_ResizeGrip]            = ImVec4(1.00f, 1.00f, 1.00f, 0.50f);
-    style.Colors[ImGuiCol_ResizeGripHovered]     = ImVec4(0.26f, 0.59f, 0.98f, 0.67f);
-    style.Colors[ImGuiCol_ResizeGripActive]      = ImVec4(0.26f, 0.59f, 0.98f, 0.95f);
-    style.Colors[ImGuiCol_PlotLines]             = ImVec4(0.39f, 0.39f, 0.39f, 1.00f);
-    style.Colors[ImGuiCol_PlotLinesHovered]      = ImVec4(1.00f, 0.43f, 0.35f, 1.00f);
-    style.Colors[ImGuiCol_PlotHistogram]         = ImVec4(0.90f, 0.70f, 0.00f, 1.00f);
-    style.Colors[ImGuiCol_PlotHistogramHovered]  = ImVec4(1.00f, 0.60f, 0.00f, 1.00f);
-    style.Colors[ImGuiCol_TextSelectedBg]        = ImVec4(0.26f, 0.59f, 0.98f, 0.35f);
-
-    if( bStyleDark_ )
-    {
-        for (int i = 0; i <= ImGuiCol_COUNT; i++)
-        {
-            ImVec4& col = style.Colors[i];
-            float H, S, V;
-            ImGui::ColorConvertRGBtoHSV( col.x, col.y, col.z, H, S, V );
-
-            if( S < 0.1f )
-            {
-                V = 1.0f - V;
-            }
-            ImGui::ColorConvertHSVtoRGB( H, S, V, col.x, col.y, col.z );
-            if( col.w < 1.00f )
-            {
-                col.w *= alpha_;
-            }
-        }
-    }
-    else
-    {
-        for (int i = 0; i <= ImGuiCol_COUNT; i++)
-        {
-            ImVec4& col = style.Colors[i];
-            if( col.w < 1.00f )
-            {
-                col.x *= alpha_;
-                col.y *= alpha_;
-                col.z *= alpha_;
-                col.w *= alpha_;
-            }
-        }
-    }
+	// Setup Dear ImGui style
+	ImGui::StyleColorsDark();
+	ImGuiStyle& style = ImGui::GetStyle();
+    style.WindowMenuButtonPosition = ImGuiDir_Right;
+    style.Colors[ImGuiCol_Separator] = style.Colors[ImGuiCol_Button];
 }
 
 void DialogManager::InitImGui()
 {
+	if(!gc) return;
+
 	IMGUI_CHECKVERSION();
 	ImGui::CreateContext();
 	ImGuiIO& io = ImGui::GetIO();
@@ -529,7 +456,7 @@ void DialogManager::InitImGui()
 	//io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;      // Enable Gamepad Controls
 	//io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;
 
-	ImGuiSetStyle(true, 1.0f); // Dark, alpha
+	ImGuiSetStyle();
 
 	ImFontConfig config;
 
@@ -540,8 +467,10 @@ void DialogManager::InitImGui()
 	icons_config.FontDataOwnedByAtlas = false;
 	
 	const CFG_FONTPRM &prm = g_pOrbiter->Cfg()->CfgFontPrm;
-	io.Fonts->AddFontFromFileTTF(prm.ImGui_FontFile, prm.ImGui_FontSize, &config, ImGui::GetIO().Fonts->GetGlyphRangesJapanese());
+	defaultFont = io.Fonts->AddFontFromFileTTF(prm.ImGui_FontFile, prm.ImGui_FontSize, &config, ImGui::GetIO().Fonts->GetGlyphRangesJapanese());
 	io.Fonts->AddFontFromFileTTF("fa-solid-900.ttf", prm.ImGui_FontSize, &icons_config, icons_ranges);
+	consoleFont = io.Fonts->AddFontFromFileTTF("Cousine-Regular.ttf", prm.ImGui_FontSize, &config, ImGui::GetIO().Fonts->GetGlyphRangesDefault());
+	monoFont = io.Fonts->AddFontFromFileTTF("Lekton-Bold.ttf", prm.ImGui_FontSize, &config, GetGlyphRangesOrbiter());
 	io.Fonts->Build();
 	
 
@@ -551,6 +480,8 @@ void DialogManager::InitImGui()
 
 void DialogManager::ShutdownImGui()
 {
+	if(!gc) return;
+
 	gc->clbkImGuiShutdown();
 	ImGui_ImplWin32_Shutdown();
 	ImGui::DestroyContext();
@@ -558,18 +489,13 @@ void DialogManager::ShutdownImGui()
 
 void DialogManager::ImGuiNewFrame()
 {
+	if(!gc) return;
+
 	gc->clbkImGuiNewFrame();
 	ImGui_ImplWin32_NewFrame();
 	ImGui::NewFrame();
 
-	//ImGui::ShowDemoWindow();
-	
-	// Render notifications
-	ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 5.f); // Round borders
-	ImGui::PushStyleColor(ImGuiCol_WindowBg, ImVec4(43.f / 255.f, 43.f / 255.f, 43.f / 255.f, 240.f / 255.f)); // Background color
-	RenderNotifications(); // <-- Here we render all notifications
-	ImGui::PopStyleVar(1); // Don't forget to Pop()
-	ImGui::PopStyleColor(1);
+	RenderNotifications();
 
 	// We can't use a range-based loop here because Show() may unregister the current dialog
 	for (auto it = DlgImGuiList.begin(); it != DlgImGuiList.end();)
@@ -582,13 +508,42 @@ void DialogManager::ImGuiNewFrame()
 	ImGui::EndFrame();
 }
 
+ImFont *DialogManager::GetFont(ImGuiFont f)
+{
+	switch(f) {
+	case ImGuiFont::MONO: return monoFont;
+	case ImGuiFont::CONSOLE: return consoleFont;
+	case ImGuiFont::DEFAULT: return defaultFont;
+	default: return defaultFont;
+	}
+}
+
 ImGuiDialog::~ImGuiDialog(){
 	// Make sure this dialog is no longer referenced in the DialogManager
 	oapiCloseDialog(this);
 }
 
+bool ImGuiDialog::HandleHelpButton() {
+	if(!helpfile.empty()) {
+		HELPCONTEXT hc;
+		hc.helpfile = const_cast<char *>(helpfile.c_str());
+		hc.topic = helptopic.empty() ? NULL : const_cast<char *>(helptopic.c_str());
+		hc.toc = (char*)"html/orbiter.chm::/orbiter.hhc";
+		hc.index = (char*)"html/orbiter.chm::/orbiter.hhk";
+
+		if(ImGui::MenuButton(ICON_FA_CIRCLE_QUESTION, "Help")) {
+			g_pOrbiter->OpenHelp(&hc);
+		}
+		return true;
+	}
+	return false;
+}
+
 void ImGuiDialog::Display() {
+	ImGui::SetNextWindowSize(ImVec2(defaultSize.width, defaultSize.height), ImGuiCond_FirstUseEver);
+
 	if(ImGui::Begin(name.c_str(), &active)) {
+		HandleHelpButton();
 		OnDraw();
 	}
 	ImGui::End();
@@ -672,9 +627,9 @@ struct Notification
 	time_point_t creation;
 	float height;
 	float speed;
+	uint32_t type;
 
-	Notification(uint32_t type, const char *title_, const char *content_, size_t hash_):title(title_),content(content_),hash(hash_)
-	{
+	Notification(uint32_t type_, const char *title_, const char *content_, size_t hash_):title(title_),content(content_),hash(hash_),type(type_)	{
 		if(type >= OAPINOTIF_INFO) type = OAPINOTIF_INFO;
 		color = notifcolors[type];
 		icon = notificons[type];
@@ -683,12 +638,13 @@ struct Notification
 		occurrences = 1;
 		expired = false;
 		permanent = type == OAPINOTIF_ERROR;
-		speed = 1.0f;
+		speed = 0.0f;
 		height = -1.0;
 	}
 	void ReTrigger() {
 		occurrences++;
 		creation = std::chrono::steady_clock::now() - FADE_TIME;
+		duration = notifduration[type];
 	}
 	void UpdateState(time_point_t now, float h, duration_t dt) {
 		duration_t elapsed = now - creation;
@@ -706,7 +662,7 @@ struct Notification
 
 		if(h < height) {
 			height -= speed;
-			speed += std::chrono::duration_cast<std::chrono::seconds>(dt).count() * 0.001;
+			speed += std::chrono::duration_cast<std::chrono::milliseconds>(dt).count()/100.0f;
 			if(height <= h) {
 				height = h;
 				speed = 0.0f;
@@ -731,14 +687,16 @@ static void RenderNotifications()
 	static time_point_t last = std::chrono::steady_clock::now();
 	auto now = std::chrono::steady_clock::now();
 	duration_t dt = now - last;
+	last = now;
 	for (auto &notif: notifications)
 	{
 		notif.UpdateState(now, height, dt);
 
 		ImGui::PushStyleVar(ImGuiStyleVar_Alpha, notif.color.w);
+		ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 5.f);
 		ImGui::SetNextWindowPos(ImVec2(vp_size.x - NOTIFY_PADDING_X, vp_size.y - NOTIFY_PADDING_Y - notif.height), ImGuiCond_Always, ImVec2(1.0f, 1.0f));
 
-		// Generate new unique name for this toast
+		// Generate new unique name for this notification
 		char window_name[32];
 		sprintf(window_name, "##NOTIF%d", i);
 		i++;
@@ -798,7 +756,7 @@ static void RenderNotifications()
 
 		ImGui::PopTextWrapPos();
 
-		ImGui::PopStyleVar();
+		ImGui::PopStyleVar(2);
 		// Save height for next notification
 		height += ImGui::GetWindowHeight() + NOTIFY_PADDING_MESSAGE_Y;
 
@@ -817,7 +775,7 @@ static void RenderNotifications()
 DLLEXPORT void oapiAddNotification(int type, const char *title, const char *content) {
 	const size_t hash = std::hash<std::string>{}(title) ^ std::hash<std::string>{}(content);
 	for (auto &notif: notifications) {
-		if(notif.hash == hash && notif.title == title && notif.content == content) {
+		if(notif.hash == hash && notif.title == title && notif.content == content && notif.type == type) {
 			notif.ReTrigger();
 			return;
 		}
@@ -844,6 +802,43 @@ namespace ImGui {
 		return ret;
 	}
 
+	// Cheap double slider
+	// It's provided only to be able to use sliders where a double is used but a float would have been enough
+	// e.g. the stars brightness configuration
+	DLLEXPORT bool SliderDouble(const char* label, double* v, double v_min, double v_max, const char* display_format)
+	{
+		float tmp = *v;
+		bool ret = ImGui::SliderFloat(label, &tmp, v_min, v_max, display_format);
+		if(ret) *v = tmp;
+		return ret;
+	}
+
+	DLLEXPORT bool InputIntEx(const char* label, int* v, int v_min, int v_max, int step, int step_fast, ImGuiInputTextFlags flags)
+	{
+		bool ret = ImGui::InputInt(label, v, step, step_fast, flags);
+		if(ret) {
+			if(*v < v_min) *v = v_min;
+			else if (*v > v_max) *v = v_max;
+		}
+		return ret;
+	}
+	DLLEXPORT bool InputDoubleEx(const char* label, double* v, double v_min, double v_max, double step, double step_fast, const char *fmt, ImGuiInputTextFlags flags)
+	{
+		bool ret = ImGui::InputDouble(label, v, step, step_fast, fmt, flags);
+		if(ret) {
+			if(*v < v_min) *v = v_min;
+			else if (*v > v_max) *v = v_max;
+		}
+		return ret;
+	}
+
+
+	DLLEXPORT void PushFont(ImGuiFont f)
+	{
+		ImGui::PushFont(g_pOrbiter->DlgMgr()->GetFont(f));
+	}
+
+
 	// From imgui_demo.cpp, with added sameline argument
 	DLLEXPORT void HelpMarker(const char* desc, bool sameline)
 	{
@@ -857,5 +852,53 @@ namespace ImGui {
 			ImGui::PopTextWrapPos();
 			ImGui::EndTooltip();
 		}
+	}
+
+	DLLEXPORT bool MenuButton(const char *label, const char *tooltip, float xoffset)
+	{
+		ImGuiContext& g = *GImGui;
+		const ImGuiWindow* window = ImGui::GetCurrentWindow();
+		const ImRect titleBarRect = window->TitleBarRect();
+		const ImGuiStyle& style = g.Style;
+        ImGuiLastItemData last_item_backup = g.LastItemData;
+		ImGui::PushClipRect( titleBarRect.Min, titleBarRect.Max, false );
+		float width = (strlen(label)+1) * g.FontSize;
+		float offset = titleBarRect.Max.x - width - titleBarRect.Min.x - g.Style.FramePadding.x;
+		offset -= xoffset;
+		ImGui::SetCursorPos( ImVec2( offset, 0.0f ) );
+        ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0,0,0,0));
+		bool ret = ImGui::Button( label );
+		ImGui::PopStyleColor();
+		if(tooltip && ImGui::IsItemHovered())
+			ImGui::SetTooltip(tooltip);
+		ImGui::PopClipRect();
+        g.LastItemData = last_item_backup;
+		return ret;
+	}
+
+	DLLEXPORT ImTextureID GetImTextureID (SURFHANDLE surf)
+	{
+		oapi::GraphicsClient *gc = g_pOrbiter->GetGraphicsClient();
+		if (gc && surf)
+			return gc->clbkImGuiSurfaceTexture (surf);
+		return 0;
+	}
+
+	DLLEXPORT void Image(SURFHANDLE surf, const ImVec2& image_size, const ImVec2& uv0, const ImVec2& uv1, const ImVec4& tint_col, const ImVec4& border_col)
+	{
+		ImTextureID tex_id = GetImTextureID(surf);
+		Image(tex_id, image_size, uv0, uv1, tint_col, border_col);
+	}
+
+	DLLEXPORT bool ImageButton(const char* str_id, SURFHANDLE surf, const ImVec2& image_size, const ImVec2& uv0, const ImVec2& uv1, const ImVec4& bg_col, const ImVec4& tint_col)
+	{
+		ImTextureID tex_id = GetImTextureID(surf);
+		return ImageButton(str_id, tex_id, image_size, uv0, uv1, bg_col, tint_col);
+	}
+
+	DLLEXPORT bool SliderEnum(const char *label, int *v, const char *values[], int nvalues)
+	{
+        const char* elem_name = (*v >= 0 && *v < nvalues) ? values[*v] : "Unknown";
+        return ImGui::SliderInt(label, v, 0, nvalues - 1, elem_name);
 	}
 }

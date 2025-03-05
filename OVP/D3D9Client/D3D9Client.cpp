@@ -2749,6 +2749,12 @@ void D3D9Client::clbkImGuiRenderDrawData()
 		ImGui::UpdatePlatformWindows();
 		ImGui::RenderPlatformWindowsDefault();
 	}
+
+	// Release textures that were protected for ImGui usage during the frame
+	for(auto &surf: ImTextures) {
+		clbkReleaseSurface(surf);
+	}
+	ImTextures.clear();
 }
 void D3D9Client::clbkImGuiInit()
 {
@@ -2758,9 +2764,20 @@ void D3D9Client::clbkImGuiInit()
 void D3D9Client::clbkImGuiShutdown()
 {
 	_TRACE;
+	// Clean up also here just in case
+	for(auto &surf: ImTextures) {
+		clbkReleaseSurface(surf);
+	}
+	ImTextures.clear();
 	ImGui_ImplDX9_Shutdown();
 }
-
+uint64_t D3D9Client::clbkImGuiSurfaceTexture(SURFHANDLE surf)
+{
+	ImTextures.push_back(surf);
+	clbkIncrSurfaceRef(surf);
+	LPDIRECT3DTEXTURE9 pTxt = SURFACE(surf)->GetTexture();
+	return (uint64_t)pTxt;
+}
 // =======================================================================
 
 bool D3D9Client::clbkSplashLoadMsg (const char *msg, int line)

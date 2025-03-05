@@ -2061,11 +2061,14 @@ HRESULT Orbiter::UserInput ()
 	    (g_select && g_select->IsActive())) skipkbd = true;
 
 	if (didev = GetDInput()->GetKbdDevice()) {
+		ImGuiIO& io = ImGui::GetIO();
 		// keyboard input: immediate key interpretation
 		hr = didev->GetDeviceState (sizeof(buffer), &buffer);
 		if ((hr == DIERR_NOTACQUIRED || hr == DIERR_INPUTLOST) && SUCCEEDED (didev->Acquire()))
 			hr = didev->GetDeviceState (sizeof(buffer), &buffer);
-		if (SUCCEEDED (hr))
+
+		// Direct input bypasses the proc loop so we skip it here
+		if (SUCCEEDED (hr) && !io.WantCaptureKeyboard)
 			for (i = 0; i < 256; i++)
 				simkstate[i] |= buffer[i];
 		bool consume = BroadcastImmediateKeyboardEvent (simkstate);
@@ -2078,7 +2081,7 @@ HRESULT Orbiter::UserInput ()
 		hr = didev->GetDeviceData (sizeof(DIDEVICEOBJECTDATA), dod, &dwItems, 0);
 		if ((hr == DIERR_NOTACQUIRED || hr == DIERR_INPUTLOST) && SUCCEEDED (didev->Acquire()))
 			hr = didev->GetDeviceData (sizeof(DIDEVICEOBJECTDATA), dod, &dwItems, 0);
-		if (SUCCEEDED (hr)) {
+		if (SUCCEEDED (hr) && !io.WantCaptureKeyboard) {
 			BroadcastBufferedKeyboardEvent (buffer, dod, dwItems);
 			if (!skipkbd) {
 				KbdInputBuffered_System (buffer, dod, dwItems);
