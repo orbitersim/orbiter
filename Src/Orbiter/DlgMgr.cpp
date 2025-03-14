@@ -773,6 +773,9 @@ static void RenderNotifications()
 
 // OAPI implementation
 DLLEXPORT void oapiAddNotification(int type, const char *title, const char *content) {
+	if(content == NULL) {
+		content = "(null)";
+	}
 	const size_t hash = std::hash<std::string>{}(title) ^ std::hash<std::string>{}(content);
 	for (auto &notif: notifications) {
 		if(notif.hash == hash && notif.title == title && notif.content == content && notif.type == type) {

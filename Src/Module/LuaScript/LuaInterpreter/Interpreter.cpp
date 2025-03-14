@@ -95,8 +95,15 @@ int Interpreter::LuaCall(lua_State *L, int narg, int nres)
 	int res = lua_pcall(L, narg, nres, base);
 	lua_remove(L, base);
 	if(res != 0) {
-		oapiWriteLogError("%s", lua_tostring(L, -1));
-		oapiAddNotification(OAPINOTIF_ERROR, "Lua error", lua_tostring(L, -1));
+		const char *msg = lua_tostring(L, -1);
+		// Lua "threads" that are terminated when the scenario ends generate "Lua thread terminated" errors
+		// This is expected and should not generate logs/notifications
+		// Warning: the string must match with the one in oapi_init.lua: proc.skip ()
+		// strstr may be heavy but it's only an error path
+		if(strstr(msg, "Lua thread terminated") == NULL) {
+			oapiWriteLogError("%s", msg);
+			oapiAddNotification(OAPINOTIF_ERROR, "Lua error", msg);
+		}
 	}
 	return res;
 }
