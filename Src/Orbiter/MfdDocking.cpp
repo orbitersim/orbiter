@@ -83,6 +83,8 @@ void Instrument_Docking::SetupVessel ()
 		ndock = vessel->ndock;
 		// rotation matrix ship local -> ship approach frame
 		DirRotToMatrix(vessel->dock[refdock]->dir, vessel->dock[refdock]->rot, dockframe);
+	} else {
+		ndock = 0;
 	}
 }
 
@@ -626,10 +628,16 @@ bool Instrument_Docking::ProcessButton (int bt, int event)
 {
 	static const DWORD btkey[6] = { OAPI_KEY_D, OAPI_KEY_N, OAPI_KEY_V, OAPI_KEY_T, OAPI_KEY_S, OAPI_KEY_H };
 	if (event & PANEL_MOUSE_LBDOWN) {
-		if (ndock > 1) {
-			if (bt < 6) return KeyBuffered (btkey[bt]);
-		} else {
-			if (bt < 5) return KeyBuffered (btkey[bt+1]);
+		switch(ndock) {
+			case 0:
+				if (bt < 4) return KeyBuffered (btkey[bt+1]);
+				break;
+			case 1:
+				if (bt < 5) return KeyBuffered (btkey[bt+1]);
+				break;
+			default:
+				if (bt < 6) return KeyBuffered (btkey[bt]);
+				break;
 		}
 	}
 	return false;
@@ -638,8 +646,11 @@ bool Instrument_Docking::ProcessButton (int bt, int event)
 const char *Instrument_Docking::BtnLabel (int bt) const
 {
 	static const char *label[6] = { "DCK", "NAV", "VIS", "TGT", "SCL", "HUD" };
-	if (ndock > 1) return (bt < 6 ? label[bt] : 0);
-	else           return (bt < 5 ? label[bt+1] : 0);
+	switch(ndock) {
+	case 0: return (bt < 4 ? label[bt+1] : 0); // disable DCK and HUD buttons
+	case 1: return (bt < 5 ? label[bt+1] : 0); // disable DCK
+	default: return (bt < 6 ? label[bt] : 0);  // enable DCK and HUD
+	}
 }
 
 int Instrument_Docking::BtnMenu (const MFDBUTTONMENU **menu) const
@@ -653,7 +664,11 @@ int Instrument_Docking::BtnMenu (const MFDBUTTONMENU **menu) const
 		{"Copy data to HUD", 0, 'H'}
 	};
 	if (menu) *menu = (ndock > 1 ? mnu : mnu+1);
-	return (ndock > 1 ? 6 : 5);
+	switch(ndock) {
+		case 0: return 4;
+		case 1: return 5;
+		default: return 6;
+	}
 }
 
 bool Instrument_Docking::ClbkSelection_Target (Select *menu, int item, char *str, void *data)
