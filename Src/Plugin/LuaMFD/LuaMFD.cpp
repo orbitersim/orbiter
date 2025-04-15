@@ -19,7 +19,7 @@ InterpreterList *g_IList = NULL;
 
 // Constructor
 ScriptMFD::ScriptMFD (DWORD w, DWORD h, VESSEL *vessel)
-: MFD (w, h, vessel)
+: MFD2 (w, h, vessel)
 {
 	hVessel = pV->GetHandle();
 	hFont = NULL;
@@ -34,7 +34,11 @@ ScriptMFD::ScriptMFD (DWORD w, DWORD h, VESSEL *vessel)
 
 // Destructor
 ScriptMFD::~ScriptMFD ()
-{}
+{
+	if(hFont) {
+		oapiReleaseFont(hFont);
+	}
+}
 
 // Return button labels
 char *ScriptMFD::ButtonLabel (int bt)
@@ -91,9 +95,9 @@ bool ScriptMFD::ConsumeButton (int bt, int event)
 
 void ScriptMFD::SetFontSize (double size)
 {
-	if (hFont) DeleteObject (hFont);
+	if (hFont) oapiReleaseFont (hFont);
 	int h = (int)(H*size*9.0/200.0);
-	hFont = CreateFont (-h, 0, 0, 0, 400, 0, 0, 0, 0, 3, 2, 1, 49, "Courier New");
+	hFont = oapiCreateFont (-h, true, "Courier New");
 	fw = fh = 0;
 }
 
@@ -144,7 +148,7 @@ void ScriptMFD::SetPage (DWORD newpg)
 }
 
 // Repaint the MFD
-void ScriptMFD::Update (HDC hDC)
+bool ScriptMFD::Update (oapi::Sketchpad *skp)
 {
 	DWORD npg = vi->nenv;
 	pg = min (pg, npg-1);
@@ -152,19 +156,19 @@ void ScriptMFD::Update (HDC hDC)
 	int yofs = (5*ch)/4;
 	char cbuf[256];
 	sprintf (cbuf, "Term %d/%d", pg+1, npg);
-	Title (hDC, cbuf);
+	Title (skp, cbuf);
 	if (env->interp->IsBusy())
-		TextOut (hDC, W-cw*5, 1, "busy", 4);
+		skp->Text (W-cw*5, 1, "busy", 4);
 
-	SelectDefaultPen (hDC, 0);
-	MoveToEx (hDC, 0, yofs, NULL); LineTo (hDC, W, yofs);
+	oapi::Pen *pen = GetDefaultPen(0);
+	skp->SetPen(pen);
+	skp->MoveTo (0, yofs); skp->LineTo (W, yofs);
 
-	HGDIOBJ oFont = SelectObject (hDC, hFont);
+	oapi::Font *oldFont = skp->SetFont(hFont);
 	if (!fh) {
-		TEXTMETRIC tm;
-		GetTextMetrics (hDC, &tm);
-		fw = tm.tmAveCharWidth;
-		fh = tm.tmHeight-tm.tmInternalLeading;
+		DWORD cs = skp->GetCharSize();
+		fw = (cs >> 16) & 0xffff;
+		fh = cs & 0xffff;
 		nchar = (W-fw/2)/fw;
 		nline = (H-yofs-fh/2)/fh;
 	}
@@ -178,12 +182,13 @@ void ScriptMFD::Update (HDC hDC)
 	for (; ls; ls = ls->next) {
 		if (ls->col != col) {
 			col = ls->col;
-			SetTextColor (hDC, col);
+			skp->SetTextColor (col);
 		}
-		TextOut (hDC, xofs, yofs, ls->buf, min(strlen(ls->buf),(size_t)nchar));
+		skp->Text (xofs, yofs, ls->buf, min(strlen(ls->buf),(size_t)nchar));
 		yofs += fh;
 	}
-	SelectObject (hDC, oFont);
+	skp->SetFont(oldFont);
+	return true;
 }
 
 // MFD message parser
