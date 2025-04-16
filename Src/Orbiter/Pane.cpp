@@ -27,8 +27,8 @@ static COLORREF normalColor = RGB (  0, 255, 0);
 static COLORREF infoColor   = RGB (224, 192, 0);
 static COLORREF brightColor = RGB (255, 224, 128);
 
-			   
-Pane::Pane (oapi::GraphicsClient *gclient, HWND hwnd, int width, int height, int bpp)
+
+Pane::Pane (oapi::GraphicsClient *gclient, std::shared_ptr<sdl::UnmanagedWindow> hwnd, int width, int height, int bpp)
 {
 	// Note: gclient is assumed to be a valid pointer. Nongraphics orbiter
 	// instances should not create a Pane.
@@ -145,29 +145,31 @@ bool Pane::MFDConsumeKeyBuffered (int id, DWORD key)
 	return false;
 }
 
-bool Pane::ProcessMouse_System(UINT event, DWORD state, DWORD x, DWORD y, const char *kstate)
+bool Pane::ProcessMouse_System(const SDL_Event &event, DWORD x, DWORD y,
+                               const char *kstate)
 {
 	if (g_camera->IsExternal()) return false;
 	// respond to mouse events only in cockpit mode
 
 	bool consumed = false;
-	if (defpanel)      /*consumed = defpanel->ProcessMouse(event, state, x, y)*/;
-	else if (panel2d)  consumed = panel2d->ProcessMouse_System(event, state, x, y, kstate);
-	else if (panel)    /*consumed = panel->ProcessMouse(event, state, x, y)*/;
-	else if (vcockpit) /*consumed = vcockpit->ProcessMouse(event, state, x, y)*/;
+	if (defpanel)      /*consumed = defpanel->ProcessMouse(event, state, x, y)*/ {}
+	else if (panel2d)  {consumed = panel2d->ProcessMouse_System(event, x, y, kstate);}
+	else if (panel)    /*consumed = panel->ProcessMouse(event, state, x, y)*/ {}
+	else if (vcockpit) /*consumed = vcockpit->ProcessMouse(event, state, x, y)*/ {}
 	return consumed;
 }
 
-bool Pane::ProcessMouse_OnRunning (UINT event, DWORD state, DWORD x, DWORD y, const char *kstate)
+bool Pane::ProcessMouse_OnRunning (const SDL_Event &event, DWORD x, DWORD y,
+                                  const char *kstate)
 {
 	if (g_camera->IsExternal()) return false;
 	// respond to mouse events only in cockpit mode
 
 	bool consumed = false;
-	if (defpanel)      consumed = defpanel->ProcessMouse (event, state, x, y);
-	else if (panel2d)  consumed = panel2d->ProcessMouse_OnRunning (event, state, x, y, kstate);
-	else if (panel)    consumed = panel->ProcessMouse (event, state, x, y);
-	else if (vcockpit) consumed = vcockpit->ProcessMouse (event, state, x, y);
+	if (defpanel)      consumed = defpanel->ProcessMouse (event, x, y);
+	else if (panel2d)  consumed = panel2d->ProcessMouse_OnRunning (event, x, y, kstate);
+	else if (panel)    consumed = panel->ProcessMouse (event, x, y);
+	else if (vcockpit) consumed = vcockpit->ProcessMouse (event, x, y);
 	return consumed;
 }
 

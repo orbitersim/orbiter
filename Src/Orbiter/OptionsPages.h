@@ -17,6 +17,7 @@
 #include <CommCtrl.h>
 #include "CustomControls.h"
 #include "OrbiterAPI.h"
+#include <SDL3/SDL_joystick.h>
 
 class OptionsPage;
 class Config;
@@ -326,6 +327,7 @@ protected:
 class OptionsPage_Joystick : public OptionsPage {
 public:
 	OptionsPage_Joystick(OptionsPageContainer* container);
+	~OptionsPage_Joystick() override;
 	int ResourceId() const;
 	const char* Name() const;
 	const HELPCONTEXT* HelpContext() const;
@@ -335,6 +337,10 @@ protected:
 	BOOL OnInitDialog(HWND hPage, WPARAM wParam, LPARAM lParam);
 	BOOL OnCommand(HWND hPage, WORD ctrlId, WORD notification, HWND hCtrl);
 	BOOL OnHScroll(HWND hPage, WPARAM wParam, LPARAM lParam);
+
+private:
+	SDL_JoystickID* m_joylist;
+	int m_njoy;
 };
 
 /************************************************************************

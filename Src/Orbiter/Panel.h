@@ -79,7 +79,7 @@ public:
 	inline void MFDSize (int id, int &w, int &h) const
 	{ w = mfd[id].w, h = mfd[id].h; }
 
-	bool ProcessMouse (UINT event, DWORD state, int x, int y);
+	bool ProcessMouse (const SDL_Event &event, int x, int y);
 
 	void GetMouseState (int &idx, int &state, int &mx, int &my) const;
 	//{ idx = idx_mfocus; state = mstate; mx = mousex, my = mousey; }

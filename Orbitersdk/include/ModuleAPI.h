@@ -10,6 +10,7 @@
 
 #ifndef __MODULEAPI_H
 #define __MODULEAPI_H
+#include <SDL3/SDL_events.h>
 
 namespace oapi {
 
@@ -29,7 +30,7 @@ namespace oapi {
 		 * \brief Creates a new ModuleNV instance.
 		 * \param hDLL DLL library instance handle (see \ref InitModule)
 		 */
-		ModuleNV (HINSTANCE hDLL);
+		explicit ModuleNV (HINSTANCE hDLL);
 
 		/**
 		 * \brief Module interface version
@@ -95,7 +96,7 @@ namespace oapi {
 		 * \brief Creates a new Module instance.
 		 * \param hDLL DLL library instance handle (see \ref InitModule)
 		 */
-		Module (HINSTANCE hDLL);
+		explicit Module (HINSTANCE hDLL);
 		virtual ~Module();
 
 		/**
@@ -259,9 +260,7 @@ namespace oapi {
 		 * \brief Process mouse events
 		 *
 		 * Called to offer a mouse event to the module.
-		 * \param event Event type. This is a Windows message identifier (WM_xxx) such as WM_LBUTTONDOWN.
-		 * \param state Keyboard state during mouse event. This corresponds to the WPARAM value passed to
-		 *   the window message handler for mouse events (e.g. MK_CONTROL).
+		 * \param event The SDL mouse event.
 		 * \param x Mouse x position in render window at event
 		 * \param y Mouse y position in render window at event
 		 * \return Returning true prevents the event from entering the standard Orbiter processing queue
@@ -274,7 +273,7 @@ namespace oapi {
 		 * \note Mouse-processing of the Orbiter main menu cannot be blocked.
 		 * \sa clbkProcessKeyboardImmediate, clbkProcessKeyboardBuffered
 		 */
-		virtual bool clbkProcessMouse (UINT event, DWORD state, DWORD x, DWORD y) { return false; }
+		virtual bool clbkProcessMouse (const SDL_Event &event, DWORD x, DWORD y) { return false; }
 
 		/**
 		 * \brief Process immediate keyboard events

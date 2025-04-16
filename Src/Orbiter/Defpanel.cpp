@@ -539,25 +539,20 @@ void DefaultPanel::Render ()
 	gc->clbkRender2DPanel (&surf, (MESHHANDLE)&mesh, &transf, transpmfd);
 }
 
-bool DefaultPanel::ProcessMouse (UINT event, DWORD state, int x, int y)
+bool DefaultPanel::ProcessMouse (const SDL_Event &event, int x, int y)
 {
-	switch (event) {
-	case WM_LBUTTONDOWN:
-		mstate = PANEL_MOUSE_LBDOWN | PANEL_MOUSE_LBPRESSED;
-		break;
-	case WM_RBUTTONDOWN:
-		mstate = PANEL_MOUSE_RBDOWN | PANEL_MOUSE_RBPRESSED;
-		break;
-	case WM_LBUTTONUP:
-		mstate = PANEL_MOUSE_LBUP;
-		break;
-	case WM_RBUTTONUP:
-		mstate = PANEL_MOUSE_RBUP;
-		break;
-	default:
-		mstate = 0;
-		break;
-	}
+    if (event.type == SDL_EVENT_MOUSE_BUTTON_DOWN && event.button.button == SDL_BUTTON_LEFT) {
+        mstate = PANEL_MOUSE_LBDOWN | PANEL_MOUSE_LBPRESSED;
+    } else if (event.type == SDL_EVENT_MOUSE_BUTTON_DOWN && event.button.button == SDL_BUTTON_RIGHT) {
+        mstate = PANEL_MOUSE_RBDOWN | PANEL_MOUSE_RBPRESSED;
+    } else if (event.type == SDL_EVENT_MOUSE_BUTTON_UP && event.button.button == SDL_BUTTON_LEFT) {
+        mstate = PANEL_MOUSE_LBUP;
+    } else if (event.type == SDL_EVENT_MOUSE_BUTTON_UP && event.button.button == SDL_BUTTON_RIGHT) {
+        mstate = PANEL_MOUSE_RBUP;
+    } else {
+        mstate = 0;
+    }
+
 	if (mstate & PANEL_MOUSE_DOWN) { // locate mouse event
 		int mfd, btn;
 		if (GetMFDButton (x, y, mfd, btn)) {
