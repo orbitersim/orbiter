@@ -40,7 +40,9 @@
 #include "gcConst.h"
 #include <unordered_map>
 #include <d3d9on12.h>
-
+#include "imgui.h"
+#include "imgui_impl_dx9.h"
+#include "imgui_impl_win32.h"
 
 #if defined(_MSC_VER) && (_MSC_VER <= 1700 ) // Microsoft Visual Studio Version 2012 and lower
 #define round(v) floor(v+0.5)
@@ -2724,7 +2726,58 @@ bool D3D9Client::clbkFilterElevation(OBJHANDLE hPlanet, int ilat, int ilng, int 
 	_TRACE;
 	return FilterElevationPhysics(hPlanet, lvl, ilat, ilng, elev_res, elev);
 }
+void D3D9Client::clbkImGuiNewFrame()
+{
+	_TRACE;
+	ImGui_ImplDX9_NewFrame();
+}
+void D3D9Client::clbkImGuiRenderDrawData()
+{
+	_TRACE;
 
+	if (pDevice->BeginScene() >= 0)
+	{
+		ImGui::Render();
+		ImGui_ImplDX9_RenderDrawData(ImGui::GetDrawData());
+		pDevice->EndScene();
+	}
+
+	// Update and Render additional Platform Windows
+	ImGuiIO& io = ImGui::GetIO();
+	if (io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable)
+	{
+		ImGui::UpdatePlatformWindows();
+		ImGui::RenderPlatformWindowsDefault();
+	}
+
+	// Release textures that were protected for ImGui usage during the frame
+	for(auto &surf: ImTextures) {
+		clbkReleaseSurface(surf);
+	}
+	ImTextures.clear();
+}
+void D3D9Client::clbkImGuiInit()
+{
+	_TRACE;
+	ImGui_ImplDX9_Init(pDevice);
+}
+void D3D9Client::clbkImGuiShutdown()
+{
+	_TRACE;
+	// Clean up also here just in case
+	for(auto &surf: ImTextures) {
+		clbkReleaseSurface(surf);
+	}
+	ImTextures.clear();
+	ImGui_ImplDX9_Shutdown();
+}
+uint64_t D3D9Client::clbkImGuiSurfaceTexture(SURFHANDLE surf)
+{
+	ImTextures.push_back(surf);
+	clbkIncrSurfaceRef(surf);
+	LPDIRECT3DTEXTURE9 pTxt = SURFACE(surf)->GetTexture();
+	return (uint64_t)pTxt;
+}
 // =======================================================================
 
 bool D3D9Client::clbkSplashLoadMsg (const char *msg, int line)

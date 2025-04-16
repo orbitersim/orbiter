@@ -95,8 +95,15 @@ int Interpreter::LuaCall(lua_State *L, int narg, int nres)
 	int res = lua_pcall(L, narg, nres, base);
 	lua_remove(L, base);
 	if(res != 0) {
-		oapiWriteLogError("%s", lua_tostring(L, -1));
-		oapiAnnotationSetText(errorbox, const_cast<char *>(lua_tostring(L, -1)));
+		const char *msg = lua_tostring(L, -1);
+		// Lua "threads" that are terminated when the scenario ends generate "Lua thread terminated" errors
+		// This is expected and should not generate logs/notifications
+		// Warning: the string must match with the one in oapi_init.lua: proc.skip ()
+		// strstr may be heavy but it's only an error path
+		if(strstr(msg, "Lua thread terminated") == NULL) {
+			oapiWriteLogError("%s", msg);
+			oapiAddNotification(OAPINOTIF_ERROR, "Lua error", msg);
+		}
 	}
 	return res;
 }
@@ -806,6 +813,7 @@ void Interpreter::LoadAPI ()
 		{"open_inputbox", oapiOpenInputBox},
 		{"receive_input", oapiReceiveInput},
 		{"open_inputboxex", oapi_open_inputboxex},
+		{"add_notification", oapi_add_notification},
 		{"del_vessel", oapi_del_vessel},
 		{"create_vessel", oapi_create_vessel},
 		{"set_focusobject", oapi_set_focusobject},
@@ -1344,6 +1352,13 @@ void Interpreter::LoadAPI ()
 	lua_createtable (L, 0, 1);
 	lua_pushnumber (L, MESHPROPERTY_MODULATEMATALPHA); lua_setfield (L, -2, "MODULATEMATALPHA");
 	lua_setglobal (L, "MESHPROPERTY");
+
+	lua_createtable (L, 0, 4);
+	lua_pushnumber (L, OAPINOTIF_SUCCESS); lua_setfield (L, -2, "SUCCESS");
+	lua_pushnumber (L, OAPINOTIF_WARNING); lua_setfield (L, -2, "WARNING");
+	lua_pushnumber (L, OAPINOTIF_ERROR); lua_setfield (L, -2, "ERROR");
+	lua_pushnumber (L, OAPINOTIF_INFO); lua_setfield (L, -2, "INFO");
+	lua_setglobal (L, "OAPINOTIF");
 }
 
 void Interpreter::LoadMFDAPI ()
@@ -4016,6 +4031,28 @@ int Interpreter::oapi_open_inputboxex (lua_State *L)
 	ctx->L = L;
 
 	oapiOpenInputBoxEx (title, Clbk_enter, Clbk_cancel, buf, vislen, ctx, flags);
+	return 0;
+}
+
+/***
+Display a notification on the screen
+
+Error notifications are persistant and must be acknowledged
+
+@function add_notification
+@tparam number type Notification type (see table OAPINOTIF)
+@tparam string title Notification title
+@tparam[opt=""] string content Notification content
+*/
+int Interpreter::oapi_add_notification (lua_State *L)
+{
+	int type = luaL_checkinteger(L, 1);
+	const char *title = luaL_checkstring(L, 2);
+	const char *content = "";
+	if(lua_gettop (L) >= 3) {
+		content = luaL_checkstring(L, 3);
+	}
+	oapiAddNotification(type, title, content);
 	return 0;
 }
 
