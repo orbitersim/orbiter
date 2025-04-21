@@ -33,7 +33,7 @@ RunwayLights::RunwayLights(class vBase *_vB, const class Scene *scn)
 	apr_length = 257.0;
 	iCategory = 0;
 	nPAPI = 0;
-	hObj = vB->GetObjectA();
+	hObj = vB->GetObjHandle();
 	nVASI = 0;
 	bSingleEnded = false;
 	bDisp2 = false;
