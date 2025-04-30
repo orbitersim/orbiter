@@ -100,7 +100,7 @@ set(ldoc $<TARGET_FILE:lua::exe> ${ORBITER_BINARY_ROOT_DIR}/packages/LDoc/ldoc.l
 
 find_package(OpenGL QUIET)
 find_package(HTMLHelp)
-find_package(LATEX)		
+find_package(LATEX)
 find_package(MFC)
 
 # We don't query Qt with find_package because we need the 64-bit version here
@@ -114,6 +114,10 @@ set(Qt5_x64_DIR
 if(MSVC)
   add_compile_options(/we4311 /DNOMINMAX)
   add_link_options("/NODEFAULTLIB:\"LIBCMTD\"")
+  if (CMAKE_BUILD_TYPE STREQUAL "Debug")
+    # disable the implied default incremental linking for debug builds
+    add_link_options("/INCREMENTAL:NO")
+  endif()
 else()
   set(CMAKE_BUILD_WITH_INSTALL_RPATH true)
 endif()
@@ -175,6 +179,22 @@ string(COMPARE NOTEQUAL ${ORBITER_PLANET_TEXTURE_INSTALL_DIR} "${ORBITER_BINARY_
 
 if (${CUSTOM_PLANET_TEXTURE_DIR})
 	string(REPLACE  "/" "\\" ORBITER_PLANET_TEXTURE_INSTALL_DIR_W "${ORBITER_PLANET_TEXTURE_INSTALL_DIR}")
+
+	if(BUILD_ORBITER_DX7)
+		configure_file(${ORBITER_SOURCE_DIR}/Orbiter.cfg.in ${ORBITER_BINARY_ROOT_DIR}/Orbiter.cfg)
+		install(FILES
+			${ORBITER_BINARY_ROOT_DIR}/Orbiter.cfg
+			DESTINATION ${ORBITER_INSTALL_ROOT_DIR}
+		)
+	endif()
+
+	if(BUILD_ORBITER_SERVER)
+		configure_file(${ORBITER_SOURCE_DIR}/Orbiter.cfg.in ${ORBITER_BINARY_ROOT_DIR}/Orbiter_NG.cfg)
+		install(FILES
+			${ORBITER_BINARY_ROOT_DIR}/Orbiter_NG.cfg
+			DESTINATION ${ORBITER_INSTALL_ROOT_DIR}
+		)
+	endif()
 
 	configure_file(${ORBITER_SOURCE_DIR}/Orbiter.cfg.in ${ORBITER_BINARY_ROOT_DIR}/Orbiter.cfg)
 	install(FILES ${ORBITER_BINARY_ROOT_DIR}/Orbiter.cfg DESTINATION ${ORBITER_INSTALL_ROOT_DIR})
@@ -301,7 +321,7 @@ endif()
 
 configure_file(${CMAKE_SOURCE_DIR}/cmake/CPackOptions.cmake.in
 	${CMAKE_BINARY_DIR}/OrbiterCPackOptions.cmake)
-			   
+
 set(CPACK_GENERATOR "WIX;ZIP")
 set(CPACK_PACKAGE_NAME OpenOrbiter)
 set(CPACK_PACKAGE_VENDOR Orbitersim)
