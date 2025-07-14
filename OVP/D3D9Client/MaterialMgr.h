@@ -9,7 +9,7 @@
 #define __MATERIALMGR_H
 
 #include <d3d9.h>
-#include <d3dx9.h>
+#include "MathAPI.h"
 
 #include "Mesh.h"
 #include "D3D9Client.h"

@@ -124,6 +124,12 @@ set(IncludeFiles
 set(APIHeaders
     ${INCLUDE_TARGET_DIR}/gcGUI.h
 	${INCLUDE_TARGET_DIR}/gcCoreAPI.h
+#	${INCLUDE_TARGET_DIR}/MathAPI.h
+	${INCLUDE_TARGET_DIR}/DrawAPI.h
+	${INCLUDE_TARGET_DIR}/OrbiterAPI.h
+	${INCLUDE_TARGET_DIR}/GraphicsAPI.h
+	${DXMATH_DIR}/DirectXMath.h
+	${DXMATH_DIR}/DirectXCollision.h
 )
 
 set(ShaderFiles
@@ -174,6 +180,7 @@ add_library(D3D9Client MODULE
 target_include_directories(D3D9Client PUBLIC
 	${ORBITER_SOURCE_SDK_INCLUDE_DIR}
 	${DXSDK_DIR}/Include
+	${DXMATH_DIR}
 )
 
 target_link_directories(D3D9Client PUBLIC

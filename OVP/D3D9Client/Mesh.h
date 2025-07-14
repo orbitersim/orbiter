@@ -22,7 +22,7 @@
 #include "AABBUtil.h"
 #include "IProcess.h"
 #include <d3d9.h>
-#include <d3dx9.h>
+#include "MathAPI.h"
 #include <vector>
 #include <map>
 
@@ -146,7 +146,7 @@ public:
 	LPDIRECT3DVERTEXBUFFER9 pSB;
 
 	NMVERTEX				*pVBSys;
-	D3DXVECTOR4				*pGBSys;
+	XMVECTOR				*pGBSys;
 	WORD					*pIBSys;
 	SMVERTEX				*pSBSys;
 
@@ -206,7 +206,7 @@ public:
 		bool  bDualSided;
 		bool  bDeleted;			// This entry is deleted by DelGroup()
 		bool  bRendered;
-		D3DXMATRIX  Transform;	// Group specific transformation matrix
+		FMATRIX4  Transform;	// Group specific transformation matrix
 		D9BBox BBox;
 		DWORD TexIdxEx[MAXTEX];
 		float TexMixEx[MAXTEX];
@@ -216,7 +216,7 @@ public:
 					D3D9Mesh(const char *fname);
 					D3D9Mesh(DWORD nGrp, const MESHGROUPEX **hGroup, const SURFHANDLE *hSurf);
 					D3D9Mesh(const MESHGROUPEX *pGroup, const MATERIAL *pMat, SurfNative *pTex);
-					D3D9Mesh(MESHHANDLE hMesh, bool asTemplate = false, D3DXVECTOR3 *reorig = NULL, float *scale = NULL);
+					D3D9Mesh(MESHHANDLE hMesh, bool asTemplate = false, FVECTOR3 *reorig = NULL, float *scale = NULL);
 					D3D9Mesh(MESHHANDLE hMesh, const D3D9Mesh &hTemp);
 					~D3D9Mesh();
 
@@ -227,7 +227,7 @@ public:
 	void			LoadBakedLights();
 	void			BakeLights(ImageProcessing *pBaker, const FVECTOR3* BakedLightsControl);
 	void			BakeAO(ImageProcessing* pBaker, const FVECTOR3 &vSun, const LVLH& lvlh, const LPDIRECT3DTEXTURE9 pIrrad);
-	void			LoadMeshFromHandle(MESHHANDLE hMesh, D3DXVECTOR3 *reorig = NULL, float *scale = NULL);
+	void			LoadMeshFromHandle(MESHHANDLE hMesh, FVECTOR3 *reorig = NULL, float *scale = NULL);
 	void			ReLoadMeshFromHandle(MESHHANDLE hMesh);
 	void			ReloadTextures();
 
@@ -289,17 +289,17 @@ public:
 	DWORD			GetMeshGroupMaterialIdx(DWORD grp) const;
 	DWORD			GetMeshGroupTextureIdx(DWORD grp) const;
 	DWORD			GetGroupTransformCount() const;
-	D3DXVECTOR3		GetBoundingSpherePos();
+	FVECTOR3		GetBoundingSpherePos();
 	float			GetBoundingSphereRadius();
 	D9BBox *		GetAABB();
-	D3DXVECTOR3		GetGroupSize(DWORD idx) const;
-	LPD3DXMATRIX	GetTransform() { if (bGlobalTF) return &mTransform; else return NULL; }
+	FVECTOR3		GetGroupSize(DWORD idx) const;
+	LPFMATRIX4	GetTransform() { if (bGlobalTF) return &mTransform; else return NULL; }
 
-	D3DXMATRIX		GetTransform(int grp, bool bCombined);
-	bool			SetTransform(int grp, const LPD3DXMATRIX pMat);
+	FMATRIX4		GetTransform(int grp, bool bCombined);
+	bool			SetTransform(int grp, const LPFMATRIX4 pMat);
 
 	void			SetPosition(VECTOR3 &pos);
-	void			SetRotation(D3DXMATRIX &rot);
+	void			SetRotation(FMATRIX4 &rot);
 
 	/**
 	 * \brief Replace a mesh texture.
@@ -312,34 +312,34 @@ public:
 
 	void			RenderGroup(const GROUPREC *grp);
 	void			RenderGroup(int idx);
-	void			RenderBaseTile(const LPD3DXMATRIX pW);
-	void			RenderBoundingBox(const LPD3DXMATRIX pW);
-	void			Render(const LPD3DXMATRIX pW, const ENVCAMREC* em = NULL, int iTech = RENDER_VESSEL);
-	void			RenderFast(const LPD3DXMATRIX pW, int iTech);
-	void			RenderShadowMap(const LPD3DXMATRIX pW, const LPD3DXMATRIX pVP, int flags, bool bNoCull = false);
-	void			RenderStencilShadows(float alpha, const LPD3DXMATRIX pP, const LPD3DXMATRIX pW, bool bShadowMap = false, const D3DXVECTOR4 *elev = NULL);
-	void			RenderShadowsEx(float alpha, const LPD3DXMATRIX pP, const LPD3DXMATRIX pW, const D3DXVECTOR4 *light, const D3DXVECTOR4 *param);
-	void			RenderRings(const LPD3DXMATRIX pW, LPDIRECT3DTEXTURE9 pTex);
-	void			RenderRings2(const LPD3DXMATRIX pW, LPDIRECT3DTEXTURE9 pTex, float irad, float orad);
-	void			RenderAxisVector(LPD3DXMATRIX pW, const D3DXCOLOR *pColor, float len);
-	void			RenderSimplified(const LPD3DXMATRIX pW, LPDIRECT3DCUBETEXTURE9 *pEnv = NULL, int nEnv = 0, bool bSP = false);
+	void			RenderBaseTile(const LPFMATRIX4 pW);
+	void			RenderBoundingBox(const LPFMATRIX4 pW);
+	void			Render(const LPFMATRIX4 pW, const ENVCAMREC* em = NULL, int iTech = RENDER_VESSEL);
+	void			RenderFast(const LPFMATRIX4 pW, int iTech);
+	void			RenderShadowMap(const LPFMATRIX4 pW, const LPFMATRIX4 pVP, int flags, bool bNoCull = false);
+	void			RenderStencilShadows(float alpha, const LPFMATRIX4 pP, const LPFMATRIX4 pW, bool bShadowMap = false, const FVECTOR4 *elev = NULL);
+	void			RenderShadowsEx(float alpha, const LPFMATRIX4 pP, const LPFMATRIX4 pW, const FVECTOR4 *light, const FVECTOR4 *param);
+	void			RenderRings(const LPFMATRIX4 pW, LPDIRECT3DTEXTURE9 pTex);
+	void			RenderRings2(const LPFMATRIX4 pW, LPDIRECT3DTEXTURE9 pTex, float irad, float orad);
+	void			RenderAxisVector(LPFMATRIX4 pW, const FVECTOR4 *pColor, float len);
+	void			RenderSimplified(const LPFMATRIX4 pW, LPDIRECT3DCUBETEXTURE9 *pEnv = NULL, int nEnv = 0, bool bSP = false);
 	void			CheckMeshStatus();
 	void			ResetTransformations();
-	void			TransformGroup(DWORD n, const D3DXMATRIX *m);
-	void			Transform(const D3DXMATRIX *m);
+	void			TransformGroup(DWORD n, const FMATRIX4 *m);
+	void			Transform(const FMATRIX4 *m);
 	int				GetGroup (DWORD grp, GROUPREQUESTSPEC *grs);
 	int				EditGroup (DWORD grp, GROUPEDITSPEC *ges);
 
 	void			SetSunLight(const D3D9Sun *pLight);
 
-	D3D9Pick		Pick(const LPD3DXMATRIX pW, const LPD3DXMATRIX pT, const D3DXVECTOR3 *vDir, const PickProp* p);
+	D3D9Pick		Pick(const LPFMATRIX4 pW, const LPFMATRIX4 pT, const FVECTOR3 *vDir, const PickProp* p);
 
 	void			UpdateBoundingBox();
 	void			BoundingBox(const NMVERTEX *vtx, DWORD n, D9BBox *box);
 
 	void			SetAmbientColor(const FVECTOR3& c);
 	const FVECTOR3& GetAmbientColor();
-	void			SetupFog(const LPD3DXMATRIX pW);
+	void			SetupFog(const LPFMATRIX4 pW);
 	void			ResetRenderStatus();
 
 	LPDIRECT3DTEXTURE9 GetCombinedMap(int tex_idx = -1);
@@ -363,7 +363,7 @@ private:
 
 	void			UpdateTangentSpace(NMVERTEX *pVrt, WORD *pIdx, DWORD nVtx, DWORD nFace, bool bTextured);
 	void			ProcessInherit();
-	bool			CopyVertices(GROUPREC *grp, const MESHGROUPEX *mg, D3DXVECTOR3 *reorig = NULL, float *scale = NULL);
+	bool			CopyVertices(GROUPREC *grp, const MESHGROUPEX *mg, FVECTOR3 *reorig = NULL, float *scale = NULL);
 	void			SetGroupRec(DWORD i, const MESHGROUPEX *mg);
 	void			Null(const char *meshName = NULL);
 	void			UpdateFlags();
@@ -385,9 +385,9 @@ private:
 	std::map<int, _BakedLights>::const_iterator bli;
 	std::vector<ENVCAMREC*> env_cams;
 
-	D3DXMATRIX mTransform;
-	D3DXMATRIX mTransformInv;
-	D3DXMATRIX *pGrpTF;
+	FMATRIX4 mTransform;
+	FMATRIX4 mTransformInv;
+	FMATRIX4 *pGrpTF;
 	D3D9Sun sunLight;
 	FVECTOR3 cAmbient;
 	LightStruct null_light;

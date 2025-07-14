@@ -16,7 +16,7 @@
 D3D9Client  * D3D9Effect::gc = 0;
 ID3DXEffect * D3D9Effect::FX = 0;
 LPDIRECT3DVERTEXBUFFER9 D3D9Effect::VB = 0;
-D3DXVECTOR4 D3D9Effect::atm_color;			// Earth glow color
+FVECTOR4 D3D9Effect::atm_color;			// Earth glow color
 
 D3D9MatExt D3D9Effect::mfdmat;
 D3D9MatExt D3D9Effect::defmat;
@@ -196,7 +196,7 @@ NTVERTEX exhaust_vtx[8] = {
 
 // TotalWeight = 21.337518, Count = 27, x - balance = -0.145075, y - balance = -0.012734
 /*
-static D3DXVECTOR3 shadow_kernel[27] = {
+static FVECTOR3 shadow_kernel[27] = {
 	{ -0.2607f, -0.9643f, 0.9995f },
 	{ -0.7879f, -0.5824f, 0.9898f },
 	{ -0.3796f, -0.6389f, 0.8620f },
@@ -227,7 +227,7 @@ static D3DXVECTOR3 shadow_kernel[27] = {
 };
 */
 
-static D3DXVECTOR3 shadow_kernel[27] = {
+static FVECTOR3 shadow_kernel[27] = {
 	{ -0.0000f, 0.0000f, 1.0000f },
 	{ 0.1915f, 0.0188f, 1.0000f },
 	{ 0.0558f, -0.2664f, 1.0000f },
@@ -509,9 +509,9 @@ void D3D9Effect::D3D9TechInit(D3D9Client *_gc, LPDIRECT3DDEVICE9 _pDev, const ch
 	//
 	FX->SetInt(eHazeMode, 0);
 	FX->SetBool(eInSpace, false);
-	FX->SetVector(eAttennuate, ptr(D3DXVECTOR4(1,1,1,1))); 
-	FX->SetVector(eInScatter,  ptr(D3DXVECTOR4(0,0,0,0)));
-	FX->SetVector(eColor, ptr(D3DXVECTOR4(0, 0, 0, 0)));
+	FX->SetVector(eAttennuate, _DX(F4_One)); 
+	FX->SetVector(eInScatter, _DX(F4_Zero));
+	FX->SetVector(eColor, _DX(F4_Zero));
 
 	//if (Config->ShadowFilter>=3) FX->SetValue(eKernel, &shadow_kernel2, sizeof(shadow_kernel2));
 	FX->SetValue(eKernel, &shadow_kernel, sizeof(shadow_kernel));
@@ -524,13 +524,13 @@ void D3D9Effect::D3D9TechInit(D3D9Client *_gc, LPDIRECT3DDEVICE9 _pDev, const ch
 	// Create a Circle Mesh --------------------------------------------
 	//
 	if (!VB) {
-		HR(pDev->CreateVertexBuffer(256 * sizeof(D3DXVECTOR3), 0, 0, D3DPOOL_DEFAULT, &VB, NULL));
+		HR(pDev->CreateVertexBuffer(256 * sizeof(FVECTOR3), 0, 0, D3DPOOL_DEFAULT, &VB, NULL));
 
-		D3DXVECTOR3 *pVert;
+		FVECTOR3 *pVert;
 
 		if (VB->Lock(0, 0, (void **)&pVert, 0) == S_OK) {
 			float angle = 0.0f, step = float(PI2) / 255.0f;
-			pVert[0] = D3DXVECTOR3(0, 0, 0);
+			pVert[0] = FVECTOR3(0, 0, 0);
 			for (int i = 1; i < 256; i++) {
 				pVert[i].x = 0;
 				pVert[i].y = cos(angle);
@@ -544,9 +544,9 @@ void D3D9Effect::D3D9TechInit(D3D9Client *_gc, LPDIRECT3DDEVICE9 _pDev, const ch
 }
 
 
-void D3D9Effect::SetViewProjMatrix(LPD3DXMATRIX pVP)
+void D3D9Effect::SetViewProjMatrix(LPFMATRIX4 pVP)
 {
-	FX->SetMatrix(eVP, pVP);
+	FX->SetMatrix(eVP, _DX(pVP));
 }
 
 
@@ -572,7 +572,7 @@ void D3D9Effect::UpdateEffectCamera(OBJHANDLE hPlanet)
 	float radlimit = float(rad) + 1.0f;
 	float rho0 = 1.0f;
 	
-	atm_color = D3DXVECTOR4(0.5f, 0.5f, 0.5f, 1.0f);
+	atm_color = FVECTOR4(0.5f, 0.5f, 0.5f, 1.0f);
 
 	const ATMCONST *atm = oapiGetPlanetAtmConstants(hPlanet); 
 	VESSEL *hVessel = oapiGetFocusInterface();
@@ -593,14 +593,14 @@ void D3D9Effect::UpdateEffectCamera(OBJHANDLE hPlanet)
 
 	if (atm) {
 		radlimit = float(atm->radlimit);
-		atm_color = D3DXVEC4(atm->color0, 1.0f);
+		atm_color = FVECTOR4(FVECTOR3(atm->color0), 1.0f);
 		rho0 = float(atm->rho0);
 	}
 
 	float av = (atm_color.x + atm_color.y + atm_color.z) * 0.3333333f;
 	float fc = 1.5f;
 	float alt = 1.0f - pow(float(hVessel->GetAtmDensity()/rho0), 0.2f);
-	atm_color += D3DXVECTOR4(av,av,av,1.0)*fc;
+	atm_color += FVECTOR4(av,av,av,1.0f)*fc;
 	atm_color *= 1.0f/(fc+1.0f);
 	atm_color *= float(Config->PlanetGlow) * alt;
 	
@@ -609,12 +609,12 @@ void D3D9Effect::UpdateEffectCamera(OBJHANDLE hPlanet)
 	float proxy_size = asin(min(1.0f, rl)) + float(40.0*PI/180.0);
 
 	if (rl>1e-3) atm_color *= pow(rl, 1.5f);
-	else atm_color = D3DXVECTOR4(0,0,0,1);
+	else atm_color = FVECTOR4(0.0f, 0.0f, 0.0f, 1.0f);
 
-	FX->SetValue(eEast, ptr(D3DXVEC(east)), sizeof(D3DXVECTOR3));
-	FX->SetValue(eNorth, ptr(D3DXVEC(north)), sizeof(D3DXVECTOR3));
-	FX->SetValue(eCameraPos, ptr(D3DXVEC(cam)), sizeof(D3DXVECTOR3));
-	FX->SetVector(eRadius, ptr(D3DXVECTOR4((float)rad, radlimit, (float)len, (float)(len-rad))));
+	FX->SetValue(eEast, _DX(FVECTOR3(east)), sizeof(FVECTOR3));
+	FX->SetValue(eNorth, _DX(FVECTOR3(north)), sizeof(FVECTOR3));
+	FX->SetValue(eCameraPos, _DX(FVECTOR3(cam)), sizeof(FVECTOR3));
+	FX->SetVector(eRadius, _DX(FVECTOR4((float)rad, radlimit, (float)len, (float)(len-rad))));
 	FX->SetFloat(ePointScale, 0.5f*float(height)/tan(ap));
 	FX->SetFloat(eProxySize, cos(proxy_size));
 	FX->SetFloat(eInvProxySize, 1.0f/(1.0f-cos(proxy_size)));
@@ -626,8 +626,8 @@ void D3D9Effect::UpdateEffectCamera(OBJHANDLE hPlanet)
 //
 void D3D9Effect::EnablePlanetGlow(bool bEnabled)
 {
-	if (bEnabled) FX->SetVector(eAtmColor, &atm_color);
-	else FX->SetVector(eAtmColor, ptr(D3DXVECTOR4(0,0,0,0)));
+	if (bEnabled) FX->SetVector(eAtmColor, _DX(atm_color));
+	else FX->SetVector(eAtmColor, _DX(F4_Zero));
 }
 
 
@@ -662,7 +662,7 @@ void D3D9Effect::InitLegacyAtmosphere(OBJHANDLE hPlanet, float GlobalAmbient)
 
 // ===========================================================================================
 //
-void D3D9Effect::Render2DPanel(const MESHGROUP *mg, const SURFHANDLE pTex, const LPD3DXMATRIX pW, float alpha, float scale, bool additive)
+void D3D9Effect::Render2DPanel(const MESHGROUP *mg, const SURFHANDLE pTex, const LPFMATRIX4 pW, float alpha, float scale, bool additive)
 {
 	UINT numPasses = 0;
 	if (!pTex || !mg || !pW) return;
@@ -670,7 +670,7 @@ void D3D9Effect::Render2DPanel(const MESHGROUP *mg, const SURFHANDLE pTex, const
 	if (SURFACE(pTex)->IsPowerOfTwo() || (!gc->IsLimited())) FX->SetTechnique(ePanelTech);		// ANISOTROPIC filter 
 	else FX->SetTechnique(ePanelTechB);	// POINT filter (for non-pow2 conditional)
 	
-	HR(FX->SetMatrix(eW, pW));
+	HR(FX->SetMatrix(eW, _DX(pW)));
 
 	if (pTex) FX->SetTexture(eTex0, SURFACE(pTex)->GetTexture());
 	else      FX->SetTexture(eTex0, NULL);
@@ -694,7 +694,7 @@ void D3D9Effect::Render2DPanel(const MESHGROUP *mg, const SURFHANDLE pTex, const
 
 // ===========================================================================================
 //
-void D3D9Effect::RenderReEntry(const SURFHANDLE pTex, const LPD3DXVECTOR3 vPosA, const LPD3DXVECTOR3 vPosB, const LPD3DXVECTOR3 vDir, float alpha_a, float alpha_b, float size)
+void D3D9Effect::RenderReEntry(const SURFHANDLE pTex, const LPFVECTOR3 vPosA, const LPFVECTOR3 vPosB, const LPFVECTOR3 vDir, float alpha_a, float alpha_b, float size)
 {
 	static WORD ReentryIdx[6] = {0,1,2, 3,2,1};
 	
@@ -715,9 +715,8 @@ void D3D9Effect::RenderReEntry(const SURFHANDLE pTex, const LPD3DXVECTOR3 vPosA,
 	};
 	
 	UINT numPasses = 0;
-	D3DXMATRIX WA, WB;
-	D3DXVECTOR3 vCam;
-	D3DXVec3Normalize(&vCam, vPosA);
+	FMATRIX4 WA, WB;
+	FVECTOR3 vCam = unit(*vPosA);
 	D3DMAT_CreateX_Billboard(&vCam, vPosB, size*(0.8f+x*0.02f), &WB);
 	D3DMAT_CreateX_Billboard(&vCam, vPosA, vDir, size, size, &WA);
 
@@ -726,12 +725,12 @@ void D3D9Effect::RenderReEntry(const SURFHANDLE pTex, const LPD3DXVECTOR3 vPosA,
 	FX->SetTechnique(eExhaust);
 	FX->SetTexture(eTex0, SURFACE(pTex)->GetTexture());
 	FX->SetFloat(eMix, alpha_b);
-	FX->SetMatrix(eW, &WB);
+	FX->SetMatrix(eW, _DX(WB));
 	FX->Begin(&numPasses, D3DXFX_DONOTSAVESTATE);
 	FX->BeginPass(0);
 	pDev->DrawIndexedPrimitiveUP(D3DPT_TRIANGLELIST, 0, 4, 2, &ReentryIdx, D3DFMT_INDEX16, &ReentryVtxB, sizeof(NTVERTEX));
 	FX->SetFloat(eMix, alpha_a);
-	FX->SetMatrix(eW, &WA);
+	FX->SetMatrix(eW, _DX(WA));
 	FX->CommitChanges();
 	pDev->DrawIndexedPrimitiveUP(D3DPT_TRIANGLELIST, 0, 4, 2, &ReentryIdx, D3DFMT_INDEX16, &ReentryVtxA, sizeof(NTVERTEX));
 
@@ -743,14 +742,14 @@ void D3D9Effect::RenderReEntry(const SURFHANDLE pTex, const LPD3DXVECTOR3 vPosA,
 // ===========================================================================================
 // This is a special rendering routine used to render beacons
 //
-void D3D9Effect::RenderSpot(float alpha, const LPD3DXCOLOR pColor, const LPD3DXMATRIX pW, SURFHANDLE pTex)
+void D3D9Effect::RenderSpot(float alpha, const LPFVECTOR4 pColor, const LPFMATRIX4 pW, SURFHANDLE pTex)
 {
 	UINT numPasses = 0;
 	HR(pDev->SetVertexDeclaration(pNTVertexDecl));
 	HR(FX->SetTechnique(eSpotTech));
 	HR(FX->SetFloat(eMix, alpha));
-	HR(FX->SetValue(eColor, pColor, sizeof(D3DXCOLOR)));
-	HR(FX->SetMatrix(eW, pW));
+	HR(FX->SetValue(eColor, pColor, sizeof(FVECTOR4)));
+	HR(FX->SetMatrix(eW, _DX(pW)));
 	HR(FX->SetTexture(eTex0, SURFACE(pTex)->GetTexture()));
 	HR(FX->Begin(&numPasses, D3DXFX_DONOTSAVESTATE));
 	HR(FX->BeginPass(0));
@@ -763,13 +762,13 @@ void D3D9Effect::RenderSpot(float alpha, const LPD3DXCOLOR pColor, const LPD3DXM
 // ===========================================================================================
 // Used by Render Star only
 //
-void D3D9Effect::RenderBillboard(const LPD3DXMATRIX pW, LPDIRECT3DTEXTURE9 pTex, float alpha)
+void D3D9Effect::RenderBillboard(const LPFMATRIX4 pW, LPDIRECT3DTEXTURE9 pTex, float alpha)
 {
 	UINT numPasses = 0;
 
 	HR(pDev->SetVertexDeclaration(pNTVertexDecl));
 	HR(FX->SetTechnique(eSimple));
-	HR(FX->SetMatrix(eW, pW));
+	HR(FX->SetMatrix(eW, _DX(pW)));
 	HR(FX->SetFloat(eMix, alpha));
 	HR(FX->SetTexture(eTex0, pTex));
 	HR(FX->Begin(&numPasses, D3DXFX_DONOTSAVESTATE));
@@ -783,7 +782,7 @@ void D3D9Effect::RenderBillboard(const LPD3DXMATRIX pW, LPDIRECT3DTEXTURE9 pTex,
 // ===========================================================================================
 // This is a special rendering routine used to render engine exhaust
 //
-void D3D9Effect::RenderExhaust(const LPD3DXMATRIX pW, VECTOR3 &cdir, EXHAUSTSPEC *es, SURFHANDLE def)
+void D3D9Effect::RenderExhaust(const LPFMATRIX4 pW, VECTOR3 &cdir, EXHAUSTSPEC *es, SURFHANDLE def)
 {
 
 	SURFHANDLE pTex = SURFACE(es->tex);
@@ -832,7 +831,7 @@ void D3D9Effect::RenderExhaust(const LPD3DXMATRIX pW, VECTOR3 &cdir, EXHAUSTSPEC
 	HR(pDev->SetVertexDeclaration(pNTVertexDecl));
 	HR(FX->SetTechnique(eExhaust));
 	HR(FX->SetFloat(eMix, float(alpha)));
-	HR(FX->SetMatrix(eW, pW));
+	HR(FX->SetMatrix(eW, _DX(pW)));
 	HR(FX->SetTexture(eTex0, SURFACE(pTex)->GetTexture()));
 	HR(FX->Begin(&numPasses, D3DXFX_DONOTSAVESTATE));
 	HR(FX->BeginPass(0));
@@ -842,12 +841,12 @@ void D3D9Effect::RenderExhaust(const LPD3DXMATRIX pW, VECTOR3 &cdir, EXHAUSTSPEC
 }
 
 
-void D3D9Effect::RenderBoundingBox(const LPD3DXMATRIX pW, const LPD3DXMATRIX pGT, const D3DXVECTOR4 *bmin, const D3DXVECTOR4 *bmax, const D3DXVECTOR4 *color)
+void D3D9Effect::RenderBoundingBox(const LPFMATRIX4 pW, const LPFMATRIX4 pGT, const FVECTOR4 *bmin, const FVECTOR4 *bmax, const FVECTOR4 *color)
 {
-	D3DXMATRIX ident;
-	D3DXMatrixIdentity(&ident);
+	FMATRIX4 ident;
+	oapiMatrixIdentity(&ident);
 
-	static D3DVECTOR poly[10] = {
+	static FVECTOR3 poly[10] = {
 		{0, 0, 0},
 		{1, 0, 0},
 		{1, 1, 0},
@@ -860,7 +859,7 @@ void D3D9Effect::RenderBoundingBox(const LPD3DXMATRIX pW, const LPD3DXMATRIX pGT
 		{0, 0, 1}
 	};
 
-	static D3DVECTOR list[6] = {
+	static FVECTOR3 list[6] = {
 		{1, 0, 0},
 		{1, 0, 1},
 		{1, 1, 0},
@@ -871,87 +870,83 @@ void D3D9Effect::RenderBoundingBox(const LPD3DXMATRIX pW, const LPD3DXMATRIX pGT
 	
 	pDev->SetVertexDeclaration(pPositionDecl);
 
-	FX->SetMatrix(eW, pW);
-	FX->SetMatrix(eGT, pGT);
-	FX->SetVector(eAttennuate, bmin);
-	FX->SetVector(eInScatter, bmax);	
-	FX->SetVector(eColor, color);	
+	FX->SetMatrix(eW, _DX(pW));
+	FX->SetMatrix(eGT, _DX(pGT));
+	FX->SetVector(eAttennuate, _DX(bmin));
+	FX->SetVector(eInScatter, _DX(bmax));
+	FX->SetVector(eColor, _DX(color));
 	FX->SetTechnique(eBBTech);
 
 	UINT numPasses = 0;
 	FX->Begin(&numPasses, D3DXFX_DONOTSAVESTATE);
 	FX->BeginPass(0);
 	
-	pDev->DrawPrimitiveUP(D3DPT_LINESTRIP, 9, &poly, sizeof(D3DVECTOR));	
-	pDev->DrawPrimitiveUP(D3DPT_LINELIST, 3, &list, sizeof(D3DVECTOR));	
+	pDev->DrawPrimitiveUP(D3DPT_LINESTRIP, 9, &poly, sizeof(FVECTOR3));	
+	pDev->DrawPrimitiveUP(D3DPT_LINELIST, 3, &list, sizeof(FVECTOR3));	
 
 	FX->EndPass();
 	FX->End();	
 }
 
-void D3D9Effect::RenderTileBoundingBox(const LPD3DXMATRIX pW, VECTOR4 *pVtx, const LPD3DXVECTOR4 color)
+void D3D9Effect::RenderTileBoundingBox(const LPFMATRIX4 pW, VECTOR4 *pVtx, const LPFVECTOR4 color)
 {
-	D3DXVECTOR3 poly[8];
+	FVECTOR3 poly[8];
 
-	for (int i=0;i<8;i++) poly[i] = D3DXVEC(pVtx[i]);
+	for (int i=0;i<8;i++) poly[i] = FVECTOR4(pVtx[i]).xyz;
 
 	WORD idc1[10] = { 0, 1, 3, 2, 0, 4, 5, 7, 6, 4 };
 	WORD idc2[6] = { 1, 5, 3, 7, 2, 6};
 
 	pDev->SetVertexDeclaration(pPositionDecl);
 
-	FX->SetMatrix(eW, pW);
-	FX->SetVector(eColor, color);	
+	FX->SetMatrix(eW, _DX(pW));
+	FX->SetVector(eColor, _DX(color));
 	FX->SetTechnique(eTBBTech);
 
 	UINT numPasses = 0;
 	FX->Begin(&numPasses, D3DXFX_DONOTSAVESTATE);
 	FX->BeginPass(0);
-	pDev->DrawIndexedPrimitiveUP(D3DPT_LINESTRIP, 0, 8, 9, &idc1, D3DFMT_INDEX16, &poly, sizeof(D3DXVECTOR3));
-	pDev->DrawIndexedPrimitiveUP(D3DPT_LINELIST, 0, 8, 3, &idc2, D3DFMT_INDEX16, &poly, sizeof(D3DXVECTOR3));	
+	pDev->DrawIndexedPrimitiveUP(D3DPT_LINESTRIP, 0, 8, 9, &idc1, D3DFMT_INDEX16, &poly, sizeof(FVECTOR3));
+	pDev->DrawIndexedPrimitiveUP(D3DPT_LINELIST, 0, 8, 3, &idc2, D3DFMT_INDEX16, &poly, sizeof(FVECTOR3));	
 	FX->EndPass();
 	FX->End();	
 }
 
 
-void D3D9Effect::RenderLines(const D3DXVECTOR3 *pVtx, const WORD *pIdx, int nVtx, int nIdx, const D3DXMATRIX *pW, DWORD color)
+void D3D9Effect::RenderLines(const FVECTOR3 *pVtx, const WORD *pIdx, int nVtx, int nIdx, const FMATRIX4 *pW, DWORD color)
 {
 	UINT numPasses = 0;
 	pDev->SetVertexDeclaration(pPositionDecl);
-	FX->SetMatrix(eW, pW);
-	FX->SetVector(eColor, (const D3DXVECTOR4 *)ptr(D3DXCOLOR(color)));
+	FX->SetMatrix(eW, _DX(pW));
+	FX->SetVector(eColor, _DX(FVECTOR4(color)));
 	FX->SetTechnique(eTBBTech);
 	FX->Begin(&numPasses, D3DXFX_DONOTSAVESTATE);
 	FX->BeginPass(0);
-	pDev->DrawIndexedPrimitiveUP(D3DPT_LINELIST, 0, nVtx, nIdx/2, pIdx, D3DFMT_INDEX16, pVtx, sizeof(D3DXVECTOR3));
+	pDev->DrawIndexedPrimitiveUP(D3DPT_LINELIST, 0, nVtx, nIdx/2, pIdx, D3DFMT_INDEX16, pVtx, sizeof(FVECTOR3));
 	FX->EndPass();
 	FX->End();
 }
 
 
-void D3D9Effect::RenderBoundingSphere(const LPD3DXMATRIX pW, const LPD3DXMATRIX pGT, const D3DXVECTOR4 *bs, const D3DXVECTOR4 *color)
+void D3D9Effect::RenderBoundingSphere(const LPFMATRIX4 pW, const LPFMATRIX4 pGT, const FVECTOR4 *bs, const FVECTOR4 *color)
 {
-	D3DXMATRIX mW;
-	
-	D3DXVECTOR3 vCam;
-	D3DXVECTOR3 vPos;
-	
-	D3DXVec3TransformCoord(&vPos, ptr(D3DXVECTOR3(bs->x, bs->y, bs->z)), pW);
+	FMATRIX4 mW;
+	FVECTOR3 vPos = oapiTransformCoord(&(FVECTOR3(bs->x, bs->y, bs->z)), pW);
+	FVECTOR3 vCam = unit(vPos);
 
-	D3DXVec3Normalize(&vCam, &vPos);
 	D3DMAT_CreateX_Billboard(&vCam, &vPos, bs->w, &mW);
 
 	pDev->SetVertexDeclaration(pPositionDecl);
 
-	FX->SetMatrix(eW, &mW);
-	FX->SetVector(eColor, color);	
+	FX->SetMatrix(eW, _DX(mW));
+	FX->SetVector(eColor, _DX(color));
 	FX->SetTechnique(eBSTech);
 
 	UINT numPasses = 0;
 	FX->Begin(&numPasses, D3DXFX_DONOTSAVESTATE);
 	FX->BeginPass(0);
 	
-	pDev->SetStreamSource(0, VB, 0, sizeof(D3DXVECTOR3));
+	pDev->SetStreamSource(0, VB, 0, sizeof(FVECTOR3));
 	pDev->DrawPrimitive(D3DPT_LINESTRIP, 0, 255);	
 	
 	FX->EndPass();
@@ -961,9 +956,9 @@ void D3D9Effect::RenderBoundingSphere(const LPD3DXMATRIX pW, const LPD3DXMATRIX 
 // ===========================================================================================
 // This is a special rendering routine used to render (grapple point) arrows
 //
-void D3D9Effect::RenderArrow(OBJHANDLE hObj, const VECTOR3 *ofs, const VECTOR3 *dir, const VECTOR3 *rot, float size, const D3DXCOLOR *pColor)
+void D3D9Effect::RenderArrow(OBJHANDLE hObj, const VECTOR3 *ofs, const VECTOR3 *dir, const VECTOR3 *rot, float size, const FVECTOR4 *pColor)
 {
-    static D3DVECTOR arrow[18] = {
+    static FVECTOR3 arrow[18] = {
         // Head (front- & back-face)
         {0.0, 0.0, 0.0},
         {0.0,-1.0, 1.0},
@@ -988,7 +983,7 @@ void D3D9Effect::RenderArrow(OBJHANDLE hObj, const VECTOR3 *ofs, const VECTOR3 *
     };
 
     MATRIX3 grot;
-    D3DXMATRIX W;
+    FMATRIX4 W;
     VECTOR3 camp, gpos;
 
     oapiGetRotationMatrix(hObj, &grot);
@@ -1002,32 +997,32 @@ void D3D9Effect::RenderArrow(OBJHANDLE hObj, const VECTOR3 *ofs, const VECTOR3 *
     VECTOR3 y = mul (grot, unit(*rot)) * size;
     VECTOR3 x = mul (grot, unit(crossp(*dir, *rot))) * size;
 
-    D3DXMatrixIdentity(&W);
+    oapiMatrixIdentity(&W);
 
-    W._11 = float(x.x);
-    W._12 = float(x.y);
-    W._13 = float(x.z);
+    W.m11 = float(x.x);
+    W.m12 = float(x.y);
+    W.m13 = float(x.z);
 
-    W._21 = float(y.x);
-    W._22 = float(y.y);
-    W._23 = float(y.z);
+    W.m21 = float(y.x);
+    W.m22 = float(y.y);
+    W.m23 = float(y.z);
 
-    W._31 = float(z.x);
-    W._32 = float(z.y);
-    W._33 = float(z.z);
+    W.m31 = float(z.x);
+    W.m32 = float(z.y);
+    W.m33 = float(z.z);
 
-    W._41 = float(pos.x);
-    W._42 = float(pos.y);
-    W._43 = float(pos.z);
+    W.m41 = float(pos.x);
+    W.m42 = float(pos.y);
+    W.m43 = float(pos.z);
 
     UINT numPasses = 0;
     HR(pDev->SetVertexDeclaration(pPositionDecl)); // Position only vertex decleration
     HR(FX->SetTechnique(eArrowTech)); // Use arrow shader
-    HR(FX->SetValue(eColor, pColor, sizeof(D3DXCOLOR))); // Setup arrow color
-    HR(FX->SetMatrix(eW, &W));
+    HR(FX->SetValue(eColor, pColor, sizeof(FVECTOR4))); // Setup arrow color
+    HR(FX->SetMatrix(eW, _DX(W)));
     HR(FX->Begin(&numPasses, D3DXFX_DONOTSAVESTATE));
     HR(FX->BeginPass(0));
-    HR(pDev->DrawPrimitiveUP(D3DPT_TRIANGLELIST, 6, &arrow, sizeof(D3DVECTOR))); // Draw 6 triangles un-indexed
+    HR(pDev->DrawPrimitiveUP(D3DPT_TRIANGLELIST, 6, &arrow, sizeof(FVECTOR3))); // Draw 6 triangles un-indexed
     HR(FX->EndPass());
     HR(FX->End()); 
 }

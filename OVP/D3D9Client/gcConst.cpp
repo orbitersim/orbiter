@@ -18,7 +18,7 @@
 
 
 #include <d3d9.h>
-#include <d3dx9.h>
+#include "MathAPI.h"
 #include <set>
 #include "gcConst.h"
 #include "D3D9Surface.h"
@@ -357,5 +357,5 @@ DWORD gcConst::Color(const oapi::FVECTOR4* c)
 //
 COLOUR4	gcConst::Colour4(DWORD dwABGR)
 {
-	return FVECTOR4(dwABGR).Colour4();
+	return FVECTOR4(dwABGR);
 }

@@ -687,9 +687,8 @@ bool vPlanet::GetMinMaxDistance(float *zmin, float *zmax, float *dmin)
 	if (mesh==NULL) return false;
 	if (bBSRecompute) UpdateBoundingBox();
 
-	D3DXVECTOR3 pos = D3DXVECTOR3(mWorld._41, mWorld._42, mWorld._43);
-
-	float dst = D3DXVec3Length(&pos);
+	FVECTOR3 pos = FVECTOR3(mWorld.m41, mWorld.m42, mWorld.m43);
+	float dst = length(pos);
 
 	*dmin = dst - float(size);
 	*zmin = *dmin;
@@ -718,7 +717,7 @@ SurfTile * vPlanet::FindTile(double lng, double lat, int maxlvl)
 
 // ==============================================================
 
-void vPlanet::PickSurface(D3DXVECTOR3 &vRay, TILEPICK *result)
+void vPlanet::PickSurface(FVECTOR3 &vRay, TILEPICK *result)
 {
 	if (surfmgr2) {
 		surfmgr2->Pick(vRay, result);
@@ -772,15 +771,15 @@ bool vPlanet::Update (bool bMainScene)
 	}
 	if (rescale) {
 		rad_scale *= dist_scale;
-		mWorld._41 *= dist_scale;
-		mWorld._42 *= dist_scale;
-		mWorld._43 *= dist_scale;
+		mWorld.m41 *= dist_scale;
+		mWorld.m42 *= dist_scale;
+		mWorld.m43 *= dist_scale;
 	}
 
 	// scale up from template sphere radius 1
-	mWorld._11 *= rad_scale; mWorld._12 *= rad_scale; mWorld._13 *= rad_scale;
-	mWorld._21 *= rad_scale; mWorld._22 *= rad_scale; mWorld._23 *= rad_scale;
-	mWorld._31 *= rad_scale; mWorld._32 *= rad_scale; mWorld._33 *= rad_scale;
+	mWorld.m11 *= rad_scale; mWorld.m12 *= rad_scale; mWorld.m13 *= rad_scale;
+	mWorld.m21 *= rad_scale; mWorld.m22 *= rad_scale; mWorld.m23 *= rad_scale;
+	mWorld.m31 *= rad_scale; mWorld.m32 *= rad_scale; mWorld.m33 *= rad_scale;
 
 	// cloud layer world matrix
 	if (prm.bCloud) {
@@ -803,17 +802,17 @@ bool vPlanet::Update (bool bMainScene)
 			// world matrix for cloud shadows on the surface
 			memcpy (&clouddata->mWorldC0, &mWorld, sizeof (D3DMATRIX));
 			if (prm.cloudrot) {
-				static D3DXMATRIX crot (1,0,0,0, 0,1,0,0, 0,0,1,0, 0,0,0,1);
-				crot._11 =   crot._33 = (float)cos(prm.cloudrot);
-				crot._13 = -(crot._31 = (float)sin(prm.cloudrot));
-				D3DXMatrixMultiply (&clouddata->mWorldC0, &crot, &clouddata->mWorldC0);
+				static FMATRIX4 crot (1,0,0,0, 0,1,0,0, 0,0,1,0, 0,0,0,1);
+				crot.m11 =   crot.m33 = (float)cos(prm.cloudrot);
+				crot.m13 = -(crot.m31 = (float)sin(prm.cloudrot));
+				oapiMatrixMultiply (&clouddata->mWorldC0, &crot, &clouddata->mWorldC0);
 			}
 
 			// world matrix for cloud layer
 			memcpy (&clouddata->mWorldC, &clouddata->mWorldC0, sizeof (D3DMATRIX));
 			for (i = 0; i < 3; i++)
 				for (j = 0; j < 3; j++) {
-					clouddata->mWorldC.m[i][j] *= cloudscale;
+					clouddata->mWorldC.data[i + j<<2] *= cloudscale;
 				}
 
 			// set microtexture intensity
@@ -966,8 +965,8 @@ bool vPlanet::Render(LPDIRECT3DDEVICE9 dev)
 				float s = float(shd->size);
 				float is = 1.0f / s;
 				float qw = 1.0f / float(Config->ShadowMapSize);
-				HR(D3D9Effect::FX->SetMatrix(D3D9Effect::eLVP, shd->mLVP.toCDX()));
-				HR(D3D9Effect::FX->SetVector(D3D9Effect::eSHD, ptr(D3DXVECTOR4(s, is, qw, 0))));
+				HR(D3D9Effect::FX->SetMatrix(D3D9Effect::eLVP, _DX(shd->mLVP)));
+				HR(D3D9Effect::FX->SetVector(D3D9Effect::eSHD, _DX(FVECTOR4(s, is, qw, 0))));
 				HR(D3D9Effect::FX->SetBool(D3D9Effect::eShadowToggle, true));
 
 				D3D9Mesh::SetShadows(shd);
@@ -977,16 +976,16 @@ bool vPlanet::Render(LPDIRECT3DDEVICE9 dev)
 		DWORD amb = prm.amb0col;
 		float fogfactor;
 
-		D3DCOLOR bg		= scn->GetBgColour();
+		DWORD bg		= scn->GetBgColour();
 		prm.bFog		= prm.bFogEnabled;
 		prm.bTint		= prm.bFogEnabled;
 		prm.bAddBkg		= ((bg & 0xFFFFFF) && (hObj != scn->GetCameraProxyBody()));
 		prm.FogDensity	= 0.0f;
-		prm.SkyColor	= D3DXCOLOR(bg);
-		prm.AmbColor	= D3DXCOLOR(0,0,0,0);
-		prm.FogColor	= D3DXCOLOR(0,0,0,0);
-		prm.TintColor	= D3DXCOLOR(0,0,0,0);
-		prm.SunDir		= _D3DXVECTOR3(SunDirection());
+		prm.SkyColor	= FVECTOR4(bg);
+		prm.AmbColor	= _F4(0,0,0,0);
+		prm.FogColor	= _F4(0,0,0,0);
+		prm.TintColor	= _F4(0,0,0,0);
+		prm.SunDir		= _FVECTOR3(SunDirection());
 
 		SetupEclipse();
 
@@ -1010,7 +1009,7 @@ bool vPlanet::Render(LPDIRECT3DDEVICE9 dev)
 
 		if (prm.bAtm) {
 			if (ModLighting (amb))
-				prm.AmbColor = D3DXCOLOR(amb);
+				prm.AmbColor = FVECTOR4(amb);
 		}
 
 		if (prm.bFog) { // set up distance fog
@@ -1048,7 +1047,7 @@ bool vPlanet::Render(LPDIRECT3DDEVICE9 dev)
 				float gfog = (float)(bright*(min(1.0,fogcol.y)+0.0));
 				float bfog = (float)(bright*(min(1.0,fogcol.z)+0.0));
 				prm.FogDensity = fogfactor;
-				prm.FogColor = D3DXCOLOR(rfog, gfog, bfog, 1.0f);
+				prm.FogColor = FVECTOR4(rfog, gfog, bfog, 1.0f);
 			}
 		}
 
@@ -1177,7 +1176,7 @@ void vPlanet::RenderSphere (LPDIRECT3DDEVICE9 dev)
 		D3D9Effect::FX->GetFloat(D3D9Effect::eFogDensity, &fogfactor);
 		dev->SetRenderState(D3DRS_CULLMODE, D3DCULL_CCW);
 		if (prm.bFog) D3D9Effect::FX->SetFloat(D3D9Effect::eFogDensity, fogfactor/dist_scale);
-		surfmgr->SetAmbientColor(prm.AmbColor);
+		surfmgr->SetAmbientColor(prm.AmbColor.dword_abgr());
 		surfmgr->Render (dev, mWorld, dist_scale, patchres, 0.0, prm.bFog); // surface
 		if (prm.bFog) D3D9Effect::FX->SetFloat(D3D9Effect::eFogDensity, fogfactor);
 	}
@@ -1521,8 +1520,8 @@ vPlanet::sOverlay * vPlanet::AddOverlaySurface(VECTOR4 lnglat, gcCore::OlayType 
 	if (pOld) {
 		pOld->pSurf[int(type)] = pSrf;
 		pOld->lnglat = lnglat;
-		if (pB) pOld->Blend[int(type)] = D3DXVECTOR4(pB->r, pB->g, pB->b, pB->a);
-		else pOld->Blend[int(type)] = D3DXVECTOR4(1, 1, 1, 1);
+		if (pB) pOld->Blend[int(type)] = FVECTOR4(pB->r, pB->g, pB->b, pB->a);
+		else pOld->Blend[int(type)] = FVECTOR4(1.0f, 1.0f, 1.0f, 1.0f);
 		return pOld;
 	}
 
@@ -1530,8 +1529,8 @@ vPlanet::sOverlay * vPlanet::AddOverlaySurface(VECTOR4 lnglat, gcCore::OlayType 
 	memset(&oLay->pSurf, 0, sizeof(oLay->pSurf));
 	oLay->pSurf[int(type)] = pSrf;
 	oLay->lnglat = lnglat;
-	if (pB) oLay->Blend[int(type)] = D3DXVECTOR4(pB->r, pB->g, pB->b, pB->a);
-	else oLay->Blend[int(type)] = D3DXVECTOR4(1, 1, 1, 1);
+	if (pB) oLay->Blend[int(type)] = FVECTOR4(pB->r, pB->g, pB->b, pB->a);
+	else oLay->Blend[int(type)] = FVECTOR4(1.0f, 1.0f, 1.0f, 1.0f);
 	overlays.push_back(oLay);
 	return oLay;
 }

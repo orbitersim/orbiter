@@ -14,7 +14,7 @@
 #include "Scene.h"
 #include "AABBUtil.h"
 #include <d3d9.h>
-#include <d3dx9.h>
+#include "MathAPI.h"
 #include <vector>
 
 extern class D3D9Config *Config;
@@ -101,7 +101,7 @@ public:
 	 */
 	inline bool IsActive () const { return active; }
 
-	inline const D3DXMATRIX * MWorld() const { return &mWorld; }
+	inline const FMATRIX4 * MWorld() const { return &mWorld; }
 
 	inline Scene * GetScene() const { return scn; }
 	inline oapi::D3D9Client * GetClient() const { return gc; }
@@ -131,7 +131,7 @@ public:
 	virtual bool IsVisible();
 	virtual DWORD GetMeshCount();
 
-	D3DXVECTOR3 GetBoundingSpherePosDX();
+	FVECTOR3 GetBoundingSpherePosDX();
 	VECTOR3 GetBoundingSpherePos();
 	float GetBoundingSphereRadius();
 	const char *GetName() const;
@@ -242,8 +242,8 @@ public:
 protected:
 
 	void RenderSpot(LPDIRECT3DDEVICE9 dev, const VECTOR3 *ofs, float size, const VECTOR3 &col, bool lighting, int shape);
-	void RenderAxisVector(D3D9Pad *pSkp, const D3DXCOLOR *pColor, VECTOR3 vector, float lscale, float size, bool bLog=false);
-	void RenderAxisLabel(D3D9Pad *pSkp, const D3DXCOLOR *clr, VECTOR3 vector, float lscale, float size, const char *label, bool bLog=false);
+	void RenderAxisVector(D3D9Pad *pSkp, const FVECTOR4 *pColor, VECTOR3 vector, float lscale, float size, bool bLog=false);
+	void RenderAxisLabel(D3D9Pad *pSkp, const FVECTOR4 *clr, VECTOR3 vector, float lscale, float size, const char *label, bool bLog=false);
 
 
 	static oapi::D3D9Client *gc;			// graphics client instance pointer
@@ -263,7 +263,7 @@ protected:
 	VECTOR3 gpos;		// Global position
 	MATRIX3 grot;		// Global rotation
 	MATRIX4 dmWorld;    // world matrix in double precision
-	D3DXMATRIX mWorld;	// world matrix in single precision
+	FMATRIX4 mWorld;	// world matrix in single precision
 	double size;        // object radius [m]
 	double cdist;		// current camera distance
 	double sunapprad;	// Apparent size of the sun

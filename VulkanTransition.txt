@@ -1,0 +1,4 @@
+Vulkan transition and API cleanup notes:
+
+- Parameter order of "FVECTOR4 mul(FMATRIX4, FVECTOR4), mul(FVECTOR4, FMATRIX4)" may have changed.
+ 

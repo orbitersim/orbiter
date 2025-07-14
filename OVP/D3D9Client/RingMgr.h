@@ -46,7 +46,7 @@ public:
 	inline double InnerRad() const { return irad; }
 	inline double OuterRad() const { return orad; }
 
-	bool Render (LPDIRECT3DDEVICE9 dev, D3DXMATRIX &mWorld, bool zenable);
+	bool Render (LPDIRECT3DDEVICE9 dev, FMATRIX4 &mWorld, bool zenable);
 
 protected:
 	D3D9Mesh *CreateRing (double irad, double orad, int nsect);

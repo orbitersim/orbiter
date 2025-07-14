@@ -53,7 +53,7 @@ vObject *vObj = NULL;
 D3D9Mesh* hSelMesh = NULL;
 std::string buffer("");
 std::string buffer2("");
-D3DXVECTOR3 PickLocation;
+FVECTOR3 PickLocation;
 
 std::map<int, const LightEmitter*> Emitters;
 
@@ -356,7 +356,7 @@ void Create()
 	camMode = 0;
 	dspMode = 0;
 	SelColor = 0;
-	PickLocation = D3DXVECTOR3(0,0,0);
+	PickLocation = FVECTOR3(0,0,0);
 
 	cpr = cpg = cpb = cpa = 0.0f;
 
@@ -1394,7 +1394,7 @@ DWORD GetSelectedMesh()
 	return sMesh;
 }
 
-void SetPickPos(D3DXVECTOR3 pos)
+void SetPickPos(FVECTOR3 pos)
 {
 	PickLocation = pos;
 }
@@ -1687,7 +1687,7 @@ struct PCParam {
 
 // =============================================================================================
 //
-D3DXCOLOR ProcessColor(D3DXVECTOR4 C, PCParam *prm, int x, int y)
+FVECTOR4 ProcessColor(FVECTOR4 C, PCParam *prm, int x, int y)
 {
 	float fMip = float(prm->Mip);
 	float a = prm->a;
@@ -1695,28 +1695,28 @@ D3DXCOLOR ProcessColor(D3DXVECTOR4 C, PCParam *prm, int x, int y)
 	float c = prm->c;
 
 	// Swap color channels
-	C = D3DXVECTOR4(C.z, C.y, C.z, C.x);
+	C = FVECTOR4(C.z, C.y, C.z, C.x);
 	
 	if (c>0.001) {
-		D3DXVECTOR4 rnd((float)oapiRand(),(float)oapiRand(), (float)oapiRand(), (float)oapiRand());
+		FVECTOR4 rnd((float)oapiRand(),(float)oapiRand(), (float)oapiRand(), (float)oapiRand());
 		C += (rnd*2.0f-1.0f) * (c/(2.0f+fMip));
 	}
 	
 	// Reduce contrast
 	if (prm->Func & 0x2) {
 
-		if (prm->Mip==0) return D3DXCOLOR(C.x, C.y, C.z, C.w);		// Do nothing for the main level
+		if (prm->Mip==0) return FVECTOR4(C.x, C.y, C.z, C.w);		// Do nothing for the main level
 
 		C = C*2.0f - 1.0f;			// Expand to [-1, 1]
 		C *= pow(a, -abs(C)*fMip);
 
 		float k = b * fMip;
 
-		C = D3DXVECTOR4(reduce(C.x, k), reduce(C.y, k), reduce(C.z, k), reduce(C.w, k));
+		C = FVECTOR4(reduce(C.x, k), reduce(C.y, k), reduce(C.z, k), reduce(C.w, k));
 		C = C*0.5f + 0.5f;			// Back to [0, 1]
 	}
 
-	return D3DXCOLOR(C.x, C.y, C.z, C.w);
+	return FVECTOR4(C.x, C.y, C.z, C.w);
 }
 
 // =============================================================================================
@@ -1770,7 +1770,7 @@ bool Execute(HWND hWnd, LPOPENFILENAME pOF)
 			//
 			for (DWORD n=0;n<mips;n++) {
 
-				D3DXCOLOR seam;
+				FVECTOR4 seam;
 
 				DWORD w = info.Width>>n;
 				DWORD h = info.Height>>n;
@@ -1789,33 +1789,33 @@ bool Execute(HWND hWnd, LPOPENFILENAME pOF)
 				for (DWORD y=0;y<h;y++) {
 					for (DWORD x=0;x<w;x++) {
 
-						D3DXCOLOR c(pIn[x + y*w]);
+						FVECTOR4 c(pIn[x + y*w]);
 						DWORD r = w-1;
 						DWORD b = h-1;
 						
 						if (Func&0x4) {
 							seam = c;
-							if (x==0) seam = D3DXCOLOR(pIn[r + y*w]);
-							if (x==r) seam = D3DXCOLOR(pIn[0 + y*w]);
-							if (y==0) seam = D3DXCOLOR(pIn[x + b*w]);
-							if (y==b) seam = D3DXCOLOR(pIn[x + 0*w]);
+							if (x==0) seam = FVECTOR4(pIn[r + y*w]);
+							if (x==r) seam = FVECTOR4(pIn[0 + y*w]);
+							if (y==0) seam = FVECTOR4(pIn[x + b*w]);
+							if (y==b) seam = FVECTOR4(pIn[x + 0*w]);
 							c = (c*2.0f + seam) * 0.33333f;
 						}
 
-						pOut[x + y*w] = ProcessColor(D3DXVECTOR4(c.r, c.g, c.b, c.a), &prm, x, y);
+						pOut[x + y*w] = ProcessColor(FVECTOR4(c.r, c.g, c.b, c.a), &prm, x, y).dword_abgr();
 					}
 				}
 
 				// Balance fine correction
 				if (Func&0x1) {
-					D3DXCOLOR c = D3DXCOLOR(0,0,0,0);
+					FVECTOR4 c = _F4(0,0,0,0);
 					DWORD s = w*h;
-					for (DWORD x=0;x<s;x++) c += D3DXCOLOR(pOut[x]);
+					for (DWORD x=0;x<s;x++) c += FVECTOR4(pOut[x]);
 					c *= 1.0f/float(w*h);
-					c -= D3DXCOLOR(0.5f, 0.5f, 0.5f, 0.5f);
+					c -= FVECTOR4(0.5f, 0.5f, 0.5f, 0.5f);
 					for (DWORD x=0;x<s;x++) {
-						D3DXCOLOR q = D3DXCOLOR(pOut[x]);
-						pOut[x] = D3DXCOLOR(q.r-c.r, q.g, q.b-c.b, q.a);
+						FVECTOR4 q = FVECTOR4(pOut[x]);
+						pOut[x] = FVECTOR4(q.r-c.r, q.g, q.b-c.b, q.a).dword_abgr();
 					}
 				}
 

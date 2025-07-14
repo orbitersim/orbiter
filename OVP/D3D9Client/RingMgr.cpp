@@ -88,12 +88,12 @@ DWORD RingManager::LoadTextures ()
 	return LoadPlanetTextures(fname, tex, 0, MAXRINGRES);
 }
 
-bool RingManager::Render(LPDIRECT3DDEVICE9 dev, D3DXMATRIX &mWorld, bool front)
+bool RingManager::Render(LPDIRECT3DDEVICE9 dev, FMATRIX4 &mWorld, bool front)
 {
 	MATRIX3 grot;
-	static D3DXMATRIX imat;
-	D3DXVECTOR3 q(mWorld._11, mWorld._21, mWorld._31);
-	float scale = D3DXVec3Length(&q);
+	static FMATRIX4 imat;
+	FVECTOR3 q(mWorld.m11, mWorld.m21, mWorld.m31);
+	float scale = oapi::length(q);
 	
 	oapiGetRotationMatrix(vp->Object(), &grot);
 	
@@ -108,11 +108,11 @@ bool RingManager::Render(LPDIRECT3DDEVICE9 dev, D3DXMATRIX &mWorld, bool front)
 		zaxis = -zaxis;
 	}
 
-	D3DXVECTOR3 x(float(xaxis.x), float(xaxis.y), float(xaxis.z)); 
-	D3DXVECTOR3 y(float(yaxis.x), float(yaxis.y), float(yaxis.z)); 
-	D3DXVECTOR3 z(float(zaxis.x), float(zaxis.y), float(zaxis.z)); 
+	FVECTOR3 x(float(xaxis.x), float(xaxis.y), float(xaxis.z)); 
+	FVECTOR3 y(float(yaxis.x), float(yaxis.y), float(yaxis.z)); 
+	FVECTOR3 z(float(zaxis.x), float(zaxis.y), float(zaxis.z)); 
 
-	D3DXMATRIX World = mWorld;
+	FMATRIX4 World = mWorld;
 
 	x*=scale; y*=scale;	z*=scale;
 

@@ -176,7 +176,7 @@ bool ImageProcessing::SetupViewPort()
 
 	// Setup view-projection matrix and viewport
 	//
-	D3DXMatrixOrthoOffCenterLH(&mVP, 0.0f, (float)desc.Width, (float)desc.Height, 0.0f, 0.0f, 1.0f);
+	D3DMAT_OrthoOffCenterLH(&mVP, 0.0f, (float)desc.Width, (float)desc.Height, 0.0f, 0.0f, 1.0f);
 
 	iVP.X = 0;
 	iVP.Y = 0;
@@ -186,9 +186,9 @@ bool ImageProcessing::SetupViewPort()
 	iVP.MaxZ = 1.0f;
 
 	HR(pDevice->SetViewport(&iVP));
-	HR(pVSConst->SetMatrix(pDevice, hVP, &mVP));
-	HR(pVSConst->SetVector(pDevice, hSiz, ptr(D3DXVECTOR4(float(desc.Width), float(desc.Height), 1.0f/float(desc.Width), 1.0f/float(desc.Height)))));
-	HR(pVSConst->SetVector(pDevice, hPos, &vTemplate));
+	HR(pVSConst->SetMatrix(pDevice, hVP, _DX(mVP)));
+	HR(pVSConst->SetVector(pDevice, hSiz, _DX(FVECTOR4(float(desc.Width), float(desc.Height), 1.0f/float(desc.Width), 1.0f/float(desc.Height)))));
+	HR(pVSConst->SetVector(pDevice, hPos, _DX(vTemplate)));
 	return true;
 }
 
@@ -197,7 +197,7 @@ bool ImageProcessing::SetupViewPort()
 //
 void ImageProcessing::SetTemplate(float w, float h, float x, float y)
 {
-	vTemplate = D3DXVECTOR4(w, h, x, y);
+	vTemplate = FVECTOR4(w, h, x, y);
 }
 
 

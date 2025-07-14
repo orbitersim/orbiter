@@ -63,7 +63,7 @@ int MeshManager::StoreMesh(MESHHANDLE hMesh, const char *name)
 	DWORD count = mlist[nmlist-1].mesh->GetGroupCount();
 
 	for (DWORD i=0;i<count;i++) {
-		D3DXVECTOR3 s = mlist[nmlist-1].mesh->GetGroupSize(i);
+		FVECTOR3 s = mlist[nmlist-1].mesh->GetGroupSize(i);
 		if (fabs(s.x)>lim || fabs(s.y)>lim || fabs(s.z)>lim) return i;
 	}
 

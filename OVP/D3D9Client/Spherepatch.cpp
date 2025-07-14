@@ -12,6 +12,7 @@
 #include "Spherepatch.h"
 #include "AABBUtil.h"
 #include "TileMgr2.h"
+#include "DirectXCollision.h"
 
 static float TEX2_MULTIPLIER = 4.0f; // microtexture multiplier
 
@@ -56,13 +57,6 @@ VBMESH::~VBMESH ()
 	nf_cur = 0;
 }
 
-void VBMESH::ComputeSphere()
-{
-	bsCnt = D3DXVECTOR3(float(Box[0].x + Box[7].x), float(Box[0].y + Box[7].y), float(Box[0].z + Box[7].z)) * 0.5f;
-	bsRad = D3DXVec3Length(ptr(D3DXVECTOR3(float(Box[0].x - Box[7].x), float(Box[0].y - Box[7].y), float(Box[0].z - Box[7].z)) * 0.5f));
-}
-
-
 void VBMESH::MapVertices(LPDIRECT3DDEVICE9 pDev, DWORD MemFlag)
 {
 	if (nv!=nv_cur && vtx) {
@@ -78,7 +72,11 @@ void VBMESH::MapVertices(LPDIRECT3DDEVICE9 pDev, DWORD MemFlag)
 
 	if (vtx) {
 
-		HR(D3DXComputeBoundingSphere((const D3DXVECTOR3 *)&vtx->x, nv, sizeof(VERTEX_2TEX), &bsCnt, &bsRad));
+		DirectX::BoundingSphere spr;
+		DirectX::BoundingSphere::CreateFromPoints(spr, nv, (const XMFLOAT3*)&vtx->x, sizeof(VERTEX_2TEX));
+		
+		bsCnt = _F(spr.Center);
+		bsRad = spr.Radius;
 
 		if (pVB) {
 			if (HROK(pVB->Lock(0, 0, (LPVOID*)&pVBuffer, D3DLOCK_DISCARD))) {
@@ -144,7 +142,7 @@ void CreateSphere (LPDIRECT3DDEVICE9 pDev, VBMESH &mesh, DWORD nrings, bool hemi
             FLOAT fDAngX0 = x*fDAng - (FLOAT)PI;  // subtract Pi to wrap at +-180°
 			if (hemisphere && which_half) fDAngX0 += (FLOAT)PI;
 
-			D3DVECTOR v = {r0*(FLOAT)cos(fDAngX0), y0, r0*(FLOAT)sin(fDAngX0)};
+			FVECTOR3 v = {r0*(FLOAT)cos(fDAngX0), y0, r0*(FLOAT)sin(fDAngX0)};
 			FLOAT tu = a*(FLOAT)x + du;
 			//FLOAT tu = x/(FLOAT)x1;
 
@@ -166,7 +164,7 @@ void CreateSphere (LPDIRECT3DDEVICE9 pDev, VBMESH &mesh, DWORD nrings, bool hemi
         }
     }
     // Make top and bottom
-	D3DVECTOR pvy = {0, 1, 0}, nvy = {0,-1,0};
+	FVECTOR3 pvy = {0, 1, 0}, nvy = {0,-1,0};
 	WORD wNorthVtx = nvtx;
     *vtx++ = VERTEX_2TEX (pvy, pvy, 0.5f, 0.0f, 0.5f, 0.0f);
     nvtx++;
@@ -278,14 +276,14 @@ void CreateSpherePatch (LPDIRECT3DDEVICE9 pDev, VBMESH &mesh, int nlng, int nlat
 				else if (tpos.z > tpmax.z) tpmax.z = tpos.z;
 			}
 
-			Vtx[n].x = Vtx[n].nx = D3DVAL(pos.x);
-			Vtx[n].y = Vtx[n].ny = D3DVAL(pos.y);
-			Vtx[n].z = Vtx[n].nz = D3DVAL(pos.z);
+			Vtx[n].x = Vtx[n].nx = float(pos.x);
+			Vtx[n].y = Vtx[n].ny = float(pos.y);
+			Vtx[n].z = Vtx[n].nz = float(pos.z);
 			if (shift_origin)
 				Vtx[n].x -= dx, Vtx[n].y -= dy;
 
-			Vtx[n].tu0 = D3DVAL(nseg ? (c1*j)/nseg+c2 : 0.5f); // overlap to avoid seams
-			Vtx[n].tv0 = D3DVAL((c1*(res-i))/res+c2);
+			Vtx[n].tu0 = float(nseg ? (c1*j)/nseg+c2 : 0.5f); // overlap to avoid seams
+			Vtx[n].tv0 = float((c1*(res-i))/res+c2);
 			//Vtx[n].tu1 = (nseg ? Vtx[n].tu0 * TEX2_MULTIPLIER : 0.5f);
 			//Vtx[n].tv1 = Vtx[n].tv0 * TEX2_MULTIPLIER;
 			if (!outside) {

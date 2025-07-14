@@ -57,7 +57,7 @@ void CloudManager::LoadData()
 
 // =======================================================================
 
-void CloudManager::Render(LPDIRECT3DDEVICE9 dev, D3DXMATRIX &wmat, double scale, int level, double viewap)
+void CloudManager::Render(LPDIRECT3DDEVICE9 dev, FMATRIX4 &wmat, double scale, int level, double viewap)
 {
 	LoadData();
 	if (bNoTextures) return;
@@ -86,7 +86,7 @@ void CloudManager::Render(LPDIRECT3DDEVICE9 dev, D3DXMATRIX &wmat, double scale,
 }
 
 
-void CloudManager::RenderShadow(LPDIRECT3DDEVICE9 dev, D3DXMATRIX &wmat, double scale, int level, double viewap, float shadowalpha)
+void CloudManager::RenderShadow(LPDIRECT3DDEVICE9 dev, FMATRIX4 &wmat, double scale, int level, double viewap, float shadowalpha)
 {
 	LoadData();
 	if (bNoTextures) return;
@@ -117,7 +117,7 @@ void CloudManager::RenderShadow(LPDIRECT3DDEVICE9 dev, D3DXMATRIX &wmat, double 
 
 // ==============================================================
 
-void CloudManager::RenderSimple(int level, int npatch, TILEDESC *tile, LPD3DXMATRIX mWrld)
+void CloudManager::RenderSimple(int level, int npatch, TILEDESC *tile, LPFMATRIX4 mWrld)
 {
 	LoadData();
 	if (bNoTextures) return;
@@ -126,7 +126,7 @@ void CloudManager::RenderSimple(int level, int npatch, TILEDESC *tile, LPD3DXMAT
 	LPDIRECT3DDEVICE9 pDev = gc->GetDevice();
 	pDev->SetVertexDeclaration(pPatchVertexDecl);
 
-	HR(FX->SetMatrix(eW, mWrld));
+	HR(FX->SetMatrix(eW, _DX(mWrld)));
 	UINT numPasses = 0;
 	HR(FX->Begin(&numPasses, D3DXFX_DONOTSAVESTATE));
 	HR(FX->BeginPass(0));
@@ -172,14 +172,14 @@ void CloudManager::RenderTile (int lvl, int hemisp, int ilat, int nlat, int ilng
 	VBMESH &mesh = PATCH_TPL[lvl][ilat]; // patch template
 
 	if (range.tumin == 0 && range.tumax == 1) {
-		HR(FX->SetVector(eTexOff, ptr(D3DXVECTOR4(1.0f, 0.0f, 1.0f, 0.0f))));
+		HR(FX->SetVector(eTexOff, _DX(FVECTOR4(1.0f, 0.0f, 1.0f, 0.0f))));
 	}
 	else {
 		float tuscale = range.tumax-range.tumin, tuofs = range.tumin;
 		float tvscale = range.tvmax-range.tvmin, tvofs = range.tvmin;
-		HR(FX->SetVector(eTexOff, ptr(D3DXVECTOR4(tuscale,tuofs,tvscale,tvofs))));
+		HR(FX->SetVector(eTexOff, _DX(FVECTOR4(tuscale,tuofs,tvscale,tvofs))));
 	}
-	HR(FX->SetMatrix(eW, &mWorld));
+	HR(FX->SetMatrix(eW, _DX(mWorld)));
 	HR(FX->SetTexture(eTex0, tex));	  // Diffuse Texture
 
 	FX->CommitChanges();

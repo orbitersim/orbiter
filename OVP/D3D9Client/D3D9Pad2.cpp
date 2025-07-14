@@ -9,7 +9,7 @@
 #include "D3D9Surface.h"
 #include "Scene.h"
 #include "Mesh.h"
-#include <d3dx9.h>
+#include "MathAPI.h"
 #include <sstream>
 
 
@@ -520,13 +520,13 @@ void D3D9Pad::Clipper(int idx, const VECTOR3 *uDir, double cos_angle, double dis
 	if (idx > 1) idx = 1;
 
 	if (uDir) {
-		ClipData[idx].uDir = D3DXVEC(*uDir);
+		ClipData[idx].uDir = _F(uDir);
 		ClipData[idx].ca = float(cos_angle);
 		ClipData[idx].dst = float(dist);
 		ClipData[idx].bEnable = true;
 	}
 	else {
-		ClipData[idx].uDir = D3DXVECTOR3(0,0,1);
+		ClipData[idx].uDir = FVECTOR3(0,0,1);
 		ClipData[idx].ca = 2.0f;
 		ClipData[idx].dst = 0.0f;
 		ClipData[idx].bEnable = false;
@@ -572,7 +572,7 @@ const FMATRIX4 *D3D9Pad::ProjectionMatrix() const
 //
 const FMATRIX4 *D3D9Pad::GetViewProjectionMatrix() const
 {
-	D3DXMatrixMultiply(&mVP, &mV, &mP);
+	oapiMatrixMultiply(&mVP, &mV, &mP);
 	return (const FMATRIX4 *)&mVP;
 }
 
@@ -619,13 +619,13 @@ void D3D9Pad::SetViewMode(SkpView mode)
 // ===============================================================================================
 // !! For a private use in D3D9Client !!
 //
-LPD3DXMATRIX D3D9Pad::WorldMatrix()
+LPFMATRIX4 D3D9Pad::WorldMatrix()
 {
 #ifdef SKPDBG 
 	Log("WorldMatrix() ! - ! - !");
 #endif
 	Change |= SKPCHG_TRANSFORM;
-	return (LPD3DXMATRIX)&mW;
+	return (LPFMATRIX4)&mW;
 }
 
 
@@ -638,13 +638,13 @@ void D3D9Pad::SetWorldTransform2D(float scale, float rot, const IVECTOR2 *c, con
 #endif
 	Change |= SKPCHG_TRANSFORM;
 
-	D3DXVECTOR2 ctr = D3DXVECTOR2(0, 0);
-	D3DXVECTOR2 trl = D3DXVECTOR2(0, 0);
+	FVECTOR2 ctr = FVECTOR2(0, 0);
+	FVECTOR2 trl = FVECTOR2(0, 0);
 
-	if (c) ctr = D3DXVECTOR2(float(c->x), float(c->y));
-	if (t) trl = D3DXVECTOR2(float(t->x), float(t->y));
+	if (c) ctr = FVECTOR2(float(c->x), float(c->y));
+	if (t) trl = FVECTOR2(float(t->x), float(t->y));
 
-	D3DXMatrixAffineTransformation2D(&mW, scale, &ctr, rot, &trl);
+	D3DMAT_AffineTransformation2D(&mW, scale, &ctr, rot, &trl);
 }
 
 
@@ -658,7 +658,7 @@ void D3D9Pad::SetWorldTransform(const FMATRIX4 *pWT)
 	Change |= SKPCHG_TRANSFORM;
 
 	if (pWT) memcpy(&mW, pWT, sizeof(FMATRIX4));
-	else D3DXMatrixIdentity(&mW);
+	else oapiMatrixIdentity(&mW);
 }
 
 
@@ -669,12 +669,12 @@ void D3D9Pad::SetWorldBillboard(const FVECTOR3& wpos, float scale, bool bFixed, 
 #ifdef SKPDBG 
 	Log("SetWorldBillboard()");
 #endif
-	scale *= (mP._11 + mP._22) * 0.5f;
+	scale *= (mP.m11 + mP.m22) * 0.5f;
 	Change |= SKPCHG_TRANSFORM;
 	FVECTOR3 up = unit(wpos);
-	FVECTOR3 y  = unit(cross((index ? *index : FVECTOR3(mV._11, mV._21, mV._31)), up));
-	FVECTOR3 x  = cross(up, y);
-	float d = (bFixed ? dot(up, wpos) / float(tgt_desc.Width) : 1.0f) * scale;
+	FVECTOR3 y  = unit(crossp((index ? *index : FVECTOR3(mV.m11, mV.m21, mV.m31)), up));
+	FVECTOR3 x  = crossp(up, y);
+	float d = (bFixed ? dotp(up, wpos) / float(tgt_desc.Width) : 1.0f) * scale;
 	FMATRIX4 mWorld;
 	mWorld._x.xyz = x * d;
 	mWorld._y.xyz = y * d;
@@ -733,11 +733,11 @@ void D3D9Pad::TexChange(SURFHANDLE hNew)
 
 	if (SURFACE(hNew)->IsColorKeyEnabled()) {
 		bColorKey = true;
-		cColorKey = D3DXCOLOR(SURFACE(hNew)->ColorKey);
+		cColorKey = FVECTOR4(SURFACE(hNew)->ColorKey);
 	}
 	else {
 		bColorKey = false;
-		cColorKey = D3DXCOLOR(DWORD(0));
+		cColorKey = FVECTOR4(DWORD(0));
 	}
 }
 
@@ -782,7 +782,7 @@ int D3D9Pad::DrawMeshGroup(const MESHHANDLE hMesh, DWORD grp, Sketchpad::MeshFla
 	while (grp < nGrp)
 	{
 		SURFHANDLE pTex = hTex ? hTex : pMesh->GetTexture(grp);
-		D3DXCOLOR   Mat = pMesh->GetMaterial(grp);
+		FVECTOR4   Mat = pMesh->GetMaterial(grp);
 	
 		if (pTex)
 		{
@@ -794,7 +794,7 @@ int D3D9Pad::DrawMeshGroup(const MESHHANDLE hMesh, DWORD grp, Sketchpad::MeshFla
 			HR(FX->SetBool(eTexEn, false));
 		}
 		
-		HR(FX->SetValue(eMtrl, &Mat, sizeof(D3DXCOLOR)));
+		HR(FX->SetValue(eMtrl, &Mat, sizeof(FVECTOR4)));
 		HR(FX->CommitChanges());
 
 		pMesh->RenderGroup(grp);
@@ -892,7 +892,7 @@ void D3D9PolyLine::Draw(D3D9Pad *pSkp, LPDIRECT3DDEVICE9 pDev)
 void D3D9PolyLine::Update(const FVECTOR2 *_pt, int _npt, bool bConnect)
 {
 	SkpVtx *Vtx = NULL;
-	D3DXVECTOR2 *pt = (D3DXVECTOR2 *)_pt;
+	FVECTOR2 *pt = (FVECTOR2 *)_pt;
 
 	HR(pVB->Lock(0, 0, (LPVOID*)&Vtx, D3DLOCK_DISCARD));
 
@@ -902,8 +902,8 @@ void D3D9PolyLine::Update(const FVECTOR2 *_pt, int _npt, bool bConnect)
 	vI = 0;
 	float length = 0.0f;
 
-	D3DXVECTOR2 pp; // Prev point
-	D3DXVECTOR2 np;	// Next point
+	FVECTOR2 pp; // Prev point
+	FVECTOR2 np;	// Next point
 
 	bLoop = bConnect;
 
@@ -938,7 +938,7 @@ void D3D9PolyLine::Update(const FVECTOR2 *_pt, int _npt, bool bConnect)
 		vI+=2;
 		// --------------------------------------
 		pp = pt[i];
-		length += D3DXVec2Length(ptr(np - pp));
+		length += oapi::length(np - pp);
 	}
 
 	if (bLoop) {

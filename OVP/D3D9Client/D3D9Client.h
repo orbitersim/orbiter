@@ -19,7 +19,7 @@
 #endif
 
 #include <d3d9.h>
-#include <d3dx9.h>
+#include "MathAPI.h"
 #include "D3D9Catalog.h"
 #include "GraphicsAPI.h"
 #include "D3D9Util.h"
@@ -1167,7 +1167,6 @@ public:
 	inline bool			IsControlPanelOpen() const { return bControlPanel; }
 	inline bool 		IsRunning() const { return bRunning; }
 	inline bool			IsLimited() const { return ((pCaps->TextureCaps&D3DPTEXTURECAPS_POW2) && (pCaps->TextureCaps&D3DPTEXTURECAPS_NONPOW2CONDITIONAL)); }
-	const LPD3DXMATRIX 	GetIdentity() const { return (const LPD3DXMATRIX)&ident; }
 	HWND 				GetWindow();
 	bool 				HasVertexTextureSupport() const { return bVertexTex; }
 	const D3DCAPS9 *	GetHardwareCaps() const { return pCaps; }
@@ -1177,7 +1176,7 @@ public:
 	const void *		GetConfigParam (DWORD paramtype) const;
 	bool				RegisterRenderProc(__gcRenderProc proc, DWORD id, void *pParam = NULL);
 	bool				RegisterGenericProc(__gcGenericProc proc, DWORD id, void *pParam = NULL);
-	void				MakeRenderProcCall(Sketchpad *pSkp, DWORD id, LPD3DXMATRIX pV, LPD3DXMATRIX pP);
+	void				MakeRenderProcCall(Sketchpad *pSkp, DWORD id, LPFMATRIX4 pV, LPFMATRIX4 pP);
 	void				MakeGenericProcCall(DWORD id, int iUser, void *pUser) const;
 	bool				IsGenericProcEnabled(DWORD id) const;
 	void				SetScenarioName(const std::string &path) { scenarioName = path; };
@@ -1450,7 +1449,7 @@ private:
 	Scene *scene;           // Scene description
 
 	MeshManager *meshmgr;   // mesh manager
-	D3DXMATRIX ident;
+	FMATRIX4 ident;
 
 	struct RenderProcData;
 	struct GenericProcData;

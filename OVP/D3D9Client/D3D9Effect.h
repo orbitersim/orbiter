@@ -13,7 +13,7 @@
 
 #include "D3D9Client.h"
 #include <d3d9.h> 
-#include <d3dx9.h>
+#include "MathAPI.h"
 
 // NOTE: a "bool" in HLSL is 32bits (i.e. int)
 // Must match with counterpart in D3D9Client.fx
@@ -57,23 +57,23 @@ public:
 	static void EnablePlanetGlow(bool bEnabled);
 	static void UpdateEffectCamera(OBJHANDLE hPlanet);
 	static void InitLegacyAtmosphere(OBJHANDLE hPlanet, float GlobalAmbient);
-	static void SetViewProjMatrix(LPD3DXMATRIX pVP);
+	static void SetViewProjMatrix(LPFMATRIX4 pVP);
 
-	static void RenderLines(const D3DXVECTOR3 *pVtx, const WORD *pIdx, int nVtx, int nIdx, const D3DXMATRIX *pW, DWORD color);
-	static void RenderTileBoundingBox(const LPD3DXMATRIX pW, VECTOR4 *pVtx, const LPD3DXVECTOR4 color);
-	static void RenderBoundingBox(const LPD3DXMATRIX pW, const LPD3DXMATRIX pGT, const D3DXVECTOR4 *bmin, const D3DXVECTOR4 *bmax, const D3DXVECTOR4 *color);
-	static void RenderBoundingSphere(const LPD3DXMATRIX pW, const LPD3DXMATRIX pGT, const D3DXVECTOR4 *bs, const D3DXVECTOR4 *color);
-	static void RenderBillboard(const LPD3DXMATRIX pW, LPDIRECT3DTEXTURE9 pTex, float alpha = 1.0f);
-	static void RenderExhaust(const LPD3DXMATRIX pW, VECTOR3 &cdir, EXHAUSTSPEC *es, SURFHANDLE def);
-	static void RenderSpot(float intens, const LPD3DXCOLOR color, const LPD3DXMATRIX pW, SURFHANDLE pTex);
-	static void Render2DPanel(const MESHGROUP *mg, const SURFHANDLE pTex, const LPD3DXMATRIX pW, float alpha, float scale, bool additive);
-	static void RenderReEntry(const SURFHANDLE pTex, const LPD3DXVECTOR3 vPosA, const LPD3DXVECTOR3 vPosB, const LPD3DXVECTOR3 vDir, float alpha_a, float alpha_b, float size);
-	static void RenderArrow(OBJHANDLE hObj, const VECTOR3 *ofs, const VECTOR3 *dir, const VECTOR3 *rot, float size, const D3DXCOLOR *pColor);  
+	static void RenderLines(const FVECTOR3 *pVtx, const WORD *pIdx, int nVtx, int nIdx, const FMATRIX4 *pW, DWORD color);
+	static void RenderTileBoundingBox(const LPFMATRIX4 pW, VECTOR4 *pVtx, const LPFVECTOR4 color);
+	static void RenderBoundingBox(const LPFMATRIX4 pW, const LPFMATRIX4 pGT, const FVECTOR4 *bmin, const FVECTOR4 *bmax, const FVECTOR4 *color);
+	static void RenderBoundingSphere(const LPFMATRIX4 pW, const LPFMATRIX4 pGT, const FVECTOR4 *bs, const FVECTOR4 *color);
+	static void RenderBillboard(const LPFMATRIX4 pW, LPDIRECT3DTEXTURE9 pTex, float alpha = 1.0f);
+	static void RenderExhaust(const LPFMATRIX4 pW, VECTOR3 &cdir, EXHAUSTSPEC *es, SURFHANDLE def);
+	static void RenderSpot(float intens, const LPFVECTOR4 color, const LPFMATRIX4 pW, SURFHANDLE pTex);
+	static void Render2DPanel(const MESHGROUP *mg, const SURFHANDLE pTex, const LPFMATRIX4 pW, float alpha, float scale, bool additive);
+	static void RenderReEntry(const SURFHANDLE pTex, const LPFVECTOR3 vPosA, const LPFVECTOR3 vPosB, const LPFVECTOR3 vDir, float alpha_a, float alpha_b, float size);
+	static void RenderArrow(OBJHANDLE hObj, const VECTOR3 *ofs, const VECTOR3 *dir, const VECTOR3 *rot, float size, const FVECTOR4 *pColor);  
 	
 	static LPDIRECT3DDEVICE9 pDev;      ///< Static (global) render device
 	static LPDIRECT3DVERTEXBUFFER9 VB;  ///< Static (global) Vertex buffer pointer
 	
-	static D3DXVECTOR4 atm_color;		///< Earth glow color
+	static FVECTOR4 atm_color;		///< Earth glow color
 
 	// Rendering Technique related parameters
 	static ID3DXEffect	*FX;

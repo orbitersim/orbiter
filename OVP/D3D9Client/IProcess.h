@@ -7,7 +7,7 @@
 #define __IPROCESS_H
 
 #include <d3d9.h> 
-#include <d3dx9.h>
+#include "MathAPI.h"
 #include <list>
 #include <map>
 #include "OrbiterAPI.h"
@@ -143,8 +143,8 @@ private:
 	LPDIRECT3DVERTEXSHADER9 pVertex;
 	LPDIRECT3DPIXELSHADER9 pPixel;
 	D3DSURFACE_DESC desc;
-	D3DXMATRIX   mVP;
-	D3DXVECTOR4  vTemplate;
+	FMATRIX4   mVP;
+	FVECTOR4  vTemplate;
 	D3DVIEWPORT9 iVP;
 	D3DXHANDLE   hVP;
 	D3DXHANDLE   hPos;

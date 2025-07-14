@@ -150,15 +150,15 @@ public:
 		VECTOR3		relpos;		// Relative camera position (Used by Mesh Debugger)
 		VECTOR3		dir;		// Camera direction
 
-		D3DXVECTOR3 x;			// Camera axis vector
-		D3DXVECTOR3 y;			// Camera axis vector
-		D3DXVECTOR3 z;			// Camera axis vector
-		D3DXVECTOR3 upos;		// Camera position unit vector
+		FVECTOR3 x;			// Camera axis vector
+		FVECTOR3 y;			// Camera axis vector
+		FVECTOR3 z;			// Camera axis vector
+		FVECTOR3 upos;		// Camera position unit vector
 
-		D3DXMATRIX	mView;		// D3DX view matrix for current camera state
-		D3DXMATRIX	mProj;		// D3DX projection matrix for current camera state
-		D3DXMATRIX	mProjView;	// D3DX combined projection view matrix
-		D3DXMATRIX  mProjViewInf; // D3DX combined projection view matrix, far plane at infinity
+		FMATRIX4	mView;		// D3DX view matrix for current camera state
+		FMATRIX4	mProj;		// D3DX projection matrix for current camera state
+		FMATRIX4	mProjView;	// D3DX combined projection view matrix
+		FMATRIX4  mProjViewInf; // D3DX combined projection view matrix, far plane at infinity
 		OBJHANDLE	hTarget;	// Current camera target, Mesh Debugger Related
 
 		OBJHANDLE	hObj_proxy;	// closest celestial body
@@ -180,8 +180,8 @@ public:
 	struct SUNVISPARAMS {
 		float		brightness;
 		bool		visible;
-		D3DXVECTOR2 position;
-		D3DXCOLOR	color;
+		FVECTOR2 position;
+		FVECTOR4	color;
 	};
 
 	SHADOWMAP* smEX = nullptr;	// Exterior shadow map
@@ -255,7 +255,7 @@ public:
 	/**
 	 * \brief Get the ambient background colour
 	 */
-	inline D3DCOLOR GetBgColour() const { return bg_rgba; }
+	inline DWORD GetBgColour() const { return bg_rgba; }
 
 	/**
 	 * \brief Get the viewport dimension (width)
@@ -279,7 +279,7 @@ public:
 	/**
 	 * \brief Gets sun diffuse colour (accounting for atmospheric shift)
 	 */
-	D3DXCOLOR GetSunDiffColor();
+	FVECTOR4 GetSunDiffColor();
 
 	/**
 	 * \brief Render a secondary scene. (Env Maps, Shadow Maps, MFD Camera Views)
@@ -290,7 +290,7 @@ public:
 		const LPDIRECT3DCUBETEXTURE9 pCT = nullptr, SHADOWMAP* sm = nullptr);
 
 	int RenderShadowMap(SMapInput* smp, SHADOWMAP* out, std::list<vVessel*>& Casters, bool bInternal = false);
-	int RenderVCShadowMap(D3DXVECTOR3& cdir, D3DXVECTOR3& ld, std::list<vVessel*>& Casters);
+	int RenderVCShadowMap(FVECTOR3& cdir, FVECTOR3& ld, std::list<vVessel*>& Casters);
 	bool RenderVCProbes(vVessel *vFocus);
 
 	bool IntegrateIrradiance(vVessel *vV, ENVCAMREC* ec, bool bInterior);
@@ -340,10 +340,10 @@ public:
 
 	// Picking Functions ============================================================================================================
 	//
-	D3DXVECTOR3		GetPickingRay(short x, short y);
+	FVECTOR3		GetPickingRay(short x, short y);
 	D3D9Pick		PickScene(short xpos, short ypos, const PickProp* p);
 	TILEPICK		PickSurface(short xpos, short ypos);
-	D3D9Pick		PickMesh(DEVMESHHANDLE hMesh, const LPD3DXMATRIX pW, short xpos, short ypos);
+	D3D9Pick		PickMesh(DEVMESHHANDLE hMesh, const LPFMATRIX4 pW, short xpos, short ypos);
 
 	void			ClearOmitFlags();
 	bool			IsRendering() const { return bRendering; }
@@ -360,10 +360,10 @@ public:
 
 	// Camera Matrix Access =========================================================================================================
 	//
-	void			   GetAdjProjViewMatrix(LPD3DXMATRIX mP, float znear, float zfar);
-	const LPD3DXMATRIX GetProjectionViewMatrix() const { return (LPD3DXMATRIX)&Camera.mProjView; }
-	const LPD3DXMATRIX GetProjectionMatrix() const { return (LPD3DXMATRIX)&Camera.mProj; }
-	const LPD3DXMATRIX GetViewMatrix() const { return (LPD3DXMATRIX)&Camera.mView; }
+	void			   GetAdjProjViewMatrix(LPFMATRIX4 mP, float znear, float zfar);
+	const LPFMATRIX4 GetProjectionViewMatrix() const { return (LPFMATRIX4)&Camera.mProjView; }
+	const LPFMATRIX4 GetProjectionMatrix() const { return (LPFMATRIX4)&Camera.mProj; }
+	const LPFMATRIX4 GetViewMatrix() const { return (LPFMATRIX4)&Camera.mView; }
 
 
 	// Main Camera Interface =========================================================================================================
@@ -378,14 +378,14 @@ public:
 	bool			UpdateCameraFromOrbiter(DWORD dwPass);
 
 					// Manually initialize client's internal camera setup
-	bool			SetupInternalCamera(D3DXMATRIX *mView, VECTOR3 *pos, double apr, double asp);
-	void			CameraOffOrigin90(D3DXMATRIX* mView, FVECTOR3 pos);
+	bool			SetupInternalCamera(FMATRIX4 *mView, VECTOR3 *pos, double apr, double asp);
+	void			CameraOffOrigin90(FMATRIX4* mView, FVECTOR3 pos);
 
 					// Pan Camera in a mesh debugger
 	bool			CameraPan(VECTOR3 pan, double speed);
 
 					// Check if a sphere located in pCnt (relative to cam) with a specified radius is visible in a camera
-	bool			IsVisibleInCamera(const D3DXVECTOR3 *pCnt, float radius);
+	bool			IsVisibleInCamera(const FVECTOR3 *pCnt, float radius);
 	bool			IsProxyMesh();
 	bool            CameraDirection2Viewport(const VECTOR3 &dir, int &x, int &y);
 	double			GetTanAp() const { return tan(Camera.aperture); }
@@ -404,14 +404,14 @@ public:
 	double			GetCameraNearAltitude() const { return Camera.alt_near; }
 	double			GetCameraElevation() const { return Camera.elev; }
 	void			GetCameraLngLat(double *lng, double *lat) const;
-	bool			WorldToScreenSpace(const VECTOR3& rdir, oapi::IVECTOR2* pt, D3DXMATRIX* pVP = NULL, float clip = 1.0f);
-	bool			WorldToScreenSpace2(const VECTOR3& rdir, oapi::FVECTOR2* pt, D3DXMATRIX* pVP = NULL, float clip = 1.0f);
+	bool			WorldToScreenSpace(const VECTOR3& rdir, oapi::IVECTOR2* pt, FMATRIX4* pVP = NULL, float clip = 1.0f);
+	bool			WorldToScreenSpace2(const VECTOR3& rdir, oapi::FVECTOR2* pt, FMATRIX4* pVP = NULL, float clip = 1.0f);
 
 	DWORD			GetFrameId() const { return dwFrameId; }
 
-	const D3DXVECTOR3 *GetCameraX() const { return &Camera.x; }
-	const D3DXVECTOR3 *GetCameraY() const { return &Camera.y; }
-	const D3DXVECTOR3 *GetCameraZ() const { return &Camera.z; }
+	const FVECTOR3 *GetCameraX() const { return &Camera.x; }
+	const FVECTOR3 *GetCameraY() const { return &Camera.y; }
+	const FVECTOR3 *GetCameraZ() const { return &Camera.z; }
 
 	const CAMERA *	GetCamera() const { return &Camera; }
 
@@ -424,7 +424,7 @@ public:
 
 	// Visual Management =========================================================================================================
 	//
-	void			GetLVLH(vVessel *vV, D3DXVECTOR3 *up, D3DXVECTOR3 *nr, D3DXVECTOR3 *cp);
+	void			GetLVLH(vVessel *vV, FVECTOR3 *up, FVECTOR3 *nr, FVECTOR3 *cp);
 	class vObject *	GetVisObject(OBJHANDLE hObj) const;
 	class vVessel *	GetFocusVisual() const { return vFocus; }
 	void			CheckVisual(OBJHANDLE hObj);
@@ -510,7 +510,7 @@ private:
 	DWORD nstream = {};				// number of streams
 
 	DEVMESHHANDLE dmCubeMesh = {};
-	D3DCOLOR bg_rgba = {};			// ambient background colour
+	DWORD bg_rgba = {};			// ambient background colour
 
 	// GDI resources ====================================================================
 	//

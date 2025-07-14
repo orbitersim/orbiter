@@ -86,8 +86,8 @@ public:
 	bool GetMinMaxDistance(float *zmin, float *zmax, float *dmin);
 	int	 GetMatrixTransform(gcCore::MatrixId matrix_id, DWORD mesh, DWORD group, FMATRIX4 *pMat);
 	int  SetMatrixTransform(gcCore::MatrixId matrix_id, DWORD mesh, DWORD group, const FMATRIX4 *pMat);
-	bool GetVCPos(D3DXVECTOR3* cpos, D3DXVECTOR3* lpos, float* rad);
-	bool GetMeshPosition(int idx, D3DXVECTOR3* cpos, D3DXVECTOR3* lpos, float* rad);
+	bool GetVCPos(FVECTOR3* cpos, FVECTOR3* lpos, float* rad);
+	bool GetMeshPosition(int idx, FVECTOR3* cpos, FVECTOR3* lpos, float* rad);
 	void BakeLights(ImageProcessing* pBaker);
 	void ErrorOnce(Errors e);
 	void UpdateBoundingBox();
@@ -146,7 +146,7 @@ public:
 	 * \brief Render the vessel's active light beacons
 	 * \param dev render device
 	 */
-	void RenderLightCone (LPD3DXMATRIX pWT);
+	void RenderLightCone (LPFMATRIX4 pWT);
 	void RenderBeacons (LPDIRECT3DDEVICE9 dev);
 	void RenderReentry (LPDIRECT3DDEVICE9 dev);
 	void RenderGrapplePoints (LPDIRECT3DDEVICE9 dev);
@@ -169,7 +169,7 @@ public:
 	
 	float GetExhaustLength() const { return ExhaustLength; }
 
-	D3D9Pick Pick(const D3DXVECTOR3 *vDir, const PickProp* p);
+	D3D9Pick Pick(const FVECTOR3 *vDir, const PickProp* p);
 
 	bool HasExtPass();
 	bool HasShadow();
@@ -222,7 +222,7 @@ protected:
 	bool ModLighting();
 
 	void Animate (UINT an, UINT mshidx);
-	void AnimateComponent (ANIMATIONCOMP *comp, const D3DXMATRIX &T);
+	void AnimateComponent (ANIMATIONCOMP *comp, const FMATRIX4 &T);
 	void RestoreDefaultState(ANIMATIONCOMP *AC);
 	void StoreDefaultState(ANIMATIONCOMP *AC);
 	void DeleteDefaultState(ANIMATIONCOMP *AC);
@@ -248,7 +248,7 @@ private:
 
 	struct MESHREC {
 		D3D9Mesh *mesh;		// DX9 mesh representation
-		D3DXMATRIX *trans;	// mesh transformation matrix (rel. to vessel frame)
+		FMATRIX4 *trans;	// mesh transformation matrix (rel. to vessel frame)
 		WORD vismode;
 	} *meshlist;			// list of associated meshes
 

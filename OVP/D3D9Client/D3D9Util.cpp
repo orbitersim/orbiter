@@ -20,6 +20,7 @@
 #include <cctype>
 #include <unordered_map>
 #include <algorithm>
+#include "DirectXCollision.h"
 
 extern D3D9Client* g_client;
 extern unordered_map<MESHHANDLE, class SketchMesh*> MeshMap;
@@ -68,7 +69,7 @@ float SunOcclusionByPlanet(OBJHANDLE hObj, VECTOR3 gpos)
 	VECTOR3 usd = spos / sd;					
 	VECTOR3 up = unit(rpos);
 	double r  = length(rpos);
-	double ca = -dot(up, usd);
+	double ca = -dotp(up, usd);
 	double qr = sqrt(saturate(1.0 - ca * ca)) * r;
 	double dp = r * r - sz * sz;
 	double hd = dp > 1e4 ? sqrt(dp) : 1000.0; // Distance to horizon
@@ -84,7 +85,7 @@ bool IsCastingShadows(vObject* body, vObject* ref, double* sunsize_out)
 {
 	double sz = oapiGetSize(oapiGetGbodyByIndex(0));
 	VECTOR3 bc = body->GlobalPos() - ref->GlobalPos();
-	double x = dot(bc, ref->SunDirection());			// Distance to projection plane
+	double x = dotp(bc, ref->SunDirection());			// Distance to projection plane
 	double s = abs(x) * sz / ref->SunDistance();		// Size of the sun at projection plane
 	double refrad = body->GetSize() + ref->GetSize() + s;
 	if (sunsize_out) *sunsize_out = s;
@@ -233,28 +234,28 @@ bool CopyBuffer(LPDIRECT3DRESOURCE9 _pDst, LPDIRECT3DRESOURCE9 _pSrc)
 	return false;
 }
 
-inline D3DXVECTOR4 CV2VEC4(const D3DCOLORVALUE &in)
+inline FVECTOR4 CV2VEC4(const D3DCOLORVALUE &in)
 {
-	return D3DXVECTOR4(in.r, in.g, in.b, in.a);
+	return FVECTOR4(in.r, in.g, in.b, in.a);
 }
 
-inline D3DXVECTOR4 CV2VEC4(const D3DCOLORVALUE &in, float w)
+inline FVECTOR4 CV2VEC4(const D3DCOLORVALUE &in, float w)
 {
-	return D3DXVECTOR4(in.r, in.g, in.b, w);
+	return FVECTOR4(in.r, in.g, in.b, w);
 }
 
-inline D3DXVECTOR3 CV2VEC3(const D3DCOLORVALUE &in)
+inline FVECTOR3 CV2VEC3(const D3DCOLORVALUE &in)
 {
-	return D3DXVECTOR3(in.r, in.g, in.b);
+	return FVECTOR3(in.r, in.g, in.b);
 }
 
-inline D3DCOLORVALUE VECtoCV(const D3DXVECTOR3 &in, float w)
+inline D3DCOLORVALUE VECtoCV(const FVECTOR3 &in, float w)
 {
 	D3DCOLORVALUE c = { in.x, in.y, in.z, w };
 	return c;
 }
 
-inline D3DCOLORVALUE VECtoCV(const D3DXVECTOR4 &in)
+inline D3DCOLORVALUE VECtoCV(const FVECTOR4 &in)
 {
 	D3DCOLORVALUE c = { in.x, in.y, in.z, in.w };
 	return c;
@@ -284,26 +285,26 @@ void CreateMatExt(const D3DMATERIAL9 *pIn, D3D9MatExt *pOut)
 	pOut->Diffuse = CV2VEC4(pIn->Diffuse);
 	pOut->Emissive = CV2VEC3(pIn->Emissive);
 	pOut->Specular = CV2VEC4(pIn->Specular, pIn->Power);
-	pOut->Reflect = D3DXVECTOR3(0, 0, 0);
-	pOut->Fresnel = D3DXVECTOR3(1, 0, 1024.0f);
-	pOut->Emission2 = D3DXVECTOR3(1, 1, 1);
-	pOut->Roughness = D3DXVECTOR2(1.0f, 1.0f);
-	pOut->SpecialFX = D3DXVECTOR4(0, 0, 0, 0);
+	pOut->Reflect = FVECTOR3(0.0f, 0.0f, 0.0f);
+	pOut->Fresnel = FVECTOR3(1.0f, 0.0f, 1024.0f);
+	pOut->Emission2 = FVECTOR3(1.0f, 1.0f, 1.0f);
+	pOut->Roughness = FVECTOR2(1.0f, 1.0f);
+	pOut->SpecialFX = FVECTOR4(0.0f, 0.0f, 0.0f, 0.0f);
 	pOut->Metalness = 0.0f;
 	pOut->ModFlags = 0;
 }
 
 void CreateDefaultMat(D3D9MatExt *pOut)
 {
-	pOut->Ambient = D3DXVECTOR3(0, 0, 0);
-	pOut->Diffuse = D3DXVECTOR4(1, 1, 1, 1);
-	pOut->Emissive = D3DXVECTOR3(0, 0, 0);
-	pOut->Specular = D3DXVECTOR4(0.2f, 0.2f, 0.2f, 50.0f);
-	pOut->Reflect = D3DXVECTOR3(0, 0, 0);
-	pOut->Fresnel = D3DXVECTOR3(1, 0, 1024.0f);
-	pOut->Emission2 = D3DXVECTOR3(1, 1, 1);
-	pOut->Roughness = D3DXVECTOR2(1.0f, 1.0f);
-	pOut->SpecialFX = D3DXVECTOR4(0, 0, 0, 0);
+	pOut->Ambient = FVECTOR3(0.0f, 0.0f, 0.0f);
+	pOut->Diffuse = FVECTOR4(1.0f, 1.0f, 1.0f, 1.0f);
+	pOut->Emissive = FVECTOR3(0.0f, 0.0f, 0.0f);
+	pOut->Specular = FVECTOR4(0.2f, 0.2f, 0.2f, 50.0f);
+	pOut->Reflect = FVECTOR3(0.0f, 0.0f, 0.0f);
+	pOut->Fresnel = FVECTOR3(1.0f, 0.0f, 1024.0f);
+	pOut->Emission2 = FVECTOR3(1.0f, 1.0f, 1.0f);
+	pOut->Roughness = FVECTOR2(1.0f, 1.0f);
+	pOut->SpecialFX = FVECTOR4(0.0f, 0.0f, 0.0f, 0.0f);
 	pOut->Metalness = 0.0f;
 	pOut->ModFlags = 0;
 }
@@ -314,7 +315,7 @@ void SurfaceLighting(D3D9Sun *light, OBJHANDLE hP, OBJHANDLE hO, float ao)
 	// hP=hPlanet, hS=hSun
 	VECTOR3 GO, GS, GP;
 
-	D3DXVECTOR3 _one(1,1,1);
+	FVECTOR3 _one(1,1,1);
 
 	OBJHANDLE hS = oapiGetGbodyByIndex(0);	// the central star
 	oapiGetGlobalPos (hO, &GO);				// object position
@@ -342,8 +343,8 @@ void SurfaceLighting(D3D9Sun *light, OBJHANDLE hP, OBJHANDLE hO, float ao)
 		disp = float(max (0.02, min(0.9, log1p(atm->rho0))));
 	}
 
-	D3DXVECTOR3 lcol;
-	D3DXVECTOR3 r0 = _one - D3DXVECTOR3(0.65f, 0.75f, 1.0f) * disp;
+	FVECTOR3 lcol;
+	FVECTOR3 r0 = _one - FVECTOR3(0.65f, 0.75f, 1.0f) * disp;
 
 	if (atm) { // case 1: planet has atmosphere
 		lcol = (r0 + (_one-r0) * saturate(h/d)) * saturate((h+rs)/(2.0f*rs));
@@ -357,9 +358,9 @@ void SurfaceLighting(D3D9Sun *light, OBJHANDLE hP, OBJHANDLE hO, float ao)
 		lcol *= 1.0f-amb*0.5f; // reduce direct light component to avoid overexposure
 	}
 
-	light->Color = D3DXCOLOR(lcol.x, lcol.y, lcol.z, 1.0f);
-	light->Ambient = D3DXCOLOR(amb, amb, amb, 1.0f);
-	light->Dir = D3DXVEC(S) * (-1.0f/s);
+	light->Color = FVECTOR3(lcol.x, lcol.y, lcol.z);
+	light->Ambient = FVECTOR3(amb, amb, amb);
+	light->Dir = S * (-1.0f/s);
 }
 // ===========================================
 // Remove unecessary spaces and tablations
@@ -663,11 +664,11 @@ std::string::size_type replace_all (std::string &subj, const std::string &s, con
 // Some utility methods for D3D vectors and matrices
 // ============================================================================
 
-float D3DXVec3Angle(D3DXVECTOR3 a, D3DXVECTOR3 b)
+float D3DXVec3Angle(FVECTOR3 a, FVECTOR3 b)
 {
-	D3DXVec3Normalize(&a,&a);
-	D3DXVec3Normalize(&b,&b);
-	float x = D3DXVec3Dot(&a,&b);
+	normalise(a);
+	normalise(b);
+	float x = dotp(a, b);
 	if (x<-1.0f) x=-1.0f;
 	if (x> 1.0f) x= 1.0f;
 	return acos(x);
@@ -675,180 +676,187 @@ float D3DXVec3Angle(D3DXVECTOR3 a, D3DXVECTOR3 b)
 
 // ============================================================================
 //
-D3DXVECTOR3 Perpendicular(D3DXVECTOR3 *a)
+FVECTOR3 Perpendicular(FVECTOR3 *a)
 {
 	float x = fabs(a->x);
 	float y = fabs(a->y);
 	float z = fabs(a->z);
 	float m = min(min(x, y), z);
-	if (m==x) return D3DXVECTOR3(0, a->z,  a->y);
-	if (m==y) return D3DXVECTOR3(a->z, 0, -a->x);
-	else      return D3DXVECTOR3(a->y, -a->x, 0);
+	if (m==x) return FVECTOR3(0, a->z,  a->y);
+	if (m==y) return FVECTOR3(a->z, 0, -a->x);
+	else      return FVECTOR3(a->y, -a->x, 0);
 }
 
 // Cleate a billboarding matrix. X-axis of the vertex data will be pointing to the camera
 //
-void D3DMAT_CreateX_Billboard(const D3DXVECTOR3 *toCam, const D3DXVECTOR3 *pos, float size, D3DXMATRIX *pOut)
+void D3DMAT_CreateX_Billboard(const FVECTOR3 *toCam, const FVECTOR3 *pos, float size, FMATRIX4 *pOut)
 {
 	float hz  = 1.0f/sqrt(toCam->x*toCam->x + toCam->z*toCam->z);
 
-	pOut->_11 =  toCam->x;
-	pOut->_12 =  toCam->y;
-	pOut->_13 =  toCam->z;
-	pOut->_31 = -toCam->z*hz;
-	pOut->_32 =  0.0f;
-	pOut->_33 =  toCam->x*hz;
-	pOut->_21 = -pOut->_12*pOut->_33;
-	pOut->_22 =  pOut->_33*pOut->_11 - pOut->_13*pOut->_31;
-	pOut->_23 =  pOut->_31*pOut->_12;
-	pOut->_41 =  pos->x;
-	pOut->_42 =  pos->y;
-	pOut->_43 =  pos->z;
-	pOut->_14 = pOut->_24 = pOut->_34 = pOut->_44 = 0.0f;
-	pOut->_11 *= size; pOut->_12 *= size; pOut->_13 *= size;
-	pOut->_21 *= size; pOut->_22 *= size; pOut->_23 *= size;
-	pOut->_31 *= size;					  pOut->_33 *= size;
+	pOut->m11 =  toCam->x;
+	pOut->m12 =  toCam->y;
+	pOut->m13 =  toCam->z;
+	pOut->m31 = -toCam->z*hz;
+	pOut->m32 =  0.0f;
+	pOut->m33 =  toCam->x*hz;
+	pOut->m21 = -pOut->m12*pOut->m33;
+	pOut->m22 =  pOut->m33*pOut->m11 - pOut->m13*pOut->m31;
+	pOut->m23 =  pOut->m31*pOut->m12;
+	pOut->m41 =  pos->x;
+	pOut->m42 =  pos->y;
+	pOut->m43 =  pos->z;
+	pOut->m14 = pOut->m24 = pOut->m34 = pOut->m44 = 0.0f;
+	pOut->m11 *= size; pOut->m12 *= size; pOut->m13 *= size;
+	pOut->m21 *= size; pOut->m22 *= size; pOut->m23 *= size;
+	pOut->m31 *= size;					  pOut->m33 *= size;
 }
 
 
 // Cleate a billboarding matrix. X-axis of the vertex data will be pointing to the camera
 //
-void D3DMAT_CreateX_Billboard(const D3DXVECTOR3 *toCam, const D3DXVECTOR3 *pos, const D3DXVECTOR3 *dir, float size, float stretch, D3DXMATRIX *pOut)
+void D3DMAT_CreateX_Billboard(const FVECTOR3 *toCam, const FVECTOR3 *pos, const FVECTOR3 *dir, float size, float stretch, FMATRIX4 *pOut)
 {
-	D3DXVECTOR3 q,w;
-	D3DXVec3Normalize(&q, D3DXVec3Cross(&q, dir, toCam));
-	D3DXVec3Normalize(&w, D3DXVec3Cross(&w, &q,  dir));
+	FVECTOR3 q = unit(crossp(*dir, *toCam));
+	FVECTOR3 w = unit(crossp(q, *dir));
 
-	pOut->_11 = w.x * size;
-	pOut->_12 = w.y * size;
-	pOut->_13 = w.z * size;
+	pOut->m11 = w.x * size;
+	pOut->m12 = w.y * size;
+	pOut->m13 = w.z * size;
 
-	pOut->_21 = q.x * size;
-	pOut->_22 = q.y * size;
-	pOut->_23 = q.z * size;
+	pOut->m21 = q.x * size;
+	pOut->m22 = q.y * size;
+	pOut->m23 = q.z * size;
 
-	pOut->_31 = dir->x * stretch;
-	pOut->_32 = dir->y * stretch;
-	pOut->_33 = dir->z * stretch;
+	pOut->m31 = dir->x * stretch;
+	pOut->m32 = dir->y * stretch;
+	pOut->m33 = dir->z * stretch;
 
-	pOut->_41 = pos->x;
-	pOut->_42 = pos->y;
-	pOut->_43 = pos->z;
+	pOut->m41 = pos->x;
+	pOut->m42 = pos->y;
+	pOut->m43 = pos->z;
 
-	pOut->_14 = pOut->_24 = pOut->_34 = pOut->_44 = 0.0f;
+	pOut->m14 = pOut->m24 = pOut->m34 = pOut->m44 = 0.0f;
 }
 
 // ============================================================================
 //
-void D3DMAT_ZeroMatrix(D3DXMATRIX *mat)
+void D3DMAT_ZeroMatrix(FMATRIX4 *mat)
 {
-	ZeroMemory(mat, sizeof (D3DXMATRIX));
+	ZeroMemory(mat, sizeof (FMATRIX4));
 }
 
 // ============================================================================
-// Matrix identity
+// Copy a FMATRIX4
 
-void D3DMAT_Identity (D3DXMATRIX *mat)
+void D3DMAT_Copy (FMATRIX4 *tgt, const FMATRIX4 *src)
 {
-	ZeroMemory(mat, sizeof (D3DXMATRIX));
-	mat->_11 = mat->_22 = mat->_33 = mat->_44 = 1.0f;
-}
-
-// ============================================================================
-// Copy a D3DXMATRIX
-
-void D3DMAT_Copy (D3DXMATRIX *tgt, const D3DXMATRIX *src)
-{
-	 memcpy(tgt, src, sizeof (D3DXMATRIX));
+	 memcpy(tgt, src, sizeof (FMATRIX4));
 }
 
 // ============================================================================
 //
-void D3DMAT_FromAxis(D3DXMATRIX *mat, const D3DVECTOR *x, const D3DVECTOR *y, const D3DVECTOR *z)
+void D3DMAT_FromAxis(FMATRIX4 *mat, const FVECTOR3 *x, const FVECTOR3 *y, const FVECTOR3 *z)
 {
-	mat->_11 = x->x;
-	mat->_21 = x->y;
-	mat->_31 = x->z;
+	mat->m11 = x->x;
+	mat->m21 = x->y;
+	mat->m31 = x->z;
 
-	mat->_12 = y->x;
-	mat->_22 = y->y;
-	mat->_32 = y->z;
+	mat->m12 = y->x;
+	mat->m22 = y->y;
+	mat->m32 = y->z;
 
-	mat->_13 = z->x;
-	mat->_23 = z->y;
-	mat->_33 = z->z;
+	mat->m13 = z->x;
+	mat->m23 = z->y;
+	mat->m33 = z->z;
 }
 
 // ============================================================================
 //
-void D3DMAT_FromAxis(D3DXMATRIX *mat, const VECTOR3 *x, const VECTOR3 *y, const VECTOR3 *z)
+void D3DMAT_FromAxis(FMATRIX4 *mat, const VECTOR3 *x, const VECTOR3 *y, const VECTOR3 *z)
 {
-	mat->_11 = float(x->x);
-	mat->_21 = float(x->y);
-	mat->_31 = float(x->z);
+	mat->m11 = float(x->x);
+	mat->m21 = float(x->y);
+	mat->m31 = float(x->z);
 
-	mat->_12 = float(y->x);
-	mat->_22 = float(y->y);
-	mat->_32 = float(y->z);
+	mat->m12 = float(y->x);
+	mat->m22 = float(y->y);
+	mat->m32 = float(y->z);
 
-	mat->_13 = float(z->x);
-	mat->_23 = float(z->y);
-	mat->_33 = float(z->z);
+	mat->m13 = float(z->x);
+	mat->m23 = float(z->y);
+	mat->m33 = float(z->z);
 }
 
 // ============================================================================
 //
-void D3DMAT_FromAxisT(D3DXMATRIX *mat, const D3DVECTOR *x, const D3DVECTOR *y, const D3DVECTOR *z)
+void D3DMAT_FromAxisT(FMATRIX4 *mat, const FVECTOR3 *x, const FVECTOR3 *y, const FVECTOR3 *z)
 {
-	mat->_11 = x->x;
-	mat->_12 = x->y;
-	mat->_13 = x->z;
+	mat->m11 = x->x;
+	mat->m12 = x->y;
+	mat->m13 = x->z;
 
-	mat->_21 = y->x;
-	mat->_22 = y->y;
-	mat->_23 = y->z;
+	mat->m21 = y->x;
+	mat->m22 = y->y;
+	mat->m23 = y->z;
 
-	mat->_31 = z->x;
-	mat->_32 = z->y;
-	mat->_33 = z->z;
+	mat->m31 = z->x;
+	mat->m32 = z->y;
+	mat->m33 = z->z;
 }
 
 // ============================================================================
-// Copy a rotation matrix into a D3DXMATRIX
-
-void D3DMAT_SetRotation (D3DXMATRIX *mat, const MATRIX3 *rot)
+//
+void D3DMAT_Scale(FMATRIX4* mat, float x, float y, float z)
 {
-	mat->_11 = (FLOAT)rot->m11;
-	mat->_12 = (FLOAT)rot->m12;
-	mat->_13 = (FLOAT)rot->m13;
-	mat->_21 = (FLOAT)rot->m21;
-	mat->_22 = (FLOAT)rot->m22;
-	mat->_23 = (FLOAT)rot->m23;
-	mat->_31 = (FLOAT)rot->m31;
-	mat->_32 = (FLOAT)rot->m32;
-	mat->_33 = (FLOAT)rot->m33;
+	mat->m11 *= x;
+	mat->m12 *= x;
+	mat->m13 *= x;
+
+	mat->m21 *= y;
+	mat->m22 *= y;
+	mat->m23 *= y;
+
+	mat->m31 *= z;
+	mat->m32 *= z;
+	mat->m33 *= z;
+}
+
+// ============================================================================
+// Copy a rotation matrix into a FMATRIX4
+
+void D3DMAT_SetRotation (FMATRIX4 *mat, const MATRIX3 *rot)
+{
+	mat->m11 = (FLOAT)rot->m11;
+	mat->m12 = (FLOAT)rot->m12;
+	mat->m13 = (FLOAT)rot->m13;
+	mat->m21 = (FLOAT)rot->m21;
+	mat->m22 = (FLOAT)rot->m22;
+	mat->m23 = (FLOAT)rot->m23;
+	mat->m31 = (FLOAT)rot->m31;
+	mat->m32 = (FLOAT)rot->m32;
+	mat->m33 = (FLOAT)rot->m33;
 }
 
 // ============================================================================
 // Copy the transpose of a matrix as rotation of a D3D transformation matrix
 
-void D3DMAT_SetInvRotation (D3DXMATRIX *mat, const MATRIX3 *rot)
+void D3DMAT_SetInvRotation (FMATRIX4 *mat, const MATRIX3 *rot)
 {
-	mat->_11 = (FLOAT)rot->m11;
-	mat->_12 = (FLOAT)rot->m21;
-	mat->_13 = (FLOAT)rot->m31;
-	mat->_21 = (FLOAT)rot->m12;
-	mat->_22 = (FLOAT)rot->m22;
-	mat->_23 = (FLOAT)rot->m32;
-	mat->_31 = (FLOAT)rot->m13;
-	mat->_32 = (FLOAT)rot->m23;
-	mat->_33 = (FLOAT)rot->m33;
+	mat->m11 = (FLOAT)rot->m11;
+	mat->m12 = (FLOAT)rot->m21;
+	mat->m13 = (FLOAT)rot->m31;
+	mat->m21 = (FLOAT)rot->m12;
+	mat->m22 = (FLOAT)rot->m22;
+	mat->m23 = (FLOAT)rot->m32;
+	mat->m31 = (FLOAT)rot->m13;
+	mat->m32 = (FLOAT)rot->m23;
+	mat->m33 = (FLOAT)rot->m33;
 }
 
 // ============================================================================
 // Define a rotation matrix from a rotation axis & rotation angle
 
-void D3DMAT_RotationFromAxis (const D3DXVECTOR3 &axis, float angle, D3DXMATRIX *rot)
+void D3DMAT_RotationFromAxis (const FVECTOR3 &axis, float angle, FMATRIX4 *rot)
 {
 	// Calculate quaternion
 	angle *= 0.5f;
@@ -862,126 +870,134 @@ void D3DMAT_RotationFromAxis (const D3DXVECTOR3 &axis, float angle, D3DXMATRIX *
 	float xy = x*y, xz = x*z, yz = y*z;
 	float wx = w*x, wy = w*y, wz = w*z;
 
-	rot->_11 = 1 - 2 * (yy+zz);
-	rot->_12 =     2 * (xy+wz);
-	rot->_13 =     2 * (xz-wy);
-	rot->_21 =     2 * (xy-wz);
-	rot->_22 = 1 - 2 * (xx+zz);
-	rot->_23 =     2 * (yz+wx);
-	rot->_31 =     2 * (xz+wy);
-	rot->_32 =     2 * (yz-wx);
-	rot->_33 = 1 - 2 * (xx+yy);
+	rot->m11 = 1 - 2 * (yy+zz);
+	rot->m12 =     2 * (xy+wz);
+	rot->m13 =     2 * (xz-wy);
+	rot->m21 =     2 * (xy-wz);
+	rot->m22 = 1 - 2 * (xx+zz);
+	rot->m23 =     2 * (yz+wx);
+	rot->m31 =     2 * (xz+wy);
+	rot->m32 =     2 * (yz-wx);
+	rot->m33 = 1 - 2 * (xx+yy);
 
-	rot->_14 = rot->_24 = rot->_34 = rot->_41 = rot->_42 = rot->_43 = 0.0f;
-	rot->_44 = 1.0f;
+	rot->m14 = rot->m24 = rot->m34 = rot->m41 = rot->m42 = rot->m43 = 0.0f;
+	rot->m44 = 1.0f;
 }
 
 // ============================================================================
 // Set up a as matrix for ANTICLOCKWISE rotation r around x/y/z-axis
 
-void D3DMAT_RotX  (D3DXMATRIX *mat, double r)
+void D3DMAT_RotX  (FMATRIX4 *mat, double r)
 {
 	double sinr = sin(r), cosr = cos(r);
-	ZeroMemory (mat, sizeof (D3DXMATRIX));
-	mat->_22 = mat->_33 = (FLOAT)cosr;
-	mat->_23 = -(mat->_32 = (FLOAT)sinr);
-	mat->_11 = mat->_44 = 1.0f;
+	ZeroMemory (mat, sizeof (FMATRIX4));
+	mat->m22 = mat->m33 = (FLOAT)cosr;
+	mat->m23 = -(mat->m32 = (FLOAT)sinr);
+	mat->m11 = mat->m44 = 1.0f;
 }
 
 // ============================================================================
 //
-void D3DMAT_RotY (D3DXMATRIX *mat, double r)
+void D3DMAT_RotY (FMATRIX4 *mat, double r)
 {
 	double sinr = sin(r), cosr = cos(r);
-	ZeroMemory (mat, sizeof (D3DXMATRIX));
-	mat->_11 = mat->_33 = (FLOAT)cosr;
-	mat->_31 = -(mat->_13 = (FLOAT)sinr);
-	mat->_22 = mat->_44 = 1.0f;
+	ZeroMemory (mat, sizeof (FMATRIX4));
+	mat->m11 = mat->m33 = (FLOAT)cosr;
+	mat->m31 = -(mat->m13 = (FLOAT)sinr);
+	mat->m22 = mat->m44 = 1.0f;
 }
 
 // ============================================================================
 //
-float D3DMAT_BSScaleFactor(const D3DXMATRIX *mat)
+float D3DMAT_BSScaleFactor(const FMATRIX4 *mat)
 {
-	float lx = mat->_11*mat->_11 + mat->_12*mat->_12 + mat->_13*mat->_13;
-    float ly = mat->_21*mat->_21 + mat->_22*mat->_22 + mat->_23*mat->_23;
-    float lz = mat->_31*mat->_31 + mat->_32*mat->_32 + mat->_33*mat->_33;
+	float lx = mat->m11*mat->m11 + mat->m12*mat->m12 + mat->m13*mat->m13;
+    float ly = mat->m21*mat->m21 + mat->m22*mat->m22 + mat->m23*mat->m23;
+    float lz = mat->m31*mat->m31 + mat->m32*mat->m32 + mat->m33*mat->m33;
 	return sqrt(max(max(lx,ly),lz));
 }
 
 // ============================================================================
 // Apply a translation vector toa D3D transformation matrix
 
-void D3DMAT_SetTranslation (D3DXMATRIX *mat, const VECTOR3 *trans)
+void D3DMAT_SetTranslation (FMATRIX4 *mat, const VECTOR3 *trans)
 {
-	mat->_41 = (FLOAT)trans->x;
-	mat->_42 = (FLOAT)trans->y;
-	mat->_43 = (FLOAT)trans->z;
-}
-
-void D3DMAT_SetTranslation(D3DXMATRIX *mat, const D3DXVECTOR3 *trans)
-{
-	mat->_41 = (FLOAT)trans->x;
-	mat->_42 = (FLOAT)trans->y;
-	mat->_43 = (FLOAT)trans->z;
+	mat->m41 = (FLOAT)trans->x;
+	mat->m42 = (FLOAT)trans->y;
+	mat->m43 = (FLOAT)trans->z;
 }
 
 // ============================================================================
 //
-bool D3DMAT_VectorMatrixMultiply (D3DXVECTOR3 *res, const D3DXVECTOR3 *v, const D3DXMATRIX *mat)
+void D3DMAT_SetTranslation(FMATRIX4 *mat, const FVECTOR3 *trans)
 {
-    float x = v->x*mat->_11 + v->y*mat->_21 + v->z* mat->_31 + mat->_41;
-    float y = v->x*mat->_12 + v->y*mat->_22 + v->z* mat->_32 + mat->_42;
-    float z = v->x*mat->_13 + v->y*mat->_23 + v->z* mat->_33 + mat->_43;
-    float w = v->x*mat->_14 + v->y*mat->_24 + v->z* mat->_34 + mat->_44;
-
-    if (fabs (w) < 1e-5f) return false;
-
-    res->x = x/w;
-    res->y = y/w;
-    res->z = z/w;
-    return true;
+	mat->m41 = (FLOAT)trans->x;
+	mat->m42 = (FLOAT)trans->y;
+	mat->m43 = (FLOAT)trans->z;
 }
 
-// =======================================================================
-// Name: D3DMath_MatrixInvert()
-// Desc: Does the matrix operation: [Q] = inv[A]. Note: this function only
-//       works for matrices with [0 0 0 1] for the 4th column.
-// =======================================================================
-
-HRESULT D3DMAT_MatrixInvert (D3DXMATRIX *res, D3DXMATRIX *a)
+// ============================================================================
+//
+void D3DMAT_Transform(FVECTOR4* o, const FVECTOR4* i, const FMATRIX4* m)
 {
-    if( fabs(a->_44 - 1.0f) > .001f)
-        return E_INVALIDARG;
-    if( fabs(a->_14) > .001f || fabs(a->_24) > .001f || fabs(a->_34) > .001f )
-        return E_INVALIDARG;
-
-    FLOAT fDetInv = 1.0f / ( a->_11 * ( a->_22 * a->_33 - a->_23 * a->_32 ) -
-                             a->_12 * ( a->_21 * a->_33 - a->_23 * a->_31 ) +
-                             a->_13 * ( a->_21 * a->_32 - a->_22 * a->_31 ) );
-
-    res->_11 =  fDetInv * ( a->_22 * a->_33 - a->_23 * a->_32 );
-    res->_12 = -fDetInv * ( a->_12 * a->_33 - a->_13 * a->_32 );
-    res->_13 =  fDetInv * ( a->_12 * a->_23 - a->_13 * a->_22 );
-    res->_14 = 0.0f;
-
-    res->_21 = -fDetInv * ( a->_21 * a->_33 - a->_23 * a->_31 );
-    res->_22 =  fDetInv * ( a->_11 * a->_33 - a->_13 * a->_31 );
-    res->_23 = -fDetInv * ( a->_11 * a->_23 - a->_13 * a->_21 );
-    res->_24 = 0.0f;
-
-    res->_31 =  fDetInv * ( a->_21 * a->_32 - a->_22 * a->_31 );
-    res->_32 = -fDetInv * ( a->_11 * a->_32 - a->_12 * a->_31 );
-    res->_33 =  fDetInv * ( a->_11 * a->_22 - a->_12 * a->_21 );
-    res->_34 = 0.0f;
-
-    res->_41 = -( a->_41 * res->_11 + a->_42 * res->_21 + a->_43 * res->_31 );
-    res->_42 = -( a->_41 * res->_12 + a->_42 * res->_22 + a->_43 * res->_32 );
-    res->_43 = -( a->_41 * res->_13 + a->_42 * res->_23 + a->_43 * res->_33 );
-    res->_44 = 1.0f;
-
-    return S_OK;
+	o->Load(XMVector4Transform(i->XM(), m->XM()));
 }
+
+// ============================================================================
+//
+void D3DMAT_AffineTransformation2D(FMATRIX4* pOut, float Scl, const FVECTOR2* pRotCtr, float Rot, const FVECTOR2* pTransl)
+{
+	XMVECTOR Tr = FVECTOR2(0, 0).XM();
+	XMVECTOR Rc = Tr;
+	XMVECTOR Sl = FVECTOR2(Scl).XM();
+
+	if (pRotCtr) Rc = pRotCtr->XM();
+	if (pTransl) Tr = pTransl->XM();
+
+	XMMATRIX M = XMMatrixAffineTransformation2D(Sl, Rc, Rot, Tr);
+	pOut->Load(M);
+}
+
+// ============================================================================
+//
+void D3DMAT_Transformation2D(FMATRIX4* pOut, const FVECTOR2* pSclCtr, float SclRot, const FVECTOR2* pScl,
+	const FVECTOR2* pRotCtr, float Rot, const FVECTOR2* pTransl)
+{
+	XMVECTOR Tr = FVECTOR2(0, 0).XM();
+	XMVECTOR Sc = Tr;
+	XMVECTOR Rc = Tr;
+	XMVECTOR Sl = FVECTOR2(1, 1).XM();
+
+	if (pSclCtr) Sc = pSclCtr->XM();
+	if (pScl)	 Sl = pScl->XM();
+	if (pRotCtr) Rc = pRotCtr->XM();
+	if (pTransl) Tr = pTransl->XM();
+
+	XMMATRIX M = XMMatrixTransformation2D(Sc, SclRot, Sl, Rc, Rot, Tr);
+	pOut->Load(M);
+}
+
+// ============================================================================
+//
+void D3DMAT_OrthoOffCenterLH(FMATRIX4* o, float l, float r, float b, float t, float zn, float zf)
+{
+	o->Load(XMMatrixOrthographicOffCenterLH(l, r, b, t, zn, zf));
+}
+
+// ============================================================================
+//
+void D3DMAT_OrthoOffCenterRH(FMATRIX4* o, float l, float r, float b, float t, float zn, float zf)
+{
+	o->Load(XMMatrixOrthographicOffCenterRH(l, r, b, t, zn, zf));
+}
+
+// ============================================================================
+//
+void D3DMAT_LookAtRH(FMATRIX4* o, const FVECTOR3* pEye, const FVECTOR3* pAt, const FVECTOR3* pUp)
+{
+	o->Load(XMMatrixLookAtRH(pEye->XM(), pAt->XM(), pUp->XM()));
+}
+
 
 // ============================================================================
 //
@@ -1359,20 +1375,20 @@ void D3D9Light::Reset()
 
 // ============================================================================
 //
-float D3D9Light::GetIlluminance(D3DXVECTOR3 &_pos, float r) const
+float D3D9Light::GetIlluminance(FVECTOR3 &_pos, float r) const
 {
 	if (intensity < 0) return -1.0f;
 
-	D3DXVECTOR3 pos = _pos - Position;
+	FVECTOR3 pos = _pos - Position;
 
-	float d = D3DXVec3Length(&pos);
+	float d = oapi::length(pos);
 	float d2 = d*d;
 
 	if (d < r) return 1e6;	// Light is inside the sphere
 	if (d > (r + range)) return -1.0f; // Light can't reach the sphere
 
 	if ((Type == 1) && (cosp>0.1)) {
-		float x = D3DXVec3Dot(&pos, &Direction);
+		float x = dotp(pos, Direction);
 		if (x < -r) return -1.0f;	// The sphere is a way behind the spotlight
 		if ((sqrt(d2 - x*x) - x*tanp) * cosp > r) return -1.0f; // Light cone doesn't intersect the sphere
 	}
@@ -1396,13 +1412,13 @@ void D3D9Light::UpdateLight(const LightEmitter *_le, const class vObject *vo)
 
 	// -----------------------------------------------------------------------------
 
-	D3DXVec3TransformCoord(&Position, ptr(D3DXVEC(le->GetPosition())), vo->MWorld());
-	Dst2 = D3DXVec3Dot(&Position, &Position);
+	Position = oapiTransformCoord(&(_F(le->GetPosition())), vo->MWorld());
+	Dst2 = dotp(Position, Position);
 
 	// -----------------------------------------------------------------------------
 
 	const double *att = ((PointLight*)le)->GetAttenuation();
-	Attenuation = D3DXVECTOR3((float)att[0], (float)att[1], (float)att[2]);
+	Attenuation = FVECTOR3((float)att[0], (float)att[1], (float)att[2]);
 
 	// -----------------------------------------------------------------------------
 
@@ -1444,7 +1460,7 @@ void D3D9Light::UpdateLight(const LightEmitter *_le, const class vObject *vo)
 
 	// -----------------------------------------------------------------------------
 	intensity = float(le->GetIntensity());
-	const COLOUR4 &col_d = le->GetDiffuseColour();
+	const FVECTOR4 &col_d = le->GetDiffuseColour();
 	Diffuse.r = (col_d.r*intensity);
 	Diffuse.g = (col_d.g*intensity);
 	Diffuse.b = (col_d.b*intensity);
@@ -1469,8 +1485,8 @@ void D3D9Light::UpdateLight(const LightEmitter *_le, const class vObject *vo)
 
 	// -----------------------------------------------------------------------------
 	if (Type != 0) {
-		D3DXVec3TransformNormal(&Direction, ptr(D3DXVEC(le->GetDirection())), vo->MWorld());
-		float angle = acos(dot(unit(Position), Direction));
+		Direction = oapiTransformNormal(&_F(le->GetDirection()), vo->MWorld());
+		float angle = acos(dotp(unit(Position), Direction));
 		cone = ilerp(U * 0.5f, P * 0.5f, angle);
 	}
 }
@@ -1673,7 +1689,7 @@ bool SketchMesh::LoadMeshFromHandle(MESHHANDLE hMesh)
 	// -----------------------------------------------------------------------
 
 	nMtrl = oapiMeshMaterialCount(hMesh);
-	if (nMtrl) Mtrl = new D3DXCOLOR[nMtrl];
+	if (nMtrl) Mtrl = new FVECTOR4[nMtrl];
 	for (DWORD i = 0; i < nMtrl; i++) {
 		MATERIAL* pMat = oapiMeshMaterial(hMesh, i);
 		if (pMat) {
@@ -1767,11 +1783,11 @@ SURFHANDLE SketchMesh::GetTexture(DWORD idx)
 
 // ===============================================================================================
 //
-D3DXCOLOR SketchMesh::GetMaterial(DWORD idx)
+FVECTOR4 SketchMesh::GetMaterial(DWORD idx)
 {
 	assert(idx < nGrp);
 	if (Grp[idx].MtrlIdx != SPEC_DEFAULT && Mtrl) return Mtrl[Grp[idx].MtrlIdx];
-	return D3DXCOLOR(1, 1, 1, 1);
+	return F4_One;
 }
 
 

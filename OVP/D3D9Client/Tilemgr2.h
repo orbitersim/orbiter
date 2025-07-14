@@ -106,7 +106,7 @@ public:
 	inline void GetIndex(int *lng, int *lat) const { *lng = ilng, *lat = ilat; }
 	inline bool HasOwnTex() const { return owntex; }
 	inline bool HasOwnElev() const { return has_elevfile; }
-	inline void GetWorldMatrix(void *pOut) const { memcpy(pOut, &mWorld, sizeof(D3DXMATRIX)); }
+	inline void GetWorldMatrix(void *pOut) const { memcpy(pOut, &mWorld, sizeof(FMATRIX4)); }
 
 	bool PreDelete();
 	// Prepare tile for deletion. Return false if tile is locked
@@ -126,8 +126,8 @@ public:
 	// Match edges with neighbour tiles
 
 	float GetBoundingSphereRad() const;
-	D3DXVECTOR3 GetBoundingSpherePos() const;
-	bool Pick(const LPD3DXMATRIX pW, const D3DXVECTOR3 *vDir, TILEPICK &result);
+	FVECTOR3 GetBoundingSpherePos() const;
+	bool Pick(const LPFMATRIX4 pW, const FVECTOR3 *vDir, TILEPICK &result);
 	FVECTOR4 GetTexRangeDX (const TEXCRDRANGE2 *subrange) const;
 	inline const TEXCRDRANGE2 *GetTexRange () const { return &texrange; }
 	// Returns the tile's texture coordinate range
@@ -212,7 +212,7 @@ protected:
 	float tgtscale;
 	
 public:
-	D3DXMATRIX mWorld;
+	FMATRIX4 mWorld;
 	MATRIX4 dmWorld;
 	TILEBOUNDS bnd;
 };
@@ -441,7 +441,7 @@ public:
 	int GetElevation(double lng, double lat, double *elev, FVECTOR3 *nrm, SurfTile **cache);
 	void Unload(int lvl);
 
-	void Pick(D3DXVECTOR3 &vRay, TILEPICK *pPick);
+	void Pick(FVECTOR3 &vRay, TILEPICK *pPick);
 
 	// v2 Labels interface -----------------------------------------------
 	void CreateLabels();

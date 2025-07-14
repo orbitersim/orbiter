@@ -144,7 +144,7 @@ protected:
 
 	void InitCelestialTransform();
 
-	bool LocalHorizonTransform(MATRIX3& R, D3DXMATRIX& T);
+	bool LocalHorizonTransform(MATRIX3& R, FMATRIX4& T);
 
 	/**
 	 * \brief Convert a direction into viewport coordinates
@@ -177,7 +177,7 @@ private:
 	LPDIRECT3DVERTEXBUFFER9 m_elGridLabelVtx; ///< vertex buffer for elevation grid labels
 	LPDIRECT3DINDEXBUFFER9 m_GridLabelIdx; ///< index list for azimuth/elevation grid labels
 	MATRIX3 m_rotCelestial;          ///< rotation matrix for celestial grid rendering
-	D3DXMATRIX m_transformCelestial; ///< rotation for celestial grid rendering
+	FMATRIX4 m_transformCelestial; ///< rotation for celestial grid rendering
 	double m_mjdPrecessionChecked;
 
 	static ID3DXEffect* s_FX;

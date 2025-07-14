@@ -57,7 +57,7 @@ vObject::vObject(OBJHANDLE _hObj, const Scene *scene)
 	, lng(0), lat(0)
 {
 	_TRACE;
-	D3DXMatrixIdentity(&mWorld);
+	oapiMatrixIdentity(&mWorld);
 	if (_hObj) size = oapiGetSize(_hObj);
 	else size = 0;
 	dmWorld = identity4();
@@ -218,11 +218,10 @@ void vObject::UpdateBoundingBox()
 
 // ===========================================================================================
 //
-D3DXVECTOR3 vObject::GetBoundingSpherePosDX()
+FVECTOR3 vObject::GetBoundingSpherePosDX()
 {
 	if (bBSRecompute) UpdateBoundingBox();
-	D3DXVECTOR3 pos;
-	D3DXVec3TransformCoord(&pos, (LPD3DXVECTOR3)&BBox.bs, &mWorld);
+	FVECTOR3 pos = oapiTransformCoord(&_F(BBox.bs), &mWorld);
 	return pos;
 }
 
@@ -230,7 +229,7 @@ D3DXVECTOR3 vObject::GetBoundingSpherePosDX()
 //
 VECTOR3 vObject::GetBoundingSpherePos()
 {
-	D3DXVECTOR3 pos = GetBoundingSpherePosDX();
+	FVECTOR3 pos = GetBoundingSpherePosDX();
 	return _V((double)pos.x, (double)pos.y, (double)pos.z);
 }
 
@@ -264,7 +263,7 @@ bool vObject::IsVisible()
 	if ((objtp == OBJTP_VESSEL) && apprad < 0.005*apr) return false;
 	if ((objtp == OBJTP_SURFBASE) && apprad < 0.02*apr) return false;
 
-	return gc->GetScene()->IsVisibleInCamera(ptr(D3DXVEC(pos)), rad);
+	return gc->GetScene()->IsVisibleInCamera(ptr(_F(pos)), rad);
 
 	/* 
 	if (bVis) {
@@ -294,15 +293,14 @@ void vObject::RenderSpot(LPDIRECT3DDEVICE9 dev, const VECTOR3 *ofs, float size, 
 	double cosa = dotp (unit(gpos), unit(gpos - camp));
 	double intens = (lighting ? 0.5 * ((1.0-ambient)*cosa + 1.0+ambient) : 1.0);
 
-	D3DXMATRIX W;
-	D3DXVECTOR3 vPos(float(pos.x), float(pos.y), float(pos.z));
-	D3DXVECTOR3 vCam;
-	D3DXVec3Normalize(&vCam, &vPos);
+	FMATRIX4 W;
+	FVECTOR3 vPos(float(pos.x), float(pos.y), float(pos.z));
+	FVECTOR3 vCam = unit(vPos);	
 	D3DMAT_CreateX_Billboard(&vCam, &vPos, size, &W);
 
-	D3DXCOLOR color((float)col.x, (float)col.y, (float)col.z, 1.0f);
+	FVECTOR4 color((float)col.x, (float)col.y, (float)col.z, 1.0f);
 
-	D3D9Effect::RenderSpot((float)intens, &color, (const LPD3DXMATRIX)&W, blobtex[shape]);
+	D3D9Effect::RenderSpot((float)intens, &color, (const LPFMATRIX4)&W, blobtex[shape]);
 }
 
 
@@ -327,21 +325,20 @@ void vObject::RenderDot(LPDIRECT3DDEVICE9 dev)
 	if (apr<0.3) s = 1.0;
 	float scale = float(size * ds * s/apr);
 
-	D3DXMATRIX W;
-	D3DXVECTOR3 vCam;
-	D3DXVECTOR3 vPos(float(cpos.x), float(cpos.y), float(cpos.z));
+	FMATRIX4 W;
+	FVECTOR3 vPos(float(cpos.x), float(cpos.y), float(cpos.z));
 	vPos*=float(ds);
 
-	D3DXVec3Normalize(&vCam, &vPos);
+	FVECTOR3 vCam = unit(vPos);
 	D3DMAT_CreateX_Billboard(&vCam, &vPos, scale, &W);
 
 	float ints = float(sqrt(1.0+dotp(unit(gpos-spos), unit(cpos)))) * 1.0f;
 
 	if (ints>1.0f) ints=1.0f;
 
-	D3DXCOLOR color(float(albedo.x)*ints, float(albedo.y)*ints, float(albedo.z)*ints, 1.0f);
+	FVECTOR4 color(float(albedo.x)*ints, float(albedo.y)*ints, float(albedo.z)*ints, 1.0f);
 
-	D3D9Effect::RenderSpot(1.0f, &color, (const LPD3DXMATRIX)&W, blobtex[0]);
+	D3D9Effect::RenderSpot(1.0f, &color, (const LPFMATRIX4)&W, blobtex[0]);
 }
 
 
@@ -366,24 +363,24 @@ void vObject::RenderVectors (LPDIRECT3DDEVICE9 dev, D3D9Pad* pSkp)
 				//scale *= 0.99f; // 1% "slimmer" to avoid z-fighting with force vector(s)
 				float ascale = float(size) * sclset * 0.5f;
 
-				RenderAxisVector(pSkp, ptr(D3DXCOLOR(1, 0, 0, alpha)), _V(1, 0, 0), ascale, scale);
-				RenderAxisLabel(pSkp, ptr(D3DXCOLOR(1, 0, 0, alpha)), _V(1, 0, 0), ascale, scale, "+X");
+				RenderAxisVector(pSkp, ptr(FVECTOR4(1, 0, 0, alpha)), _V(1, 0, 0), ascale, scale);
+				RenderAxisLabel(pSkp, ptr(FVECTOR4(1, 0, 0, alpha)), _V(1, 0, 0), ascale, scale, "+X");
 
-				RenderAxisVector(pSkp, ptr(D3DXCOLOR(0, 1, 0, alpha)), _V(0, 1, 0), ascale, scale);
-				RenderAxisLabel(pSkp, ptr(D3DXCOLOR(0, 1, 0, alpha)), _V(0, 1, 0), ascale, scale, "+Y");
+				RenderAxisVector(pSkp, ptr(FVECTOR4(0, 1, 0, alpha)), _V(0, 1, 0), ascale, scale);
+				RenderAxisLabel(pSkp, ptr(FVECTOR4(0, 1, 0, alpha)), _V(0, 1, 0), ascale, scale, "+Y");
 
-				RenderAxisVector(pSkp, ptr(D3DXCOLOR(0, 0, 1, alpha)), _V(0, 0, 1), ascale, scale);
-				RenderAxisLabel(pSkp, ptr(D3DXCOLOR(0, 0, 1, alpha)), _V(0, 0, 1), ascale, scale, "+Z");
+				RenderAxisVector(pSkp, ptr(FVECTOR4(0, 0, 1, alpha)), _V(0, 0, 1), ascale, scale);
+				RenderAxisLabel(pSkp, ptr(FVECTOR4(0, 0, 1, alpha)), _V(0, 0, 1), ascale, scale, "+Z");
 
 				if (favmode & FAV_NEGATIVE) {
-					RenderAxisVector(pSkp, ptr(D3DXCOLOR(1, 0, 0, alpha * 0.5f)), _V(-1, 0, 0), ascale, scale);
-					RenderAxisLabel(pSkp, ptr(D3DXCOLOR(1, 0, 0, alpha)), _V(-1, 0, 0), ascale, scale, "-X");
+					RenderAxisVector(pSkp, ptr(FVECTOR4(1, 0, 0, alpha * 0.5f)), _V(-1, 0, 0), ascale, scale);
+					RenderAxisLabel(pSkp, ptr(FVECTOR4(1, 0, 0, alpha)), _V(-1, 0, 0), ascale, scale, "-X");
 
-					RenderAxisVector(pSkp, ptr(D3DXCOLOR(0, 1, 0, alpha * 0.5f)), _V(0, -1, 0), ascale, scale);
-					RenderAxisLabel(pSkp, ptr(D3DXCOLOR(0, 1, 0, alpha)), _V(0, -1, 0), ascale, scale, "-Y");
+					RenderAxisVector(pSkp, ptr(FVECTOR4(0, 1, 0, alpha * 0.5f)), _V(0, -1, 0), ascale, scale);
+					RenderAxisLabel(pSkp, ptr(FVECTOR4(0, 1, 0, alpha)), _V(0, -1, 0), ascale, scale, "-Y");
 
-					RenderAxisVector(pSkp, ptr(D3DXCOLOR(0, 0, 1, alpha * 0.5f)), _V(0, 0, -1), ascale, scale);
-					RenderAxisLabel(pSkp, ptr(D3DXCOLOR(0, 0, 1, alpha)), _V(0, 0, -1), ascale, scale, "-Z");
+					RenderAxisVector(pSkp, ptr(FVECTOR4(0, 0, 1, alpha * 0.5f)), _V(0, 0, -1), ascale, scale);
+					RenderAxisLabel(pSkp, ptr(FVECTOR4(0, 0, 1, alpha)), _V(0, 0, -1), ascale, scale, "-Z");
 				}
 			}
 		}
@@ -393,9 +390,9 @@ void vObject::RenderVectors (LPDIRECT3DDEVICE9 dev, D3D9Pad* pSkp)
 
 // ===========================================================================================
 //
-void vObject::RenderAxisVector(D3D9Pad *pSkp, const D3DXCOLOR *pColor, VECTOR3 vector, float lscale, float size, bool bLog)
+void vObject::RenderAxisVector(D3D9Pad *pSkp, const FVECTOR4 *pColor, VECTOR3 vector, float lscale, float size, bool bLog)
 {
-	D3DXMATRIX W;
+	FMATRIX4 W;
 
 	VECTOR3 dir = mul(grot, vector);
 	VECTOR3 camp = gc->GetScene()->GetCameraGPos();
@@ -407,15 +404,15 @@ void vObject::RenderAxisVector(D3D9Pad *pSkp, const D3DXCOLOR *pColor, VECTOR3 v
     VECTOR3 x = mul (grot, unit(rot)) * size;
     VECTOR3 z = mul (grot, unit(crossp(vector, rot))) * size;
 
-    D3DXMatrixIdentity(&W);
+    oapiMatrixIdentity(&W);
 
-    W._11 = float(x.x); W._12 = float(x.y); W._13 = float(x.z);
-    W._21 = float(y.x); W._22 = float(y.y); W._23 = float(y.z);
-    W._31 = float(z.x); W._32 = float(z.y); W._33 = float(z.z);
+    W.m11 = float(x.x); W.m12 = float(x.y); W.m13 = float(x.z);
+    W.m21 = float(y.x); W.m22 = float(y.y); W.m23 = float(y.z);
+    W.m31 = float(z.x); W.m32 = float(z.y); W.m33 = float(z.z);
 
-    W._41 = float(pos.x);
-    W._42 = float(pos.y);
-    W._43 = float(pos.z);
+    W.m41 = float(pos.x);
+    W.m42 = float(pos.y);
+    W.m43 = float(pos.z);
 
 	float len = float(length(vector));
 
@@ -428,10 +425,10 @@ void vObject::RenderAxisVector(D3D9Pad *pSkp, const D3DXCOLOR *pColor, VECTOR3 v
 
 // ===========================================================================================
 //
-void vObject::RenderAxisLabel(D3D9Pad *pSkp, const D3DXCOLOR *clr, VECTOR3 vector, float lscale, float size, const char *label, bool bLog)
+void vObject::RenderAxisLabel(D3D9Pad *pSkp, const FVECTOR4 *clr, VECTOR3 vector, float lscale, float size, const char *label, bool bLog)
 {
-	D3DXVECTOR3 homog, ws;
-	D3DXMATRIX W;
+	FVECTOR3 homog, ws;
+	FMATRIX4 W;
 
 	VECTOR3 dir = mul(grot, vector);
 	VECTOR3 camp = gc->GetScene()->GetCameraGPos();
@@ -443,30 +440,30 @@ void vObject::RenderAxisLabel(D3D9Pad *pSkp, const D3DXCOLOR *clr, VECTOR3 vecto
 	VECTOR3 x = mul(grot, unit(rot)) * size;
 	VECTOR3 z = mul(grot, unit(crossp(vector, rot))) * size;
 
-	D3DXMatrixIdentity(&W);
+	oapiMatrixIdentity(&W);
 
-	W._11 = float(x.x);  W._12 = float(x.y);  W._13 = float(x.z);
-	W._21 = float(y.x);  W._22 = float(y.y);  W._23 = float(y.z);
-	W._31 = float(z.x);  W._32 = float(z.y);  W._33 = float(z.z);
+	W.m11 = float(x.x);  W.m12 = float(x.y);  W.m13 = float(x.z);
+	W.m21 = float(y.x);  W.m22 = float(y.y);  W.m23 = float(y.z);
+	W.m31 = float(z.x);  W.m32 = float(z.y);  W.m33 = float(z.z);
 
-	W._41 = float(pos.x);
-	W._42 = float(pos.y);
-	W._43 = float(pos.z);
+	W.m41 = float(pos.x);
+	W.m42 = float(pos.y);
+	W.m43 = float(pos.z);
 
 	float len = float(length(vector));
 
 	if (bLog) len = max(0.0f, 13.0f + log(len)) * lscale / size;
 	else      len = len * lscale / size;
 
-	D3DXVec3TransformCoord(&ws, ptr(D3DXVECTOR3(0, len, 0)), &W);
-	D3DXVec3TransformCoord(&homog, &ws, scn->GetProjectionViewMatrix());
+	ws = oapiTransformCoord(ptr(FVECTOR3(0, len, 0)), &W);
+	homog = oapiTransformCoord(&ws, scn->GetProjectionViewMatrix());
 
-	if (D3DXVec3Dot(&ws, scn->GetCameraZ()) < 0) return;
+	if (dotp(ws, *scn->GetCameraZ()) < 0) return;
 
 	if (homog.x >= -1.0f && homog.x <= 1.0f && homog.y >= -1.0f && homog.y <= 1.0f) {
 		int xc = (int)(scn->ViewW()*0.5*(1.0f + homog.x));
 		int yc = (int)(scn->ViewH()*0.5*(1.0f - homog.y));
-		pSkp->SetTextColor(D3DXCOLOR(clr->b, clr->g, clr->r, clr->a));
+		pSkp->SetTextColor(FVECTOR4(clr->b, clr->g, clr->r, clr->a).dword_abgr());
 		pSkp->Text(xc + 10, yc, label, lstrlen(label));
 	}
 }

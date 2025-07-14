@@ -11,6 +11,7 @@
 #include "VesselAPI.h"
 #include "ModuleAPI.h"
 #include "DrawAPI.h"
+#include "MathAPI.h"
 #include <windowsx.h>
 #include "gcCoreAPI.h"
 #include "Orbit.h"

@@ -193,7 +193,7 @@ bool MatMgr::LoadConfiguration(bool bAppend)
 		// --------------------------------------------------------------------------------------------
 		if (!strncmp(cbuf, "SPECULAR", 8)) {
 			if (sscanf_s(cbuf, "SPECULAR %f %f %f %f", &a, &b, &c, &d)!=4) LogErr("Invalid Line in (%s): %s", path, cbuf);
-			Mat.Specular = D3DXVECTOR4(a, b, c, d);
+			Mat.Specular = FVECTOR4(a, b, c, d);
 			Mat.ModFlags |= D3D9MATEX_SPECULAR;
 			continue;
 		}
@@ -201,7 +201,7 @@ bool MatMgr::LoadConfiguration(bool bAppend)
 		// --------------------------------------------------------------------------------------------
 		if (!strncmp(cbuf, "DIFFUSE", 7)) {
 			if (sscanf_s(cbuf, "DIFFUSE %f %f %f %f", &a, &b, &c, &d)!=4) LogErr("Invalid Line in (%s): %s", path, cbuf);
-			Mat.Diffuse = D3DXVECTOR4(a, b, c, d);
+			Mat.Diffuse = FVECTOR4(a, b, c, d);
 			Mat.ModFlags |= D3D9MATEX_DIFFUSE;
 			continue;
 		}
@@ -209,7 +209,7 @@ bool MatMgr::LoadConfiguration(bool bAppend)
 		// --------------------------------------------------------------------------------------------
 		if (!strncmp(cbuf, "EMISSIVE", 8)) {
 			if (sscanf_s(cbuf, "EMISSIVE %f %f %f", &a, &b, &c)!=3) LogErr("Invalid Line in (%s): %s", path, cbuf);
-			Mat.Emissive = D3DXVECTOR3(a, b, c);
+			Mat.Emissive = FVECTOR3(a, b, c);
 			Mat.ModFlags |= D3D9MATEX_EMISSIVE;
 			continue;
 		}
@@ -217,7 +217,7 @@ bool MatMgr::LoadConfiguration(bool bAppend)
 		// --------------------------------------------------------------------------------------------
 		if (!strncmp(cbuf, "EMISSION2", 9)) {
 			if (sscanf_s(cbuf, "EMISSION2 %f %f %f", &a, &b, &c) != 3) LogErr("Invalid Line in (%s): %s", path, cbuf);
-			Mat.Emission2 = D3DXVECTOR3(a, b, c);
+			Mat.Emission2 = FVECTOR3(a, b, c);
 			Mat.ModFlags |= D3D9MATEX_EMISSION2;
 			continue;
 		}
@@ -225,7 +225,7 @@ bool MatMgr::LoadConfiguration(bool bAppend)
 		// --------------------------------------------------------------------------------------------
 		if (!strncmp(cbuf, "AMBIENT", 7)) {
 			if (sscanf_s(cbuf, "AMBIENT %f %f %f", &a, &b, &c)!=3) LogErr("Invalid Line in (%s): %s", path, cbuf);
-			Mat.Ambient = D3DXVECTOR3(a, b, c);
+			Mat.Ambient = FVECTOR3(a, b, c);
 			Mat.ModFlags |= D3D9MATEX_AMBIENT;
 			continue;
 		}
@@ -233,7 +233,7 @@ bool MatMgr::LoadConfiguration(bool bAppend)
 		// --------------------------------------------------------------------------------------------
 		if (!strncmp(cbuf, "REFLECT", 7)) {
 			if (sscanf_s(cbuf, "REFLECT %f %f %f", &a, &b, &c) != 3) LogErr("Invalid Line in (%s): %s", path, cbuf);
-			Mat.Reflect = D3DXVECTOR3(a, b, c);
+			Mat.Reflect = FVECTOR3(a, b, c);
 			Mat.ModFlags |= D3D9MATEX_REFLECT;
 			continue;
 		}
@@ -242,7 +242,7 @@ bool MatMgr::LoadConfiguration(bool bAppend)
 		if (!strncmp(cbuf, "FRESNEL", 7)) {
 			if (sscanf_s(cbuf, "FRESNEL %f %f %f", &a, &b, &c) != 3) LogErr("Invalid Line in (%s): %s", path, cbuf);
 			if (b < 10.0f) b = 1024.0f;
-			Mat.Fresnel = D3DXVECTOR3(a, c, b);
+			Mat.Fresnel = FVECTOR3(a, c, b);
 			Mat.ModFlags |= D3D9MATEX_FRESNEL;
 			continue;
 		}
@@ -250,8 +250,8 @@ bool MatMgr::LoadConfiguration(bool bAppend)
 		// --------------------------------------------------------------------------------------------
 		if (!strncmp(cbuf, "ROUGHNESS", 9)) {
 			int cnt = sscanf_s(cbuf, "ROUGHNESS %f %f", &a, &b);
-			if (cnt == 1) Mat.Roughness = D3DXVECTOR2(a, 1.0f);
-			else if (cnt == 2)  Mat.Roughness = D3DXVECTOR2(a, b);
+			if (cnt == 1) Mat.Roughness = FVECTOR2(a, 1.0f);
+			else if (cnt == 2)  Mat.Roughness = FVECTOR2(a, b);
 			else LogErr("Invalid Line in (%s): %s", path, cbuf);
 			Mat.ModFlags |= D3D9MATEX_ROUGHNESS;
 			continue;
@@ -260,8 +260,8 @@ bool MatMgr::LoadConfiguration(bool bAppend)
 		// --------------------------------------------------------------------------------------------
 		if (!strncmp(cbuf, "SMOOTHNESS", 10)) {
 			int cnt = sscanf_s(cbuf, "SMOOTHNESS %f %f", &a, &b);
-			if (cnt == 1) Mat.Roughness = D3DXVECTOR2(a, 1.0f);
-			else if (cnt == 2)  Mat.Roughness = D3DXVECTOR2(a, b);
+			if (cnt == 1) Mat.Roughness = FVECTOR2(a, 1.0f);
+			else if (cnt == 2)  Mat.Roughness = FVECTOR2(a, b);
 			else LogErr("Invalid Line in (%s): %s", path, cbuf);
 			Mat.ModFlags |= D3D9MATEX_ROUGHNESS;
 			continue;

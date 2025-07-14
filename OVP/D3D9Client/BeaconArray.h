@@ -11,7 +11,7 @@
 #include "D3D9Client.h"
 #include "D3D9Effect.h"
 #include <d3d9.h>
-#include <d3dx9.h>
+#include "MathAPI.h"
 
 
 /**
@@ -63,7 +63,7 @@ public:
 	 * \param pW 3DX matrix to operate on
 	 * \param time Seconds-only part of the simulation elapsed time (0...1.0)
 	 */
-	void Render(LPDIRECT3DDEVICE9 dev, const LPD3DXMATRIX pW, float time=0.5f);
+	void Render(LPDIRECT3DDEVICE9 dev, const LPFMATRIX4 pW, float time=0.5f);
 
 	void Update(DWORD nCount, class vPlanet *vP);
 

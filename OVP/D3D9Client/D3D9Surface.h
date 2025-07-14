@@ -13,7 +13,7 @@
 #include "GDIPad.h"
 //#include "gcCore.h"
 #include <d3d9.h>
-#include <d3dx9.h>
+#include "MathAPI.h"
 
 #define	MAP_NORMAL			0
 #define	MAP_SPECULAR		1

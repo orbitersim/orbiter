@@ -41,6 +41,17 @@
 #include <unordered_map>
 #include <d3d9on12.h>
 
+#include <DirectXMath.h>
+#include <DirectXCollision.h>
+#include <DirectXPackedVector.h>
+
+#include <DirectXCollision.inl>
+#include <DirectXMathConvert.inl>
+#include <DirectXMathMatrix.inl>
+#include <DirectXMathMisc.inl>
+#include <DirectXMathVector.inl>
+#include <DirectXPackedVector.inl>
+
 
 #if defined(_MSC_VER) && (_MSC_VER <= 1700 ) // Microsoft Visual Studio Version 2012 and lower
 #define round(v) floor(v+0.5)
@@ -414,7 +425,7 @@ HWND D3D9Client::clbkCreateRenderWindow()
 	surfBltTgt		 = NULL;	// This variable is not used, set it to NULL anyway
 	hMainThread		 = GetCurrentThread();
 
-	D3DXMatrixIdentity(&ident);
+	oapiMatrixIdentity(&ident);
 
 	oapiDebugString()[0] = '\0';
 
@@ -761,26 +772,26 @@ void D3D9Client::SketchPadTest()
 	pSkp->QuickPen(0xA0000000, 3.0f);
 	pSkp->PushWorldTransform();
 
-	pSkp->SetWorldScaleTransform2D(ptr(FVECTOR2(100.0f, 100.0f)), &pos0);
+	pSkp->SetWorldScaleTransform2D(&(FVECTOR2(100.0f, 100.0f)), &pos0);
 	pSkp->DrawPoly(hColors);
 	pSkp->DrawPoly(hOutline);
 
-	pSkp->SetWorldScaleTransform2D(ptr(FVECTOR2(100.0f, 100.0f)), &pos1);
+	pSkp->SetWorldScaleTransform2D(&(FVECTOR2(100.0f, 100.0f)), &pos1);
 	pSkp->DrawPoly(hOutline2);
 
-	pSkp->SetWorldScaleTransform2D(ptr(FVECTOR2(100.0f, 100.0f)), &pos2);
+	pSkp->SetWorldScaleTransform2D(&(FVECTOR2(100.0f, 100.0f)), &pos2);
 	pSkp->DrawPoly(hStrip);
 
-	pSkp->SetWorldScaleTransform2D(ptr(FVECTOR2(100.0f, 100.0f)), &pos3);
+	pSkp->SetWorldScaleTransform2D(&(FVECTOR2(100.0f, 100.0f)), &pos3);
 	pSkp->DrawPoly(hStrip2);
 
-	pSkp->SetWorldScaleTransform2D(ptr(FVECTOR2(100.0f, 100.0f)), &pos4);
+	pSkp->SetWorldScaleTransform2D(&(FVECTOR2(100.0f, 100.0f)), &pos4);
 	pSkp->QuickPen(0xFF000000, 25.0f);
 	pSkp->DrawPoly(hOutline);
 
 	hSrc = clbkLoadSurface("generic/noisep.dds", OAPISURFACE_TEXTURE);
 
-	pSkp->SetWorldScaleTransform2D(ptr(FVECTOR2(1.0f, 1.0f)), &pos5);
+	pSkp->SetWorldScaleTransform2D(&(FVECTOR2(1.0f, 1.0f)), &pos5);
 
 	FVECTOR2 pt[4];
 	pt[0] = FVECTOR2(-100.0f, -100.0f);
@@ -1790,8 +1801,8 @@ LRESULT D3D9Client::RenderWndProc (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM l
 					out.hVessel = pick.vObj->GetObjHandle();
 					out.mesh = MESHHANDLE(pick.pMesh);
 					out.group = pick.group;
-					out.pos = _FV(pick.pos);
-					out.normal = _FV(pick.normal);
+					out.pos = pick.pos;
+					out.normal = pick.normal;
 					out.dist = pick.dist;
 					MakeGenericProcCall(GENERICPROC_PICK_VESSEL, sizeof(gcCore::PickData), &out);
 				}
@@ -1963,8 +1974,8 @@ void D3D9Client::clbkRender2DPanel (SURFHANDLE *hSurf, MESHHANDLE hMesh, MATRIX3
 	float vw = (float)viewW;
 	float vh = (float)viewH;
 
-	D3DXMATRIX mVP;
-	D3DXMatrixOrthoOffCenterRH(&mVP, (0.0f-dx)*sx, (vw-dx)*sx, (vh-dy)*sy, (0.0f-dy)*sy, -100.0f, 100.0f);
+	FMATRIX4 mVP;
+	D3DMAT_OrthoOffCenterRH(&mVP, (0.0f-dx)*sx, (vw-dx)*sx, (vh-dy)*sy, (0.0f-dy)*sy, -100.0f, 100.0f);
 	D3D9Effect::SetViewProjMatrix(&mVP);
 
 	for (DWORD i=0;i<ngrp;i++) {
@@ -2801,7 +2812,7 @@ SURFHANDLE D3D9Client::GetBackBufferHandle() const
 
 // =======================================================================
 
-void D3D9Client::MakeRenderProcCall(Sketchpad *pSkp, DWORD id, LPD3DXMATRIX pV, LPD3DXMATRIX pP)
+void D3D9Client::MakeRenderProcCall(Sketchpad *pSkp, DWORD id, LPFMATRIX4 pV, LPFMATRIX4 pP)
 {
 	for (auto it = RenderProcs.cbegin(); it != RenderProcs.cend(); ++it) {
 		if (it->id == id) {

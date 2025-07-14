@@ -10,7 +10,7 @@
 #include "OrbiterAPI.h"
 #include "D3D9Client.h"
 #include <d3d9.h> 
-#include <d3dx9.h>
+#include "MathAPI.h"
 
 
 // ======================================================================

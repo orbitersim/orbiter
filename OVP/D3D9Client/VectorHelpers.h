@@ -242,101 +242,63 @@ inline VECTOR4 vmin(const VECTOR4 &v, const VECTOR4 &w)
 }
 
 
-// D3DXVECTOR3 Helpers ==================================================================
+// FVECTOR3 Helpers ==================================================================
 //
 //
 
-inline D3DXVECTOR3 exp2(const D3DXVECTOR3 &v)
+inline FVECTOR3 exp2(const FVECTOR3 &v)
 {
-	return D3DXVECTOR3(exp2(v.x), exp2(v.y), exp2(v.z));
+	return FVECTOR3(exp2(v.x), exp2(v.y), exp2(v.z));
 }
 
-inline D3DXVECTOR3 _D3DXVECTOR3(const VECTOR3 &v)
+inline FVECTOR3 _FVECTOR3(const VECTOR3 &v)
 {
-	return D3DXVECTOR3(float(v.x), float(v.y), float(v.z));
+	return FVECTOR3(float(v.x), float(v.y), float(v.z));
 }
 
-inline D3DXVECTOR3 _D3DXVECTOR3(double x, double y, double z)
+inline FVECTOR3 _FVECTOR3(double x, double y, double z)
 {
-	return D3DXVECTOR3(float(x), float(y), float(z));
+	return FVECTOR3(float(x), float(y), float(z));
 }
 
-inline D3DXVECTOR3 operator* (const D3DXVECTOR3 &a, const D3DXVECTOR3 &b)
+inline FVECTOR3 rcp(const FVECTOR3 &v)
 {
-	return D3DXVECTOR3(a.x*b.x, a.y*b.y, a.z*b.z);
+	return FVECTOR3(1.0f/v.x, 1.0f/v.y, 1.0f/v.z);
 }
 
-inline D3DXVECTOR3 operator+ (const D3DXVECTOR3 &a, float d)
+inline FVECTOR3 vmax(const FVECTOR3 &v, const FVECTOR3 &w)
 {
-	return D3DXVECTOR3(a.x+d, a.y+d, a.z+d);
+	return FVECTOR3(std::max(v.x, w.x), std::max(v.y, w.y), std::max(v.z, w.z));
 }
 
-inline D3DXVECTOR3 &operator*= (D3DXVECTOR3 &a, const D3DXVECTOR3 &b)
+inline FVECTOR3 vmin(const FVECTOR3 &v, const FVECTOR3 &w)
 {
-	a.x *= b.x; a.y *= b.y; a.z *= b.z; 
-	return a;
+	return FVECTOR3(std::min(v.x, w.x), std::min(v.y, w.y), std::min(v.z, w.z));
 }
 
-inline D3DXVECTOR3 &operator+= (D3DXVECTOR3 &a, float d)
+inline FVECTOR3 lerp(const FVECTOR3 &v, const FVECTOR3 &w, float x)
 {
-	a.x += d; a.y += d; a.z += d; 
-	return a;
-}
-
-inline D3DXVECTOR3 rcp(const D3DXVECTOR3 &v)
-{
-	return D3DXVECTOR3(1.0f/v.x, 1.0f/v.y, 1.0f/v.z);
-}
-
-inline D3DXVECTOR3 vmax(const D3DXVECTOR3 &v, const D3DXVECTOR3 &w)
-{
-	return D3DXVECTOR3(std::max(v.x, w.x), std::max(v.y, w.y), std::max(v.z, w.z));
-}
-
-inline D3DXVECTOR3 vmin(const D3DXVECTOR3 &v, const D3DXVECTOR3 &w)
-{
-	return D3DXVECTOR3(std::min(v.x, w.x), std::min(v.y, w.y), std::min(v.z, w.z));
-}
-
-inline D3DXVECTOR3 lerp(const D3DXVECTOR3 &v, const D3DXVECTOR3 &w, float x)
-{
-	return D3DXVECTOR3(v.x+(w.x-v.x)*x, v.y+(w.y-v.y)*x, v.z+(w.z-v.z)*x);
+	return FVECTOR3(v.x+(w.x-v.x)*x, v.y+(w.y-v.y)*x, v.z+(w.z-v.z)*x);
 }
 
 
 
-// D3DXVECTOR4 Helpers ==================================================================
+// FVECTOR4 Helpers ==================================================================
 //
 //
-inline D3DXVECTOR4 abs(D3DXVECTOR4 &a)
+inline FVECTOR4 abs(FVECTOR4 &a)
 {
-	return D3DXVECTOR4(abs(a.x), abs(a.y), abs(a.z), abs(a.w));
+	return FVECTOR4(abs(a.x), abs(a.y), abs(a.z), abs(a.w));
 }
 
-inline D3DXVECTOR4 sign(D3DXVECTOR4 &a)
+inline FVECTOR4 sign(FVECTOR4 &a)
 {
-	return D3DXVECTOR4(sign(a.x), sign(a.y), sign(a.z), sign(a.w));
+	return FVECTOR4(sign(a.x), sign(a.y), sign(a.z), sign(a.w));
 }
 
-inline D3DXVECTOR4 pow(float x, D3DXVECTOR4 &y)
+inline FVECTOR4 pow(float x, FVECTOR4 &y)
 {
-	return D3DXVECTOR4(pow(x, y.x), pow(x, y.y), pow(x, y.z), pow(x, y.w));
-}
-
-inline D3DXVECTOR4 operator- (const D3DXVECTOR4 &v, float d)
-{
-	return D3DXVECTOR4(v.x-d, v.y-d, v.z-d, v.w-d);
-}
-
-inline D3DXVECTOR4 operator+ (const D3DXVECTOR4 &v, float d)
-{
-	return D3DXVECTOR4(v.x+d, v.y+d, v.z+d, v.w+d);
-}
-
-inline D3DXVECTOR4 &operator*= (D3DXVECTOR4 &v, const D3DXVECTOR4 &d)
-{
-	v.x*=d.x; v.y*=d.y;	v.z*=d.z; v.w*=d.w;
-	return v;
+	return FVECTOR4(pow(x, y.x), pow(x, y.y), pow(x, y.z), pow(x, y.w));
 }
 
 #endif

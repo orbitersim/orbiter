@@ -129,6 +129,9 @@ namespace oapi {
 	class Pen;
 	class Brush;
 	union FVECTOR4;
+	union FVECTOR3;
+	union FVECTOR2;
+	union FMATRIX4;
 }
 
 // ======================================================================
@@ -6798,6 +6801,15 @@ OAPIFUNC void oapiTriggerPanelRedrawArea (int panel_id, int area_id);
   	 */
 OAPIFUNC void oapiTriggerRedrawArea (int panel_id, int vc_id, int area_id);
 //@}
+
+
+OAPIFUNC void oapiMatrixIdentity(oapi::FMATRIX4 *x);
+OAPIFUNC oapi::FMATRIX4  mul(const oapi::FMATRIX4* a, const oapi::FMATRIX4* b);
+OAPIFUNC oapi::FMATRIX4* oapiMatrixMultiply(oapi::FMATRIX4* o, const oapi::FMATRIX4* a, const oapi::FMATRIX4* b);
+OAPIFUNC oapi::FMATRIX4* oapiMatrixInverse(oapi::FMATRIX4* o, float* d, const oapi::FMATRIX4* a);
+OAPIFUNC oapi::FMATRIX4* oapiMatrixRotationAxis(oapi::FMATRIX4* o, oapi::FVECTOR3* pAxis, float rad);
+OAPIFUNC oapi::FVECTOR3 oapiTransformCoord(const oapi::FVECTOR3* V, const oapi::FMATRIX4* M);
+OAPIFUNC oapi::FVECTOR3 oapiTransformNormal(const oapi::FVECTOR3* V, const oapi::FMATRIX4* M);
 
 //@}  -- End of Orbiter API interface methods --
 

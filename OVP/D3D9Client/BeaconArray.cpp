@@ -41,8 +41,8 @@ BeaconArray::BeaconArray(BeaconArrayEntry *pEnt, DWORD nEntry, vBase *_vB)
 
 			if (vB) pBeaconPos[i].vLoc = unit(vB->ToLocal(pEnt[i].pos, &pBeaconPos[i].lng, &pBeaconPos[i].lat));
 
-			pVrt[i].pos = D3DXVEC(pEnt[i].pos);
-			pVrt[i].dir = D3DXVEC(pEnt[i].dir);
+			pVrt[i].pos = _F(pEnt[i].pos);
+			pVrt[i].dir = _F(pEnt[i].dir);
 
 			pVrt[i].color = pEnt[i].color;
 			pVrt[i].size  = pEnt[i].size;
@@ -118,13 +118,13 @@ void BeaconArray::UnLockVertexBuffer()
 
 // ===========================================================================================
 //
-void BeaconArray::Render(LPDIRECT3DDEVICE9 dev, const LPD3DXMATRIX pW, float time)
+void BeaconArray::Render(LPDIRECT3DDEVICE9 dev, const LPFMATRIX4 pW, float time)
 {
 	if (!pVB) return;
 
 	UINT numPasses = 0;
 	HR(FX->SetTechnique(eBeaconArrayTech));
-	HR(FX->SetMatrix(eW, pW));
+	HR(FX->SetMatrix(eW, _DX(pW)));
 	HR(FX->SetTexture(eTex0, SURFACE(pBright)->GetTexture()));
 	HR(FX->SetFloat(eTime, time));
 	HR(FX->SetFloat(eMix, float(Config->RwyBrightness)));

@@ -578,7 +578,7 @@ public:
 	 * \default None, returns 2 ("client does not support operation").
 	 */
 	virtual int clbkSetMeshMaterial (DEVMESHHANDLE hMesh, DWORD matidx, const MATERIAL *mat) { return 2; }
-	virtual int clbkSetMeshMaterialEx(DEVMESHHANDLE hMesh, DWORD matidx, MatProp prp, const oapi::FVECTOR4* in) { return 2; }
+	virtual int clbkSetMeshMaterialEx(DEVMESHHANDLE hMesh, DWORD matidx, MatProp prp, const FVECTOR4* in) { return 2; }
 
 	/**
 	 * \brief Retrieve the properties of one of the mesh materials.
@@ -589,7 +589,7 @@ public:
 	 * \default None, returns 2 ("client does not support operation").
 	 */
 	virtual int clbkMeshMaterial (DEVMESHHANDLE hMesh, DWORD matidx, MATERIAL *mat) { return 2; }
-	virtual int clbkMeshMaterialEx(DEVMESHHANDLE hMesh, DWORD matidx, MatProp prp, oapi::FVECTOR4* out) { return 2; }
+	virtual int clbkMeshMaterialEx(DEVMESHHANDLE hMesh, DWORD matidx, MatProp prp, FVECTOR4* out) { return 2; }
 
 	/**
      * \brief Set custom properties for a device-specific mesh.

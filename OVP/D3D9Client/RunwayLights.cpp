@@ -641,7 +641,7 @@ BeaconArray *RunwayLights::BuildVASI(VECTOR3 _start, VECTOR3 _end, DWORD idx)
 }
 	
 
-void RunwayLights::SetPAPIColors(BeaconArray *pPAPI, LPD3DXMATRIX world, int i)
+void RunwayLights::SetPAPIColors(BeaconArray *pPAPI, LPFMATRIX4 world, int i)
 {
 
 	BAVERTEX *pVrt = pPAPI->LockVertexBuffer();
@@ -651,12 +651,12 @@ void RunwayLights::SetPAPIColors(BeaconArray *pPAPI, LPD3DXMATRIX world, int i)
 		DWORD red    = 0xFFFF4444;
 		DWORD white  = 0xFFFFEECC; 
 
-		D3DXVECTOR3 vPos, vUp, vFront;
-		D3DXVec3TransformNormal(&vUp, ptr(D3DXVECTOR3(0,1,0)), world);
-		D3DXVECTOR3 vRef1 = pVrt[0].pos;
-		D3DXVec3Normalize(&vFront, D3DXVec3TransformCoord(&vPos, &vRef1, world));
+		FVECTOR3 vRef1 = pVrt[0].pos;
+		FVECTOR3 vUp = oapiTransformNormal(ptr(FVECTOR3(0,1,0)), world);
+		FVECTOR3 vPos = oapiTransformCoord(&vRef1, world);		
+		FVECTOR3 vFront = unit(vPos);
 	
-		float slope = float(-asin(D3DXVec3Dot(&vFront,&vUp))*DEG);
+		float slope = float(-asin(dotp(vFront, vUp))*DEG);
 
 		VECTOR3 P = PAPI_pos[i];
 
@@ -693,7 +693,7 @@ void RunwayLights::Update(class vPlanet *vP)
 }
 
 
-void RunwayLights::Render(LPDIRECT3DDEVICE9 dev, LPD3DXMATRIX world, bool night)
+void RunwayLights::Render(LPDIRECT3DDEVICE9 dev, LPFMATRIX4 world, bool night)
 {
 	_TRACE;
 	currentTime = float(fmod(1.7*oapiGetSimTime(), 1.0));
@@ -703,11 +703,9 @@ void RunwayLights::Render(LPDIRECT3DDEVICE9 dev, LPD3DXMATRIX world, bool night)
 
 	VECTOR3 dir = unit(end2 - end1); // Vector of the runway
 	VECTOR3 camDir = scene->GetCameraGDir();
-	D3DXVECTOR3 dirGlo;
+	FVECTOR3 dirGlo = oapiTransformNormal(&_F(dir), world);
 	
-	D3DXVec3TransformNormal(&dirGlo, ptr(D3DXVEC(dir)), world);
-	
-	if (D3DXVec3Dot(ptr(D3DXVEC(camDir)), &dirGlo) > 0)
+	if (dotp(_F(camDir), dirGlo) > 0)
 	{
 		if (night && beacons1) beacons1->Render(dev, world, currentTime);
 		
@@ -973,7 +971,7 @@ void TaxiLights::Init()
 	taxiLight.dir = _V(0, 1, 0);
 	taxiLight.pos = _V(0, 0, 0);
 	//taxiLight.lat = taxiLight.lng = 0.0;
-	taxiLight.color = D3DXCOLOR(float(color.x), float(color.y), float(color.z), 1.0f);
+	taxiLight.color = FVECTOR4(float(color.x), float(color.y), float(color.z), 1.0f).dword_abgr();
 
 	VECTOR3 space = dir * len / (count-1);
 	VECTOR3 current = end1;
@@ -990,7 +988,7 @@ void TaxiLights::Init()
 }
 
 
-void TaxiLights::Render(LPDIRECT3DDEVICE9 dev, LPD3DXMATRIX world, bool night)
+void TaxiLights::Render(LPDIRECT3DDEVICE9 dev, LPFMATRIX4 world, bool night)
 {
 	if (night) beacons1->Render(dev, world, 0.5f);
 }

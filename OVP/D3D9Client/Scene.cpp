@@ -29,7 +29,7 @@
 
 using namespace oapi;
 
-static D3DXMATRIX ident;
+static FMATRIX4 ident;
 
 const double LABEL_DISTLIMIT = 0.6;
 
@@ -41,7 +41,7 @@ D3DXHANDLE Scene::eColor = 0;
 D3DXHANDLE Scene::eTex0 = 0;
 
 
-D3DXVECTOR4 IKernel[IKernelSize];
+FVECTOR4 IKernel[IKernelSize];
 
 bool sort_tgt_dist(const vObject *a, const vObject *b)
 {
@@ -122,7 +122,7 @@ Scene::Scene(D3D9Client *_gc, DWORD w, DWORD h)
 
 	pDevice = _gc->GetDevice();
 
-	D3DXMatrixIdentity(&ident);
+	oapiMatrixIdentity(&ident);
 
 	SetCameraAperture(float(RAD*50.0), float(viewH)/float(viewW));
 	SetCameraFrustumLimits(2.5f, 5e6f); // initial limits
@@ -871,7 +871,7 @@ double Scene::GetTargetGroundAltitude() const
 // ============================================================================================
 // Up, North, Forward in Ecliptic frame
 //
-void Scene::GetLVLH(vVessel *vV, D3DXVECTOR3 *up, D3DXVECTOR3 *nr, D3DXVECTOR3 *fw)
+void Scene::GetLVLH(vVessel *vV, FVECTOR3 *up, FVECTOR3 *nr, FVECTOR3 *fw)
 {
 	if (!vV || !up || !nr || !fw) return;
 
@@ -882,10 +882,10 @@ void Scene::GetLVLH(vVessel *vV, D3DXVECTOR3 *up, D3DXVECTOR3 *nr, D3DXVECTOR3 *
 	hV->GetRelativePos(hRef, rpos);
 	VECTOR3 axis = mul(grot, _V(0, 1, 0));
 	normalise(rpos);
-	*up = D3DXVEC(rpos);
-	*fw = D3DXVEC(unit(crossp(axis, rpos)));
-	D3DXVec3Cross(nr, up, fw);
-	D3DXVec3Normalize(nr, nr);
+	*up = _F(rpos);
+	*fw = _F(unit(crossp(axis, rpos)));
+	*nr = crossp(*up, *fw);
+	normalize(*nr);
 }
 
 
@@ -1182,8 +1182,8 @@ void Scene::ComputeLocalLightsVisibility()
 	}
 
 	struct {
-		D3DXMATRIX mVP;
-		D3DXMATRIX mSVP;
+		FMATRIX4 mVP;
+		FMATRIX4 mSVP;
 		FVECTOR4 vSrc;
 		FVECTOR3 vDir;
 	} ComputeData;
@@ -1191,7 +1191,7 @@ void Scene::ComputeLocalLightsVisibility()
 	D3DSURFACE_DESC desc;
 	pLocalResultsSL->GetDesc(&desc);
 
-	D3DXMatrixOrthoOffCenterLH(&ComputeData.mVP, 0.0f, (float)desc.Width, (float)desc.Height, 0.0f, 0.0f, 1.0f);
+	D3DMAT_OrthoOffCenterLH(&ComputeData.mVP, 0.0f, (float)desc.Width, (float)desc.Height, 0.0f, 0.0f, 1.0f);
 
 	psgBuffer[GBUF_DEPTH]->GetDesc(&desc);
 
@@ -1572,8 +1572,8 @@ void Scene::clbkRenderMainScene()
 		Casters.clear();
 		Casters.push_back(vFocus);
 
-		D3DXVECTOR3 ld = sunLight.Dir;
-		D3DXVECTOR3 pos = vFocus->GetBoundingSpherePosDX();
+		FVECTOR3 ld = sunLight.Dir;
+		FVECTOR3 pos = vFocus->GetBoundingSpherePosDX();
 		float rad = vFocus->GetBoundingSphereRadius();
 		float frad = rad;
 
@@ -1587,16 +1587,16 @@ void Scene::clbkRenderMainScene()
 			if (v == vFocus) continue;
 			if (v->HasShadow() == false) continue;
 
-			D3DXVECTOR3 bs_pos = v->GetBoundingSpherePosDX();
+			FVECTOR3 bs_pos = v->GetBoundingSpherePosDX();
 			float bs_rad = v->GetBoundingSphereRadius();
 
 			if (bs_rad > 80.0) continue;
 
-			D3DXVECTOR3 bc = bs_pos - pos;
-			float z = D3DXVec3Dot(&ld, &bc);
+			FVECTOR3 bc = bs_pos - pos;
+			float z = dotp(ld, bc);
 			if (fabs(z) > 1e3) continue;
-			D3DXVECTOR3 fbc = bc - ld * z;
-			float dst = D3DXVec3Length(&fbc);
+			FVECTOR3 fbc = bc - ld * z;
+			float dst = length(fbc);
 			if (dst > 1e3) continue;
 
 			float nrd = (rad + dst + bs_rad) * 0.5f;
@@ -2007,7 +2007,7 @@ void Scene::clbkRenderMainScene()
 
 			//D3D9DebugLog("Aperture = %f, dist=%f", GetCameraApertureCorner() * 2.0 * 180.0 / PI, cascfg[2].dist- cascfg[2].size);
 
-			D3DXVECTOR3 ld = sunLight.Dir;
+			FVECTOR3 ld = sunLight.Dir;
 			Casters.clear();
 			RenderVCShadowMap(Camera.z, ld, Casters);
 		}
@@ -2044,8 +2044,8 @@ void Scene::clbkRenderMainScene()
 		psgBuffer[GBUF_BLUR]->GetDesc(&blur);
 		psgBuffer[GBUF_COLOR]->GetDesc(&colr);
 
-		D3DXVECTOR2 scr = D3DXVECTOR2(1.0f / float(colr.Width), 1.0f / float(colr.Height));
-		D3DXVECTOR2 sbf = D3DXVECTOR2(1.0f / float(blur.Width), 1.0f / float(blur.Height));
+		FVECTOR2 scr = FVECTOR2(1.0f / float(colr.Width), 1.0f / float(colr.Height));
+		FVECTOR2 sbf = FVECTOR2(1.0f / float(blur.Width), 1.0f / float(blur.Height));
 
 
 		if (pLightBlur->IsOK())
@@ -2058,7 +2058,7 @@ void Scene::clbkRenderMainScene()
 			// Grap a copy of a backbuffer
 			pDevice->StretchRect(pOffscreenTarget, NULL, psgBuffer[GBUF_COLOR], NULL, D3DTEXF_POINT);
 
-			pLightBlur->SetFloat("vSB", &sbf, sizeof(D3DXVECTOR2));
+			pLightBlur->SetFloat("vSB", &sbf, sizeof(FVECTOR2));
 			pLightBlur->SetBool("bBlendIn", false);
 			pLightBlur->SetBool("bBlur", false);
 
@@ -2125,7 +2125,7 @@ void Scene::clbkRenderMainScene()
 		if (pGDIOverlay->IsOK())
 		{
 			gc->bGDIClear = true; // Must clear background before continuing drawing into overlay
-			D3DXCOLOR clr(0x4080F0); // RGB ColorKey
+			FVECTOR4 clr(0xFF4080F0ul); // ARGB ColorKey
 			pGDIOverlay->SetTextureNative("tSrc", ptgBuffer[GBUF_GDI], IPF_POINT | IPF_CLAMP);
 			pGDIOverlay->SetFloat("vColorKey", &clr, sizeof(clr));
 			pGDIOverlay->SetOutputNative(0, gc->GetBackBuffer());
@@ -2275,7 +2275,7 @@ void Scene::clbkRenderMainScene()
 			if (pLocalResults) {
 				pSketch = GetPooledSketchpad(SKETCHPAD_2D_OVERLAY);
 				pSketch->SetBlendState(Sketchpad::BlendState::FILTER_POINT);
-				pSketch->StretchRectNative(pLocalResults, NULL, ptr(_RECT(0, 0, viewW, 10)));
+				pSketch->StretchRectNative(pLocalResults, NULL, &(_RECT(0, 0, viewW, 10)));
 				pSketch->SetBlendState(Sketchpad::BlendState::FILTER_LINEAR);
 				pSketch->EndDrawing();
 			}
@@ -2286,7 +2286,7 @@ void Scene::clbkRenderMainScene()
 			LPDIRECT3DTEXTURE9 pTex = DebugControls::GetCombinedMap();
 			if (pTex) {
 				pSketch = GetPooledSketchpad(SKETCHPAD_2D_OVERLAY);
-				pSketch->StretchRectNative(pTex, NULL, ptr(_RECT(0, 0, viewH, viewH)));
+				pSketch->StretchRectNative(pTex, NULL, &(_RECT(0, 0, viewH, viewH)));
 				pSketch->EndDrawing();
 			}
 			break;
@@ -2298,7 +2298,7 @@ void Scene::clbkRenderMainScene()
 				if (ptE) {
 					pSketch = GetPooledSketchpad(SKETCHPAD_2D_OVERLAY);
 					pSketch->SetBlendState(Sketchpad::BlendState::FILTER_POINT);
-					pSketch->StretchRectNative(ptE, NULL, ptr(_RECT(0, 0, viewW, 10)));
+					pSketch->StretchRectNative(ptE, NULL, &(_RECT(0, 0, viewW, 10)));
 					pSketch->SetBlendState(Sketchpad::BlendState::FILTER_LINEAR);
 					pSketch->EndDrawing();
 				}
@@ -2321,19 +2321,19 @@ void Scene::clbkRenderMainScene()
 		D3DSURFACE_DESC desc;
 		if (pTab) {
 			pTab->GetLevelDesc(0, &desc);
-			pSketch->StretchRectNative(pTab, NULL, ptr(_R(0, y - desc.Height, desc.Width, y)));
+			pSketch->StretchRectNative(pTab, NULL, &(_R(0, y - desc.Height, desc.Width, y)));
 			y -= (desc.Height + 5);
 		}
 		pTab = vP->GetScatterTable(MIE_LAND);
 		if (pTab) {
 			pTab->GetLevelDesc(0, &desc);
-			pSketch->StretchRectNative(pTab, NULL, ptr(_R(0, y - desc.Height, desc.Width, y)));
+			pSketch->StretchRectNative(pTab, NULL, &(_R(0, y - desc.Height, desc.Width, y)));
 			y -= (desc.Height + 5);
 		}
 		pTab = vP->GetScatterTable(ATN_LAND);
 		if (pTab) {
 			pTab->GetLevelDesc(0, &desc);
-			pSketch->StretchRectNative(pTab, NULL, ptr(_R(0, y - desc.Height, desc.Width, y)));
+			pSketch->StretchRectNative(pTab, NULL, &(_R(0, y - desc.Height, desc.Width, y)));
 			y -= (desc.Height + 5);
 		}
 		for (int i=0;i<9;i++)
@@ -2416,7 +2416,7 @@ void Scene::CombineSMaps(SMapInput* a, SMapInput* b, SMapInput* out)
 {
 	FVECTOR3 ab = b->pos - a->pos;
 	FVECTOR3 ap = a->pos;
-	FVECTOR3 bp = a->pos - b->ld * dot(ab, b->ld);	// Project 'b' to a plane of 'a'
+	FVECTOR3 bp = a->pos - b->ld * dotp(ab, b->ld);	// Project 'b' to a plane of 'a'
 
 	ab = bp - ap;
 	float le = length(ab);			// a-b distance
@@ -2485,13 +2485,15 @@ Scene::SUNVISPARAMS Scene::GetSunScreenVisualState()
 	DWORD w, h;
 	oapiGetViewportSize(&w, &h);
 
-	const LPD3DXMATRIX pVP = GetProjectionViewMatrix();
-	D3DXVECTOR4 pos;
-	D3DXVECTOR4 sun = D3DXVECTOR4(float(sunGPos.x), float(sunGPos.y), float(sunGPos.z), 1.0f);
-	D3DXVec4Transform(&pos, &sun, pVP);
+	FVECTOR4 pos;
+	const LPFMATRIX4 pVP = GetProjectionViewMatrix();
+	FVECTOR4 sun = FVECTOR4(float(sunGPos.x), float(sunGPos.y), float(sunGPos.z), 1.0f);
+
+	D3DMAT_Transform(&pos, &sun, pVP);
+
 	result.brightness = saturate(pos.z);
 
-	D3DXVECTOR2 scrPos = D3DXVECTOR2(pos.x, pos.y);
+	FVECTOR2 scrPos = FVECTOR2(pos.x, pos.y);
 	scrPos /= pos.w;
 	scrPos *= 0.5f;
 	scrPos.x *= w / h;
@@ -2510,12 +2512,12 @@ Scene::SUNVISPARAMS Scene::GetSunScreenVisualState()
 		DWORD matIndex = pick.pMesh->GetMeshGroupMaterialIdx(pick.group);
 		D3D9MatExt material;
 		pick.pMesh->GetMaterial(&material, matIndex);
-		D3DXCOLOR surfCol(material.Diffuse.x, material.Diffuse.y, material.Diffuse.z, material.Diffuse.w);
+		FVECTOR4 surfCol(material.Diffuse.x, material.Diffuse.y, material.Diffuse.z, material.Diffuse.w);
 
 		result.visible = (surfCol.a != 1.0f);
 		if (result.visible)
 		{
-			D3DXCOLOR color = D3DXCOLOR(surfCol.r*surfCol.a, surfCol.g*surfCol.a, surfCol.b*surfCol.a, 1.0f);
+			FVECTOR4 color = FVECTOR4(surfCol.r*surfCol.a, surfCol.g*surfCol.a, surfCol.b*surfCol.a, 1.0f);
 			color += GetSunDiffColor() * (1 - surfCol.a);
 
 			result.color = color;
@@ -2532,11 +2534,11 @@ Scene::SUNVISPARAMS Scene::GetSunScreenVisualState()
 // ===========================================================================================
 // Lens flare code (SolarLiner)
 //
-D3DXCOLOR Scene::GetSunDiffColor()
+FVECTOR4 Scene::GetSunDiffColor()
 {
 	vPlanet *vP = Camera.vProxy;
 
-	D3DXVECTOR3 _one(1, 1, 1);
+	FVECTOR3 _one(1, 1, 1);
 	VECTOR3 GS, GP, GO;
 	oapiCameraGlobalPos(&GO);
 
@@ -2552,7 +2554,7 @@ D3DXCOLOR Scene::GetSunDiffColor()
 
 	float pwr = 1.0f;
 
-	if (hP == hS) return GetSun()->Color;
+	if (hP == hS) return _F4(GetSun()->Color, 1.0f);
 
 	double r = length(P);
 	double pres = 1000.0;
@@ -2594,9 +2596,9 @@ D3DXCOLOR Scene::GetSunDiffColor()
 	if (alt>10e3f) al = aalt / k;
 	else           al = 0.173f;
 
-	D3DXVECTOR3 lcol(1, 1, 1);
-	//D3DXVECTOR3 r0 = _one - D3DXVECTOR3(0.65f, 0.75f, 1.0f) * disp;
-	D3DXVECTOR3 r0 = _one - D3DXVECTOR3(1.15f, 1.65f, 2.35f) * disp;
+	FVECTOR3 lcol(1, 1, 1);
+	//FVECTOR3 r0 = _one - FVECTOR3(0.65f, 0.75f, 1.0f) * disp;
+	FVECTOR3 r0 = _one - FVECTOR3(1.15f, 1.65f, 2.35f) * disp;
 
 	if (atm) {
 		float x = sqrt(saturate(h / al));
@@ -2607,7 +2609,7 @@ D3DXCOLOR Scene::GetSunDiffColor()
 		lcol = r0 * saturate((h + rs) / (2.0f*rs));
 	}
 
-	return D3DXCOLOR(lcol.x, lcol.y, lcol.z, 1);
+	return FVECTOR4(lcol.x, lcol.y, lcol.z, 1);
 }
 
 
@@ -2625,8 +2627,8 @@ int Scene::RenderShadowMap(SMapInput* smi, SHADOWMAP *sm, std::list<vVessel*>& C
 	sm->rad = rad;
 	sm->cascades = 1;
 	sm->Center[0] = { 0, 0 };
-	sm->Subrect[0] = { 0, 0, 1, 1 };
-	sm->SubrectTF[0] = { 0, 0, 1, 1 };
+	sm->Subrect[0] = _F4( 0, 0, 1, 1 );
+	sm->SubrectTF[0] = _F4( 0, 0, 1, 1 );
 
 	float dst = length(smi->pos);
 	float mnd =  1e16f;
@@ -2661,16 +2663,16 @@ int Scene::RenderShadowMap(SMapInput* smi, SHADOWMAP *sm, std::list<vVessel*>& C
 
 	sm->depth = (mxd + rad);
 
-	D3DXMATRIX mProj, mView;
-	D3DXMatrixOrthoOffCenterRH(&mProj, -rad, rad, rad, -rad, -rad, sm->depth);
+	FMATRIX4 mProj, mView;
+	D3DMAT_OrthoOffCenterRH(&mProj, -rad, rad, rad, -rad, -rad, sm->depth);
 
 	sm->dist = mxd;
 
-	D3DXVECTOR3 lp = smi->pos - smi->ld * sm->dist;
-	D3DXVECTOR3 pos = smi->pos;
+	FVECTOR3 lp = smi->pos - smi->ld * sm->dist;
+	FVECTOR3 pos = smi->pos;
 
-	D3DXMatrixLookAtRH(&mView, &lp, &pos, ptr(D3DXVECTOR3(0, 1, 0)));
-	D3DXMatrixMultiply(sm->mLVP.toDX(), &mView, &mProj);
+	D3DMAT_LookAtRH(&mView, &lp, &pos, &FVECTOR3(0, 1, 0));
+	oapiMatrixMultiply(&sm->mLVP, &mView, &mProj);
 
 	sm->mVP[0] = sm->mLVP;
 
@@ -2724,11 +2726,11 @@ int Scene::RenderShadowMap(SMapInput* smi, SHADOWMAP *sm, std::list<vVessel*>& C
 
 // ===========================================================================================
 //
-int Scene::RenderVCShadowMap(D3DXVECTOR3& cdir, D3DXVECTOR3& ld, std::list<vVessel*>& Casters)
+int Scene::RenderVCShadowMap(FVECTOR3& cdir, FVECTOR3& ld, std::list<vVessel*>& Casters)
 {
 	SHADOWMAP* sm = smVC;
 
-	D3DXVECTOR3 pos = cdir * cascfg[0].dist;
+	FVECTOR3 pos = cdir * cascfg[0].dist;
 	float rad = cascfg[0].size;
 	sm->pos = pos;
 	sm->ld = ld;
@@ -2767,7 +2769,7 @@ int Scene::RenderVCShadowMap(D3DXVECTOR3& cdir, D3DXVECTOR3& ld, std::list<vVess
 	if (Casters.size() == 0) return -1;	// The list is empty, Nothing to render
 
 	// Compute shadow lod
-	rsmax = viewh * rad / (tanap * D3DXVec3Length(&pos));
+	rsmax = viewh * rad / (tanap * length(pos));
 
 	sm->dist = mxd;
 	sm->lod = 0;
@@ -2776,7 +2778,7 @@ int Scene::RenderVCShadowMap(D3DXVECTOR3& cdir, D3DXVECTOR3& ld, std::list<vVess
 	sm->depth = (mxd + vFocus->GetSize());
 	sm->bValid = true;
 
-	D3DXMATRIX mProj, mView;
+	FMATRIX4 mProj, mView;
 	
 	for (int i = 0; i < sm->cascades; i++)
 	{
@@ -2786,14 +2788,13 @@ int Scene::RenderVCShadowMap(D3DXVECTOR3& cdir, D3DXVECTOR3& ld, std::list<vVess
 		rad = cascfg[i].size;
 
 		// Project pos to a shadow plane
-		D3DXVECTOR3 sp = pos - ld * D3DXVec3Dot(&pos, &ld);
-		D3DXVECTOR3 ep = sp - ld * sm->dist;
-		D3DXMatrixOrthoOffCenterRH(&mProj, -rad, rad, rad, -rad, 0, sm->depth);
-		D3DXMatrixLookAtRH(&mView, &ep, &sp, ptr(D3DXVECTOR3(0, 1, 0)));
-		D3DXMatrixMultiply(sm->mVP[i].toDX(), &mView, &mProj);
+		FVECTOR3 sp = pos - ld * dotp(pos, ld);
+		FVECTOR3 ep = sp - ld * sm->dist;
+		D3DMAT_OrthoOffCenterRH(&mProj, -rad, rad, rad, -rad, 0, sm->depth);
+		D3DMAT_LookAtRH(&mView, &ep, &sp, &(FVECTOR3(0, 1, 0)));
+		oapiMatrixMultiply(&sm->mVP[i], &mView, &mProj);
 
-		D3DXVECTOR3 xy;
-		D3DXVec3TransformCoord(&xy, &pos, sm->mVP[0].toDX());
+		FVECTOR3 xy = oapiTransformCoord(&pos, &sm->mVP[0]);
 		float s = 0.5f * rad / sm->rad;
 
 		xy.y = -xy.y;
@@ -3042,15 +3043,15 @@ void Scene::RenderStage(LPDIRECT3DCUBETEXTURE9 pCT)
 	if (!pRenderStage) return;
 
 	struct {
-		D3DXMATRIX mVP;
-		D3DXMATRIX mW;
+		FMATRIX4 mVP;
+		FMATRIX4 mW;
 	} ShaderData;
 
 	ShaderData.mVP = Camera.mProjView;
-	D3DXMatrixIdentity(&ShaderData.mW);
-	ShaderData.mW._11 = 1e3f;
-	ShaderData.mW._22 = 1e3f;
-	ShaderData.mW._33 = 1e3f;
+	oapiMatrixIdentity(&ShaderData.mW);
+	ShaderData.mW.m11 = 1e3f;
+	ShaderData.mW.m22 = 1e3f;
+	ShaderData.mW.m33 = 1e3f;
 	
 	HR(pDevice->SetRenderState(D3DRS_CULLMODE, D3DCULL_NONE));
 
@@ -3102,7 +3103,7 @@ bool Scene::RenderBlurredMap(LPDIRECT3DDEVICE9 pDev, LPDIRECT3DCUBETEXTURE9 pSrc
 	}
 
 
-	D3DXVECTOR3 dir, up, cp;
+	FVECTOR3 dir, up, cp;
 	LPDIRECT3DSURFACE9 pSrf = NULL;
 	LPDIRECT3DSURFACE9 pTmp = NULL;
 
@@ -3128,15 +3129,14 @@ bool Scene::RenderBlurredMap(LPDIRECT3DDEVICE9 pDev, LPDIRECT3DCUBETEXTURE9 pSrc
 		for (DWORD i = 0; i < 6; i++) {
 
 			EnvMapDirection(i, &dir, &up);
-			D3DXVec3Cross(&cp, &up, &dir);
-			D3DXVec3Normalize(&cp, &cp);
-
+			cp = unit(crossp(up, dir));
+			
 			pSrc->GetCubeMapSurface(D3DCUBEMAP_FACES(i), mip, &pSrf);
 
 			pBlur->SetOutputNative(0, pSrf);
-			pBlur->SetFloat("vDir", &dir, sizeof(D3DXVECTOR3));
-			pBlur->SetFloat("vUp", &up, sizeof(D3DXVECTOR3));
-			pBlur->SetFloat("vCp", &cp, sizeof(D3DXVECTOR3));
+			pBlur->SetFloat("vDir", &dir, sizeof(FVECTOR3));
+			pBlur->SetFloat("vUp", &up, sizeof(FVECTOR3));
+			pBlur->SetFloat("vCp", &cp, sizeof(FVECTOR3));
 
 			if (!pBlur->Execute(true)) {
 				LogErr("pBlur Execute Failed");
@@ -3154,15 +3154,14 @@ bool Scene::RenderBlurredMap(LPDIRECT3DDEVICE9 pDev, LPDIRECT3DCUBETEXTURE9 pSrc
 		for (DWORD i = 0; i < 6; i++) {
 
 			EnvMapDirection(i, &dir, &up);
-			D3DXVec3Cross(&cp, &up, &dir);
-			D3DXVec3Normalize(&cp, &cp);
-
+			cp = unit(crossp(up, dir));
+			
 			pSrc->GetCubeMapSurface(D3DCUBEMAP_FACES(i), mip, &pSrf);
 
 			pBlur->SetOutputNative(0, pSrf);
-			pBlur->SetFloat("vDir", &dir, sizeof(D3DXVECTOR3));
-			pBlur->SetFloat("vUp", &up, sizeof(D3DXVECTOR3));
-			pBlur->SetFloat("vCp", &cp, sizeof(D3DXVECTOR3));
+			pBlur->SetFloat("vDir", &dir, sizeof(FVECTOR3));
+			pBlur->SetFloat("vUp", &up, sizeof(FVECTOR3));
+			pBlur->SetFloat("vCp", &cp, sizeof(FVECTOR3));
 
 			if (!pBlur->Execute(true)) {
 				LogErr("pBlur Execute Failed");
@@ -3290,7 +3289,7 @@ bool Scene::IntegrateIrradiance(vVessel *vV, ENVCAMREC *ec, bool bInterior)
 	HR(pOuts->GetDesc(&desc));
 
 
-	D3DXVECTOR3 nr, up, cp;
+	FVECTOR3 nr, up, cp;
 	LPDIRECT3DSURFACE9 pTmp = NULL;
 
 	UINT size = bInterior ? 3 : 1;
@@ -3322,9 +3321,9 @@ bool Scene::IntegrateIrradiance(vVessel *vV, ENVCAMREC *ec, bool bInterior)
 	pIrradiance->SetTextureNative("tCube", pSrc, IPF_LINEAR);
 	pIrradiance->SetTextureNative("tRandom", ptRandom, IPF_POINT);
 	pIrradiance->SetFloat("Kernel", IKernel, sizeof(IKernel));
-	pIrradiance->SetFloat("vNr", &nr, sizeof(D3DXVECTOR3));
-	pIrradiance->SetFloat("vUp", &up, sizeof(D3DXVECTOR3));
-	pIrradiance->SetFloat("vCp", &cp, sizeof(D3DXVECTOR3));
+	pIrradiance->SetFloat("vNr", &nr, sizeof(FVECTOR3));
+	pIrradiance->SetFloat("vUp", &up, sizeof(FVECTOR3));
+	pIrradiance->SetFloat("vCp", &cp, sizeof(FVECTOR3));
 	pIrradiance->SetFloat("fIntensity", &Glow, sizeof(float));
 	pIrradiance->SetBool("bUp", false);
 	pIrradiance->SetTemplate(0.5f, 1.0f, 0.0f, 0.0f);
@@ -3350,7 +3349,7 @@ bool Scene::IntegrateIrradiance(vVessel *vV, ENVCAMREC *ec, bool bInterior)
 	if (bInterior)	pIrradiance->Activate("PSPostBlurIntr");
 	else			pIrradiance->Activate("PSPostBlur");
 
-	pIrradiance->SetFloat("fD", ptr(D3DXVECTOR2(1.0f / float(W), 1.0f / float(H))), sizeof(D3DXVECTOR2));
+	pIrradiance->SetFloat("fD", &(FVECTOR2(1.0f / float(W), 1.0f / float(H))), sizeof(FVECTOR2));
 	pIrradiance->SetOutputNative(0, pOuts);
 	pIrradiance->SetTextureNative("tSrc", pIrradTemp, IPF_POINT | IPF_WRAP);
 
@@ -3456,7 +3455,7 @@ void Scene::VisualizeShadowMap(SHADOWMAP *sm)
 			RECT tgt = { l, t, r, b };
 			auto map = sm->Map(i);
 			if (map) {
-				pSketch->SetRenderParam(Sketchpad::RenderParam::PRM_GAMMA, ptr(FVECTOR4(0.25f, 0.25f, 0.25f, 1.0f)));
+				pSketch->SetRenderParam(Sketchpad::RenderParam::PRM_GAMMA, &(FVECTOR4(0.25f, 0.25f, 0.25f, 1.0f)));
 				pSketch->StretchRectNative(map, nullptr, &tgt);
 				pSketch->SetRenderParam(Sketchpad::RenderParam::PRM_GAMMA, nullptr);
 			}
@@ -3467,7 +3466,7 @@ void Scene::VisualizeShadowMap(SHADOWMAP *sm)
 	}
 	else if (pTex) {
 		RECT tgt = { 0, 0, long(s), long(s) };
-		pSketch->SetRenderParam(Sketchpad::RenderParam::PRM_GAMMA, ptr(FVECTOR4(0.25f, 0.25f, 0.25f, 1.0f)));
+		pSketch->SetRenderParam(Sketchpad::RenderParam::PRM_GAMMA, &(FVECTOR4(0.25f, 0.25f, 0.25f, 1.0f)));
 		pSketch->StretchRectNative(pTex, nullptr, &tgt);
 		pSketch->SetRenderParam(Sketchpad::RenderParam::PRM_GAMMA, nullptr);
 	}
@@ -3508,11 +3507,11 @@ void Scene::RenderMesh(DEVMESHHANDLE hMesh, const oapi::FMATRIX4 *pWorld)
 	float s = float(smEX->size);
 	float sr = 2.0f * smEX->rad / s;
 
-	HR(D3D9Effect::FX->SetMatrix(D3D9Effect::eLVP, smEX->mLVP.toCDX()));
+	HR(D3D9Effect::FX->SetMatrix(D3D9Effect::eLVP, _DX(smEX->mLVP)));
 
 	if (smEX->IsValid()) {
 		pMesh->SetShadows(smEX);
-		HR(D3D9Effect::FX->SetVector(D3D9Effect::eSHD, ptr(D3DXVECTOR4(sr, 1.0f / s, float(oapiRand()), 1.0f / smEX->depth))));
+		HR(D3D9Effect::FX->SetVector(D3D9Effect::eSHD, _DX(FVECTOR4(sr, 1.0f / s, float(oapiRand()), 1.0f / smEX->depth))));
 		HR(D3D9Effect::FX->SetBool(D3D9Effect::eShadowToggle, true));
 	}
 	else {
@@ -3521,19 +3520,19 @@ void Scene::RenderMesh(DEVMESHHANDLE hMesh, const oapi::FMATRIX4 *pWorld)
 	}
 
 	pMesh->SetSunLight(&sunLight);
-	pMesh->RenderSimplified(LPD3DXMATRIX(pWorld));
+	pMesh->RenderSimplified(LPFMATRIX4(pWorld));
 }
 
 
 // ===========================================================================================
 //
-bool Scene::WorldToScreenSpace(const VECTOR3 &wpos, oapi::IVECTOR2 *pt, D3DXMATRIX *pVP, float clip)
+bool Scene::WorldToScreenSpace(const VECTOR3 &wpos, oapi::IVECTOR2 *pt, FMATRIX4 *pVP, float clip)
 {
-	D3DXVECTOR4 homog;
-	D3DXVECTOR3 pos(float(wpos.x), float(wpos.y), float(wpos.z));
+	FVECTOR4 homog;
+	FVECTOR3 pos(float(wpos.x), float(wpos.y), float(wpos.z));
 
-	if (pVP) D3DXVec3Transform(&homog, &pos, pVP);
-	else D3DXVec3Transform(&homog, &pos, GetProjectionViewMatrix());
+	if (pVP) D3DMAT_Transform(&homog, &_F4(pos, 1.0f), pVP);
+	else     D3DMAT_Transform(&homog, &_F4(pos, 1.0f), GetProjectionViewMatrix());
 
 	if (homog.w < 0.0f) return false;
 
@@ -3558,13 +3557,13 @@ bool Scene::WorldToScreenSpace(const VECTOR3 &wpos, oapi::IVECTOR2 *pt, D3DXMATR
 
 // ===========================================================================================
 //
-bool Scene::WorldToScreenSpace2(const VECTOR3& wpos, oapi::FVECTOR2* pt, D3DXMATRIX* pVP, float clip)
+bool Scene::WorldToScreenSpace2(const VECTOR3& wpos, oapi::FVECTOR2* pt, FMATRIX4* pVP, float clip)
 {
-	D3DXVECTOR4 homog;
-	D3DXVECTOR3 pos(float(wpos.x), float(wpos.y), float(wpos.z));
+	FVECTOR4 homog;
+	FVECTOR3 pos(float(wpos.x), float(wpos.y), float(wpos.z));
 
-	if (pVP) D3DXVec3Transform(&homog, &pos, pVP);
-	else D3DXVec3Transform(&homog, &pos, GetProjectionViewMatrix());
+	if (pVP) D3DMAT_Transform(&homog, &_F4(pos, 1.0f), pVP);
+	else     D3DMAT_Transform(&homog, &_F4(pos, 1.0f), GetProjectionViewMatrix());
 
 	homog.x /= homog.w;
 	homog.y /= homog.w;
@@ -3743,12 +3742,12 @@ DWORD Scene::GetRenderPass() const
 
 // ===========================================================================================
 //
-D3DXVECTOR3 Scene::GetPickingRay(short xpos, short ypos)
+FVECTOR3 Scene::GetPickingRay(short xpos, short ypos)
 {
 	float x = 2.0f*float(xpos) / float(ViewW()) - 1.0f;
 	float y = 2.0f*float(ypos) / float(ViewH()) - 1.0f;
-	D3DXVECTOR3 vPick = Camera.x * (x / Camera.mProj._11) + Camera.y * (-y / Camera.mProj._22) + Camera.z;
-	D3DXVec3Normalize(&vPick, &vPick);
+	FVECTOR3 vPick = Camera.x * (x / Camera.mProj.m11) + Camera.y * (-y / Camera.mProj.m22) + Camera.z;
+	normalize(vPick);
 	return vPick;
 }
 
@@ -3759,7 +3758,7 @@ TILEPICK Scene::PickSurface(short xpos, short ypos)
 	TILEPICK tp; memset(&tp, 0, sizeof(TILEPICK));
 	vPlanet *vp = GetCameraProxyVisual();
 	if (!vp) return tp;
-	D3DXVECTOR3 vRay = GetPickingRay(xpos, ypos);
+	FVECTOR3 vRay = GetPickingRay(xpos, ypos);
 	vp->PickSurface(vRay, &tp);
 	return tp;
 }
@@ -3768,7 +3767,7 @@ TILEPICK Scene::PickSurface(short xpos, short ypos)
 //
 D3D9Pick Scene::PickScene(short xpos, short ypos, const PickProp *p)
 {
-	D3DXVECTOR3 vPick = GetPickingRay(xpos, ypos);
+	FVECTOR3 vPick = GetPickingRay(xpos, ypos);
 
 	D3D9Pick result;
 	result.dist  = 1e30f;
@@ -3796,23 +3795,23 @@ D3D9Pick Scene::PickScene(short xpos, short ypos, const PickProp *p)
 
 // ===========================================================================================
 //
-D3D9Pick Scene::PickMesh(DEVMESHHANDLE hMesh, const LPD3DXMATRIX pW, short xpos, short ypos)
+D3D9Pick Scene::PickMesh(DEVMESHHANDLE hMesh, const LPFMATRIX4 pW, short xpos, short ypos)
 {
 	D3D9Mesh *pMesh = (D3D9Mesh *)hMesh;
 	PickProp prp = { NULL, 0.1f, false };
-	return pMesh->Pick(pW, NULL, ptr(GetPickingRay(xpos, ypos)), &prp);
+	return pMesh->Pick(pW, NULL, &(GetPickingRay(xpos, ypos)), &prp);
 }
 
 // ===========================================================================================
 //
-void Scene::GetAdjProjViewMatrix(LPD3DXMATRIX pMP, float znear, float zfar)
+void Scene::GetAdjProjViewMatrix(LPFMATRIX4 pMP, float znear, float zfar)
 {
 	float tanap = tan(Camera.aperture);
-	ZeroMemory(pMP, sizeof(D3DXMATRIX));
-	pMP->_11 = (Camera.aspect / tanap);
-	pMP->_22 = (1.0f / tanap);
-	pMP->_43 = (pMP->_33 = zfar / (zfar - znear)) * (-znear);
-	pMP->_34 = 1.0f;
+	ZeroMemory(pMP, sizeof(FMATRIX4));
+	pMP->m11 = (Camera.aspect / tanap);
+	pMP->m22 = (1.0f / tanap);
+	pMP->m43 = (pMP->m33 = zfar / (zfar - znear)) * (-znear);
+	pMP->m34 = 1.0f;
 }
 
 // ===========================================================================================
@@ -3826,12 +3825,12 @@ void Scene::SetCameraAperture(float ap, float as)
 	float cor = sqrt(tanap * tanap + tanap * tanap * as * as);
 	Camera.corner = atan(cor);
 
-	ZeroMemory(&Camera.mProj, sizeof(D3DXMATRIX));
+	ZeroMemory(&Camera.mProj, sizeof(FMATRIX4));
 
-	Camera.mProj._11 = (as / tanap);
-	Camera.mProj._22 = (1.0f / tanap);
-	Camera.mProj._43 = (Camera.mProj._33 = Camera.farplane / (Camera.farplane-Camera.nearplane)) * (-Camera.nearplane);
-	Camera.mProj._34 = 1.0f;
+	Camera.mProj.m11 = (as / tanap);
+	Camera.mProj.m22 = (1.0f / tanap);
+	Camera.mProj.m43 = (Camera.mProj.m33 = Camera.farplane / (Camera.farplane-Camera.nearplane)) * (-Camera.nearplane);
+	Camera.mProj.m34 = 1.0f;
 
 	float x = tanap / as;
 	float y = tanap;
@@ -3844,7 +3843,7 @@ void Scene::SetCameraAperture(float ap, float as)
 	Camera.vhf  = 1.0f / cos(ap);
 	Camera.vwf  = Camera.vhf/as;
 
-	D3DXMatrixMultiply(&Camera.mProjView, &Camera.mView, &Camera.mProj);
+	oapiMatrixMultiply(&Camera.mProjView, &Camera.mView, &Camera.mProj);
 	D3D9Effect::SetViewProjMatrix(&Camera.mProjView);
 }
 
@@ -3876,7 +3875,7 @@ bool Scene::CameraPan(VECTOR3 pan, double speed)
 			VECTOR3 pos;
 			oapiGetGlobalPos(hTgt, &pos);
 			Camera.pos = pos + Camera.relpos;
-			Camera.pos += Camera.dir * (pan.z*speed) + _VD3DX(Camera.x) * (pan.x*speed) + _VD3DX(Camera.y) * (pan.y*speed);
+			Camera.pos += Camera.dir * (pan.z*speed) + _V(Camera.x) * (pan.x*speed) + _V(Camera.y) * (pan.y*speed);
 			Camera.relpos = Camera.pos - pos;
 			return true;
 		}
@@ -3917,7 +3916,7 @@ bool Scene::UpdateCameraFromOrbiter(DWORD dwPass)
 
 	oapiCameraGlobalDir(&Camera.dir);
 	oapiCameraRotationMatrix(&grot);
-	D3DXMatrixIdentity(&Camera.mView);
+	oapiMatrixIdentity(&Camera.mView);
 	D3DMAT_SetRotation(&Camera.mView, &grot);
 
 	// note: in render space, the camera is always placed at the origin,
@@ -3936,20 +3935,20 @@ bool Scene::UpdateCameraFromOrbiter(DWORD dwPass)
 
 // ===========================================================================================
 //
-void Scene::CameraOffOrigin90(D3DXMATRIX *mView, FVECTOR3 pos)
+void Scene::CameraOffOrigin90(FMATRIX4 *mView, FVECTOR3 pos)
 {
 	Camera.mView = *mView;
-	Camera.x = D3DXVECTOR3(Camera.mView._11, Camera.mView._21, Camera.mView._31);
-	Camera.y = D3DXVECTOR3(Camera.mView._12, Camera.mView._22, Camera.mView._32);
-	Camera.z = D3DXVECTOR3(Camera.mView._13, Camera.mView._23, Camera.mView._33);
+	Camera.x = FVECTOR3(Camera.mView.m11, Camera.mView.m21, Camera.mView.m31);
+	Camera.y = FVECTOR3(Camera.mView.m12, Camera.mView.m22, Camera.mView.m32);
+	Camera.z = FVECTOR3(Camera.mView.m13, Camera.mView.m23, Camera.mView.m33);
 
-	auto x = D3DXVECTOR3(Camera.mView._11, Camera.mView._12, Camera.mView._13);
-	auto y = D3DXVECTOR3(Camera.mView._21, Camera.mView._22, Camera.mView._23);
-	auto z = D3DXVECTOR3(Camera.mView._31, Camera.mView._32, Camera.mView._33);
+	auto x = FVECTOR3(Camera.mView.m11, Camera.mView.m12, Camera.mView.m13);
+	auto y = FVECTOR3(Camera.mView.m21, Camera.mView.m22, Camera.mView.m23);
+	auto z = FVECTOR3(Camera.mView.m31, Camera.mView.m32, Camera.mView.m33);
 
-	Camera.mView._14 = -D3DXVec3Dot(&x, (const D3DXVECTOR3*)&pos);
-	Camera.mView._24 = -D3DXVec3Dot(&y, (const D3DXVECTOR3*)&pos);
-	Camera.mView._34 = -D3DXVec3Dot(&z, (const D3DXVECTOR3*)&pos);
+	Camera.mView.m14 = -dotp(x, pos);
+	Camera.mView.m24 = -dotp(y, pos);
+	Camera.mView.m34 = -dotp(z, pos);
 
 	SetCameraAperture(0.7853981634, 1.0f);
 }
@@ -3957,21 +3956,21 @@ void Scene::CameraOffOrigin90(D3DXMATRIX *mView, FVECTOR3 pos)
 
 // ===========================================================================================
 //
-bool Scene::SetupInternalCamera(D3DXMATRIX *mNew, VECTOR3 *gpos, double apr, double asp)
+bool Scene::SetupInternalCamera(FMATRIX4 *mNew, VECTOR3 *gpos, double apr, double asp)
 {
 
 	// Update camera orientation if a new matrix is provided
 	if (mNew) {
 		Camera.mView	  = *mNew;
-		Camera.x   = D3DXVECTOR3(Camera.mView._11, Camera.mView._21, Camera.mView._31);
-		Camera.y   = D3DXVECTOR3(Camera.mView._12, Camera.mView._22, Camera.mView._32);
-		Camera.z   = D3DXVECTOR3(Camera.mView._13, Camera.mView._23, Camera.mView._33);
-		Camera.dir = _VD3DX(Camera.z);
+		Camera.x   = FVECTOR3(Camera.mView.m11, Camera.mView.m21, Camera.mView.m31);
+		Camera.y   = FVECTOR3(Camera.mView.m12, Camera.mView.m22, Camera.mView.m32);
+		Camera.z   = FVECTOR3(Camera.mView.m13, Camera.mView.m23, Camera.mView.m33);
+		Camera.dir = _V(Camera.z);
 	}
 
 	if (gpos) Camera.pos = *gpos;
 
-	Camera.upos = D3DXVEC(unit(Camera.pos));
+	Camera.upos = _F(unit(Camera.pos));
 
 	// find a logical reference body
 	Camera.hObj_proxy = oapiCameraProxyGbody();
@@ -4158,13 +4157,13 @@ void Scene::RenderCustomCameraView(CAMREC *cCur)
 	pVes->GetRotationMatrix(grot);
 	pVes->Local2Global(cCur->vPosition, gpos);
 
-	D3DXMATRIX mEnv, mGlo;
+	FMATRIX4 mEnv, mGlo;
 
-	D3DXMatrixIdentity(&mGlo);
+	oapiMatrixIdentity(&mGlo);
 	D3DMAT_SetRotation(&mGlo, &grot);
-	D3DXMatrixIdentity(&mEnv);
+	oapiMatrixIdentity(&mEnv);
 	D3DMAT_SetRotation(&mEnv, &cCur->mRotation);
-	D3DXMatrixMultiply(&mEnv, &mGlo, &mEnv);
+	oapiMatrixMultiply(&mEnv, &mGlo, &mEnv);
 
 	PushCamera();
 
@@ -4202,10 +4201,10 @@ void Scene::RenderGlares()
 		static SMVERTEX Vertex[4] = { {-1, -1, 0, 0, 0}, {-1, 1, 0, 0, 1}, {1, 1, 0, 1, 1}, {1, -1, 0, 1, 0} };
 		static WORD cIndex[6] = { 0, 2, 1, 0, 3, 2 };
 		D3DSURFACE_DESC desc; FVECTOR2 pt;
-		struct { D3DXMATRIX	mVP; float4	Pos, Color;	float GPUId, Alpha, Blend; } Const;
+		struct { FMATRIX4	mVP; float4	Pos, Color;	float GPUId, Alpha, Blend; } Const;
 
-		Const.Color = FVECTOR4(1, 1, 1, 1);
-		D3DXMatrixOrthoOffCenterLH(&Const.mVP, 0.0f, (float)viewW, (float)viewH, 0.0f, 0.0f, 1.0f);
+		Const.Color = _F4(1, 1, 1, 1);
+		D3DMAT_OrthoOffCenterLH(&Const.mVP, 0.0f, (float)viewW, (float)viewH, 0.0f, 0.0f, 1.0f);
 		pLocalResultsSL->GetDesc(&desc);
 
 		pRenderGlares->ClearTextures();
@@ -4226,7 +4225,7 @@ void Scene::RenderGlares()
 			if (WorldToScreenSpace2(pos, &pt))
 			{
 				float cis = 1.0f, glare = float(Config->GFXGlare) * saturate(8.0 * AU / sdst);
-				FVECTOR4 clr = FVECTOR4(1, 1, 1, 1);
+				FVECTOR4 clr = _F4(1, 1, 1, 1);
 
 				vPlanet* vp = GetCameraNearVisual();
 			
@@ -4284,7 +4283,7 @@ void Scene::RenderGlares()
 
 // ===========================================================================================
 //
-bool Scene::IsVisibleInCamera(const D3DXVECTOR3 *pCnt, float radius)
+bool Scene::IsVisibleInCamera(const FVECTOR3 *pCnt, float radius)
 {
 	float z = Camera.z.x*pCnt->x + Camera.z.y*pCnt->y + Camera.z.z*pCnt->z;
 	if (z<(-radius)) return false;
@@ -4302,9 +4301,10 @@ bool Scene::IsVisibleInCamera(const D3DXVECTOR3 *pCnt, float radius)
 //
 bool Scene::CameraDirection2Viewport(const VECTOR3 &dir, int &x, int &y)
 {
-	D3DXVECTOR3 homog;
-	D3DXVECTOR3 idir = D3DXVECTOR3( -float(dir.x), -float(dir.y), -float(dir.z) );
-	D3DMAT_VectorMatrixMultiply(&homog, &idir, &Camera.mProjView);
+	
+	FVECTOR3 idir = FVECTOR3( -float(dir.x), -float(dir.y), -float(dir.z) );
+	FVECTOR3 homog = oapiTransformCoord(&idir, &Camera.mProjView);
+
 	if (homog.x >= -1.0f && homog.y <= 1.0f && homog.z >= 0.0) {
 		if (std::hypot(homog.x, homog.y) < 1e-6) {
 			x = viewW / 2, y = viewH / 2;

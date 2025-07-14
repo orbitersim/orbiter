@@ -122,7 +122,7 @@ namespace DebugControls {
 	void		SetVisual(vObject *vo);
 	void		RemoveVisual(vObject *vo);
 	vObject *	GetVisual();
-	void		SetPickPos(D3DXVECTOR3 pos);
+	void		SetPickPos(FVECTOR3 pos);
 	D3D9Mesh*	GetMesh();
 
 	void		SetupMeshGroups();

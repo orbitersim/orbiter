@@ -13,6 +13,7 @@
 #include "DrawAPI.h"
 #include <d3d9.h>
 #include <d3dx9.h>
+#include "MathAPI.h"
 #include <string>
 #include "gcCore.h"
 
@@ -188,26 +189,26 @@ typedef struct {
 
 
 typedef struct {
-	D3DXVECTOR3 pos;				///< beacon position
-	D3DXVECTOR3 dir;				///< light direction
+	FVECTOR3 pos;					///< beacon position
+	FVECTOR3 dir;					///< light direction
 	float size, angle, on, off;		///< beacon size and light cone angle
 	float bright, falloff;
 	DWORD color;					///< beacon color
 } BAVERTEX;
 
 typedef struct _LightStruct  {
-    int			  Type;             ///< Type of light source
-	float		  Dst2;				///< Square distance between camera and the light emitter
-    D3DXCOLOR     Diffuse;          ///< Color of light
-    D3DXVECTOR3   Position;         ///< position in world space
-    D3DXVECTOR3   Direction;        ///< direction in world space
-    D3DXVECTOR3   Attenuation;      ///< Attenuation
-	D3DXVECTOR4   Param;            ///< range, falloff, theta, phi
+    int			Type;             ///< Type of light source
+	float		Dst2;			  ///< Square distance between camera and the light emitter
+	FVECTOR4    Diffuse;          ///< Color of light
+    FVECTOR3	Position;         ///< position in world space
+    FVECTOR3	Direction;        ///< direction in world space
+    FVECTOR3	Attenuation;      ///< Attenuation
+	FVECTOR4	Param;            ///< range, falloff, theta, phi
 public : _LightStruct () :	Type(0),
 							Dst2(0.0),
-							Diffuse(D3DXCOLOR(0ul)),
-							Position(0,0,0), Direction(1.0f, 0.0f, 0.0f), Attenuation(1.0f, 1.0f, 1.0f),
-							Param(0,0,0,0)
+							Diffuse(0ul),
+							Position(), Direction(1.0f, 0.0f, 0.0f), Attenuation(1.0f, 1.0f, 1.0f),
+							Param()
 							{}
 } LightStruct;
 
@@ -219,7 +220,7 @@ public:
 				D3D9Light(const LightEmitter *le, const class vObject *vo);
 				~D3D9Light();
 
-		float	GetIlluminance(D3DXVECTOR3 &pos, float r) const;
+		float	GetIlluminance(FVECTOR3 &pos, float r) const;
 		void	UpdateLight(const LightEmitter *le, const class vObject *vo);
 		void	Reset();
 		const   LightEmitter *GetEmitter() const;
@@ -256,7 +257,7 @@ public:
 	bool			LoadMeshFromHandle(MESHHANDLE hMesh);
 	void			RenderGroup(DWORD idx);
 	SURFHANDLE		GetTexture(DWORD idx);
-	D3DXCOLOR		GetMaterial(DWORD idx);
+	FVECTOR4		GetMaterial(DWORD idx);
 	DWORD			GroupCount() const { return nGrp; }
 
 private:
@@ -274,7 +275,7 @@ private:
 	LPDIRECT3DDEVICE9 pDev;
 	SURFHANDLE* Tex;			// list of mesh textures
 	SKETCHGRP* Grp;            // list of mesh groups
-	D3DXCOLOR* Mtrl;
+	FVECTOR4* Mtrl;
 };
 
 #pragma pack(push, 4)
@@ -304,16 +305,16 @@ typedef struct {
  * \brief Material structure used in D3D9Mesh. ModFlags is not loaded to shaders
  */
 typedef struct {
-	D3DXVECTOR4	  Diffuse;
-	D3DXVECTOR4   Specular;			///< Specular color, power in alpha
-	D3DXVECTOR3	  Ambient;
-	D3DXVECTOR3   Emissive;
-	D3DXVECTOR3   Reflect;			///< Color multiplier and intensity (alpha)
-	D3DXVECTOR3	  Emission2;		///<
-	D3DXVECTOR3	  Fresnel;			///< Fresnel reflection
-	D3DXVECTOR2	  Roughness;		///< 
-	float		  Metalness;
-	D3DXVECTOR4	  SpecialFX;
+	FVECTOR4	Diffuse;
+	FVECTOR4	Specular;			///< Specular color, power in alpha
+	FVECTOR3	Ambient;
+	FVECTOR3	Emissive;
+	FVECTOR3	Reflect;			///< Color multiplier and intensity (alpha)
+	FVECTOR3	Emission2;			///<
+	FVECTOR3	Fresnel;			///< Fresnel reflection
+	FVECTOR2	Roughness;			///< 
+	float		Metalness;
+	FVECTOR4	SpecialFX;
 	// -----------------------
 	DWORD		  ModFlags;			///< Modification flags
 } D3D9MatExt;
@@ -325,15 +326,15 @@ typedef struct {
 	class vObject  *vObj;			///< Visual handle
 	float			dist;			///< Distance to a pick point
 	int				group;			///< Mesh group that was picked
-	D3DXVECTOR3		normal;			///< Normal vector in local vessel coordinates
-	D3DXVECTOR3		pos;			///< Position in local vessel coordinates
+	FVECTOR3		normal;			///< Normal vector in local vessel coordinates
+	FVECTOR3		pos;			///< Position in local vessel coordinates
 	int				idx;			///< Index that was picked
 	float			u, v;			///< Barycentric coordinates
 } D3D9Pick;
 
 typedef struct {
-	D3DXVECTOR3 _p;		// Position from camera
-	D3DXVECTOR3 _n;		// Normal
+	FVECTOR3 _p;		// Position from camera
+	FVECTOR3 _n;		// Normal
 	int i;				// Face Index
 	float d;			// Distance from camera
 	float u, v;			
@@ -427,44 +428,16 @@ inline void LogSunLight(D3D9Sun& s)
 	LogAlw("Sunlight.Incat = [%f, %f, %f]", s.Incatter.x, s.Incatter.y, s.Incatter.z);
 }
 
-// -----------------------------------------------------------------------------------
-// Conversion functions
-// ------------------------------------------------------------------------------------
 
-inline RECT _RECT(DWORD l, DWORD t, DWORD r, DWORD b)
-{
-	RECT rect = { long(l), long(t), long(r), long(b) };
-	return rect;
-}
 
-inline VECTOR3 _V(D3DXVECTOR3 &i)
-{
-	return _V(double(i.x), double(i.y), double(i.z));
-}
-
-inline oapi::FVECTOR3 _FV(D3DXVECTOR3 &i)
-{
-	return oapi::FVECTOR3(i.x, i.y, i.z);
-}
-
-inline VECTOR3 _V(D3DXVECTOR4 &i)
-{
-	return _V(double(i.x), double(i.y), double(i.z));
-}
-
-inline void D3DXCOLORSWAP(D3DXCOLOR *x)
+inline void D3DXCOLORSWAP(FVECTOR4 *x)
 {
 	float a = x->r; x->r = x->b; x->b = a;
 }
 
-inline D3DXVECTOR3 D3DXVECTOR3f4(D3DXVECTOR4 v)
+inline FVECTOR4 D3DCOLORMULT(const FVECTOR4*a, const FVECTOR4*b)
 {
-	return D3DXVECTOR3(v.x, v.y, v.z);
-}
-
-inline D3DCOLORVALUE D3DCOLORMULT(const D3DCOLORVALUE *a, const D3DCOLORVALUE *b)
-{
-	D3DCOLORVALUE c;
+	FVECTOR4 c;
 	c.a = a->a * b->a;
 	c.r = a->r * b->r;
 	c.g = a->g * b->g;
@@ -472,88 +445,40 @@ inline D3DCOLORVALUE D3DCOLORMULT(const D3DCOLORVALUE *a, const D3DCOLORVALUE *b
 	return c;
 }
 
-inline void MATRIX4toD3DMATRIX (const MATRIX4 &M, D3DXMATRIX &D)
+inline FMATRIX4 _FMATRIX (const MATRIX4 &M)
 {
-	D._11 = (float)M.m11;  D._12 = (float)M.m12;  D._13 = (float)M.m13;  D._14 = (float)M.m14;
-	D._21 = (float)M.m21;  D._22 = (float)M.m22;  D._23 = (float)M.m23;  D._24 = (float)M.m24;
-	D._31 = (float)M.m31;  D._32 = (float)M.m32;  D._33 = (float)M.m33;  D._34 = (float)M.m34;
-	D._41 = (float)M.m41;  D._42 = (float)M.m42;  D._43 = (float)M.m43;  D._44 = (float)M.m44;
-}
-
-inline MATRIX4 _MATRIX4(const LPD3DXMATRIX M)
-{
-	MATRIX4 D;
-	D.m11 = (double)M->_11;  D.m12 = (double)M->_12;  D.m13 = (double)M->_13;  D.m14 = (double)M->_14;
-	D.m21 = (double)M->_21;  D.m22 = (double)M->_22;  D.m23 = (double)M->_23;  D.m24 = (double)M->_24;
-	D.m31 = (double)M->_31;  D.m32 = (double)M->_32;  D.m33 = (double)M->_33;  D.m34 = (double)M->_34;
-	D.m41 = (double)M->_41;  D.m42 = (double)M->_42;  D.m43 = (double)M->_43;  D.m44 = (double)M->_44;
+	FMATRIX4 D;
+	D.m11 = (float)M.m11;  D.m12 = (float)M.m12;  D.m13 = (float)M.m13;  D.m14 = (float)M.m14;
+	D.m21 = (float)M.m21;  D.m22 = (float)M.m22;  D.m23 = (float)M.m23;  D.m24 = (float)M.m24;
+	D.m31 = (float)M.m31;  D.m32 = (float)M.m32;  D.m33 = (float)M.m33;  D.m34 = (float)M.m34;
+	D.m41 = (float)M.m41;  D.m42 = (float)M.m42;  D.m43 = (float)M.m43;  D.m44 = (float)M.m44;
 	return D;
 }
 
-inline void TransformVertex(NMVERTEX *pVrt, LPD3DXMATRIX pW)
+inline MATRIX4 _MATRIX4(const FMATRIX4* M)
 {
-	D3DXVECTOR3 p,n,t;
-	D3DXVec3TransformCoord(&p, ptr(D3DXVECTOR3(pVrt->x, pVrt->y, pVrt->z)), pW);
-	D3DXVec3TransformNormal(&n, ptr(D3DXVECTOR3(pVrt->nx, pVrt->ny, pVrt->nz)), pW);
-	D3DXVec3TransformNormal(&t, ptr(D3DXVECTOR3(pVrt->tx, pVrt->ty, pVrt->tz)), pW);
+	MATRIX4 D;
+	D.m11 = (double)M->m11;  D.m12 = (double)M->m12;  D.m13 = (double)M->m13;  D.m14 = (double)M->m14;
+	D.m21 = (double)M->m21;  D.m22 = (double)M->m22;  D.m23 = (double)M->m23;  D.m24 = (double)M->m24;
+	D.m31 = (double)M->m31;  D.m32 = (double)M->m32;  D.m33 = (double)M->m33;  D.m34 = (double)M->m34;
+	D.m41 = (double)M->m41;  D.m42 = (double)M->m42;  D.m43 = (double)M->m43;  D.m44 = (double)M->m44;
+	return D;
+}
+
+inline void TransformVertex(NMVERTEX *pVrt, const FMATRIX4* pW)
+{
+	FVECTOR3 p = oapiTransformCoord(ptr(FVECTOR3(pVrt->x, pVrt->y, pVrt->z)), pW);
+	FVECTOR3 n = oapiTransformNormal(ptr(FVECTOR3(pVrt->nx, pVrt->ny, pVrt->nz)), pW);
+	FVECTOR3 t = oapiTransformNormal(ptr(FVECTOR3(pVrt->tx, pVrt->ty, pVrt->tz)), pW);
 	pVrt->x  = p.x;	pVrt->y  = p.y; pVrt->z  = p.z;
 	pVrt->nx = n.x; pVrt->ny = n.y; pVrt->nz = n.z;
 	pVrt->tx = t.x; pVrt->ty = t.y; pVrt->tz = t.z;
 }
 
-inline void D3DVEC (const VECTOR3 &v, D3DVECTOR &d3dv)
-{
-	d3dv.x = (float)v.x;
-	d3dv.y = (float)v.y;
-	d3dv.z = (float)v.z;
-}
-
-inline D3DXVECTOR4 D3DXC2V(const D3DXCOLOR &v)
-{
-	return D3DXVECTOR4(v.r, v.g, v.b, v.a);
-}
-
-inline D3DXVECTOR3 D3DXVEC(const VECTOR3 &v)
-{
-	return D3DXVECTOR3(float(v.x), float(v.y), float(v.z));
-}
-
-inline D3DXVECTOR3 D3DXVEC(const VECTOR4 &v)
-{
-	return D3DXVECTOR3(float(v.x), float(v.y), float(v.z));
-}
-
-inline D3DXVECTOR4 D3DXVEC4(const VECTOR3 &v, float w)
-{
-	return D3DXVECTOR4(float(v.x), float(v.y), float(v.z), w);
-}
-
-inline D3DXCOLOR _D3DXCOLOR(const VECTOR3 &v, float a = 1.0f)
-{
-	return D3DXCOLOR(float(v.x), float(v.y), float(v.z), a);
-}
-
-inline VECTOR3 _VD3DX(const D3DXVECTOR3 &v)
-{
-	return _V(double(v.x), double(v.y), double(v.z));
-}
-
-inline VECTOR4 _VD4DX(const D3DXVECTOR4 &v)
-{
-	return _V(double(v.x), double(v.y), double(v.z), double(v.w));
-}
-
-inline float D3DVAL (double x)
-{
-	return (float)x;
-}
-
-//char* _fgets(char* cbuf, int num, FILE* stream, bool keepOneSpace = false);
-
 int fgets2(char *buf, int cmax, FILE *file, DWORD param=0);
 
-float D3DXVec3Angle(D3DXVECTOR3 a, D3DXVECTOR3 b);
-D3DXVECTOR3 Perpendicular(D3DXVECTOR3 *a);
+float D3DXVec3Angle(FVECTOR3 a, FVECTOR3 b);
+FVECTOR3 Perpendicular(FVECTOR3 *a);
 
 const char *RemovePath(const char *in);
 SketchMesh * GetSketchMesh(const MESHHANDLE hMesh);
@@ -581,33 +506,39 @@ DWORD BuildDate();
 // D3D vector and matrix operations
 // ------------------------------------------------------------------------------------
 
-float D3DMAT_BSScaleFactor(const D3DXMATRIX *mat);
-void D3DMAT_Identity (D3DXMATRIX *mat);
-void D3DMAT_ZeroMatrix(D3DXMATRIX *mat);
-void D3DMAT_Copy (D3DXMATRIX *tgt, const D3DXMATRIX *src);
-void D3DMAT_SetRotation (D3DXMATRIX *mat, const MATRIX3 *rot);
-void D3DMAT_SetInvRotation (D3DXMATRIX *mat, const MATRIX3 *rot);
-void D3DMAT_RotationFromAxis (const D3DXVECTOR3 &axis, float angle, D3DXMATRIX *rot);
-void D3DMAT_FromAxis(D3DXMATRIX *out, const D3DVECTOR *x, const D3DVECTOR *y, const D3DVECTOR *z);
-void D3DMAT_FromAxis(D3DXMATRIX *out, const VECTOR3 *x, const VECTOR3 *y, const VECTOR3 *z);
-void D3DMAT_FromAxisT(D3DXMATRIX *out, const D3DVECTOR *x, const D3DVECTOR *y, const D3DVECTOR *z);
-void D3DMAT_CreateX_Billboard(const D3DXVECTOR3 *toCam, const D3DXVECTOR3 *pos, float scale, D3DXMATRIX *pOut);
-void D3DMAT_CreateX_Billboard(const D3DXVECTOR3 *toCam, const D3DXVECTOR3 *pos, const D3DXVECTOR3 *dir, float size, float stretch, D3DXMATRIX *pOut);
+float D3DMAT_BSScaleFactor(const FMATRIX4 *mat);
+void D3DMAT_ZeroMatrix(FMATRIX4 *mat);
+void D3DMAT_Copy (FMATRIX4 *tgt, const FMATRIX4 *src);
+void D3DMAT_Scale(FMATRIX4* mat, float x, float y, float z);
+void D3DMAT_SetRotation (FMATRIX4 *mat, const MATRIX3 *rot);
+void D3DMAT_SetInvRotation (FMATRIX4 *mat, const MATRIX3 *rot);
+void D3DMAT_RotationFromAxis (const FVECTOR3 &axis, float angle, FMATRIX4 *rot);
+void D3DMAT_FromAxis(FMATRIX4 *out, const FVECTOR3 *x, const FVECTOR3 *y, const FVECTOR3 *z);
+void D3DMAT_FromAxis(FMATRIX4 *out, const VECTOR3 *x, const VECTOR3 *y, const VECTOR3 *z);
+void D3DMAT_FromAxisT(FMATRIX4 *out, const FVECTOR3 *x, const FVECTOR3 *y, const FVECTOR3 *z);
+void D3DMAT_CreateX_Billboard(const FVECTOR3 *toCam, const FVECTOR3 *pos, float scale, FMATRIX4 *pOut);
+void D3DMAT_CreateX_Billboard(const FVECTOR3 *toCam, const FVECTOR3 *pos, const FVECTOR3 *dir, float size, float stretch, FMATRIX4 *pOut);
+void D3DMAT_Transformation2D(FMATRIX4* pOut, const FVECTOR2* pSclCtr, float SclRot, const FVECTOR2* pScl, const FVECTOR2* pRotCtr, float Rot, const FVECTOR2* pTransl);
+void D3DMAT_AffineTransformation2D(FMATRIX4* pOut, float Scl, const FVECTOR2* pRotCtr, float Rot, const FVECTOR2* pTransl);
+
+void D3DMAT_OrthoOffCenterLH(FMATRIX4* o, float l, float r, float b, float t, float zn, float zf);
+void D3DMAT_OrthoOffCenterRH(FMATRIX4* o, float l, float r, float b, float t, float zn, float zf);
+void D3DMAT_LookAtRH(FMATRIX4* o, const FVECTOR3* pEye, const FVECTOR3* pAt, const FVECTOR3* pUp);
 
 // Set up a as matrix for ANTICLOCKWISE rotation r around x/y/z-axis
-void D3DMAT_RotX (D3DXMATRIX *mat, double r);
-void D3DMAT_RotY (D3DXMATRIX *mat, double r);
+void D3DMAT_RotX (FMATRIX4 *mat, double r);
+void D3DMAT_RotY (FMATRIX4 *mat, double r);
 
-void D3DMAT_SetTranslation (D3DXMATRIX *mat, const VECTOR3 *trans);
-void D3DMAT_SetTranslation(D3DXMATRIX *mat, const D3DXVECTOR3 *trans);
-bool D3DMAT_VectorMatrixMultiply (D3DXVECTOR3 *res, const D3DXVECTOR3 *v, const D3DXMATRIX *mat);
-HRESULT D3DMAT_MatrixInvert (D3DXMATRIX *res, D3DXMATRIX *a);
+void D3DMAT_SetTranslation(FMATRIX4 *mat, const VECTOR3 *trans);
+void D3DMAT_SetTranslation(FMATRIX4 *mat, const FVECTOR3 *trans);
+
+void D3DMAT_Transform(FVECTOR4* o, const FVECTOR4* i, const FMATRIX4* m);
 
 // ------------------------------------------------------------------------------------
 // Vertex formats
 // ------------------------------------------------------------------------------------
 struct VERTEX_XYZ { float x, y, z; };                   // transformed vertex
-struct VERTEX_XYZC { float x, y, z; D3DCOLOR col; };     // untransformed vertex with single colour component
+struct VERTEX_XYZC { float x, y, z; DWORD col; };     // untransformed vertex with single colour component
 
 // untransformed lit vertex with texture coordinates
 struct VERTEX_XYZ_TEX {
@@ -621,7 +552,7 @@ struct VERTEX_2TEX {
 	float tu0, tv0, e;
 	inline VERTEX_2TEX() : x(0.0f), y(0.0f), z(0.0f), nx(0.0f), ny(0.0f), nz(0.0f),
 		tu0(0.0f), tv0(0.0f), e(0.0f) {}
-	inline VERTEX_2TEX(const D3DVECTOR& p, const D3DVECTOR& n, float u0, float v0, float u1, float v1)
+	inline VERTEX_2TEX(const FVECTOR3& p, const FVECTOR3& n, float u0, float v0, float u1, float v1)
 		: x(p.x), y(p.y), z(p.z), nx(n.x), ny(n.y), nz(n.z),
 		tu0(u0), tv0(v0), e(0.0f) {}
 };
@@ -744,6 +675,52 @@ struct AutoFile
 	}
 };
 
+
+// -----------------------------------------------------------------------------------
+// Conversion functions
+// ------------------------------------------------------------------------------------
+
+inline RECT _RECT(DWORD l, DWORD t, DWORD r, DWORD b)
+{
+	RECT rect = { long(l), long(t), long(r), long(b) };
+	return rect;
+}
+
+inline VECTOR4 _V4(const FVECTOR4& i) { VECTOR4 v = { i.x, i.y, i.z, i.w }; return v; }
+inline VECTOR4 _V4(const VECTOR3& i, double w = 0.0) { VECTOR4 v = { i.x, i.y, i.z, w }; return v; }
+inline VECTOR4 _V4(const FVECTOR3& i, float w = 0.0f) { VECTOR4 v = { i.x, i.y, i.z, w }; return v; }
+
+inline VECTOR3 _V(const FVECTOR3& i) { return _V(double(i.x), double(i.y), double(i.z)); }
+inline VECTOR3 _V(const VECTOR4& i) { return _V(double(i.x), double(i.y), double(i.z)); }
+inline VECTOR3 _V(const FVECTOR4& i) { return _V(double(i.x), double(i.y), double(i.z)); }
+
+inline FVECTOR3 _F(const VECTOR3& i) { return FVECTOR3(float(i.x), float(i.y), float(i.z)); }
+inline FVECTOR3 _F(const VECTOR4& i) { return FVECTOR3(float(i.x), float(i.y), float(i.z)); }
+inline FVECTOR3 _F(const FVECTOR4& i) { return FVECTOR3(float(i.x), float(i.y), float(i.z)); }
+inline FVECTOR3 _F(const VECTOR3* i) { return FVECTOR3(float(i->x), float(i->y), float(i->z)); }
+
+inline FVECTOR4 _F4(const VECTOR4& i) { return FVECTOR4(float(i.x), float(i.y), float(i.z), float(i.w)); }
+inline FVECTOR4 _F4(const VECTOR3& i, double w = 0.0) { return FVECTOR4(float(i.x), float(i.y), float(i.z), float(w)); }
+inline FVECTOR4 _F4(const FVECTOR3& i, float w = 0.0f) { return FVECTOR4(float(i.x), float(i.y), float(i.z), float(w)); }
+
+inline VECTOR4  _V4(double x, double y, double z, double w) { VECTOR4 v = { x, y, z, w }; return v; }
+inline VECTOR4  _V4(int x, int y, int z, int w) { VECTOR4 v = { double(x), double(y), double(z), double(w) }; return v; }
+inline FVECTOR4 _F4(float x, float y, float z, float w) { return FVECTOR4(x, y, z, w); }
+inline FVECTOR4 _F4(int x, int y, int z, int w) { return FVECTOR4(float(x), float(y), float(z), float(w)); }
+inline FVECTOR3 _F(float x, float y, float z) { return FVECTOR3(x, y, z); }
+inline FVECTOR3 _F(int x, int y, int z) { return FVECTOR3(float(x), float(y), float(z)); }
+
+
+
+inline FVECTOR3 _F(const XMFLOAT3& i) { return FVECTOR3(float(i.x), float(i.y), float(i.z)); }
+
+
+inline const D3DXVECTOR3* _DX(const FVECTOR3& a) { return (D3DXVECTOR3*)&a; }
+inline const D3DXVECTOR4* _DX(const FVECTOR4& a) { return (D3DXVECTOR4*)&a; }
+inline const D3DXVECTOR3* _DX(const FVECTOR3* a) { return (D3DXVECTOR3*)a; }
+inline const D3DXVECTOR4* _DX(const FVECTOR4* a) { return (D3DXVECTOR4*)a; }
+inline const D3DXMATRIX*  _DX(const FMATRIX4& a) { return (D3DXMATRIX*)&a; }
+inline const D3DXMATRIX*  _DX(const FMATRIX4* a) { return (D3DXMATRIX*)a; }
 
 // ------------------------------------------------------------------------------------
 // Miscellaneous helper functions
