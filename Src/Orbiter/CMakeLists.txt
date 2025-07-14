@@ -126,6 +126,7 @@ set(Orbiter_includes
 	${CMAKE_CURRENT_SOURCE_DIR}
 	${CMAKE_SOURCE_DIR}/Orbitersdk/include
 	${CMAKE_SOURCE_DIR}/OVP
+	${EXTERN_DIR}/dxmath/Inc
 	${CMAKE_CURRENT_BINARY_DIR}
 	${HTMLHELP_INCLUDE_DIR}
 )

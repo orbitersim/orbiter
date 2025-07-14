@@ -314,15 +314,15 @@ void HazeManager2::RenderSky(VECTOR3 cpos, VECTOR3 cdir, double rad, double apr)
 
 	FMATRIX4 mWL, mL;
 	oapiMatrixIdentity(&mWL);
-	D3DMAT_FromAxisT(&mWL, ptr(_FVECTOR3(ux)), ptr(_FVECTOR3(ur)), ptr(_FVECTOR3(uy)));
+	D3DMAT_FromAxisT(&mWL, ptr(_F(ux)), ptr(_F(ur)), ptr(_F(uy)));
 
 	double a = 15.0*RAD;
 	double b = (PI-asin(rad/cr))/6.0;
 	
 	FVECTOR3 vTileCenter = FVECTOR3(float(sin(15.0*RAD)), 1.0f, float(1.0+cos(15.0*RAD))) * 0.5;
-	oapiMatrixRotationAxis(&mL, ptr(_FVECTOR3(ur)), float(-a*0.5));
+	oapiMatrixRotationAxis(&mL, ptr(_F(ur)), float(-a*0.5));
 	oapiMatrixMultiply(&mWL, &mWL, &mL);
-	oapiMatrixRotationAxis(&mL, ptr(_FVECTOR3(ur)), float(-a));
+	oapiMatrixRotationAxis(&mL, ptr(_F(ur)), float(-a));
 
 	
 	//vp->GetScatterConst()->mVP = vp->GetScene()->PushCameraFrustumLimits(hd * 0.1, hd * 5.0);
@@ -408,7 +408,7 @@ void HazeManager2::RenderRing(VECTOR3 cpos, VECTOR3 cdir, double rad, double hra
 
 	FMATRIX4 mW;
 	oapiMatrixIdentity(&mW);
-	D3DMAT_FromAxisT(&mW, ptr(_FVECTOR3(ux)), ptr(_FVECTOR3(ur)), ptr(_FVECTOR3(uy)));
+	D3DMAT_FromAxisT(&mW, ptr(_F(ux)), ptr(_F(ur)), ptr(_F(uy)));
 
 	ShaderParams sprm;
 	pRing->Setup(pPositionDecl, false, 2);

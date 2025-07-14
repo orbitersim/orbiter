@@ -1663,7 +1663,7 @@ void D3D9Pad::AppendLineVertexList(const Type *pt, int _npt, bool bLoop)
 
 			pp = _DXV2(pt[i]);
 
-			if (IsDashed()) length += oapi::length(np - pp);
+			if (IsDashed()) length += ::length(np - pp);
 		}
 
 		// Last segment ---------------------------------------------------------

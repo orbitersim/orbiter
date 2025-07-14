@@ -74,12 +74,6 @@ namespace oapi
 			y = _y;
 		}
 
-		FVECTOR2(double _x, double _y)
-		{
-			x = float(_x);
-			y = float(_y);
-		}
-
 		FVECTOR2(long _x, long _y)
 		{
 			x = float(_x);
@@ -131,81 +125,14 @@ namespace oapi
 			return data[i];
 		}
 
-		inline FVECTOR2 operator* (float f) const
+		inline bool operator== (const FVECTOR2& f) const
 		{
-			return FVECTOR2(x * f, y * f);
+			return x == f.x && y == f.y;
 		}
 
-		inline FVECTOR2 operator* (FVECTOR2 f) const
+		inline bool operator!= (const FVECTOR2& f) const
 		{
-			return FVECTOR2(x * f.x, y * f.y);
-		}
-
-		inline FVECTOR2& operator*= (FVECTOR2& f)
-		{
-			x *= f.x; y *= f.y;
-			return *this;
-		}
-
-		inline FVECTOR2& operator+= (FVECTOR2& f)
-		{
-			x += f.x; y += f.y;
-			return *this;
-		}
-
-		inline FVECTOR2& operator-= (FVECTOR2& f)
-		{
-			x -= f.x; y -= f.y;
-			return *this;
-		}
-
-		inline FVECTOR2& operator/= (FVECTOR2& f)
-		{
-			x /= f.x; y /= f.y;
-			return *this;
-		}
-
-		inline FVECTOR2 operator/ (float f) const
-		{
-			f = 1.0f / f;
-			return FVECTOR2(x * f, y * f);
-		}
-
-		inline FVECTOR2 operator+ (float f) const
-		{
-			return FVECTOR2(x + f, y + f);
-		}
-
-		inline FVECTOR2 operator+ (FVECTOR2& f) const
-		{
-			return FVECTOR2(x + f.x, y + f.y);
-		}
-
-		inline FVECTOR2 operator- (float f) const
-		{
-			return FVECTOR2(x - f, y - f);
-		}
-
-		inline FVECTOR2 operator+ (const FVECTOR2& f) const
-		{
-			return FVECTOR2(x + f.x, y + f.y);
-		}
-
-		inline FVECTOR2 operator- (const FVECTOR2& f) const
-		{
-			return FVECTOR2(x - f.x, y - f.y);
-		}
-
-		inline FVECTOR2& operator*= (float f)
-		{
-			x *= f; y *= f;
-			return *this;
-		}
-
-		inline FVECTOR2& operator/= (float f)
-		{
-			x /= f; y /= f;
-			return *this;
+			return x != f.x || y != f.y;
 		}
 
 		float data[2];
@@ -263,115 +190,11 @@ namespace oapi
 		}
 #endif
 
-		float MaxRGB() const
-		{
-			return (std::max)(r, (std::max)(g, b));
-		}
-
-		float MinRGB() const
-		{
-			return (std::min)(r, (std::min)(g, b));
-		}
-
-		inline VECTOR3 _V() const
-		{
-			VECTOR3 v = { x,y,z };
-			return v;
-		}
+		inline VECTOR3 _V() const { VECTOR3 v = { x,y,z }; return v; }
 
 		inline float& operator[](int i)
 		{
 			return data[i];
-		}
-
-		inline FVECTOR3& operator*= (float f)
-		{
-			x *= f; y *= f; z *= f;
-			return *this;
-		}
-
-		inline FVECTOR3& operator*= (const FVECTOR3& f)
-		{
-			x *= f.x; y *= f.y; z *= f.z;
-			return *this;
-		}
-
-		inline FVECTOR3& operator/= (float f)
-		{
-			// return *this *= (1.0f / f); // nicer?
-			f = 1.0f / f;
-			x *= f; y *= f; z *= f;
-			return *this;
-		}
-
-		inline FVECTOR3& operator+= (float f)
-		{
-			x += f; y += f; z += f;
-			return *this;
-		}
-
-		inline FVECTOR3& operator+= (const FVECTOR3& f)
-		{
-			x += f.x; y += f.y; z += f.z;
-			return *this;
-		}
-
-		inline FVECTOR3& operator-= (float f)
-		{
-			x -= f; y -= f; z -= f;
-			return *this;
-		}
-
-		inline FVECTOR3& operator-= (const FVECTOR3& f)
-		{
-			x -= f.x; y -= f.y; z -= f.z;
-			return *this;
-		}
-
-		inline FVECTOR3 operator* (float f) const
-		{
-			return FVECTOR3(x * f, y * f, z * f);
-		}
-
-		inline FVECTOR3 operator* (const FVECTOR3& f) const
-		{
-			return FVECTOR3(x * f.x, y * f.y, z * f.z);
-		}
-
-		inline FVECTOR3 operator/ (float f) const
-		{
-			f = 1.0f / f;
-			return FVECTOR3(x * f, y * f, z * f);
-		}
-
-		inline FVECTOR3 operator/ (const FVECTOR3& f) const
-		{
-			return FVECTOR3(x / f.x, y / f.y, z / f.z);
-		}
-
-		inline FVECTOR3 operator+ (float f) const
-		{
-			return FVECTOR3(x + f, y + f, z + f);
-		}
-
-		inline FVECTOR3 operator- (float f) const
-		{
-			return FVECTOR3(x - f, y - f, z - f);
-		}
-
-		inline FVECTOR3 operator+ (const FVECTOR3& f) const
-		{
-			return FVECTOR3(x + f.x, y + f.y, z + f.z);
-		}
-
-		inline FVECTOR3 operator- (const FVECTOR3& f) const
-		{
-			return FVECTOR3(x - f.x, y - f.y, z - f.z);
-		}
-
-		inline FVECTOR3 operator-() const
-		{
-			return FVECTOR3(-x, -y, -z);
 		}
 
 		inline bool operator== (const FVECTOR3& f) const
@@ -421,11 +244,6 @@ namespace oapi
 			if (db > 0xFF) db = 0xFF;
 			if (da > 0xFF) da = 0xFF;
 			return (da << 24) | (dr << 16) | (dg << 8) | db;
-		}
-
-		float MaxRGB() const
-		{
-			return (std::max)(r, (std::max)(g, b));
 		}
 
 		FVECTOR4()
@@ -517,84 +335,14 @@ namespace oapi
 			return data[i];
 		}
 
-		inline FVECTOR4 operator* (float f) const
+		inline bool operator== (const FVECTOR4& f) const
 		{
-			return FVECTOR4(x * f, y * f, z * f, w * f);
+			return x == f.x && y == f.y && z == f.z && w == f.w;
 		}
 
-		inline FVECTOR4& operator*= (float f)
+		inline bool operator!= (const FVECTOR4& f) const
 		{
-			x *= f; y *= f; z *= f; w *= f;
-			return *this;
-		}
-
-		inline FVECTOR4& operator*= (const FVECTOR4& f)
-		{
-			x *= f.x; y *= f.y; z *= f.z; w *= f.w;
-			return *this;
-		}
-
-		inline FVECTOR4& operator/= (float f)
-		{
-			// return *this *= (1.0f / f); // nicer?
-			f = 1.0f / f;
-			x *= f; y *= f; z *= f; w *= f;
-			return *this;
-		}
-
-		inline FVECTOR4& operator+= (float f)
-		{
-			x += f; y += f; z += f; w += f;
-			return *this;
-		}
-
-		inline FVECTOR4& operator+= (const FVECTOR4& f)
-		{
-			x += f.x; y += f.y; z += f.z; w += f.w;
-			return *this;
-		}
-
-		inline FVECTOR4& operator-= (float f)
-		{
-			x -= f; y -= f; z -= f; w -= f;
-			return *this;
-		}
-
-		inline FVECTOR4& operator-= (const FVECTOR4& f)
-		{
-			x -= f.x; y -= f.y; z -= f.z; w -= f.w;
-			return *this;
-		}
-
-		inline FVECTOR4 operator/ (float f) const
-		{
-			f = 1.0f / f;
-			return FVECTOR4(x * f, y * f, z * f, w * f);
-		}
-
-		inline FVECTOR4 operator+ (float f) const
-		{
-			return FVECTOR4(x + f, y + f, z + f, w + f);
-		}
-
-		inline FVECTOR4 operator- (float f) const
-		{
-			return FVECTOR4(x - f, y - f, z - f, w - f);
-		}
-
-		inline FVECTOR4 operator+ (const FVECTOR4& f) const
-		{
-			return FVECTOR4(x + f.x, y + f.y, z + f.z, w + f.w);
-		}
-
-		inline FVECTOR4 operator- (const FVECTOR4& f) const
-		{
-			return FVECTOR4(x - f.x, y - f.y, z - f.z, w - f.w);
-		}
-
-		inline FVECTOR4 operator-() const
-		{
-			return FVECTOR4(-x, -y, -z, -w);
+			return x != f.x || y != f.y || z != f.z || w != f.w;
 		}
 
 		float data[4];
@@ -723,8 +471,120 @@ namespace oapi
 		struct { FVECTOR4 _x, _y, _z, _p; };
 		struct { float m11, m12, m13, m14, m21, m22, m23, m24, m31, m32, m33, m34, m41, m42, m43, m44; };
 	} FMATRIX4;
+}
 
 
+	// ==============================================================================================================
+	// Type casting
+	//
+
+	using namespace oapi;
+
+	inline VECTOR3 _V(const oapi::FVECTOR3& i) { return { double(i.x), double(i.y), double(i.z) }; }
+	inline VECTOR3 _V(const VECTOR4 & i) { return  { double(i.x), double(i.y), double(i.z) }; }
+	inline VECTOR3 _V(const oapi::FVECTOR4 & i) { return { double(i.x), double(i.y), double(i.z) }; }
+
+	inline VECTOR4 _V4(const oapi::FVECTOR4& i) { return { i.x, i.y, i.z, i.w }; }
+	inline VECTOR4 _V4(const VECTOR3& i, double w = 0.0) { return { i.x, i.y, i.z, w }; }
+	inline VECTOR4 _V4(const oapi::FVECTOR3& i, float w = 0.0f) { return { i.x, i.y, i.z, w }; }
+
+	inline FVECTOR3 _F(const VECTOR3& i) { return FVECTOR3(float(i.x), float(i.y), float(i.z)); }
+	inline FVECTOR3 _F(const VECTOR4& i) { return FVECTOR3(float(i.x), float(i.y), float(i.z)); }
+	inline FVECTOR3 _F(const FVECTOR4& i) { return FVECTOR3(float(i.x), float(i.y), float(i.z)); }
+	inline FVECTOR3 _F(const VECTOR3* i) { return FVECTOR3(float(i->x), float(i->y), float(i->z)); }
+
+	inline FVECTOR4 _F4(const VECTOR4& i) { return FVECTOR4(float(i.x), float(i.y), float(i.z), float(i.w)); }
+	inline FVECTOR4 _F4(const VECTOR3& i, double w = 0.0) { return FVECTOR4(float(i.x), float(i.y), float(i.z), float(w)); }
+	inline FVECTOR4 _F4(const FVECTOR3& i, float w = 0.0f) { return FVECTOR4(float(i.x), float(i.y), float(i.z), float(w)); }
+
+	inline VECTOR4  _V4(double x, double y, double z, double w) { return { x, y, z, w }; }
+	inline VECTOR4  _V4(int x, int y, int z, int w) { return { double(x), double(y), double(z), double(w) }; }
+	inline FVECTOR4 _F4(float x, float y, float z, float w) { return FVECTOR4(x, y, z, w); }
+	inline FVECTOR4 _F4(int x, int y, int z, int w) { return FVECTOR4(float(x), float(y), float(z), float(w)); }
+	inline FVECTOR3 _F(float x, float y, float z) { return FVECTOR3(x, y, z); }
+	inline FVECTOR3 _F(int x, int y, int z) { return FVECTOR3(float(x), float(y), float(z)); }
+	inline FVECTOR2 _F2(float x, float y) { return FVECTOR2(x, y); }
+
+	// ==============================================================================================================
+	// FVECTOR2 operators
+	//
+	inline FVECTOR2& operator*= (FVECTOR2&v, float f) { v.x *= f; v.y *= f; return v; }
+	inline FVECTOR2& operator/= (FVECTOR2&v, float f) { v.x /= f; v.y /= f; return v; }
+	inline FVECTOR2& operator+= (FVECTOR2&v, float f) { v.x += f; v.y += f; return v; }
+	inline FVECTOR2& operator-= (FVECTOR2&v, float f) { v.x -= f; v.y -= f; return v; }
+
+	inline FVECTOR2& operator*= (FVECTOR2&v, const FVECTOR2& f) { v.x *= f.x; v.y *= f.y; return v; }
+	inline FVECTOR2& operator/= (FVECTOR2&v, const FVECTOR2& f) { v.x /= f.x; v.y /= f.y; return v; }
+	inline FVECTOR2& operator+= (FVECTOR2&v, const FVECTOR2& f) { v.x += f.x; v.y += f.y; return v; }
+	inline FVECTOR2& operator-= (FVECTOR2&v, const FVECTOR2& f) { v.x -= f.x; v.y -= f.y; return v; }
+
+	inline FVECTOR2 operator* (const FVECTOR2&v, float f) { return _F2(v.x * f, v.y * f); }
+	inline FVECTOR2 operator/ (const FVECTOR2&v, float f) { return _F2(v.x / f, v.y / f); }
+	inline FVECTOR2 operator+ (const FVECTOR2&v, float f) { return _F2(v.x + f, v.y + f); }
+	inline FVECTOR2 operator- (const FVECTOR2&v, float f) { return _F2(v.x - f, v.y - f); }
+
+	inline FVECTOR2 operator* (const FVECTOR2&v, const FVECTOR2& f) { return _F2(v.x * f.x, v.y * f.y); }
+	inline FVECTOR2 operator/ (const FVECTOR2&v, const FVECTOR2& f) { return _F2(v.x / f.x, v.y / f.y); }
+	inline FVECTOR2 operator+ (const FVECTOR2&v, const FVECTOR2& f) { return _F2(v.x + f.x, v.y + f.y); }
+	inline FVECTOR2 operator- (const FVECTOR2&v, const FVECTOR2& f) { return _F2(v.x - f.x, v.y - f.y); }
+
+	inline FVECTOR2 operator- (const FVECTOR2&v) { return _F2(-v.x, -v.y); }
+
+
+	// ==============================================================================================================
+	// FVECTOR3 operators
+	//
+	inline FVECTOR3& operator*= (FVECTOR3&v, float f) {	v.x *= f; v.y *= f; v.z *= f; return v; }
+	inline FVECTOR3& operator/= (FVECTOR3&v, float f) { v.x /= f; v.y /= f; v.z /= f; return v; }
+	inline FVECTOR3& operator+= (FVECTOR3&v, float f) { v.x += f; v.y += f; v.z += f; return v; }
+	inline FVECTOR3& operator-= (FVECTOR3&v, float f) { v.x -= f; v.y -= f; v.z -= f; return v; }
+
+	inline FVECTOR3& operator*= (FVECTOR3&v, const FVECTOR3& f)	{ v.x *= f.x; v.y *= f.y; v.z *= f.z; return v;	}
+	inline FVECTOR3& operator/= (FVECTOR3&v, const FVECTOR3& f) { v.x /= f.x; v.y /= f.y; v.z /= f.z; return v; }
+	inline FVECTOR3& operator+= (FVECTOR3&v, const FVECTOR3& f) { v.x += f.x; v.y += f.y; v.z += f.z; return v; }
+	inline FVECTOR3& operator-= (FVECTOR3&v, const FVECTOR3& f) { v.x -= f.x; v.y -= f.y; v.z -= f.z; return v; }
+
+	inline FVECTOR3 operator* (const FVECTOR3&v, float f) { return _F(v.x * f, v.y * f, v.z * f); }
+	inline FVECTOR3 operator/ (const FVECTOR3&v, float f) { return _F(v.x / f, v.y / f, v.z / f); }
+	inline FVECTOR3 operator+ (const FVECTOR3&v, float f) { return _F(v.x + f, v.y + f, v.z + f); }
+	inline FVECTOR3 operator- (const FVECTOR3&v, float f) { return _F(v.x - f, v.y - f, v.z - f); }
+
+	inline FVECTOR3 operator* (const FVECTOR3&v, const FVECTOR3& f) { return _F(v.x * f.x, v.y * f.y, v.z * f.z); }
+	inline FVECTOR3 operator/ (const FVECTOR3&v, const FVECTOR3& f) { return _F(v.x / f.x, v.y / f.y, v.z / f.z); }
+	inline FVECTOR3 operator+ (const FVECTOR3&v, const FVECTOR3& f) { return _F(v.x + f.x, v.y + f.y, v.z + f.z); }
+	inline FVECTOR3 operator- (const FVECTOR3&v, const FVECTOR3& f) { return _F(v.x - f.x, v.y - f.y, v.z - f.z); }
+
+	inline FVECTOR3 operator- (const FVECTOR3&v) { return _F(-v.x, -v.y, -v.z); }
+
+
+
+	// ==============================================================================================================
+	// FVECTOR4 operators
+	//
+	inline FVECTOR4& operator*= (FVECTOR4&v, float f) { v.x *= f; v.y *= f; v.z *= f; v.w *= f; return v; }
+	inline FVECTOR4& operator/= (FVECTOR4&v, float f) { v.x /= f; v.y /= f; v.z /= f; v.w /= f; return v; }
+	inline FVECTOR4& operator+= (FVECTOR4&v, float f) { v.x += f; v.y += f; v.z += f; v.w += f; return v; }
+	inline FVECTOR4& operator-= (FVECTOR4&v, float f) { v.x -= f; v.y -= f; v.z -= f; v.w -= f; return v; }
+
+	inline FVECTOR4& operator*= (FVECTOR4&v, const FVECTOR4& f) { v.x *= f.x; v.y *= f.y; v.z *= f.z; v.w *= f.w; return v; }
+	inline FVECTOR4& operator/= (FVECTOR4&v, const FVECTOR4& f) { v.x /= f.x; v.y /= f.y; v.z /= f.z; v.w /= f.w; return v; }
+	inline FVECTOR4& operator+= (FVECTOR4&v, const FVECTOR4& f) { v.x += f.x; v.y += f.y; v.z += f.z; v.w += f.w; return v; }
+	inline FVECTOR4& operator-= (FVECTOR4&v, const FVECTOR4& f) { v.x -= f.x; v.y -= f.y; v.z -= f.z; v.w -= f.w; return v; }
+
+	inline FVECTOR4 operator* (const FVECTOR4&v, float f) { return _F4(v.x * f, v.y * f, v.z * f, v.w * f); }
+	inline FVECTOR4 operator/ (const FVECTOR4&v, float f) { return _F4(v.x / f, v.y / f, v.z / f, v.w / f); }
+	inline FVECTOR4 operator+ (const FVECTOR4&v, float f) { return _F4(v.x + f, v.y + f, v.z + f, v.w + f); }
+	inline FVECTOR4 operator- (const FVECTOR4&v, float f) { return _F4(v.x - f, v.y - f, v.z - f, v.w - f); }
+
+	inline FVECTOR4 operator* (const FVECTOR4&v, const FVECTOR4& f) { return _F4(v.x * f.x, v.y * f.y, v.z * f.z, v.w * f.w); }
+	inline FVECTOR4 operator/ (const FVECTOR4&v, const FVECTOR4& f) { return _F4(v.x / f.x, v.y / f.y, v.z / f.z, v.w / f.w); }
+	inline FVECTOR4 operator+ (const FVECTOR4&v, const FVECTOR4& f) { return _F4(v.x + f.x, v.y + f.y, v.z + f.z, v.w + f.w); }
+	inline FVECTOR4 operator- (const FVECTOR4&v, const FVECTOR4& f) { return _F4(v.x - f.x, v.y - f.y, v.z - f.z, v.w - f.w); }
+
+	inline FVECTOR4 operator- (const FVECTOR4&v) { return _F4(-v.x, -v.y, -v.z, -v.w); }
+
+//namespace oapi
+//{
 	/**
 	* \brief Vector Matrix multiplication
 	*/
@@ -737,57 +597,13 @@ namespace oapi
 		return FVECTOR4(x, y, z, w);
 	}
 
-
-	inline FVECTOR4 tmul(const FMATRIX4& M, const FVECTOR4& V)
+	inline FVECTOR4 mul(const FMATRIX4& M, const FVECTOR4& V)
 	{
 		float x = V.x * M.m11 + V.y * M.m12 + V.z * M.m13 + V.w * M.m14;
 		float y = V.x * M.m21 + V.y * M.m22 + V.z * M.m23 + V.w * M.m24;
 		float z = V.x * M.m31 + V.y * M.m32 + V.z * M.m33 + V.w * M.m34;
 		float w = V.x * M.m41 + V.y * M.m42 + V.z * M.m43 + V.w * M.m44;
 		return FVECTOR4(x, y, z, w);
-	}
-
-	inline FVECTOR2 unit(const FVECTOR2& v)
-	{
-		float f = 1.0f / ::sqrt(v.x * v.x + v.y * v.y);
-		return FVECTOR2(v.x * f, v.y * f);
-	}
-
-	inline FVECTOR3 unit(const FVECTOR3& v)
-	{
-		float d = v.x * v.x + v.y * v.y + v.z * v.z;
-		return d > 0 ? FVECTOR3(v.x, v.y, v.z) / ::sqrt(d) : 0.0f;
-	}
-
-	inline FVECTOR3 normalize(const FVECTOR3& v)
-	{
-		float d = v.x * v.x + v.y * v.y + v.z * v.z;
-		return d > 0 ? FVECTOR3(v.x, v.y, v.z) / ::sqrt(d) : 0.0f;
-	}
-
-	inline float dotp(const FVECTOR2& v, const FVECTOR2& w)
-	{
-		return v.x * w.x + v.y * w.y;
-	}
-
-	inline float dotp(const FVECTOR3& v, const FVECTOR3& w)
-	{
-		return v.x * w.x + v.y * w.y + v.z * w.z;
-	}
-
-	inline float dotp(const FVECTOR4& v, const FVECTOR4& w)
-	{
-		return v.x * w.x + v.y * w.y + v.z * w.z + v.w * w.w;
-	}
-
-	inline float length(const FVECTOR2& v)
-	{
-		return ::sqrt(v.x * v.x + v.y * v.y);
-	}
-
-	inline float length(const FVECTOR3& v)
-	{
-		return ::sqrt(v.x * v.x + v.y * v.y + v.z * v.z);
 	}
 
 	inline FVECTOR3 crossp(const FVECTOR3& a, const FVECTOR3& b)
@@ -804,74 +620,48 @@ namespace oapi
 		return x;
 	}
 
-	inline FVECTOR3 saturate(const FVECTOR3& v)
-	{
-		return FVECTOR3(saturate(v.x), saturate(v.y), saturate(v.z));
-	}
+	
 
-	inline FVECTOR4 saturate(const FVECTOR4& v)
-	{
-		return FVECTOR4(saturate(v.x), saturate(v.y), saturate(v.z), saturate(v.w));
-	}
+	inline FVECTOR2 rcp(const FVECTOR2& v) { return _F2(1.0f / v.x, 1.0f / v.y); }
+	inline FVECTOR3 rcp(const FVECTOR3& v) { return  _F(1.0f / v.x, 1.0f / v.y, 1.0f / v.z); }
+	inline FVECTOR4 rcp(const FVECTOR4& v) { return _F4(1.0f / v.x, 1.0f / v.y, 1.0f / v.z, 1.0f/ v.w); }
 
-	inline FVECTOR2 lerp(const FVECTOR2& a, const FVECTOR2& b, float x)
-	{
-		return a + (b - a) * x;
-	}
+	inline float dotp(const FVECTOR2& v, const FVECTOR2& w) { return v.x * w.x + v.y * w.y; }
+	inline float dotp(const FVECTOR3& v, const FVECTOR3& w) { return v.x * w.x + v.y * w.y + v.z * w.z; }
+	inline float dotp(const FVECTOR4& v, const FVECTOR4& w)	{ return v.x * w.x + v.y * w.y + v.z * w.z + v.w * w.w;	}
 
-	inline FVECTOR3 lerp(const FVECTOR3& a, const FVECTOR3& b, float x)
-	{
-		return a + (b - a) * x;
-	}
+	inline FVECTOR2 abs(const FVECTOR2& v) { return _F2(fabs(v.x), fabs(v.y)); }
+	inline FVECTOR3 abs(const FVECTOR3& v) { return  _F(fabs(v.x), fabs(v.y), fabs(v.z)); }
+	inline FVECTOR4 abs(const FVECTOR4& v) { return _F4(fabs(v.x), fabs(v.y), fabs(v.z), fabs(v.w)); }
 
-	inline FVECTOR4 lerp(const FVECTOR4& a, const FVECTOR4& b, float x)
-	{
-		return a + (b - a) * x;
-	}
+	inline FVECTOR2 saturate(const FVECTOR2& v) { return _F2(saturate(v.x), saturate(v.y)); }
+	inline FVECTOR3 saturate(const FVECTOR3& v) { return  _F(saturate(v.x), saturate(v.y), saturate(v.z)); }
+	inline FVECTOR4 saturate(const FVECTOR4& v) { return _F4(saturate(v.x), saturate(v.y), saturate(v.z), saturate(v.w)); }
 
-	inline FVECTOR3 pow(const FVECTOR3& x, float y)
-	{
-		return FVECTOR3(::pow(x.x, y), ::pow(x.y, y), ::pow(x.z, y));
-	}
+	inline FVECTOR2 pow(const FVECTOR2& v, float p) { return _F2(pow(v.x, p), pow(v.y, p)); }
+	inline FVECTOR3 pow(const FVECTOR3& v, float p) { return  _F(pow(v.x, p), pow(v.y, p), pow(v.z, p)); }
+	inline FVECTOR4 pow(const FVECTOR4& v, float p) { return _F4(pow(v.x, p), pow(v.y, p), pow(v.z, p), pow(v.w, p)); }
 
-	inline FVECTOR4 pow(const FVECTOR4& x, float y)
-	{
-		return FVECTOR4(::pow(x.x, y), ::pow(x.y, y), ::pow(x.z, y), ::pow(x.w, y));
-	}
+	inline FVECTOR2 pow(const FVECTOR2& v, const FVECTOR2& w) { return _F2(pow(v.x, w.x), pow(v.y, w.y)); }
+	inline FVECTOR3 pow(const FVECTOR3& v, const FVECTOR3& w) { return  _F(pow(v.x, w.x), pow(v.y, w.y), pow(v.z, w.z)); }
+	inline FVECTOR4 pow(const FVECTOR4& v, const FVECTOR4& w) { return _F4(pow(v.x, w.x), pow(v.y, w.y), pow(v.z, w.z), pow(v.w, w.w)); }
 
-	inline FVECTOR3 pow(const FVECTOR3& x, const FVECTOR3& y)
-	{
-		return FVECTOR3(::pow(x.x, y.x), ::pow(x.y, y.y), ::pow(x.z, y.z));
-	}
+	inline FVECTOR2 sqrt(const FVECTOR2& v) { return _F2(sqrt(v.x), sqrt(v.y)); }
+	inline FVECTOR3 sqrt(const FVECTOR3& v) { return  _F(sqrt(v.x), sqrt(v.y), sqrt(v.z)); }
+	inline FVECTOR4 sqrt(const FVECTOR4& v) { return _F4(sqrt(v.x), sqrt(v.y), sqrt(v.z), sqrt(v.w)); }
 
-	inline FVECTOR4 pow(const FVECTOR4& x, const FVECTOR4& y)
-	{
-		return FVECTOR4(::pow(x.x, y.x), ::pow(x.y, y.y), ::pow(x.z, y.z), ::pow(x.w, y.w));
-	}
+	inline FVECTOR2 exp(const FVECTOR2& v) { return _F2(exp(v.x), exp(v.y)); }
+	inline FVECTOR3 exp(const FVECTOR3& v) { return  _F(exp(v.x), exp(v.y), exp(v.z)); }
+	inline FVECTOR4 exp(const FVECTOR4& v) { return _F4(exp(v.x), exp(v.y), exp(v.z), exp(v.w)); }
 
-	inline FVECTOR3 exp(const FVECTOR3& x)
-	{
-		return FVECTOR3(::exp(x.x), ::exp(x.y), ::exp(x.z));
-	}
+	template <typename T> inline constexpr float ilen(const T& v) { return 1.0f / ::sqrt(dotp(v, v)); }
+	template <typename T> inline constexpr T unit(const T& v) { return v * ilen(v); }
+	template <typename T> inline constexpr void normalize(T& v) { v *= ilen(v); }
+	template <typename T> inline constexpr void normalise(T& v) { v *= ilen(v); }
+	template <typename T> inline constexpr float length(const T& v) { return ::sqrt(dotp(v,v)); }
+	template <typename T> inline constexpr T lerp(const T& a, const T& b, float x) { return a + (b - a) * x; }
 
-	inline FVECTOR4 exp(const FVECTOR4& x)
-	{
-		return FVECTOR4(::exp(x.x), ::exp(x.y), ::exp(x.z), ::exp(x.w));
-	}
-
-	inline FVECTOR3 sqrt(const FVECTOR3& x)
-	{
-		return FVECTOR3(::sqrt(x.x), ::sqrt(x.y), ::sqrt(x.z));
-	}
-
-	inline FVECTOR4 sqrt(const FVECTOR4& x)
-	{
-		return FVECTOR4(::sqrt(x.x), ::sqrt(x.y), ::sqrt(x.z), ::sqrt(x.w));
-	}
-
-	inline FVECTOR3 normalise(const FVECTOR3& v) { return normalize(v); }
-
-} //namespace
+//} //namespace
 
 
 static oapi::FMATRIX4 FMATRIX_Identity = {

@@ -720,9 +720,9 @@ void vVessel::BakeLights(ImageProcessing *pBaker)
 	lvlh.Up = unit(rpos);
 	lvlh.East = unit(crossp(polaraxis, lvlh.Up));
 	lvlh.North = unit(crossp(lvlh.Up, lvlh.East));
-	lvlh.Up = tmul(mW, FVECTOR4(lvlh.Up, 0)).xyz;
-	lvlh.East = tmul(mW, FVECTOR4(lvlh.East, 0)).xyz;
-	lvlh.North = tmul(mW, FVECTOR4(lvlh.North, 0)).xyz;
+	lvlh.Up = mul(mW, FVECTOR4(lvlh.Up, 0)).xyz;
+	lvlh.East = mul(mW, FVECTOR4(lvlh.East, 0)).xyz;
+	lvlh.North = mul(mW, FVECTOR4(lvlh.North, 0)).xyz;
 
 	auto maps = GetExteriorEnvMap();
 
@@ -732,7 +732,7 @@ void vVessel::BakeLights(ImageProcessing *pBaker)
 			if (!meshlist[i].mesh) continue;
 			if (meshlist[i].vismode & MESHVIS_VC) // TODO:  Should check Shader type
 			{
-				auto vSun = tmul(mW, FVECTOR4(sundir, 0));
+				auto vSun = mul(mW, FVECTOR4(sundir, 0));
 				if (bMustRebake) meshlist[i].mesh->BakeLights(pBaker, BakedLightsControl);
 				if (Config->ExpVCLight == 0) meshlist[i].mesh->BakeAO(pBaker, vSun.xyz, lvlh, maps->pIrrad);
 			}
@@ -1753,7 +1753,7 @@ void vVessel::RenderLightCone(LPFMATRIX4 pWT)
 	if (em->GetType() == LightEmitter::LT_SPOT) {
 		FVECTOR3 Main[2];
 		Main[0] = _F(_P);
-		Main[1] = _F(_P + _D * R);
+		Main[1] = _F(_P + _D * double(R));
 		WORD Idx[2] = { 0, 1 };
 		D3D9Effect::RenderLines(Main, Idx, 2, 2, pWT, 0xFF00FF00);
 

@@ -65,10 +65,12 @@ template <typename T> inline _constexpr_ T sign (T val)
 	return val < T(0) ? T(-1) : T(1);
 }
 
+/*
 template <typename T> inline _constexpr_ T lerp (T a, T b, T x)
 {
 	return a + (b - a)*x;
-}
+}*/
+
 // ...slightly faster than the above, but not available in Visual Studio 2012 (I think)?
 //template <typename T> inline _constexpr_ T lerp(T v0, T v1, T t) {
 //	return fma(t, v1, fma(-t, v0, v0));
@@ -241,11 +243,23 @@ inline VECTOR4 vmin(const VECTOR4 &v, const VECTOR4 &w)
 	return _V(std::min(v.x, w.x), std::min(v.y, w.y), std::min(v.z, w.z), std::min(v.w, w.w));
 }
 
+inline float MaxRGB(const FVECTOR3& v) 
+{
+	return (std::max)(v.r, (std::max)(v.g, v.b));
+}
+
+inline float MaxRGB(const FVECTOR4& v)
+{
+	return (std::max)(v.r, (std::max)(v.g, v.b));
+}
+
+
 
 // FVECTOR3 Helpers ==================================================================
 //
 //
 
+/*
 inline FVECTOR3 exp2(const FVECTOR3 &v)
 {
 	return FVECTOR3(exp2(v.x), exp2(v.y), exp2(v.z));
@@ -300,6 +314,7 @@ inline FVECTOR4 pow(float x, FVECTOR4 &y)
 {
 	return FVECTOR4(pow(x, y.x), pow(x, y.y), pow(x, y.z), pow(x, y.w));
 }
+*/
 
 #endif
 

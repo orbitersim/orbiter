@@ -686,29 +686,6 @@ inline RECT _RECT(DWORD l, DWORD t, DWORD r, DWORD b)
 	return rect;
 }
 
-inline VECTOR4 _V4(const FVECTOR4& i) { VECTOR4 v = { i.x, i.y, i.z, i.w }; return v; }
-inline VECTOR4 _V4(const VECTOR3& i, double w = 0.0) { VECTOR4 v = { i.x, i.y, i.z, w }; return v; }
-inline VECTOR4 _V4(const FVECTOR3& i, float w = 0.0f) { VECTOR4 v = { i.x, i.y, i.z, w }; return v; }
-
-inline VECTOR3 _V(const FVECTOR3& i) { return _V(double(i.x), double(i.y), double(i.z)); }
-inline VECTOR3 _V(const VECTOR4& i) { return _V(double(i.x), double(i.y), double(i.z)); }
-inline VECTOR3 _V(const FVECTOR4& i) { return _V(double(i.x), double(i.y), double(i.z)); }
-
-inline FVECTOR3 _F(const VECTOR3& i) { return FVECTOR3(float(i.x), float(i.y), float(i.z)); }
-inline FVECTOR3 _F(const VECTOR4& i) { return FVECTOR3(float(i.x), float(i.y), float(i.z)); }
-inline FVECTOR3 _F(const FVECTOR4& i) { return FVECTOR3(float(i.x), float(i.y), float(i.z)); }
-inline FVECTOR3 _F(const VECTOR3* i) { return FVECTOR3(float(i->x), float(i->y), float(i->z)); }
-
-inline FVECTOR4 _F4(const VECTOR4& i) { return FVECTOR4(float(i.x), float(i.y), float(i.z), float(i.w)); }
-inline FVECTOR4 _F4(const VECTOR3& i, double w = 0.0) { return FVECTOR4(float(i.x), float(i.y), float(i.z), float(w)); }
-inline FVECTOR4 _F4(const FVECTOR3& i, float w = 0.0f) { return FVECTOR4(float(i.x), float(i.y), float(i.z), float(w)); }
-
-inline VECTOR4  _V4(double x, double y, double z, double w) { VECTOR4 v = { x, y, z, w }; return v; }
-inline VECTOR4  _V4(int x, int y, int z, int w) { VECTOR4 v = { double(x), double(y), double(z), double(w) }; return v; }
-inline FVECTOR4 _F4(float x, float y, float z, float w) { return FVECTOR4(x, y, z, w); }
-inline FVECTOR4 _F4(int x, int y, int z, int w) { return FVECTOR4(float(x), float(y), float(z), float(w)); }
-inline FVECTOR3 _F(float x, float y, float z) { return FVECTOR3(x, y, z); }
-inline FVECTOR3 _F(int x, int y, int z) { return FVECTOR3(float(x), float(y), float(z)); }
 
 
 

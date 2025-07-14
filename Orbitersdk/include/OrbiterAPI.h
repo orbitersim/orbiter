@@ -7102,10 +7102,7 @@ OAPIFUNC oapi::FVECTOR3 oapiTransformNormal(const oapi::FVECTOR3* V, const oapi:
  * \param z z-component
  * \return vector defined as (x,y,z)
  */
-inline VECTOR3 _V(double x, double y, double z)
-{
-	VECTOR3 vec = {x,y,z}; return vec;
-}
+inline VECTOR3 _V(double x, double y, double z) { return { x, y, z }; }
 
 /**
  * \ingroup vec

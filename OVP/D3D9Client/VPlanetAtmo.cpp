@@ -339,7 +339,7 @@ void vPlanet::IntegrateSegment(FVECTOR3 vOrig, FVECTOR3 vRay, float len, FVECTOR
 	{
 		float dst = len * (iNSEG * (float(i) + 0.5f));
 		FVECTOR3 pos = vOrig + vRay * dst;
-		FVECTOR3 n = normalize(pos);
+		FVECTOR3 n = unit(pos);
 		float rad = dotp(n, pos);
 		float alt = rad - cp.PlanetRad;
 		float ang = dotp(n, vRay);
@@ -517,7 +517,7 @@ D3D9Sun vPlanet::GetObjectAtmoParams(VECTOR3 vRelPos)
 	if (((r - size) > a) || !HasAtmosphere() || !surfmgr2) // In space
 	{
 		op.Dir = -cp.toSun;
-		op.Color = (cSun.MaxRGB() > 1.0f ? cSun / cSun.MaxRGB() : cSun) * Config->GFXSunIntensity;
+		op.Color = (MaxRGB(cSun) > 1.0f ? cSun / MaxRGB(cSun) : cSun) * Config->GFXSunIntensity;
 		op.Ambient = float(ambient) * 0.0039f;
 		return op;
 	}
@@ -536,10 +536,10 @@ D3D9Sun vPlanet::GetObjectAtmoParams(VECTOR3 vRelPos)
 
 
 	FVECTOR3 cSunAmb = SunLightColor(-dNS, alt) * cp.cSun;
-	cSunAmb = cSunAmb.MaxRGB() > 1.0f ? cSunAmb / cSunAmb.MaxRGB() : cSunAmb;
+	cSunAmb = MaxRGB(cSunAmb) > 1.0f ? cSunAmb / MaxRGB(cSunAmb) : cSunAmb;
 
 	op.Dir = -cp.toSun;
-	op.Color = (cSun.MaxRGB() > 1.0f ? cSun / cSun.MaxRGB() : cSun) * Config->GFXSunIntensity;
+	op.Color = (MaxRGB(cSun) > 1.0f ? cSun / MaxRGB(cSun) : cSun) * Config->GFXSunIntensity;
 	op.Ambient = unit(mc.rgb + cSunAmb * 2.0f) * mc.a * mc.g;
 	op.Ambient *= exp(-alt * cp.iH.x) * cp.rmI.x * 6e5;
 	op.Ambient += float(ambient) * 0.0039f;
@@ -1293,7 +1293,7 @@ void vPlanet::TestComputations(Sketchpad* pSkp)
 			}
 		}
 		GetScene()->vPickRay = 0;
-		vRay = normalize(vPos - vRef); // From vRef to vPos
+		vRay = unit(vPos - vRef); // From vRef to vPos
 	}
 
 	float cd = length(vRef - vPos);
@@ -1438,7 +1438,7 @@ void vPlanet::TestComputations(Sketchpad* pSkp)
 	if (e0 > s0) {
 		D3D9DebugLog("Primary Integral");
 		V0 = (vR + vRay * s0)._V();
-		V1 = V0 + vRay._V() * (e0 - s0);
+		V1 = V0 + _V(vRay) * double(e0 - s0);
 		scn->WorldToScreenSpace(V0, &pt0);
 		scn->WorldToScreenSpace(V1, &pt1);
 		pSkp->QuickPen(0xFF90FF90);
@@ -1447,8 +1447,8 @@ void vPlanet::TestComputations(Sketchpad* pSkp)
 
 	if (e1 > s1) {
 		D3D9DebugLog("Secondary Integral");
-		V0 = (vR + vRay * s1)._V();
-		V1 = V0 + vRay._V() * (e1 - s1);
+		V0 = _V(vR + vRay * s1);
+		V1 = V0 + _V(vRay) * double(e1 - s1);
 		scn->WorldToScreenSpace(V0, &pt0);
 		scn->WorldToScreenSpace(V1, &pt1);
 		pSkp->QuickPen(0xFF9090FF);

@@ -93,7 +93,7 @@ bool RingManager::Render(LPDIRECT3DDEVICE9 dev, FMATRIX4 &mWorld, bool front)
 	MATRIX3 grot;
 	static FMATRIX4 imat;
 	FVECTOR3 q(mWorld.m11, mWorld.m21, mWorld.m31);
-	float scale = oapi::length(q);
+	float scale = length(q);
 	
 	oapiGetRotationMatrix(vp->Object(), &grot);
 	

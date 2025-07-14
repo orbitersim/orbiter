@@ -993,9 +993,9 @@ void D3D9Effect::RenderArrow(OBJHANDLE hObj, const VECTOR3 *ofs, const VECTOR3 *
     VECTOR3 pos = gpos - camp;
     if (ofs) pos += mul (grot, *ofs);
 
-    VECTOR3 z = mul (grot, unit(*dir)) * size;
-    VECTOR3 y = mul (grot, unit(*rot)) * size;
-    VECTOR3 x = mul (grot, unit(crossp(*dir, *rot))) * size;
+    VECTOR3 z = mul (grot, unit(*dir)) * double(size);
+    VECTOR3 y = mul (grot, unit(*rot)) * double(size);
+    VECTOR3 x = mul (grot, unit(crossp(*dir, *rot))) * double(size);
 
     oapiMatrixIdentity(&W);
 

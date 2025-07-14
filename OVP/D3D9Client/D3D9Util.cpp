@@ -360,7 +360,7 @@ void SurfaceLighting(D3D9Sun *light, OBJHANDLE hP, OBJHANDLE hO, float ao)
 
 	light->Color = FVECTOR3(lcol.x, lcol.y, lcol.z);
 	light->Ambient = FVECTOR3(amb, amb, amb);
-	light->Dir = S * (-1.0f/s);
+	light->Dir = S * (-1.0/s);
 }
 // ===========================================
 // Remove unecessary spaces and tablations
@@ -1381,7 +1381,7 @@ float D3D9Light::GetIlluminance(FVECTOR3 &_pos, float r) const
 
 	FVECTOR3 pos = _pos - Position;
 
-	float d = oapi::length(pos);
+	float d = length(pos);
 	float d2 = d*d;
 
 	if (d < r) return 1e6;	// Light is inside the sphere

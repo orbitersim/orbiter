@@ -6,7 +6,6 @@ endif(NOT DEFINED ORBITER_BINARY_ROOT_DIR)
 
 add_subdirectory(Lua)
 add_subdirectory(zlib)
-add_subdirectory(dxmath)
 
 ## LFS
 add_library(lfs SHARED luafilesystem/src/lfs.c)
@@ -28,3 +27,15 @@ add_custom_target(CopyLDoc ALL
 	COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_CURRENT_SOURCE_DIR}/ldoc/ ${ORBITER_BINARY_ROOT_DIR}/packages/ldoc
 	COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_CURRENT_SOURCE_DIR}/Penlight/lua/ ${ORBITER_BINARY_ROOT_DIR}/
 )
+
+
+
+#file(GLOB DXMATH_INL_FILES "${dxmath_SOURCE_DIR}/Inc/*.inl")
+#file(GLOB DXMATH_H_FILES "${dxmath_SOURCE_DIR}/Inc/*.h")
+#file(GLOB DXMATH_EXT_FILES "${dxmath_SOURCE_DIR}/Extensions/*.h")
+#file(GLOB DXMATH_SH_FILES "${dxmath_SOURCE_DIR}/SHMath/*.*")
+
+#file(COPY ${DXMATH_INL_FILES} DESTINATION ${DXMATH_DIR})
+#file(COPY ${DXMATH_H_FILES} DESTINATION ${DXMATH_DIR})
+#file(COPY ${DXMATH_EXT_FILES} DESTINATION ${DXMATH_DIR})
+#file(COPY ${DXMATH_SH_FILES} DESTINATION ${DXMATH_DIR})

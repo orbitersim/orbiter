@@ -323,14 +323,14 @@ BeaconArray *RunwayLights::BuildLights(VECTOR3 _start, VECTOR3 _end, double disp
 
 	// start lights --------------------------------------
 
-	_space = _widthDir * width/float(numLightsEnd-1);
+	_space = _widthDir * width / double(numLightsEnd-1);
 
 	if (iCategory==2) {
-		_current = _start - _space*(float(numLightsEnd-1)/2.0) - _space * 3;
+		_current = _start - _space*(double(numLightsEnd-1)/2.0) - _space * 3;
 		count = numLightsEnd+6;
 	}
 	else {
-		_current = _start - _space*(float(numLightsEnd-1)/2.0);
+		_current = _start - _space*(double(numLightsEnd-1)/2.0);
 		count = numLightsEnd;
 	}
 
@@ -551,7 +551,7 @@ BeaconArray * RunwayLights::BuildPAPI(VECTOR3 start, VECTOR3 end, DWORD i)
 	{
 		entryPAPI[j] = papiLight;
 		entryPAPI[j].dir = _V(-entryPAPI[j].dir.x, entryPAPI[j].dir.y, -entryPAPI[j].dir.z);
-		entryPAPI[j].pos = start + dir*PAPI_pos[i].z + widthDir*disp + widthDir*j*papi_separation - widthDir*papi_separation*1.5;
+		entryPAPI[j].pos = start + dir*PAPI_pos[i].z + widthDir * double(disp) + widthDir * double(j*papi_separation) - widthDir * double(papi_separation*1.5);
 	}
 
 	BeaconArray *beacons = new BeaconArray(entryPAPI, 4);
@@ -612,7 +612,7 @@ BeaconArray *RunwayLights::BuildVASI(VECTOR3 _start, VECTOR3 _end, DWORD idx)
 		beaconsEntry1[i] = vasiLight;
 		beaconsEntry1[i].color = red;
 		beaconsEntry1[i].size = 1.0f * lightSize;
-		beaconsEntry1[i].pos = _current + _widthDir * 2.0 * float(k) + _V(0,1,0);
+		beaconsEntry1[i].pos = _current + _widthDir * 2.0 * double(k) + _V(0,1,0);
 	}
 
 	_current -= _dir * VASI[e].y;
@@ -620,7 +620,7 @@ BeaconArray *RunwayLights::BuildVASI(VECTOR3 _start, VECTOR3 _end, DWORD idx)
 	for (k=0;k<5;k++, i++) {
 		beaconsEntry1[i] = vasiLight;
 		beaconsEntry1[i].color = white;
-		beaconsEntry1[i].pos = _current + _widthDir * 2.0 * float(k) + _V(0,1,0) + _V(0,1,0)*(sin(VASI[e].x*RAD)*VASI[e].y);
+		beaconsEntry1[i].pos = _current + _widthDir * 2.0 * double(k) + _V(0,1,0) + _V(0,1,0)*(sin(VASI[e].x*RAD)*VASI[e].y);
 	}
 	
 	// Post process lights ------------------------------------------

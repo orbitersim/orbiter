@@ -4234,7 +4234,7 @@ void Scene::RenderGlares()
 					VECTOR3 crp = vp->CameraPos();
 					clr = vp->SunLightColor(crp, 2.0);
 					cis = CameraInSpace();
-					glare *= pow(clr.MaxRGB(), 0.33f) * cis;				
+					glare *= pow(MaxRGB(clr), 0.33f) * cis;
 				}
 							
 				float cd = length(pt - FVECTOR2(viewW, viewH) * 0.5f) / float(viewW); // Glare distance from a screen center
@@ -4243,7 +4243,7 @@ void Scene::RenderGlares()
 
 				Const.GPUId = 0.5f / float(desc.Width);
 				Const.Pos = FVECTOR4(pt.x, pt.y, size, size);
-				Const.Color.rgb = clr.rgb / (clr.MaxRGB() + 0.0001f);
+				Const.Color.rgb = clr.rgb / (MaxRGB(clr) + 0.0001f);
 				Const.Alpha = alpha * 2.0f;
 				Const.Blend = sqrt(cis);
 

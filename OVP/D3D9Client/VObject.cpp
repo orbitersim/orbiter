@@ -400,9 +400,9 @@ void vObject::RenderAxisVector(D3D9Pad *pSkp, const FVECTOR4 *pColor, VECTOR3 ve
     VECTOR3 pos = gpos - camp;
 	VECTOR3 rot = crossp(pos, vector);
 
-    VECTOR3 y = mul (grot, unit(vector)) * size;
-    VECTOR3 x = mul (grot, unit(rot)) * size;
-    VECTOR3 z = mul (grot, unit(crossp(vector, rot))) * size;
+    VECTOR3 y = mul (grot, unit(vector)) * double(size);
+    VECTOR3 x = mul (grot, unit(rot)) * double(size);
+    VECTOR3 z = mul (grot, unit(crossp(vector, rot))) * double(size);
 
     oapiMatrixIdentity(&W);
 
@@ -436,9 +436,9 @@ void vObject::RenderAxisLabel(D3D9Pad *pSkp, const FVECTOR4 *clr, VECTOR3 vector
 	VECTOR3 pos = gpos - camp;
 	VECTOR3 rot = crossp(pos, vector);
 
-	VECTOR3 y = mul(grot, unit(vector)) * size;
-	VECTOR3 x = mul(grot, unit(rot)) * size;
-	VECTOR3 z = mul(grot, unit(crossp(vector, rot))) * size;
+	VECTOR3 y = mul(grot, unit(vector)) * double(size);
+	VECTOR3 x = mul(grot, unit(rot)) * double(size);
+	VECTOR3 z = mul(grot, unit(crossp(vector, rot))) * double(size);
 
 	oapiMatrixIdentity(&W);
 

@@ -985,7 +985,7 @@ bool vPlanet::Render(LPDIRECT3DDEVICE9 dev)
 		prm.AmbColor	= _F4(0,0,0,0);
 		prm.FogColor	= _F4(0,0,0,0);
 		prm.TintColor	= _F4(0,0,0,0);
-		prm.SunDir		= _FVECTOR3(SunDirection());
+		prm.SunDir		= _F(SunDirection());
 
 		SetupEclipse();
 
