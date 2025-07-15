@@ -57,17 +57,17 @@ public:
 	static void EnablePlanetGlow(bool bEnabled);
 	static void UpdateEffectCamera(OBJHANDLE hPlanet);
 	static void InitLegacyAtmosphere(OBJHANDLE hPlanet, float GlobalAmbient);
-	static void SetViewProjMatrix(LPFMATRIX4 pVP);
+	static void SetViewProjMatrix(FMATRIX4* pVP);
 
 	static void RenderLines(const FVECTOR3 *pVtx, const WORD *pIdx, int nVtx, int nIdx, const FMATRIX4 *pW, DWORD color);
-	static void RenderTileBoundingBox(const LPFMATRIX4 pW, VECTOR4 *pVtx, const LPFVECTOR4 color);
-	static void RenderBoundingBox(const LPFMATRIX4 pW, const LPFMATRIX4 pGT, const FVECTOR4 *bmin, const FVECTOR4 *bmax, const FVECTOR4 *color);
-	static void RenderBoundingSphere(const LPFMATRIX4 pW, const LPFMATRIX4 pGT, const FVECTOR4 *bs, const FVECTOR4 *color);
-	static void RenderBillboard(const LPFMATRIX4 pW, LPDIRECT3DTEXTURE9 pTex, float alpha = 1.0f);
-	static void RenderExhaust(const LPFMATRIX4 pW, VECTOR3 &cdir, EXHAUSTSPEC *es, SURFHANDLE def);
-	static void RenderSpot(float intens, const LPFVECTOR4 color, const LPFMATRIX4 pW, SURFHANDLE pTex);
-	static void Render2DPanel(const MESHGROUP *mg, const SURFHANDLE pTex, const LPFMATRIX4 pW, float alpha, float scale, bool additive);
-	static void RenderReEntry(const SURFHANDLE pTex, const LPFVECTOR3 vPosA, const LPFVECTOR3 vPosB, const LPFVECTOR3 vDir, float alpha_a, float alpha_b, float size);
+	static void RenderTileBoundingBox(const FMATRIX4* pW, VECTOR4 *pVtx, const FVECTOR4* color);
+	static void RenderBoundingBox(const FMATRIX4* pW, const FMATRIX4* pGT, const FVECTOR4 *bmin, const FVECTOR4 *bmax, const FVECTOR4 *color);
+	static void RenderBoundingSphere(const FMATRIX4* pW, const FMATRIX4* pGT, const FVECTOR4 *bs, const FVECTOR4 *color);
+	static void RenderBillboard(const FMATRIX4* pW, LPDIRECT3DTEXTURE9 pTex, float alpha = 1.0f);
+	static void RenderExhaust(const FMATRIX4* pW, VECTOR3 &cdir, EXHAUSTSPEC *es, SURFHANDLE def);
+	static void RenderSpot(float intens, const FVECTOR4* color, const FMATRIX4* pW, SURFHANDLE pTex);
+	static void Render2DPanel(const MESHGROUP *mg, const SURFHANDLE pTex, const FMATRIX4* pW, float alpha, float scale, bool additive);
+	static void RenderReEntry(const SURFHANDLE pTex, const FVECTOR3* vPosA, const FVECTOR3* vPosB, const FVECTOR3* vDir, float alpha_a, float alpha_b, float size);
 	static void RenderArrow(OBJHANDLE hObj, const VECTOR3 *ofs, const VECTOR3 *dir, const VECTOR3 *rot, float size, const FVECTOR4 *pColor);  
 	
 	static LPDIRECT3DDEVICE9 pDev;      ///< Static (global) render device

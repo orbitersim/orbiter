@@ -84,7 +84,7 @@ void SurfaceManager::Render(LPDIRECT3DDEVICE9 dev, FMATRIX4 &wmat, double scale,
 
 // ==============================================================
 
-void SurfaceManager::RenderSimple(int level, int npatch, TILEDESC *tile, LPFMATRIX4 mWrld)
+void SurfaceManager::RenderSimple(int level, int npatch, TILEDESC *tile, FMATRIX4* mWrld)
 {
 	// render complete sphere (used at low LOD levels)
 	HR(FX->SetTechnique(ePlanetTile));

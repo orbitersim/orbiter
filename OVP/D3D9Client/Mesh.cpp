@@ -1571,7 +1571,7 @@ const FVECTOR3& D3D9Mesh::GetAmbientColor()
 
 // ===========================================================================================
 //
-void D3D9Mesh::SetupFog(const LPFMATRIX4 pW)
+void D3D9Mesh::SetupFog(const FMATRIX4* pW)
 {
 	_TRACE;
 	if (!IsOK()) return;
@@ -1756,7 +1756,7 @@ void D3D9Mesh::SetShadows(const SHADOWMAP *sprm)
 // ================================================================================================
 // This is a rendering routine for a Exterior Mesh, non-spherical moons/asteroids
 //
-void D3D9Mesh::Render(const LPFMATRIX4 pW, const ENVCAMREC* em, int iTech)
+void D3D9Mesh::Render(const FMATRIX4* pW, const ENVCAMREC* em, int iTech)
 {
 	_TRACE;
 	
@@ -2333,7 +2333,7 @@ void D3D9Mesh::Render(const LPFMATRIX4 pW, const ENVCAMREC* em, int iTech)
 // ================================================================================================
 // Render without animations 
 //
-void D3D9Mesh::RenderSimplified(const LPFMATRIX4 pW, LPDIRECT3DCUBETEXTURE9 *pEnv, int nEnv, bool bSP)
+void D3D9Mesh::RenderSimplified(const FMATRIX4* pW, LPDIRECT3DCUBETEXTURE9 *pEnv, int nEnv, bool bSP)
 {
 	if (!IsOK()) return;
 
@@ -2585,7 +2585,7 @@ void D3D9Mesh::RenderSimplified(const LPFMATRIX4 pW, LPDIRECT3DCUBETEXTURE9 *pEn
 // ================================================================================================
 // Render a legacy orbiter mesh without any additional textures
 //
-void D3D9Mesh::RenderFast(const LPFMATRIX4 pW, int iTech)
+void D3D9Mesh::RenderFast(const FMATRIX4* pW, int iTech)
 {
 
 	_TRACE;
@@ -2933,7 +2933,7 @@ FMATRIX4 D3D9Mesh::GetTransform(int g, bool bCombined)
 
 // ===========================================================================================
 //
-bool D3D9Mesh::SetTransform(int g, const LPFMATRIX4 pMat)
+bool D3D9Mesh::SetTransform(int g, const FMATRIX4* pMat)
 {
 	if (g >= int(nGrp)) return false;
 
@@ -2964,7 +2964,7 @@ bool D3D9Mesh::SetTransform(int g, const LPFMATRIX4 pMat)
 
 // ===========================================================================================
 //
-void D3D9Mesh::RenderBaseTile(const LPFMATRIX4 pW)
+void D3D9Mesh::RenderBaseTile(const FMATRIX4* pW)
 {
 	if (!IsOK()) return;
 
@@ -3087,7 +3087,7 @@ void D3D9Mesh::RenderBaseTile(const LPFMATRIX4 pW)
 
 // ================================================================================================
 //
-void D3D9Mesh::RenderShadowMap(const LPFMATRIX4 pW, const LPFMATRIX4 pVP, int opt, bool bNoCull)
+void D3D9Mesh::RenderShadowMap(const FMATRIX4* pW, const FMATRIX4* pVP, int opt, bool bNoCull)
 {
 	if (!IsOK()) return;
 
@@ -3174,7 +3174,7 @@ void D3D9Mesh::RenderShadowMap(const LPFMATRIX4 pW, const LPFMATRIX4 pVP, int op
 
 // ================================================================================================
 //
-void D3D9Mesh::RenderStencilShadows(float alpha, const LPFMATRIX4 pP, const LPFMATRIX4 pW, bool bShadowMap, const FVECTOR4 *elev)
+void D3D9Mesh::RenderStencilShadows(float alpha, const FMATRIX4* pP, const FMATRIX4* pW, bool bShadowMap, const FVECTOR4 *elev)
 {
 	if (!IsOK()) return;
 
@@ -3244,7 +3244,7 @@ void D3D9Mesh::RenderStencilShadows(float alpha, const LPFMATRIX4 pP, const LPFM
 
 // ================================================================================================
 //
-void D3D9Mesh::RenderShadowsEx(float alpha, const LPFMATRIX4 pP, const LPFMATRIX4 pW, const FVECTOR4 *light, const FVECTOR4 *param)
+void D3D9Mesh::RenderShadowsEx(float alpha, const FMATRIX4* pP, const FMATRIX4* pW, const FVECTOR4 *light, const FVECTOR4 *param)
 {
 	if (!IsOK()) return;
 
@@ -3303,7 +3303,7 @@ void D3D9Mesh::RenderShadowsEx(float alpha, const LPFMATRIX4 pP, const LPFMATRIX
 // ================================================================================================
 // This is a rendering routine for a Exterior Mesh, non-spherical moons/asteroids
 //
-void D3D9Mesh::RenderBoundingBox(const LPFMATRIX4 pW)
+void D3D9Mesh::RenderBoundingBox(const FMATRIX4* pW)
 {
 	_TRACE;
 
@@ -3564,7 +3564,7 @@ float D3D9Mesh::GetBoundingSphereRadius()
 
 // ===========================================================================================
 //
-D3D9Pick D3D9Mesh::Pick(const LPFMATRIX4 pW, const LPFMATRIX4 pT, const FVECTOR3 *vDir, const PickProp *p)
+D3D9Pick D3D9Mesh::Pick(const FMATRIX4* pW, const FMATRIX4* pT, const FVECTOR3 *vDir, const PickProp *p)
 {
 	D3D9Pick result;
 	result.dist  = 1e30f;
@@ -3670,7 +3670,7 @@ D3D9Pick D3D9Mesh::Pick(const LPFMATRIX4 pW, const LPFMATRIX4 pT, const FVECTOR3
 
 // This is a special rendering routine used to render 3D arrow --------------------------------
 //
-void D3D9Mesh::RenderAxisVector(LPFMATRIX4 pW, const FVECTOR4 *pColor, float len)
+void D3D9Mesh::RenderAxisVector(FMATRIX4* pW, const FVECTOR4 *pColor, float len)
 {
 	UINT numPasses = 0;
 	HR(FX->SetTechnique(eAxisTech));
@@ -3688,7 +3688,7 @@ void D3D9Mesh::RenderAxisVector(LPFMATRIX4 pW, const FVECTOR4 *pColor, float len
 
 // Used only by ring manager --------------------------------------------------------------------
 //
-void D3D9Mesh::RenderRings(const LPFMATRIX4 pW, LPDIRECT3DTEXTURE9 pTex)
+void D3D9Mesh::RenderRings(const FMATRIX4* pW, LPDIRECT3DTEXTURE9 pTex)
 {
 	_TRACE;
 	if (!IsOK()) return;
@@ -3712,7 +3712,7 @@ void D3D9Mesh::RenderRings(const LPFMATRIX4 pW, LPDIRECT3DTEXTURE9 pTex)
 
 // Used only by ring manager --------------------------------------------------------------------
 //
-void D3D9Mesh::RenderRings2(const LPFMATRIX4 pW, LPDIRECT3DTEXTURE9 pTex, float irad, float orad)
+void D3D9Mesh::RenderRings2(const FMATRIX4* pW, LPDIRECT3DTEXTURE9 pTex, float irad, float orad)
 {
 	_TRACE;
 	if (!IsOK()) return;

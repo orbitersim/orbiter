@@ -300,7 +300,7 @@ void vObject::RenderSpot(LPDIRECT3DDEVICE9 dev, const VECTOR3 *ofs, float size, 
 
 	FVECTOR4 color((float)col.x, (float)col.y, (float)col.z, 1.0f);
 
-	D3D9Effect::RenderSpot((float)intens, &color, (const LPFMATRIX4)&W, blobtex[shape]);
+	D3D9Effect::RenderSpot((float)intens, &color, (const FMATRIX4*)&W, blobtex[shape]);
 }
 
 
@@ -338,7 +338,7 @@ void vObject::RenderDot(LPDIRECT3DDEVICE9 dev)
 
 	FVECTOR4 color(float(albedo.x)*ints, float(albedo.y)*ints, float(albedo.z)*ints, 1.0f);
 
-	D3D9Effect::RenderSpot(1.0f, &color, (const LPFMATRIX4)&W, blobtex[0]);
+	D3D9Effect::RenderSpot(1.0f, &color, (const FMATRIX4*)&W, blobtex[0]);
 }
 
 

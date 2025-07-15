@@ -641,7 +641,7 @@ BeaconArray *RunwayLights::BuildVASI(VECTOR3 _start, VECTOR3 _end, DWORD idx)
 }
 	
 
-void RunwayLights::SetPAPIColors(BeaconArray *pPAPI, LPFMATRIX4 world, int i)
+void RunwayLights::SetPAPIColors(BeaconArray *pPAPI, FMATRIX4* world, int i)
 {
 
 	BAVERTEX *pVrt = pPAPI->LockVertexBuffer();
@@ -693,7 +693,7 @@ void RunwayLights::Update(class vPlanet *vP)
 }
 
 
-void RunwayLights::Render(LPDIRECT3DDEVICE9 dev, LPFMATRIX4 world, bool night)
+void RunwayLights::Render(LPDIRECT3DDEVICE9 dev, FMATRIX4* world, bool night)
 {
 	_TRACE;
 	currentTime = float(fmod(1.7*oapiGetSimTime(), 1.0));
@@ -988,7 +988,7 @@ void TaxiLights::Init()
 }
 
 
-void TaxiLights::Render(LPDIRECT3DDEVICE9 dev, LPFMATRIX4 world, bool night)
+void TaxiLights::Render(LPDIRECT3DDEVICE9 dev, FMATRIX4* world, bool night)
 {
 	if (night) beacons1->Render(dev, world, 0.5f);
 }

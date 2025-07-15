@@ -555,7 +555,7 @@ public:
 
 	void SetViewProj(const FMATRIX4* pV, const FMATRIX4* pP);
 
-	LPFMATRIX4 WorldMatrix();
+	FMATRIX4* WorldMatrix();
 	DWORD GetLineHeight(); ///< Return height of a character in the currently selected font with "internal leading"
 	const char *GetName() const { return name; }
 	LPDIRECT3DSURFACE9 GetRenderTarget() const { return pTgt; }
@@ -672,7 +672,7 @@ private:
 	static SkpVtx *Vtx;		// List of vertices
 	static D3D9Client *gc;
 	static LPDIRECT3DDEVICE9 pDev;
-	static LPFVECTOR2 pSinCos[5];
+	static FVECTOR2* pSinCos[5];
 	static LPDIRECT3DTEXTURE9 pNoise;
 	// -------------------------------------------
 

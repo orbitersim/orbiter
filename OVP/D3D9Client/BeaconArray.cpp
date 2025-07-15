@@ -118,7 +118,7 @@ void BeaconArray::UnLockVertexBuffer()
 
 // ===========================================================================================
 //
-void BeaconArray::Render(LPDIRECT3DDEVICE9 dev, const LPFMATRIX4 pW, float time)
+void BeaconArray::Render(LPDIRECT3DDEVICE9 dev, const FMATRIX4* pW, float time)
 {
 	if (!pVB) return;
 

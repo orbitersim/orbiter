@@ -293,10 +293,10 @@ public:
 	float			GetBoundingSphereRadius();
 	D9BBox *		GetAABB();
 	FVECTOR3		GetGroupSize(DWORD idx) const;
-	LPFMATRIX4	GetTransform() { if (bGlobalTF) return &mTransform; else return NULL; }
+	FMATRIX4*	GetTransform() { if (bGlobalTF) return &mTransform; else return NULL; }
 
 	FMATRIX4		GetTransform(int grp, bool bCombined);
-	bool			SetTransform(int grp, const LPFMATRIX4 pMat);
+	bool			SetTransform(int grp, const FMATRIX4* pMat);
 
 	void			SetPosition(VECTOR3 &pos);
 	void			SetRotation(FMATRIX4 &rot);
@@ -312,17 +312,17 @@ public:
 
 	void			RenderGroup(const GROUPREC *grp);
 	void			RenderGroup(int idx);
-	void			RenderBaseTile(const LPFMATRIX4 pW);
-	void			RenderBoundingBox(const LPFMATRIX4 pW);
-	void			Render(const LPFMATRIX4 pW, const ENVCAMREC* em = NULL, int iTech = RENDER_VESSEL);
-	void			RenderFast(const LPFMATRIX4 pW, int iTech);
-	void			RenderShadowMap(const LPFMATRIX4 pW, const LPFMATRIX4 pVP, int flags, bool bNoCull = false);
-	void			RenderStencilShadows(float alpha, const LPFMATRIX4 pP, const LPFMATRIX4 pW, bool bShadowMap = false, const FVECTOR4 *elev = NULL);
-	void			RenderShadowsEx(float alpha, const LPFMATRIX4 pP, const LPFMATRIX4 pW, const FVECTOR4 *light, const FVECTOR4 *param);
-	void			RenderRings(const LPFMATRIX4 pW, LPDIRECT3DTEXTURE9 pTex);
-	void			RenderRings2(const LPFMATRIX4 pW, LPDIRECT3DTEXTURE9 pTex, float irad, float orad);
-	void			RenderAxisVector(LPFMATRIX4 pW, const FVECTOR4 *pColor, float len);
-	void			RenderSimplified(const LPFMATRIX4 pW, LPDIRECT3DCUBETEXTURE9 *pEnv = NULL, int nEnv = 0, bool bSP = false);
+	void			RenderBaseTile(const FMATRIX4* pW);
+	void			RenderBoundingBox(const FMATRIX4* pW);
+	void			Render(const FMATRIX4* pW, const ENVCAMREC* em = NULL, int iTech = RENDER_VESSEL);
+	void			RenderFast(const FMATRIX4* pW, int iTech);
+	void			RenderShadowMap(const FMATRIX4* pW, const FMATRIX4* pVP, int flags, bool bNoCull = false);
+	void			RenderStencilShadows(float alpha, const FMATRIX4* pP, const FMATRIX4* pW, bool bShadowMap = false, const FVECTOR4 *elev = NULL);
+	void			RenderShadowsEx(float alpha, const FMATRIX4* pP, const FMATRIX4* pW, const FVECTOR4 *light, const FVECTOR4 *param);
+	void			RenderRings(const FMATRIX4* pW, LPDIRECT3DTEXTURE9 pTex);
+	void			RenderRings2(const FMATRIX4* pW, LPDIRECT3DTEXTURE9 pTex, float irad, float orad);
+	void			RenderAxisVector(FMATRIX4* pW, const FVECTOR4 *pColor, float len);
+	void			RenderSimplified(const FMATRIX4* pW, LPDIRECT3DCUBETEXTURE9 *pEnv = NULL, int nEnv = 0, bool bSP = false);
 	void			CheckMeshStatus();
 	void			ResetTransformations();
 	void			TransformGroup(DWORD n, const FMATRIX4 *m);
@@ -332,14 +332,14 @@ public:
 
 	void			SetSunLight(const D3D9Sun *pLight);
 
-	D3D9Pick		Pick(const LPFMATRIX4 pW, const LPFMATRIX4 pT, const FVECTOR3 *vDir, const PickProp* p);
+	D3D9Pick		Pick(const FMATRIX4* pW, const FMATRIX4* pT, const FVECTOR3 *vDir, const PickProp* p);
 
 	void			UpdateBoundingBox();
 	void			BoundingBox(const NMVERTEX *vtx, DWORD n, D9BBox *box);
 
 	void			SetAmbientColor(const FVECTOR3& c);
 	const FVECTOR3& GetAmbientColor();
-	void			SetupFog(const LPFMATRIX4 pW);
+	void			SetupFog(const FMATRIX4* pW);
 	void			ResetRenderStatus();
 
 	LPDIRECT3DTEXTURE9 GetCombinedMap(int tex_idx = -1);

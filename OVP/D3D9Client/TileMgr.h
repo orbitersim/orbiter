@@ -106,7 +106,7 @@ protected:
 
 	virtual void InitRenderTile() = 0;
 	virtual void EndRenderTile() = 0;
-	virtual void RenderSimple(int level, int npatch, TILEDESC *tile, LPFMATRIX4 mWorld) = 0;
+	virtual void RenderSimple(int level, int npatch, TILEDESC *tile, FMATRIX4* mWorld) = 0;
 
 	virtual void RenderTile(int lvl, int hemisp, int ilat, int nlat, int ilng, int nlng, double sdist, TILEDESC *tile,
 		const TEXCRDRANGE &range, LPDIRECT3DTEXTURE9 tex, LPDIRECT3DTEXTURE9 ltex, DWORD flag) = 0;

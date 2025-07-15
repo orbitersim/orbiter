@@ -286,7 +286,7 @@ FVECTOR3 Tile::GetBoundingSpherePos() const
 
 // -----------------------------------------------------------------------
 
-bool Tile::Pick(const LPFMATRIX4 pW, const FVECTOR3 *vDir, TILEPICK &result)
+bool Tile::Pick(const FMATRIX4* pW, const FVECTOR3 *vDir, TILEPICK &result)
 {
 	if (!mesh) {
 		LogErr("Tile::Pick() Failed: No Mesh Available");

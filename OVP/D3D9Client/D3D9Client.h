@@ -1176,7 +1176,7 @@ public:
 	const void *		GetConfigParam (DWORD paramtype) const;
 	bool				RegisterRenderProc(__gcRenderProc proc, DWORD id, void *pParam = NULL);
 	bool				RegisterGenericProc(__gcGenericProc proc, DWORD id, void *pParam = NULL);
-	void				MakeRenderProcCall(Sketchpad *pSkp, DWORD id, LPFMATRIX4 pV, LPFMATRIX4 pP);
+	void				MakeRenderProcCall(Sketchpad *pSkp, DWORD id, const FMATRIX4* pV, const FMATRIX4* pP);
 	void				MakeGenericProcCall(DWORD id, int iUser, void *pUser) const;
 	bool				IsGenericProcEnabled(DWORD id) const;
 	void				SetScenarioName(const std::string &path) { scenarioName = path; };

@@ -63,7 +63,7 @@ public:
 	 * \param pW 3DX matrix to operate on
 	 * \param time Seconds-only part of the simulation elapsed time (0...1.0)
 	 */
-	void Render(LPDIRECT3DDEVICE9 dev, const LPFMATRIX4 pW, float time=0.5f);
+	void Render(LPDIRECT3DDEVICE9 dev, const FMATRIX4* pW, float time=0.5f);
 
 	void Update(DWORD nCount, class vPlanet *vP);
 

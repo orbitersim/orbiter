@@ -386,7 +386,7 @@ void gcCore::RenderMesh(DEVMESHHANDLE hMesh, const oapi::FMATRIX4* pWorld)
 bool gcCore::PickMesh(PickMeshStruct* pm, DEVMESHHANDLE hMesh, const FMATRIX4* pWorld, short x, short y)
 {
 	Scene* pScene = g_client->GetScene();
-	D3D9Pick pk = pScene->PickMesh(hMesh, (const LPFMATRIX4)pWorld, x, y);
+	D3D9Pick pk = pScene->PickMesh(hMesh, (const FMATRIX4*)pWorld, x, y);
 	if (pk.group >= 0) {
 		if (pk.dist < pm->dist) {
 			pm->pos = pk.pos;

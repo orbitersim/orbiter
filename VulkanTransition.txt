@@ -1,4 +1,5 @@
 Vulkan transition and API cleanup notes:
 
-- Parameter order of "FVECTOR4 mul(FMATRIX4, FVECTOR4), mul(FVECTOR4, FMATRIX4)" may have changed.
- 
+- 32-bit FVECTOR math routines removed from DrawAPI.h, now included in MathAPI.h.
+- Parameter order of "FVECTOR4 mul(FMATRIX4, FVECTOR4), mul(FVECTOR4, FMATRIX4)" may have changed, "tmul" discontinued
+- FVECTOR based "dot" and "cross" renamed as "dotp" and "crossp" for consistency. 

@@ -2812,7 +2812,7 @@ SURFHANDLE D3D9Client::GetBackBufferHandle() const
 
 // =======================================================================
 
-void D3D9Client::MakeRenderProcCall(Sketchpad *pSkp, DWORD id, LPFMATRIX4 pV, LPFMATRIX4 pP)
+void D3D9Client::MakeRenderProcCall(Sketchpad *pSkp, DWORD id, const FMATRIX4* pV, const FMATRIX4* pP)
 {
 	for (auto it = RenderProcs.cbegin(); it != RenderProcs.cend(); ++it) {
 		if (it->id == id) {

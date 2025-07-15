@@ -127,7 +127,7 @@ public:
 
 	float GetBoundingSphereRad() const;
 	FVECTOR3 GetBoundingSpherePos() const;
-	bool Pick(const LPFMATRIX4 pW, const FVECTOR3 *vDir, TILEPICK &result);
+	bool Pick(const FMATRIX4* pW, const FVECTOR3 *vDir, TILEPICK &result);
 	FVECTOR4 GetTexRangeDX (const TEXCRDRANGE2 *subrange) const;
 	inline const TEXCRDRANGE2 *GetTexRange () const { return &texrange; }
 	// Returns the tile's texture coordinate range

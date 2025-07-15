@@ -348,7 +348,7 @@ void vVessel::InsertMesh(UINT idx)
 	VECTOR3 ofs=_V(0,0,0);
 
 	UINT i;
-	LPFMATRIX4 pT = NULL;
+	FMATRIX4* pT = NULL;
 
 	if (idx >= nmesh) { // append a new entry to the list
 		MESHREC *tmp = new MESHREC[idx+1];
@@ -886,7 +886,7 @@ bool vVessel::Render(LPDIRECT3DDEVICE9 dev, const SHADOWMAP *shd, DWORD flg)
 		DWORD mFlags = pMesh->MeshFlags;
 
 		FMATRIX4 mWT;
-		LPFMATRIX4 pWT;
+		FMATRIX4* pWT;
 		
 		if (meshlist[i].trans) pWT = oapiMatrixMultiply(&mWT, (const FMATRIX4*)meshlist[i].trans, &mWorld);
 		else pWT = &mWorld;
@@ -913,8 +913,8 @@ bool vVessel::Render(LPDIRECT3DDEVICE9 dev, const SHADOWMAP *shd, DWORD flg)
 			}
 		}
 
-		const LPFMATRIX4 pVP = scn->GetProjectionViewMatrix();
-		const LPFMATRIX4 pLVP = shd ? (const LPFMATRIX4)&shd->mLVP : nullptr;
+		const FMATRIX4* pVP = scn->GetProjectionViewMatrix();
+		const FMATRIX4* pLVP = shd ? (const FMATRIX4*)&shd->mLVP : nullptr;
 
 		// Render vessel meshes --------------------------------------------------------------------------
 		//
@@ -1722,7 +1722,7 @@ bool vVessel::IsRoot() const
 
 // ============================================================================================
 //
-void vVessel::RenderLightCone(LPFMATRIX4 pWT)
+void vVessel::RenderLightCone(FMATRIX4* pWT)
 {
 	if (DebugControls::sEmitter == 0) return;
 	if (DebugControls::Emitters.count(DebugControls::sEmitter) == 0) return;
@@ -2209,8 +2209,8 @@ void vVessel::UpdateBoundingBox()
 
 		if (meshlist[i].vismode&vismode) {
 
-			LPFMATRIX4 pMeshTF = meshlist[i].mesh->GetTransform();
-			LPFMATRIX4 pTF = &mTF;
+			FMATRIX4* pMeshTF = meshlist[i].mesh->GetTransform();
+			FMATRIX4* pTF = &mTF;
 
 			if (meshlist[i].trans) {
 				if (pMeshTF) oapiMatrixMultiply(pTF, meshlist[i].trans, pMeshTF);
@@ -2257,7 +2257,7 @@ void vVessel::UpdateBoundingBox()
 D3D9Pick vVessel::Pick(const FVECTOR3 *vDir, const PickProp *p)
 {
 	FMATRIX4 mWT;
-	LPFMATRIX4 pWT = NULL;
+	FMATRIX4* pWT = NULL;
 
 	DWORD flags = *(DWORD*)gc->GetConfigParam(CFGPRM_GETDEBUGFLAGS);
 	DWORD displ = *(DWORD*)gc->GetConfigParam(CFGPRM_GETDISPLAYMODE);
@@ -2365,8 +2365,8 @@ int vVessel::SetMatrixTransform(gcCore::MatrixId func, DWORD mi, DWORD gi, const
 		memcpy_s(meshlist[mi].trans, sizeof(FMATRIX4), pMat, sizeof(FMATRIX4));
 	}
 
-	if (func == gcCore::MatrixId::MESH) if (!pMesh->SetTransform(-1, (LPFMATRIX4)pMat)) return -4;
-	if (func == gcCore::MatrixId::GROUP) if (!pMesh->SetTransform(gi, (LPFMATRIX4)pMat)) return -5;
+	if (func == gcCore::MatrixId::MESH) if (!pMesh->SetTransform(-1, (FMATRIX4*)pMat)) return -4;
+	if (func == gcCore::MatrixId::GROUP) if (!pMesh->SetTransform(gi, (FMATRIX4*)pMat)) return -5;
 
 	return 0;
 }

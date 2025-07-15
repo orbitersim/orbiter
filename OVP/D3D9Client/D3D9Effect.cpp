@@ -544,7 +544,7 @@ void D3D9Effect::D3D9TechInit(D3D9Client *_gc, LPDIRECT3DDEVICE9 _pDev, const ch
 }
 
 
-void D3D9Effect::SetViewProjMatrix(LPFMATRIX4 pVP)
+void D3D9Effect::SetViewProjMatrix(FMATRIX4* pVP)
 {
 	FX->SetMatrix(eVP, _DX(pVP));
 }
@@ -662,7 +662,7 @@ void D3D9Effect::InitLegacyAtmosphere(OBJHANDLE hPlanet, float GlobalAmbient)
 
 // ===========================================================================================
 //
-void D3D9Effect::Render2DPanel(const MESHGROUP *mg, const SURFHANDLE pTex, const LPFMATRIX4 pW, float alpha, float scale, bool additive)
+void D3D9Effect::Render2DPanel(const MESHGROUP *mg, const SURFHANDLE pTex, const FMATRIX4* pW, float alpha, float scale, bool additive)
 {
 	UINT numPasses = 0;
 	if (!pTex || !mg || !pW) return;
@@ -694,7 +694,7 @@ void D3D9Effect::Render2DPanel(const MESHGROUP *mg, const SURFHANDLE pTex, const
 
 // ===========================================================================================
 //
-void D3D9Effect::RenderReEntry(const SURFHANDLE pTex, const LPFVECTOR3 vPosA, const LPFVECTOR3 vPosB, const LPFVECTOR3 vDir, float alpha_a, float alpha_b, float size)
+void D3D9Effect::RenderReEntry(const SURFHANDLE pTex, const FVECTOR3* vPosA, const FVECTOR3* vPosB, const FVECTOR3* vDir, float alpha_a, float alpha_b, float size)
 {
 	static WORD ReentryIdx[6] = {0,1,2, 3,2,1};
 	
@@ -742,7 +742,7 @@ void D3D9Effect::RenderReEntry(const SURFHANDLE pTex, const LPFVECTOR3 vPosA, co
 // ===========================================================================================
 // This is a special rendering routine used to render beacons
 //
-void D3D9Effect::RenderSpot(float alpha, const LPFVECTOR4 pColor, const LPFMATRIX4 pW, SURFHANDLE pTex)
+void D3D9Effect::RenderSpot(float alpha, const FVECTOR4* pColor, const FMATRIX4* pW, SURFHANDLE pTex)
 {
 	UINT numPasses = 0;
 	HR(pDev->SetVertexDeclaration(pNTVertexDecl));
@@ -762,7 +762,7 @@ void D3D9Effect::RenderSpot(float alpha, const LPFVECTOR4 pColor, const LPFMATRI
 // ===========================================================================================
 // Used by Render Star only
 //
-void D3D9Effect::RenderBillboard(const LPFMATRIX4 pW, LPDIRECT3DTEXTURE9 pTex, float alpha)
+void D3D9Effect::RenderBillboard(const FMATRIX4* pW, LPDIRECT3DTEXTURE9 pTex, float alpha)
 {
 	UINT numPasses = 0;
 
@@ -782,7 +782,7 @@ void D3D9Effect::RenderBillboard(const LPFMATRIX4 pW, LPDIRECT3DTEXTURE9 pTex, f
 // ===========================================================================================
 // This is a special rendering routine used to render engine exhaust
 //
-void D3D9Effect::RenderExhaust(const LPFMATRIX4 pW, VECTOR3 &cdir, EXHAUSTSPEC *es, SURFHANDLE def)
+void D3D9Effect::RenderExhaust(const FMATRIX4* pW, VECTOR3 &cdir, EXHAUSTSPEC *es, SURFHANDLE def)
 {
 
 	SURFHANDLE pTex = SURFACE(es->tex);
@@ -841,7 +841,7 @@ void D3D9Effect::RenderExhaust(const LPFMATRIX4 pW, VECTOR3 &cdir, EXHAUSTSPEC *
 }
 
 
-void D3D9Effect::RenderBoundingBox(const LPFMATRIX4 pW, const LPFMATRIX4 pGT, const FVECTOR4 *bmin, const FVECTOR4 *bmax, const FVECTOR4 *color)
+void D3D9Effect::RenderBoundingBox(const FMATRIX4* pW, const FMATRIX4* pGT, const FVECTOR4 *bmin, const FVECTOR4 *bmax, const FVECTOR4 *color)
 {
 	FMATRIX4 ident;
 	oapiMatrixIdentity(&ident);
@@ -888,7 +888,7 @@ void D3D9Effect::RenderBoundingBox(const LPFMATRIX4 pW, const LPFMATRIX4 pGT, co
 	FX->End();	
 }
 
-void D3D9Effect::RenderTileBoundingBox(const LPFMATRIX4 pW, VECTOR4 *pVtx, const LPFVECTOR4 color)
+void D3D9Effect::RenderTileBoundingBox(const FMATRIX4* pW, VECTOR4 *pVtx, const FVECTOR4* color)
 {
 	FVECTOR3 poly[8];
 
@@ -928,7 +928,7 @@ void D3D9Effect::RenderLines(const FVECTOR3 *pVtx, const WORD *pIdx, int nVtx, i
 }
 
 
-void D3D9Effect::RenderBoundingSphere(const LPFMATRIX4 pW, const LPFMATRIX4 pGT, const FVECTOR4 *bs, const FVECTOR4 *color)
+void D3D9Effect::RenderBoundingSphere(const FMATRIX4* pW, const FMATRIX4* pGT, const FVECTOR4 *bs, const FVECTOR4 *color)
 {
 	FMATRIX4 mW;
 	FVECTOR3 vPos = oapiTransformCoord(&(FVECTOR3(bs->x, bs->y, bs->z)), pW);

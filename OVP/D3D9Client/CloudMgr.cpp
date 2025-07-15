@@ -117,7 +117,7 @@ void CloudManager::RenderShadow(LPDIRECT3DDEVICE9 dev, FMATRIX4 &wmat, double sc
 
 // ==============================================================
 
-void CloudManager::RenderSimple(int level, int npatch, TILEDESC *tile, LPFMATRIX4 mWrld)
+void CloudManager::RenderSimple(int level, int npatch, TILEDESC *tile, FMATRIX4* mWrld)
 {
 	LoadData();
 	if (bNoTextures) return;

@@ -448,7 +448,9 @@ namespace oapi
 
 		void Zero()
 		{
-			for (int i = 0; i < 16; i++) data[i] = 0.0;
+			m21 = m31 = m41 = m12 = m32 = m42 = 0.0f;
+			m13 = m23 = m43 = m14 = m24 = m34 = 0.0f;
+			m11 = m22 = m33 = m44 = 0.0f;
 		}
 
 		void Ident()
@@ -480,13 +482,13 @@ namespace oapi
 
 	using namespace oapi;
 
-	inline VECTOR3 _V(const oapi::FVECTOR3& i) { return { double(i.x), double(i.y), double(i.z) }; }
+	inline VECTOR3 _V(const FVECTOR3& i) { return { double(i.x), double(i.y), double(i.z) }; }
 	inline VECTOR3 _V(const VECTOR4 & i) { return  { double(i.x), double(i.y), double(i.z) }; }
-	inline VECTOR3 _V(const oapi::FVECTOR4 & i) { return { double(i.x), double(i.y), double(i.z) }; }
+	inline VECTOR3 _V(const FVECTOR4 & i) { return { double(i.x), double(i.y), double(i.z) }; }
 
-	inline VECTOR4 _V4(const oapi::FVECTOR4& i) { return { i.x, i.y, i.z, i.w }; }
+	inline VECTOR4 _V4(const FVECTOR4& i) { return { i.x, i.y, i.z, i.w }; }
 	inline VECTOR4 _V4(const VECTOR3& i, double w = 0.0) { return { i.x, i.y, i.z, w }; }
-	inline VECTOR4 _V4(const oapi::FVECTOR3& i, float w = 0.0f) { return { i.x, i.y, i.z, w }; }
+	inline VECTOR4 _V4(const FVECTOR3& i, float w = 0.0f) { return { i.x, i.y, i.z, w }; }
 
 	inline FVECTOR3 _F(const VECTOR3& i) { return FVECTOR3(float(i.x), float(i.y), float(i.z)); }
 	inline FVECTOR3 _F(const VECTOR4& i) { return FVECTOR3(float(i.x), float(i.y), float(i.z)); }
@@ -606,6 +608,15 @@ namespace oapi
 		return FVECTOR4(x, y, z, w);
 	}
 
+	inline FMATRIX4 transp(const FMATRIX4& M)
+	{
+		return FMATRIX4(M.m11, M.m21, M.m31, M.m41,
+						M.m12, M.m22, M.m32, M.m42,
+						M.m13, M.m23, M.m33, M.m43,
+						M.m14, M.m24, M.m34, M.m44
+		);
+	}
+
 	inline FVECTOR3 crossp(const FVECTOR3& a, const FVECTOR3& b)
 	{
 		return FVECTOR3(a.y * b.z - a.z * b.y, a.z * b.x - a.x * b.z, a.x * b.y - a.y * b.x);
@@ -619,8 +630,6 @@ namespace oapi
 		x = (x > 1.0f) ? 1.0f : x;
 		return x;
 	}
-
-	
 
 	inline FVECTOR2 rcp(const FVECTOR2& v) { return _F2(1.0f / v.x, 1.0f / v.y); }
 	inline FVECTOR3 rcp(const FVECTOR3& v) { return  _F(1.0f / v.x, 1.0f / v.y, 1.0f / v.z); }
@@ -654,30 +663,37 @@ namespace oapi
 	inline FVECTOR3 exp(const FVECTOR3& v) { return  _F(exp(v.x), exp(v.y), exp(v.z)); }
 	inline FVECTOR4 exp(const FVECTOR4& v) { return _F4(exp(v.x), exp(v.y), exp(v.z), exp(v.w)); }
 
-	template <typename T> inline constexpr float ilen(const T& v) { return 1.0f / ::sqrt(dotp(v, v)); }
+	inline FVECTOR2 min(const FVECTOR2& v, const FVECTOR2& w) { return _F2(std::min(v.x, w.x), std::min(v.y, w.y)); }
+	inline FVECTOR3 min(const FVECTOR3& v, const FVECTOR3& w) { return  _F(std::min(v.x, w.x), std::min(v.y, w.y), std::min(v.z, w.z)); }
+	inline FVECTOR4 min(const FVECTOR4& v, const FVECTOR4& w) { return _F4(std::min(v.x, w.x), std::min(v.y, w.y), std::min(v.z, w.z), std::min(v.w, w.w)); }
+
+	inline FVECTOR2 max(const FVECTOR2& v, const FVECTOR2& w) { return _F2(std::max(v.x, w.x), std::max(v.y, w.y)); }
+	inline FVECTOR3 max(const FVECTOR3& v, const FVECTOR3& w) { return  _F(std::max(v.x, w.x), std::max(v.y, w.y), std::max(v.z, w.z)); }
+	inline FVECTOR4 max(const FVECTOR4& v, const FVECTOR4& w) { return _F4(std::max(v.x, w.x), std::max(v.y, w.y), std::max(v.z, w.z), std::max(v.w, w.w)); }
+
+	template <typename T> inline constexpr float ilen(const T& v) { return 1.0f / sqrt(dotp(v, v)); }
 	template <typename T> inline constexpr T unit(const T& v) { return v * ilen(v); }
 	template <typename T> inline constexpr void normalize(T& v) { v *= ilen(v); }
 	template <typename T> inline constexpr void normalise(T& v) { v *= ilen(v); }
-	template <typename T> inline constexpr float length(const T& v) { return ::sqrt(dotp(v,v)); }
+	template <typename T> inline constexpr float length(const T& v) { return sqrt(dotp(v,v)); }
 	template <typename T> inline constexpr T lerp(const T& a, const T& b, float x) { return a + (b - a) * x; }
+	template <typename T> inline constexpr T lerp(const T& a, const T& b, double x) { return a + (b - a) * x; }
+	template <typename T> inline constexpr T sqr(T a) {	return a * a; }
+	template <typename T> inline constexpr T hermite(T a) {	return a * a * (T(3) - T(2) * a); }
+	template <typename T> inline constexpr T herp(T a, T b, float x) { return lerp(a, b, (float)hermite(x)); }
+	template <typename T> inline constexpr T herp(T a, T b, double x) { return lerp(a, b, (double)hermite(x)); }
 
 //} //namespace
 
 
-static oapi::FMATRIX4 FMATRIX_Identity = {
+static const FMATRIX4 FMATRIX_Identity = {
 	1.0f, 0.0f, 0.0f, 0.0f,
 	0.0f, 1.0f, 0.0f, 0.0f,
 	0.0f, 0.0f, 1.0f, 0.0f,
 	0.0f, 0.0f, 0.0f, 1.0f
 };
 
-static oapi::FVECTOR4 F4_Zero = { 0.0f, 0.0f, 0.0f, 0.0f };
-static oapi::FVECTOR4 F4_One = { 1.0f, 1.0f, 1.0f, 1.0f };
-
-
-typedef oapi::FMATRIX4* LPFMATRIX4;
-typedef oapi::FVECTOR4* LPFVECTOR4;
-typedef oapi::FVECTOR3* LPFVECTOR3;
-typedef oapi::FVECTOR2* LPFVECTOR2;
+static const oapi::FVECTOR4 F4_Zero = { 0.0f, 0.0f, 0.0f, 0.0f };
+static const oapi::FVECTOR4 F4_One = { 1.0f, 1.0f, 1.0f, 1.0f };
 
 #endif

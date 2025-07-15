@@ -27,7 +27,7 @@ protected:
 
 	void InitRenderTile();
 	void EndRenderTile();
-	void RenderSimple(int level, int npatch, TILEDESC *tile, LPFMATRIX4 mWorld);
+	void RenderSimple(int level, int npatch, TILEDESC *tile, FMATRIX4* mWorld);
 
 	void RenderTile(int lvl, int hemisp, int ilat, int nlat, int ilng, int nlng, double sdist,
 		TILEDESC *tile, const TEXCRDRANGE &range, LPDIRECT3DTEXTURE9 tex, LPDIRECT3DTEXTURE9 ltex, DWORD flag);

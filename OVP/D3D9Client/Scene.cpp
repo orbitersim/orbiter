@@ -2486,7 +2486,7 @@ Scene::SUNVISPARAMS Scene::GetSunScreenVisualState()
 	oapiGetViewportSize(&w, &h);
 
 	FVECTOR4 pos;
-	const LPFMATRIX4 pVP = GetProjectionViewMatrix();
+	const FMATRIX4* pVP = GetProjectionViewMatrix();
 	FVECTOR4 sun = FVECTOR4(float(sunGPos.x), float(sunGPos.y), float(sunGPos.z), 1.0f);
 
 	D3DMAT_Transform(&pos, &sun, pVP);
@@ -3520,7 +3520,7 @@ void Scene::RenderMesh(DEVMESHHANDLE hMesh, const oapi::FMATRIX4 *pWorld)
 	}
 
 	pMesh->SetSunLight(&sunLight);
-	pMesh->RenderSimplified(LPFMATRIX4(pWorld));
+	pMesh->RenderSimplified(pWorld);
 }
 
 
@@ -3795,7 +3795,7 @@ D3D9Pick Scene::PickScene(short xpos, short ypos, const PickProp *p)
 
 // ===========================================================================================
 //
-D3D9Pick Scene::PickMesh(DEVMESHHANDLE hMesh, const LPFMATRIX4 pW, short xpos, short ypos)
+D3D9Pick Scene::PickMesh(DEVMESHHANDLE hMesh, const FMATRIX4* pW, short xpos, short ypos)
 {
 	D3D9Mesh *pMesh = (D3D9Mesh *)hMesh;
 	PickProp prp = { NULL, 0.1f, false };
@@ -3804,7 +3804,7 @@ D3D9Pick Scene::PickMesh(DEVMESHHANDLE hMesh, const LPFMATRIX4 pW, short xpos, s
 
 // ===========================================================================================
 //
-void Scene::GetAdjProjViewMatrix(LPFMATRIX4 pMP, float znear, float zfar)
+void Scene::GetAdjProjViewMatrix(FMATRIX4* pMP, float znear, float zfar)
 {
 	float tanap = tan(Camera.aperture);
 	ZeroMemory(pMP, sizeof(FMATRIX4));

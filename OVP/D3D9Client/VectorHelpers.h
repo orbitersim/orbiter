@@ -65,23 +65,6 @@ template <typename T> inline _constexpr_ T sign (T val)
 	return val < T(0) ? T(-1) : T(1);
 }
 
-/*
-template <typename T> inline _constexpr_ T lerp (T a, T b, T x)
-{
-	return a + (b - a)*x;
-}*/
-
-// ...slightly faster than the above, but not available in Visual Studio 2012 (I think)?
-//template <typename T> inline _constexpr_ T lerp(T v0, T v1, T t) {
-//	return fma(t, v1, fma(-t, v0, v0));
-//}
-
-template <typename T> inline _constexpr_ T saturate (T val)
-{
-	return (val > T(1)) ? T(1)
-		 : (val < T(0)) ? T(0)
-		 : val;
-}
 
 template <typename T> inline _constexpr_ T clamp(T x, T a, T b)
 {
@@ -95,15 +78,6 @@ template <typename T> inline _constexpr_ T ilerp(T a, T b, T x)
 	return saturate((x - a) / (b - a));
 }
 
-template <typename T> inline _constexpr_ T sqr(T a)
-{
-	return a * a;
-}
-
-template <typename T> inline _constexpr_ T hermite(T a)
-{
-	return a * a * (T(3) - T(2)*a);
-}
 
 	
 // VECTOR3 Helpers ==================================================================
@@ -228,11 +202,6 @@ inline VECTOR4 exp2(const VECTOR4 &v)
 	return _V(exp2(v.x), exp2(v.y), exp2(v.z), exp2(v.w));
 }
 
-inline VECTOR4 rcp(const VECTOR4 &v)
-{
-	return _V(1.0/v.x, 1.0/v.y, 1.0/v.z, 1.0/v.w);
-}
-
 inline VECTOR4 vmax(const VECTOR4 &v, const VECTOR4 &w)
 {
 	return _V(std::max(v.x, w.x), std::max(v.y, w.y), std::max(v.z, w.z), std::max(v.w, w.w));
@@ -252,69 +221,6 @@ inline float MaxRGB(const FVECTOR4& v)
 {
 	return (std::max)(v.r, (std::max)(v.g, v.b));
 }
-
-
-
-// FVECTOR3 Helpers ==================================================================
-//
-//
-
-/*
-inline FVECTOR3 exp2(const FVECTOR3 &v)
-{
-	return FVECTOR3(exp2(v.x), exp2(v.y), exp2(v.z));
-}
-
-inline FVECTOR3 _FVECTOR3(const VECTOR3 &v)
-{
-	return FVECTOR3(float(v.x), float(v.y), float(v.z));
-}
-
-inline FVECTOR3 _FVECTOR3(double x, double y, double z)
-{
-	return FVECTOR3(float(x), float(y), float(z));
-}
-
-inline FVECTOR3 rcp(const FVECTOR3 &v)
-{
-	return FVECTOR3(1.0f/v.x, 1.0f/v.y, 1.0f/v.z);
-}
-
-inline FVECTOR3 vmax(const FVECTOR3 &v, const FVECTOR3 &w)
-{
-	return FVECTOR3(std::max(v.x, w.x), std::max(v.y, w.y), std::max(v.z, w.z));
-}
-
-inline FVECTOR3 vmin(const FVECTOR3 &v, const FVECTOR3 &w)
-{
-	return FVECTOR3(std::min(v.x, w.x), std::min(v.y, w.y), std::min(v.z, w.z));
-}
-
-inline FVECTOR3 lerp(const FVECTOR3 &v, const FVECTOR3 &w, float x)
-{
-	return FVECTOR3(v.x+(w.x-v.x)*x, v.y+(w.y-v.y)*x, v.z+(w.z-v.z)*x);
-}
-
-
-
-// FVECTOR4 Helpers ==================================================================
-//
-//
-inline FVECTOR4 abs(FVECTOR4 &a)
-{
-	return FVECTOR4(abs(a.x), abs(a.y), abs(a.z), abs(a.w));
-}
-
-inline FVECTOR4 sign(FVECTOR4 &a)
-{
-	return FVECTOR4(sign(a.x), sign(a.y), sign(a.z), sign(a.w));
-}
-
-inline FVECTOR4 pow(float x, FVECTOR4 &y)
-{
-	return FVECTOR4(pow(x, y.x), pow(x, y.y), pow(x, y.z), pow(x, y.w));
-}
-*/
 
 #endif
 

@@ -343,7 +343,7 @@ public:
 	FVECTOR3		GetPickingRay(short x, short y);
 	D3D9Pick		PickScene(short xpos, short ypos, const PickProp* p);
 	TILEPICK		PickSurface(short xpos, short ypos);
-	D3D9Pick		PickMesh(DEVMESHHANDLE hMesh, const LPFMATRIX4 pW, short xpos, short ypos);
+	D3D9Pick		PickMesh(DEVMESHHANDLE hMesh, const FMATRIX4* pW, short xpos, short ypos);
 
 	void			ClearOmitFlags();
 	bool			IsRendering() const { return bRendering; }
@@ -360,10 +360,10 @@ public:
 
 	// Camera Matrix Access =========================================================================================================
 	//
-	void			   GetAdjProjViewMatrix(LPFMATRIX4 mP, float znear, float zfar);
-	const LPFMATRIX4 GetProjectionViewMatrix() const { return (LPFMATRIX4)&Camera.mProjView; }
-	const LPFMATRIX4 GetProjectionMatrix() const { return (LPFMATRIX4)&Camera.mProj; }
-	const LPFMATRIX4 GetViewMatrix() const { return (LPFMATRIX4)&Camera.mView; }
+	void			   GetAdjProjViewMatrix(FMATRIX4* mP, float znear, float zfar);
+	const FMATRIX4* GetProjectionViewMatrix() const { return (FMATRIX4*)&Camera.mProjView; }
+	const FMATRIX4* GetProjectionMatrix() const { return (FMATRIX4*)&Camera.mProj; }
+	const FMATRIX4* GetViewMatrix() const { return (FMATRIX4*)&Camera.mView; }
 
 
 	// Main Camera Interface =========================================================================================================

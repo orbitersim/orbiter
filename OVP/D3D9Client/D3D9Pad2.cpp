@@ -619,13 +619,13 @@ void D3D9Pad::SetViewMode(SkpView mode)
 // ===============================================================================================
 // !! For a private use in D3D9Client !!
 //
-LPFMATRIX4 D3D9Pad::WorldMatrix()
+FMATRIX4* D3D9Pad::WorldMatrix()
 {
 #ifdef SKPDBG 
 	Log("WorldMatrix() ! - ! - !");
 #endif
 	Change |= SKPCHG_TRANSFORM;
-	return (LPFMATRIX4)&mW;
+	return (FMATRIX4*)&mW;
 }
 
 
