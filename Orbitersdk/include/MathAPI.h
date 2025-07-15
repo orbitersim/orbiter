@@ -27,7 +27,7 @@
 #include <algorithm>
 #endif
 
-#if defined (D3D9CLIENT_EXPORTS) || (Orbiter_EXPORTS)
+#if defined (vkCLIENT_EXPORTS) || (Orbiter_EXPORTS)
 #define __XM
 #include "DirectXMath.h"
 using namespace DirectX;

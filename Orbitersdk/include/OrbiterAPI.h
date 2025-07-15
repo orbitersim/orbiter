@@ -492,7 +492,7 @@ namespace oapi {
 		IMAGE_PNG = 1,
 		IMAGE_JPG = 2,
 		IMAGE_TIF = 3,
-		IMAGE_DDS = 4	///< D3D9+ only
+		IMAGE_DDS = 4	///< vk+ only
 	};
 }
 
