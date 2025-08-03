@@ -1304,8 +1304,9 @@ void D3D9Pad::Polygon (const IVECTOR2 *pt, int npt)
 #endif
 
 	if (npt<3) return;
-	if (HasBrush() && npt > 64) return;
-
+	// The VectorMap drawing code creates polygons with at least 68 points
+	// Let's accept up to 70
+	if (HasBrush() && npt > 70) return;
 
 	// Create filled polygon interior -----------------------------------------
 	//

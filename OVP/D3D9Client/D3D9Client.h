@@ -1037,6 +1037,11 @@ public:
 	bool clbkFilterElevation(OBJHANDLE hPlanet, int ilat, int ilng, int lvl, double elev_res, INT16* elev);
 	// @}
 
+	void clbkImGuiNewFrame() override;
+	void clbkImGuiRenderDrawData() override;
+	void clbkImGuiInit() override;
+	void clbkImGuiShutdown() override;
+	uint64_t clbkImGuiSurfaceTexture(SURFHANDLE surf) override;
 
 	HWND				GetRenderWindow () const { return hRenderWnd; }
 	CD3DFramework9 *    GetFramework() const { return pFramework; }
@@ -1341,6 +1346,7 @@ private:
 
 	std::vector<RenderProcData> RenderProcs;
 	std::vector<GenericProcData> GenericProcs;
+	std::vector<SURFHANDLE> ImTextures;
 	mutable std::list<RenderTgtData> RenderStack;
 
 	HFONT hLblFont1;
