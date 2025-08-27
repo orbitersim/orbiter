@@ -4,7 +4,7 @@ on:
   workflow_call:
     inputs:
       os:
-        default: windows-2019
+        default: windows-2022
         type: string
       configuration:
         description: 'Build configuration; release or debug'
