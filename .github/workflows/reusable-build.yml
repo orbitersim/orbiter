@@ -47,6 +47,7 @@ jobs:
     - name: Setup MSVC Console
       uses: ilammy/msvc-dev-cmd@v1
       with:
+        vsversion: "17.0"
         arch: ${{ inputs.architecture }}
 
     - name: Install documentation prerequisites
