@@ -25,7 +25,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        architecture: [x64, x86]
+        architecture: [x86]
     with:
       configuration: 'debug'
       architecture: ${{ matrix.architecture }}
@@ -45,15 +45,9 @@ jobs:
         name: Orbiter-x86
         path: Orbiter-x86
 
-    - uses: actions/download-artifact@v4
-      with:
-        name: Orbiter-x64
-        path: Orbiter-x64
-
     - run: |
         find .
         mv Orbiter-x86/Orbiter.zip Orbiter-x86-debug.zip
-        mv Orbiter-x64/Orbiter.zip Orbiter-x64-debug.zip
 
     - name: "Create debug release"
       uses: softprops/action-gh-release@v2
@@ -66,4 +60,3 @@ jobs:
         name: Orbiter ${{ inputs.version }}
         files: |
           Orbiter-x86-debug.zip
-          Orbiter-x64-debug.zip
