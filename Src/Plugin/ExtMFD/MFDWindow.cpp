@@ -41,9 +41,32 @@ DlgExtMFD::DlgExtMFD(const std::string& name, MFDWindow* mfd) : ImGuiDialog(name
 	m_oldSize = ImVec2(0, 0);
 }
 
+static void AspectRatio(ImGuiSizeCallbackData* data)
+{
+	MFDWindow *mfd = (MFDWindow *)data->UserData;
+	if(mfd->GetAspectRatioState()) {
+		//cf https://github.com/ocornut/imgui/pull/8028
+		int current_cursor = ImGui::GetMouseCursor();
+		if(current_cursor == ImGuiMouseCursor_ResizeNWSE || current_cursor == ImGuiMouseCursor_ResizeNESW)
+		{
+			if(mfd->aspect_ratio > data->DesiredSize.x / data->DesiredSize.y)
+				data->DesiredSize.x = mfd->aspect_ratio * data->DesiredSize.y;
+			else
+				data->DesiredSize.y = data->DesiredSize.x / mfd->aspect_ratio;
+		}
+		else if(current_cursor == ImGuiMouseCursor_ResizeNS)
+			data->DesiredSize.x = mfd->aspect_ratio * data->DesiredSize.y;
+		else if(current_cursor == ImGuiMouseCursor_ResizeEW)
+			data->DesiredSize.y = data->DesiredSize.x / mfd->aspect_ratio;
+	} else {
+		if(data->DesiredSize.y)
+			mfd->aspect_ratio = data->DesiredSize.x / data->DesiredSize.y;
+	}
+}
+
 void DlgExtMFD::Display() {
-    ImGui::SetNextWindowSize(ImVec2(defaultSize.width, defaultSize.height), ImGuiCond_FirstUseEver);
-	ImGui::SetNextWindowSizeConstraints(ImVec2(382,366), ImVec2(FLT_MAX, FLT_MAX));
+	ImGui::SetNextWindowSize(ImVec2(defaultSize.width, defaultSize.height), ImGuiCond_Once);
+	ImGui::SetNextWindowSizeConstraints(ImVec2(382,366), ImVec2(FLT_MAX, FLT_MAX), AspectRatio, m_mfd);
 	
 	char cbuf[256] = ICON_FA_TABLET_SCREEN_BUTTON " MFD [";
 	oapiGetObjectName(m_mfd->GetVessel(), cbuf + 9, 246);
@@ -62,6 +85,11 @@ void DlgExtMFD::Display() {
 		m_mfd->ToggleStickToVessel();
 	}
 	
+	bool locked = m_mfd->GetAspectRatioState();
+	if(ImGui::MenuButton(locked ? ICON_FA_LOCK : ICON_FA_LOCK_OPEN, locked ? "Unlock aspect ratio" : "Lock aspect ratio", ImGui::GetFontSize()*3.4f)) {
+		m_mfd->ToggleLockAspectRatio();
+	}
+
 	if(visible) {
 		OnDraw();
 	}
