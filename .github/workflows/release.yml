@@ -39,12 +39,12 @@ jobs:
       actions: read
       contents: write
     steps:
-    - uses: actions/download-artifact@v4
+    - uses: actions/download-artifact@v5
       with:
         name: Orbiter-x86
         path: Orbiter-x86
 
-    - uses: actions/download-artifact@v4
+    - uses: actions/download-artifact@v5
       with:
         name: Orbiter-x64
         path: Orbiter-x64
