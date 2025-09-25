@@ -58,7 +58,10 @@ class gcCore;
 
 class VESSEL;
 class MFD2;
+
+#ifdef XRSOUND
 class XRSound;
+#endif
 
 struct AirfoilContext {
 	lua_State *L;
