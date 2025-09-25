@@ -1111,9 +1111,10 @@ protected:
 	static int idx_collect(lua_State *L);
 	static void push_indexarray(lua_State *L, WORD *, int);
 
-	
+
 	friend int OpenHelp (void *context);
 
+#ifdef XRSOUND
 	// -------------------------------------------
 	// XRSound
 	// -------------------------------------------
@@ -1140,6 +1141,7 @@ protected:
 	static int xrsound_set_playposition(lua_State *L);
 	static int xrsound_get_playposition(lua_State *L);
 	static int xrsound_collect(lua_State *L);
+#endif
 
 private:
 	HANDLE hExecMutex; // flow control synchronisation
