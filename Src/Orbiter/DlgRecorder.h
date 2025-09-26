@@ -8,23 +8,17 @@
 #ifndef __DLGRECORDER_H
 #define __DLGRECORDER_H
 
-#include "DialogWin.h"
+#include "OrbiterAPI.h"
 
-class DlgRecorder: public DialogWin {
+class DlgRecorder : public ImGuiDialog {
 public:
-	DlgRecorder (HINSTANCE hInstance, HWND hParent, void *context);
-	BOOL OnInitDialog (HWND hWnd, WPARAM wParam, LPARAM lParam);
-	BOOL OnCommand (HWND hWnd, WORD id, WORD code, HWND hControl);
-	BOOL OnUser1 (HWND hWnd, WPARAM wParam, LPARAM lParam);
-	void GetRecordName (char *str, int maxlen) const;
+    DlgRecorder();
+    void OnDraw() override;
+    void DrawNormalRecording(bool recording);
+    void DrawPlaying();
 
-protected:
-	void SetupDialog (HWND hDlg);
-	void ShowAdvancedRec (HWND hDlg);
-	void HideAdvancedRec (HWND hDlg);
-
-private:
-	int RecorderDlg_w, RecorderDlg_h1, RecorderDlg_h2;
+    char m_ScenarioFile[128];
+    void GetRecordName (char *str, int maxlen) const;
 };
 
 #endif // !__DLGRECORDER_H
