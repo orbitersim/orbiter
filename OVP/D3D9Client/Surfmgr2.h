@@ -85,7 +85,7 @@ private:
 
 	PlanetShader* pShader;
 	mutable ELEVFILEHEADER ehdr;///< Let's store the complete header for later use
-	D3DXVECTOR2 MicroRep[3];
+	FVECTOR2 MicroRep[3];
 	DWORD MaxRep;
 	LPDIRECT3DTEXTURE9 ltex;	///< landmask/nightlight texture, if applicable
 	INT16 *elev_file;			///< elevation data [m]

@@ -13,7 +13,7 @@
 #include <string>
 #include <assert.h>
 #include <mutex>
-#include <d3dx9.h>
+#include "MathAPI.h"
 #include "OrbiterAPI.h"
 
 template <typename T>

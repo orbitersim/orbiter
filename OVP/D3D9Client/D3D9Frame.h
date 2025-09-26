@@ -26,7 +26,7 @@
 #define D3D9FRAME_H
 
 #include <d3d9.h>
-#include <d3dx9.h>
+#include "MathAPI.h"
 #include "Orbitersdk.h"
 #include "D3D9Client.h"
 

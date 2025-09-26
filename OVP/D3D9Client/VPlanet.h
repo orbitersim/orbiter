@@ -217,7 +217,7 @@ public:
 
 	struct sOverlay {
 		LPDIRECT3DTEXTURE9 pSurf[4];
-		D3DXVECTOR4 Blend[4];
+		FVECTOR4 Blend[4];
 		VECTOR4 lnglat;
 	};
 
@@ -259,7 +259,7 @@ public:
 	void			SetMicroTexture(LPDIRECT3DTEXTURE9 pSrc, int slot);
 	int				GetElevation(double lng, double lat, double *elv, FVECTOR3 *nrm = NULL) const;
 	SurfTile *		FindTile(double lng, double lat, int maxres);
-	void 			PickSurface(D3DXVECTOR3 &vRay, TILEPICK *pPick);
+	void 			PickSurface(FVECTOR3 &vRay, TILEPICK *pPick);
 	DWORD			GetPhysicsPatchRes() const { return physics_patchres; }
 	sOverlay *		AddOverlaySurface(VECTOR4 lnglat, gcCore::OlayType type, LPDIRECT3DTEXTURE9 pSrf = NULL, sOverlay *pOld = NULL, const FVECTOR4* pB = NULL);
 	sOverlay *		IntersectOverlay(VECTOR4 bounds, FVECTOR4* texcoord) const;
@@ -343,11 +343,11 @@ public:
 		//bool bCloudFlatShadows; ///< render cloud shadows onto a sphere?
 
 		// Shader Params
-		D3DXCOLOR	TintColor;
-		D3DXCOLOR	AmbColor;
-		D3DXCOLOR	FogColor;
-		D3DXCOLOR   SkyColor;
-		D3DXVECTOR3 SunDir;
+		FVECTOR4	TintColor;
+		FVECTOR4	AmbColor;
+		FVECTOR4	FogColor;
+		FVECTOR4   SkyColor;
+		FVECTOR3 SunDir;
 		float		FogDensity;
 		float		DistScale;
 	} prm;
@@ -436,8 +436,8 @@ private:
 		CloudManager *cloudmgr; // cloud tile manager
 		double cloudrad;        // cloud layer radius [m]
 		double viewap;          // visible radius
-		D3DXMATRIX mWorldC;     // cloud world matrix
-		D3DXMATRIX mWorldC0;    // cloud shadow world matrix
+		FMATRIX4 mWorldC;     // cloud world matrix
+		FMATRIX4 mWorldC0;    // cloud shadow world matrix
 		DWORD rendermode;		// bit 0: render from below, bit 1: render from above
 		bool cloudshadow;       // render cloud shadows on the surface
 		float shadowalpha;      // alpha value for cloud shadows

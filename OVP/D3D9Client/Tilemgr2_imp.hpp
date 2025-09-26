@@ -131,7 +131,7 @@ void TileManager2Base::ProcessNode (QuadTreeNode<TileType> *node)
 	if (ElevMode == eElevMode::ForcedElevated) bNoRelease = true;
 	
 	tile->dmWorld = WorldMatrix(ilng, nlng, ilat, nlat);
-	MATRIX4toD3DMATRIX(tile->dmWorld, tile->mWorld);
+	tile->mWorld = FMATRIX4(tile->dmWorld);
 
 	if (bFreeze) {
 		for (int i = 0; i < 4; i++) {

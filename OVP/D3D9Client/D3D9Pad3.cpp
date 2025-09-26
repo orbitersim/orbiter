@@ -6,7 +6,7 @@
 
 #include "D3D9Pad.h"
 #include "D3D9Surface.h"
-#include <d3dx9.h>
+#include "MathAPI.h"
 #include <sstream>
 
 
@@ -80,7 +80,7 @@ FVECTOR4 D3D9Pad::GetRenderParam(RenderParam param)
 	case Sketchpad::RenderParam::PRM_GAMMA: return Gamma;
 	case Sketchpad::RenderParam::PRM_NOISE: return Noise;
 	}
-	return FVECTOR4(0, 0, 0, 0);
+	return F4_Zero;
 }
 
 
@@ -93,8 +93,8 @@ void D3D9Pad::SetRenderParam(RenderParam param, const FVECTOR4 *d)
 #endif
 	if (d == NULL) {
 		switch (param) {
-		case Sketchpad::RenderParam::PRM_GAMMA: Gamma = FVECTOR4(1, 1, 1, 1); ClearEnable(SKP3E_GAMMA); break;
-		case Sketchpad::RenderParam::PRM_NOISE: Noise = FVECTOR4(0, 0, 0, 0); ClearEnable(SKP3E_NOISE); break;
+		case Sketchpad::RenderParam::PRM_GAMMA: Gamma = F4_One; ClearEnable(SKP3E_GAMMA); break;
+		case Sketchpad::RenderParam::PRM_NOISE: Noise = F4_Zero; ClearEnable(SKP3E_NOISE); break;
 		}
 		return;
 	}
@@ -141,7 +141,7 @@ void D3D9Pad::SetBlendState(BlendState dwState)
 FMATRIX4 D3D9Pad::GetWorldTransform() const
 { 
 	FMATRIX4 fm;
-	memcpy_s(&fm, sizeof(FMATRIX4), &mW, sizeof(D3DXMATRIX));
+	memcpy_s(&fm, sizeof(FMATRIX4), &mW, sizeof(FMATRIX4));
 	return fm;
 }
 
@@ -185,7 +185,7 @@ void D3D9Pad::SetWorldScaleTransform2D(const FVECTOR2 *scl, const IVECTOR2 *trl)
 
 	if (scl) sx = scl->x, sy = scl->y;
 
-	D3DXVECTOR3 t;
+	FVECTOR3 t;
 
 	t.x = 0;
 	t.y = 0;
@@ -193,7 +193,7 @@ void D3D9Pad::SetWorldScaleTransform2D(const FVECTOR2 *scl, const IVECTOR2 *trl)
 
 	if (trl) t.x = float(trl->x), t.y = float(trl->y);
 
-	D3DXMatrixScaling(&mW, sx, sy, 1.0f);
+	D3DMAT_Scale(&mW, sx, sy, 1.0f);
 	D3DMAT_SetTranslation(&mW, &t);
 }
 
@@ -269,19 +269,19 @@ void D3D9Pad::StretchRegion(const skpRegion *rgn, const SURFHANDLE hSrc, const L
 	int ty2 = ty3 - (y3 - y2);
 
 	// Corners
-	if (x0 != x1 && y0 != y1) CopyRect(hSrc, ptr(_R(x0, y0, x1, y1)), tx0, ty0);	// TOP-LEFT
-	if (x2 != x3 && y0 != y1) CopyRect(hSrc, ptr(_R(x2, y0, x3, y1)), tx2, ty0);	// TOP-RIGHT
-	if (x0 != x1 && y2 != y3) CopyRect(hSrc, ptr(_R(x0, y2, x1, y3)), tx0, ty2);	// BTM-LEFT
-	if (x2 != x3 && y2 != y3) CopyRect(hSrc, ptr(_R(x2, y2, x3, y3)), tx2, ty2);	// BTM-RIGHT
+	if (x0 != x1 && y0 != y1) CopyRect(hSrc, &(_R(x0, y0, x1, y1)), tx0, ty0);	// TOP-LEFT
+	if (x2 != x3 && y0 != y1) CopyRect(hSrc, &(_R(x2, y0, x3, y1)), tx2, ty0);	// TOP-RIGHT
+	if (x0 != x1 && y2 != y3) CopyRect(hSrc, &(_R(x0, y2, x1, y3)), tx0, ty2);	// BTM-LEFT
+	if (x2 != x3 && y2 != y3) CopyRect(hSrc, &(_R(x2, y2, x3, y3)), tx2, ty2);	// BTM-RIGHT
 
 																					// Sides
-	if (x1 != x2 && y0 != y1) StretchRect(hSrc, ptr(_R(x1, y0, x2, y1)), ptr(_R(tx1, ty0, tx2, ty1)));	// TOP
-	if (x1 != x2 && y2 != y3) StretchRect(hSrc, ptr(_R(x1, y2, x2, y3)), ptr(_R(tx1, ty2, tx2, ty3)));	// BOTTOM
-	if (x0 != x1 && y1 != y2) StretchRect(hSrc, ptr(_R(x0, y1, x1, y2)), ptr(_R(tx0, ty1, tx1, ty2)));	// LEFT
-	if (x2 != x3 && y1 != y2) StretchRect(hSrc, ptr(_R(x2, y1, x3, y2)), ptr(_R(tx2, ty1, tx3, ty2)));	// RIGHT
+	if (x1 != x2 && y0 != y1) StretchRect(hSrc, &(_R(x1, y0, x2, y1)), &(_R(tx1, ty0, tx2, ty1)));	// TOP
+	if (x1 != x2 && y2 != y3) StretchRect(hSrc, &(_R(x1, y2, x2, y3)), &(_R(tx1, ty2, tx2, ty3)));	// BOTTOM
+	if (x0 != x1 && y1 != y2) StretchRect(hSrc, &(_R(x0, y1, x1, y2)), &(_R(tx0, ty1, tx1, ty2)));	// LEFT
+	if (x2 != x3 && y1 != y2) StretchRect(hSrc, &(_R(x2, y1, x3, y2)), &(_R(tx2, ty1, tx3, ty2)));	// RIGHT
 
 	// Center
-	StretchRect(hSrc, ptr(_R(x1, y1, x2, y2)), ptr(_R(tx1, ty1, tx2, ty2)));
+	StretchRect(hSrc, &(_R(x1, y1, x2, y2)), &(_R(tx1, ty1, tx2, ty2)));
 }
 
 // ===============================================================================================
@@ -298,7 +298,7 @@ void D3D9Pad::Clear(DWORD color, bool bColor, bool bDepth)
 //
 void D3D9Pad::SetClipDistance(float nr, float fr)
 {
-	D3DXMatrixOrthoOffCenterLH(&mO, 0.0f, (float)tgt_desc.Width, (float)tgt_desc.Height, 0.0f, nr, fr);
-	mP._33 = fr / (fr - nr);
-	mP._43 = -nr * mP._33;
+	D3DMAT_OrthoOffCenterLH(&mO, 0.0f, (float)tgt_desc.Width, (float)tgt_desc.Height, 0.0f, nr, fr);
+	mP.m33 = fr / (fr - nr);
+	mP.m43 = -nr * mP.m33;
 }

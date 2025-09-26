@@ -118,16 +118,16 @@ CSphereManager::CSphereManager(D3D9Client *gc, const Scene *scene) : gc(gc), tex
 	ecl2gal = mul (_M(1,0,0, 0,cost,sint, 0,-sint,cost), ecl2gal);
 	ecl2gal = mul (_M(cosl,0,sinl, 0,1,0, -sinl,0,cosl), ecl2gal);
 
-	D3DMAT_Identity (&trans);
-	trans._11 = float(ecl2gal.m11);
-	trans._12 = float(ecl2gal.m12);
-	trans._13 = float(ecl2gal.m13);
-	trans._21 = float(ecl2gal.m21);
-	trans._22 = float(ecl2gal.m22);
-	trans._23 = float(ecl2gal.m23);
-	trans._31 = float(ecl2gal.m31);
-	trans._32 = float(ecl2gal.m32);
-	trans._33 = float(ecl2gal.m33);
+	oapiMatrixIdentity (&trans);
+	trans.m11 = float(ecl2gal.m11);
+	trans.m12 = float(ecl2gal.m12);
+	trans.m13 = float(ecl2gal.m13);
+	trans.m21 = float(ecl2gal.m21);
+	trans.m22 = float(ecl2gal.m22);
+	trans.m23 = float(ecl2gal.m23);
+	trans.m31 = float(ecl2gal.m31);
+	trans.m32 = float(ecl2gal.m32);
+	trans.m33 = float(ecl2gal.m33);
 
 	LogAlw("CSphere Manager constructed");
 }
@@ -443,7 +443,7 @@ void CSphereManager::Render (LPDIRECT3DDEVICE9 dev, int level, double bglvl)
 
 	for (hemisp = idx = 0; hemisp < 2; hemisp++) {
 		if (hemisp) { // flip world transformation to southern hemisphere
-			D3DXMatrixMultiply(&RenderParam.wmat, &TileManager::Rsouth, &RenderParam.wmat);
+			oapiMatrixMultiply(&RenderParam.wmat, &TileManager::Rsouth, &RenderParam.wmat);
 		}
 		for (ilat = nlat-1; ilat >= 0; ilat--) {
 			for (ilng = 0; ilng < nlng[ilat]; ilng++) {
@@ -487,11 +487,11 @@ void CSphereManager::ProcessTile (int lvl, int hemisp, int ilat, int nlat, int i
 void CSphereManager::SetWorldMatrix (int ilng, int nlng, int ilat, int nlat)
 {
 	// set up world transformation matrix
-	D3DXMATRIX rtile;
+	FMATRIX4 rtile;
 
 	double lng = PI2 * (double)ilng/(double)nlng + PI; // add pi so texture wraps at +-180°
 	D3DMAT_RotY (&rtile, lng);
-	D3DXMatrixMultiply(&mWorld, &rtile, &RenderParam.wmat);
+	oapiMatrixMultiply(&mWorld, &rtile, &RenderParam.wmat);
 }
 
 // =======================================================================
@@ -547,8 +547,7 @@ void CSphereManager::TileExtents (int hemisp, int ilat, int nlat, int ilng, int 
 bool CSphereManager::TileInView (int lvl, int ilat)
 {
 	VBMESH &mesh = PATCH_TPL[lvl][ilat];
-	D3DXVECTOR3 vP;
-	D3DXVec3TransformCoord(&vP, &mesh.bsCnt, &mWorld);
+	FVECTOR3 vP = oapiTransformCoord(&mesh.bsCnt, &mWorld);
 	return gc->GetScene()->IsVisibleInCamera(&vP, mesh.bsRad);
 }
 

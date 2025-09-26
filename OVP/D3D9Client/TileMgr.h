@@ -94,9 +94,9 @@ public:
 	virtual void SetMicrotexture (const char *fname);
 	virtual void SetMicrolevel (double lvl);
 
-	virtual void Render(LPDIRECT3DDEVICE9 dev, D3DXMATRIX &wmat, double scale, int level, double viewap = 0.0, bool bfog = false);
+	virtual void Render(LPDIRECT3DDEVICE9 dev, FMATRIX4 &wmat, double scale, int level, double viewap = 0.0, bool bfog = false);
 
-	void SetAmbientColor(D3DCOLOR cAmbient);
+	void SetAmbientColor(DWORD cAmbient);
 
 protected:
 
@@ -106,7 +106,7 @@ protected:
 
 	virtual void InitRenderTile() = 0;
 	virtual void EndRenderTile() = 0;
-	virtual void RenderSimple(int level, int npatch, TILEDESC *tile, LPD3DXMATRIX mWorld) = 0;
+	virtual void RenderSimple(int level, int npatch, TILEDESC *tile, FMATRIX4* mWorld) = 0;
 
 	virtual void RenderTile(int lvl, int hemisp, int ilat, int nlat, int ilng, int nlng, double sdist, TILEDESC *tile,
 		const TEXCRDRANGE &range, LPDIRECT3DTEXTURE9 tex, LPDIRECT3DTEXTURE9 ltex, DWORD flag) = 0;
@@ -147,8 +147,8 @@ protected:
 	// adjust specular reflection through atmosphere
 
 
-	D3DXMATRIX mWorld;
-	D3DCOLOR cAmbient;
+	FMATRIX4 mWorld;
+	DWORD cAmbient;
 	const vPlanet *vp;               // the planet visual
 	OBJHANDLE obj;                   // the planet object
 	char *objname;                   // the name of the planet (for identifying texture files)
@@ -163,7 +163,7 @@ protected:
 	double microlvl;                 // intensity of microtexture
 	DWORD nmask;                     // number of specular reflection masks/light maps (level <= 8)
 	VECTOR3 pcdir;                   // previous camera direction
-	static D3DXMATRIX Rsouth;        // rotation matrix for mapping tiles to southern hemisphere
+	static FMATRIX4 Rsouth;        // rotation matrix for mapping tiles to southern hemisphere
 	float spec_base;                 // base intensity for specular reflections
 	const ATMCONST *atmc;            // atmospheric parameters (used for specular colour modification)
 	bool bPreloadTile;               // pre-load surface tile textures
@@ -205,8 +205,8 @@ protected:
 
 	struct RENDERPARAM {
 		LPDIRECT3DDEVICE9 dev;       // render device
-		D3DXMATRIX wmat;             // world matrix
-		D3DXMATRIX wmat_tmp;         // copy of world matrix used as work buffer
+		FMATRIX4 wmat;             // world matrix
+		FMATRIX4 wmat_tmp;         // copy of world matrix used as work buffer
 		int tgtlvl;                  // target resolution level
 		MATRIX3 grot;                // planet rotation matrix
 		VECTOR3 cpos;                // planet offset vector (in global frame)
