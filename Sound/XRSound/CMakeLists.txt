@@ -2,22 +2,26 @@
 if(NOT IRRKLANG_DIR)
 	set(IRRKLANG_DIR ${EXTERN_DIR}/irrKlang/${ARCH})
 
-	if(NOT EXISTS ${IRRKLANG_DIR})
-		if(BUILD64)
-			set(IRRKLANG_URL https://www.ambiera.at/downloads/irrKlang-64bit-1.6.0.zip)
-		else()
-			set(IRRKLANG_URL https://www.ambiera.at/downloads/irrKlang-32bit-1.6.0.zip)
-		endif()
+	if(NOT EXISTS ${IRRKLANG_DIR}/irrKlang.lib)
+        set(IRRKLANG_UPSTREAM https://github.com/jonas2602/irrKlang/raw/refs/heads/master)
+
+        set(IRRKLANG_LIB ${IRRKLANG_UPSTREAM}/lib/Winx64-visualStudio/irrKlang.lib)
+        set(IRRKLANG_H ${IRRKLANG_UPSTREAM}/include/irrKlang.h)
 
 		include(FetchContent)
-		FetchContent_Declare(irrKlang
-			URL ${IRRKLANG_URL}
+		FetchContent_Declare(irrKlangLib
+			URL ${IRRKLANG_LIB}
 			SOURCE_DIR ${IRRKLANG_DIR}
 			DOWNLOAD_EXTRACT_TIMESTAMP ON
 		)
+        FetchContent_Declare(irrKlangHeader
+                URL ${IRRKLANG_H}
+                SOURCE_DIR ${IRRKLANG_DIR}
+                DOWNLOAD_EXTRACT_TIMESTAMP ON
+        )
 
-		message("Downloading irrKlang from ${IRRKLANG_URL} ...")
-		FetchContent_MakeAvailable(irrKlang)
+		message("Downloading irrKlang from ${IRRKLANG_UPSTREAM} ...")
+		FetchContent_MakeAvailable(irrKlangLib irrKlangHeader)
 
 	else()
 		message("Found existing irrKlang at ${IRRKLANG_DIR}")
