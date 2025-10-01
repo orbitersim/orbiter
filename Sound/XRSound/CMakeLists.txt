@@ -12,12 +12,12 @@ if(NOT IRRKLANG_DIR)
 		FetchContent_Declare(irrKlangLib
 			URL ${IRRKLANG_LIB}
 			SOURCE_DIR ${IRRKLANG_DIR}
-			DOWNLOAD_EXTRACT_TIMESTAMP ON
+			DOWNLOAD_NO_EXTRACT ON
 		)
         FetchContent_Declare(irrKlangHeader
-                URL ${IRRKLANG_H}
-                SOURCE_DIR ${IRRKLANG_DIR}
-                DOWNLOAD_EXTRACT_TIMESTAMP ON
+            URL ${IRRKLANG_H}
+            SOURCE_DIR ${IRRKLANG_DIR}
+            DOWNLOAD_NO_EXTRACT ON
         )
 
 		message("Downloading irrKlang from ${IRRKLANG_UPSTREAM} ...")
