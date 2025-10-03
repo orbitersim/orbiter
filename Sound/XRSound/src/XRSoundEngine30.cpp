@@ -6,6 +6,7 @@
 // ==============================================================
 
 #include "XRSoundEngine.h"
+#include "ISound.h"
 
 // Functionality added in XRSound version 3.0
 
