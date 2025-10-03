@@ -8,6 +8,7 @@
 #include "ModuleXRSoundEngine.h"
 #include "XRSoundConfigFileParser.h"
 #include "XRSoundDLL.h"   // for XRSoundDLL::GetAbsoluteSimTime()
+#include "ISound.h"
 
 // Static method to create a new instance of an XRSoundEngine for a module.  This is the ONLY place where new 
 // XRSoundEngine instances for modules are constructed.
@@ -106,7 +107,7 @@ void ModuleXRSoundEngine::UpdateSoundState(WavContext &context)
         else
         {
             // sound has finished, so release its resources
-            pISound->drop();
+            delete pISound;
             context.pISound = nullptr;
         }
     }

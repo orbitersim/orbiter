@@ -11,6 +11,7 @@
 #include "DefaultSoundGroupPreSteps.h"
 #include "AnimationState.h"
 #include "XRSoundDLL.h"   // for XRSoundDLL::GetAbsoluteSimTime()
+#include "ISound.h"
 
 // static data and methods
 
@@ -31,15 +32,12 @@ bool XRSoundEngine::InitializeIrrKlangEngine()
         // Note: we do NOT want to use multi-threading here: that opens up possible timing gaps / race conditions between the time 
         // we query a given sound's state in our thread and when the OTHER thread updates that state.
         // TODO: if and when we want to support 3D sounds, will need to add ESEO_USE_3D_BUFFERS flag below as well
-        s_pKlangEngine = createIrrKlangDevice(
-            ESOD_AUTO_DETECT,
-            ESEO_LOAD_PLUGINS | ESEO_PRINT_DEBUG_INFO_TO_DEBUGGER
-        );
+        s_pKlangEngine = new ISoundEngine();
 
         char logMsg[256];   // can't use CString easily here b/c Orbiter's oapiWriteLog takes a char * instead of const char * for some bizarre reason.
         if (s_pKlangEngine)
-            sprintf_s(logMsg, "%s initialized using sound driver %s; irrKlang version = %s.  XRSound UpdateInterval = %.03lf (%.1lf updates per second)", 
-                GetVersionStr(), XRSoundEngine::GetSoundDriverName(), IRR_KLANG_VERSION, 
+            sprintf_s(logMsg, "%s initialized using sound driver %s. XRSound UpdateInterval = %.03lf (%.1lf updates per second)", 
+                GetVersionStr(), XRSoundEngine::GetSoundDriverName(),  
                 s_globalConfig.UpdateInterval, (1.0 / s_globalConfig.UpdateInterval));
         else
             sprintf_s(logMsg, "%s ERROR: could not initialize default sound device.", GetVersionStr());
@@ -80,7 +78,7 @@ void XRSoundEngine::DestroyIrrKlangEngine()
         }
 
         // free and reset the engine
-        s_pKlangEngine->drop();
+        delete s_pKlangEngine;
         s_pKlangEngine = nullptr;
         s_bIrrKlangEngineNeedsInitialization = true;    // need to reinitialize the engine on next LoadWav call
     }
@@ -238,7 +236,7 @@ bool XRSoundEngine::PlayWav(const int soundID, const bool bLoop, const float vol
         if (pISound->isFinished())
         {
             // this means the previous sound in this slot has finished, but its pISound interface was not freed yet
-            pISound->drop();
+            delete pISound;
             pISound = nullptr;     // we'll obtain a new pISound below
         }
         // else sound is already playing, so we will just update its volume and loop settings later
@@ -341,7 +339,7 @@ bool XRSoundEngine::StopWavImpl(WavContext *pContext, XRSoundEngine *pEngine)
                 VERBOSE_LOG(pEngine, "XRSoundEngine::StopWavImpl: stopping sound %s", static_cast<const char*>(pContext->ToStr()));
             pISound->stop();
         }
-        pISound->drop();    // free irrKlang resources for this sound
+        delete pISound;    // free irrKlang resources for this sound
         pContext->ResetPlaybackFields();  // reset all playback fields to their initial state, indicating the context is not in use
     }
     return bStopped;
@@ -548,7 +546,7 @@ void XRSoundEngine::UpdateIrrKlangEngine()
     if (!XRSoundEngine::IsKlangEngineInitialized())
         return;     // edge case: there are no sound-enabled vessels in Orbiter yet, so nothing to do
 
-    s_pKlangEngine->update();
+//    s_pKlangEngine->update();
 }
 
 // Reset any static data for a simulation restart (e.g., one-shot timers, etc.)

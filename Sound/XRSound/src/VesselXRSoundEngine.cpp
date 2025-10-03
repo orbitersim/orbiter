@@ -10,6 +10,7 @@
 #include "DefaultSoundGroupPreSteps.h"
 #include "AnimationState.h"
 #include "XRSoundDLL.h"   // for XRSoundDLL::GetAbsoluteSimTime()
+#include "ISound.h"
 
 // static pressure threshold at which OAT and Mach values are valid; matches the XR constant value
 // (APPROX) AS SEEN ON SURFACE MFD, BUT TOO RISKY TO USE IN PRODUCTION: const double OAT_VALID_STATICP_THRESHOLD = 0.014;  // in pascals
@@ -288,7 +289,7 @@ void VesselXRSoundEngine::UpdateSoundState(WavContext &context)
         {
         release_sound:
             // sound has finished, so release its resources
-            pISound->drop();
+            delete pISound;
             context.pISound = nullptr;
         }
     }
@@ -752,7 +753,7 @@ double VesselXRSoundEngine::GetPlasmaLevel()
     // This code is lifted from SetHullTempsPostStep::AddHeat in XR1PostSteps.cpp.  It does not need to be precise; it is just to get an approximate 
     // level of plasma for the vessel in at atmosphere.
     const double HULL_HEATING_FACTOR = 3.1034e-10;
-    const double workingHullHeatingFactor = HULL_HEATING_FACTOR * 0.642; // tweaked very carefully…
+    const double workingHullHeatingFactor = HULL_HEATING_FACTOR * 0.642; // tweaked very carefullyâ€¦
 
     const double atmPressure = pVessel->GetAtmPressure();
     const double airspeed = pVessel->GetAirspeed();   // check *airspeed* here, not ground speed

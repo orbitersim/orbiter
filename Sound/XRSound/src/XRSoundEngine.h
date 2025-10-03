@@ -25,9 +25,11 @@ class ModuleXRSoundEngine;
 #define oapiGetSimTime ERROR! "Do not invoke oapiGetSimTime: see comment block in XRSoundDLL::clbkPreStep for details"
 
 #ifdef XRSOUND_DLL_BUILD
-#include <irrKlang.h>
-using namespace irrklang;
+//#include <irrKlang.h>
+//using namespace irrklang;
 #include "XRSoundConfigFileParser.h"
+class ISound;
+class ISoundEngine;
 #else
 // we're compiling XRSoundLib, so all we need is a forward reference (and we don't want to include the full class definition on the .lib side!)
 class ISoundEngine;
