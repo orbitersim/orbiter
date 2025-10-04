@@ -246,7 +246,7 @@ bool XRSoundEngine::PlayWav(const int soundID, const bool bLoop, const float vol
     {
         // sound is not playing, so let's start immediately and track it via its pISound interface
         // NOTE: we start this paused so that we can set the proper volume level before starting it via UpdateSoundState
-        pISound = pContext->pISound = s_pKlangEngine->play2D(pContext->csSoundFilename, bLoop, true, true);
+        pISound = pContext->pISound = s_pKlangEngine->play2D(pContext->csSoundFilename, bLoop, true);
         if (pISound == nullptr)   // this means the sound could not be played; e.g., corrupt file, etc.
         {
             VERBOSE_LOG(this, "XRSoundEngine::PlayWav ERROR: could not play sound %s", static_cast<const char*>(pContext->ToStr()));
