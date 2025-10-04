@@ -152,9 +152,6 @@ DLLCLBK void InitModule(HINSTANCE hDLL)
     
     // parse this immediately so we can read it from the start
     XRSoundDLL::ParseGlobalConfigFile();
-
-    // NOTE: the initial implementation was to call XRSoundEngine::InitializeIrrKlangEngine from here, but
-    // it hung indefinitely when calling createIrrKlangDevice, so I had to move that logic into XRSoundDLL::GetXRSoundEngineInstance.
 }
 
 // parse (or re-parse) our global XRSound.cfg file (this parse is vessel-independent)
@@ -186,7 +183,7 @@ XRSoundDLL *XRSoundDLL::s_pInstance;
 
 // Constructor
 XRSoundDLL::XRSoundDLL(HINSTANCE hDLL) :
-    Module(hDLL), m_hDLL(hDLL), m_nextSoundEnginesRefreshSimt(0), m_absoluteSimTime(0), m_nextIrrKlangUpdateRealtime(0)
+    Module(hDLL), m_hDLL(hDLL), m_nextSoundEnginesRefreshSimt(0), m_absoluteSimTime(0)
 {
 }
 
@@ -198,7 +195,7 @@ XRSoundDLL::~XRSoundDLL()
     // sanity checks to make sure things were already cleaned up as expected
     _ASSERTE(m_allVesselsMap.size() == 0);
     _ASSERTE(m_allModulesMap.size() == 0);
-    _ASSERTE(!XRSoundEngine::IsKlangEngineInitialized());
+    _ASSERTE(!XRSoundEngine::IsSoundEngineInitialized());
 #endif
 }
 
@@ -209,7 +206,7 @@ void XRSoundDLL::clbkSimulationStart(RenderMode mode)
     // reparse our global (i.e., vessel-independent) config file in case the user dropped to the launchpad and restarted
     XRSoundDLL::ParseGlobalConfigFile();
 
-    // NOTE: this is too late to invoke XRSoundEngine::InitializeIrrKlangEngine, since vessels need the engine to be available
+    // NOTE: this is too late to invoke XRSoundEngine::InitializeSoundEngine, since vessels need the engine to be available
     // before clbkSetClassCaps.
     // Instead, the first call to XRSoundDLL::GetXRSoundEngineInstance handles initializing the engine, since that
     // is the first call that must be made before any other XRSoundEngine calls can be made.
@@ -239,7 +236,7 @@ void XRSoundDLL::clbkSimulationEnd()
         XRSoundEngine::DestroyInstance(it->second);
     m_allVesselsMap.clear();
 
-    XRSoundEngine::DestroyIrrKlangEngine();
+    XRSoundEngine::DestroySoundEngine();
 }
 
 // Returns a list of all Orbiter vessel handles that exist during this frame
@@ -397,16 +394,6 @@ void XRSoundDLL::clbkPreStep(double simtDoNotUse, double simdt, double mjd)
             pEngine->clbkPreStep(simt, simdt, mjd);
         }
         m_nextSoundEnginesRefreshSimt = simt + GetGlobalConfig().UpdateInterval;
-    }
-
-    // NOTE: we need to give irrKlang ~20 timeslices a second in *realtime*, not *sim time*, which can be slowed down to 1/10 realtime.
-    // give irrKlang a timeslice to update the state of the sound output
-    const double systemUptime = GetSystemUptime();
-    if (systemUptime >= m_nextIrrKlangUpdateRealtime)
-    {
-        // DEV DEBUGGING ONLY: sprintf(oapiDebugString(), "Updating irrKlang engine at systemUptime %lf", systemUptime);
-        XRSoundEngine::UpdateIrrKlangEngine();
-        m_nextIrrKlangUpdateRealtime = systemUptime + 0.05;     // 20 updates per second in realtime
     }
 }
 

@@ -29,4 +29,5 @@ install(DIRECTORY ${ORBITER_BINARY_ROOT_DIR}/XRSound/Default
 install(FILES "${ORBITER_BINARY_ROOT_DIR}/Doc/XRSound User Manual.pdf"
 	DESTINATION ${ORBITER_INSTALL_DOC_DIR}/
 )
+
 add_subdirectory(src)
