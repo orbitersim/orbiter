@@ -12,7 +12,7 @@
 
 bool XRSoundEngine::SetPan(const int soundID, const float pan)
 {
-    if (!IsKlangEngineInitialized() || (pan < -1.0) || (pan > 1.0))
+    if (!IsSoundEngineInitialized() || (pan < -1.0) || (pan > 1.0))
         return false;
 
     bool retVal = false;
@@ -22,7 +22,7 @@ bool XRSoundEngine::SetPan(const int soundID, const float pan)
         ISound *pISound = pContext->pISound;
         if (pISound)   // was sound ever started via PlayWav?
         {
-            // irrKlang has pan direction inverted with Orbiter's X coordinate system, so flip it
+            // SDL3_mixer has pan direction inverted with Orbiter's X coordinate system, so flip it
             pISound->setPan(-pan);
             retVal = true;
         }
@@ -32,7 +32,7 @@ bool XRSoundEngine::SetPan(const int soundID, const float pan)
 
 float XRSoundEngine::GetPan(const int soundID)
 {
-    if (!IsKlangEngineInitialized())
+    if (!IsSoundEngineInitialized())
         return -100;
 
     float retVal = -100;
@@ -42,7 +42,7 @@ float XRSoundEngine::GetPan(const int soundID)
         ISound *pISound = pContext->pISound;
         if (pISound)   // was sound ever started via PlayWav?
         {
-            // irrKlang has pan direction inverted with Orbiter's X coordinate system, so flip it
+            // SDL3_mixer has pan direction inverted with Orbiter's X coordinate system, so flip it
             retVal = -(pISound->getPan());
         }
     }
@@ -51,7 +51,7 @@ float XRSoundEngine::GetPan(const int soundID)
 
 bool XRSoundEngine::SetPlaybackSpeed(const int soundID, const float speed)
 {
-    if (!IsKlangEngineInitialized())
+    if (!IsSoundEngineInitialized())
         return false;
 
     bool retVal = false;
@@ -67,7 +67,7 @@ bool XRSoundEngine::SetPlaybackSpeed(const int soundID, const float speed)
 
 float XRSoundEngine::GetPlaybackSpeed(const int soundID)
 {
-    if (!IsKlangEngineInitialized())
+    if (!IsSoundEngineInitialized())
         return 0;
 
     float retVal = 0;
@@ -84,7 +84,7 @@ float XRSoundEngine::GetPlaybackSpeed(const int soundID)
 
 bool XRSoundEngine::SetPlayPosition(const int soundID, const unsigned int positionMillis)
 {
-    if (!IsKlangEngineInitialized())
+    if (!IsSoundEngineInitialized())
         return false;
 
     bool retVal = false;
@@ -100,7 +100,7 @@ bool XRSoundEngine::SetPlayPosition(const int soundID, const unsigned int positi
 
 int XRSoundEngine::GetPlayPosition(const int soundID)
 {
-    if (!IsKlangEngineInitialized())
+    if (!IsSoundEngineInitialized())
         return -1;
 
     int retVal = -1;
