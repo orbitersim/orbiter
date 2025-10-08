@@ -493,6 +493,7 @@ protected:
 	static int oapi_get_windvector(lua_State* L);
 	static int oapi_get_planetjcoeffcount(lua_State* L);
 	static int oapi_get_planetjcoeff(lua_State* L);
+	static int oapi_surface_elevation(lua_State* L);
 
 	// Vessel functions
 	static int oapi_get_propellanthandle (lua_State *L);
