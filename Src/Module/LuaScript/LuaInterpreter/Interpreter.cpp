@@ -899,6 +899,7 @@ void Interpreter::LoadAPI ()
 		{"get_windvector", oapi_get_windvector},
 		{"get_planetjcoeffcount", oapi_get_planetjcoeffcount},
 		{"get_planetjcoeff", oapi_get_planetjcoeff},
+		{"surface_elevation", oapi_surface_elevation},
 
 		// vessel functions
 		{"get_propellanthandle", oapi_get_propellanthandle},
@@ -4782,6 +4783,76 @@ int Interpreter::oapi_get_planetjcoeff(lua_State *L)
 	return 1;
 }
 
+/***
+Return the elevation of a point on a planet surface
+
+Note: If tgtlvl == 0 (default), the function will calculate the elevation from the highest available elevation resolution. If tgtlvl > 0, the function will
+query at most that level (but may use a lower level if the requested resolution level is not available at the position).
+
+Note: Typically, lower resolutions would be requested from a vessel at high altitude, where exact surface elevation is not critical (and not realistically measurable
+anyway). Querying elevations from lower resolution data improves the probability of a cache hit and is therefore more efficient.
+
+Note: If the requested resolution level is not available at the queried location, the function computes the elevation from the highest available resolution
+level. The actual resolution used can be obtained by setting lvl.
+
+@function surface_elevation
+@tparam handle hPlanet planet object handle
+@tparam number lng longitude [rad]
+@tparam number lat latitude [rad]
+@tparam[opt=0] number tgtlvl requested elevation resolution level
+@tparam[opt=nil] handle tilecache tile cache (not yet implemented)
+@tparam[opt=false] bool nml return the surface normal (in the local horizon frame)
+@tparam[opt=false] bool lvl return the actual tile resolution from which the results were obtained
+@treturn number[,vector][,number] Surface elevation above planet mean radius, surface normal (if asked) and tile resolution (if asked)
+*/
+int Interpreter::oapi_surface_elevation (lua_State *L)
+{
+	int top = lua_gettop(L);
+
+	OBJHANDLE hPlanet;
+	ASSERT_SYNTAX (top >= 3, "Too few arguments");
+	ASSERT_SYNTAX (lua_islightuserdata (L,1), "Argument 1: invalid type (expected planet handle)");
+	ASSERT_SYNTAX (lua_isnumber (L,2), "Argument 2: invalid type (expected number)");
+	ASSERT_SYNTAX (lua_isnumber (L,3), "Argument 3: invalid type (expected number)");
+	ASSERT_SYNTAX (hPlanet = (OBJHANDLE)lua_toObject (L,1), "Argument 1: invalid object");
+	double lng = luaL_checknumber(L,2);
+	double lat = luaL_checknumber(L,3);
+	int tgtlvl = 0;
+	VECTOR3 NML;
+	VECTOR3 *pNML = nullptr;
+	int lvl;
+	int *plvl = nullptr;
+	std::vector<ElevationTile> *tilecache = nullptr;
+
+
+	if(top >= 4) {
+		ASSERT_SYNTAX (lua_isnumber (L,4), "Argument 4: invalid type (expected number)");
+		tgtlvl =  luaL_checkinteger(L,4);
+	}
+	if(top >= 5) {
+		// TODO: handle tilecache
+	}
+	if(lua_toboolean(L, 6)) {
+		pNML = &NML;
+	}
+	if(lua_toboolean(L, 7)) {
+		plvl = &lvl;
+	}
+
+	double elev = oapiSurfaceElevationEx(hPlanet, lng, lat, tgtlvl, tilecache, pNML, plvl);
+
+	int nret = 1;
+	lua_pushnumber (L, elev);
+	if(pNML) {
+		lua_pushvector(L, NML);
+		nret++;
+	}
+	if(plvl) {
+		lua_pushinteger(L, lvl);
+		nret++;
+	}
+	return nret;
+}
 
 /***
 Return an identifier of a vessel's propellant resource.
