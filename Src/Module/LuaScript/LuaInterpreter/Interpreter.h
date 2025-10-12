@@ -582,6 +582,7 @@ protected:
 	static int oapi_simulatebufferedkey (lua_State *L);
 	static int oapi_simulateimmediatekey (lua_State *L);
 	static int oapi_acceptdelayedkey (lua_State *L);
+	static int oapi_get_keystate (lua_State *L);
 
 	// file i/o functions
 	static int oapi_openfile (lua_State* L);
