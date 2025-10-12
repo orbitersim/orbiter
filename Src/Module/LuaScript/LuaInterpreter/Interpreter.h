@@ -553,6 +553,11 @@ protected:
 	static void customcamera_clbk(oapi::Sketchpad *pSkp, void *pParam);
 	static int customcamera_collect (lua_State *L);
 
+	// TileCache
+	static int oapi_init_tilecache(lua_State *);
+	static int oapi_release_tilecache(lua_State *);
+	static int tilecache_collect(lua_State *);
+
 
 	// animation functions
 	static int oapi_create_animationcomponent (lua_State *L);

@@ -900,6 +900,8 @@ void Interpreter::LoadAPI ()
 		{"get_planetjcoeffcount", oapi_get_planetjcoeffcount},
 		{"get_planetjcoeff", oapi_get_planetjcoeff},
 		{"surface_elevation", oapi_surface_elevation},
+		{"init_tilecache", oapi_init_tilecache},
+		{"release_tilecache", oapi_release_tilecache},
 
 		// vessel functions
 		{"get_propellanthandle", oapi_get_propellanthandle},
@@ -1349,6 +1351,19 @@ void Interpreter::LoadAPI ()
 	lua_createtable (L, 0, 1);
 	lua_pushnumber (L, MESHPROPERTY_MODULATEMATALPHA); lua_setfield (L, -2, "MODULATEMATALPHA");
 	lua_setglobal (L, "MESHPROPERTY");
+
+
+	static const struct luaL_reg TileCacheLib[] = {
+		{"__gc", tilecache_collect},
+		{NULL, NULL}
+	};
+
+	luaL_newmetatable (L, "TileCache.vtable");
+	lua_pushstring (L, "__index");
+	lua_pushvalue (L, -2); // push metatable
+	lua_settable (L, -3);  // metatable.__index = metatable
+	luaL_openlib (L, NULL, TileCacheLib, 0);
+
 }
 
 void Interpreter::LoadMFDAPI ()
@@ -4792,6 +4807,9 @@ query at most that level (but may use a lower level if the requested resolution 
 Note: Typically, lower resolutions would be requested from a vessel at high altitude, where exact surface elevation is not critical (and not realistically measurable
 anyway). Querying elevations from lower resolution data improves the probability of a cache hit and is therefore more efficient.
 
+Note: The tile cache is a container to store previously loaded elevation tiles and can speed up the function if the tile required for computing the request
+has been loaded before. The tile cache can be initialised with opai.init_tilecache and released with oapi.release_tilecache.
+
 Note: If the requested resolution level is not available at the queried location, the function computes the elevation from the highest available resolution
 level. The actual resolution used can be obtained by setting lvl.
 
@@ -4800,7 +4818,7 @@ level. The actual resolution used can be obtained by setting lvl.
 @tparam number lng longitude [rad]
 @tparam number lat latitude [rad]
 @tparam[opt=0] number tgtlvl requested elevation resolution level
-@tparam[opt=nil] handle tilecache tile cache (not yet implemented)
+@tparam[opt=nil] handle tilecache tile cache (see notes)
 @tparam[opt=false] bool nml return the surface normal (in the local horizon frame)
 @tparam[opt=false] bool lvl return the actual tile resolution from which the results were obtained
 @treturn number[,vector][,number] Surface elevation above planet mean radius, surface normal (if asked) and tile resolution (if asked)
@@ -4824,13 +4842,19 @@ int Interpreter::oapi_surface_elevation (lua_State *L)
 	int *plvl = nullptr;
 	std::vector<ElevationTile> *tilecache = nullptr;
 
-
 	if(top >= 4) {
 		ASSERT_SYNTAX (lua_isnumber (L,4), "Argument 4: invalid type (expected number)");
 		tgtlvl =  luaL_checkinteger(L,4);
 	}
 	if(top >= 5) {
-		// TODO: handle tilecache
+		if(!lua_isnil(L, 5)) {
+			std::vector<ElevationTile> **tc = (std::vector<ElevationTile> **)luaL_checkudata(L, 5, "TileCache.vtable");
+			if(*tc) {
+				tilecache = *tc;
+			} else {
+				luaL_error(L, "Trying to use a TileCache that has been released!");
+			}
+		}
 	}
 	if(lua_toboolean(L, 6)) {
 		pNML = &NML;
@@ -6303,6 +6327,65 @@ int Interpreter::oapi_customcamera_overlay(lua_State *L)
 	}
 	return 0;
 }
+
+/***
+Tile cache.
+
+Allocates an elevation data cache to speed up calls to \ref oapi.surface_elevation
+
+Note: When passing a tile cache to oapi.surface_elevation, any cache hits avoid having to re-load an elevation tile from file.
+
+Note: Should be called before the first invocation of oapi.surface_elevation
+
+Note: The cache can be released explicitly with oapi.release_tilecache, if not the Lua garbage collector will eventually release it when it's no longer referenced
+
+Note: A cache size of 2 is usually sufficient for spacecraft, but surface vessels that stay in a local area may benefit from a larger cache.
+
+@function init_tilecache
+@tparam number size cache capacity: number of tiles to be held
+@treturn handle tile cache handle
+*/
+int Interpreter::oapi_init_tilecache(lua_State *L)
+{
+	int size = 2;
+	if(lua_gettop(L)>0) {
+		size = luaL_checkinteger(L, 1);
+	}
+
+	std::vector<ElevationTile> **tc = (std::vector<ElevationTile> **)lua_newuserdata(L, sizeof(std::vector<ElevationTile> *));
+	*tc = InitTileCache(size);
+	luaL_getmetatable(L, "TileCache.vtable");
+	lua_setmetatable(L, -2);
+	return 1;
+}
+
+/***
+Release a tile cache previously allocated with oapi.init_tilecache.
+
+Note: The tilecache is no longer valid when the function returns, trying to use it will result in a Lua error
+
+@function release_tilecache
+@tparam handle hCache handle to the cache to be released
+*/
+int Interpreter::oapi_release_tilecache(lua_State *L)
+{
+	std::vector<ElevationTile> **tc = (std::vector<ElevationTile> **)luaL_checkudata(L, 1, "TileCache.vtable");
+	if(*tc) {
+		ReleaseTileCache(*tc);
+		*tc = nullptr;
+	}
+	return 0;
+}
+
+int Interpreter::tilecache_collect(lua_State *L)
+{
+	std::vector<ElevationTile> **tc = (std::vector<ElevationTile> **)luaL_checkudata(L, 1, "TileCache.vtable");
+	if(*tc) {
+		ReleaseTileCache(*tc);
+	}
+	return 0;
+}
+
 
 /***
 Animations.
