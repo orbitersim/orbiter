@@ -12,6 +12,8 @@
 #define __GRAPHICSAPI_H
 
 #include "Orbitersdk.h"
+
+#include <SDL3/SDL_oapi.h>
 #include <stdio.h>
 #include <windows.h>
 
@@ -788,25 +790,17 @@ public:
 	/**
 	 * \brief Returns the handle of the main render window.
 	 */
-	HWND GetRenderWindow () const { return hRenderWnd; }
+	const std::shared_ptr<sdl::UnmanagedWindow>& GetRenderWindow () const { return hRenderWnd; }
 
-	/**
-	 * \brief Render window message handler
-	 *
-	 * Derived classes should also call the base class method to allow
-	 * default message processing.
-	 * \param hWnd render window handle
-	 * \param uMsg Windows message identifier
-	 * \param wParam WPARAM message parameter
-	 * \param lParam LPARAM message parameter
-	 * \return The return value depends on the message being processed.
-	 * \note This is the standard Windows message handler for the render
-	 *   window.
-	 * \note This method currently intercepts only the WM_CLOSE and WM_DESTROY
-	 *   messages, and passes everything else to the Orbiter core message
-	 *   handler.
-	 */
-	virtual LRESULT RenderWndProc (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
+    /**
+     * \brief Event handler for the render window.
+     *
+     * Be sure to call ConsumeEvent on your ImCtx here.
+     * \param event The event to consume
+     * \param wantsOut Set to true if the render window should be closed
+     * \return True if the event was consumed
+     */
+	virtual bool RenderWndProc(const SDL_Event &event, bool &wantsOut);
 
 	/**
 	 * \brief Message handler for 'video' tab in Orbiter Launchpad dialog
@@ -1481,6 +1475,18 @@ public:
 	virtual bool clbkFilterElevation(OBJHANDLE hPlanet, int ilat, int ilng, int lvl, double elev_res, INT16* elev) { return false; }
 	// @}
 
+	virtual void clbkImGuiNewFrame () = 0;
+	virtual void clbkImGuiRenderDrawData () = 0;
+	virtual void clbkImGuiInit () = 0;
+	virtual void clbkImGuiShutdown() = 0;
+	// Returns an ImTextureID from a surface so that it can be used in
+	// ImGui widgets.
+	// Note: we use uint64_t so we don't have to include imgui.h
+	// This method should make sure the texture won't be released
+	// before the frame is ended by e.g. incrementing its reference
+	// counter and releasing it once the frame has been rendered.
+	virtual uint64_t clbkImGuiSurfaceTexture(SURFHANDLE surf) = 0;
+
 protected:
 	/** \brief Launchpad video tab indicator
 	 *
@@ -1509,7 +1515,7 @@ protected:
 	 * \note Derived classes should perform any required per-session
 	 *   initialisation of the 3D render environment here.
 	 */
-	virtual HWND clbkCreateRenderWindow ();
+	virtual std::shared_ptr<sdl::UnmanagedWindow> clbkCreateRenderWindow ();
 
 	/**
 	 * \brief Simulation startup finalisation
@@ -1831,9 +1837,9 @@ private:
 	 * \return Render window handle
 	 * \note This is called after clbkCreateRenderWindow returns.
 	 */
-	HWND InitRenderWnd (HWND hWnd);
+	void InitRenderWnd (std::shared_ptr<sdl::UnmanagedWindow>& hWnd);
 
-	HWND hRenderWnd;        // render window handle
+	std::shared_ptr<sdl::UnmanagedWindow> hRenderWnd; // render window handle
 	HINSTANCE hOrbiterInst; // orbiter core instance handle
 	VIDEODATA VideoData;    // the standard video options from config
 

@@ -63,7 +63,7 @@ void Module::clbkSimulationStart (RenderMode mode)
 {
 	// backward compatibility call (deprecated)
 	void (*opcOpenRenderViewport)(HWND,DWORD,DWORD,BOOL) = (void(*)(HWND,DWORD,DWORD,BOOL))GetProcAddress (hModule, "opcOpenRenderViewport");
-	if (opcOpenRenderViewport) opcOpenRenderViewport (g_pOrbiter->GetRenderWnd(), g_pOrbiter->ViewW(), g_pOrbiter->ViewH(), g_pOrbiter->IsFullscreen()?TRUE:FALSE);
+	if (opcOpenRenderViewport) opcOpenRenderViewport (g_pOrbiter->GetRenderWnd()->Win32Handle(), g_pOrbiter->ViewW(), g_pOrbiter->ViewH(), g_pOrbiter->IsFullscreen()?TRUE:FALSE);
 }
 
 // ======================================================================

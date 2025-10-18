@@ -40,7 +40,9 @@
 #include "gcConst.h"
 #include <unordered_map>
 #include <d3d9on12.h>
-
+#include "imgui.h"
+#include "imgui_impl_dx9.h"
+#include "imgui_impl_win32.h"
 
 #if defined(_MSC_VER) && (_MSC_VER <= 1700 ) // Microsoft Visual Studio Version 2012 and lower
 #define round(v) floor(v+0.5)
@@ -380,7 +382,7 @@ bool D3D9Client::clbkInitialise()
 // ==============================================================
 // This is called when a simulation session will begin
 //
-HWND D3D9Client::clbkCreateRenderWindow()
+std::shared_ptr<sdl::UnmanagedWindow> D3D9Client::clbkCreateRenderWindow()
 {
 	_TRACE;
 
@@ -424,8 +426,8 @@ HWND D3D9Client::clbkCreateRenderWindow()
 
 	hRenderWnd = GraphicsClient::clbkCreateRenderWindow();
 
-	LogAlw("Window Handle = %s",_PTR(hRenderWnd));
-	SetWindowText(hRenderWnd, "[D3D9Client]");
+	LogAlw("Window Handle = %s",_PTR(hRenderWnd->Win32Handle()));
+	SDL_SetWindowTitle(hRenderWnd->Inner(), "[D3D9Client]");
 
 	LogOk("Starting to initialize device and 3D environment...");
 
@@ -433,7 +435,7 @@ HWND D3D9Client::clbkCreateRenderWindow()
 
 	WriteLog("[DirectX 9 Initialized]");
 
-	HRESULT hr = pFramework->Initialize(hRenderWnd, GetVideoData());
+	HRESULT hr = pFramework->Initialize(hRenderWnd->Win32Handle(), GetVideoData());
 
 	if (hr!=S_OK) {
 		LogErr("ERROR: Failed to initialize 3D Framework");
@@ -441,13 +443,13 @@ HWND D3D9Client::clbkCreateRenderWindow()
 	}
 
 	RECT rect;
-	GetClientRect(hRenderWnd, &rect);
-	HDC hWnd = GetDC(hRenderWnd);
+	GetClientRect(hRenderWnd->Win32Handle(), &rect);
+	HDC hWnd = GetDC(hRenderWnd->Win32Handle());
 	HBRUSH hBr = CreateSolidBrush(RGB(0,0,0));
 	FillRect(hWnd, &rect, hBr);
 	DeleteObject(hBr);
-	ReleaseDC(hRenderWnd, hWnd);
-	ValidateRect(hRenderWnd, NULL);	// avoids white flash after splash screen
+	ReleaseDC(hRenderWnd->Win32Handle(), hWnd);
+	ValidateRect(hRenderWnd->Win32Handle(), NULL);	// avoids white flash after splash screen
 
 	pCaps = pFramework->GetCaps();
 
@@ -499,7 +501,7 @@ HWND D3D9Client::clbkCreateRenderWindow()
 
 	SplashScreen();  // Warning SurfNative is not yet fully initialized here
 
-	ShowWindow(hRenderWnd, SW_SHOW);
+    SDL_ShowWindow(hRenderWnd->Inner());
 
 	OutputLoadStatus("Building Shader Programs...",0);
 
@@ -593,7 +595,7 @@ void D3D9Client::clbkPostCreation()
 	// Create Window Manager -----------------------------------------
 	//
 	if (Config->gcGUIMode != 0) {
-		pWM = new WindowManager(hRenderWnd, ModuleInstance(), !(GetVideoData()->fullscreen));
+		pWM = new WindowManager(hRenderWnd->Win32Handle(), ModuleInstance(), !(GetVideoData()->fullscreen));
 		if (pWM->IsOK() == false) SAFE_DELETE(pWM);
 	}
 
@@ -1686,11 +1688,11 @@ int D3D9Client::clbkVisEvent(OBJHANDLE hObj, VISHANDLE vis, DWORD msg, DWORD_PTR
 
 // ==============================================================
 //
-void D3D9Client::PickTerrain(DWORD uMsg, int xpos, int ypos)
+void D3D9Client::PickTerrain(Uint32 uMsg, int xpos, int ypos)
 {
-	bool bUD = (uMsg == WM_LBUTTONUP || uMsg == WM_RBUTTONUP || uMsg == WM_LBUTTONDOWN || uMsg == WM_RBUTTONDOWN);
+	bool bUD = (uMsg == SDL_EVENT_MOUSE_BUTTON_UP || uMsg == SDL_EVENT_MOUSE_BUTTON_DOWN);
 	bool bPrs = IsGenericProcEnabled(GENERICPROC_PICK_TERRAIN) && bUD;
-	bool bHov = IsGenericProcEnabled(GENERICPROC_HOVER_TERRAIN) && (uMsg == WM_MOUSEMOVE || uMsg == WM_MOUSEWHEEL);
+	bool bHov = IsGenericProcEnabled(GENERICPROC_HOVER_TERRAIN) && (uMsg == SDL_EVENT_MOUSE_MOTION || uMsg == SDL_EVENT_MOUSE_WHEEL);
 
 	if (bPrs || bHov) {
 		gcCore::PickGround pg = gcCore2::ScanScreen(xpos, ypos);
@@ -1700,225 +1702,167 @@ void D3D9Client::PickTerrain(DWORD uMsg, int xpos, int ypos)
 	}
 }
 
+static bool EventIsKeyboard(Uint32 type) {
+    return type >= SDL_EVENT_KEY_UP && type < SDL_EVENT_MOUSE_MOTION;
+}
+
+static bool EventIsMouse(Uint32 type) {
+    return type >= SDL_EVENT_MOUSE_MOTION &&
+           type < SDL_EVENT_JOYSTICK_AXIS_MOTION;
+}
 
 // ==============================================================
 // Message handler for render window
 
-LRESULT D3D9Client::RenderWndProc (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
-{
-	static bool bTrackMouse = false;
-	static short xpos=0, ypos=0;
+bool D3D9Client::RenderWndProc(const SDL_Event &event, bool &wantsOut) {
+    static bool bTrackMouse = false;
+    static short xpos = 0, ypos = 0;
 
-	D3D9Pick pick;
+    D3D9Pick pick;
 
-	if (hRenderWnd!=hWnd && uMsg!= WM_NCDESTROY) {
-		LogErr("Invalid Window !! RenderWndProc() called after calling clbkDestroyRenderWindow() uMsg=0x%X", uMsg);
-		return 0;
-	}
+    if (hRenderWnd == nullptr) {
+        LogErr("Invalid Window !! RenderWndProc() called after calling "
+               "clbkDestroyRenderWindow()");
+        return false;
+    }
 
-	if (bRunning && DebugControls::IsActive()) {
-		// Must update camera to correspond MAIN_SCENE due to Pick() function,
-		// because env-maps have altered camera settings
-		// GetScene()->UpdateCameraFromOrbiter(RENDERPASS_PICKSCENE);
-		// Obsolete: since moving env/cam stuff in pre-scene
-	}
+    if (bRunning && DebugControls::IsActive()) {
+        // Must update camera to correspond MAIN_SCENE due to Pick() function,
+        // because env-maps have altered camera settings
+        // GetScene()->UpdateCameraFromOrbiter(RENDERPASS_PICKSCENE);
+        // Obsolete: since moving env/cam stuff in pre-scene
+    }
 
-	if (pWM) if (pWM->MainWindowProc(hWnd, uMsg, wParam, lParam)) return 0;
+    if (pWM)
+        if (pWM->MainWindowProc(event))
+            return true;
 
+    if (event.type == SDL_EVENT_QUIT ||
+        (event.type == SDL_EVENT_WINDOW_CLOSE_REQUESTED &&
+         event.window.windowID == SDL_GetWindowID(hRenderWnd->Inner()))) {
+        wantsOut = true;
+        return true;
+    }
 
-	switch (uMsg)
-	{
-		case WM_MOUSELEAVE:
-		{
-			if (bTrackMouse && bRunning) GraphicsClient::RenderWndProc (hWnd, WM_LBUTTONUP, 0, 0);
-			return 0;
-		}
+    if ((event.type == SDL_EVENT_WINDOW_MOUSE_LEAVE &&
+             event.window.windowID == SDL_GetWindowID(hRenderWnd->Inner()) && bTrackMouse && bRunning) ||
+         (event.type == SDL_EVENT_MOUSE_BUTTON_UP &&
+          event.button.button == SDL_BUTTON_LEFT)) {
+        float xpf, xpy = 0;
+        SDL_GetMouseState(&xpf, &xpy);
 
-		case WM_MBUTTONDOWN:
-		{
-			break;
-		}
+        PickTerrain(event.type, xpf, xpy);
 
-		case WM_RBUTTONUP:
-		case WM_RBUTTONDOWN:
-		{
-			int xp = GET_X_LPARAM(lParam);
-			int yp = GET_Y_LPARAM(lParam);
-			PickTerrain(uMsg, xp, yp);
-			break;
-		}
+        if (DebugControls::IsActive()) {
+            DWORD flags = *(DWORD *)GetConfigParam(CFGPRM_GETDEBUGFLAGS);
+            if (flags & DBG_FLAGS_PICK) {
+                DebugControls::SetGroupHighlight(false);
+            }
+        }
+        bTrackMouse = false;
+    } else if ((event.type == SDL_EVENT_MOUSE_BUTTON_UP || event.type == SDL_EVENT_MOUSE_BUTTON_DOWN) && event.button.button == SDL_BUTTON_RIGHT) {
+        int xp = event.button.x;
+        int yp = event.button.y;
+        PickTerrain(event.type, xp, yp);
+    } else if ((event.type == SDL_EVENT_MOUSE_BUTTON_DOWN) && event.button.button == SDL_BUTTON_LEFT) {
+        bTrackMouse = true;
+        xpos = event.button.x;
+        ypos = event.button.y;
 
+        GetScene()->vPickRay = GetScene()->GetPickingRay(xpos, ypos);
 
-		case WM_LBUTTONDOWN:
-		{
-			bTrackMouse = true;
-			xpos = GET_X_LPARAM(lParam);
-			ypos = GET_Y_LPARAM(lParam);
+        bool bShift = (GetAsyncKeyState(VK_SHIFT) & 0x8000) != 0;
+        bool bCtrl = (GetAsyncKeyState(VK_CONTROL) & 0x8000) != 0;
+        bool bPckVsl = IsGenericProcEnabled(GENERICPROC_PICK_VESSEL);
 
-			GetScene()->vPickRay = GetScene()->GetPickingRay(xpos, ypos);
+        if (DebugControls::IsActive() || bPckVsl || (bShift && bCtrl)) {
+            pick = GetScene()->PickScene(xpos, ypos);
+            if (bPckVsl) {
+                gcCore::PickData out;
+                out.hVessel = pick.vObj->GetObjectA();
+                out.mesh = MESHHANDLE(pick.pMesh);
+                out.group = pick.group;
+                out.pos = _FV(pick.pos);
+                out.normal = _FV(pick.normal);
+                out.dist = pick.dist;
+                MakeGenericProcCall(GENERICPROC_PICK_VESSEL,
+                                    sizeof(gcCore::PickData), &out);
+            }
+        }
 
-			TRACKMOUSEEVENT te; te.cbSize = sizeof(TRACKMOUSEEVENT); te.dwFlags = TME_LEAVE; te.hwndTrack = hRenderWnd;
-			TrackMouseEvent(&te);
+        PickTerrain(event.type, xpos, ypos);
 
-			bool bShift = (GetAsyncKeyState(VK_SHIFT) & 0x8000) != 0;
-			bool bCtrl = (GetAsyncKeyState(VK_CONTROL) & 0x8000) != 0;
-			bool bPckVsl = IsGenericProcEnabled(GENERICPROC_PICK_VESSEL);
+        // No Debug Controls
+        if (bShift && bCtrl && !DebugControls::IsActive() &&
+            !oapiCameraInternal()) {
 
-			if (DebugControls::IsActive() || bPckVsl || (bShift && bCtrl)) {
-				pick = GetScene()->PickScene(xpos, ypos);
-				if (bPckVsl) {
-					gcCore::PickData out;
-					out.hVessel = pick.vObj->GetObjectA();
-					out.mesh = MESHHANDLE(pick.pMesh);
-					out.group = pick.group;
-					out.pos = _FV(pick.pos);
-					out.normal = _FV(pick.normal);
-					out.dist = pick.dist;
-					MakeGenericProcCall(GENERICPROC_PICK_VESSEL, sizeof(gcCore::PickData), &out);
-				}
-			}
+            if (!pick.pMesh)
+                return true;
 
-			PickTerrain(uMsg, xpos, ypos);
+            OBJHANDLE hObj = pick.vObj->Object();
+            if (oapiGetObjectType(hObj) == OBJTP_VESSEL) {
+                oapiSetFocusObject(hObj);
+            }
 
-			// No Debug Controls
-			if (bShift && bCtrl && !DebugControls::IsActive() && !oapiCameraInternal()) {
+            return true;
+        }
 
-				if (!pick.pMesh) break;
+        // With Debug Controls
+        if (DebugControls::IsActive()) {
 
-				OBJHANDLE hObj = pick.vObj->Object();
-				if (oapiGetObjectType(hObj) == OBJTP_VESSEL) {
-					oapiSetFocusObject(hObj);
-				}
+            DWORD flags = *(DWORD *)GetConfigParam(CFGPRM_GETDEBUGFLAGS);
 
-				break;
-			}
+            if (flags & DBG_FLAGS_PICK) {
+                if (!pick.pMesh)
+                    return true;
 
-			// With Debug Controls
-			if (DebugControls::IsActive()) {
+                if (bShift && bCtrl) {
+                    OBJHANDLE hObj = pick.vObj->Object();
+                    if (oapiGetObjectType(hObj) == OBJTP_VESSEL) {
+                        oapiSetFocusObject(hObj);
+                        return true;
+                    }
+                } else if (pick.group >= 0) {
+                    DebugControls::SetVisual(pick.vObj);
+                    DebugControls::SelectMesh(pick.pMesh);
+                    DebugControls::SelectGroup(pick.group);
+                    DebugControls::SetGroupHighlight(true);
+                    DebugControls::SetPickPos(pick.pos);
+                }
+            }
+        }
+    } else if (event.type == SDL_EVENT_KEY_DOWN) {
+        bool bShift = (event.key.mod & SDL_KMOD_SHIFT) != 0;
+        bool bCtrl = (event.key.mod & SDL_KMOD_CTRL) != 0;
+        if (event.key.key == SDLK_C && bShift && bCtrl)
+            bControlPanel = !bControlPanel;
+        if (event.key.key == SDLK_N && bShift && bCtrl)
+            Config->bCloudNormals = !Config->bCloudNormals;
+        if (event.key.key == SDLK_F && bShift && bCtrl) {
+            if (bFreeze)
+                bFreezeEnable = bFreeze = false;
+            else
+                bFreezeEnable = true;
+        }
+        if (event.key.key == SDLK_A && bFreeze)
+            bFreezeRenderAll = !bFreezeRenderAll;
+    } else if (event.type == SDL_EVENT_MOUSE_WHEEL) {
+        if (DebugControls::IsActive()) {
+            short d = event.wheel.y;
+            if (d < -1)
+                d = -1;
+            if (d > 1)
+                d = 1;
+            double speed = *(double *)GetConfigParam(CFGPRM_GETCAMERASPEED);
+            speed *= (DebugControls::GetVisualSize() / 100.0);
+            if (scene->CameraPan(_V(0, 0, double(d)) * 2.0, speed))
+                return 0;
+        }
 
-				DWORD flags = *(DWORD*)GetConfigParam(CFGPRM_GETDEBUGFLAGS);
+        PickTerrain(event.type, xpos, ypos);
+    }
 
-				if (flags&DBG_FLAGS_PICK) {
-
-					if (!pick.pMesh) break;
-
-					if (bShift && bCtrl) {
-						OBJHANDLE hObj = pick.vObj->Object();
-						if (oapiGetObjectType(hObj)==OBJTP_VESSEL) {
-							oapiSetFocusObject(hObj);
-							break;
-						}
-					}
-					else if (pick.group>=0) {
-						DebugControls::SetVisual(pick.vObj);
-						DebugControls::SelectMesh(pick.pMesh);
-						DebugControls::SelectGroup(pick.group);
-						DebugControls::SetGroupHighlight(true);
-						DebugControls::SetPickPos(pick.pos);
-					}
-				}
-			}
-
-			break;
-		}
-
-		case WM_LBUTTONUP:
-		{
-			int xp = GET_X_LPARAM(lParam);
-			int yp = GET_Y_LPARAM(lParam);
-
-			PickTerrain(uMsg, xp, yp);
-
-			if (DebugControls::IsActive()) {
-				DWORD flags = *(DWORD*)GetConfigParam(CFGPRM_GETDEBUGFLAGS);
-				if (flags&DBG_FLAGS_PICK) {
-					DebugControls::SetGroupHighlight(false);
-				}
-			}
-			bTrackMouse = false;
-			break;
-		}
-
-		case WM_KEYDOWN:
-		{
-			bool bShift = (GetAsyncKeyState(VK_SHIFT) & 0x8000)!=0;
-			bool bCtrl  = (GetAsyncKeyState(VK_CONTROL) & 0x8000)!=0;
-			if (wParam == 'C' && bShift && bCtrl) bControlPanel = !bControlPanel;
-			if (wParam == 'N' && bShift && bCtrl) Config->bCloudNormals = !Config->bCloudNormals;
-			if (wParam == 'F' && bShift && bCtrl) {
-				if (bFreeze) bFreezeEnable = bFreeze = false;
-				else bFreezeEnable = true;
-			}
-			if (wParam == 'A' && bFreeze) bFreezeRenderAll = !bFreezeRenderAll;
-
-			break;
-		}
-
-		case WM_MOUSEWHEEL:
-		{
-			if (DebugControls::IsActive()) {
-				short d = GET_WHEEL_DELTA_WPARAM(wParam);
-				if (d<-1) d=-1;
-				if (d>1) d=1;
-				double speed = *(double *)GetConfigParam(CFGPRM_GETCAMERASPEED);
-				speed *= (DebugControls::GetVisualSize()/100.0);
-				if (scene->CameraPan(_V(0,0,double(d))*2.0, speed)) return 0;
-			}
-
-			PickTerrain(uMsg, xpos, ypos);
-			break;
-		}
-
-		case WM_MOUSEMOVE:
-
-			if (DebugControls::IsActive())
-			{
-
-				double x = double(GET_X_LPARAM(lParam) - xpos);
-				double y = double(GET_Y_LPARAM(lParam) - ypos);
-				xpos = GET_X_LPARAM(lParam);
-				ypos = GET_Y_LPARAM(lParam);
-
-				if (bTrackMouse) {
-					double speed = *(double *)GetConfigParam(CFGPRM_GETCAMERASPEED);
-					speed *= (DebugControls::GetVisualSize() / 100.0);
-					if (scene->CameraPan(_V(-x, y, 0)*0.05, speed)) return 0;
-				}
-			}
-
-			xpos = GET_X_LPARAM(lParam);
-			ypos = GET_Y_LPARAM(lParam);
-
-			PickTerrain(uMsg, xpos, ypos);
-
-			break;
-
-		case WM_MOVE:
-			// If in windowed mode, move the Framework's window
-			break;
-
-		case WM_SYSCOMMAND:
-			switch (wParam) {
-				case SC_KEYMENU:
-					// trap Alt system keys
-					return 1;
-				case SC_MOVE:
-				case SC_SIZE:
-				case SC_MAXIMIZE:
-				case SC_MONITORPOWER:
-					// Prevent moving/sizing and power loss in fullscreen mode
-					if (bFullscreen) return 1;
-					break;
-			}
-			break;
-
-		case WM_SYSKEYUP:
-			if (bFullscreen) return 0;  // trap Alt-key
-			break;
-	}
-
-	if (!bRunning && uMsg>=0x0200 && uMsg<=0x020E) return 0;
-	return GraphicsClient::RenderWndProc (hWnd, uMsg, wParam, lParam);
+    return GraphicsClient::RenderWndProc(event, wantsOut);
 }
 
 
@@ -2104,9 +2048,9 @@ bool oapi::D3D9Client::SaveSurfaceToFile (const D3DSURFACE_DESC* desc, D3DLOCKED
 
 bool oapi::D3D9Client::SaveSurfaceToClipboard (const D3DSURFACE_DESC* desc)
 {
-	if (OpenClipboard(hRenderWnd))
+	if (OpenClipboard(hRenderWnd->Win32Handle()))
 	{
-		HDC hDC = GetDC(hRenderWnd);
+		HDC hDC = GetDC(hRenderWnd->Win32Handle());
 		HDC hdcmem = CreateCompatibleDC(hDC);
 		HBITMAP hBm = CreateCompatibleBitmap(hDC, desc->Width, desc->Height);
 
@@ -2724,7 +2668,57 @@ bool D3D9Client::clbkFilterElevation(OBJHANDLE hPlanet, int ilat, int ilng, int 
 	_TRACE;
 	return FilterElevationPhysics(hPlanet, lvl, ilat, ilng, elev_res, elev);
 }
+void D3D9Client::clbkImGuiNewFrame()
+{
+	_TRACE;
+	ImGui_ImplDX9_NewFrame();
+}
+void D3D9Client::clbkImGuiRenderDrawData()
+{
+	_TRACE;
 
+	if (pDevice->BeginScene() >= 0)
+	{
+		ImGui::Render();
+		ImGui_ImplDX9_RenderDrawData(ImGui::GetDrawData());
+		pDevice->EndScene();
+	}
+
+	// Update and Render additional Platform Windows
+	ImGuiIO& io = ImGui::GetIO();
+	if (io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable)
+	{
+		ImGui::UpdatePlatformWindows();
+		ImGui::RenderPlatformWindowsDefault();
+	}
+
+	for(auto &surf: ImTextures) {
+		clbkReleaseSurface(surf);
+	}
+	ImTextures.clear();
+}
+void D3D9Client::clbkImGuiInit()
+{
+	_TRACE;
+	ImGui_ImplDX9_Init(pDevice);
+}
+void D3D9Client::clbkImGuiShutdown()
+{
+	_TRACE;
+	// Clean up also here just in case
+	for(auto &surf: ImTextures) {
+		clbkReleaseSurface(surf);
+	}
+	ImTextures.clear();
+	ImGui_ImplDX9_Shutdown();
+}
+uint64_t D3D9Client::clbkImGuiSurfaceTexture(SURFHANDLE surf)
+{
+	ImTextures.push_back(surf);
+	clbkIncrSurfaceRef(surf);
+	LPDIRECT3DTEXTURE9 pTxt = SURFACE(surf)->GetTexture();
+	return (uint64_t)pTxt;
+}
 // =======================================================================
 
 bool D3D9Client::clbkSplashLoadMsg (const char *msg, int line)
@@ -2924,7 +2918,7 @@ void D3D9Client::SplashScreen()
 
 	RECT rS;
 
-	GetWindowRect(hRenderWnd, &rS);
+	GetWindowRect(hRenderWnd->Win32Handle(), &rS);
 
 	LogAlw("Splash Window Size = [%u, %u]", rS.right - rS.left, rS.bottom - rS.top);
 	LogAlw("Splash Window LeftTop = [%d, %d]", rS.left, rS.top);

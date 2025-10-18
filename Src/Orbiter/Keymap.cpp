@@ -114,41 +114,41 @@ struct {
 	WORD defkey;
 	const char *itemstr;
 } lkeyspec[LKEY_COUNT] = {
-	{OAPI_KEY_LEFT     | KMOD_ALT,                 "CockpitCamRotateLeft"},
-	{OAPI_KEY_RIGHT    | KMOD_ALT,                 "CockpitCamRotateRight"},
-	{OAPI_KEY_UP       | KMOD_ALT,                 "CockpitCamRotateUp"},
-	{OAPI_KEY_DOWN     | KMOD_ALT,                 "CockpitCamRotateDown"},
-	{OAPI_KEY_DOWN     | KMOD_CTRL | KMOD_ALT,     "CockpitCamDontLean"},
-	{OAPI_KEY_UP       | KMOD_CTRL | KMOD_ALT,     "CockpitCamLeanForward"},
-	{OAPI_KEY_LEFT     | KMOD_CTRL | KMOD_ALT,     "CockpitCamLeanLeft"},
-	{OAPI_KEY_RIGHT    | KMOD_CTRL | KMOD_ALT,     "CockpitCamLeanRight"},
+	{OAPI_KEY_LEFT     | OKMOD_ALT,                 "CockpitCamRotateLeft"},
+	{OAPI_KEY_RIGHT    | OKMOD_ALT,                 "CockpitCamRotateRight"},
+	{OAPI_KEY_UP       | OKMOD_ALT,                 "CockpitCamRotateUp"},
+	{OAPI_KEY_DOWN     | OKMOD_ALT,                 "CockpitCamRotateDown"},
+	{OAPI_KEY_DOWN     | OKMOD_CTRL | OKMOD_ALT,     "CockpitCamDontLean"},
+	{OAPI_KEY_UP       | OKMOD_CTRL | OKMOD_ALT,     "CockpitCamLeanForward"},
+	{OAPI_KEY_LEFT     | OKMOD_CTRL | OKMOD_ALT,     "CockpitCamLeanLeft"},
+	{OAPI_KEY_RIGHT    | OKMOD_CTRL | OKMOD_ALT,     "CockpitCamLeanRight"},
 	{OAPI_KEY_HOME,                                "CockpitResetCam"},
 	{OAPI_KEY_LEFT,                                "PanelShiftLeft"},
 	{OAPI_KEY_RIGHT,                               "PanelShiftRight"},
 	{OAPI_KEY_UP,                                  "PanelShiftUp"},
 	{OAPI_KEY_DOWN,                                "PanelShiftDown"},
-	{OAPI_KEY_LEFT     | KMOD_CTRL,                "PanelSwitchLeft"},
-	{OAPI_KEY_RIGHT    | KMOD_CTRL,                "PanelSwitchRight"},
-	{OAPI_KEY_UP       | KMOD_CTRL,                "PanelSwitchUp"},
-	{OAPI_KEY_DOWN     | KMOD_CTRL,                "PanelSwitchDown"},
-	{OAPI_KEY_LEFT     | KMOD_CTRL,                "TrackCamRotateLeft"},
-	{OAPI_KEY_RIGHT    | KMOD_CTRL,                "TrackCamRotateRight"},
-	{OAPI_KEY_UP       | KMOD_CTRL,                "TrackCamRotateUp"},
-	{OAPI_KEY_DOWN     | KMOD_CTRL,                "TrackCamRotateDown"},
+	{OAPI_KEY_LEFT     | OKMOD_CTRL,                "PanelSwitchLeft"},
+	{OAPI_KEY_RIGHT    | OKMOD_CTRL,                "PanelSwitchRight"},
+	{OAPI_KEY_UP       | OKMOD_CTRL,                "PanelSwitchUp"},
+	{OAPI_KEY_DOWN     | OKMOD_CTRL,                "PanelSwitchDown"},
+	{OAPI_KEY_LEFT     | OKMOD_CTRL,                "TrackCamRotateLeft"},
+	{OAPI_KEY_RIGHT    | OKMOD_CTRL,                "TrackCamRotateRight"},
+	{OAPI_KEY_UP       | OKMOD_CTRL,                "TrackCamRotateUp"},
+	{OAPI_KEY_DOWN     | OKMOD_CTRL,                "TrackCamRotateDown"},
 	{OAPI_KEY_NEXT,                                "TrackCamAdvance"},
 	{OAPI_KEY_PRIOR,                               "TrackCamRetreat"},
 	{OAPI_KEY_LEFT,                                "GroundCamTiltLeft"},
 	{OAPI_KEY_RIGHT,                               "GroundCamTiltRight"},
 	{OAPI_KEY_UP,                                  "GroundCamTiltUp"},
 	{OAPI_KEY_DOWN,                                "GroundCamTiltDown"},
-	{OAPI_KEY_ADD      | KMOD_CTRL,                "IncMainThrust"},
-	{OAPI_KEY_SUBTRACT | KMOD_CTRL,                "DecMainThrust"},
+	{OAPI_KEY_ADD      | OKMOD_CTRL,                "IncMainThrust"},
+	{OAPI_KEY_SUBTRACT | OKMOD_CTRL,                "DecMainThrust"},
 	{OAPI_KEY_MULTIPLY,                            "KillMainRetroThrust"},
 	{OAPI_KEY_ADD,                                 "OverrideFullMainThrust"},
 	{OAPI_KEY_SUBTRACT,                            "OverrideFullRetroThrust"},
 	{OAPI_KEY_NUMPAD0,                             "IncHoverThrust"},
 	{OAPI_KEY_DECIMAL,                             "DecHoverThrust"},
-	{OAPI_KEY_DIVIDE   | KMOD_CTRL,                "RCSEnable"},
+	{OAPI_KEY_DIVIDE   | OKMOD_CTRL,                "RCSEnable"},
 	{OAPI_KEY_DIVIDE,                              "RCSMode"},
 	{OAPI_KEY_NUMPAD2,                             "RCSPitchUp"},
 	{OAPI_KEY_NUMPAD8,                             "RCSPitchDown"},
@@ -162,18 +162,18 @@ struct {
 	{OAPI_KEY_NUMPAD3,                             "RCSRight"},
 	{OAPI_KEY_NUMPAD6,                             "RCSForward"},
 	{OAPI_KEY_NUMPAD9,                             "RCSBack"},
-	{OAPI_KEY_NUMPAD2 | KMOD_CTRL,                 "LPRCSPitchUp"},
-	{OAPI_KEY_NUMPAD8 | KMOD_CTRL,                 "LPRCSPitchDown"},
-	{OAPI_KEY_NUMPAD1 | KMOD_CTRL,                 "LPRCSYawLeft"},
-	{OAPI_KEY_NUMPAD3 | KMOD_CTRL,                 "LPRCSYawRight"},
-	{OAPI_KEY_NUMPAD4 | KMOD_CTRL,                 "LPRCSBankLeft"},
-	{OAPI_KEY_NUMPAD6 | KMOD_CTRL,                 "LPRCSBankRight"},
-	{OAPI_KEY_NUMPAD2 | KMOD_CTRL,                 "LPRCSUp"},
-	{OAPI_KEY_NUMPAD8 | KMOD_CTRL,                 "LPRCSDown"},
-	{OAPI_KEY_NUMPAD1 | KMOD_CTRL,                 "LPRCSLeft"},
-	{OAPI_KEY_NUMPAD3 | KMOD_CTRL,                 "LPRCSRight"},
-	{OAPI_KEY_NUMPAD6 | KMOD_CTRL,                 "LPRCSForward"},
-	{OAPI_KEY_NUMPAD9 | KMOD_CTRL,                 "LPRCSBack"},
+	{OAPI_KEY_NUMPAD2 | OKMOD_CTRL,                 "LPRCSPitchUp"},
+	{OAPI_KEY_NUMPAD8 | OKMOD_CTRL,                 "LPRCSPitchDown"},
+	{OAPI_KEY_NUMPAD1 | OKMOD_CTRL,                 "LPRCSYawLeft"},
+	{OAPI_KEY_NUMPAD3 | OKMOD_CTRL,                 "LPRCSYawRight"},
+	{OAPI_KEY_NUMPAD4 | OKMOD_CTRL,                 "LPRCSBankLeft"},
+	{OAPI_KEY_NUMPAD6 | OKMOD_CTRL,                 "LPRCSBankRight"},
+	{OAPI_KEY_NUMPAD2 | OKMOD_CTRL,                 "LPRCSUp"},
+	{OAPI_KEY_NUMPAD8 | OKMOD_CTRL,                 "LPRCSDown"},
+	{OAPI_KEY_NUMPAD1 | OKMOD_CTRL,                 "LPRCSLeft"},
+	{OAPI_KEY_NUMPAD3 | OKMOD_CTRL,                 "LPRCSRight"},
+	{OAPI_KEY_NUMPAD6 | OKMOD_CTRL,                 "LPRCSForward"},
+	{OAPI_KEY_NUMPAD9 | OKMOD_CTRL,                 "LPRCSBack"},
 	{OAPI_KEY_A,                                   "NMHoldAltitude"},
 	{OAPI_KEY_L,                                   "NMHLevel"},
 	{OAPI_KEY_LBRACKET,                            "NMPrograde"},
@@ -181,43 +181,43 @@ struct {
 	{OAPI_KEY_SEMICOLON,                           "NMNormal"},
 	{OAPI_KEY_APOSTROPHE,                          "NMAntinormal"},
 	{OAPI_KEY_NUMPAD5,                             "NMKillrot"},
-	{OAPI_KEY_D       | KMOD_CTRL,                 "Undock"},
+	{OAPI_KEY_D       | OKMOD_CTRL,                 "Undock"},
 	{OAPI_KEY_DELETE,                              "IncElevatorTrim"},
 	{OAPI_KEY_INSERT,                              "DecElevatorTrim"},
 	{OAPI_KEY_COMMA,                               "WheelbrakeLeft"},
 	{OAPI_KEY_PERIOD,                              "WheelbrakeRight"},
-	{OAPI_KEY_H       | KMOD_CTRL,                 "HUD"},
+	{OAPI_KEY_H       | OKMOD_CTRL,                 "HUD"},
 	{OAPI_KEY_H,                                   "HUDMode"},
-	{OAPI_KEY_R       | KMOD_CTRL,                 "HUDReference"},
-	{OAPI_KEY_R       | KMOD_CTRL | KMOD_ALT,      "HUDTarget"},
-	{OAPI_KEY_H       | KMOD_ALT,                  "HUDColour"},
+	{OAPI_KEY_R       | OKMOD_CTRL,                 "HUDReference"},
+	{OAPI_KEY_R       | OKMOD_CTRL | OKMOD_ALT,      "HUDTarget"},
+	{OAPI_KEY_H       | OKMOD_ALT,                  "HUDColour"},
 	{OAPI_KEY_T,                                   "IncSimSpeed"},
 	{OAPI_KEY_R,                                   "DecSimSpeed"},
 	{OAPI_KEY_X,                                   "IncFOV"},
 	{OAPI_KEY_Z,                                   "DecFOV"},
-	{OAPI_KEY_X       | KMOD_CTRL,                 "StepIncFOV"},
-	{OAPI_KEY_Z       | KMOD_CTRL,                 "StepDecFOV"},
+	{OAPI_KEY_X       | OKMOD_CTRL,                 "StepIncFOV"},
+	{OAPI_KEY_Z       | OKMOD_CTRL,                 "StepDecFOV"},
 	{OAPI_KEY_F4,                                  "MainMenu"},
-	{OAPI_KEY_F1      | KMOD_ALT,                  "DlgHelp"},
-	{OAPI_KEY_F1      | KMOD_CTRL,                 "DlgCamera"},
-	{OAPI_KEY_F2      | KMOD_CTRL,                 "DlgSimspeed"},
-	{OAPI_KEY_F4      | KMOD_CTRL,                 "DlgCustomCmd"},
-	{OAPI_KEY_F9      | KMOD_CTRL,                 "DlgVisualHelpers"},
-	{OAPI_KEY_F5      | KMOD_CTRL,                 "DlgRecorder"},
-	{OAPI_KEY_I       | KMOD_CTRL,                 "DlgInfo"},
-	{OAPI_KEY_M       | KMOD_CTRL,                 "DlgMap"},
+	{OAPI_KEY_F1      | OKMOD_ALT,                  "DlgHelp"},
+	{OAPI_KEY_F1      | OKMOD_CTRL,                 "DlgCamera"},
+	{OAPI_KEY_F2      | OKMOD_CTRL,                 "DlgSimspeed"},
+	{OAPI_KEY_F4      | OKMOD_CTRL,                 "DlgCustomCmd"},
+	{OAPI_KEY_F9      | OKMOD_CTRL,                 "DlgVisualHelpers"},
+	{OAPI_KEY_F5      | OKMOD_CTRL,                 "DlgRecorder"},
+	{OAPI_KEY_I       | OKMOD_CTRL,                 "DlgInfo"},
+	{OAPI_KEY_M       | OKMOD_CTRL,                 "DlgMap"},
 	{OAPI_KEY_F1,                                  "ToggleCamInternal"},
 	{OAPI_KEY_F2,                                  "ToggleTrackMode"},
 	{OAPI_KEY_F8,                                  "TogglePanelMode"},
 	{OAPI_KEY_F9,                                  "TogglePlanetarium"},
-	{OAPI_KEY_F9      | KMOD_ALT,                  "ToggleSurfaceLabels"},
-	{OAPI_KEY_C       | KMOD_CTRL,                 "ToggleRecPlay"},
-	{OAPI_KEY_P       | KMOD_CTRL,                 "Pause"},
-	{OAPI_KEY_S       | KMOD_CTRL,                 "Quicksave"},
-	{OAPI_KEY_Q       | KMOD_CTRL,                 "Quit"},
+	{OAPI_KEY_F9      | OKMOD_ALT,                  "ToggleSurfaceLabels"},
+	{OAPI_KEY_C       | OKMOD_CTRL,                 "ToggleRecPlay"},
+	{OAPI_KEY_P       | OKMOD_CTRL,                 "Pause"},
+	{OAPI_KEY_S       | OKMOD_CTRL,                 "Quicksave"},
+	{OAPI_KEY_Q       | OKMOD_CTRL,                 "Quit"},
 	{OAPI_KEY_F3,                                  "DlgSelectVessel"},
-	{OAPI_KEY_F3      | KMOD_CTRL,                 "SelectPrevVessel"},
-	{OAPI_KEY_SYSRQ   | KMOD_CTRL,                 "DlgCapture"},
+	{OAPI_KEY_F3      | OKMOD_CTRL,                 "SelectPrevVessel"},
+	{OAPI_KEY_SYSRQ   | OKMOD_CTRL,                 "DlgCapture"},
 	{OAPI_KEY_F6,                                  "DlgOptions"}
 };
 
@@ -278,10 +278,10 @@ bool Keymap::IsLogicalKey (DWORD &key, char *kstate, int lfunc, bool clearkey) c
 bool Keymap::IsMatchingModifier (char *kstate, WORD key) const
 {
 	WORD kmod;
-	if (kmod = (key & KMOD_CTRL)) {
-		if (kmod == KMOD_CTRL) {
+	if (kmod = (key & OKMOD_CTRL)) {
+		if (kmod == OKMOD_CTRL) {
 			if (!KEYMOD_CONTROL(kstate))  return false;
-		} else if (kmod == KMOD_LCTRL) {
+		} else if (kmod == OKMOD_LCTRL) {
 			if (!KEYMOD_LCONTROL(kstate)) return false;
 		} else {
 			if (!KEYMOD_RCONTROL(kstate)) return false;
@@ -290,10 +290,10 @@ bool Keymap::IsMatchingModifier (char *kstate, WORD key) const
 		if (KEYMOD_CONTROL(kstate))       return false;
 	}
 
-	if (kmod = (key & KMOD_SHIFT)) {
-		if (kmod == KMOD_SHIFT) {
+	if (kmod = (key & OKMOD_SHIFT)) {
+		if (kmod == OKMOD_SHIFT) {
 			if (!KEYMOD_SHIFT(kstate))    return false;
-		} else if (kmod == KMOD_LSHIFT) {
+		} else if (kmod == OKMOD_LSHIFT) {
 			if (!KEYMOD_LSHIFT(kstate))   return false;
 		} else {
 			if (!KEYMOD_RSHIFT(kstate))   return false;
@@ -302,10 +302,10 @@ bool Keymap::IsMatchingModifier (char *kstate, WORD key) const
 		if (KEYMOD_SHIFT(kstate))         return false;
 	}
 
-	if (kmod = (key & KMOD_ALT)) {
-		if (kmod == KMOD_ALT) {
+	if (kmod = (key & OKMOD_ALT)) {
+		if (kmod == OKMOD_ALT) {
 			if (!KEYMOD_ALT(kstate))      return false;
-		} else if (kmod == KMOD_LALT) {
+		} else if (kmod == OKMOD_LALT) {
 			if (!KEYMOD_LALT(kstate))     return false;
 		} else {
 			if (!KEYMOD_RALT(kstate))     return false;
@@ -329,15 +329,15 @@ bool Keymap::ScanStr (char *cbuf, WORD &key) const
 	for (;;) {
 		tok = strtok (NULL, " ");
 		if (!tok) break;
-		if      (!_stricmp (tok, "LSHIFT")) key |= KMOD_LSHIFT;
-		else if (!_stricmp (tok, "RSHIFT")) key |= KMOD_RSHIFT;
-		else if (!_stricmp (tok, "SHIFT"))  key |= KMOD_SHIFT;
-		else if (!_stricmp (tok, "LCTRL"))  key |= KMOD_LCTRL;
-		else if (!_stricmp (tok, "RCTRL"))  key |= KMOD_RCTRL;
-		else if (!_stricmp (tok, "CTRL"))   key |= KMOD_CTRL;
-		else if (!_stricmp (tok, "LALT"))   key |= KMOD_LALT;
-		else if (!_stricmp (tok, "RALT"))   key |= KMOD_RALT;
-		else if (!_stricmp (tok, "ALT"))    key |= KMOD_ALT;
+		if      (!_stricmp (tok, "LSHIFT")) key |= OKMOD_LSHIFT;
+		else if (!_stricmp (tok, "RSHIFT")) key |= OKMOD_RSHIFT;
+		else if (!_stricmp (tok, "SHIFT"))  key |= OKMOD_SHIFT;
+		else if (!_stricmp (tok, "LCTRL"))  key |= OKMOD_LCTRL;
+		else if (!_stricmp (tok, "RCTRL"))  key |= OKMOD_RCTRL;
+		else if (!_stricmp (tok, "CTRL"))   key |= OKMOD_CTRL;
+		else if (!_stricmp (tok, "LALT"))   key |= OKMOD_LALT;
+		else if (!_stricmp (tok, "RALT"))   key |= OKMOD_RALT;
+		else if (!_stricmp (tok, "ALT"))    key |= OKMOD_ALT;
 	}
 	return true;
 }
@@ -352,25 +352,25 @@ char *Keymap::PrintStr (char *cbuf, WORD &key) const
 		cbuf[0] = '\0'; 
 	} else {
 		strcpy (cbuf, keyname[i].name);
-		if (kmod = (key & KMOD_SHIFT)) {
+		if (kmod = (key & OKMOD_SHIFT)) {
 			switch (kmod) {
-			case KMOD_SHIFT:  strcat (cbuf, " SHIFT");  break;
-			case KMOD_LSHIFT: strcat (cbuf, " LSHIFT"); break;
-			case KMOD_RSHIFT: strcat (cbuf, " RSHIFT"); break;
+			case OKMOD_SHIFT:  strcat (cbuf, " SHIFT");  break;
+			case OKMOD_LSHIFT: strcat (cbuf, " LSHIFT"); break;
+			case OKMOD_RSHIFT: strcat (cbuf, " RSHIFT"); break;
 			}
 		}
-		if (kmod = (key & KMOD_CTRL)) {
+		if (kmod = (key & OKMOD_CTRL)) {
 			switch (kmod) {
-			case KMOD_CTRL:  strcat (cbuf, " CTRL");  break;
-			case KMOD_LCTRL: strcat (cbuf, " LCTRL"); break;
-			case KMOD_RCTRL: strcat (cbuf, " RCTRL"); break;
+			case OKMOD_CTRL:  strcat (cbuf, " CTRL");  break;
+			case OKMOD_LCTRL: strcat (cbuf, " LCTRL"); break;
+			case OKMOD_RCTRL: strcat (cbuf, " RCTRL"); break;
 			}
 		}
-		if (kmod = (key & KMOD_ALT)) {
+		if (kmod = (key & OKMOD_ALT)) {
 			switch (kmod) {
-			case KMOD_ALT:  strcat (cbuf, " ALT");  break;
-			case KMOD_LALT: strcat (cbuf, " LALT"); break;
-			case KMOD_RALT: strcat (cbuf, " RALT"); break;
+			case OKMOD_ALT:  strcat (cbuf, " ALT");  break;
+			case OKMOD_LALT: strcat (cbuf, " LALT"); break;
+			case OKMOD_RALT: strcat (cbuf, " RALT"); break;
 			}
 		}
 	}

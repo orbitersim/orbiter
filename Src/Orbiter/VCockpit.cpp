@@ -34,7 +34,7 @@ VirtualCockpit::VirtualCockpit (int _id, const Pane *_pane)
 	if (g_pOrbiter->IsFullscreen())
 		cwnd = 0;
 	else
-		cwnd = g_pOrbiter->GetRenderWnd();
+		cwnd = g_pOrbiter->GetRenderWnd()->Win32Handle();
 	for (i = 0; i < 4; i++)
 		connect[i] = -1;
 }
@@ -346,23 +346,21 @@ bool VirtualCockpit::SetClickZone_Quadrilateral (int i,
 	return true;
 }
 
-bool VirtualCockpit::ProcessMouse (UINT event, DWORD state, int x, int y)
+bool VirtualCockpit::ProcessMouse (const SDL_Event &event, int x, int y)
 {
 	mstate = 0;
-	switch (event) {
-	case WM_LBUTTONDOWN:
-		state = PANEL_MOUSE_LBDOWN | PANEL_MOUSE_LBPRESSED;
-		break;
-	case WM_RBUTTONDOWN:
-		state = PANEL_MOUSE_RBDOWN | PANEL_MOUSE_RBPRESSED;
-		break;
-	case WM_LBUTTONUP:
-		state = PANEL_MOUSE_LBUP;
-		break;
-	case WM_RBUTTONUP:
-		state = PANEL_MOUSE_RBUP;
-		break;
-	}
+    auto state = 0;
+
+    if (event.type == SDL_EVENT_MOUSE_BUTTON_DOWN && event.button.button == SDL_BUTTON_LEFT) {
+        state = PANEL_MOUSE_LBDOWN | PANEL_MOUSE_LBPRESSED;
+    } else if (event.type == SDL_EVENT_MOUSE_BUTTON_DOWN && event.button.button == SDL_BUTTON_RIGHT) {
+        state = PANEL_MOUSE_RBDOWN | PANEL_MOUSE_RBPRESSED;
+    } else if (event.type == SDL_EVENT_MOUSE_BUTTON_UP && event.button.button == SDL_BUTTON_LEFT) {
+        state = PANEL_MOUSE_LBUP;
+    } else if (event.type == SDL_EVENT_MOUSE_BUTTON_UP && event.button.button == SDL_BUTTON_RIGHT) {
+        state = PANEL_MOUSE_RBUP;
+    }
+
 	if (state & PANEL_MOUSE_DOWN) { // locate mouse event
 		idx_mfocus = -1;
 

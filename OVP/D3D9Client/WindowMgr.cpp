@@ -1059,6 +1059,18 @@ SideBar *WindowManager::FindDestination()
 // ===============================================================================================
 // Orbiter Application Main Window Proc
 //
+bool WindowManager::MainWindowProc(const SDL_Event &event)
+{
+	static int xpos, ypos;
+    if (event.type == SDL_EVENT_MOUSE_MOTION) {
+        xpos = event.motion.x;
+        ypos = event.motion.y;
+        MouseMoved(xpos, ypos);
+        return true;
+    }
+    return false;
+}
+
 bool WindowManager::MainWindowProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
 	static int xpos, ypos;
@@ -1087,13 +1099,6 @@ bool WindowManager::MainWindowProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM l
 
 	return false;
 }
-
-
-
-
-
-
-
 
 // ===============================================================================================
 // SideBar Implementation
@@ -1542,20 +1547,20 @@ LRESULT SideBar::SideBarWndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lPar
 	static bool bUpdate = false;
 
 	HWND hMain = pMgr->GetMainWindow();
-
+	
 	switch(uMsg) {
-
+	
 	case WM_KEYDOWN:
 	{
 		pMgr->MainWindowProc(hWnd, uMsg, wParam, lParam);
 		break;
 	}
-
-
+	
+	
 	case WM_MOUSEWHEEL:
 	{
 		if (GetStyle() == gcGUI::DS_FLOAT) break;
-
+	
 		int old = rollpos;
 		short d = GET_WHEEL_DELTA_WPARAM(wParam);
 		if (d>0) rollpos += pMgr->cfg.scroll;
@@ -1572,25 +1577,25 @@ LRESULT SideBar::SideBarWndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lPar
 	{
 		xpos = GET_X_LPARAM(lParam);
 		ypos = GET_Y_LPARAM(lParam);
-
+	
 		for (Node* nd : wList)
 		{
 			Node *pPar = nd->pParent;
-
+	
 			if (pPar) {
 				if (pPar->GetSideBar() == this) {
 					if (pPar->bOpen == false) continue;
 				}
 			}
-
+	
 			if (PointInside(xpos, ypos, &(nd->trect))) {
-
+	
 				if (nd->bClose && PointInside(xpos, ypos, &(nd->crect))) {
 					dnClose = nd;
 				}
-				else {			
+				else {
 					xof = xpos - nd->trect.left;
-					yof = ypos - nd->trect.top;				
+					yof = ypos - nd->trect.top;
 					dnNode = nd;
 				}
 				TRACKMOUSEEVENT te; te.cbSize = sizeof(TRACKMOUSEEVENT); te.dwFlags = TME_LEAVE; te.hwndTrack = hBar;
@@ -1600,14 +1605,14 @@ LRESULT SideBar::SideBarWndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lPar
 		}
 		break;
 	}
-
+	
 	case WM_LBUTTONUP:
 	{
 		int xp = GET_X_LPARAM(lParam);
 		int yp = GET_Y_LPARAM(lParam);
-
+	
 		SideBar *pDG = pMgr->GetDraged();
-
+	
 		if (pDG) {
 			SideBar *pTgt = pMgr->FindDestination();
 			if (pTgt) pTgt->Apply();
@@ -1629,7 +1634,7 @@ LRESULT SideBar::SideBarWndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lPar
 				}
 			}
 		}
-
+	
 		if (dnClose) {
 			if (dnClose->GetSideBar() == this) {
 				if (PointInside(xp, yp, &(dnClose->crect))) {
@@ -1640,33 +1645,33 @@ LRESULT SideBar::SideBarWndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lPar
 				}
 			}
 		}
-		
+	
 		dnNode = NULL;
 		dnClose = NULL;
 		break;
 	}
-
-
+	
+	
 	case WM_MOUSELEAVE:
 	{
 		dnNode = NULL;
 		dnClose = NULL;
-		break; 
+		break;
 	}
-
-
+	
+	
 	case WM_MOUSEMOVE:
 	{
 		int dx = abs(GET_X_LPARAM(lParam) - xpos);
 		int dy = abs(GET_Y_LPARAM(lParam) - ypos);
 		int x = GET_X_LPARAM(lParam);
 		int y = GET_Y_LPARAM(lParam);
-
+	
 		if (Config->gcGUIMode < 3) {
-
+	
 			POINT scp = { x, y };
 			ClientToScreen(hWnd, &scp);
-				
+	
 			// Begin Moving a Window
 			//
 			if (dnNode && IsFloater() && (GetTopNode() == dnNode) && (dx > 1 || dy > 1))
@@ -1678,7 +1683,7 @@ LRESULT SideBar::SideBarWndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lPar
 				dnClose = NULL;
 				break;
 			}
-
+	
 			// Detach a window from a dock
 			//
 			if (Config->gcGUIMode == 1) {
@@ -1691,7 +1696,7 @@ LRESULT SideBar::SideBarWndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lPar
 					break;
 				}
 			}
-
+	
 			// Move a dragged window and try to insert content into a dock
 			//
 			if (pMgr->GetDraged()) {
@@ -1709,21 +1714,20 @@ LRESULT SideBar::SideBarWndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lPar
 				break;
 			}
 		}
-		break; 
+		break;
 	}
-
+	
 	case WM_PAINT:
 		PaintWindow();
 		break;
-		
+	
 	case WM_ERASEBKGND:
 		return 1;
-
+	
 	default:
 		break;
 	}
-
-
+	
 	return DefWindowProc(hWnd, uMsg, wParam, lParam);
 }
 

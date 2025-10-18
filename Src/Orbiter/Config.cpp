@@ -194,9 +194,9 @@ CFG_DEVPRM CfgDevPrm_default = {
 
 CFG_JOYSTICKPRM CfgJoystickPrm_default = {
 	0,			// Joy_idx (joystick device index, 0=disabled)
-	2500,		// Deadzone (neutralise joystick axes within 20% of central position)
+	6500,		// Deadzone (neutralise joystick axes within 20% of central position)
 	1,			// ThrottleAxis (z-axis by default)
-	9500,		// ThrottleSaturation (saturate throttle at the last 5% each end)
+	31100,		// ThrottleSaturation (saturate throttle at the last 5% each end)
 	true		// bThrottleIgnore (ignore throttle setting on simulation start)
 };
 
@@ -227,7 +227,9 @@ CFG_DEMOPRM CfgDemoPrm_default = {
 
 CFG_FONTPRM CfgFontPrm_default = {
 	1.0f,		// dlgFont_Scale (scaling factor for inline dialog fonts)
-	"Arial"		// dlgFont1_Face (default dialog font face name)
+	"Arial",	// dlgFont1_Face (default dialog font face name)
+	14.0f,		// ImGui_FontSize
+	"Roboto-Medium.ttf" // ImGui_FontFile
 };
 
 CFG_CAMERAPRM CfgCameraPrm_default = {
@@ -459,6 +461,10 @@ Config::Config(char* fname)
 	Load(fname);
 }
 
+static bool operator==(const SDL_GUID a, const SDL_GUID b) {
+    return memcmp(&a.data, &b.data, 16) == 0;
+}
+
 bool Config::Load(const char *fname)
 {
 	int i;
@@ -529,14 +535,25 @@ bool Config::Load(const char *fname)
 	if (GetInt (ifs, "WindowHeight", i)) CfgDevPrm.WinH = (DWORD)i;
 
 	// Joystick information
-	if (GetInt (ifs, "JoystickIndex", i))
-		CfgJoystickPrm.Joy_idx = (DWORD)i;
+	if (GetString (ifs, "JoystickIndex", cbuf)) {
+	    const auto guid = SDL_StringToGUID(cbuf);
+	    auto njoy = 0;
+	    const auto joylist = SDL_GetJoysticks(&njoy);
+	    CfgJoystickPrm.Joy_idx = 0;
+	    for (int joyix = 0; joyix < njoy; joyix++) {
+            if (SDL_GetJoystickGUIDForID(joylist[joyix]) == guid) {
+                CfgJoystickPrm.Joy_idx = joylist[joyix];
+            	break;
+            }
+        }
+	    SDL_free(joylist);
+	}
 	if (GetInt (ifs, "JoystickThrottleAxis", i))
 		CfgJoystickPrm.ThrottleAxis = max (0, min (3, i));
 	if (GetInt (ifs, "JoystickThrottleSaturation", i))
-		CfgJoystickPrm.ThrottleSaturation = max (0, min (10000, i));
+		CfgJoystickPrm.ThrottleSaturation = max (0, min (32768, i));
 	if (GetInt (ifs, "JoystickDeadzone", i))
-		CfgJoystickPrm.Deadzone = max (0, min (10000, i));
+		CfgJoystickPrm.Deadzone = max (0, min (32768, i));
 	GetBool (ifs, "IgnoreThrottleOnStart", CfgJoystickPrm.bThrottleIgnore);
 
 	// planet render parameters
@@ -719,14 +736,14 @@ bool Config::Load(const char *fname)
 	GetBool (ifs, "ShowWarpAlways", CfgUIPrm.bWarpAlways);
 	GetBool (ifs, "ShowWarpScientific", CfgUIPrm.bWarpScientific);
 	if (GetInt (ifs, "InfobarMode", i) && i >= 0 && i <= 2)
-		CfgUIPrm.InfoMode = (DWORD)i;
+		CfgUIPrm.InfoMode = i;
 	if (GetString (ifs, "InfoAuxIdx", cbuf)) {
 		sscanf (cbuf, "%d%d", CfgUIPrm.InfoAuxIdx+0, CfgUIPrm.InfoAuxIdx+1);
 		for (i = 0; i < 2; i++)
 			if (CfgUIPrm.InfoAuxIdx[i] > 3) CfgUIPrm.InfoAuxIdx[i] = 0;
 	}
 	if (GetInt (ifs, "MenubarOpacity", i) && i >= 0 && i <= 10)
-		CfgUIPrm.MenuOpacity = (DWORD)i;
+		CfgUIPrm.MenuOpacity = i;
 	if (GetInt (ifs, "InfobarOpacity", i) && i >= 0 && i <= 10)
 		CfgUIPrm.InfoOpacity = (DWORD)i;
 	if (GetInt (ifs, "MenubarSpeed", i) && i >= 1 && i <= 20)
@@ -758,6 +775,8 @@ bool Config::Load(const char *fname)
 	// font characteristics
 	if (GetReal (ifs, "DialogFont_Scale", d)) CfgFontPrm.dlgFont_Scale = (float)d;
 	GetString (ifs, "DialogFont1_Face", CfgFontPrm.dlgFont1_Face);
+	if (GetReal (ifs, "ImGui_FontSize", d)) CfgFontPrm.ImGui_FontSize = (float)d;
+	GetString (ifs, "ImGui_FontFile", CfgFontPrm.ImGui_FontFile);
 
 	// misc. options
 	if (GetString (ifs, "LPadRect", cbuf)) {
@@ -1246,8 +1265,12 @@ BOOL Config::Write (const char *fname) const
 
 	if (memcmp (&CfgJoystickPrm, &CfgJoystickPrm_default, sizeof(CFG_JOYSTICKPRM)) || bEchoAll) {
 		ofs << "\n; === Joystick parameters ===\n";
-		if (CfgJoystickPrm.Joy_idx != CfgJoystickPrm_default.Joy_idx || bEchoAll)
-			ofs << "JoystickIndex = " << CfgJoystickPrm.Joy_idx << '\n';
+		if (CfgJoystickPrm.Joy_idx != CfgJoystickPrm_default.Joy_idx || bEchoAll) {
+            const auto guid = SDL_GetJoystickGUIDForID(CfgJoystickPrm.Joy_idx);
+	        char cbuf[33];
+		    SDL_GUIDToString(guid, cbuf, 33);
+		    ofs << "JoystickIndex = " << cbuf << '\n';
+		}
 		if (CfgJoystickPrm.ThrottleAxis != CfgJoystickPrm_default.ThrottleAxis || bEchoAll)
 			ofs << "JoystickThrottleAxis = " << CfgJoystickPrm.ThrottleAxis << '\n';
 		if (CfgJoystickPrm.ThrottleSaturation != CfgJoystickPrm_default.ThrottleSaturation || bEchoAll)
@@ -1332,6 +1355,10 @@ BOOL Config::Write (const char *fname) const
 			ofs << "DialogFont_Scale = " << CfgFontPrm.dlgFont_Scale << '\n';
 		if (strcmp (CfgFontPrm.dlgFont1_Face, CfgFontPrm_default.dlgFont1_Face) || bEchoAll)
 			ofs << "DialogFont1_Face = " << CfgFontPrm.dlgFont1_Face << '\n';
+		if (CfgFontPrm.ImGui_FontSize != CfgFontPrm_default.ImGui_FontSize || bEchoAll)
+			ofs << "ImGui_FontSize = " << CfgFontPrm.ImGui_FontSize << '\n';
+		if (strcmp (CfgFontPrm.ImGui_FontFile, CfgFontPrm_default.ImGui_FontFile) || bEchoAll)
+			ofs << "ImGui_FontFile = " << CfgFontPrm.ImGui_FontFile << '\n';
 	}
 
 	if (memcmp (&CfgWindowPos, &CfgWindowPos_default, sizeof(CFG_WINDOWPOS)) || bEchoAll) {

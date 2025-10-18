@@ -8,16 +8,12 @@
 #ifndef __DLGTACC_H
 #define __DLGTACC_H
 
-#include "DialogWin.h"
+#include "OrbiterAPI.h"
 
-class DlgTacc: public DialogWin {
+class DlgTacc : public ImGuiDialog {
 public:
-	DlgTacc (HINSTANCE hInstance, HWND hParent, void *context);
-	void Message (DWORD msg, void *data);
-	void RegisterWarp (HWND hDlg, double warp, bool commit = true, bool edit = true, bool slide = true);
-	BOOL OnInitDialog (HWND hDlg, WPARAM wParam, LPARAM lParam);
-	BOOL OnCommand (HWND hDlg, WORD id, WORD code, HWND hControl);
-	BOOL OnHScroll (HWND hDlg, WORD request, WORD curpos, HWND hControl);
+    DlgTacc();
+    void OnDraw() override;
 };
 
 #endif // !__DLGTACC_H

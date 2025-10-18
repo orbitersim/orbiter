@@ -23,12 +23,14 @@ target_include_directories(XRSound_dll PUBLIC
 	${ORBITER_SOURCE_SDK_INCLUDE_DIR}
 	${CMAKE_CURRENT_SOURCE_DIR}/Utils
 	${IRRKLANG_DIR}/include
+	SDL3::SDL3
 )
 
-target_link_libraries(XRSound_dll
+target_link_libraries(XRSound_dll PUBLIC
 	${ORBITER_LIB}
 	${ORBITER_SDK_LIB}
 	${IRRKLANG_LIB}
+	SDL3::SDL3
 )
 
 add_dependencies(XRSound_dll
@@ -54,7 +56,10 @@ set_target_properties(XRSound_lib
 
 target_include_directories(XRSound_lib PUBLIC
 	${ORBITER_SOURCE_SDK_INCLUDE_DIR}
+	SDL3::SDL3
 )
+
+target_link_libraries(XRSound_lib PUBLIC SDL3::SDL3)
 
 install(TARGETS XRSound_lib
 	ARCHIVE DESTINATION ${ORBITER_INSTALL_SDK_DIR}/XRSound

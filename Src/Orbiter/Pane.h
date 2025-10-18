@@ -55,7 +55,7 @@ class Pane {
 	friend class MenuInfoBar;
 
 public:
-	Pane (oapi::GraphicsClient *gclient, HWND hwnd, int width, int height, int bpp);
+	Pane (oapi::GraphicsClient *gclient, std::shared_ptr<sdl::UnmanagedWindow> hwnd, int width, int height, int bpp);
 	// Create a new pane with dimension width x height x bpp
 
 	~Pane ();
@@ -92,9 +92,11 @@ public:
 	bool MFDConsumeKeyBuffered (int id, DWORD key);
 	// Process a buffered key for MFD id
 
-	bool ProcessMouse_System(UINT event, DWORD state, DWORD x, DWORD y, const char *kstate);
+	bool ProcessMouse_System(const SDL_Event &event, DWORD x, DWORD y,
+                                 const char *kstate);
 
-	bool ProcessMouse_OnRunning (UINT event, DWORD state, DWORD x, DWORD y, const char *kstate);
+	bool ProcessMouse_OnRunning (const SDL_Event &event, DWORD x, DWORD y,
+                                    const char *kstate);
 	// Process a mouse click/release
 
 	void SetFOV (double _fov);
@@ -271,7 +273,7 @@ private:
 	oapi::GraphicsClient *gc; // client instance
 	int W, H, BPP;            // pane dimensions
 	int scaleW;
-	HWND hWnd;               // window handle
+	std::shared_ptr<sdl::UnmanagedWindow> hWnd; // window handle
 	int colidx;              // HUD colour index
 	COLORREF hudCol;         // HUD colour
 	double hudIntens;        // HUD intensity (VC only)

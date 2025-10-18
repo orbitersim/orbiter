@@ -41,7 +41,7 @@ Panel2D::Panel2D (int _id, Pane *_pane, double scale)
 	mstate = 0;
 
 	if (g_pOrbiter->IsFullscreen()) cwnd = 0;
-	else                            cwnd = g_pOrbiter->GetRenderWnd();
+	else                            cwnd = g_pOrbiter->GetRenderWnd()->Win32Handle();
 
 	for (i = 0; i < 4; i++)
 		connect[i] = -1;
@@ -281,49 +281,36 @@ void Panel2D::Render ()
 	}
 }
 
-bool Panel2D::ProcessMouse_System(UINT event, DWORD state, int x, int y, const char *kstate)
+bool Panel2D::ProcessMouse_System(const SDL_Event &event, int x, int y,
+                                  const char *kstate)
 {
 	// Windows event handler for mouse events
-	switch (event) {
-	case WM_MOUSEWHEEL:
-		if ((KEYMOD_CONTROL(kstate))) {
-			short zDelta = (short)HIWORD(state);
+	if (event.type == SDL_EVENT_MOUSE_WHEEL) {
+	    if ((KEYMOD_CONTROL(kstate))) {
+			double zDelta = event.wheel.y * 120.0;
 			zoomaction = (zDelta < 0 ? ZOOM_OUT : ZOOM_IN);
 			refx = x, refy = y;
 			return true;
 		}
-		break;
 	}
 	return false;
 }
 
-bool Panel2D::ProcessMouse_OnRunning (UINT event, DWORD state, int x, int y, const char *kstate)
+bool Panel2D::ProcessMouse_OnRunning (const SDL_Event &event, int x, int y,
+                                     const char *kstate)
 {
 	mstate = 0;
+    auto state = 0;
 
-	// Windows event handler for mouse events
-	switch (event) {
-	case WM_LBUTTONDOWN:
-		state = PANEL_MOUSE_LBDOWN | PANEL_MOUSE_LBPRESSED;
-		break;
-	case WM_RBUTTONDOWN:
-		state = PANEL_MOUSE_RBDOWN | PANEL_MOUSE_RBPRESSED;
-		break;
-	case WM_LBUTTONUP:
-		state = PANEL_MOUSE_LBUP;
-		break;
-	case WM_RBUTTONUP:
-		state = PANEL_MOUSE_RBUP;
-		break;
-	//case WM_MOUSEWHEEL:
-	//	if ((KEYMOD_CONTROL(kstate))) {
-	//		short zDelta = (short)HIWORD(state);
-	//		zoomaction = (zDelta < 0 ? ZOOM_OUT : ZOOM_IN);
-	//		refx = x, refy = y;
-	//		return true;
-	//	}
-	//	break;
-	}
+    if (event.type == SDL_EVENT_MOUSE_BUTTON_DOWN && event.button.button == SDL_BUTTON_LEFT) {
+        state = PANEL_MOUSE_LBDOWN | PANEL_MOUSE_LBPRESSED;
+    } else if (event.type == SDL_EVENT_MOUSE_BUTTON_DOWN && event.button.button == SDL_BUTTON_RIGHT) {
+        state = PANEL_MOUSE_RBDOWN | PANEL_MOUSE_RBPRESSED;
+    } else if (event.type == SDL_EVENT_MOUSE_BUTTON_UP && event.button.button == SDL_BUTTON_LEFT) {
+        state = PANEL_MOUSE_LBUP;
+    } else if (event.type == SDL_EVENT_MOUSE_BUTTON_UP && event.button.button == SDL_BUTTON_RIGHT) {
+        state = PANEL_MOUSE_RBUP;
+    }
 
 	// mouse state event handler (button-down events only)
 	if (state & PANEL_MOUSE_DOWN) {

@@ -27,7 +27,7 @@ public:
 	MenuInfoBar (const Pane *_pane);
 	~MenuInfoBar ();
 	void Update (double t);
-	bool ProcessMouse (UINT event, DWORD state, DWORD x, DWORD y);
+	bool ProcessMouse (const SDL_Event &event, DWORD x, DWORD y);
 	void Render ();
 	void SetFOV (double fov);
 	void SetWarp (double warp);

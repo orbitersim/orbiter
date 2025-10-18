@@ -11,12 +11,16 @@
 #define __CONFIG_H
 
 //#include <d3d.h>
-#include <windows.h>
-#include "Vecmat.h"
-#include <iostream>
-#include <fstream>
-#include <list>
 #include "GraphicsAPI.h"
+#include "Vecmat.h"
+#include <fstream>
+#include <iostream>
+#include <list>
+#include <optional>
+#include <windows.h>
+
+#include <filesystem>
+namespace fs = std::filesystem;
 
 // dynamic state propagation methods
 #define MAX_PROP_LEVEL  5
@@ -218,25 +222,25 @@ struct CFG_DEVPRM {
 };
 
 struct CFG_JOYSTICKPRM {
-	DWORD  Joy_idx;				// joystick device index (0=disabled)
-	DWORD  Deadzone;			// central deadzone range for all axes (0-10000)
-	DWORD  ThrottleAxis;		// joystick throttle axis (0=none, 1=z-axis, 2=slider 0, 3=slider 1)
-	DWORD  ThrottleSaturation;	// saturation level for joystick throttle control (0-10000)
-	bool   bThrottleIgnore;		// ignore joystick throttle setting on start
+	SDL_JoystickID Joy_idx;		    // joystick device index (0=disabled)
+	DWORD    Deadzone;			    // central deadzone range for all axes (0-32768)
+	DWORD    ThrottleAxis;	    	// joystick throttle axis (0=none, 1=z-axis, 2=slider 0, 3=slider 1)
+	DWORD    ThrottleSaturation;	// saturation level for joystick throttle control (0-32768)
+	bool     bThrottleIgnore;		// ignore joystick throttle setting on start
 };
 
 struct CFG_UIPRM {              // user interface options
 	DWORD  MouseFocusMode;	    // 0: focus requires click; 1: focus requires click for child windows only; 2: focus follow mouse
-	DWORD  MenuMode;            // 0=show, 1=hide, 2=auto-hide
+	int    MenuMode;            // 0=show, 1=hide, 2=auto-hide
 	bool   bMenuLabelOnly;      // display only menu labels?
 	bool   bWarpAlways;         // always display time acceleration != 1
 	bool   bWarpScientific;     // display time acceleration in scientific notation?
-	DWORD  InfoMode;            // 0=show, 1=hide, 2=auto-hide
-	DWORD  InfoAuxIdx[2];       // index for auxiliary info bars left/right (0=none)
-	DWORD  MenuOpacity;         // menubar opacity (0-10)
-	DWORD  InfoOpacity;         // infobar opacity (0-20)
-	DWORD  MenuScrollspeed;     // menubar scroll speed (1-20)
-	DWORD  PauseIndMode;        // 0=flash on pause/resume, 1=show on pause, 2=don't show
+	int    InfoMode;            // 0=show, 1=hide, 2=auto-hide
+	int    InfoAuxIdx[2];       // index for auxiliary info bars left/right (0=none)
+	int    MenuOpacity;         // menubar opacity (0-10)
+	int    InfoOpacity;         // infobar opacity (0-20)
+	int    MenuScrollspeed;     // menubar scroll speed (1-20)
+	int    PauseIndMode;        // 0=flash on pause/resume, 1=show on pause, 2=don't show
 	int    SelVesselTab;        // tab to open in vessel selection dialog
  	int    SelVesselRange;      // "nearby" range for vessel selection dialog
 	bool   bSelVesselFlat;      // flat assemblies for vessel selection dialog
@@ -253,6 +257,8 @@ struct CFG_DEMOPRM {
 struct CFG_FONTPRM {
 	float  dlgFont_Scale;		// font scaling factor
 	char   dlgFont1_Face[64];	// dialog font face name
+	float  ImGui_FontSize;		// Font size for ImGui dialogs
+	char   ImGui_FontFile[256];	// Font file for ImGui default font
 };
 
 struct CFG_CAMERAPRM {
@@ -309,7 +315,7 @@ bool GetItemVector (std::istream &is, const char *label, Vector &val);
 bool GetItemVECTOR (std::istream &is, const char *label, VECTOR3 &val);
 
 bool FindLine      (std::istream &is, const char *line);
-// scans stream 'is' from beginning for a line beginning with 'line' 
+// scans stream 'is' from beginning for a line beginning with 'line'
 // and leaves file pointer on the beginning of the next line
 // return value is false if line is not found
 

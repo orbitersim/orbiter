@@ -324,6 +324,7 @@ INT_PTR orbiter::LaunchpadDialog::DlgProc (HWND hWnd, UINT uMsg, WPARAM wParam, 
 		if (pCfg->CfgDemoPrm.bBlockExit) return TRUE;
 		UpdateConfig ();
 		DestroyWindow (hWnd);
+		g_pOrbiter->SetShouldQuit();
 		return TRUE;
 	case WM_DESTROY:
 		if (pCfg->CfgDemoPrm.bDemo && timerid) {
@@ -430,6 +431,7 @@ INT_PTR orbiter::LaunchpadDialog::DlgProc (HWND hWnd, UINT uMsg, WPARAM wParam, 
 				PostMessage (hWnd, WM_COMMAND, IDLAUNCH, 0);
 		}
 		return 0;
+	default: break;
 	}
 	return FALSE;
 }

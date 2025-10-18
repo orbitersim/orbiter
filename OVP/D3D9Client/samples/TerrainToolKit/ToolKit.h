@@ -129,7 +129,7 @@ public:
 	void		clbkSimulationStart(RenderMode rm);
 	void		clbkSimulationEnd();
 	void		clbkPreStep(double simt, double simdt, double mjd);
-	bool		clbkProcessMouse(UINT event, DWORD state, DWORD x, DWORD y);
+	bool		clbkProcessMouse(const SDL_Event& event, DWORD x, DWORD y) override;
 	bool		clbkProcessKeyboardBuffered(DWORD key, char kstate[256], bool simRunning);
 
 				// From D3D9Client

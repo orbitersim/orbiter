@@ -14,11 +14,11 @@ add_dependencies(Vsop87
 )
 
 target_include_directories(Vsop87
-	PUBLIC ${CMAKE_SOURCE_DIR}/Orbitersdk/include
+	PUBLIC ${CMAKE_SOURCE_DIR}/Orbitersdk/include SDL3::SDL3
 )
 
 target_link_libraries(Vsop87
-	${ORBITER_LIB}
+	${ORBITER_LIB} SDL3::SDL3
 )
 
 set(VSOP87_LIB $<TARGET_LINKER_FILE:Vsop87>)

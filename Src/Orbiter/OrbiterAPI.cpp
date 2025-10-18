@@ -1966,6 +1966,14 @@ DLLEXPORT HDC oapiGetDC (SURFHANDLE surf)
 	return hDC;
 }
 
+DLLEXPORT uint64_t oapiGetImTextureID (SURFHANDLE surf)
+{
+	oapi::GraphicsClient *gc = g_pOrbiter->GetGraphicsClient();
+	if (gc && surf)
+		return gc->clbkImGuiSurfaceTexture (surf);
+	return 0;
+}
+
 DLLEXPORT void oapiReleaseDC (SURFHANDLE surf, HDC hDC)
 {
 	oapi::GraphicsClient *gc = g_pOrbiter->GetGraphicsClient();
@@ -2159,6 +2167,12 @@ DLLEXPORT HWND oapiOpenDialogEx (HINSTANCE hDLLInst, int resourceId, DLGPROC msg
 	return g_pOrbiter->OpenDialogEx (hDLLInst, resourceId, msgProc, flag, context);
 }
 
+DLLEXPORT void oapiOpenDialog(ImGuiDialog *e)
+{
+	g_pOrbiter->DlgMgr()->AddEntry(e);
+	e->Activate();
+}
+
 DLLEXPORT HWND oapiFindDialog (HINSTANCE hDLLInst, int resourceId)
 {
 	return g_pOrbiter->IsDialog (hDLLInst, resourceId);
@@ -2167,6 +2181,12 @@ DLLEXPORT HWND oapiFindDialog (HINSTANCE hDLLInst, int resourceId)
 DLLEXPORT void oapiCloseDialog (HWND hDlg)
 {
 	g_pOrbiter->CloseDialog (hDlg);
+}
+
+DLLEXPORT void oapiCloseDialog(ImGuiDialog *e)
+{
+    if (g_pOrbiter->DlgMgr())
+	    g_pOrbiter->DlgMgr()->DelEntry(e);
 }
 
 DLLEXPORT void *oapiGetDialogContext (HWND hDlg)
@@ -2205,7 +2225,7 @@ DLLEXPORT INT_PTR oapiDefDialogProc (HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM
 
 DLLEXPORT bool oapiOpenHelp (HELPCONTEXT *hcontext)
 {
-	HWND hDlg = g_pOrbiter->OpenHelp (hcontext);
+	g_pOrbiter->OpenHelp (hcontext);
 	return true;
 }
 

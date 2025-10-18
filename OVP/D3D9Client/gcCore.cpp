@@ -567,7 +567,7 @@ HBITMAP	gcCore::LoadBitmapFromFile(const char* fname)
 //
 HWND gcCore::GetRenderWindow()
 {
-	return g_client->GetRenderWindow();
+	return g_client->GetRenderWindow()->Win32Handle();
 }
 
 

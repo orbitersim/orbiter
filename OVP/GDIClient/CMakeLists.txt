@@ -10,17 +10,19 @@ add_library(GDIClient SHARED
 )
 
 target_include_directories(GDIClient
-	PUBLIC ${CMAKE_SOURCE_DIR}/Orbitersdk/include
+	PUBLIC ${CMAKE_SOURCE_DIR}/Orbitersdk/include imgui
 )
 
 add_dependencies(GDIClient
 	${OrbiterTgt}
 	Orbitersdk
+	imgui
 )
 
 target_link_libraries(GDIClient
 	${ORBITER_LIB}
 	${ORBITER_SDK_LIB}
+	imgui
 )
 
 # Installation

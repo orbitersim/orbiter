@@ -8,15 +8,12 @@
 #ifndef __DLGMENUCFG_H
 #define __DLGMENUCFG_H
 
-#include "DialogWin.h"
+#include "OrbiterAPI.h"
 
-class DlgMenuCfg: public DialogWin {
+class DlgMenuCfg: public ImGuiDialog {
 public:
-	DlgMenuCfg (HINSTANCE hInstance, HWND hParent, void *context);
-	~DlgMenuCfg ();
-	BOOL OnInitDialog (HWND hWnd, WPARAM wParam, LPARAM lParam);
-	BOOL OnCommand (HWND hWnd, WORD id, WORD code, HWND hControl);
-	BOOL OnHScroll (HWND hWnd, WORD request, WORD curpos, HWND hControl);
+	DlgMenuCfg ();
+	void OnDraw();
 };
 
 #endif // !__DLGMENUCFG_H
