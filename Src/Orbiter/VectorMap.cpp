@@ -692,8 +692,6 @@ void VectorMap::DrawMap_engine ()
 {
 	// called either directly (by DrawMap) or from the drawing thread
 
-	tic();
-
 	// clear the bitmap
 	HBITMAP pBmp = (HBITMAP)SelectObject (hDCmem, hBmpDraw);
 	BitBlt (hDCmem, 0, 0, cw, ch, NULL, 0, 0, BLACKNESS);
