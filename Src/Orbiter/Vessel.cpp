@@ -43,6 +43,8 @@
 #include <stdlib.h>
 #include <string>
 
+#include "Tracy.hpp"
+
 using namespace std;
 
 extern Orbiter *g_pOrbiter;
@@ -906,6 +908,7 @@ void Vessel::SetRotationMatrix (const Matrix &R)
 
 void Vessel::GetIntermediateMoments (Vector &acc, Vector &tau, const StateVectors &state, double tfrac, double dt)
 {
+	ZoneScoped;
 	// TODO: Move this up to VesselBase
 	Vector F(Flin_add); // linear forces excluding gravitational and ground contact forces
 	Vector M(Amom_add); // angular momentum excluding gravity gradient torque and ground contact torques
@@ -923,6 +926,7 @@ void Vessel::GetIntermediateMoments (Vector &acc, Vector &tau, const StateVector
 void Vessel::GetIntermediateMoments_pert (Vector &acc, Vector &tau,
 	const StateVectors &state_rel, double tfrac, double dt, const CelestialBody *cbody)
 {
+	ZoneScoped;
 	StateVectors state(state_rel);
 	state.pos += cbody->InterpolatePosition (tfrac);
 
@@ -941,6 +945,7 @@ void Vessel::GetIntermediateMoments_pert (Vector &acc, Vector &tau,
 
 Vector Vessel::GetTorque () const
 {
+	ZoneScoped;
 	static Vector F(0,0,0);
 	Vector M(Amom);
 	AddSurfaceForces (&F, &M, s0, 0, 0);
@@ -951,6 +956,7 @@ Vector Vessel::GetTorque () const
 
 Vector Vessel::GetMomentumFlux () const
 {
+	ZoneScoped;
 	// map momentum flux into vessel frame
 	return tmul (s0->R, g_psys->GetMomentumFlux (s0->pos));
 }
@@ -1241,6 +1247,7 @@ bool Vessel::GetWeightVector (Vector &G) const
 
 bool Vessel::GetThrustVector (Vector &T) const
 {
+	ZoneScoped;
 	if (m_bThrustEngaged) T.Set (Thrust);
 	else                  T.Set (0,0,0);
 	return m_bThrustEngaged;
@@ -1250,6 +1257,7 @@ bool Vessel::GetThrustVector (Vector &T) const
 
 bool Vessel::GetLiftVector (Vector &L) const
 {
+	ZoneScoped;
 	if (!Lift) {
 		L.Set (0, 0, 0);
 		return false;
@@ -1265,6 +1273,7 @@ bool Vessel::GetLiftVector (Vector &L) const
 
 bool Vessel::GetDragVector (Vector &D) const
 {
+	ZoneScoped;
 	if (!Drag) {
 		D.Set (0, 0, 0);
 		return false;
@@ -1279,6 +1288,7 @@ bool Vessel::GetDragVector (Vector &D) const
 
 bool Vessel::GetSideForceVector (Vector &SF) const
 {
+	ZoneScoped;
 	if (!SideForce) {
 		SF.Set (0, 0, 0);
 		return false;
@@ -1392,6 +1402,7 @@ void Vessel::ShiftThrusters (const Vector &shift)
 
 Vector Vessel::GetThrusterForce (const ThrustSpec *ts) const
 {
+	ZoneScoped;
 	if (!ts->tank || !ts->tank->mass) {
 		return Vector(0,0,0);
 	} else {
@@ -1405,6 +1416,7 @@ Vector Vessel::GetThrusterForce (const ThrustSpec *ts) const
 
 void Vessel::GetThrusterMoment (const ThrustSpec *ts, Vector &F, Vector &T) const
 {
+	ZoneScoped;
 	if (!ts->tank || !ts->tank->mass) {
 		F.Set(0,0,0);
 		T.Set(0,0,0);
@@ -2702,6 +2714,7 @@ void Vessel::MoveDock(PortSpec* pD, const Vector& pos, const Vector& dir, const 
 
 PortSpec* Vessel::GetProxyDock(PortSpec *pD)
 {
+	ZoneScoped;
 	double maxd = 1e30;
 	PortSpec* pTgt = nullptr;
 	if (ndock == 0) return nullptr;
@@ -2738,6 +2751,7 @@ PortSpec* Vessel::GetProxyDock(PortSpec *pD)
 
 bool Vessel::GetTargetDockAlignment(PortSpec* pD, PortSpec* pT, Vector* ref, Vector* dir, Vector* rot, Vector* vel)
 {
+	ZoneScoped;
 	Vessel* pVT = pT->owner;
 	if (pVT->proxybody != proxybody) return false;
 	if (ref) *ref = tmul(GRot(), mul(pVT->GRot(), pT->ref) + pVT->GPos() - GPos()) - pD->ref;
@@ -2751,6 +2765,7 @@ bool Vessel::GetTargetDockAlignment(PortSpec* pD, PortSpec* pT, Vector* ref, Vec
 
 int Vessel::Dock (Vessel *target, DWORD mydid, DWORD tgtdid, DWORD mode)
 {
+	ZoneScoped;
 	if (dock[mydid]->mate) return 1;          // error: my dock already in use
 	if (target->dock[tgtdid]->mate) return 2; // error: target dock already in use
 	if (supervessel)
@@ -2880,6 +2895,7 @@ void Vessel::UndockInteractive (const Vessel *exclude, double vsep)
 
 void Vessel::RelDockingPos (const Vessel *target, UINT mydid, UINT tgtdid, Vector &P, Matrix &R)
 {
+	ZoneScoped;
 	// Calculate the relative position 'P' and orientation 'R' of 'target'
 	// in my reference frame, if we are docked between 'mydid' and 'tgtdid'
 
@@ -3279,6 +3295,7 @@ UINT Vessel::MakeFreeMeshEntry (UINT idx)
 
 void Vessel::ScanMeshCaps ()
 {
+	ZoneScoped;
 	extpassmesh = false;
 
 	for (UINT i = 0; i < nmesh; i++) {
@@ -3623,6 +3640,7 @@ void Vessel::InitOrbiting (const Vector &relr, const Vector &relv, const Vector 
 
 void Vessel::SetProxyplanet (Planet *pp)
 {
+	ZoneScoped;
 	VesselBase::SetProxyplanet (pp);
 	landtgt = 0;
 	for (DWORD i = 0; i < nnav; i++) nav[i].dbidx = -1;
@@ -3737,6 +3755,7 @@ int Vessel::ConsumeDirectKey (char *buffer)
 
 int Vessel::ConsumeBufferedKey (DWORD key, bool down, char *kstate)
 {
+	ZoneScoped;
 	int res;
 	const Keymap &keymap = g_pOrbiter->keymap;
 
@@ -3797,6 +3816,7 @@ int Vessel::ConsumeBufferedKey (DWORD key, bool down, char *kstate)
 
 bool Vessel::GetSuperStructCG (Vector &cg) const
 {
+	ZoneScoped;
 	if (!supervessel) {
 		cg.Set(0,0,0);
 		return false;
@@ -3810,6 +3830,7 @@ bool Vessel::GetSuperStructCG (Vector &cg) const
 
 double Vessel::MaxAngularMoment (int axis) const
 {
+	ZoneScoped;
 	dCHECK(axis >= 0 && axis < 6, "Invalid axis index.")
 
 	if (!supervessel) return max_angular_moment[axis];
@@ -3845,6 +3866,7 @@ double Vessel::GetGravityGradientDamping () const
 
 void Vessel::UpdateBodyForces ()
 {
+	ZoneScoped;
 	Lift = Drag = SideForce = 0.0;
 
 	if (m_thruster.size()) UpdateThrustForces ();
@@ -3861,6 +3883,7 @@ void Vessel::UpdateBodyForces ()
 
 void Vessel::UpdateThrustForces ()
 {
+	ZoneScoped;
 	UINT j;
 	Vector F;
 
@@ -4033,6 +4056,7 @@ void Vessel::UpdateThrustForces ()
 
 void Vessel::HoverHoldAltitude ()
 {
+	ZoneScoped;
 	const double vh_max = 2e1;  // max vertical velocity
 
 	double dt = td.SimT1 - hoverhold.T;
@@ -4065,6 +4089,7 @@ void Vessel::HoverHoldAltitude ()
 
 void Vessel::UpdateRadiationForces ()
 {
+	ZoneScoped;
 	double illum = IlluminationFactor();
 	if (!illum) return; // we are in shadow
 
@@ -4095,6 +4120,7 @@ void Vessel::UpdateRadiationForces ()
 
 void Vessel::UpdateAerodynamicForces ()
 {
+	ZoneScoped;
 	if (!nairfoil) { UpdateAerodynamicForces_OLD (); return; }
 	// use old atmospheric flight model;
 
@@ -4227,6 +4253,7 @@ void Vessel::UpdateAerodynamicForces ()
 
 void Vessel::UpdateAerodynamicForces_OLD ()
 {
+	ZoneScoped;
 	const double eps = 1e-8;
 
 	if (sp.airspd < eps) return; // nothing to do
@@ -4283,6 +4310,7 @@ void Vessel::UpdateAerodynamicForces_OLD ()
 
 bool Vessel::AddSurfaceForces (Vector *F, Vector *M, const StateVectors *s, double tfrac, double dt, bool allow_groundcontact) const
 {
+	ZoneScoped;
 	nforcevec = 0; // should move higher up
 	E_comp = 0.0;  // compression energy
 
@@ -4711,6 +4739,7 @@ bool Vessel::AddSurfaceForces (Vector *F, Vector *M, const StateVectors *s, doub
 
 void Vessel::Update (bool force)
 {
+	ZoneScoped;
 	// if the vessel is part of a composite structure or passively attached
 	// to a parent vessel, its state is updated by the composite or parent
 	if (attach)
@@ -4932,6 +4961,7 @@ void Vessel::Update (bool force)
 
 void Vessel::UpdatePassive ()
 {
+	ZoneScoped;
 	StateVectors *s = (s1 ? s1:s0); // hack - this should really only be called during update phase
 
 	if (!attach) return; // should not happen
@@ -4972,12 +5002,14 @@ void Vessel::UpdatePassive ()
 
 void Vessel::UpdateAttachments ()
 {
+	ZoneScoped;
 	for (DWORD j = 0; j < ncattach; j++)
 		if (cattach[j]->mate) cattach[j]->mate->UpdatePassive ();
 }
 
 void Vessel::PostUpdate ()
 {
+	ZoneScoped;
 	// Called after all vessels have been updated, but before
 	// module clbkPostStep is called for the vessel
 
@@ -5063,6 +5095,7 @@ void Vessel::PostUpdate ()
 
 bool Vessel::CheckSurfaceContact () const
 {
+	ZoneScoped;
 	if (!proxybody) return false; // sanity check
 	double alt = Altitude();
 	if (alt > 2.0*size) return false;
@@ -5134,12 +5167,14 @@ void Vessel::Timejump (double dt, int mode)
 
 void Vessel::ModulePreStep (double t, double dt, double mjd)
 {
+	ZoneScoped;
 	if (modIntf.v->Version() >= 1)
 		((VESSEL2*)modIntf.v)->clbkPreStep (t, dt, mjd);
 }
 
 void Vessel::ModulePostStep (double t, double dt, double mjd)
 {
+	ZoneScoped;
 	if (modIntf.v->Version() >= 1)
 		((VESSEL2*)modIntf.v)->clbkPostStep (t, dt, mjd);
 }
@@ -5164,6 +5199,7 @@ void Vessel::ModuleSignalNavmode (int mode, bool active)
 
 void Vessel::DrawHUD (HUD *hud, oapi::Sketchpad *skp)
 {
+	ZoneScoped;
 	if (modIntf.v->Version() >= 1) {
 		bool drawn = false;
 		if (modIntf.v->Version() >= 2) {
@@ -5175,6 +5211,7 @@ void Vessel::DrawHUD (HUD *hud, oapi::Sketchpad *skp)
 
 void Vessel::RenderHUD (HUD *hud, int mode, HUDPAINTSPEC *spec, SURFHANDLE hTex)
 {
+	ZoneScoped;
 	if (modIntf.v->Version() >= 2)
 		((VESSEL3*)modIntf.v)->clbkRenderHUD (mode, spec, hTex);
 	else
@@ -5195,6 +5232,7 @@ void Vessel::MFDchanged (int mfd, int mode) const
 
 void Vessel::UpdateProxies ()
 {
+	ZoneScoped;
 	VesselBase::UpdateProxies ();
 
 	int i;
@@ -5214,6 +5252,7 @@ void Vessel::UpdateProxies ()
 
 void Vessel::UpdateReceiverStatus (DWORD idx)
 {
+	ZoneScoped;
 	if (!proxyplanet) return;
 
 	int i, j;
@@ -5323,6 +5362,7 @@ void Vessel::UpdateReceiverStatus (DWORD idx)
 
 double Vessel::IlluminationFactor () const
 {
+	ZoneScoped;
 	if (td.SimT1 >= lightfac_T0 && td.SimT1 <= lightfac_T1)
 		return lightfac;             // current estimate still valid
 
@@ -5409,6 +5449,7 @@ void Vessel::Refuel ()
 
 void Vessel::EngineStatus (ENGINESTATUS *es)
 {
+	ZoneScoped;
 	es->main = GetThrusterGroupLevel (THGROUP_MAIN);
 	if (!es->main) es->main = -GetThrusterGroupLevel (THGROUP_RETRO);
 	es->hover = GetThrusterGroupLevel (THGROUP_HOVER);
@@ -5661,6 +5702,7 @@ bool Vessel::LoadVC (int id) const
 
 bool Vessel::VCRedrawEvent (int id, int event, SURFHANDLE surf) const
 {
+	ZoneScoped;
 	if (modIntf.v && modIntf.v->Version() >= 1)
 		return ((VESSEL2*)modIntf.v)->clbkVCRedrawEvent (id, event, surf);
 	else
@@ -5669,6 +5711,7 @@ bool Vessel::VCRedrawEvent (int id, int event, SURFHANDLE surf) const
 
 bool Vessel::VCMouseEvent (int id, int event, Vector &p) const
 {
+	ZoneScoped;
 	if (modIntf.v && modIntf.v->Version() >= 1) {
 		VECTOR3 v = _V(p.x,p.y,p.z);
 		return ((VESSEL2*)modIntf.v)->clbkVCMouseEvent (id, event, v);
@@ -6012,6 +6055,7 @@ bool Vessel::GetStateEx (void *status)
 
 void Vessel::EndStateUpdate ()
 {
+	ZoneScoped;
 	Body::EndStateUpdate();
 	for (int i = 0; i < 2; i++) {
 		wbrake[i] = (wbrake_override[i] ? wbrake_override[i] : wbrake_permanent[i]);;
@@ -6847,6 +6891,7 @@ bool VESSEL::GetTorqueVector (VECTOR3 &M) const
 
 OBJHANDLE VESSEL::GetElements (ELEMENTS &el, double &mjd_ref) const
 {
+	ZoneScoped;
 	const Elements *els = vessel->Els();
 	if (els) {
 		el.a      = els->a;
@@ -6864,6 +6909,7 @@ OBJHANDLE VESSEL::GetElements (ELEMENTS &el, double &mjd_ref) const
 
 bool VESSEL::GetElements (OBJHANDLE hRef, ELEMENTS &el, ORBITPARAM *prm, double mjd_ref, int frame) const
 {
+	ZoneScoped;
 	const CelestialBody *ref = (hRef ? (CelestialBody*)hRef : vessel->cbody);
 	Elements els (1, 0, 0, 0, 0, 0, mjd_ref ? mjd_ref : td.MJD0);
 	els.SetMasses (0, ref->Mass());
@@ -6904,6 +6950,7 @@ bool VESSEL::GetElements (OBJHANDLE hRef, ELEMENTS &el, ORBITPARAM *prm, double 
 
 bool VESSEL::SetElements (OBJHANDLE hRef, const ELEMENTS &el, ORBITPARAM *prm, double mjd_ref, int frame) const
 {
+	ZoneScoped;
 	const CelestialBody *ref = (hRef ? (CelestialBody*)hRef : vessel->cbody);
 	Elements els;
 	if (!mjd_ref) mjd_ref = td.MJD0;
@@ -6941,6 +6988,7 @@ bool VESSEL::SetElements (OBJHANDLE hRef, const ELEMENTS &el, ORBITPARAM *prm, d
 
 OBJHANDLE VESSEL::GetArgPer (double &arg) const
 {
+	ZoneScoped;
 	const Elements *els = vessel->Els();
 	if (els) {
 		arg = els->ArgPer();
@@ -6950,6 +6998,7 @@ OBJHANDLE VESSEL::GetArgPer (double &arg) const
 
 OBJHANDLE VESSEL::GetSMi (double &smi) const
 {
+	ZoneScoped;
 	const Elements *els = vessel->Els();
 	if (els) {
 		smi = els->SMi();
@@ -6959,6 +7008,7 @@ OBJHANDLE VESSEL::GetSMi (double &smi) const
 
 OBJHANDLE VESSEL::GetApDist (double &apdist) const
 {
+	ZoneScoped;
 	const Elements *els = vessel->Els();
 	if (els) {
 		apdist = els->ApDist();
@@ -6968,6 +7018,7 @@ OBJHANDLE VESSEL::GetApDist (double &apdist) const
 
 OBJHANDLE VESSEL::GetPeDist (double &pedist) const
 {
+	ZoneScoped;
 	const Elements *els = vessel->Els();
 	if (els) {
 		pedist = els->PeDist();
@@ -7382,6 +7433,7 @@ int VESSEL::GetDockIndex(DOCKHANDLE hDock) const
 
 bool VESSEL::GetTargetDockAlignment(DOCKHANDLE pD, DOCKHANDLE pT, VECTOR3* ofs, VECTOR3* dir, VECTOR3* rot, VECTOR3* vel) const
 {
+	ZoneScoped;
 	Vector o, d, r, v;
 	Vector* op = ofs ? &o : nullptr; Vector* dp = dir ? &d : nullptr;
 	Vector* rp = rot ? &r : nullptr; Vector* vp = vel ? &v : nullptr;
@@ -7540,6 +7592,7 @@ void VESSEL::ClearLightEmitters () const
 
 bool VESSEL::GetSuperstructureCG (VECTOR3 &cg) const
 {
+	ZoneScoped;
 	Vector vcg;
 	bool ok = vessel->GetSuperStructCG (vcg);
 	cg.x = vcg.x;
@@ -7669,6 +7722,7 @@ void VESSEL::ShiftMeshes (const VECTOR3 &ofs) const
 
 bool VESSEL::GetMeshOffset (UINT idx, VECTOR3 &ofs) const
 {
+	ZoneScoped;
 	if (idx >= vessel->nmesh) return false;
 	memcpy (&ofs, &vessel->meshlist[idx]->meshofs, sizeof(VECTOR3));
 	return true;
@@ -8837,6 +8891,7 @@ void VESSEL2::clbkVisualDestroyed (VISHANDLE vis, int refcount)
 
 void VESSEL2::clbkDrawHUD (int mode, const HUDPAINTSPEC *hps, HDC hDC)
 {
+	ZoneScoped;
 	if (vessel->hudskp && vessel->hudskp->GetDC() == hDC)
 		g_pane->DrawDefaultHUD (vessel->hudskp);
 }
@@ -8972,12 +9027,14 @@ bool VESSEL3::clbkLoadPanel2D (int id, PANELHANDLE hPanel, DWORD viewW, DWORD vi
 
 bool VESSEL3::clbkDrawHUD (int mode, const HUDPAINTSPEC *hps, oapi::Sketchpad *skp)
 {
+	ZoneScoped;
 	g_pane->DrawDefaultHUD (skp);
 	return true;
 }
 
 void VESSEL3::clbkRenderHUD (int mode, const HUDPAINTSPEC *hps, SURFHANDLE hDefaultTex)
 {
+	ZoneScoped;
 	g_pane->RenderDefaultHUD ();
 }
 

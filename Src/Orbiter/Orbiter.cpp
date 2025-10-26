@@ -44,6 +44,9 @@
 #include "GraphicsAPI.h"
 #include "ConsoleManager.h"
 #include <filesystem>
+
+#include "Tracy.hpp"
+
 namespace fs = std::filesystem;
 
 using namespace std;
@@ -973,11 +976,13 @@ void Orbiter::BroadcastGlobalInit ()
 
 HRESULT Orbiter::Render3DEnvironment ()
 {
+	ZoneScoped;
 	if (gclient) {
 		gclient->clbkRenderScene ();
 		Output2DData ();
 		gclient->clbkDisplayFrame ();
 	}
+	FrameMark;
     return S_OK;
 }
 
@@ -1059,6 +1064,7 @@ INT Orbiter::Run ()
 
 void Orbiter::SingleFrame ()
 {
+	ZoneScoped;
 	if (bSession) {
 		if (bAllowInput) bActive = true, bAllowInput = false;
 		if (BeginTimeStep (bRunning)) {
@@ -1248,6 +1254,7 @@ void Orbiter::InsertVessel (Vessel *vessel)
 //-----------------------------------------------------------------------------
 bool Orbiter::KillVessels ()
 {
+	ZoneScoped;
 	int i, n = g_psys->nVessel();
 	DWORD j;
 
@@ -1766,6 +1773,7 @@ const Mesh *Orbiter::LoadMeshGlobal (const char *fname, LoadMeshClbkFunc fClbk)
 //-----------------------------------------------------------------------------
 VOID Orbiter::Output2DData ()
 {
+	ZoneScoped;
 	g_pane->Draw ();
 	if (g_pane) {
 		for (DWORD i = 0; i < nsnote; i++)
@@ -1782,6 +1790,7 @@ VOID Orbiter::Output2DData ()
 //-----------------------------------------------------------------------------
 bool Orbiter::BeginTimeStep (bool running)
 {
+	ZoneScoped;
 	// Check for a pause/resume request
 	if (bRequestRunning != running) {
 		running = bRunning = bRequestRunning;
@@ -1854,6 +1863,7 @@ bool Orbiter::BeginTimeStep (bool running)
 
 void Orbiter::EndTimeStep (bool running)
 {
+	ZoneScoped;
 	if (running) {
 		if (g_psys) g_psys->FinaliseUpdate ();
 		//ModulePostStep();
@@ -1971,6 +1981,7 @@ bool Orbiter::UnregisterCustomCmd (int cmdId)
 //-----------------------------------------------------------------------------
 void Orbiter::ModulePreStep ()
 {
+	ZoneScoped;
 	// broadcast to modules
 	for (auto it = m_Plugin.begin(); it != m_Plugin.end(); it++)
 		it->pModule->clbkPreStep(td.SimT0, td.SimDT, td.MJD0);
@@ -1986,6 +1997,7 @@ void Orbiter::ModulePreStep ()
 //-----------------------------------------------------------------------------
 void Orbiter::ModulePostStep ()
 {
+	ZoneScoped;
 	// broadcast to vessels
 	for (DWORD i = 0; i < g_psys->nVessel(); i++)
 		g_psys->GetVessel(i)->ModulePostStep (td.SimT1, td.SimDT, td.MJD1);
@@ -2001,6 +2013,7 @@ void Orbiter::ModulePostStep ()
 //-----------------------------------------------------------------------------
 VOID Orbiter::UpdateWorld ()
 {
+	ZoneScoped;
 	// module pre-timestep callbacks
 	if (bRunning) ModulePreStep ();
 

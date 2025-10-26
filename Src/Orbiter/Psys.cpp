@@ -16,6 +16,8 @@
 #include "SuperVessel.h"
 #include "Log.h"
 
+#include "Tracy.hpp"
+
 using namespace std;
 
 extern TimeData td;
@@ -99,6 +101,7 @@ void PlanetarySystem::Write (ostream &os)
 
 Body *PlanetarySystem::GetObj (const char *name, bool ignorecase)
 {
+	ZoneScoped;
 	for (DWORD i = 0; i < bodies.size(); i++)
 		if (!StrComp (bodies[i]->Name(), name, ignorecase)) return bodies[i];
 	return 0;
@@ -106,6 +109,7 @@ Body *PlanetarySystem::GetObj (const char *name, bool ignorecase)
 
 CelestialBody *PlanetarySystem::GetGravObj (const char *name, bool ignorecase) const
 {
+	ZoneScoped;
 	for (DWORD i = 0; i < celestials.size(); i++)
 		if (!StrComp (celestials[i]->Name(), name, ignorecase)) return celestials[i];
 	return 0;
@@ -113,6 +117,7 @@ CelestialBody *PlanetarySystem::GetGravObj (const char *name, bool ignorecase) c
 
 Planet *PlanetarySystem::GetPlanet (const char *name, bool ignorecase)
 {
+	ZoneScoped;
 	for (size_t i = 0; i < planets.size(); i++)
 		if (!StrComp (planets[i]->Name(), name, ignorecase)) return planets[i];
 	return 0;
@@ -120,6 +125,7 @@ Planet *PlanetarySystem::GetPlanet (const char *name, bool ignorecase)
 
 Vessel *PlanetarySystem::GetVessel (const char *name, bool ignorecase) const
 {
+	ZoneScoped;
 	for (DWORD i = 0; i < vessels.size(); i++)
 		if (!StrComp (vessels[i]->Name(), name, ignorecase)) return vessels[i];
 	return 0;
@@ -127,6 +133,7 @@ Vessel *PlanetarySystem::GetVessel (const char *name, bool ignorecase) const
 
 bool PlanetarySystem::isObject (const Body *obj) const
 {
+	ZoneScoped;
 	for (DWORD i = 0; i < bodies.size(); i++)
 		if (bodies[i] == obj) return true;
 	return false;
@@ -134,6 +141,7 @@ bool PlanetarySystem::isObject (const Body *obj) const
 
 bool PlanetarySystem::isVessel (const Vessel *v) const
 {
+	ZoneScoped;
 	for (DWORD i = 0; i < vessels.size(); i++)
 		if (vessels[i] == v) return true;
 	return false;
@@ -141,6 +149,7 @@ bool PlanetarySystem::isVessel (const Vessel *v) const
 
 Base *PlanetarySystem::GetBase (const Planet *planet, const char *name, bool ignorecase)
 {
+	ZoneScoped;
 	for (DWORD i = 0; i < planet->nBase(); i++)
 		if (!StrComp (planet->GetBase(i)->Name(), name, ignorecase))
 			return planet->GetBase(i);
@@ -149,6 +158,7 @@ Base *PlanetarySystem::GetBase (const Planet *planet, const char *name, bool ign
 
 Base *PlanetarySystem::GetBase (const char *name, bool ignorecase)
 {
+	ZoneScoped;
 	for (DWORD i = 0; i < celestials.size(); i++) {
 		if (celestials[i]->Type() != OBJTP_PLANET) continue;
 		Planet *planet = (Planet*)celestials[i];
@@ -469,6 +479,7 @@ void PlanetarySystem::UndockVessel (SuperVessel *sv, Vessel *_vessel, int port, 
 
 void PlanetarySystem::ScanGFieldSources (const Vector *gpos, const Body *exclude, GFieldData *gfd) const
 {
+	ZoneScoped;
 	const double min_contrib = 1e-6; // min. rel. g-field contribution threshold
 	DWORD i, j, idx;
 	double a, atot = 0.0;
@@ -502,6 +513,7 @@ void PlanetarySystem::ScanGFieldSources (const Vector *gpos, const Body *exclude
 
 void PlanetarySystem::UpdateGFieldSources (const Vector *gpos, const Body *exclude, GFieldData *gfd) const
 {
+	ZoneScoped;
 	extern const DWORD MAXGFIELDLIST;
 	const double min_contrib = 1e-6; // min. g-field contribution threshold
 	DWORD i, idx, imin;
@@ -541,6 +553,7 @@ void PlanetarySystem::UpdateGFieldSources (const Vector *gpos, const Body *exclu
 
 Vector PlanetarySystem::GaccAt (double t, const Vector &gpos, const Body *exclude) const
 {
+	ZoneScoped;
 	Vector r, acc, pos, closepos;
 	CelestialBody *closep = 0;
 	const CelestialBody *sec;
@@ -576,6 +589,7 @@ Vector PlanetarySystem::GaccAt (double t, const Vector &gpos, const Body *exclud
 
 Vector SingleGacc_perturbation (const Vector &rpos, const CelestialBody *body)
 {
+	ZoneScoped;
 	// Calculate perturbation of gravitational acceleration due to nonspherical
 	// shape of the body.
 	// rpos: relative position of 'bodies' wrt. r (global frame)
@@ -666,6 +680,7 @@ Vector SingleGacc_perturbation (const Vector &rpos, const CelestialBody *body)
 
 Vector SingleGacc (const Vector &rpos, const CelestialBody *body)
 {
+	ZoneScoped;
 	// Calculate gravitational acceleration at a position r from a single source
 	// rpos: relative position of 'body' wrt. r (global coords)
 
@@ -675,6 +690,7 @@ Vector SingleGacc (const Vector &rpos, const CelestialBody *body)
 
 Vector PlanetarySystem::Gacc (const Vector &gpos, const Body *exclude, const GFieldData *gfd) const
 {
+	ZoneScoped;
 	Vector acc;
 	DWORD i, j;
 
@@ -695,6 +711,7 @@ Vector PlanetarySystem::Gacc (const Vector &gpos, const Body *exclude, const GFi
 
 Vector PlanetarySystem::Gacc_intermediate (const Vector &gpos, double n, const Body *exclude, GFieldData *gfd) const
 {
+	ZoneScoped;
 	Vector acc;
 	DWORD i, j;
 	
@@ -715,6 +732,7 @@ Vector PlanetarySystem::Gacc_intermediate (const Vector &gpos, double n, const B
 
 Vector PlanetarySystem::Gacc_intermediate_pert (const CelestialBody *cbody, const Vector &relpos, double n, const Body *exclude, GFieldData *gfd) const
 {
+	ZoneScoped;
 	Vector acc;
 	DWORD i, j;
 	Vector gpos = relpos + cbody->InterpolatePosition (n);
@@ -742,6 +760,7 @@ Vector PlanetarySystem::Gacc_intermediate_pert (const CelestialBody *cbody, cons
 
 Vector PlanetarySystem::GaccRel (const Vector &rpos, const CelestialBody *cbody, double n, const Body *exclude, GFieldData *gfd) const
 {
+	ZoneScoped;
 	Vector acc;
 	DWORD i, j;
 
@@ -769,6 +788,7 @@ Vector PlanetarySystem::GaccPn_perturbation (const Vector &gpos, double n, const
 
 CelestialBody *PlanetarySystem::GetDominantGravitySource (const Vector &gpos, double &gfrac)
 {
+	ZoneScoped;
 	// assumes spherical gravity sources
 	DWORD i;
 	double g, gtot = 0.0, gmax = 0.0;
@@ -788,6 +808,7 @@ CelestialBody *PlanetarySystem::GetDominantGravitySource (const Vector &gpos, do
 
 double PlanetarySystem::GetGravityContribution (const Body *body, const Vector &gpos, bool *dominant)
 {
+	ZoneScoped;
 	// assumes spherical gravity sources
 	DWORD i;
 	double g, gtot = 0.0, gbody = 0.0, gmax = 0.0;
@@ -813,6 +834,7 @@ Vector PlanetarySystem::GetMomentumFlux (const Vector &gpos) const
 
 void PlanetarySystem::Update (bool force)
 {
+	ZoneScoped;
 	DWORD i;
 	for (i = 0; i < bodies      .size(); i++) bodies      [i]->BeginStateUpdate ();
 	for (i = 0; i < stars       .size(); i++) stars       [i]->RelTrueAndBaryState();
@@ -825,6 +847,7 @@ void PlanetarySystem::Update (bool force)
 
 void PlanetarySystem::FinaliseUpdate ()
 {
+	ZoneScoped;
 	DWORD i;
 	for (i = 0; i < bodies.size(); i++) bodies[i]->EndStateUpdate ();
 	for (i = 0; i < supervessels.size(); i++) supervessels[i]->PostUpdate ();

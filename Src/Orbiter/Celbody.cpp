@@ -17,6 +17,8 @@
 #include "Orbitersdk.h"
 #include "PinesGrav.h"
 
+#include "Tracy.hpp"
+
 using namespace std;
 
 extern Orbiter *g_pOrbiter;
@@ -266,6 +268,7 @@ void CelestialBody::AddSecondary (CelestialBody *sec)
 
 const Elements *CelestialBody::Els () const
 {
+	ZoneScoped;
 	if (!bFixedElements) {
 		if (cbody) el->Calculate (s0->pos-cbody->GPos(), s0->vel-cbody->GVel(), td.SimT0);
 		else       el->Calculate (s0->pos, s0->vel, td.SimT0);
@@ -275,6 +278,7 @@ const Elements *CelestialBody::Els () const
 
 Vector CelestialBody::Barycentre2Pos (const Vector &bary) const
 {
+	ZoneScoped;
 	if (!nsecondary) return bary;
 	else {
 		Vector b2;
@@ -289,6 +293,7 @@ Vector CelestialBody::Barycentre2Pos (const Vector &bary) const
 
 Vector CelestialBody::Pos2Barycentre (const Vector &pos) const
 {
+	ZoneScoped;
 	double m, mtot = mass;
 	Vector b(pos*mass);
 	for (DWORD i = 0; i < nsecondary; i++) {
@@ -300,6 +305,7 @@ Vector CelestialBody::Pos2Barycentre (const Vector &pos) const
 
 int CelestialBody::RelTrueAndBaryState()
 {
+	ZoneScoped;
 	// Calculate the body's true and barycentre state with respect to
 	// the parent's position. This recursively steps through all the
 	// body's secondary bodies to find the barycentre offset
@@ -407,6 +413,7 @@ int CelestialBody::RelTrueAndBaryState()
 
 void CelestialBody::AbsTrueState()
 {
+	ZoneScoped;
 	// Calculate the body's true position and velocity as the sum of the
 	// parent state and its own relative state.
 	// Recursively updates all secondary body states.
@@ -425,6 +432,7 @@ void CelestialBody::AbsTrueState()
 
 void CelestialBody::Update (bool force)
 {
+	ZoneScoped;
 #ifdef UNDEF
 	int flg = EPHEM_TRUEPOS | EPHEM_TRUEVEL;
 	static Vector pbpos;
@@ -492,6 +500,7 @@ void CelestialBody::Update (bool force)
 
 void CelestialBody::UpdatePrecession ()
 {
+	ZoneScoped;
 	// Tilt of rotation axis, including precession
 	// See "Planetary axis precession" in "Orbiter Technical Reference" for algorithm
 
@@ -520,6 +529,7 @@ void CelestialBody::UpdatePrecession ()
 
 void CelestialBody::UpdateRotation ()
 {
+	ZoneScoped;
 	// Rotation of object around its local axis of rotation (y-axis)
 	// See "Planetary axis precession" in "Orbiter Technical Reference" for algorithm
 
@@ -536,6 +546,7 @@ void CelestialBody::UpdateRotation ()
 
 void CelestialBody::GetRotation (double t, Matrix &rot) const
 {
+	ZoneScoped;
 	// Note: this function assumes current precession, i.e. mjd sufficiently close to td.mjd
 	double r = posangle (Dphi + t*rot_omega - Lrel*cos_eps + rotation_off);
 	double cosr = cos(r), sinr = sin(r);
@@ -549,6 +560,7 @@ void CelestialBody::GetRotation (double t, Matrix &rot) const
 
 int CelestialBody::ExternEphemeris (double mjd, int req, double *res) const
 {
+	ZoneScoped;
 	if (module)
 		return module->clbkEphemeris (mjd, req, res); // new interface
 	if (modIntf.oplanetEphemeris) {                   // OBSOLETE!
@@ -561,6 +573,7 @@ int CelestialBody::ExternEphemeris (double mjd, int req, double *res) const
 
 int CelestialBody::ExternFastEphemeris (double simt, int req, double *res) const
 {
+	ZoneScoped;
 	if (module) {
 		return module->clbkFastEphemeris (simt, req, res); // new interface
 	}
@@ -575,6 +588,7 @@ int CelestialBody::ExternFastEphemeris (double simt, int req, double *res) const
 
 int CelestialBody::ExternPosition ()
 {
+	ZoneScoped;
 	static double res[12];
 	static int req = EPHEM_TRUEPOS | EPHEM_TRUEVEL | EPHEM_BARYPOS | EPHEM_BARYVEL;
 	int flg;
@@ -589,6 +603,7 @@ int CelestialBody::ExternPosition ()
 
 int CelestialBody::ExternState (double *res)
 {
+	ZoneScoped;
 	static int req = EPHEM_TRUEPOS | EPHEM_TRUEVEL | EPHEM_BARYPOS | EPHEM_BARYVEL;
 	int flg;
 
@@ -599,6 +614,7 @@ int CelestialBody::ExternState (double *res)
 
 bool CelestialBody::PositionAtTime (double t, Vector *p) const
 {
+	ZoneScoped;
 	if (bDynamicPosVel) return false;
 	// can't calc at arbitrary times if using dynamic updates
 
@@ -623,6 +639,7 @@ bool CelestialBody::PositionAtTime (double t, Vector *p) const
 
 bool CelestialBody::PosVelAtTime (double t, Vector *p, Vector *v) const
 {
+	ZoneScoped;
 	if (bDynamicPosVel) return false;
 	// can't calc at arbitrary times if using dynamic updates
 
@@ -642,6 +659,7 @@ bool CelestialBody::PosVelAtTime (double t, Vector *p, Vector *v) const
 
 Vector CelestialBody::InterpolatePosition (double n) const
 {
+	ZoneScoped;
 	// Interpolate global position of body by iterative bisection
 
 	if      (n == 0)   return s0->pos;
@@ -693,6 +711,7 @@ Vector CelestialBody::InterpolatePosition (double n) const
 
 StateVectors CelestialBody::InterpolateState (double n) const
 {
+	ZoneScoped;
 	// Celestial body state vectors at fractional time n [0..1] between
 	// s0 at td.SimT0 and s1 at td.SimT1
 	// Note: n > 0 is only allowed during the update phase (between 
@@ -773,6 +792,7 @@ void CelestialBody::ClearModule ()
 
 void Pol2Crt (double *pol, double *crt, bool dopos, bool dovel)
 {
+	ZoneScoped;
 	double rad  = pol[2] * AU; // convert AU -> m (should be moved into module)
 	double cosp = cos(pol[0]), sinp = sin(pol[0]); // cos, sin longitude
 	double cost = cos(pol[1]), sint = sin(pol[1]); // cos, sin latitude
@@ -795,6 +815,7 @@ void Pol2Crt (double *pol, double *crt, bool dopos, bool dovel)
 
 void InterpretEphemeris (double *data, int flg, Vector *pos, Vector *vel, Vector *bpos, Vector *bvel)
 {
+	ZoneScoped;
 	static double crt[6], *p;
 
 	if (flg & (EPHEM_TRUEPOS|EPHEM_TRUEVEL)) {

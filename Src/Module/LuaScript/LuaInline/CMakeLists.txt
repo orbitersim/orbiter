@@ -11,6 +11,7 @@ add_library(LuaInline SHARED
 target_include_directories(LuaInline
 	PUBLIC ${ORBITER_SOURCE_SDK_INCLUDE_DIR}
 	PUBLIC ${ORBITER_SOURCE_ROOT_DIR}/Src/Module/LuaScript/LuaInterpreter
+	PUBLIC ${TRACY_CLIENT_INCLUDE}
 )
 
 target_link_libraries(LuaInline
@@ -18,6 +19,7 @@ target_link_libraries(LuaInline
 	${ORBITER_SDK_LIB}
 	LuaInterpreter
 	lua::lib
+	${TRACY_CLIENT}
 )
 
 add_dependencies(LuaInline

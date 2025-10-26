@@ -16,6 +16,8 @@
 #include "Log.h"
 #include <stdio.h>
 
+#include "Tracy.hpp"
+
 extern Orbiter *g_pOrbiter;
 extern TimeData td;
 extern PlanetarySystem *g_psys; // pointer to planetary system
@@ -308,6 +310,7 @@ bool SuperVessel::Activate (bool force)
 
 void SuperVessel::RPlace (const Vector &_rpos, const Vector &_rvel, const Vessel *ref)
 {
+	ZoneScoped;
 	DWORD i;
 	Vector dp = _rpos-s0->pos;
 	if (ref)
@@ -334,6 +337,7 @@ void SuperVessel::RPlace (const Vector &_rpos, const Vector &_rvel, const Vessel
 
 void SuperVessel::SetGlobalOrientation (const Vector &arot, const Vessel *ref)
 {
+	ZoneScoped;
 	DWORD i;
 	double sinx = sin(arot.x), cosx = cos(arot.x);
 	double siny = sin(arot.y), cosy = cos(arot.y);
@@ -412,6 +416,7 @@ void SuperVessel::SetAngVel (const Vector &omega, const Vessel *ref)
 void SuperVessel::GetIntermediateMoments (Vector &acc, Vector &tau,
 	const StateVectors &state, double tfrac, double dt)
 {
+	ZoneScoped;
 	// TODO: Move this up to VesselBase
 	Vector F(Flin);
 	Vector M(Amom);
@@ -469,6 +474,7 @@ bool SuperVessel::isComponent (const Vessel *v) const
 
 void SuperVessel::SoftDockUpdate(Vessel* vessel2, PortSpec *pD)
 {
+	ZoneScoped;
 	DWORD idx1;
 	DWORD idx2;
 
@@ -737,6 +743,7 @@ bool SuperVessel::Merge (Vessel *vessel1, int port1, Vessel *vessel2, int port2)
 
 bool SuperVessel::AddSurfaceForces (Vector *F, Vector *M, const StateVectors *s, double tfrac, double dt) const
 {
+	ZoneScoped;
 	bool impact = false;
 	DWORD comp;
 	StateVectors scomp;
@@ -755,6 +762,7 @@ bool SuperVessel::AddSurfaceForces (Vector *F, Vector *M, const StateVectors *s,
 
 void SuperVessel::Update (bool force)
 {
+	ZoneScoped;
 	DWORD i;
 	bool grot_changed = false;
 	bool el_updated = false;;
@@ -830,6 +838,7 @@ void SuperVessel::Update (bool force)
 
 void SuperVessel::PostUpdate ()
 {
+	ZoneScoped;
 	VesselBase::PostUpdate ();
 
 	if (bActivationPending) {
@@ -842,6 +851,7 @@ void SuperVessel::PostUpdate ()
 
 void SuperVessel::UpdateProxies ()
 {
+	ZoneScoped;
 	VesselBase::UpdateProxies ();
 
 	// MOVE THIS UP TO VesselBase::PostUpdate
@@ -853,6 +863,7 @@ void SuperVessel::UpdateProxies ()
 
 void SuperVessel::SetOrbitReference (CelestialBody *body)
 {
+	ZoneScoped;
 	if (body && body != cbody) {               // otherwise nothing to do
 		cbody = body;
 		el->Setup (mass, cbody->Mass(), el->MJDepoch());
@@ -866,6 +877,7 @@ void SuperVessel::SetOrbitReference (CelestialBody *body)
 
 bool SuperVessel::CheckSurfaceContact () const
 {
+	ZoneScoped;
 	for (DWORD comp = 0; comp < nv; comp++)
 		if (vlist[comp].vessel->CheckSurfaceContact ())
 			return true;
@@ -933,6 +945,7 @@ bool SuperVessel::ThrustEngaged () const
 
 void SuperVessel::ComponentStateVectors (const StateVectors *s, StateVectors *scomp, int comp) const
 {
+	ZoneScoped;
 	scomp->vel.Set (s->vel + mul (s->R, crossp (vlist[comp].rpos-cg, s->omega)));
 	scomp->pos.Set (s->pos + mul (s->R, vlist[comp].rpos-cg));
 	scomp->omega.Set (tmul (vlist[comp].rrot, s->omega));
@@ -957,6 +970,7 @@ void SuperVessel::SetStateFromComponent (const StateVectors *scomp, int comp) co
 void SuperVessel::AddComponentForceAndMoment (Vector *F, Vector *M,
 	const Vector *Fcomp, const Vector *Mcomp, int comp) const
 {
+	ZoneScoped;
 	Vector Ftrans (mul (vlist[comp].rrot, *Fcomp));
 	*F += Ftrans;
 	*M += mul (vlist[comp].rrot, *Mcomp) + crossp (Ftrans, vlist[comp].rpos-cg);
@@ -978,6 +992,7 @@ void SuperVessel::NotifyShiftVesselOrigin (Vessel *vessel, const Vector &dr)
 
 bool SuperVessel::GetCG (const Vessel *vessel, Vector &vcg)
 {
+	ZoneScoped;
 	for (DWORD i = 0; i < nv; i++) {
 		if (vlist[i].vessel == vessel) {
 			vcg.Set (tmul (vlist[i].rrot, cg-vlist[i].rpos));
@@ -991,6 +1006,7 @@ bool SuperVessel::GetCG (const Vessel *vessel, Vector &vcg)
 
 bool SuperVessel::GetPMI (const Vessel *vessel, Vector &vpmi)
 {
+	ZoneScoped;
 	for (DWORD i = 0; i < nv; i++) {
 		if (vlist[i].vessel == vessel) {
 			vpmi.Set (0,0,0);
@@ -1057,6 +1073,7 @@ void SuperVessel::ResetMassAndCG ()
 
 void SuperVessel::CalcPMI ()
 {
+	ZoneScoped;
 	// Calculates the PMI values for the supervessel from the layout and component PMI
 	// values. For details see "Inertia calculations for composite vessels" in "Orbiter
 	// Technical Reference".
