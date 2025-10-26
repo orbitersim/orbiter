@@ -44,6 +44,9 @@
 #include "GraphicsAPI.h"
 #include "ConsoleManager.h"
 #include <filesystem>
+
+#include "Tracy.hpp"
+
 namespace fs = std::filesystem;
 
 using namespace std;
@@ -978,6 +981,8 @@ HRESULT Orbiter::Render3DEnvironment ()
 		Output2DData ();
 		gclient->clbkDisplayFrame ();
 	}
+	// Mark frame boundary for when using the profiler
+	FrameMark;
     return S_OK;
 }
 
