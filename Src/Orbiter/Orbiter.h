@@ -12,6 +12,7 @@
 #include <commctrl.h>
 #include "Mesh.h"
 #include "TimeData.h"
+#include <chrono>
 
 class DInput;
 class Config;
@@ -378,8 +379,8 @@ private:
 	int             cfglen;
 	char            simkstate[256];// accumulated simulated key state
 
-	DWORD           ms_prev;       // used for time step calculation
-	DWORD           ms_suspend;    // used for time-skipping within a step
+	std::chrono::time_point<std::chrono::steady_clock> time_prev;       // used for time step calculation
+	std::chrono::time_point<std::chrono::steady_clock> time_suspend;    // used for time-skipping within a step
 	bool            bActive;       // render window has focus
 	bool            bAllowInput;   // allow input processing for the next frame even if render window doesn't have focus
 	bool            bVisible;      // render window exists and is visible

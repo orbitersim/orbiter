@@ -415,33 +415,25 @@ void tracenew (char *fname, int line)
 // =======================================================================
 
 static double prof_sum = 0.0;
-static double prof_scale = 0.0;
-static DWORD prof_count = 0;
-static LARGE_INTEGER prof_t0;
+static uint32_t prof_count = 0;
+static std::chrono::time_point<std::chrono::steady_clock> prof_t0;
 
 void StartProf ()
 {
-	if (!prof_scale) {
-		LARGE_INTEGER freq;
-		QueryPerformanceFrequency (&freq);
-		double f = (double)freq.LowPart + (double)freq.HighPart * 4294967296.0;
-		prof_scale = 1e6/(double)f;
-	}
-	QueryPerformanceCounter (&prof_t0);
+	prof_t0 = std::chrono::steady_clock::now();
 }
 
 double EndProf (DWORD *count)
 {
-	LARGE_INTEGER t1;
-	QueryPerformanceCounter (&t1);
-	double f0 = (double)prof_t0.LowPart + (double)prof_t0.HighPart * 4294967296.0;
-	double f1 = (double)t1.LowPart      + (double)t1.HighPart * 4294967296.0;
-	double dt = f1-f0;
+	auto t1 = std::chrono::steady_clock::now();
+	std::chrono::duration<double> time_delta = t1 - prof_t0;
+
+	double dt = time_delta.count();
 	if (dt > 0.0) {
 		prof_sum += dt;
 		prof_count++;
 	}
 	if (count) *count = prof_count;
-	return prof_sum*prof_scale/(double)prof_count;
+	return prof_sum/(double)prof_count;
 }
 

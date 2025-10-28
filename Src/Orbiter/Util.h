@@ -65,10 +65,6 @@ inline void EulerAngles (const Matrix &R, VECTOR3 &e)
 double rand1();
 // uniformly distributed random number, range [0,1]
 
-// Timing functions
-void tic();   // start clock
-double toc(); // stop clock and return value
-
 RECT GetClientPos (HWND hWnd, HWND hChild);
 void SetClientPos (HWND hWnd, HWND hChild, RECT &r);
 
