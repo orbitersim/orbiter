@@ -984,6 +984,7 @@ void Interpreter::LoadAPI ()
 		{"simulatebufferedkey", oapi_simulatebufferedkey},
 		{"simulateimmediatekey", oapi_simulateimmediatekey},
 		{"acceptdelayedkey", oapi_acceptdelayedkey},
+		{"get_keystate", oapi_get_keystate},
 			
 		// file i/o functions
 		{"openfile", oapi_openfile},
@@ -7082,6 +7083,27 @@ int Interpreter::oapi_acceptdelayedkey (lua_State *L)
 	lua_pushboolean(L, ret);
 	return 1;
 }
+/***
+Get the keyboard state
+
+Note: you should use the clbk\_consumedirectkey/clbk\_consumebufferedkey callbacks whenever possible, this function is mainly made
+for scenario scripts that don't use these callbacks.
+
+@function get_keystate
+@treturn handle keyboard state
+@usage
+	local kstate = oapi.get_keystate()
+	if oapi.keydown(kstate, OAPI_KEY.E) then
+		...
+	end
+end
+*/
+int Interpreter::oapi_get_keystate (lua_State *L)
+{
+	lua_pushlightuserdata(L, (void *)oapiGetKeyState());
+	return 1;
+}
+
 
 /***
 File I/O.
