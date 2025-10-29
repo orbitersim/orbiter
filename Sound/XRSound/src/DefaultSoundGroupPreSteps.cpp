@@ -606,7 +606,7 @@ void MusicDefaultSoundGroupPreStep::clbkPreStep(const double simt, const double 
     if (!HasFocus())
         return;
 
-    // To prevent intermittent music stuttering on Orbiter startup when Orbiter hangs for a full second, which starves the irrKLang engine, 
+    // To prevent intermittent music stuttering on Orbiter startup, 
     // don't play any music until two seconds after simulation start.
     if (simt < 2.0)
     {
