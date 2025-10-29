@@ -51,7 +51,7 @@ public:
 	// Convert from time invariant geocentric frame to base centric system (Inverse of the ToLocal)
 	//
 	VECTOR3 FromLocal(VECTOR3 pos) const;
-	void	FromLocal(VECTOR3 pos, D3DXVECTOR3 *pTgt) const;
+	void	FromLocal(VECTOR3 pos, FVECTOR3 *pTgt) const;
 
 	void RenderRunwayLights (LPDIRECT3DDEVICE9 dev);
 	bool RenderSurface (LPDIRECT3DDEVICE9 dev);
@@ -89,7 +89,7 @@ private:
 	class vPlanet *vP;
 	VECTOR3 vLocalPos;
 	MATRIX3 mGlobalRot;
-	D3DXMATRIX mGlobalRotDX;
+	FMATRIX4 mGlobalRotDX;
 
 	int numRunwayLights;
 	RunwayLights** runwayLights;

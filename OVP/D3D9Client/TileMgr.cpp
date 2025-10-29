@@ -461,17 +461,17 @@ void TileManager::LoadSpecularMasks ()
 
 // ==============================================================
 
-void TileManager::SetAmbientColor(D3DCOLOR c)
+void TileManager::SetAmbientColor(DWORD c)
 {
 	cAmbient = c;
 }
 
 // ==============================================================
 
-void TileManager::Render(LPDIRECT3DDEVICE9 dev, D3DXMATRIX &wmat, double scale, int level, double viewap, bool bfog)
+void TileManager::Render(LPDIRECT3DDEVICE9 dev, FMATRIX4 &wmat, double scale, int level, double viewap, bool bfog)
 {
 	VECTOR3 gpos;
-	D3DXMATRIX imat;
+	FMATRIX4 imat;
 
 	FX->SetFloat(eDistScale, 1.0f/float(scale));
 
@@ -480,8 +480,8 @@ void TileManager::Render(LPDIRECT3DDEVICE9 dev, D3DXMATRIX &wmat, double scale, 
 	RenderParam.dev = dev;
 	D3DMAT_Copy (&RenderParam.wmat, &wmat);
 	D3DMAT_Copy (&RenderParam.wmat_tmp, &wmat);
-	D3DMAT_MatrixInvert (&imat, &wmat);
-	RenderParam.cdir = _V(imat._41, imat._42, imat._43); // camera position in local coordinates (units of planet radii)
+	oapiMatrixInverse(&imat, NULL, &wmat);
+	RenderParam.cdir = _V(imat.m41, imat.m42, imat.m43); // camera position in local coordinates (units of planet radii)
 	RenderParam.cpos = vp->PosFromCamera() * scale;
 	normalise (RenderParam.cdir);                        // camera direction
 	RenderParam.bfog = bfog;
@@ -526,7 +526,7 @@ void TileManager::Render(LPDIRECT3DDEVICE9 dev, D3DXMATRIX &wmat, double scale, 
 		WaitForSingleObject (tilebuf->hQueueMutex, INFINITE); // make sure we can write to texture request queue
 		for (hemisp = idx = 0; hemisp < 2; hemisp++) {
 			if (hemisp) { // flip world transformation to southern hemisphere
-				D3DXMatrixMultiply(&RenderParam.wmat, &Rsouth, &RenderParam.wmat);
+				oapiMatrixMultiply(&RenderParam.wmat, &Rsouth, &RenderParam.wmat);
 				D3DMAT_Copy (&RenderParam.wmat_tmp, &RenderParam.wmat);
 				RenderParam.grot.m12 = -RenderParam.grot.m12;
 				RenderParam.grot.m13 = -RenderParam.grot.m13;
@@ -658,9 +658,8 @@ void TileManager::ProcessTile (int lvl, int hemisp, int ilat, int nlat, int ilng
 		VBMESH *mesh = &PATCH_TPL[lvl][ilat];
 
 		float bsrad = mesh->bsRad * bsScale;
-		D3DXVECTOR3 vBS;
-		D3DXVec3TransformCoord(&vBS, &mesh->bsCnt, &mWorld);
-		float dist = D3DXVec3Length(&vBS);
+		FVECTOR3 vBS = oapiTransformCoord(&mesh->bsCnt, &mWorld);
+		float dist = length(vBS);
 		if ((dist-bsrad)>RenderParam.horzdist) return; //Tile is behind the horizon
 		if (gc->GetScene()->IsVisibleInCamera(&vBS, bsrad)==false) return;
 
@@ -711,8 +710,7 @@ int TileManager::IsTileInView(int lvl, int ilat, float scale)
 {
 	VBMESH &mesh = PATCH_TPL[lvl][ilat];
 	float rad = mesh.bsRad * scale;
-	D3DXVECTOR3 vP;
-	D3DXVec3TransformCoord(&vP, &mesh.bsCnt, &mWorld);
+	FVECTOR3 vP = oapiTransformCoord(&mesh.bsCnt, &mWorld);
 
 	//float dist = D3DXVec3Length(&vP);
 	//if ((dist-rad)>RenderParam.horzdist) return -1;	 //Tile is behind the horizon
@@ -725,7 +723,7 @@ int TileManager::IsTileInView(int lvl, int ilat, float scale)
 void TileManager::SetWorldMatrix (int ilng, int nlng, int ilat, int nlat)
 {
 	// set up world transformation matrix
-	D3DXMATRIX rtile, wtrans;
+	FMATRIX4 rtile, wtrans;
 	double lng = PI*2.0 * (double)ilng/(double)nlng + PI; // add pi so texture wraps at +-180°
 	D3DMAT_RotY (&rtile, lng);
 
@@ -739,12 +737,12 @@ void TileManager::SetWorldMatrix (int ilng, int nlng, int ilat, int nlat)
 		double dx = s*cos(lng)*cos(lat); // the offsets between sphere centre and tile corner
 		double dy = s*sin(lat);
 		double dz = s*sin(lng)*cos(lat);
-		RenderParam.wmat_tmp._41 = (float)(dx*RenderParam.grot.m11 + dy*RenderParam.grot.m12 + dz*RenderParam.grot.m13 + RenderParam.cpos.x);
-		RenderParam.wmat_tmp._42 = (float)(dx*RenderParam.grot.m21 + dy*RenderParam.grot.m22 + dz*RenderParam.grot.m23 + RenderParam.cpos.y);
-		RenderParam.wmat_tmp._43 = (float)(dx*RenderParam.grot.m31 + dy*RenderParam.grot.m32 + dz*RenderParam.grot.m33 + RenderParam.cpos.z);
-		D3DXMatrixMultiply(&mWorld, &rtile, &RenderParam.wmat_tmp);
+		RenderParam.wmat_tmp.m41 = (float)(dx*RenderParam.grot.m11 + dy*RenderParam.grot.m12 + dz*RenderParam.grot.m13 + RenderParam.cpos.x);
+		RenderParam.wmat_tmp.m42 = (float)(dx*RenderParam.grot.m21 + dy*RenderParam.grot.m22 + dz*RenderParam.grot.m23 + RenderParam.cpos.y);
+		RenderParam.wmat_tmp.m43 = (float)(dx*RenderParam.grot.m31 + dy*RenderParam.grot.m32 + dz*RenderParam.grot.m33 + RenderParam.cpos.z);
+		oapiMatrixMultiply(&mWorld, &rtile, &RenderParam.wmat_tmp);
 	} else {
-		D3DXMatrixMultiply(&mWorld, &rtile, &RenderParam.wmat);
+		oapiMatrixMultiply(&mWorld, &rtile, &RenderParam.wmat);
 	}
 }
 
@@ -898,7 +896,7 @@ bool TileManager::bGlobalRipple = false;
 bool TileManager::bGlobalLights = false;
 
 TileBuffer *TileManager::tilebuf = NULL;
-D3DXMATRIX  TileManager::Rsouth;
+FMATRIX4  TileManager::Rsouth;
 
 VBMESH TileManager::PATCH_TPL_1;
 VBMESH TileManager::PATCH_TPL_2;

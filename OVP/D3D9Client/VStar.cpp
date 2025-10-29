@@ -61,15 +61,15 @@ bool vStar::Render(LPDIRECT3DDEVICE9 dev)
 	// double phi = atan2 (bdir.z, bdir.x);
 	// FLOAT sphi = (FLOAT)sin(phi), cphi = (FLOAT)cos(phi);
 	// FLOAT tx = (FLOAT)cpos.x, ty = (FLOAT)cpos.y, tz = (FLOAT)cpos.z;
-	mWorld._11 =  (FLOAT)bdir.x; //cphi;
-	mWorld._12 =  (FLOAT)bdir.y; //0;
-	mWorld._13 =  (FLOAT)bdir.z; //sphi;
-	mWorld._31 = -(FLOAT)(bdir.z/hz); //-sphi;
-	mWorld._32 =  0;
-	mWorld._33 =  (FLOAT)(bdir.x/hz); //cphi;
-	mWorld._21 =  -(mWorld._12*mWorld._33 - mWorld._32*mWorld._13); //0;
-	mWorld._22 =  -(mWorld._13*mWorld._31 - mWorld._33*mWorld._11); //1;
-	mWorld._23 =  -(mWorld._11*mWorld._32 - mWorld._31*mWorld._12); // 0;
+	mWorld.m11 =  (FLOAT)bdir.x; //cphi;
+	mWorld.m12 =  (FLOAT)bdir.y; //0;
+	mWorld.m13 =  (FLOAT)bdir.z; //sphi;
+	mWorld.m31 = -(FLOAT)(bdir.z/hz); //-sphi;
+	mWorld.m32 =  0;
+	mWorld.m33 =  (FLOAT)(bdir.x/hz); //cphi;
+	mWorld.m21 =  -(mWorld.m12*mWorld.m33 - mWorld.m32*mWorld.m13); //0;
+	mWorld.m22 =  -(mWorld.m13*mWorld.m31 - mWorld.m33*mWorld.m11); //1;
+	mWorld.m23 =  -(mWorld.m11*mWorld.m32 - mWorld.m31*mWorld.m12); // 0;
 
 	// artificially reduce size reduction with distance
 	// to make star appear larger
@@ -82,15 +82,15 @@ bool vStar::Render(LPDIRECT3DDEVICE9 dev)
 	if (cdist > maxdist) {
 		dist_scale = maxdist/cdist;
 		rad_scale *= float(dist_scale);
-		mWorld._41 = float(cpos.x*dist_scale);
-		mWorld._42 = float(cpos.y*dist_scale);
-		mWorld._43 = float(cpos.z*dist_scale);
+		mWorld.m41 = float(cpos.x*dist_scale);
+		mWorld.m42 = float(cpos.y*dist_scale);
+		mWorld.m43 = float(cpos.z*dist_scale);
 	}
 
 	// scale up sphere radius from 1 to planet radius
-	mWorld._11 *= rad_scale; mWorld._12 *= rad_scale; mWorld._13 *= rad_scale;
-	mWorld._21 *= rad_scale; mWorld._22 *= rad_scale; mWorld._23 *= rad_scale;
-	mWorld._31 *= rad_scale; mWorld._32 *= rad_scale; mWorld._33 *= rad_scale;
+	mWorld.m11 *= rad_scale; mWorld.m12 *= rad_scale; mWorld.m13 *= rad_scale;
+	mWorld.m21 *= rad_scale; mWorld.m22 *= rad_scale; mWorld.m23 *= rad_scale;
+	mWorld.m31 *= rad_scale; mWorld.m32 *= rad_scale; mWorld.m33 *= rad_scale;
 
 	//D3D9Effect::RenderBillboard(&mWorld, scn->GetSunTexture(), 1.0f);
 	D3D9Effect::RenderBillboard(&mWorld, SURFACE(deftex)->GetTexture(), 1.0f);

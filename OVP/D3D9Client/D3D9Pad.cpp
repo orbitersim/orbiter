@@ -51,7 +51,7 @@ oapi::Pen * defpen = 0;
 //
 void D3D9Pad::SinCos(int n, int k)
 {
-	pSinCos[k] = new D3DXVECTOR2[n];
+	pSinCos[k] = new FVECTOR2[n];
 	float s = float(PI2) / float(n);
 	float q = -s / 2.0f;
 	for (int i = 0; i<n; i++) { 
@@ -209,10 +209,10 @@ void D3D9Pad::Reset()
 	bMustEndScene = false;
 	vI = 0;
 	iI = 0;
-	D3DXMatrixIdentity(&mO);
-	D3DXMatrixIdentity(&mVOrig);
-	D3DXMatrixIdentity(&mPOrig);
-	vTarget = D3DXVECTOR4(1,1,1,1);
+	oapiMatrixIdentity(&mO);
+	oapiMatrixIdentity(&mVOrig);
+	oapiMatrixIdentity(&mPOrig);
+	vTarget = F4_One;
 	pTgt = NULL;
 	pDep = NULL;
 	zfar = 1.0f;
@@ -259,20 +259,20 @@ void D3D9Pad::LoadDefaults()
 	memset(ClipData, 0, sizeof(ClipData));
 	ScissorRect = { 0,0,0,0 };
 
-	cColorKey  = D3DXCOLOR(DWORD(0));
+	cColorKey  = FVECTOR4(DWORD(0));
 	brushcolor = SkpColor(0xFF00FF00);
 	bkcolor    = SkpColor(0xFF000000);
 	textcolor  = SkpColor(0xFF00FF00);
 	pencolor   = SkpColor(0xFF00FF00);
 
-	D3DXMatrixIdentity(&mVP);
-	D3DXMatrixIdentity(&mW);
-	D3DXMatrixIdentity(&mP);
-	D3DXMatrixIdentity(&mV);
-	D3DXMatrixIdentity((D3DXMATRIX*)&ColorMatrix);
+	oapiMatrixIdentity(&mVP);
+	oapiMatrixIdentity(&mW);
+	oapiMatrixIdentity(&mP);
+	oapiMatrixIdentity(&mV);
+	oapiMatrixIdentity((FMATRIX4*)&ColorMatrix);
 
-	Gamma = FVECTOR4(1, 1, 1, 1);
-	Noise = FVECTOR4(0, 0, 0, 0);
+	Gamma = F4_One;
+	Noise = F4_Zero;
 }
 
 
@@ -337,7 +337,7 @@ D3D9Pad::~D3D9Pad ()
 // ===============================================================================================
 // Private
 //
-void D3D9Pad::SetViewProj(const D3DXMATRIX* pV, const D3DXMATRIX* pP)
+void D3D9Pad::SetViewProj(const FMATRIX4* pV, const FMATRIX4* pP)
 {
 	mV = mVOrig = *pV;
 	mP = mPOrig = *pP;
@@ -389,9 +389,11 @@ void D3D9Pad::BeginDrawing(LPDIRECT3DSURFACE9 pRenderTgt, LPDIRECT3DSURFACE9 pDe
 
 	pRenderTgt->GetDesc(&tgt_desc);
 	zfar = float(max(tgt_desc.Width, tgt_desc.Height));
-	D3DXMatrixOrthoOffCenterLH(&mO, 0.0f, (float)tgt_desc.Width, (float)tgt_desc.Height, 0.0f, 0.0f, zfar);
-	vTarget = D3DXVECTOR4(2.0f / (float)tgt_desc.Width, 2.0f / (float)tgt_desc.Height, (float)tgt_desc.Width, (float)tgt_desc.Height);
+	D3DMAT_OrthoOffCenterLH(&mO, 0.0f, (float)tgt_desc.Width, (float)tgt_desc.Height, 0.0f, 0.0f, zfar);
+	vTarget = FVECTOR4(2.0f / (float)tgt_desc.Width, 2.0f / (float)tgt_desc.Height, (float)tgt_desc.Width, (float)tgt_desc.Height);
+
 	
+
 	pTgt = pRenderTgt;
 	pDep = pDepthStensil;
 	tgt = { 0, 0, (long)tgt_desc.Width, (long)tgt_desc.Height };
@@ -474,7 +476,7 @@ bool D3D9Pad::Flush(HPOLY hPoly)
 	HR(pDev->SetVertexDeclaration(pSketchpadDecl));
 		
 	HR(FX->SetFloat(eRandom, float(oapiRand())));
-	HR(FX->SetVector(eTarget, &vTarget));
+	HR(FX->SetVector(eTarget, _DX(vTarget)));
 	HR(FX->SetTechnique(eSketch));
 	HR(FX->Begin(&numPasses, D3DXFX_DONOTSAVESTATE));
 
@@ -633,19 +635,19 @@ void D3D9Pad::SetupDevice(Topo tNew)
 	if (Change & (SKPCHG_TRANSFORM | SKPCHG_CLIPCONE)) {
 
 		if (vmode == ORTHO) {
-			D3DXMATRIX mWVP;
-			D3DXMatrixMultiply(&mWVP, &mW, &mO);
-			HR(FX->SetMatrix(eWVP, &mWVP));
-			HR(FX->SetMatrix(eVP, &mO));
-			HR(FX->SetMatrix(eW, &mW));
+			FMATRIX4 mWVP;
+			oapiMatrixMultiply(&mWVP, &mW, &mO);
+			HR(FX->SetMatrix(eWVP, _DX(mWVP)));
+			HR(FX->SetMatrix(eVP, _DX(mO)));
+			HR(FX->SetMatrix(eW, _DX(mW)));
 			HR(FX->SetBool(eCovEn, false));
 		}
 		else {
-			float d = float(tgt_desc.Height) * mP._22;
+			float d = float(tgt_desc.Height) * mP.m22;
 			float f = atan(1.0f / d) * 1.7f;
-			D3DXMatrixMultiply(&mVP, &mV, &mP);
-			HR(FX->SetMatrix(eVP, &mVP));
-			HR(FX->SetMatrix(eW, &mW));
+			oapiMatrixMultiply(&mVP, &mV, &mP);
+			HR(FX->SetMatrix(eVP, _DX(mVP)));
+			HR(FX->SetMatrix(eW, _DX(mW)));
 			HR(FX->SetFloat(eFov, f));
 			HR(FX->SetBool(eCovEn, ClipData[0].bEnable || ClipData[1].bEnable));
 		}
@@ -658,9 +660,9 @@ void D3D9Pad::SetupDevice(Topo tNew)
 		float offset = 0.0f;
 		int w = int(ceil(GetPenWidth()));
 		if ((w & 1) == 0) offset = 0.5f;
-		HR(FX->SetValue(ePen, &pencolor.fclr, sizeof(D3DXCOLOR)));
+		HR(FX->SetValue(ePen, &pencolor.fclr, sizeof(FVECTOR4)));
 		HR(FX->SetBool(eDashEn, IsDashed()));
-		HR(FX->SetValue(eWidth, ptr(D3DXVECTOR3(GetPenWidth(), pattern*0.13f, offset)), sizeof(D3DXVECTOR3)));
+		HR(FX->SetValue(eWidth, &(FVECTOR3(GetPenWidth(), pattern*0.13f, offset)), sizeof(FVECTOR3)));
 	}
 
 
@@ -692,9 +694,9 @@ void D3D9Pad::SetupDevice(Topo tNew)
 	//
 	if (Change & SKPCHG_CLIPCONE) {
 		if (ClipData[0].bEnable || ClipData[1].bEnable) {
-			HR(FX->SetValue(ePos, &ClipData[0].uDir, sizeof(D3DXVECTOR3)));
-			HR(FX->SetValue(ePos2, &ClipData[1].uDir, sizeof(D3DXVECTOR3)));
-			HR(FX->SetValue(eCov, ptr(D3DXVECTOR4(ClipData[0].ca, ClipData[0].dst, ClipData[1].ca, ClipData[1].dst)), sizeof(D3DXVECTOR4)));
+			HR(FX->SetValue(ePos, &ClipData[0].uDir, sizeof(FVECTOR3)));
+			HR(FX->SetValue(ePos2, &ClipData[1].uDir, sizeof(FVECTOR3)));
+			HR(FX->SetValue(eCov, &(FVECTOR4(ClipData[0].ca, ClipData[0].dst, ClipData[1].ca, ClipData[1].dst)), sizeof(FVECTOR4)));
 		}
 	}
 
@@ -717,7 +719,7 @@ void D3D9Pad::SetupDevice(Topo tNew)
 			if (Change & SKPCHG_TEXTURE) {
 				HR(FX->SetTexture(eTex0, hTexture));
 				HR(FX->SetBool(eKeyEn, bColorKey));
-				HR(FX->SetValue(eKey, &cColorKey, sizeof(D3DXCOLOR)));
+				HR(FX->SetValue(eKey, &cColorKey, sizeof(FVECTOR4)));
 			}
 		}
 
@@ -727,7 +729,7 @@ void D3D9Pad::SetupDevice(Topo tNew)
 			}
 		}
 
-		HR(FX->SetVector(eSize, ptr(D3DXVECTOR4(tw, th, 1.0f, 1.0f))));
+		HR(FX->SetVector(eSize, _DX(FVECTOR4(tw, th, 1.0f, 1.0f))));
 		HR(FX->SetBool(eTexEn, (hTexture != NULL)));
 		HR(FX->SetBool(eFntEn, (hFontTex != NULL)));
 	}
@@ -796,7 +798,7 @@ Font *D3D9Pad::SetFont(Font *font)
 
 #ifdef SKPDBG 
 	LOGFONTA lf;
-	GetObjectA(font->GetGDIFont(), sizeof(LOGFONT), &lf);
+	GetObjHandle(font->GetGDIFont(), sizeof(LOGFONT), &lf);
 	Log("SetFont(%s) Face=[%s] Height=%d Weight=%d", _PTR(font), lf.lfFaceName, lf.lfHeight, lf.lfWeight);
 #endif
 	// No "Change" falgs required here, covered in SetFontTextureNative()
@@ -945,8 +947,8 @@ void D3D9Pad::SetOrigin (int x, int y)
 #endif
 	Change |= SKPCHG_TRANSFORM;
 
-	mW._41 = float(x);
-	mW._42 = float(y);
+	mW.m41 = float(x);
+	mW.m42 = float(y);
 }
 
 
@@ -954,8 +956,8 @@ void D3D9Pad::SetOrigin (int x, int y)
 //
 void D3D9Pad::GetOrigin(int *x, int *y) const
 {
-	if (x) *x = int(mW._41);
-	if (y) *y = int(mW._42);
+	if (x) *x = int(mW.m41);
+	if (y) *y = int(mW.m42);
 }
 
 
@@ -1255,7 +1257,7 @@ void D3D9Pad::Ellipse (int x0, int y0, int x1, int y1)
 	//fl += w;
 	//ft += h;
 
-	IVECTOR2 pts[65] = { 0 };
+	IVECTOR2 pts[65] = {};
 
 	WORD n = 8;
 	WORD q = 0;
@@ -1534,14 +1536,14 @@ int CreatePolyIndexList(const Type *pt, short npt, WORD *Out)
 
 // ===============================================================================================
 //
-inline D3DXVECTOR2 _DXV2(const IVECTOR2 &pt)
+inline FVECTOR2 _DXV2(const IVECTOR2 &pt)
 {
-	return D3DXVECTOR2(float(pt.x), float(pt.y));
+	return FVECTOR2(float(pt.x), float(pt.y));
 }
 
-inline D3DXVECTOR2 _DXV2(const FVECTOR2 &pt)
+inline FVECTOR2 _DXV2(const FVECTOR2 &pt)
 {
-	return D3DXVECTOR2(pt.x, pt.y);
+	return FVECTOR2(pt.x, pt.y);
 }
 
 
@@ -1613,8 +1615,8 @@ void D3D9Pad::AppendLineVertexList(const Type *pt, int _npt, bool bLoop)
 		WORD aV, bV, cV, dV;
 		float length = 0.0f;
 
-		D3DXVECTOR2 pp; // Prev point
-		D3DXVECTOR2 np;	// Next point
+		FVECTOR2 pp; // Prev point
+		FVECTOR2 np;	// Next point
 
 		// Line Init ------------------------------------------------------------
 		//
@@ -1661,7 +1663,7 @@ void D3D9Pad::AppendLineVertexList(const Type *pt, int _npt, bool bLoop)
 
 			pp = _DXV2(pt[i]);
 
-			if (IsDashed()) length += D3DXVec2Length(ptr(np - pp));
+			if (IsDashed()) length += ::length(np - pp);
 		}
 
 		// Last segment ---------------------------------------------------------
@@ -1714,8 +1716,8 @@ void D3D9Pad::AppendLineVertexList(const Type *pt)
 
 	if (Topology(TRIANGLE)) {
 
-		D3DXVECTOR2  pp = _DXV2(pt[0]) * 2.0 - _DXV2(pt[1]);
-		D3DXVECTOR2  np;
+		FVECTOR2  pp = _DXV2(pt[0]) * 2.0 - _DXV2(pt[1]);
+		FVECTOR2  np;
 
 		WORD vF = vI;
 
@@ -1796,7 +1798,7 @@ ID3DXEffect* D3D9Pad::FX = 0;
 D3D9Client * D3D9Pad::gc = 0;
 WORD * D3D9Pad::Idx = 0;
 SkpVtx * D3D9Pad::Vtx = 0;
-LPD3DXVECTOR2 D3D9Pad::pSinCos[];
+FVECTOR2* D3D9Pad::pSinCos[];
 LPDIRECT3DDEVICE9 D3D9PadFont::pDev = 0;
 LPDIRECT3DDEVICE9 D3D9Pad::pDev = 0;
 LPDIRECT3DTEXTURE9 D3D9Pad::pNoise = 0;

@@ -750,7 +750,7 @@ void SurfTile::StepIn ()
 		double s = vPlanet->GetSize();
 		for (int i = 0; i < ARRAYSIZE(vPlanet->MicroCfg.Level); ++i) {
 			double f = s / vPlanet->MicroCfg.Level[i].size;
-			MicroRep[i] = D3DXVECTOR2(fixinput(width*f, i), fixinput(height*f, i));
+			MicroRep[i] = FVECTOR2(fixinput(width*f, i), fixinput(height*f, i));
 		}
 	}
 }
@@ -804,10 +804,9 @@ void SurfTile::Render ()
 	has_lights &= pShader->bNightlights;
 	has_atmosphere &= pShader->bAtmosphere;
 
-	sp->vCloudOff = FVECTOR4(0, 0, 1, 1);
+	sp->vCloudOff = FVECTOR4(0.0f, 0.0f, 1.0f, 1.0f);
 
-	D3DXVECTOR3 bs_pos;
-	D3DXVec3TransformCoord(&bs_pos, &mesh->bsCnt, &mWorld);
+	FVECTOR3 bs_pos = oapiTransformCoord(&mesh->bsCnt, &mWorld);
 
 	// ----------------------------------------------------------------------
 	// Assign micro texture range information to shaders 
@@ -992,29 +991,29 @@ void SurfTile::Render ()
 
 	if (pShader->bShdMap)
 	{
-		const Scene::SHADOWMAPPARAM* shd = scene->GetSMapData();
+		const SHADOWMAP* shd = scene->GetSMapData(ShdPackage::Main);
 
-		D3DXVECTOR3 bc = bs_pos - shd->pos;
+		FVECTOR3 bc = FVECTOR3(bs_pos) - shd->pos;
 
 		double alt = scene->GetCameraAltitude() - scene->GetTargetElevation();
 
 		if ((alt < 10e3) && (scene->GetCameraProxyVisual() == mgr->GetPlanet())) {
 
-			if (shd->pShadowMap && (Config->ShadowMapMode != 0) && (Config->TerrainShadowing == 2)) {
+			if (shd->IsValid() && (Config->ShadowMapMode != 0) && (Config->TerrainShadowing == 2)) {
 
-				float x = D3DXVec3Dot(&bc, &(shd->ld));
+				float x = dotp(bc, shd->ld);
 
-				if (sqrt(D3DXVec3Dot(&bc, &bc) - x * x) < (shd->rad + mesh->bsRad)) {
+				if (sqrt(dotp(bc, bc) - x * x) < (shd->rad + mesh->bsRad)) {
 					float s = float(shd->size);
 					float sr = 2.0f * shd->rad / s;
-					sp->mLVP = shd->mViewProj;
+					sp->mLVP = shd->mLVP;
 					sp->vSHD = FVECTOR4(sr, 1.0f / s, 0.0f, 1.0f / shd->depth);
 					fc->bShadows = true;
 				}
 			}
 		}
 
-		pShader->SetTexture(pShader->tShadowMap, shd->pShadowMap);
+		pShader->SetTexture(pShader->tShadowMap, shd->ptShmRT[0]);
 	}
 
 	// ---------------------------------------------------------------------
@@ -1115,7 +1114,7 @@ void SurfTile::Render ()
 	if (DebugControls::IsActive()) {
 		DWORD flags  = *(DWORD*)mgr->GetClient()->GetConfigParam(CFGPRM_GETDEBUGFLAGS);
 		if (flags&DBG_FLAGS_TILEBOXES) {
-			D3D9Effect::RenderTileBoundingBox(&mWorld, mesh->Box, &D3DXVECTOR4(1,0,0,1));
+			D3D9Effect::RenderTileBoundingBox(&mWorld, mesh->Box, &FVECTOR4(1,0,0,1));
 		}
 	}*/
 }
@@ -1610,7 +1609,7 @@ void TileManager2<SurfTile>::Unload(int lvl)
 // -----------------------------------------------------------------------
 
 template<>
-void TileManager2<SurfTile>::Pick(D3DXVECTOR3 &vRay, TILEPICK *pPick)
+void TileManager2<SurfTile>::Pick(FVECTOR3 &vRay, TILEPICK *pPick)
 {
 	std::list<Tile *> tiles;
 

@@ -15,6 +15,7 @@
 #include "D3D9Catalog.h"
 #include "Scene.h"
 #include "OapiExtension.h"
+#include "DirectXCollision.h"
 
 #include <stack>
 #include <io.h>
@@ -277,15 +278,15 @@ float Tile::GetBoundingSphereRad() const
 
 // -----------------------------------------------------------------------
 
-D3DXVECTOR3 Tile::GetBoundingSpherePos() const
+FVECTOR3 Tile::GetBoundingSpherePos() const
 {
 	if (mesh) return mesh->bsCnt;
-	return D3DXVECTOR3(0,0,0);
+	return FVECTOR3(0,0,0);
 }
 
 // -----------------------------------------------------------------------
 
-bool Tile::Pick(const LPD3DXMATRIX pW, const D3DXVECTOR3 *vDir, TILEPICK &result)
+bool Tile::Pick(const FMATRIX4* pW, const FVECTOR3 *vDir, TILEPICK &result)
 {
 	if (!mesh) {
 		LogErr("Tile::Pick() Failed: No Mesh Available");
@@ -296,27 +297,25 @@ bool Tile::Pick(const LPD3DXMATRIX pW, const D3DXVECTOR3 *vDir, TILEPICK &result
 		return false;
 	}
 
-	D3DXVECTOR3 bs;
-	D3DXVec3TransformCoord(&bs, &mesh->bsCnt, pW);
+	FVECTOR3 bs = oapiTransformCoord(&mesh->bsCnt, pW);
 
-	float dst = D3DXVec3Dot(&bs, vDir);
-	float len2 = D3DXVec3Dot(&bs, &bs);
+	float dst = dotp(bs, *vDir);
+	float len2 = dotp(bs, bs);
 
 	if (dst < -mesh->bsRad) return false;
 	if (sqrt(len2 - dst*dst) > mesh->bsRad) return false;
 
-
-	D3DXVECTOR3 pos, dir;
-	D3DXVECTOR3 _a, _b, _c, cp;
-	D3DXMATRIX mWI;
+	FVECTOR3 _a, _b, _c, cp;
+	FMATRIX4 mWI;
 	float det;
 
 	WORD *pIdc = mesh->idx;
 	VERTEX_2TEX *vtx = mesh->vtx;
 
-	D3DXMatrixInverse(&mWI, &det, pW);
-	D3DXVec3TransformCoord(&pos, ptr(D3DXVECTOR3(0, 0, 0)), &mWI);
-	D3DXVec3TransformNormal(&dir, vDir, &mWI);
+	oapiMatrixInverse(&mWI, &det, pW);
+
+	XMVECTOR pos = oapiTransformCoord(&(FVECTOR3(0, 0, 0)), &mWI).XM();
+	XMVECTOR dir = oapiTransformNormal(vDir, &mWI).XM();
 
 	int idx = -1;
 
@@ -326,22 +325,20 @@ bool Tile::Pick(const LPD3DXMATRIX pW, const D3DXVECTOR3 *vDir, TILEPICK &result
 		WORD b = pIdc[i * 3 + 1];
 		WORD c = pIdc[i * 3 + 2];
 
-		_a = D3DXVECTOR3(vtx[a].x, vtx[a].y, vtx[a].z);
-		_b = D3DXVECTOR3(vtx[b].x, vtx[b].y, vtx[b].z);
-		_c = D3DXVECTOR3(vtx[c].x, vtx[c].y, vtx[c].z);
+		_a = FVECTOR3(vtx[a].x, vtx[a].y, vtx[a].z);
+		_b = FVECTOR3(vtx[b].x, vtx[b].y, vtx[b].z);
+		_c = FVECTOR3(vtx[c].x, vtx[c].y, vtx[c].z);
 
-		float u, v, dst;
+		float dst;
 
-		D3DXVec3Cross(&cp, ptr(_c - _b), ptr(_a - _b));
+		cp = crossp((_c - _b), (_a - _b));
 
-		if (D3DXVec3Dot(&cp, &dir)<0) {
-			if (D3DXIntersectTri(&_c, &_b, &_a, &pos, &dir, &u, &v, &dst)) {
+		if (dotp(cp, dir)<0) {
+			if (DirectX::TriangleTests::Intersects(pos, dir, _c.XM(), _b.XM(), _a.XM(), dst)) {			
 				if (dst > 0.1f) {
 					if (dst < result.d) {
 						idx = i;
-						result.d = dst;
-						result.u = u;
-						result.v = v;
+						result.d = dst;						
 						result.i = i;
 						result.pTile = this;
 					}
@@ -353,23 +350,20 @@ bool Tile::Pick(const LPD3DXMATRIX pW, const D3DXVECTOR3 *vDir, TILEPICK &result
 	if (idx >= 0) {
 
 		int   i = result.i;
-		float u = result.u;
-		float v = result.v;
 
 		WORD a = pIdc[i * 3 + 0];
 		WORD b = pIdc[i * 3 + 1];
 		WORD c = pIdc[i * 3 + 2];
 
-		_a = D3DXVECTOR3(vtx[a].x, vtx[a].y, vtx[a].z);
-		_b = D3DXVECTOR3(vtx[b].x, vtx[b].y, vtx[b].z);
-		_c = D3DXVECTOR3(vtx[c].x, vtx[c].y, vtx[c].z);
+		_a = FVECTOR3(vtx[a].x, vtx[a].y, vtx[a].z);
+		_b = FVECTOR3(vtx[b].x, vtx[b].y, vtx[b].z);
+		_c = FVECTOR3(vtx[c].x, vtx[c].y, vtx[c].z);
 
-		D3DXVec3Cross(&cp, ptr(_c - _b), ptr(_a - _b));
-		D3DXVec3TransformNormal(&cp, &cp, pW);
-		D3DXVec3Normalize(&result._n, &cp);
+		cp = crossp((_c - _b), (_a - _b));
+		cp = oapiTransformNormal(&cp, pW);
 
-		D3DXVECTOR3 p = (_b * u) + (_a * v) + (_c * (1.0f - u - v));
-		D3DXVec3TransformCoord(&result._p, &p, pW);
+		result._n = unit(cp);
+		result._p = *vDir * result.d;
 
 		return true;
 	}
@@ -499,13 +493,13 @@ VBMESH *Tile::CreateMesh_quadpatch (int grdlat, int grdlng, float *elev, double 
 				if      (tpos.z < tpmin.z) tpmin.z = tpos.z;
 				else if (tpos.z > tpmax.z) tpmax.z = tpos.z;
 			}
-			vtx[n].x = D3DVAL(pos.x - dx); vtx[n].nx = D3DVAL(nml.x);
-			vtx[n].y = D3DVAL(pos.y - dy); vtx[n].ny = D3DVAL(nml.y);
-			vtx[n].z = D3DVAL(pos.z);      vtx[n].nz = D3DVAL(nml.z);
-			vtx[n].e = D3DVAL(e);
+			vtx[n].x = float(pos.x - dx); vtx[n].nx = float(nml.x);
+			vtx[n].y = float(pos.y - dy); vtx[n].ny = float(nml.y);
+			vtx[n].z = float(pos.z);      vtx[n].nz = float(nml.z);
+			vtx[n].e = float(e);
 
-			vtx[n].tu0 = D3DVAL((c1*j)/grdlng+c2); // overlap to avoid seams
-			vtx[n].tv0 = D3DVAL(grdlat-i)/D3DVAL(grdlat);
+			vtx[n].tu0 = float((c1*j)/grdlng+c2); // overlap to avoid seams
+			vtx[n].tv0 = float(grdlat-i)/float(grdlat);
 			//vtx[n].tu1 = vtx[n].tu0 * TEX2_MULTIPLIER;
 			//vtx[n].tv1 = vtx[n].tv0 * TEX2_MULTIPLIER;
 			// map texture coordinates to subrange
@@ -639,7 +633,6 @@ VBMESH *Tile::CreateMesh_quadpatch (int grdlat, int grdlng, float *elev, double 
 	mesh->Box[6] = _V(tmul (R, _V(tpmin.x, tpmax.y, tpmax.z)) + pref);
 	mesh->Box[7] = _V(tmul (R, _V(tpmax.x, tpmax.y, tpmax.z)) + pref);
 
-	mesh->ComputeSphere();
 	mesh->MapVertices(TileManager2Base::pDev);
 
 	return mesh;
@@ -686,9 +679,9 @@ VBMESH *Tile::CreateMesh_hemisphere (int grd, float *elev, double globelev)
 			if (elev) eradius += (double)elev[(grd+1-y)*TILE_ELEVSTRIDE + x+1];
 			nml = _V(slat*clng, clat, slat*slng);
 			pos = nml*eradius;
-			vtx->x = D3DVAL(pos.x);  vtx->nx = D3DVAL(nml.x);
-			vtx->y = D3DVAL(pos.y);  vtx->ny = D3DVAL(nml.y);
-			vtx->z = D3DVAL(pos.z);  vtx->nz = D3DVAL(nml.z);
+			vtx->x = float(pos.x);  vtx->nx = float(nml.x);
+			vtx->y = float(pos.y);  vtx->ny = float(nml.y);
+			vtx->z = float(pos.z);  vtx->nz = float(nml.z);
 			FLOAT tu = a*(FLOAT)x + du;
 			vtx->tu0 = tu; // vtx->tu1 = tu;
 			vtx->tv0 = tv; // vtx->tv1 = tv;
@@ -719,9 +712,9 @@ VBMESH *Tile::CreateMesh_hemisphere (int grd, float *elev, double globelev)
 	}
 	nml = _V(0,1,0);
 	pos = nml*eradius;
-	vtx->x = D3DVAL(pos.x);  vtx->nx = D3DVAL(nml.x);
-	vtx->y = D3DVAL(pos.y);  vtx->ny = D3DVAL(nml.y);
-	vtx->z = D3DVAL(pos.z);  vtx->nz = D3DVAL(nml.z);
+	vtx->x = float(pos.x);  vtx->nx = float(nml.x);
+	vtx->y = float(pos.y);  vtx->ny = float(nml.y);
+	vtx->z = float(pos.z);  vtx->nz = float(nml.z);
 	vtx->tu0 = 0.5f; // vtx->tu1 = 0.5f;
 	vtx->tv0 = 0.0f; // vtx->tv1 = 0.0f;
 	vtx++;
@@ -737,9 +730,9 @@ VBMESH *Tile::CreateMesh_hemisphere (int grd, float *elev, double globelev)
 	}
 	nml = _V(0,-1,0);
 	pos = nml*eradius;
-	vtx->x = D3DVAL(pos.x);  vtx->nx = D3DVAL(nml.x);
-	vtx->y = D3DVAL(pos.y);  vtx->ny = D3DVAL(nml.y);
-	vtx->z = D3DVAL(pos.z);  vtx->nz = D3DVAL(nml.z);
+	vtx->x = float(pos.x);  vtx->nx = float(nml.x);
+	vtx->y = float(pos.y);  vtx->ny = float(nml.y);
+	vtx->z = float(pos.z);  vtx->nz = float(nml.z);
 	vtx->tu0 = 0.5f; // vtx->tu1 = 0.5f;
 	vtx->tv0 = 1.0f; // vtx->tv1 = 1.0f;
 	vtx++;

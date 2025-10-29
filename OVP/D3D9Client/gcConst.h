@@ -362,7 +362,7 @@ public:
 	* \param hMesh Handle to a devmesh containing the material
 	* \param idx Material index
 	* \param prop material property identifier (\ref MeshMaterialFlags)
-	* \param value a pointer to COLOUR4 structure containing/receiving the data, or \e NULL to reset a default value or to unspecify a property.
+	* \param value a pointer to FVECTOR4 structure containing/receiving the data, or \e NULL to reset a default value or to unspecify a property.
 	* \param bSet \e true to set material value, \e false to get a material value
 	* \return -4 = Invalid handle \n -3 = Unknown property flag \n -2 = Property not specified cannot get it \n -1 = Index out of range \n 0 = Success
 	*/
@@ -668,7 +668,7 @@ public:
 
 	inline void WorldMatrix(FMATRIX4 *mat, const FVECTOR3 &pos, const FVECTOR3 &x, const FVECTOR3 &z, float scale = 1.0f)
 	{
-		FVECTOR3 y = cross(x, z);
+		FVECTOR3 y = crossp(x, z);
 		mat->m11 = (x.x * scale); mat->m12 = (x.y * scale); mat->m13 = (x.z * scale); mat->m14 = 0.0f;
 		mat->m21 = (y.x * scale); mat->m22 = (y.y * scale); mat->m23 = (y.z * scale); mat->m24 = 0.0f;
 		mat->m31 = (z.x * scale); mat->m32 = (z.y * scale); mat->m33 = (z.z * scale); mat->m34 = 0.0f;

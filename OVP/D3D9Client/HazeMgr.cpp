@@ -73,17 +73,18 @@ void HazeManager::GlobalExit()
 
 // -----------------------------------------------------------------------
 
-void HazeManager::Render(LPDIRECT3DDEVICE9 pDev, D3DXMATRIX &wmat, bool dual)
+void HazeManager::Render(LPDIRECT3DDEVICE9 pDev, FMATRIX4 &wmat, bool dual)
 {
-	D3DXMATRIX imat, transm;
+	FMATRIX4 imat, transm;
 
 	VECTOR3 psun;
 	int i, j;
 	double phi, csun, alpha, colofs;
 	float cosp, sinp, cost, sint, h1, h2, r1, r2, intr, intg, intb;
 
-	D3DMAT_MatrixInvert (&imat, &wmat);
-	VECTOR3 rpos = {imat._41, imat._42, imat._43};   // camera in local coords (planet radius = 1)
+	oapiMatrixInverse(&imat, NULL, &wmat);
+
+	VECTOR3 rpos = {imat.m41, imat.m42, imat.m43};   // camera in local coords (planet radius = 1)
 	double cdist = length (rpos);
 
 	alpha = dens0 * min (1.0, (cdist-1.0)*200.0);
@@ -123,12 +124,12 @@ void HazeManager::Render(LPDIRECT3DDEVICE9 pDev, D3DXMATRIX &wmat, bool dual)
 	cost = (float)rpos.y, sint = (float)sqrt (1.0-cost*cost);
 	phi = atan2 (rpos.z, rpos.x), cosp = (float)cos(phi), sinp = (float)sin(phi);
 
-	D3DXMATRIX rmat = D3DXMATRIX(cost*cosp, -sint, cost*sinp, 0,
+	FMATRIX4 rmat = FMATRIX4(cost*cosp, -sint, cost*sinp, 0,
 		              sint*cosp,  cost, sint*sinp, 0,
 					  -sinp,      0,    cosp,      0,
 					  0,          0,    0,         1);
 
-	D3DXMatrixMultiply(&transm, &rmat, &wmat);
+	oapiMatrixMultiply(&transm, &rmat, &wmat);
 
 	MATRIX3 rrmat = {cost*cosp, -sint, cost*sinp,
 		             sint*cosp,  cost, sint*sinp,
@@ -165,20 +166,20 @@ void HazeManager::Render(LPDIRECT3DDEVICE9 pDev, D3DXMATRIX &wmat, bool dual)
 		else if (csun < minblue) intb = 0.0f;
 		else                     intb = (float)((csun-minblue)*2.5);
 
-		D3DXCOLOR col = D3DXCOLOR(intr*min(1.0f,dens*(float)basecol.x), intg*min(1.0f,dens*(float)basecol.y), intb*min(1.0f,dens*(float)basecol.z), (float)alpha);
-		//D3DXCOLOR col = D3DXCOLOR(intr*min(1.0f,dens*(float)basecol.x), intg*min(1.0f,dens*(float)basecol.y), intb*min(1.0f,dens*(float)basecol.z), 1.0f);
+		FVECTOR4 col = FVECTOR4(intr*min(1.0f,dens*(float)basecol.x), intg*min(1.0f,dens*(float)basecol.y), intb*min(1.0f,dens*(float)basecol.z), (float)alpha);
+		//FVECTOR4 col = FVECTOR4(intr*min(1.0f,dens*(float)basecol.x), intg*min(1.0f,dens*(float)basecol.y), intb*min(1.0f,dens*(float)basecol.z), 1.0f);
 
-		Vtx[j].dcol = col;
+		Vtx[j].dcol = col.dword_abgr();
 		j++;
 		Vtx[j].x = r2*CosP[i];
 		Vtx[j].y = h2;
 		Vtx[j].z = r2*SinP[i];
-		Vtx[j].dcol = col;
+		Vtx[j].dcol = col.dword_abgr();
 		j++;
 	}
 	
 	HR(FX->SetTechnique(eHazeTech));
-	HR(FX->SetMatrix(eW, &transm));
+	HR(FX->SetMatrix(eW, _DX(transm)));
 	HR(FX->SetTexture(eTex0, SURFACE(horizon)->GetTexture()));	
 
 	HR(pDev->SetVertexDeclaration(pHazeVertexDecl));
@@ -283,7 +284,7 @@ void HazeManager2::GlobalExit()
 
 // -----------------------------------------------------------------------
 
-void HazeManager2::Render(D3DXMATRIX &wmat, float horizontal_aperture_deg)
+void HazeManager2::Render(FMATRIX4 &wmat, float horizontal_aperture_deg)
 {
 	Scene* scn = vp->GetScene();
 	VECTOR3 cdir = scn->GetCameraGDir();
@@ -311,18 +312,19 @@ void HazeManager2::RenderSky(VECTOR3 cpos, VECTOR3 cdir, double rad, double apr)
 	VECTOR3 ux = unit(crossp(cdir, ur));
 	VECTOR3 uy = unit(crossp(ur, ux));
 
-	D3DXMATRIX mWL, mL;
-	D3DMAT_Identity(&mWL);
-	D3DMAT_FromAxisT(&mWL, ptr(_D3DXVECTOR3(ux)), ptr(_D3DXVECTOR3(ur)), ptr(_D3DXVECTOR3(uy)));
+	FMATRIX4 mWL, mL;
+	oapiMatrixIdentity(&mWL);
+	D3DMAT_FromAxisT(&mWL, ptr(_F(ux)), ptr(_F(ur)), ptr(_F(uy)));
 
 	double a = 15.0*RAD;
 	double b = (PI-asin(rad/cr))/6.0;
 	
-	D3DXVECTOR3 vTileCenter = D3DXVECTOR3(float(sin(15.0*RAD)), 1.0f, float(1.0+cos(15.0*RAD))) * 0.5;
-	D3DXMatrixRotationAxis(&mL, ptr(_D3DXVECTOR3(ur)), float(-a*0.5));
-	D3DXMatrixMultiply(&mWL, &mWL, &mL);
-	D3DXMatrixRotationAxis(&mL, ptr(_D3DXVECTOR3(ur)), float(-a));
+	FVECTOR3 vTileCenter = FVECTOR3(float(sin(15.0*RAD)), 1.0f, float(1.0+cos(15.0*RAD))) * 0.5;
+	oapiMatrixRotationAxis(&mL, ptr(_F(ur)), float(-a*0.5));
+	oapiMatrixMultiply(&mWL, &mWL, &mL);
+	oapiMatrixRotationAxis(&mL, ptr(_F(ur)), float(-a));
 
+	
 	//vp->GetScatterConst()->mVP = vp->GetScene()->PushCameraFrustumLimits(hd * 0.1, hd * 5.0);
 
 	pDome->Setup(pPositionDecl, false, 2);
@@ -340,12 +342,12 @@ void HazeManager2::RenderSky(VECTOR3 cpos, VECTOR3 cdir, double rad, double apr)
 
 	for (int i=0;i<24;i++) {
 		double x = al;
-		D3DXMatrixMultiply(&mWL, &mWL, &mL);
+		oapiMatrixMultiply(&mWL, &mWL, &mL);
 		for (int j=0;j<6;j++) {
 			float r1 =  float(sin(x));	 float h1 = -float(cos(x));
 			float r2 =  float(sin(x+b)); float h2 = -float(cos(x+b)); 
-			D3DXVECTOR3 vCnt = vTileCenter * D3DXVECTOR3((r1+r2)*0.5f, 1.0f, (r1+r2)*0.5f);	vCnt.y = (h1+h2)*0.5f;
-			D3DXVec3TransformCoord(&vCnt, &vCnt, &mWL);	
+			FVECTOR3 vCnt = vTileCenter * FVECTOR3((r1+r2)*0.5f, 1.0f, (r1+r2)*0.5f);	vCnt.y = (h1+h2)*0.5f;
+			vCnt = oapiTransformCoord(&vCnt, &mWL);
 			if (vp->GetScene()->IsVisibleInCamera(&vCnt, float(sin(a*0.5)*1.5))) RenderSkySegment(mWL, hd, x, x+b, j);	
 			x+=b;
 		}
@@ -358,7 +360,7 @@ void HazeManager2::RenderSky(VECTOR3 cpos, VECTOR3 cdir, double rad, double apr)
 
 // -----------------------------------------------------------------------
 
-void HazeManager2::RenderSkySegment(D3DXMATRIX &wmat, double rad, double dmin, double dmax, int index)
+void HazeManager2::RenderSkySegment(FMATRIX4 &wmat, double rad, double dmin, double dmax, int index)
 {
 	float r1 =  float(rad * sin(dmin));
 	float h1 = -float(rad * cos(dmin));
@@ -375,7 +377,7 @@ void HazeManager2::RenderSkySegment(D3DXMATRIX &wmat, double rad, double dmin, d
 	UINT prims = xres * yres * 2 - 2;
 
 	pDome->SetVSConstants("Prm", &sprm, sizeof(ShaderParams));
-	pDev->SetStreamSource(0, pSkyVB[index], 0, sizeof(D3DXVECTOR3));
+	pDev->SetStreamSource(0, pSkyVB[index], 0, sizeof(FVECTOR3));
 	pDev->DrawPrimitive(D3DPT_TRIANGLESTRIP, 0, prims);	
 }
 
@@ -404,9 +406,9 @@ void HazeManager2::RenderRing(VECTOR3 cpos, VECTOR3 cdir, double rad, double hra
 	VECTOR3 ux = unit(crossp(cdir, ur));
 	VECTOR3 uy = unit(crossp(ur, ux));
 
-	D3DXMATRIX mW;
-	D3DMAT_Identity(&mW);
-	D3DMAT_FromAxisT(&mW, ptr(_D3DXVECTOR3(ux)), ptr(_D3DXVECTOR3(ur)), ptr(_D3DXVECTOR3(uy)));
+	FMATRIX4 mW;
+	oapiMatrixIdentity(&mW);
+	D3DMAT_FromAxisT(&mW, ptr(_F(ux)), ptr(_F(ur)), ptr(_F(uy)));
 
 	ShaderParams sprm;
 	pRing->Setup(pPositionDecl, false, 2);
@@ -431,7 +433,7 @@ void HazeManager2::RenderRing(VECTOR3 cpos, VECTOR3 cdir, double rad, double hra
 	UINT nPrims = HORIZON2_NSEG * HORIZON2_NRING * 2 - 2;
 
 	pDev->SetRenderState(D3DRS_CULLMODE, D3DCULL_NONE);
-	pDev->SetStreamSource(0, pRingVB, 0, sizeof(D3DXVECTOR3));
+	pDev->SetStreamSource(0, pRingVB, 0, sizeof(FVECTOR3));
 	pDev->DrawPrimitive(D3DPT_TRIANGLESTRIP, 0, nPrims);
 	pDev->SetRenderState(D3DRS_CULLMODE, D3DCULL_CCW);
 
@@ -447,8 +449,8 @@ void HazeManager2::CreateRingBuffers()
 	int v = 0;
 	int nvrt = HORIZON2_NSEG * 2 * HORIZON2_NRING + 2;
 
-	D3DXVECTOR3 *pVrt = new D3DXVECTOR3[nvrt];
-	D3DXVECTOR3 *pBuf = NULL;
+	FVECTOR3 *pVrt = new FVECTOR3[nvrt];
+	FVECTOR3 *pBuf = NULL;
 
 	float d = 1.0f/float(HORIZON2_NRING);
 	double phi = 0.0;
@@ -459,19 +461,19 @@ void HazeManager2::CreateRingBuffers()
 
 	for (int k=0;k<HORIZON2_NRING;k++) {  // TODO: No need for grid anymore (jarmonik 01-Feb-2024)
 		for (int i=0;i<HORIZON2_NSEG;i++) {
-			pVrt[v++] = D3DXVECTOR3(x, y, z);
+			pVrt[v++] = FVECTOR3(x, y, z);
 			phi+=dphi;
 			x = float(cos(phi));
 			z = float(sin(phi));
-			pVrt[v++] = D3DXVECTOR3(x, y+d, z);
+			pVrt[v++] = FVECTOR3(x, y+d, z);
 		}
 		y+=d;
 	}
 
-	HR(pDev->CreateVertexBuffer(v*sizeof(D3DXVECTOR3), 0, 0, D3DPOOL_DEFAULT, &pRingVB, NULL));
+	HR(pDev->CreateVertexBuffer(v*sizeof(FVECTOR3), 0, 0, D3DPOOL_DEFAULT, &pRingVB, NULL));
 
 	if (pRingVB->Lock(0, 0, (void **)&pBuf,0)==S_OK) {
-		memcpy(pBuf, pVrt, v*sizeof(D3DXVECTOR3));
+		memcpy(pBuf, pVrt, v*sizeof(FVECTOR3));
 		pRingVB->Unlock();
 	}
 
@@ -487,8 +489,8 @@ void HazeManager2::CreateSkydomeBuffers(int index)
 	int xseg = xreslvl[index];
 	int yseg = yreslvl[index];
 
-	D3DXVECTOR3 *pVrt = new D3DXVECTOR3[xseg*yseg*2+2];
-	D3DXVECTOR3 *pBuf = NULL;
+	FVECTOR3 *pVrt = new FVECTOR3[xseg*yseg*2+2];
+	FVECTOR3 *pBuf = NULL;
 
 	double sa = 0.0, ca = 1.0;
 	double db = 1.0/double(yseg);
@@ -498,17 +500,17 @@ void HazeManager2::CreateSkydomeBuffers(int index)
 	
 	for (int s=0;s<yseg;s++) {
 		for (int i=0;i<xseg;i++) {
-			pVrt[k++]=D3DXVECTOR3(float(sa), float(b),    float(ca));
-			pVrt[k++]=D3DXVECTOR3(float(sa), float(b+db), float(ca));
+			pVrt[k++]=FVECTOR3(float(sa), float(b),    float(ca));
+			pVrt[k++]=FVECTOR3(float(sa), float(b+db), float(ca));
 			sa += ds; ca -= dc;
 		}
 		ds = -ds; dc = -dc;	sa += ds; ca -= dc;	b += db;
 	}
 
-	HR(pDev->CreateVertexBuffer(k*sizeof(D3DXVECTOR3), 0, 0, D3DPOOL_DEFAULT, &pSkyVB[index], NULL));
+	HR(pDev->CreateVertexBuffer(k*sizeof(FVECTOR3), 0, 0, D3DPOOL_DEFAULT, &pSkyVB[index], NULL));
 
 	if (pSkyVB[index]->Lock(0, 0, (void **)&pBuf,0)==S_OK) {
-		memcpy(pBuf, pVrt, k*sizeof(D3DXVECTOR3));
+		memcpy(pBuf, pVrt, k*sizeof(FVECTOR3));
 		pSkyVB[index]->Unlock();
 	}
 

@@ -1,0 +1,23 @@
+# https://EditorConfig.org
+root = true
+
+# DOS-style newlines with a newline ending every file
+[*]
+charset = utf-8
+end_of_line = crlf
+trim_trailing_whitespace = true
+insert_final_newline = true
+
+# RC files need ANSI (windows) codepage
+[*.rc]
+charset = latin1
+
+# Tab indentation (size 4 spaces)
+[*.{cpp,hpp,c,h,rc,filters,sln,vcxproj,vcproj}]
+indent_style = tab
+indent_size = 4
+
+# 4 space indentation for txt files
+[*.txt]
+indent_style = space
+indent_size = 4

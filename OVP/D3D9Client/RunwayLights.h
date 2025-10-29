@@ -17,7 +17,7 @@
 
 #include "OrbiterAPI.h"
 #include <d3d9.h>
-#include <d3dx9.h>
+#include "MathAPI.h"
 
 class BeaconArray;
 
@@ -41,7 +41,7 @@ public:
 	void SetCategory(int cat);
 
 	void Init();
-	void Render(LPDIRECT3DDEVICE9 dev, LPD3DXMATRIX world, bool night);
+	void Render(LPDIRECT3DDEVICE9 dev, FMATRIX4* world, bool night);
 	void Update(class vPlanet *vP);
 
 	float GetWidth() const { return float(width); }
@@ -50,7 +50,7 @@ public:
 
 protected:
 
-	void			   SetPAPIColors(BeaconArray *pPAPI, LPD3DXMATRIX world, int idx);
+	void			   SetPAPIColors(BeaconArray *pPAPI, FMATRIX4* world, int idx);
 
 	class BeaconArray *BuildLights(VECTOR3 start, VECTOR3 end, double disp);
 	class BeaconArray *BuildVASI(VECTOR3 start, VECTOR3 end, DWORD idx);
@@ -105,7 +105,7 @@ public:
 	void SetColor(VECTOR3 color);
 
 	void Init();
-	void Render(LPDIRECT3DDEVICE9 dev, LPD3DXMATRIX world, bool night);
+	void Render(LPDIRECT3DDEVICE9 dev, FMATRIX4* world, bool night);
 
 	static int CreateTaxiLights(OBJHANDLE base, const class Scene *scn, const char *file, TaxiLights**& out);
 

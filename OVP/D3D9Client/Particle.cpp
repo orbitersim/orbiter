@@ -63,7 +63,7 @@ D3D9ParticleStream::D3D9ParticleStream(GraphicsClient *_gc, PARTICLESTREAMSPEC *
 	pfirst = NULL;
 	plast = NULL;
 	np = 0;
-	D3DMAT_Identity(&mWorld);
+	oapiMatrixIdentity(&mWorld);
 
 	if (needsetup) {
 		int i, j, k, r, ofs;
@@ -437,7 +437,7 @@ void D3D9ParticleStream::RenderDiffuse(LPDIRECT3DDEVICE9 dev)
 
 	HR(dev->SetVertexDeclaration(pNTVertexDecl));
 	HR(FX->SetTechnique(eDiffuseTech));
-	HR(FX->SetMatrix(eW, &mWorld));
+	HR(FX->SetMatrix(eW, _DX(mWorld)));
 
 	if (tex) HR(FX->SetTexture(eTex0, SURFACE(tex)->GetTexture()));
 
@@ -493,7 +493,7 @@ void D3D9ParticleStream::RenderEmissive(LPDIRECT3DDEVICE9 dev)
 
 	HR(dev->SetVertexDeclaration(pPosTexDecl));
 	HR(FX->SetTechnique(eEmissiveTech));
-	HR(FX->SetMatrix(eW, &mWorld));
+	HR(FX->SetMatrix(eW, _DX(mWorld)));
 
 	if (tex) HR(FX->SetTexture(eTex0, SURFACE(tex)->GetTexture()));
 
@@ -714,7 +714,7 @@ void ExhaustStream::RenderGroundShadow (LPDIRECT3DDEVICE9 dev, LPDIRECT3DTEXTURE
 
 	HR(dev->SetVertexDeclaration(pPosTexDecl));
 	HR(FX->SetTechnique(eEmissiveTech));
-	HR(FX->SetMatrix(eW, &mWorld));
+	HR(FX->SetMatrix(eW, _DX(mWorld)));
 
 	if (tex) FX->SetTexture(eTex0, SURFACE(tex)->GetTexture());
 
