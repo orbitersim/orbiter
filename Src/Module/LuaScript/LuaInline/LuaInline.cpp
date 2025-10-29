@@ -27,6 +27,8 @@
 #include <direct.h>
 #include <process.h>
 
+#include "Tracy.hpp"
+
 // ==============================================================
 // class InterpreterList::Environment: implementation
 static NOTEHANDLE errorbox;
@@ -70,11 +72,18 @@ Interpreter *InterpreterList::Environment::CreateInterpreter ()
 
 unsigned int WINAPI InterpreterList::Environment::InterpreterThreadProc (LPVOID context)
 {
+#ifdef TRACY_ENABLE
+	static int num;
+	char threadname[255];
+	sprintf(threadname, "Lua interpreter %d", ++num);
+	tracy::SetThreadName(threadname);
+#endif
 	InterpreterList::Environment *env = (InterpreterList::Environment*)context;
 	Interpreter *interp = env->interp;
 	// interpreter loop
 	for (;;) {
 		interp->WaitExec(); // wait for execution permission
+		ZoneScoped;
 		if (env->termInterp) break; // close thread requested
 		if (env->cmd) {
 			interp->RunChunk (env->cmd, strlen (env->cmd)); // run command from buffer
@@ -98,16 +107,19 @@ unsigned int WINAPI InterpreterList::Environment::InterpreterThreadProc (LPVOID 
 
 InterpreterList::InterpreterList (HINSTANCE hDLL): Module (hDLL)
 {
+	ZoneScoped;
 	nlist = nbuf = 0;
 }
 
 InterpreterList::~InterpreterList ()
 {
+	ZoneScoped;
 	while (nlist) DelInterpreter(list[0]);
 }
 
 void InterpreterList::clbkSimulationStart (RenderMode mode)
 {
+	ZoneScoped;
 	errorbox = ::oapiCreateAnnotation(false, 1, _V(1.0,0,0));
 	::oapiAnnotationSetPos (errorbox, 0, 0.75, 1, 1);
 
@@ -117,12 +129,14 @@ void InterpreterList::clbkSimulationStart (RenderMode mode)
 
 void InterpreterList::clbkSimulationEnd ()
 {
+	ZoneScoped;
 	while (nlist) DelInterpreter(list[0]);
 	oapiDelAnnotation(errorbox);
 }
 
 void InterpreterList::clbkPostStep (double simt, double simdt, double mjd)
 {
+	ZoneScoped;
 	DWORD i;
 	for (i = 0; i < nlist; i++) // prune all finished interpreters
 		if (!list[i]->interp) DelInterpreter (list[i--]);
@@ -137,11 +151,13 @@ void InterpreterList::clbkPostStep (double simt, double simdt, double mjd)
 
 void InterpreterList::clbkDeleteVessel (OBJHANDLE hVessel)
 {
+	ZoneScoped;
 	Interpreter::DeleteVessel(hVessel);
 }
 
 InterpreterList::Environment *InterpreterList::AddInterpreter ()
 {
+	ZoneScoped;
 	if (nlist == nbuf) { // increase buffer size
 		Environment **tmp = new Environment*[nbuf += 16];
 		if (nlist) {
@@ -158,6 +174,7 @@ InterpreterList::Environment *InterpreterList::AddInterpreter ()
 
 int InterpreterList::DelInterpreter (InterpreterList::Environment *env)
 {
+	ZoneScoped;
 	// remove interpreter from list
 	DWORD i, j;
 	for (i = 0; i < nlist; i++)
@@ -194,6 +211,7 @@ DLLCLBK void ExitModule (HINSTANCE hDLL)
 // interpreter-specific callback functions
 DLLCLBK INTERPRETERHANDLE opcNewInterpreter ()
 {
+	ZoneScoped;
 	if (g_IList) {
 		InterpreterList::Environment *env = g_IList->AddInterpreter();
 		return (INTERPRETERHANDLE)env;
@@ -204,6 +222,7 @@ DLLCLBK INTERPRETERHANDLE opcNewInterpreter ()
 
 DLLCLBK int opcDelInterpreter (INTERPRETERHANDLE hInterp)
 {
+	ZoneScoped;
 	if (g_IList)
 		return g_IList->DelInterpreter ((InterpreterList::Environment*)hInterp);
 	else
@@ -212,6 +231,7 @@ DLLCLBK int opcDelInterpreter (INTERPRETERHANDLE hInterp)
 
 DLLCLBK INTERPRETERHANDLE opcRunInterpreter (const char *cmd)
 {
+	ZoneScoped;
 	if (g_IList) {
 		InterpreterList::Environment *env = g_IList->AddInterpreter();
 		env->cmd = new char[strlen(cmd)+10];
@@ -224,6 +244,7 @@ DLLCLBK INTERPRETERHANDLE opcRunInterpreter (const char *cmd)
 
 DLLCLBK bool opcAsyncScriptCmd (INTERPRETERHANDLE hInterp, const char *cmd)
 {
+	ZoneScoped;
 	InterpreterList::Environment *env = (InterpreterList::Environment*)hInterp;
 	char *str;
 	if (env->cmd) { // command still waiting: append new command
@@ -244,6 +265,7 @@ DLLCLBK bool opcAsyncScriptCmd (INTERPRETERHANDLE hInterp, const char *cmd)
 
 DLLCLBK bool opcExecScriptCmd (INTERPRETERHANDLE hInterp, const char *cmd)
 {
+	ZoneScoped;
 	InterpreterList::Environment *env = (InterpreterList::Environment*)hInterp;
 	char *str = new char[strlen(cmd)+1];
 	char *cmd_async = 0;

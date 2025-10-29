@@ -111,6 +111,15 @@
       }
     },
     {
+      "name": "windows-x64-tracy",
+      "displayName": "x64 Tracy Profiler",
+      "inherits": "windows-x64-release",
+      "cacheVariables": {
+        "ORBITER_TRACY_PROFILER": true,
+        "CMAKE_BUILD_TYPE": "Release"
+      }
+    },
+    {
       "name": "windows-x86-debug",
       "displayName": "x86 Debug",
       "inherits": "windows-base",

@@ -211,6 +211,13 @@ option(ORBITER_SANITIZER
 	OFF
 )
 
+option(ORBITER_TRACY_PROFILER
+	"Build orbiter with profiler support"
+	OFF
+)
+
+include(cmake/tracy.cmake)
+
 if(ORBITER_BUILD_XRSOUND)
 	set(IRRKLANG_DIR "" CACHE PATH "Path to the irrKlang library")
 endif()
