@@ -655,6 +655,8 @@ OPC_Proc Orbiter::FindModuleProc (HINSTANCE hDLL, const char *procname)
 //-----------------------------------------------------------------------------
 VOID Orbiter::Launch (const char *scenario)
 {
+	PrintModules();
+
 	HCURSOR hCursor = SetCursor (LoadCursor (NULL, IDC_WAIT));
 	bool have_state = false;
 	pConfig->Write (); // save current settings

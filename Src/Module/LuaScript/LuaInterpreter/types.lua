@@ -282,7 +282,20 @@
 -- @field VTXTEXADDU Add to vertex texture u-coordinates
 -- @field VTXTEXADDV Add to vertex texture v-coordinates
 -- @field VTXTEXADD Add to vertex texture coordinates
--- @table GRP_EDIT
+-- @table GRPEDIT
+
+--- Advanced material property (D3D9 only)
+-- @field DIFFUSE   Material Diffuse color or Albedo depending on shader used. [.rgba]
+-- @field AMBIENT   Ambient color or Ambien occlusion [.rgb]
+-- @field SPECULAR  Specular color [.rgb] power in [.a]
+-- @field LIGHT     DX7 Style emission (color is added in light that lits the diffuse texture) (i.e. light map) [.rgb]
+-- @field EMISSION  Still in a development currently: output = max(diffuse*light, emission) [.rgb]
+-- @field REFLECT   Reflectivity [.rgb]
+-- @field SMOOTH    Smoothness in [.r] (1 = smooth, 0 = rough)
+-- @field METAL     Metalness in [.r]  (1 = metal, 0 = non-metal)
+-- @field FRESNEL   Fresnel terms for fresnel effect. Used in older 2nd generation shader.
+-- @field SPECIALFX Heat map effect control variable in [.r] (i.e. average part temperature)
+-- @table MATPROP
 
 --- Visibility mode
 -- @field EXTERNAL Only visible in external view

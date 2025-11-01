@@ -6647,6 +6647,15 @@ OAPIFUNC bool oapiSimulateBufferedKey (DWORD key, DWORD *mod = 0, DWORD nmod = 0
  *   frames for the duration of the simulated input.
  */
 OAPIFUNC bool oapiSimulateImmediateKey (char kstate[256], bool onRunningOnly = false);
+
+/**
+ * \brief Retrieve the keyboard state.
+ * \note The keyboard state can be queried with the KEYDOWN macro
+ * \note Usually you would use the clbkProcessKeyboardImmediate/clbkProcessKeyboardBuffered or similar
+ *   callbacks of your module to handle key presses, this is for the odd cases where you can't.
+ * \return The keyboard state
+ */
+OAPIFUNC const char *oapiGetKeyState ();
 //@} 
 
 

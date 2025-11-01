@@ -17,7 +17,7 @@
 90 NOTEPOS 0.65 0.2 0.96 0.9
 90 NOTE The Vehicle Assembly Building (VAB) at the KSC is coming into view straight ahead.
 105 NOTEPOS 0.02 0.2 0.4 0.9
-105 NOTE The Shuttle as a very steep glideslope of 20°.
+105 NOTE The Shuttle as a very steep glideslope of 20Â°.
 120 NOTE The PAPI approach path indicators (the row of red and white lights ahead of the runway) have been adjusted to the Shuttle's approach slope. Two white and two red lights show that you are on glideslope.
 120 CAMERA SET Track:Atlantis:10.00:GLOBAL 24.521 1.318 0.559
 133 CAMERA SET Track:Atlantis:10.00:GLOBAL 106.997 2.463 0.359

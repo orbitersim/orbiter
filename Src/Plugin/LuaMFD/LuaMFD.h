@@ -9,15 +9,15 @@
 // ==============================================================
 // MFD class interface
 
-class ScriptMFD: public MFD {
+class ScriptMFD: public MFD2 {
 public:
 	ScriptMFD (DWORD w, DWORD h, VESSEL *vessel);
 	~ScriptMFD();
-	char *ButtonLabel (int bt);
+	char *ButtonLabel (int bt) override;
 	int ButtonMenu (const MFDBUTTONMENU **menu) const;
-	bool ConsumeKeyBuffered (DWORD key);
-	bool ConsumeButton (int bt, int event);
-	void Update (HDC hDC);
+	bool ConsumeKeyBuffered (DWORD key) override;
+	bool ConsumeButton (int bt, int event) override;
+	bool Update (oapi::Sketchpad *skp) override;
 	bool Input (const char *line);
 	void QueryCommand ();
 	void CreateInterpreter ();
@@ -33,7 +33,7 @@ private:
 	InterpreterList::VesselInterp *vi;
 	OBJHANDLE hVessel;      // vessel object handle
 	HANDLE interpTh;        // interpreter thread handle
-	HFONT hFont;            // font handle
+	oapi::Font *hFont;      // font handle
 	DWORD pg;               // current page   
 	DWORD fw, fh;           // character width, height
 	DWORD nchar;            // characters per line displayed

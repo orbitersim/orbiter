@@ -186,11 +186,7 @@ void SurfTile::Load ()
 		mesh = CreateMesh_quadpatch (res, res, elev, 1.0, 0.0, &texrange, shift_origin, &vtxshift, mgr->GetPlanet()->prm.tilebb_excess);
 	}
 
-	static const DWORD label_enable = MKR_ENABLE | MKR_LMARK;
-	DWORD mkrmode = *(DWORD*)smgr->Client()->GetConfigParam(CFGPRM_SURFMARKERFLAG);
-	if ((mkrmode & label_enable) == label_enable) {
-		CreateLabels();
-	}
+	CreateLabels();
 }
 
 // -----------------------------------------------------------------------

@@ -4,7 +4,7 @@ on:
   workflow_call:
     inputs:
       os:
-        default: windows-2019
+        default: windows-2022
         type: string
       configuration:
         description: 'Build configuration; release or debug'
@@ -39,7 +39,7 @@ jobs:
 
     steps:
     - name: Checkout
-      uses: actions/checkout@v4
+      uses: actions/checkout@v5
 
     - name: Setup Problem Matcher
       uses: ammaraskar/msvc-problem-matcher@master
@@ -47,6 +47,7 @@ jobs:
     - name: Setup MSVC Console
       uses: ilammy/msvc-dev-cmd@v1
       with:
+        vsversion: "17.0"
         arch: ${{ inputs.architecture }}
 
     - name: Install documentation prerequisites

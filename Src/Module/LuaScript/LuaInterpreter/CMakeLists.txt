@@ -6,10 +6,13 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${ORBITER_BINARY_ROOT_DIR})
 set(BUILD_OUT_DIR ${CMAKE_CURRENT_BINARY_DIR}/out)
 
 add_library(LuaInterpreter SHARED
-	Interpreter.cpp
-	lua_vessel_mtd.cpp
-  lua_xrsound.cpp
+        Interpreter.cpp
+        lua_vessel_mtd.cpp
 )
+
+if(ORBITER_BUILD_XRSOUND)
+  target_sources(LuaInterpreter PRIVATE lua_xrsound.cpp)
+endif()
 
 target_include_directories(LuaInterpreter
 	PUBLIC ${ORBITER_SOURCE_SDK_INCLUDE_DIR}
@@ -35,6 +38,7 @@ endif()
 if(ORBITER_BUILD_XRSOUND)
   add_dependencies(LuaInterpreter	XRSound_lib	XRSound_assets)
   target_link_libraries(LuaInterpreter XRSound_lib)
+  target_compile_definitions(LuaInterpreter PUBLIC XRSOUND)
 endif()
 
 set_target_properties(LuaInterpreter
@@ -51,6 +55,7 @@ add_custom_command(TARGET LuaInterpreter
 	COMMAND ${CMAKE_COMMAND} -E copy ${LUAINTERPRETER_LIB} ${ORBITER_BINARY_SDK_DIR}/lib/Lua/
 )
 
+if(ORBITER_MAKE_DOC)
 file(GLOB lua_in *.h *.cpp *.ld *.md *.lua)
 add_custom_command(
 	POST_BUILD
@@ -61,7 +66,7 @@ add_custom_command(
 	COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_CURRENT_SOURCE_DIR}/interpreter.hhp ${BUILD_OUT_DIR}
 	JOB_POOL htmlhelp
 )
-	
+
 add_custom_command(
 	POST_BUILD
 	OUTPUT ${ORBITER_BINARY_SDK_DIR}/doc/orbiter_lua.chm
@@ -71,16 +76,21 @@ add_custom_command(
 	COMMAND ${CMAKE_COMMAND} -E copy_if_different ./interpreter.chm ${ORBITER_BINARY_SDK_DIR}/doc/orbiter_lua.chm
 	JOB_POOL htmlhelp
 )
+
 add_custom_target(orbiter_lua
 	DEPENDS ${ORBITER_BINARY_SDK_DIR}/doc/orbiter_lua.chm
 )
+
 add_dependencies(${OrbiterTgt}
 	orbiter_lua
 )
+endif()
 
+if(ORBITER_MAKE_DOC)
 install(FILES ${ORBITER_BINARY_SDK_DIR}/doc/orbiter_lua.chm
 	DESTINATION ${ORBITER_INSTALL_SDK_DIR}/doc
 )
+endif()
 
 # Installation
 install(TARGETS LuaInterpreter

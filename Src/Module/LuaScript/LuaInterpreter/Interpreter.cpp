@@ -130,7 +130,9 @@ void Interpreter::Initialise ()
 	LoadSketchpadAPI ();  // load Sketchpad methods
 	LoadAnnotationAPI (); // load screen annotation methods
 	LoadVesselStatusAPI ();
+#ifdef XRSOUND
 	LoadXRSoundAPI ();
+#endif
 	LoadStartupScript (); // load default initialisation script
 }
 
@@ -905,6 +907,9 @@ void Interpreter::LoadAPI ()
 		{"get_windvector", oapi_get_windvector},
 		{"get_planetjcoeffcount", oapi_get_planetjcoeffcount},
 		{"get_planetjcoeff", oapi_get_planetjcoeff},
+		{"surface_elevation", oapi_surface_elevation},
+		{"init_tilecache", oapi_init_tilecache},
+		{"release_tilecache", oapi_release_tilecache},
 
 		// vessel functions
 		{"get_propellanthandle", oapi_get_propellanthandle},
@@ -987,6 +992,7 @@ void Interpreter::LoadAPI ()
 		{"simulatebufferedkey", oapi_simulatebufferedkey},
 		{"simulateimmediatekey", oapi_simulateimmediatekey},
 		{"acceptdelayedkey", oapi_acceptdelayedkey},
+		{"get_keystate", oapi_get_keystate},
 			
 		// file i/o functions
 		{"openfile", oapi_openfile},
@@ -1064,11 +1070,13 @@ void Interpreter::LoadAPI ()
 	luaL_openlib (L, "term", termLib, 0);
 
 	// Load XRSound library
+#ifdef XRSOUND
 	static const struct luaL_reg XRSoundLib[] = {
 		{"create_instance", xrsound_create_instance},
 		{NULL, NULL}
 	};
 	luaL_openlib (L, "xrsound", XRSoundLib, 0);
+#endif
 
 	// Set up global tables of constants
 
@@ -1359,6 +1367,17 @@ void Interpreter::LoadAPI ()
 	lua_pushnumber (L, OAPINOTIF_ERROR); lua_setfield (L, -2, "ERROR");
 	lua_pushnumber (L, OAPINOTIF_INFO); lua_setfield (L, -2, "INFO");
 	lua_setglobal (L, "OAPINOTIF");
+
+	static const struct luaL_reg TileCacheLib[] = {
+		{"__gc", tilecache_collect},
+		{NULL, NULL}
+	};
+
+	luaL_newmetatable (L, "TileCache.vtable");
+	lua_pushstring (L, "__index");
+	lua_pushvalue (L, -2); // push metatable
+	lua_settable (L, -3);  // metatable.__index = metatable
+	luaL_openlib (L, NULL, TileCacheLib, 0);
 }
 
 void Interpreter::LoadMFDAPI ()
@@ -3175,7 +3194,7 @@ Reset the properties of a mesh material.
 @function set_materialex
 @tparam handle hMesh mesh handle
 @tparam number matidx material index
-@tparam number matprp material property to be set
+@tparam number matprp material property to be set (see MATPROP)
 @tparam colour col material property value
 @treturn boolean true on success
 */
@@ -4756,7 +4775,7 @@ int Interpreter::oapi_get_windvector(lua_State *L)
 	VECTOR3 gv = oapiGetWindVector(hRef, lng, lat, alt, frame, &windspeed);
 	lua_pushvector(L, gv);
 	lua_pushnumber(L, windspeed);
-	return 1;
+	return 2;
 }
 
 /***
@@ -4815,6 +4834,85 @@ int Interpreter::oapi_get_planetjcoeff(lua_State *L)
 	return 1;
 }
 
+/***
+Return the elevation of a point on a planet surface
+
+Note: If tgtlvl == 0 (default), the function will calculate the elevation from the highest available elevation resolution. If tgtlvl > 0, the function will
+query at most that level (but may use a lower level if the requested resolution level is not available at the position).
+
+Note: Typically, lower resolutions would be requested from a vessel at high altitude, where exact surface elevation is not critical (and not realistically measurable
+anyway). Querying elevations from lower resolution data improves the probability of a cache hit and is therefore more efficient.
+
+Note: The tile cache is a container to store previously loaded elevation tiles and can speed up the function if the tile required for computing the request
+has been loaded before. The tile cache can be initialised with opai.init_tilecache and released with oapi.release_tilecache.
+
+Note: If the requested resolution level is not available at the queried location, the function computes the elevation from the highest available resolution
+level. The actual resolution used can be obtained by setting lvl.
+
+@function surface_elevation
+@tparam handle hPlanet planet object handle
+@tparam number lng longitude [rad]
+@tparam number lat latitude [rad]
+@tparam[opt=0] number tgtlvl requested elevation resolution level
+@tparam[opt=nil] handle tilecache tile cache (see notes)
+@tparam[opt=false] bool nml return the surface normal (in the local horizon frame)
+@tparam[opt=false] bool lvl return the actual tile resolution from which the results were obtained
+@treturn number[,vector][,number] Surface elevation above planet mean radius, surface normal (if asked) and tile resolution (if asked)
+*/
+int Interpreter::oapi_surface_elevation (lua_State *L)
+{
+	int top = lua_gettop(L);
+
+	OBJHANDLE hPlanet;
+	ASSERT_SYNTAX (top >= 3, "Too few arguments");
+	ASSERT_SYNTAX (lua_islightuserdata (L,1), "Argument 1: invalid type (expected planet handle)");
+	ASSERT_SYNTAX (lua_isnumber (L,2), "Argument 2: invalid type (expected number)");
+	ASSERT_SYNTAX (lua_isnumber (L,3), "Argument 3: invalid type (expected number)");
+	ASSERT_SYNTAX (hPlanet = (OBJHANDLE)lua_toObject (L,1), "Argument 1: invalid object");
+	double lng = luaL_checknumber(L,2);
+	double lat = luaL_checknumber(L,3);
+	int tgtlvl = 0;
+	VECTOR3 NML;
+	VECTOR3 *pNML = nullptr;
+	int lvl;
+	int *plvl = nullptr;
+	std::vector<ElevationTile> *tilecache = nullptr;
+
+	if(top >= 4) {
+		ASSERT_SYNTAX (lua_isnumber (L,4), "Argument 4: invalid type (expected number)");
+		tgtlvl =  luaL_checkinteger(L,4);
+	}
+	if(top >= 5) {
+		if(!lua_isnil(L, 5)) {
+			std::vector<ElevationTile> **tc = (std::vector<ElevationTile> **)luaL_checkudata(L, 5, "TileCache.vtable");
+			if(*tc) {
+				tilecache = *tc;
+			} else {
+				luaL_error(L, "Trying to use a TileCache that has been released!");
+			}
+		}
+	}
+	if(lua_toboolean(L, 6)) {
+		pNML = &NML;
+	}
+	if(lua_toboolean(L, 7)) {
+		plvl = &lvl;
+	}
+
+	double elev = oapiSurfaceElevationEx(hPlanet, lng, lat, tgtlvl, tilecache, pNML, plvl);
+
+	int nret = 1;
+	lua_pushnumber (L, elev);
+	if(pNML) {
+		lua_pushvector(L, NML);
+		nret++;
+	}
+	if(plvl) {
+		lua_pushinteger(L, lvl);
+		nret++;
+	}
+	return nret;
+}
 
 /***
 Return an identifier of a vessel's propellant resource.
@@ -6267,6 +6365,65 @@ int Interpreter::oapi_customcamera_overlay(lua_State *L)
 }
 
 /***
+Tile cache.
+
+Allocates an elevation data cache to speed up calls to \ref oapi.surface_elevation
+
+Note: When passing a tile cache to oapi.surface_elevation, any cache hits avoid having to re-load an elevation tile from file.
+
+Note: Should be called before the first invocation of oapi.surface_elevation
+
+Note: The cache can be released explicitly with oapi.release_tilecache, if not the Lua garbage collector will eventually release it when it's no longer referenced
+
+Note: A cache size of 2 is usually sufficient for spacecraft, but surface vessels that stay in a local area may benefit from a larger cache.
+
+@function init_tilecache
+@tparam number size cache capacity: number of tiles to be held
+@treturn handle tile cache handle
+*/
+int Interpreter::oapi_init_tilecache(lua_State *L)
+{
+	int size = 2;
+	if(lua_gettop(L)>0) {
+		size = luaL_checkinteger(L, 1);
+	}
+
+	std::vector<ElevationTile> **tc = (std::vector<ElevationTile> **)lua_newuserdata(L, sizeof(std::vector<ElevationTile> *));
+	*tc = InitTileCache(size);
+	luaL_getmetatable(L, "TileCache.vtable");
+	lua_setmetatable(L, -2);
+	return 1;
+}
+
+/***
+Release a tile cache previously allocated with oapi.init_tilecache.
+
+Note: The tilecache is no longer valid when the function returns, trying to use it will result in a Lua error
+
+@function release_tilecache
+@tparam handle hCache handle to the cache to be released
+*/
+int Interpreter::oapi_release_tilecache(lua_State *L)
+{
+	std::vector<ElevationTile> **tc = (std::vector<ElevationTile> **)luaL_checkudata(L, 1, "TileCache.vtable");
+	if(*tc) {
+		ReleaseTileCache(*tc);
+		*tc = nullptr;
+	}
+	return 0;
+}
+
+int Interpreter::tilecache_collect(lua_State *L)
+{
+	std::vector<ElevationTile> **tc = (std::vector<ElevationTile> **)luaL_checkudata(L, 1, "TileCache.vtable");
+	if(*tc) {
+		ReleaseTileCache(*tc);
+	}
+	return 0;
+}
+
+
+/***
 Animations.
 @section animations
 */
@@ -6847,7 +7004,8 @@ int Interpreter::oapi_keydown (lua_State *L)
 	ASSERT_LIGHTUSERDATA(L,1);
 	char *kstate = (char*)lua_touserdata(L,1);
 	ASSERT_NUMBER(L,2);
-	int key = lua_tointeger(L, 2);
+	unsigned int key = lua_tointeger(L, 2);
+	ASSERT_SYNTAX(key < 256, "Invalid key code");
 	lua_pushboolean (L, KEYDOWN(kstate,key));
 	return 1;
 }
@@ -6864,7 +7022,8 @@ int Interpreter::oapi_resetkey (lua_State *L)
 	ASSERT_LIGHTUSERDATA(L,1);
 	char *kstate = (char*)lua_touserdata(L,1);
 	ASSERT_NUMBER(L,2);
-	int key = lua_tointeger(L, 2);
+	unsigned int key = lua_tointeger(L, 2);
+	ASSERT_SYNTAX(key < 256, "Invalid key code");
 	RESETKEY(kstate,key);
 	return 0;
 }
@@ -6883,12 +7042,17 @@ int Interpreter::oapi_simulatebufferedkey (lua_State *L)
 {
 	ASSERT_NUMBER(L,1);
 	DWORD key = (DWORD)lua_tointeger(L,1);
+	ASSERT_SYNTAX(key < 256, "Invalid key code");
+
 	DWORD nmod = lua_gettop(L)-1;
 	DWORD *mod = 0;
 	if (nmod) {
 		mod = new DWORD[nmod];
-		for (DWORD i = 0; i < nmod; i++)
-			mod[i] = (DWORD)lua_tointeger(L,i+2);
+		for (DWORD i = 0; i < nmod; i++) {
+			DWORD modkey = (DWORD)lua_tointeger(L,i+2);
+			ASSERT_SYNTAX(modkey < 256, "Invalid key code");
+			mod[i] = modkey;
+		}
 	}
 	oapiSimulateBufferedKey (key, mod, nmod);
 	if (nmod) delete []mod;
@@ -6918,6 +7082,7 @@ int Interpreter::oapi_simulateimmediatekey (lua_State *L)
 	DWORD i, key, nkey = lua_gettop(L);
 	for (i = 0; i < nkey; i++) {
 		key = (DWORD)lua_tointeger(L,i+1);
+		ASSERT_SYNTAX(key < 256, "Invalid key code");
 		kstate[key] = 0x80;
 	}
 	oapiSimulateImmediateKey ((char*)kstate);
@@ -6946,12 +7111,34 @@ int Interpreter::oapi_acceptdelayedkey (lua_State *L)
 {
 	ASSERT_NUMBER(L,1);
 	ASSERT_NUMBER(L,2);
-	char key = lua_tointeger(L, 1);
+	unsigned int key = lua_tointeger(L, 1);
+	ASSERT_SYNTAX(key < 256, "Invalid key code");
 	double interval = lua_tonumber(L, 2);
 	bool ret = oapiAcceptDelayedKey (key, interval);
 	lua_pushboolean(L, ret);
 	return 1;
 }
+/***
+Get the keyboard state
+
+Note: you should use the clbk\_consumedirectkey/clbk\_consumebufferedkey callbacks whenever possible, this function is mainly made
+for scenario scripts that don't use these callbacks.
+
+@function get_keystate
+@treturn handle keyboard state
+@usage
+	local kstate = oapi.get_keystate()
+	if oapi.keydown(kstate, OAPI_KEY.E) then
+		...
+	end
+end
+*/
+int Interpreter::oapi_get_keystate (lua_State *L)
+{
+	lua_pushlightuserdata(L, (void *)oapiGetKeyState());
+	return 1;
+}
+
 
 /***
 File I/O.
@@ -8375,7 +8562,7 @@ or group flags.
 
 The ges table can contain the following fields :
 
-- flags: number (flags, see GRP_EDIT)
+- flags: number (flags, see GRPEDIT)
 - UsrFlag: number (Replacement for group UsrFlag entry)
 - Vtx: ntvertexarray (Replacement for group vertices)
 - nVtx: number (Number of vertices to be replaced. Optional, will use the ntvertexarray size by default)

@@ -32,19 +32,16 @@ set(CMAKE_MODULE_PATH
 	${CMAKE_MODULE_PATH}
 )
 
-if(CMAKE_SIZEOF_VOID_P EQUAL 8) # 64-bit build?
-	set(BUILD64 1)
-	set(ARCH "x64")
-	set(PLATFORM_STRING "x64")
-else()
+if(MSVC AND NOT CMAKE_SIZEOF_VOID_P EQUAL 8)
 	set(BUILD64 0)
 	set(ARCH "x86")
-	set(PLATFORM_STRING "Win32")
-  if(MSVC)
-    add_link_options("/LARGEADDRESSAWARE")
-  endif()
+  add_link_options("/LARGEADDRESSAWARE")
+else()
+	set(BUILD64 1)
+	set(ARCH "x64")
 endif()
 
+# This is important for building using vs generator (jarmonik)
 if (NOT ${CMAKE_GENERATOR} STREQUAL "Ninja")
 	add_compile_options(/MP)
 endif()
@@ -96,14 +93,14 @@ set(EXTERN_DIR "${CMAKE_SOURCE_DIR}/Extern")
 set(HTMLHELP_DIR "${EXTERN_DIR}/Htmlhelp")
 set(HTMLHELP_INCLUDE_DIR ${HTMLHELP_DIR}/include)
 set(HTMLHELP_LIB_DIR ${HTMLHELP_DIR}/lib-${ARCH})
-set(HTMLHELP_LIB ${HTMLHELP_LIB_DIR}/Htmlhelp.lib)
+set(HTMLHELP_LIB ${HTMLHELP_LIB_DIR}/Htmlhelp.Lib)
 
 set(ORBITER_TOOL_MESHC "$<TARGET_FILE:meshc>")
 set(ldoc $<TARGET_FILE:lua::exe> ${ORBITER_BINARY_ROOT_DIR}/packages/LDoc/ldoc.lua -v --multimodule)
 
 find_package(OpenGL QUIET)
 find_package(HTMLHelp)
-find_package(LATEX)		
+find_package(LATEX)
 find_package(MFC)
 
 # We don't query Qt with find_package because we need the 64-bit version here
@@ -117,6 +114,8 @@ set(Qt5_x64_DIR
 if(MSVC)
   add_compile_options(/we4311 /DNOMINMAX)
   add_link_options("/NODEFAULTLIB:\"LIBCMTD\"")
+else()
+  set(CMAKE_BUILD_WITH_INSTALL_RPATH true)
 endif()
 
 # Copy data and binary assets from source to binary tree to provide a working Orbiter environment
@@ -194,7 +193,7 @@ option(
 option(
 	ORBITER_BUILD_XRSOUND
 	"Build XRSound module to enable sound in Orbiter"
-	ON
+	OFF
 )
 
 option(ORBITER_MAKE_DOC
@@ -302,7 +301,7 @@ endif()
 
 configure_file(${CMAKE_SOURCE_DIR}/cmake/CPackOptions.cmake.in
 	${CMAKE_BINARY_DIR}/OrbiterCPackOptions.cmake)
-			   
+
 set(CPACK_GENERATOR "WIX;ZIP")
 set(CPACK_PACKAGE_NAME OpenOrbiter)
 set(CPACK_PACKAGE_VENDOR Orbitersim)

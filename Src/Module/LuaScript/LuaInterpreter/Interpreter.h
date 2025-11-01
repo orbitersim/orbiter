@@ -58,7 +58,10 @@ class gcCore;
 
 class VESSEL;
 class MFD2;
+
+#ifdef XRSOUND
 class XRSound;
+#endif
 
 struct AirfoilContext {
 	lua_State *L;
@@ -492,6 +495,7 @@ protected:
 	static int oapi_get_windvector(lua_State* L);
 	static int oapi_get_planetjcoeffcount(lua_State* L);
 	static int oapi_get_planetjcoeff(lua_State* L);
+	static int oapi_surface_elevation(lua_State* L);
 
 	// Vessel functions
 	static int oapi_get_propellanthandle (lua_State *L);
@@ -548,6 +552,11 @@ protected:
 	static void customcamera_clbk(oapi::Sketchpad *pSkp, void *pParam);
 	static int customcamera_collect (lua_State *L);
 
+	// TileCache
+	static int oapi_init_tilecache(lua_State *);
+	static int oapi_release_tilecache(lua_State *);
+	static int tilecache_collect(lua_State *);
+
 
 	// animation functions
 	static int oapi_create_animationcomponent (lua_State *L);
@@ -577,6 +586,7 @@ protected:
 	static int oapi_simulatebufferedkey (lua_State *L);
 	static int oapi_simulateimmediatekey (lua_State *L);
 	static int oapi_acceptdelayedkey (lua_State *L);
+	static int oapi_get_keystate (lua_State *L);
 
 	// file i/o functions
 	static int oapi_openfile (lua_State* L);
@@ -1107,9 +1117,10 @@ protected:
 	static int idx_collect(lua_State *L);
 	static void push_indexarray(lua_State *L, WORD *, int);
 
-	
+
 	friend int OpenHelp (void *context);
 
+#ifdef XRSOUND
 	// -------------------------------------------
 	// XRSound
 	// -------------------------------------------
@@ -1136,6 +1147,7 @@ protected:
 	static int xrsound_set_playposition(lua_State *L);
 	static int xrsound_get_playposition(lua_State *L);
 	static int xrsound_collect(lua_State *L);
+#endif
 
 private:
 	HANDLE hExecMutex; // flow control synchronisation

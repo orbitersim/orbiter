@@ -2465,6 +2465,11 @@ DLLEXPORT bool oapiSimulateImmediateKey (char kstate[256], bool onRunningOnly)
 	return g_pOrbiter->SendKbdImmediate (kstate, onRunningOnly);
 }
 
+DLLEXPORT const char *oapiGetKeyState ()
+{
+	return g_pOrbiter->KeyState();
+}
+
 DLLEXPORT NOTEHANDLE oapiCreateAnnotation (bool exclusive, double size, const VECTOR3 &col)
 {
 	COLORREF c = ((int)(col.z*255.99) << 16) + ((int)(col.y*255.99) << 8) + (int)(col.x*255.99);
