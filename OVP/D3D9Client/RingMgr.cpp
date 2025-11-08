@@ -77,7 +77,7 @@ DWORD RingManager::LoadTextures ()
 
 	sprintf_s(temp, ARRAYSIZE(temp), "%s_ring_%d.dds", fname, size);
 	if (gc->TexturePath(temp, path) &&
-	    D3DXCreateTextureFromFileExA(pDev, path, 0, 0, D3DFMT_FROM_FILE, 0, D3DFMT_FROM_FILE, D3DPOOL_DEFAULT, D3DX_DEFAULT, D3DX_DEFAULT, 0, NULL, NULL, &pTex) == S_OK)
+	    D3DXCreateTextureFromFileExA(pDev, VFS::realpath_ns(path), 0, 0, D3DFMT_FROM_FILE, 0, D3DFMT_FROM_FILE, D3DPOOL_DEFAULT, D3DX_DEFAULT, D3DX_DEFAULT, 0, NULL, NULL, &pTex) == S_OK)
 	{
 		LogAlw("High resolution ring texture loaded [%s]", path);
 	}

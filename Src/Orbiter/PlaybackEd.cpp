@@ -903,7 +903,7 @@ void PlaybackEditor::CreateInsertEventList (HWND hDlg)
 void PlaybackEditor::ScanEventFile ()
 {
 	char line[2048];
-	ifstream ifs (sysfname);
+	VFS::ifstream ifs (sysfname);
 	while (ifs.getline (line, 2048)) {
 		PlaybackEvent *pe = PlaybackEvent::Create (this, line);
 		if (pe) {
@@ -921,7 +921,7 @@ void PlaybackEditor::SaveEventFile ()
 {
 	CommitEdit(); // commit last edits
 	orbiter->FRecorder_SuspendPlayback();
-	ofstream ofs (sysfname);
+	VFS::ofstream ofs (sysfname);
 	Event *ev;
 	for (ev = Efirst; ev; ev = ev->next) {
 		ev->e->Write (ofs);

@@ -67,7 +67,7 @@ public:
 	void GetMouseState (int &idx, int &state, Vector &xs) const;
 	inline void SetMouseState (int state) { mstate = state; }
 
-	static bool Read (std::ifstream &ifs);
+	static bool Read (VFS::ifstream &ifs);
 	void Write (std::ostream &ofs) const;
 
 	/**

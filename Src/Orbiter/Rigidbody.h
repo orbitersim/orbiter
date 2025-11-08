@@ -193,7 +193,7 @@ protected:
 	void SetDefaultCaps ();
 	// Initialise parameters with default values
 
-	void ReadGenericCaps (std::ifstream &ifs);
+	void ReadGenericCaps (VFS::ifstream &ifs);
 	// Read parameters from a config file
 
 	inline int NumPropLevel() const { return nPropLevel; } // number of defined propagator levels

@@ -1379,7 +1379,7 @@ DLLEXPORT VISHANDLE *oapiObjectVisualPtr (OBJHANDLE hObject)
 
 DLLEXPORT MESHHANDLE oapiLoadMesh (const char *fname)
 {
-	ifstream ifs(g_pOrbiter->MeshPath(fname));
+	VFS::ifstream ifs(g_pOrbiter->MeshPath(fname));
 	Mesh *mesh = new Mesh; TRACENEW
 	ifs >> *mesh;
 	return (MESHHANDLE)mesh;
@@ -2261,9 +2261,9 @@ DLLEXPORT FILEHANDLE oapiOpenFile (const char *fname, FileAccessMode mode, PathR
 
 	switch (mode) {
 	case FILE_IN:
-		return (FILEHANDLE)(new ifstream (cbuf));
+		return (FILEHANDLE)(new VFS::ifstream (cbuf));
 	case FILE_IN_ZEROONFAIL: {
-		ifstream *ifs = new ifstream (cbuf);
+		ifstream *ifs = new VFS::ifstream (cbuf);
 		if (ifs->fail()) {
 			delete ifs;
 			ifs = 0;
@@ -2271,9 +2271,9 @@ DLLEXPORT FILEHANDLE oapiOpenFile (const char *fname, FileAccessMode mode, PathR
 		return (FILEHANDLE)ifs;
 		}
 	case FILE_OUT:
-		TRACENEW; return (FILEHANDLE)(new ofstream (cbuf));
+		TRACENEW; return (FILEHANDLE)(new VFS::ofstream (cbuf));
 	case FILE_APP:
-		TRACENEW; return (FILEHANDLE)(new ofstream (cbuf, ios::app));
+		TRACENEW; return (FILEHANDLE)(new VFS::ofstream (cbuf, ios::app));
 	}
 	return 0;
 }
@@ -2284,11 +2284,11 @@ DLLEXPORT void oapiCloseFile (FILEHANDLE file, FileAccessMode mode)
 		switch (mode) {
 		case FILE_IN:
 		case FILE_IN_ZEROONFAIL:
-			delete (ifstream*)file;
+			delete (VFS::ifstream*)file;
 			break;
 		case FILE_OUT:
 		case FILE_APP:
-			delete (ofstream*)file;
+			delete (VFS::ofstream*)file;
 			break;
 		}
 	}
@@ -2301,7 +2301,7 @@ DLLEXPORT bool oapiSaveScenario (const char *fname, const char *desc)
 
 DLLEXPORT void oapiWriteLine (FILEHANDLE file, char *line)
 {
-	ofstream &ofs = *(ofstream*)file;
+	VFS::ofstream &ofs = *(VFS::ofstream*)file;
 	ofs << line << endl;
 }
 
@@ -2337,33 +2337,33 @@ DLLEXPORT void __writeLogError(const char *func, const char *file, int line, con
 
 DLLEXPORT void oapiWriteScenario_string (FILEHANDLE file, char *item, char *string)
 {
-	ofstream &ofs = *(ofstream*)file;
+	VFS::ofstream &ofs = *(VFS::ofstream*)file;
 	ofs << "  " << item << ' ' << string << endl;
 }
 
 DLLEXPORT void oapiWriteScenario_int (FILEHANDLE file, char *item, int i)
 {
-	ofstream &ofs = *(ofstream*)file;
+	VFS::ofstream &ofs = *(VFS::ofstream*)file;
 	ofs << "  " << item << ' ' << i << endl;
 }
 
 DLLEXPORT void oapiWriteScenario_float (FILEHANDLE file, char *item, double d)
 {
-	ofstream &ofs = *(ofstream*)file;
+	VFS::ofstream &ofs = *(VFS::ofstream*)file;
 	FltFormat f{ 6 }; // default precision: 6
 	ofs << "  " << item << ' ' << f(d) << endl;
 }
 
 DLLEXPORT void oapiWriteScenario_vec (FILEHANDLE file, char *item, const VECTOR3 &vec)
 {
-	ofstream &ofs = *(ofstream*)file;
+	VFS::ofstream &ofs = *(VFS::ofstream*)file;
 	FltFormat f{ 6 }; // default precision: 6
 	ofs << "  " << item << ' ' << f(vec.x) << ' ' << f(vec.y) << ' ' << f(vec.z) << endl;
 }
 
 DLLEXPORT bool oapiReadScenario_nextline (FILEHANDLE file, char *&line)
 {
-	ifstream &ifs = *(ifstream*)file;
+	VFS::ifstream &ifs = *(VFS::ifstream*)file;
 	char *cbuf = readline(ifs);
 	if (!cbuf) return false;
 	line = trim_string (cbuf);
@@ -2373,58 +2373,58 @@ DLLEXPORT bool oapiReadScenario_nextline (FILEHANDLE file, char *&line)
 
 DLLEXPORT void oapiWriteItem_string (FILEHANDLE file, char *item, char *string)
 {
-	ofstream &ofs = *(ofstream*)file;
+	VFS::ofstream &ofs = *(VFS::ofstream*)file;
 	ofs << item << " = " << string << endl;
 }
 
 DLLEXPORT void oapiWriteItem_float (FILEHANDLE file, char *item, double d)
 {
-	ofstream &ofs = *(ofstream*)file;
+	VFS::ofstream &ofs = *(VFS::ofstream*)file;
 	ofs << item << " = " << d << endl;
 }
 
 DLLEXPORT void oapiWriteItem_int (FILEHANDLE file, char *item, int i)
 {
-	ofstream &ofs = *(ofstream*)file;
+	VFS::ofstream &ofs = *(VFS::ofstream*)file;
 	ofs << item << " = " << i << endl;
 }
 
 DLLEXPORT void oapiWriteItem_bool (FILEHANDLE file, char *item, bool b)
 {
-	ofstream &ofs = *(ofstream*)file;
+	VFS::ofstream &ofs = *(VFS::ofstream*)file;
 	ofs << item << " = " << (b ? "TRUE":"FALSE") << endl;
 }
 
 DLLEXPORT void oapiWriteItem_vec (FILEHANDLE file, char *item, const VECTOR3 &vec)
 {
-	ofstream &ofs = *(ofstream*)file;
+	VFS::ofstream &ofs = *(VFS::ofstream*)file;
 	ofs << item << " = " << vec.x << ' ' << vec.y << ' ' << vec.z << endl;
 }
 
 DLLEXPORT bool oapiReadItem_string (FILEHANDLE f, char *item, char *string)
 {
-	return GetItemString (*(ifstream*)f, item, string);
+	return GetItemString (*(VFS::ifstream*)f, item, string);
 }
 
 DLLEXPORT bool oapiReadItem_float (FILEHANDLE f, char *item, double &val)
 {
-	return GetItemReal (*(ifstream*)f, item, val);
+	return GetItemReal (*(VFS::ifstream*)f, item, val);
 }
 
 DLLEXPORT bool oapiReadItem_int (FILEHANDLE f, char *item, int &val)
 {
-	return GetItemInt (*(ifstream*)f, item, val);
+	return GetItemInt (*(VFS::ifstream*)f, item, val);
 }
 
 DLLEXPORT bool oapiReadItem_bool (FILEHANDLE f, char *item, bool &val)
 {
-	return GetItemBool (*(ifstream*)f, item, val);
+	return GetItemBool (*(VFS::ifstream*)f, item, val);
 }
 
 DLLEXPORT bool oapiReadItem_vec (FILEHANDLE f, char *item, VECTOR3 &val)
 {
 	Vector vec;
-	bool res = GetItemVector (*(ifstream*)f, item, vec);
+	bool res = GetItemVector (*(VFS::ifstream*)f, item, vec);
 	val.x = vec.x;
 	val.y = vec.y;
 	val.z = vec.z;

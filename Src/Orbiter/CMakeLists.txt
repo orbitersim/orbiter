@@ -116,6 +116,7 @@ set(common_src
 	Memstat.cpp
 	Util.cpp
 	ZTreeMgr.cpp
+	VFS.cpp
 # Resources
 	Orbiter.rc
 	Orbiter.ico

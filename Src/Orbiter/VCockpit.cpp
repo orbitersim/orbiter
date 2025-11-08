@@ -460,7 +460,7 @@ void VirtualCockpit::GetMouseState (int &idx, int &state, Vector &xs) const
 	xs = mouse_r;
 }
 
-bool VirtualCockpit::Read (ifstream &ifs)
+bool VirtualCockpit::Read (VFS::ifstream &ifs)
 {
 	if (!FindLine (ifs, "BEGIN_VC")) return false;
 	// read panel parameters

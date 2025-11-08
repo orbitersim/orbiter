@@ -64,14 +64,14 @@ LPDIRECT3DTEXTURE9 NatLoadSpecialTexture(const char* fname, const char* ext)
 	
 	if (g_client->TexturePath(name, path)) {
 		D3DXIMAGE_INFO info;	
-		if (D3DXGetImageInfoFromFileA(path, &info) == S_OK) {
+		if (D3DXGetImageInfoFromFileA(VFS::realpath_ns(path), &info) == S_OK) {
 
 			DWORD Mips = D3DFMT_FROM_FILE;
 
 			if (Config->TextureMips == 2) Mips = 0;                         // Autogen all
 			if (Config->TextureMips == 1 && info.MipLevels == 1) Mips = 0;  // Autogen missing
 
-			if (S_OK == D3DXCreateTextureFromFileExA(g_client->GetDevice(), path, info.Width, info.Height, Mips, 0, D3DFMT_FROM_FILE, D3DPOOL_DEFAULT, D3DX_DEFAULT, D3DX_DEFAULT, 0, NULL, NULL, &pTex))
+			if (S_OK == D3DXCreateTextureFromFileExA(g_client->GetDevice(), VFS::realpath_ns(path), info.Width, info.Height, Mips, 0, D3DFMT_FROM_FILE, D3DPOOL_DEFAULT, D3DX_DEFAULT, D3DX_DEFAULT, 0, NULL, NULL, &pTex))
 			{
 				return pTex;
 			}
@@ -109,7 +109,7 @@ SURFHANDLE NatLoadSurface(const char* file, DWORD flags, bool bPath)
 	{
 		D3DXIMAGE_INFO info;
 
-		if (D3DXGetImageInfoFromFileA(path, &info) == S_OK)
+		if (D3DXGetImageInfoFromFileA(VFS::realpath_ns(path), &info) == S_OK)
 		{
 
 			if (info.ImageFileFormat == D3DXIFF_JPG) info.Format = D3DFMT_X8R8G8B8;
@@ -120,7 +120,7 @@ SURFHANDLE NatLoadSurface(const char* file, DWORD flags, bool bPath)
 			if (Config->TextureMips == 2) Mips = 0;                         // Autogen all
 			if (Config->TextureMips == 1 && info.MipLevels == 1) Mips = 0;  // Autogen missing
 
-			if (S_OK == D3DXCreateTextureFromFileExA(g_client->GetDevice(), path, info.Width, info.Height, Mips, 0, info.Format, D3DPOOL_DEFAULT, D3DX_DEFAULT, D3DX_DEFAULT, 0, NULL, NULL, &pTex))
+			if (S_OK == D3DXCreateTextureFromFileExA(g_client->GetDevice(), VFS::realpath_ns(path), info.Width, info.Height, Mips, 0, info.Format, D3DPOOL_DEFAULT, D3DX_DEFAULT, D3DX_DEFAULT, 0, NULL, NULL, &pTex))
 			{
 				pNat = new SurfNative(pTex, flags);
 				pNat->SetName(file);
@@ -149,7 +149,7 @@ SURFHANDLE NatLoadSurface(const char* file, DWORD flags, bool bPath)
 	//
 	D3DXIMAGE_INFO info;
 
-	if (S_OK == D3DXGetImageInfoFromFileA(path, &info))
+	if (S_OK == D3DXGetImageInfoFromFileA(VFS::realpath_ns(path), &info))
 	{
 		if (flags & OAPISURFACE_SKETCHPAD) flags |= OAPISURFACE_RENDERTARGET;
 		if (flags & OAPISURFACE_RENDERTARGET) flags |= OAPISURFACE_UNCOMPRESS;
@@ -192,7 +192,7 @@ SURFHANDLE NatLoadSurface(const char* file, DWORD flags, bool bPath)
 
 		if (flags & OAPISURFACE_TEXTURE)
 		{
-			if (S_OK == D3DXCreateTextureFromFileExA(g_client->GetDevice(), path, info.Width, info.Height, Mips,
+			if (S_OK == D3DXCreateTextureFromFileExA(g_client->GetDevice(), VFS::realpath_ns(path), info.Width, info.Height, Mips,
 				Usage, Format, Pool, D3DX_DEFAULT, D3DX_DEFAULT, 0, NULL, NULL, &pTex))
 			{
 				SurfNative* pSrf = new SurfNative(pTex, flags);
@@ -208,7 +208,7 @@ SURFHANDLE NatLoadSurface(const char* file, DWORD flags, bool bPath)
 			LPDIRECT3DSURFACE9 pSurf = NULL;
 			if (S_OK == g_client->GetDevice()->CreateRenderTarget(info.Width, info.Height, Format, Multi, 0, bLock, &pSurf, NULL))
 			{
-				if (S_OK == D3DXLoadSurfaceFromFile(pSurf, NULL, NULL, path, NULL, D3DX_DEFAULT, 0, NULL))
+				if (S_OK == D3DXLoadSurfaceFromFile(pSurf, NULL, NULL, VFS::realpath_ns(path), NULL, D3DX_DEFAULT, 0, NULL))
 				{
 					SurfNative* pSrf = new SurfNative(pSurf, flags);
 					pSrf->SetName(file);
@@ -931,7 +931,7 @@ bool SurfNative::Decompress()
 			return false;
 		}
 
-		if (S_OK == D3DXCreateTextureFromFileExA(pDevice, path, desc.Width, desc.Height, Mipmaps, D3DUSAGE_RENDERTARGET, Format,
+		if (S_OK == D3DXCreateTextureFromFileExA(pDevice, VFS::realpath_ns(path), desc.Width, desc.Height, Mipmaps, D3DUSAGE_RENDERTARGET, Format,
 			D3DPOOL_DEFAULT, D3DX_DEFAULT, D3DX_DEFAULT, 0, NULL, NULL, &pDecomp))
 		{
 			HR(pDecomp->GetSurfaceLevel(0, &pDeSrf))
@@ -987,7 +987,7 @@ bool SurfNative::DeClone()
 			return false;
 		}
 
-		if (S_OK == D3DXCreateTextureFromFileExA(pDevice, path, desc.Width, desc.Height, Mipmaps, D3DUSAGE_RENDERTARGET, Format,
+		if (S_OK == D3DXCreateTextureFromFileExA(pDevice, VFS::realpath_ns(path), desc.Width, desc.Height, Mipmaps, D3DUSAGE_RENDERTARGET, Format,
 			D3DPOOL_DEFAULT, D3DX_DEFAULT, D3DX_DEFAULT, 0, NULL, NULL, &pTex))
 		{
 			pResource = pTex;
@@ -1026,13 +1026,13 @@ void SurfNative::Reload()
 	{
 		D3DXIMAGE_INFO info;
 
-		if (D3DXGetImageInfoFromFileA(path, &info) == S_OK)
+		if (D3DXGetImageInfoFromFileA(VFS::realpath_ns(path), &info) == S_OK)
 		{
 			DWORD Mips = D3DFMT_FROM_FILE;
 			if (Config->TextureMips == 2) Mips = 0;                         // Autogen all
 			if (Config->TextureMips == 1 && info.MipLevels == 1) Mips = 0;  // Autogen missing
 
-			if (S_OK == D3DXCreateTextureFromFileExA(g_client->GetDevice(), path, info.Width, info.Height, Mips, 0,
+			if (S_OK == D3DXCreateTextureFromFileExA(g_client->GetDevice(), VFS::realpath_ns(path), info.Width, info.Height, Mips, 0,
 				D3DFMT_FROM_FILE, D3DPOOL_DEFAULT, D3DX_DEFAULT, D3DX_DEFAULT, 0, NULL, NULL, (LPDIRECT3DTEXTURE9 *)&pResource))
 			{
 				AddMap(MAP_HEAT, NatLoadSpecialTexture(name, "heat"));

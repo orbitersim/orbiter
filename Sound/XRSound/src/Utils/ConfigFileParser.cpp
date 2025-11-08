@@ -34,7 +34,7 @@ ConfigFileParser::ConfigFileParser(const char *pDefaultFilename, const char *pLo
     if (pLogFilename != nullptr)
     {
         // open the log file in APPEND and SHARED mode so we can share it between multiple ship instances
-        m_pLogFile = fopen(pLogFilename, "a+t");
+        m_pLogFile = VFS::fopen(pLogFilename, "a+t");
         if (m_pLogFile == nullptr)
         {
             char temp[256];
@@ -72,7 +72,7 @@ bool ConfigFileParser::ParseFile(const char *pFilename)
     sprintf(temp, "Parsing config file '%s'", pFilename);
     WriteLog(temp);
 
-    FILE *pFile = fopen(pFilename, "rt");
+    FILE *pFile = VFS::fopen(pFilename, "rt");
 
     if (pFile == nullptr)
     {

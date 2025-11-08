@@ -468,7 +468,7 @@ HWND D3D9Client::clbkCreateRenderWindow()
 	g_pVtxmgr_vb = new Vtxmgr<LPDIRECT3DVERTEXBUFFER9>(pDevice, "TileVertex");
 	g_pIdxmgr_ib = new Idxmgr<LPDIRECT3DINDEXBUFFER9>(pDevice, "TileIndices");
 
-	HR(D3DXCreateTextureFromFileA(pDevice, "Textures/D3D9Noise.dds", &pNoiseTex));
+	HR(D3DXCreateTextureFromFileA(pDevice, VFS::realpath_ns("Textures/D3D9Noise.dds"), &pNoiseTex));
 
 	HR(pDevice->GetRenderTarget(0, &pBackBuffer));
 	HR(pDevice->GetDepthStencilSurface(&pDepthStencil));
@@ -2209,7 +2209,7 @@ HBITMAP D3D9Client::gcReadImageFromFile(const char *_path)
 {
 	char path[MAX_PATH];
 	sprintf_s(path, sizeof(path), "%s\\%s", OapiExtension::GetTextureDir(), _path);
-	return ReadImageFromFile(path);
+	return ReadImageFromFile(VFS::realpath_ns(path));
 }
 
 // ==============================================================
@@ -2937,7 +2937,7 @@ void D3D9Client::SplashScreen()
 
 	if(pCustomSplashScreen != NULL) {
 		D3DXIMAGE_INFO info;
-		HR(D3DXGetImageInfoFromFile(pCustomSplashScreen, &info));
+		HR(D3DXGetImageInfoFromFile(VFS::realpath_ns(pCustomSplashScreen), &info));
 
 		double imageW = info.Width;
 		double imageH = info.Height;
@@ -2954,7 +2954,7 @@ void D3D9Client::SplashScreen()
 			static_cast<LONG>( round(_h + _t) )
 		};
 		HR(pDevice->ColorFill(pSplashScreen, NULL, D3DCOLOR_XRGB(0, 0, 0)));
-		HR(D3DXLoadSurfaceFromFile(pSplashScreen, NULL, &imgRect, pCustomSplashScreen, NULL, D3DX_FILTER_LINEAR, 0, NULL));
+		HR(D3DXLoadSurfaceFromFile(pSplashScreen, NULL, &imgRect, VFS::realpath_ns(pCustomSplashScreen), NULL, D3DX_FILTER_LINEAR, 0, NULL));
 	} else {
 		D3DXIMAGE_INFO Info;
 		HMODULE hOrbiter =  GetModuleHandleA("orbiter.exe");

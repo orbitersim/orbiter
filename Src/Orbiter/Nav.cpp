@@ -290,7 +290,7 @@ void NavManager::AddNav (Nav *_nav)
 	nnav++;
 }
 
-DWORD NavManager::Read (ifstream &ifs, const Planet *planet, bool append)
+DWORD NavManager::Read (VFS::ifstream &ifs, const Planet *planet, bool append)
 {
 	if (nnav && !append) Clear ();
 

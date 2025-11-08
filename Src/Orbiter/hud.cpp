@@ -10,7 +10,6 @@
 #include "Psys.h"
 #include "Pane.h"
 #include "Log.h"
-#include <fstream>
 
 using namespace std;
 
@@ -1245,7 +1244,7 @@ oapi::IVECTOR2 *HUD::OffscreenDirMarker (const Vector &dir) const
 	return pt;
 }
 
-HUD *HUD::Create (ifstream &ifs, const Pane *_pane, oapi::GraphicsClient *gc)
+HUD *HUD::Create (VFS::ifstream &ifs, const Pane *_pane, oapi::GraphicsClient *gc)
 {
 	HUD *hud = 0;
 	char cbuf[256], *pc;
@@ -1535,7 +1534,7 @@ void HUD_Orbit::WriteParams (ostream &ofs) const
 	ofs << "  REF " << (ref ? ref->Name() : "AUTO") << endl;
 }
 
-void HUD_Orbit::ReadParams (ifstream &ifs)
+void HUD_Orbit::ReadParams (VFS::ifstream &ifs)
 {
 	char cbuf[256], *pc;
 	for (;;) {
@@ -2113,7 +2112,7 @@ void HUD_Docking::WriteParams (ostream &ofs) const
 	}
 }
 
-void HUD_Docking::ReadParams (ifstream &ifs)
+void HUD_Docking::ReadParams (VFS::ifstream &ifs)
 {
 	char cbuf[256], *pc;
 	for (;;) {

@@ -13,6 +13,7 @@
 #include "Camera.h"
 #include "D3dmath.h"
 #include "Log.h"
+#include "VFS.h"
 #include <assert.h>
 
 using namespace std;
@@ -859,7 +860,7 @@ void Pane::ScreenToGlobal (int x, int y, Vector &glob) const
 	glob.unify();
 }
 
-bool Pane::OpenMFD (INT_PTR id, int type, ifstream *ifs)
+bool Pane::OpenMFD (INT_PTR id, int type, VFS::ifstream *ifs)
 {
 	if (id >= MAXMFD || id < 0) return ((ExternMFD*)id)->SetMode (type);
 	if (panelmode == 1 && id >= 2) return false;
@@ -1227,11 +1228,11 @@ void Pane::SetVCNeighbours (int left, int right, int top, int bottom)
 
 void Pane::InitState (const char *scn)
 {
-	ifstream ifs (scn);
+	VFS::ifstream ifs (scn);
 	if (ifs) Read (ifs);
 }
 
-bool Pane::Read (ifstream &ifs)
+bool Pane::Read (VFS::ifstream &ifs)
 {
 	if (hud = HUD::Create (ifs, this, gc)) {
 		hudmode = hud->Mode();

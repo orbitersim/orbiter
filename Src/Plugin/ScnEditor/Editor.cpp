@@ -319,7 +319,7 @@ HINSTANCE ScnEditor::LoadVesselLibrary (const VESSEL *vessel)
 	char cbuf[256];
 	if (hEdLib) FreeLibrary (hEdLib); // remove previous library
 	if (vessel->GetEditorModule (cbuf))
-		hEdLib = LoadLibrary (cbuf);
+		hEdLib = (HINSTANCE)VFS::LoadModule(cbuf);
 	else hEdLib = 0;
 	return hEdLib;
 }
@@ -741,11 +741,11 @@ bool EditorTab_New::CreateVessel ()
 	return true;
 }
 
-void EditorTab_New::ScanConfigDir (const fs::path& dir, HTREEITEM hti)
+void EditorTab_New::ScanConfigDir (const char *dir, HTREEITEM hti)
 {
 	// recursively scans a directory tree and adds to the list
 	TV_INSERTSTRUCT tvis;
-	HTREEITEM ht, hts0, ht0;
+	HTREEITEM hts0, ht0;
 	char cbuf[256];
 
 	tvis.hParent = hti;
@@ -757,13 +757,13 @@ void EditorTab_New::ScanConfigDir (const fs::path& dir, HTREEITEM hti)
 	tvis.item.iSelectedImage = ed->treeicon_idx[0];
 
 	// scan for subdirectories
-	for (const auto& entry : fs::directory_iterator(dir)) {
-		if (entry.is_directory()) {
-			strcpy(cbuf, entry.path().filename().string().c_str());
-			ht = (HTREEITEM)SendDlgItemMessage(hTab, IDC_VESSELTP, TVM_INSERTITEM, 0, (LPARAM)&tvis);
-			ScanConfigDir(entry.path(), ht);
+	VFS::enumerate(dir, [&, tvis](const char *entry) {
+		if (VFS::is_directory(entry)) {
+			strcpy(cbuf, VFS::basename(entry));
+			HTREEITEM ht = (HTREEITEM)SendDlgItemMessage(hTab, IDC_VESSELTP, TVM_INSERTITEM, 0, (LPARAM)&tvis);
+			ScanConfigDir(entry, ht);
 		}
-	}
+	});
 
 	hts0 = (HTREEITEM)SendDlgItemMessage (hTab, IDC_VESSELTP, TVM_GETNEXTITEM, TVGN_CHILD, (LPARAM)hti);
 	// the first subdirectory entry in this folder
@@ -773,18 +773,18 @@ void EditorTab_New::ScanConfigDir (const fs::path& dir, HTREEITEM hti)
 	tvis.item.cChildren = 0;
 	tvis.item.iImage = ed->treeicon_idx[2];
 	tvis.item.iSelectedImage = ed->treeicon_idx[3];
-	for (const auto& entry : fs::directory_iterator(dir)) {
-		if (entry.is_regular_file() && entry.path().extension().string() == ".cfg") {
+	VFS::enumerate(dir, [&](const char *entry) {
+		if (VFS::is_regular_file(entry) && VFS::has_extension(entry, "cfg")) {
 			bool skip = false;
-			FILEHANDLE hFile = oapiOpenFile(entry.path().string().c_str(), FILE_IN);
+			FILEHANDLE hFile = oapiOpenFile(entry, FILE_IN);
 			if (hFile) {
 				bool b;
 				skip = (oapiReadItem_bool(hFile, (char*)"EditorCreate", b) && !b);
 				oapiCloseFile(hFile, FILE_IN);
 			}
-			if (skip) continue;
+			if (skip) return;
 
-			strcpy(cbuf, entry.path().stem().string().c_str());
+			VFS::stem(entry, cbuf);
 
 			char ch[256];
 			TV_ITEM tvi = { TVIF_HANDLE | TVIF_TEXT, 0, 0, 0, ch, 256 };
@@ -795,7 +795,7 @@ void EditorTab_New::ScanConfigDir (const fs::path& dir, HTREEITEM hti)
 				if (strcmp(tvi.pszText, cbuf) > 0) break;
 			}
 			if (tvi.hItem) {
-				ht = (HTREEITEM)SendDlgItemMessage(hTab, IDC_VESSELTP, TVM_GETNEXTITEM, TVGN_PREVIOUS, (LPARAM)tvi.hItem);
+				HTREEITEM ht = (HTREEITEM)SendDlgItemMessage(hTab, IDC_VESSELTP, TVM_GETNEXTITEM, TVGN_PREVIOUS, (LPARAM)tvi.hItem);
 				tvis.hInsertAfter = (ht ? ht : TVI_FIRST);
 			}
 			else {
@@ -803,7 +803,7 @@ void EditorTab_New::ScanConfigDir (const fs::path& dir, HTREEITEM hti)
 			}
 			(HTREEITEM)SendDlgItemMessage(hTab, IDC_VESSELTP, TVM_INSERTITEM, 0, (LPARAM)&tvis);
 		}
-	}
+	});
 }
 
 void EditorTab_New::RefreshVesselTpList ()
@@ -858,7 +858,7 @@ bool EditorTab_New::UpdateVesselBmp ()
 		FILEHANDLE hFile = oapiOpenFile (pathname, FILE_IN, CONFIG);
 		if (!hFile) return false;
 		if (oapiReadItem_string (hFile, (char*)"ImageBmp", imagename)) {
-			hVesselBmp = (HBITMAP)LoadImage (ed->InstHandle(), imagename, IMAGE_BITMAP, 0, 0, LR_LOADFROMFILE);
+			hVesselBmp = (HBITMAP)LoadImage (ed->InstHandle(), VFS::realpath_ns(imagename), IMAGE_BITMAP, 0, 0, LR_LOADFROMFILE);
 		}
 		oapiCloseFile (hFile, FILE_IN);
 	}
@@ -1584,10 +1584,10 @@ void EditorTab_Elements::RefreshSecondaryParams (const ELEMENTS &el, const ORBIT
 
 	sprintf (cbuf, "%g m", prm.PeD); SetWindowText (GetDlgItem (hTab, IDC_PERIAPSIS), cbuf);
 	sprintf (cbuf, "%g s", prm.PeT); SetWindowText (GetDlgItem (hTab, IDC_PET), cbuf);
-	sprintf (cbuf, "%0.3f °", prm.MnA*DEG); SetWindowText (GetDlgItem (hTab, IDC_MNANM), cbuf);
-	sprintf (cbuf, "%0.3f °", prm.TrA*DEG); SetWindowText (GetDlgItem (hTab, IDC_TRANM), cbuf);
-	sprintf (cbuf, "%0.3f °", prm.MnL*DEG); SetWindowText (GetDlgItem (hTab, IDC_MNLNG), cbuf);
-	sprintf (cbuf, "%0.3f °", prm.TrL*DEG); SetWindowText (GetDlgItem (hTab, IDC_TRLNG), cbuf);
+	sprintf (cbuf, "%0.3f Â°", prm.MnA*DEG); SetWindowText (GetDlgItem (hTab, IDC_MNANM), cbuf);
+	sprintf (cbuf, "%0.3f Â°", prm.TrA*DEG); SetWindowText (GetDlgItem (hTab, IDC_TRANM), cbuf);
+	sprintf (cbuf, "%0.3f Â°", prm.MnL*DEG); SetWindowText (GetDlgItem (hTab, IDC_MNLNG), cbuf);
+	sprintf (cbuf, "%0.3f Â°", prm.TrL*DEG); SetWindowText (GetDlgItem (hTab, IDC_TRLNG), cbuf);
 	if (closed) {
 		sprintf (cbuf, "%g s", prm.T);   SetWindowText (GetDlgItem (hTab, IDC_PERIOD), cbuf);
 		sprintf (cbuf, "%g m", prm.ApD); SetWindowText (GetDlgItem (hTab, IDC_APOAPSIS), cbuf);

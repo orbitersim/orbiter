@@ -29,7 +29,7 @@ public:
 	int ProcessMessage (int msg, void *data);
 
 protected:
-	bool ReadParams (std::ifstream &ifs);
+	bool ReadParams (VFS::ifstream &ifs);
 	void WriteParams (std::ostream &ofs) const;
 
 private:

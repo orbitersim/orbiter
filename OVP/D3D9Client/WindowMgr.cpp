@@ -452,7 +452,7 @@ WindowManager::WindowManager(HWND hAppMainWindow, HINSTANCE _hInst, bool bWindow
 
 	if (file.IsInvalid()) {
 		sprintf_s(path, 256, "%sgcGUI.cfg", OapiExtension::GetConfigDir());
-		fopen_s(&file.pFile, path, "r");
+		file.pFile = VFS::fopen(path, "r");
 	}
 
 	if (!file.IsInvalid()) {
@@ -566,9 +566,9 @@ WindowManager::WindowManager(HWND hAppMainWindow, HINSTANCE _hInst, bool bWindow
 
 	// ----------------------------------
 
-	hIcons = g_client->gcReadImageFromFile(cfg.bmp_icon);
-	hTitle = g_client->gcReadImageFromFile(cfg.bmp_main);
-	hSub = g_client->gcReadImageFromFile(cfg.bmp_sub);
+	hIcons = g_client->gcReadImageFromFile(VFS::realpath_ns(cfg.bmp_icon));
+	hTitle = g_client->gcReadImageFromFile(VFS::realpath_ns(cfg.bmp_main));
+	hSub = g_client->gcReadImageFromFile(VFS::realpath_ns(cfg.bmp_sub));
 
 	hAppFont = CreateFont(cfg.txt_main_size, 0, 0, 0, cfg.txt_main_weight, false, false, 0, 0, 0, 2, CLEARTYPE_QUALITY, 49, cfg.fnt_main);
 	hSubFont = CreateFont(cfg.txt_sub_size, 0, 0, 0, cfg.txt_sub_weight, false, false, 0, 0, 0, 2, CLEARTYPE_QUALITY, 49, cfg.fnt_sub);

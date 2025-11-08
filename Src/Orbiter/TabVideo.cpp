@@ -11,6 +11,7 @@
 #include "Orbiter.h"
 #include "TabVideo.h"
 #include "resource.h"
+#include "VFS.h"
 
 using namespace std;
 
@@ -154,33 +155,34 @@ void orbiter::DefVideoTab::EnumerateClients(HWND hTab)
 
 //-----------------------------------------------------------------------------
 //! Find Graphics engine DLLs in dir
-void orbiter::DefVideoTab::ScanDir(HWND hTab, const fs::path& dir)
+void orbiter::DefVideoTab::ScanDir(HWND hTab, const char *dir)
 {
-	for (auto& entry : fs::directory_iterator(dir)) {
-		fs::path modulepath;
-		auto clientname = entry.path().stem().string();
-		if (entry.is_directory()) {
-			modulepath = dir / clientname / (clientname + ".dll");
-			if (!fs::exists(modulepath))
-				continue;
+	VFS::enumerate(dir, [&](const char *entry) {
+		char clientname[MAX_PATH];
+		char modulepath[MAX_PATH];
+		VFS::stem(entry, clientname);
+		if (VFS::is_directory(entry)) {
+			sprintf(modulepath, "%s/%s/%s.dll", dir, clientname, clientname);
+			if (!VFS::exists(modulepath))
+				return;
 		}
-		else if (entry.path().extension().string() == ".dll")
-			modulepath = entry.path();
+		else if (VFS::has_extension(entry, "dll"))
+			strcpy(modulepath, entry);
 		else
-			continue;
+			return;
 
 		// We've found a potential module DLL. Load it.
-		HMODULE hMod = LoadLibraryEx(modulepath.string().c_str(), 0, LOAD_LIBRARY_AS_DATAFILE);
+		HMODULE hMod = LoadLibraryEx(modulepath, 0, LOAD_LIBRARY_AS_DATAFILE);
 		if (hMod) {
 			char catstr[256];
 			// read category string
 			if (LoadString(hMod, 1001, catstr, 256)) {
 				if (!strcmp(catstr, "Graphics engines")) {
-					SendDlgItemMessage(hTab, IDC_VID_COMBO_MODULE, CB_ADDSTRING, 0, (LPARAM)clientname.c_str());
+					SendDlgItemMessage(hTab, IDC_VID_COMBO_MODULE, CB_ADDSTRING, 0, (LPARAM)clientname);
 				}
 			}
 		}
-	}
+	});
 }
 
 //-----------------------------------------------------------------------------

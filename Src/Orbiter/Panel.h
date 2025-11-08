@@ -87,7 +87,7 @@ public:
 	inline void ClearMouseState () { mstate = 0; }
 	inline void SetMouseState (int state) { mstate = state; }
 
-	static bool Read (std::ifstream &ifs);
+	static bool Read (VFS::ifstream &ifs);
 	void Write (std::ostream &ofs) const;
 
 private:

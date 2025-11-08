@@ -6,14 +6,12 @@
 
 #include "orbitersdk.h"
 #include "resource.h"
-#include <filesystem>
-namespace fs = std::filesystem;
 
 using namespace std;
 
 class AtmConfig;
 
-const fs::path CelbodyDir = fs::path("Modules") / "Celbody";
+const char *CelbodyDir = "Modules/Celbody";
 const char *ModuleItem = "MODULE_ATM";
 
 struct {
@@ -215,40 +213,41 @@ void AtmConfig::ScanCelbodies (HWND hWnd)
 {
 	SendDlgItemMessage (hWnd, IDC_COMBO2, CB_RESETCONTENT, 0, 0);
 
-	for (auto& dir : fs::directory_iterator(CelbodyDir)) {
-		auto path = dir.path();
-		if (dir.is_directory()) {
-			std::error_code ec;
-			auto atmdir = fs::directory_entry(path / "Atmosphere", ec);
-			if(!ec && atmdir.is_directory()) {
-				SendDlgItemMessage(hWnd, IDC_COMBO2, CB_ADDSTRING, 0, (LPARAM)path.filename().string().c_str());
+	VFS::enumerate(CelbodyDir, [&](const char *entry) {
+		if (VFS::is_directory(entry)) {
+			char atmdir[MAX_PATH];
+			sprintf(atmdir, "%s/Atmosphere", entry);
+			if(VFS::is_directory(atmdir)) {
+				SendDlgItemMessage(hWnd, IDC_COMBO2, CB_ADDSTRING, 0, (LPARAM)VFS::basename(entry));
 			}
 		}
-	}
+	});
 }
 
 void AtmConfig::ScanModules (const char *celbody)
 {
 	ClearModules ();
-
-	auto path = CelbodyDir / celbody / "Atmosphere";
+	char path[MAX_PATH];
+	sprintf(path, "%s/%s/Atmosphere", CelbodyDir, celbody);
 	MODULESPEC* module_last = 0;
-	for (auto& entry : fs::directory_iterator(path)) {
-		auto module = entry.path();
-		if (module.extension().string() == ".dll") {
-			const auto name = module.stem().string();
+	VFS::enumerate(path, [&](const char *entry) {
+		if (VFS::has_extension(entry, "dll")) {
+			char name[MAX_PATH];
+			VFS::stem(entry, name);
 
 			MODULESPEC* ms = new MODULESPEC;
 			if (module_last) module_last->next = ms;
 			else             module_first = ms;
 			module_last = ms;
-			strncpy(ms->module_name, name.c_str(), 255);
-			strncpy(ms->model_name, name.c_str(), 255);
+			strncpy(ms->module_name, name, 255);
+			strncpy(ms->model_name, name, 255);
 			ms->model_desc[0] = '\0';
 			ms->next = 0;
 
 			// get info from the module
-			HINSTANCE hModule = LoadLibrary(module.string().c_str());
+			char rpath[MAX_PATH];
+			VFS::realpath(entry, rpath);
+			HINSTANCE hModule = (HINSTANCE)VFS::LoadModule(rpath);
 			if (hModule) {
 				char* (*name_func)() = (char* (*)())GetProcAddress(hModule, "ModelName");
 				if (name_func) strncpy(ms->model_name, name_func(), 255);
@@ -257,7 +256,7 @@ void AtmConfig::ScanModules (const char *celbody)
 				FreeLibrary(hModule);
 			}
 		}
-	}
+	});
 }
 
 INT_PTR CALLBACK AtmConfig::DlgProc (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)

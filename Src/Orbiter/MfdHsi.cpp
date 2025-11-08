@@ -225,12 +225,12 @@ void Instrument_HSI::UpdateDraw (oapi::Sketchpad *skp)
 			sprintf (cbuf, "NAV%d %06.2fMHz", hsi[i].nv+1, nav->freq);
 			skp->Text (x0, YLN1, cbuf, strlen(cbuf));
 		}
-		sprintf (cbuf, "CRS %03.0f°", hsi[i].obs*DEG);
+		sprintf (cbuf, "CRS %03.0fÂ°", hsi[i].obs*DEG);
 		skp->Text (x0, YLN3, cbuf, 8);
-		sprintf (cbuf, "DEV %02.0f°", fabs(crsdev)*DEG);
+		sprintf (cbuf, "DEV %02.0fÂ°", fabs(crsdev)*DEG);
 		skp->Text (x0, YLN4, cbuf, 7);
 		skp->SetTextAlign (oapi::Sketchpad::RIGHT);
-		sprintf (cbuf, "BRG %03.0f°", brg*DEG);
+		sprintf (cbuf, "BRG %03.0fÂ°", brg*DEG);
 		skp->Text (R0+U1, YLN3, cbuf, 8);
 		sprintf (cbuf, "DST%s", DistStr (adist));
 		skp->Text (R0+U1, YLN4, cbuf, strlen(cbuf));
@@ -353,7 +353,7 @@ int Instrument_HSI::BtnMenu (const MFDBUTTONMENU **menu) const
 	return 4;
 }
 
-bool Instrument_HSI::ReadParams (ifstream &ifs)
+bool Instrument_HSI::ReadParams (VFS::ifstream &ifs)
 {
 	char cbuf[256], *pc;
 	if (!FindScnHeader (ifs)) return false;

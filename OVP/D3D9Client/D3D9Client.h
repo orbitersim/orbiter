@@ -9,15 +9,6 @@
 #ifndef __D3D9CLIENT_H
 #define __D3D9CLIENT_H
 
-// must be defined before windows includes to fix warnins on VS 2003+
-#if defined(_MSC_VER) && (_MSC_VER >= 1300 ) // Microsoft Visual Studio Version 2003 and higher
-//#define _CRT_SECURE_NO_DEPRECATE
-//#define _CRT_NONSTDC_NO_WARNINGS
-#include <fstream>
-#else  // older MSVC++ versions
-#include <fstream.h>
-#endif
-
 #include <d3d9.h>
 #include <d3dx9.h>
 #include "D3D9Catalog.h"

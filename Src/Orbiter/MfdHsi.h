@@ -26,7 +26,7 @@ public:
 	int BtnMenu (const MFDBUTTONMENU **menu) const;
 
 protected:
-	bool ReadParams (std::ifstream &ifs);
+	bool ReadParams (VFS::ifstream &ifs);
 	void WriteParams (std::ostream &ofs) const;
 
 private:

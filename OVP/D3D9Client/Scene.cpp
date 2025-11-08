@@ -165,7 +165,7 @@ Scene::Scene(D3D9Client *_gc, DWORD w, DWORD h)
 	// ------------------------------------------------------------------------------
 	// Read Sun glare sampling kernel file
 
-	ifstream fs("Modules/D3D9Client/GKernel.txt");
+	VFS::ifstream fs("Modules/D3D9Client/GKernel.txt");
 	if (fs.good()) {
 		string line; vector<FVECTOR2> data;
 		while (getline(fs, line)) {
@@ -281,8 +281,8 @@ Scene::Scene(D3D9Client *_gc, DWORD w, DWORD h)
 
 		// Load some textures
 		char buff[MAX_PATH];
-		if (gc->TexturePath("D3D9Noise.dds", buff)) HR(D3DXCreateTextureFromFileA(pDevice, buff, &pTextures[TEX_NOISE]));
-		if (gc->TexturePath("D3D9CLUT.dds", buff)) HR(D3DXCreateTextureFromFileA(pDevice, buff, &pTextures[TEX_CLUT]));
+		if (gc->TexturePath("D3D9Noise.dds", buff)) HR(D3DXCreateTextureFromFileA(pDevice, VFS::realpath_ns(buff), &pTextures[TEX_NOISE]));
+		if (gc->TexturePath("D3D9CLUT.dds", buff)) HR(D3DXCreateTextureFromFileA(pDevice, VFS::realpath_ns(buff), &pTextures[TEX_CLUT]));
 
 		if (pLightBlur) {
 			HR(D3DXCreateTexture(pDevice, viewW / BufSize, viewH / BufSize, 1, D3DUSAGE_RENDERTARGET, BackBuffer, D3DPOOL_DEFAULT, &ptgBuffer[GBUF_BLUR]));
@@ -3796,7 +3796,7 @@ void Scene::D3D9TechInit(LPDIRECT3DDEVICE9 pDev, const char *folder)
 	// Create the Effect from a .fx file.
 	ID3DXBuffer* errors = 0;
 
-	HR(D3DXCreateEffectFromFile(pDev, name, 0, 0, 0, 0, &FX, &errors));
+	HR(D3DXCreateEffectFromFile(pDev, VFS::realpath_ns(name), 0, 0, 0, 0, &FX, &errors));
 
 	if (errors) {
 

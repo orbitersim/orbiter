@@ -788,17 +788,17 @@ void Instrument_Surface::UpdateDraw (oapi::Sketchpad *skp)
 	// position data -> move to Map MFD
 	y = hrzy1+6*ch;
 	x0 = accx0+6*cw; x1 = x0 + 8*cw; x = x0 + 4*cw;
-	if (lng >= 0.0)  sprintf (cbuf, "%07.3lfº E", Deg(lng));
-	else             sprintf (cbuf, "%07.3lfº W", Deg(-lng));
+	if (lng >= 0.0)  sprintf (cbuf, "%07.3lfÂº E", Deg(lng));
+	else             sprintf (cbuf, "%07.3lfÂº W", Deg(-lng));
 	skp->Text (x0, y, cbuf, strlen(cbuf));
-	if (vlng >= 0.0) sprintf (cbuf, "[%0.4lfº/s E]", Deg(vlng));
-	else             sprintf (cbuf, "[%0.4lfº/s W]", Deg(-vlng));
+	if (vlng >= 0.0) sprintf (cbuf, "[%0.4lfÂº/s E]", Deg(vlng));
+	else             sprintf (cbuf, "[%0.4lfÂº/s W]", Deg(-vlng));
 	skp->Text (x1, y, cbuf, strlen(cbuf)); y += ch;
-	if (lat >= 0.0)  sprintf (cbuf, "%07.3lfº N", Deg(lat));
-	else             sprintf (cbuf, "%07.3lfº S", Deg(-lat));
+	if (lat >= 0.0)  sprintf (cbuf, "%07.3lfÂº N", Deg(lat));
+	else             sprintf (cbuf, "%07.3lfÂº S", Deg(-lat));
 	skp->Text (x0, y, cbuf, strlen(cbuf));
-	if (vlat >= 0.0) sprintf (cbuf, "[%0.4lfº/s N]", Deg(vlat));
-	else             sprintf (cbuf, "[%0.4lfº/s S]", Deg(-vlat));
+	if (vlat >= 0.0) sprintf (cbuf, "[%0.4lfÂº/s N]", Deg(vlat));
+	else             sprintf (cbuf, "[%0.4lfÂº/s S]", Deg(-vlat));
 	skp->Text (x1, y, cbuf, strlen(cbuf)); y += ch;
 
 	// heading indicator
@@ -859,7 +859,7 @@ void Instrument_Surface::UpdateDraw (oapi::Sketchpad *skp)
 	sprintf (cbuf, "%0.*f", avacc < 10 ? 2 : avacc < 100 ? 1 : 0, vacc);
 	skp->Text (vacx0+(25*cw)/8, accy-(3*ch)/8-1, cbuf, strlen(cbuf));
 	skp->Text (x, accy0-(7*ch)/4, "VACC", 4);
-	skp->Text (x, accy0-ch, "m/s²", 4);
+	skp->Text (x, accy0-ch, "m/sÂ²", 4);
 
 	// aoa indicator
 	x = aoax0+2*cw;
@@ -876,14 +876,14 @@ void Instrument_Surface::UpdateDraw (oapi::Sketchpad *skp)
 	else strcpy (cbuf, "----");
 	skp->Text (accx0+(15*cw)/8, accy-(3*ch)/8-1, cbuf, strlen(cbuf));
 	skp->Text (x, accy0-(7*ch)/4, "ACC", 3);
-	skp->Text (x, accy0-ch, "m/s²", 4);
+	skp->Text (x, accy0-ch, "m/sÂ²", 4);
 
 	// pitch and bank values
 	skp->SetTextAlign (oapi::Sketchpad::RIGHT);
-	sprintf (cbuf, "BNK %03.0fº%c", DEG*fabs(bank), bank >= 0 ? 'L':'R');
+	sprintf (cbuf, "BNK %03.0fÂº%c", DEG*fabs(bank), bank >= 0 ? 'L':'R');
 	skp->Text (hrzx1, hrzy1, cbuf, 9);
 	skp->SetTextAlign (oapi::Sketchpad::LEFT);
-	sprintf (cbuf, "PTCH %+03.0fº", DEG*pitch);
+	sprintf (cbuf, "PTCH %+03.0fÂº", DEG*pitch);
 	skp->Text (hrzx0, hrzy1, cbuf, 9);
 
 }
@@ -988,7 +988,7 @@ void Instrument_Surface::OptionChanged(DWORD cat, DWORD item)
 	}
 }
 
-bool Instrument_Surface::ReadParams (ifstream &ifs)
+bool Instrument_Surface::ReadParams (VFS::ifstream &ifs)
 {
 	char cbuf[256], *pc;
 	int n = 0;

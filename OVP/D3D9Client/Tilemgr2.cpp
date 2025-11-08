@@ -18,7 +18,7 @@
 
 #include <stack>
 #include <io.h>
-#include <filesystem>
+#include "VFS.h"
 
 // =======================================================================
 // Externals
@@ -78,11 +78,10 @@ Tile::~Tile ()
 
 bool Tile::LoadTextureFile(const char *fullpath, LPDIRECT3DTEXTURE9 *pPre)
 {
-	auto y = filesystem::status(fullpath);
-	if (filesystem::exists(y)) {
+	if (VFS::exists(fullpath)) {
 		DWORD Mips = 1, Filter = D3DX_FILTER_NONE;
 		if (bMipmaps) Filter = D3DX_FILTER_BOX, Mips = 0;
-		if (D3DXCreateTextureFromFileEx(mgr->Dev(), fullpath, 0, 0, Mips, 0, D3DFMT_FROM_FILE, D3DPOOL_SYSTEMMEM, D3DX_DEFAULT, Filter, 0, NULL, NULL, pPre) == S_OK) {
+		if (D3DXCreateTextureFromFileEx(mgr->Dev(), VFS::realpath_ns(fullpath), 0, 0, Mips, 0, D3DFMT_FROM_FILE, D3DPOOL_SYSTEMMEM, D3DX_DEFAULT, Filter, 0, NULL, NULL, pPre) == S_OK) {
 			return true;
 		}
 	}
@@ -1125,9 +1124,9 @@ void TileManager2Base::GlobalInit (class oapi::D3D9Client *gclient)
 
 	char name[MAX_PATH];
 
-	if (gc->TexturePath("D3D9Ocean.dds", name)) D3DXCreateTextureFromFileA(pDev, name, &hOcean);
-	if (gc->TexturePath("cloud1.dds", name)) D3DXCreateTextureFromFileA(pDev, name, &hCloudMicro);
-	if (gc->TexturePath("cloud1_norm.dds", name)) D3DXCreateTextureFromFileA(pDev, name, &hCloudMicroNorm);
+	if (gc->TexturePath("D3D9Ocean.dds", name)) D3DXCreateTextureFromFileA(pDev, VFS::realpath_ns(name), &hOcean);
+	if (gc->TexturePath("cloud1.dds", name)) D3DXCreateTextureFromFileA(pDev, VFS::realpath_ns(name), &hCloudMicro);
+	if (gc->TexturePath("cloud1_norm.dds", name)) D3DXCreateTextureFromFileA(pDev, VFS::realpath_ns(name), &hCloudMicroNorm);
 }
 
 // -----------------------------------------------------------------------

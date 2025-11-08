@@ -4,11 +4,11 @@
 #define __LOG_CPP
 
 #include <string.h>
-#include <fstream>
 #include <Windows.h>
 #include <Psapi.h>
 #include "Log.h"
 #include "Orbiter.h"
+#include "VFS.h"
 
 using namespace std;
 
@@ -25,7 +25,7 @@ static LogOutFunc logOut = 0;
 void InitLog (const char *logfile, bool append)
 {
 	strcpy (logname, logfile);
-	ofstream ofs (logname, append ? ios::app : ios::out);
+	VFS::ofstream ofs (logname, append ? ios::app : ios::out);
 	ofs << "**** " << logname << endl;
 	t0 = timeGetTime();
 }
@@ -50,7 +50,7 @@ void LogOut (const char *msg, ...)
 
 void LogOutVA(const char *format, va_list ap)
 {
-	FILE *f = fopen(logname, "a+t");
+	FILE *f = VFS::fopen(logname, "a+t");
 	fprintf(f, "%010.3f: ", (timeGetTime() - t0) * 1e-3);
 	vfprintf(f, format, ap);
 	fputc('\n', f);
@@ -66,7 +66,7 @@ void LogOutFine (const char *msg, ...)
 	if (finelog) {
 		va_list ap;
 		va_start (ap, msg);
-		FILE *f = fopen (logname, "a+t");
+		FILE *f = VFS::fopen (logname, "a+t");
 		fprintf (f, "%010.3f: ", (timeGetTime() - t0) * 1e-3);
 		vfprintf (f, msg, ap);
 		fputc ('\n', f);
@@ -398,7 +398,7 @@ void tracenew (char *fname, int line)
 {
 #define TESTALLOC 2
 #if TESTALLOC == 1
-	ofstream ofs("tracenew.txt", ios::app);
+	VFS::ofstream ofs("tracenew.txt", ios::app);
 	sprintf (DBG_MSG, "T=%f, %s: %d", SimT, fname, line);
 	ofs << DBG_MSG << endl;
 	ofs.close();

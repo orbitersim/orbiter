@@ -20,11 +20,11 @@
 */
 
 
-#include <fstream>
 #include <cmath>
 #include "Vecmat.h"
 #include "PinesGrav.h"
 #include "Orbiter.h"
+#include "VFS.h"
 
 PinesGravProp::PinesGravProp(CelestialBody* celestialbody)
 {
@@ -109,7 +109,6 @@ inline void PinesGravProp::GenerateAssocLegendreMatrix(int maxDegree)
 
 int PinesGravProp::readGravModel(char* filename, int cutoff, int &actualLoadedTerms, int &maxModelTerms)
 {
-	FILE* gravModelFile = nullptr;
 	char gravFileLine[512];
 	bool isEOF = false;
 	CoeffCutoff = cutoff;
@@ -132,9 +131,9 @@ int PinesGravProp::readGravModel(char* filename, int cutoff, int &actualLoadedTe
 	C[0] = 0;	//This needs to be 0 unless you want the point-mass gravity as well.
 	S[0] = 0; 
 
-	int file_error = fopen_s(&gravModelFile, filename, "rt");
+	FILE* gravModelFile = VFS::fopen(filename, "rt");
 
-	if (file_error == 0 && gravModelFile) {
+	if (gravModelFile) {
 		while (fgets(gravFileLine, 511, gravModelFile))
 		{
 			if (feof(gravModelFile))

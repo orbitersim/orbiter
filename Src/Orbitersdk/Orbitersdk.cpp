@@ -7,7 +7,6 @@
 // ========================================================================
 
 #include <windows.h>
-#include <fstream>
 #include <stdio.h>
 
 #define DLLCLBK extern "C" __declspec(dllexport)

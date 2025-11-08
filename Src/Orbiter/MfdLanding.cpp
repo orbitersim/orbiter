@@ -158,7 +158,7 @@ void Instrument_Landing::UpdateDraw (oapi::Sketchpad *skp)
 	if      (bdir <  0.0) bdir += Pi2;
 	else if (bdir >= Pi2) bdir -= Pi2;
 	dist = adist * sp->ref->Size();
-	sprintf (cbuf, "DIST%s  DIR %03.0f°", DistStr(dist), DEG*bdir);
+	sprintf (cbuf, "DIST%s  DIR %03.0fÂ°", DistStr(dist), DEG*bdir);
 	skp->Text (x, ch*2, cbuf, strlen(cbuf));
 
 	// horizontal airspeed
@@ -289,7 +289,7 @@ void Instrument_Landing::SetSize (const Spec &spec)
 	barw = circr/8;
 }
 
-bool Instrument_Landing::ReadParams (ifstream &ifs)
+bool Instrument_Landing::ReadParams (VFS::ifstream &ifs)
 {
 	char cbuf[256], *pc;
 	if (!FindScnHeader (ifs)) return false;

@@ -16,7 +16,6 @@
 #define __CAMERA_H
 
 #include <d3d.h>
-#include <fstream>
 #include "Vecmat.h"
 #include "elevmgr.h"
 #include "CamAPI.h"

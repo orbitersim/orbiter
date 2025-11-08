@@ -15,6 +15,8 @@
 
 #include "ZTreeMgr.h"
 #include "OrbiterAPI.h"
+#include "VFS.h"
+
 
 // =======================================================================
 // File header for compressed tree files
@@ -125,7 +127,8 @@ bool ZTreeMgr::OpenArchive ()
 	const char *name[6] = { "Surf", "Mask", "Elev", "Elev_mod", "Label", "Cloud" };
 	char fname[MAX_PATH];
 	sprintf_s (fname, MAX_PATH, "%s\\Archive\\%s.tree", path, name[layer]);
-	if (fopen_s(&treef, fname, "rb")) {
+	treef = VFS::fopen(fname, "rb");
+	if (!treef) {
 		return false;
 	}
 	TreeFileHeader tfh;

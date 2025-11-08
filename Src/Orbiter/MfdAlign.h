@@ -27,7 +27,7 @@ public:
 
 protected:
 	bool GetTimingsFromSurface(double &Tan, double &Aan, double &Tdn, double &Adn, double &VSurf);
-	bool ReadParams (std::ifstream &ifs);
+	bool ReadParams (VFS::ifstream &ifs);
 	void WriteParams (std::ostream &ofs) const;
 
 private:

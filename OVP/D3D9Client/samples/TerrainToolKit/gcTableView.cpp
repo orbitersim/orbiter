@@ -11,6 +11,7 @@
 #include <CommCtrl.h>
 #include <locale>
 #include <codecvt>
+#include "VFS.h"
 
 
 list<gcPropertyTree *> g_gcPropertyTrees;
@@ -78,7 +79,7 @@ gcPropertyTree::gcPropertyTree(gcGUIApp *_pApp, HWND _hWnd, WORD _idc, DLGPROC p
 	hBM = NULL;
 	hSr = NULL;
 
-	hIcons = pCore->LoadBitmapFromFile("D3D9\\Icons18.png");
+	hIcons = pCore->LoadBitmapFromFile(VFS::realpath_ns("D3D9\\Icons18.png"));
 
 	if (!hIcons) {
 		oapiWriteLog((char*)"gcPropertyTree: FAILED to load Textures/D3D9/Icons18.png");

@@ -15,6 +15,7 @@
 #include "gcCoreAPI.h"
 #include "Orbit.h"
 #include "Reference.h"
+#include "VFS.h"
 
 #define NTEMP 5
 
@@ -119,7 +120,7 @@ DLLCLBK void ExitModule(HINSTANCE  hModule)
 Orbits::Orbits(HINSTANCE hInst) : Module(hInst), pCore(NULL), Ref(NULL), pBody(NULL)
 {
 
-	FILE *fp = fopen("Config/DrawOrbits.cfg", "rt");
+	FILE *fp = VFS::fopen("Config/DrawOrbits.cfg", "rt");
 
 	if (fp) {
 		char buf[256];

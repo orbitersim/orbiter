@@ -25,7 +25,7 @@ public:
 	void RenderDefault ();
 	void RenderCustom (MESHHANDLE hMesh, SURFHANDLE *hTex);
 	virtual void Resize (bool isVC);
-	static HUD *Create (std::ifstream &ifs, const Pane *_pane, oapi::GraphicsClient *gc);
+	static HUD *Create (VFS::ifstream &ifs, const Pane *_pane, oapi::GraphicsClient *gc);
 	void Write (std::ostream &ofs) const;
 	virtual void SelectReference () {}
 	virtual void ProcessMessage (int msg, void *data) {}
@@ -83,7 +83,7 @@ protected:
 	// from viewport centre. Used to indicate direction of offscreen markers
 
 	virtual void WriteParams (std::ostream &ofs) const = 0;
-	virtual void ReadParams (std::ifstream &ifs) {}
+	virtual void ReadParams (VFS::ifstream &ifs) {}
 
 	const Pane *pane;         // pane instance
 	oapi::GraphicsClient *gc; // client instance
@@ -139,7 +139,7 @@ protected:
 	void Display (oapi::Sketchpad *skp);
 	void UpdateMesh (int &ivtx, int &iidx);
 	void WriteParams (std::ostream &ofs) const;
-	void ReadParams (std::ifstream &ifs);
+	void ReadParams (VFS::ifstream &ifs);
 
 private:
 	const Body *ref; // orbit reference body (0 for auto)
@@ -200,7 +200,7 @@ protected:
 	void Display (oapi::Sketchpad *skp);
 	void UpdateMesh (int &ivtx, int &iidx);
 	void WriteParams (std::ostream &ofs) const;
-	void ReadParams (std::ifstream &ifs);
+	void ReadParams (VFS::ifstream &ifs);
 
 private:
 	DWORD nv;        // slaved NAV receiver

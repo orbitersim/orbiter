@@ -87,7 +87,7 @@ DLLCLBK void InitModule (HINSTANCE hDLL)
 	char cbuf[256], name[256], script[256], key[256], persist[256];
 
 	// Scan the list of script MFD modes
-	ifstream ifs (cfgfile);
+	VFS::ifstream ifs (cfgfile);
 	while (ifs.getline (cbuf, 256)) {
 		FILEHANDLE hFile = oapiOpenFile (cbuf, FILE_IN, CONFIG);
 		if (oapiReadItem_string (hFile, (char*)"Name", name) &&

@@ -10,8 +10,6 @@
 #define __CONFIG_CPP
 #define STRICT 1
 
-#include <fstream>
-#include <iomanip>
 #include <string.h>
 #include <stdio.h>
 #include "Config.h"
@@ -469,7 +467,7 @@ bool Config::Load(const char *fname)
 	Root = new char[strlen(fname)+1]; TRACENEW
 	strcpy (Root, fname);
 
-	ifstream ifs (fname);
+	VFS::ifstream ifs (fname);
 	if (!ifs) return false;
 
 	found_config_file = true;
@@ -949,7 +947,7 @@ BOOL Config::Write (const char *fname) const
 
 	if (!fname) fname = Root;
 	if (!fname) return FALSE;
-	ofstream ofs (fname);
+	VFS::ofstream ofs (fname);
 	if (!ofs) return FALSE;
 
 	ofs << "; === ORBITER Master Configuration File ===\n";
@@ -1514,7 +1512,7 @@ bool Config::GetVector (istream &is, const char *category, Vector &val)
 bool Config::GetString (const char *category, char *val)
 {
 	if (!Root) return false;
-	ifstream ifs (Root);
+	VFS::ifstream ifs (Root);
 	if (!ifs) return false;
 	return GetString (ifs, category, val);
 }
@@ -1522,7 +1520,7 @@ bool Config::GetString (const char *category, char *val)
 bool Config::GetReal (const char *category, double &val)
 {
 	if (!Root) return false;
-	ifstream ifs (Root);
+	VFS::ifstream ifs (Root);
 	if (!ifs) return false;
 	return GetReal (ifs, category, val);
 }
@@ -1530,7 +1528,7 @@ bool Config::GetReal (const char *category, double &val)
 bool Config::GetInt (const char *category, int &val)
 {
 	if (!Root) return false;
-	ifstream ifs (Root);
+	VFS::ifstream ifs (Root);
 	if (!ifs) return false;
 	return GetInt (ifs, category, val);
 }
@@ -1538,7 +1536,7 @@ bool Config::GetInt (const char *category, int &val)
 bool Config::GetSize (const char* category, size_t& val)
 {
 	if (!Root) return false;
-	ifstream ifs(Root);
+	VFS::ifstream ifs(Root);
 	if (!ifs) return false;
 	return GetSize(ifs, category, val);
 }
@@ -1546,7 +1544,7 @@ bool Config::GetSize (const char* category, size_t& val)
 bool Config::GetBool (const char *category, bool &val)
 {
 	if (!Root) return false;
-	ifstream ifs (Root);
+	VFS::ifstream ifs (Root);
 	if (!ifs) return false;
 	return GetBool (ifs, category, val);
 }
@@ -1554,7 +1552,7 @@ bool Config::GetBool (const char *category, bool &val)
 bool Config::GetVector (const char *category, Vector &val)
 {
 	if (!Root) return false;
-	ifstream ifs (Root);
+	VFS::ifstream ifs (Root);
 	if (!ifs) return false;
 	return GetVector (ifs, category, val);
 }

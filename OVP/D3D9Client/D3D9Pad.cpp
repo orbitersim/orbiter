@@ -75,7 +75,7 @@ void D3D9Pad::D3D9TechInit(D3D9Client *_gc, LPDIRECT3DDEVICE9 pDevice)
 
 
 #ifdef SKPDBG
-	if (fopen_s(&log, "Sketchpad.log", "w+")) { log = NULL; } // Failed
+	log = VFS::fopen("Sketchpad.log", "w+");
 #endif // SKPDBG
 
 
@@ -95,7 +95,7 @@ void D3D9Pad::D3D9TechInit(D3D9Client *_gc, LPDIRECT3DDEVICE9 pDevice)
 	// Create the Effect from a .fx file.
 	ID3DXBuffer* errors = 0;
 
-	HR(D3DXCreateEffectFromFileA(pDev, name, 0, 0, 0, 0, &FX, &errors));
+	HR(D3DXCreateEffectFromFileA(pDev, VFS::realpath_ns(name), 0, 0, 0, 0, &FX, &errors));
 
 	if (errors) {
 		LogErr("Effect Error: %s",(char*)errors->GetBufferPointer());
@@ -112,8 +112,8 @@ void D3D9Pad::D3D9TechInit(D3D9Client *_gc, LPDIRECT3DDEVICE9 pDevice)
 	if (Config->ShaderDebug) {
 		LPD3DXBUFFER pBuffer = NULL;
 		if (D3DXDisassembleEffect(FX, true, &pBuffer) == S_OK) {
-			FILE *fp = NULL;
-			if (!fopen_s(&fp, "Sketchpad_asm.html", "w")) {
+			FILE *fp = VFS::fopen("Sketchpad_asm.html", "w");
+			if (fp) {
 				fwrite(pBuffer->GetBufferPointer(), 1, pBuffer->GetBufferSize(), fp);
 				fclose(fp);
 			}

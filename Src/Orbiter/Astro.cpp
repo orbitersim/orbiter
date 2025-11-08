@@ -4,7 +4,6 @@
 #include <math.h>
 #include <stdio.h>
 #include <string.h>
-#include <fstream>
 #include "Astro.h"
 #include "Vecmat.h"
 
@@ -208,7 +207,7 @@ char *SciStr (double f, int precision, char prefix)
 	for (i = 0; i < len; i++) {
 		if (strbuf[i] == 'e') {
 			sscanf(strbuf+i+1, "%d", &e);
-			sprintf (strbuf+i, "·10^%d", e);
+			sprintf (strbuf+i, "Â·10^%d", e);
 		}
 	}
 	return strbuf;

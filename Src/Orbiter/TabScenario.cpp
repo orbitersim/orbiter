@@ -15,6 +15,7 @@
 #include "Help.h"
 #include "htmlctrl.h"
 #include "resource.h"
+#include "VFS.h"
 
 using namespace std;
 
@@ -257,7 +258,7 @@ void orbiter::ScenarioTab::LaunchpadShowing(bool show)
 }
 //-----------------------------------------------------------------------------
 
-void orbiter::ScenarioTab::ScanDirectory (const fs::path& path, HTREEITEM hti)
+void orbiter::ScenarioTab::ScanDirectory (const char *path, HTREEITEM hti)
 {
 	TV_INSERTSTRUCT tvis;
 	HTREEITEM ht, hts0, ht0;
@@ -271,13 +272,13 @@ void orbiter::ScenarioTab::ScanDirectory (const fs::path& path, HTREEITEM hti)
 	tvis.item.iImage = treeicon_idx[0];
 	tvis.item.iSelectedImage = treeicon_idx[0];
 
-	for (auto& entry : fs::directory_iterator(path)) {
-		if (entry.is_directory()) {
-			strcpy(cbuf, entry.path().stem().string().c_str());
+	VFS::enumerate(path, [&](const char *filename) {
+		if (VFS::is_directory(filename)) {
+			VFS::stem(filename, cbuf);
 			ht = (HTREEITEM)SendDlgItemMessage(hTab, IDC_SCN_LIST, TVM_INSERTITEM, 0, (LPARAM)&tvis);
-			ScanDirectory(entry.path(), ht);
+			ScanDirectory(filename, ht);
 		}
-	}
+	});
 
 	hts0 = (HTREEITEM)SendDlgItemMessage (hTab, IDC_SCN_LIST, TVM_GETNEXTITEM, TVGN_CHILD, (LPARAM)hti);
 	// the first subdirectory entry in this folder
@@ -287,9 +288,9 @@ void orbiter::ScenarioTab::ScanDirectory (const fs::path& path, HTREEITEM hti)
 	tvis.item.cChildren = 0;
 	tvis.item.iImage = treeicon_idx[2];
 	tvis.item.iSelectedImage = treeicon_idx[3];
-	for (auto& entry : fs::directory_iterator(path)) {
-		if (entry.is_regular_file() && entry.path().extension().string() == ".scn") {
-			strcpy(cbuf, entry.path().stem().string().c_str());
+	VFS::enumerate(path, [&](const char *filename) {
+		if(VFS::is_regular_file(filename) && VFS::has_extension(filename, "scn")) {
+			VFS::stem(filename, cbuf);
 
 			char ch[256];
 			TV_ITEM tvi = { TVIF_HANDLE | TVIF_TEXT, 0, 0, 0, ch, 256 };
@@ -308,7 +309,7 @@ void orbiter::ScenarioTab::ScanDirectory (const fs::path& path, HTREEITEM hti)
 			}
 			(HTREEITEM)SendDlgItemMessage(hTab, IDC_SCN_LIST, TVM_INSERTITEM, 0, (LPARAM)&tvis);
 		}
-	}
+	});
 }
 
 //-----------------------------------------------------------------------------
@@ -446,7 +447,7 @@ void orbiter::ScenarioTab::ScenarioChanged ()
 	const int linelen = 256;
 	bool have_info = false;
 	char cbuf[256], path[256], *pc;
-	ifstream ifs;
+	VFS::ifstream ifs;
 	scnhelp[0] = '\0';
 
 	switch (GetSelScenario (cbuf, 256)) {
@@ -569,7 +570,7 @@ int orbiter::ScenarioTab::GetSelScenario (char *scn, int len)
 
 void orbiter::ScenarioTab::SaveCurScenario ()
 {
-	ifstream ifs (pLp->App()->ScnPath (CurrentScenario), ios::in);
+	VFS::ifstream ifs (pLp->App()->ScnPath (CurrentScenario), ios::in);
 	if (ifs) {
 		DialogBoxParam (AppInstance(), MAKEINTRESOURCE(IDD_SAVESCN), LaunchpadWnd(), SaveProc, (LPARAM)this);
 	} else {
@@ -588,12 +589,12 @@ int orbiter::ScenarioTab::SaveCurScenarioAs (const char *name, char *desc, bool 
 	bool skip = false;
 	const char *path = pLp->App()->ScnPath (name);
 	if (!replace) { // check if exists
-		ifstream ifs (path, ios::in);
+		VFS::ifstream ifs (path, ios::in);
 		if (ifs) return 2;
 	}
-	ofstream ofs (path);
+	VFS::ofstream ofs (path);
 	if (!ofs) return 1;
-	ifstream ifs (pLp->App()->ScnPath (CurrentScenario));
+	VFS::ifstream ifs (pLp->App()->ScnPath (CurrentScenario));
 	if (!ifs) return 1;
 	int i, len = strlen(desc);
 	for (i = 0; i < len-1; i++)
@@ -668,18 +669,19 @@ void orbiter::ScenarioTab::ClearQSFolder()
 {
 #ifdef _WIN32
 	// SHFileOperation needs an absolute path
-	fs::path scnpath{ fs::absolute(pLp->App()->ScnPath("Quicksave")) };
-	scnpath.replace_extension(); // remove ".scn"
+	char rpath[MAX_PATH];
+	VFS::realpath(pLp->App()->ScnPath("Quicksave"), rpath);
+	rpath[strlen(rpath)-4] = '\0'; // remove ".scn"
 	// pFrom needs to be null terminated twice
-	std::string strpath = scnpath.string() + '\0';
+	rpath[strlen(rpath)-3] = '\0';
 	SHFILEOPSTRUCT op;
 	op.hwnd = LaunchpadWnd();
 	op.wFunc = FO_DELETE;
-	op.pFrom = strpath.c_str();
+	op.pFrom = rpath;
 	op.pTo = NULL;
 	op.fFlags = FOF_ALLOWUNDO;
 	if(!SHFileOperation(&op)) {
-		fs::create_directory(scnpath);
+		VFS::create_directory(rpath);
 	}
 #else
 	fs::path scnpath{ pLp->App()->ScnPath("Quicksave") };

@@ -13,9 +13,6 @@
 
 using namespace std;
 
-#include <filesystem>
-namespace fs = std::filesystem;
-
 class FileList
 {
 public:
@@ -24,19 +21,11 @@ public:
     FileList(const char *pRootPath, const bool bRecurseSubfolders, const vector<CString> &fileTypesToAccept);
     virtual ~FileList();
 
-    static bool DirectoryExists(const char *pPath)
-    {
-        std::error_code ec;
-        auto status = fs::status(pPath, ec);
-     	if(ec) return false;
-    	return fs::is_directory(status);
-    }
-
     // Scan (or rescan) file tree.
     // Returns true on succeess, or false if the root path does not exist or is not a directory.
     bool Scan()
     {
-        if (!DirectoryExists(m_rootPath))
+        if (!VFS::is_directory(m_rootPath))
             return false;
 
         Scan(m_rootPath, 0);

@@ -174,18 +174,18 @@ void Instrument_Docking::UpdateDraw (oapi::Sketchpad *skp)
 	skp->SetTextColor(draw[2][0].col);
 	skp->SetTextAlign(oapi::Sketchpad::CENTER);
 
-	skp->Text(circx, circy - (circr * 116) / 100, "0บ", 2);
+	skp->Text(circx, circy - (circr * 116) / 100, "0ยบ", 2);
 	if (scale) {
-		skp->Text(circx + circr / 2, circy+1, "2บ", 2);
-		skp->Text(circx + circr, circy+1, "4บ", 2);
-		skp->Text(circx - (circr * 54) / 100, circy - (circr * 102) / 100, "3บ", 2);
-		skp->Text(circx + (circr * 54) / 100, circy - (circr * 102) / 100, "3บ", 2);
+		skp->Text(circx + circr / 2, circy+1, "2ยบ", 2);
+		skp->Text(circx + circr, circy+1, "4ยบ", 2);
+		skp->Text(circx - (circr * 54) / 100, circy - (circr * 102) / 100, "3ยบ", 2);
+		skp->Text(circx + (circr * 54) / 100, circy - (circr * 102) / 100, "3ยบ", 2);
 	}
 	else {
-		skp->Text(circx + circr / 2, circy+1, "10บ", 3);
-		skp->Text(circx + circr, circy+1, "20บ", 3);
-		skp->Text(circx - (circr*54)/100, circy - (circr*102)/100, "30บ", 3);
-		skp->Text(circx + (circr*54)/100, circy - (circr*102)/100, "30บ", 3);
+		skp->Text(circx + circr / 2, circy+1, "10ยบ", 3);
+		skp->Text(circx + circr, circy+1, "20ยบ", 3);
+		skp->Text(circx - (circr*54)/100, circy - (circr*102)/100, "30ยบ", 3);
+		skp->Text(circx + (circr*54)/100, circy - (circr*102)/100, "30ยบ", 3);
 	}
 
 	skp->SetTextAlign(oapi::Sketchpad::LEFT);
@@ -774,7 +774,7 @@ void Instrument_Docking::SetSize (const Spec &spec)
 	bar1x = (IW*11)/12-barw;
 }
 
-bool Instrument_Docking::ReadParams (ifstream &ifs)
+bool Instrument_Docking::ReadParams (VFS::ifstream &ifs)
 {
 	char cbuf[256], *pc;
 	if (!FindScnHeader (ifs)) return false;

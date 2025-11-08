@@ -43,7 +43,7 @@ protected:
 	void ToggleTrack();
 	bool ToggleDispParam (int which);
 
-	bool ReadParams (std::ifstream &ifs);
+	bool ReadParams (VFS::ifstream &ifs);
 	void WriteParams (std::ostream &ofs) const;
 
 private:
