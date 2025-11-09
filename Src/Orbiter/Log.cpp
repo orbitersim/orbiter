@@ -21,13 +21,16 @@ static bool finelog = false;
 static DWORD t0 = 0;
 
 static LogOutFunc logOut = 0;
+static FILE *logFile;
 
 void InitLog (const char *logfile, bool append)
 {
 	strcpy (logname, logfile);
 	VFS::ofstream ofs (logname, append ? ios::app : ios::out);
 	ofs << "**** " << logname << endl;
+	ofs.close();
 	t0 = timeGetTime();
+	logFile = VFS::fopen(logname, "a+t");
 }
 
 void SetLogOutFunc(LogOutFunc func)
@@ -50,11 +53,10 @@ void LogOut (const char *msg, ...)
 
 void LogOutVA(const char *format, va_list ap)
 {
-	FILE *f = VFS::fopen(logname, "a+t");
-	fprintf(f, "%010.3f: ", (timeGetTime() - t0) * 1e-3);
-	vfprintf(f, format, ap);
-	fputc('\n', f);
-	fclose(f);
+	fprintf(logFile, "%010.3f: ", (timeGetTime() - t0) * 1e-3);
+	vfprintf(logFile, format, ap);
+	fputc('\n', logFile);
+	fflush(logFile);
 	if (logOut) {
 		vsnprintf(logs, 255, format, ap);
 		(*logOut)(logs);
@@ -66,11 +68,10 @@ void LogOutFine (const char *msg, ...)
 	if (finelog) {
 		va_list ap;
 		va_start (ap, msg);
-		FILE *f = VFS::fopen (logname, "a+t");
-		fprintf (f, "%010.3f: ", (timeGetTime() - t0) * 1e-3);
-		vfprintf (f, msg, ap);
-		fputc ('\n', f);
-		fclose (f);
+		fprintf (logFile, "%010.3f: ", (timeGetTime() - t0) * 1e-3);
+		vfprintf (logFile, msg, ap);
+		fputc ('\n', logFile);
+		fflush (logFile);
 		if (logOut) {
 			vsnprintf (logs, 255, msg, ap);
 			(*logOut)(logs);

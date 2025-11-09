@@ -125,9 +125,14 @@ namespace VFS
 		//printf("mode=%s f=%s -> %s\n",mode, path, rpath.c_str());
 		//fflush(stdout);
 		FILE *ret;
-		if (fopen_s(&ret, rpath.c_str(), mode)) return NULL;
-
-//		return ::fopen(path, mode);
+#ifdef _WIN32
+//		if (fopen_s(&ret, rpath.c_str(), mode)) return NULL;
+		// Open file without exclusive access so we can e.g.
+		// open Orbiter.log while the program is running
+		ret = _fsopen(rpath.c_str(), mode, _SH_DENYNO );
+#else
+		ret =  ::fopen(path, mode);
+#endif
 		return ret;
 	}
 
