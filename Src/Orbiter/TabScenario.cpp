@@ -716,19 +716,30 @@ void orbiter::ScenarioTab::OpenScenarioHelp ()
 DWORD WINAPI orbiter::ScenarioTab::threadWatchScnList (LPVOID pPrm)
 {
 	ScenarioTab *tab = (ScenarioTab*)pPrm;
-	HANDLE dwChangeHandle;
+	HANDLE dwChangeHandle[2];
 	DWORD dwWaitStatus;
+	DWORD nCount = 1;
 
-	dwChangeHandle = FindFirstChangeNotification (
+	dwChangeHandle[0] = FindFirstChangeNotification (
 		tab->pCfg->CfgDirPrm.ScnDir,
 		TRUE, FILE_NOTIFY_CHANGE_FILE_NAME | FILE_NOTIFY_CHANGE_DIR_NAME);
 
+	std::string writePath = VFS::GetWritePath();
+	if(!writePath.empty()) {
+		dwChangeHandle[1] = FindFirstChangeNotification (
+			writePath.c_str(),
+			TRUE, FILE_NOTIFY_CHANGE_FILE_NAME | FILE_NOTIFY_CHANGE_DIR_NAME);
+		nCount = 2;
+	}
+
+
 	while (true) {
-		dwWaitStatus = WaitForSingleObject (dwChangeHandle, INFINITE);
+		dwWaitStatus = WaitForMultipleObjects (nCount, dwChangeHandle, FALSE, INFINITE);
 		switch (dwWaitStatus) {
 			case WAIT_OBJECT_0:
+			case WAIT_OBJECT_0+1:
 				tab->RefreshList(true);
-				FindNextChangeNotification (dwChangeHandle);
+				FindNextChangeNotification (dwChangeHandle[dwWaitStatus - WAIT_OBJECT_0]);
 				break;
 		}
 	}

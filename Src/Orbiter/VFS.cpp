@@ -98,6 +98,10 @@ namespace VFS
 		delete []cbuf;
 	}
 	
+	DLLEXPORT std::string GetWritePath()
+	{
+		return s_writePath.string();
+	}
 
 	void ifstream::open(const char *path, std::ios_base::openmode mode)
 	{
@@ -182,13 +186,13 @@ namespace VFS
 
 	DLLEXPORT void *LoadModule(const char *path) {
 		std::string rpath = GetRealPath(path);
-		printf("LoadModules f=%s -> %s\n", path, rpath.c_str());
-		fflush(stdout);
+		//printf("LoadModules f=%s -> %s\n", path, rpath.c_str());
+		//fflush(stdout);
 
 		return LoadLibrary(rpath.c_str());
 	}
 
-DLLEXPORT void remove_all(const char *path)
+	DLLEXPORT void remove_all(const char *path)
 	{
 		std::string rpath = GetRealPath(path, true);
 		std::filesystem::remove_all(rpath);
