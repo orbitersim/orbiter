@@ -62,6 +62,16 @@ static const char *last_separator(const char *path)
 
 namespace VFS
 {
+	DLLEXPORT void InitVFS()
+	{
+		SetWritePath("Work");
+
+		for(auto &entry: std::filesystem::directory_iterator("Addons")) {
+			if(std::filesystem::is_directory(entry))
+				AddOverlay(entry.path().string().c_str());
+		}
+	}
+
 	DLLEXPORT void AddOverlay(const char *path)
 	{
 		s_overlays.push_back(path);
@@ -83,6 +93,7 @@ namespace VFS
 	DLLEXPORT void SetWritePath(const char *path)
 	{
 		s_writePath = path;
+		std::filesystem::create_directories(path);
 
 		char modpath[MAX_PATH];
 		strcpy(modpath, path);

@@ -180,8 +180,7 @@ INT WINAPI WinMain (HINSTANCE hInstance, HINSTANCE, LPSTR strCmdLine, INT nCmdSh
     if (ConsoleManager::IsConsoleExclusive())
         ConsoleManager::ShowConsole(false);
     
-//	VFS::AddOverlay();
-	VFS::SetWritePath("C:\\OrbWrite");
+	VFS::InitVFS();
 
     SetEnvironmentVars();
 	g_pOrbiter = new Orbiter; // application instance
@@ -985,7 +984,7 @@ HRESULT Orbiter::Render3DEnvironment ()
 		Output2DData ();
 		gclient->clbkDisplayFrame ();
 	}
-    return S_OK;
+	return S_OK;
 }
 
 //-----------------------------------------------------------------------------
