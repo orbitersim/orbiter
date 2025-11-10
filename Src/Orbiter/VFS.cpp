@@ -1,6 +1,7 @@
 #define OAPI_IMPLEMENTATION
 
 #include "VFSAPI.h"
+#include "VFS.h"
 #include <filesystem>
 #include <list>
 #include <string>
@@ -65,7 +66,7 @@ static const char *last_separator(const char *path)
 
 namespace VFS
 {
-	DLLEXPORT void InitVFS()
+	void InitVFS()
 	{
 		s_enabled = false;
 
@@ -79,7 +80,7 @@ namespace VFS
 			SetWritePath("Work");
 	}
 
-	DLLEXPORT void AddOverlay(const char *path)
+	void AddOverlay(const char *path)
 	{
 		s_overlays.push_back(path);
 
@@ -97,7 +98,7 @@ namespace VFS
 		delete []cbuf;
 	}
 
-	DLLEXPORT void SetWritePath(const char *path)
+	void SetWritePath(const char *path)
 	{
 		s_writePath = path;
 		std::filesystem::create_directories(path);

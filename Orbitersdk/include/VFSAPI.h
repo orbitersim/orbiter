@@ -20,10 +20,7 @@ namespace VFS
 	OAPIFUNC void create_directory(const char *path);
 	OAPIFUNC void remove_all(const char *);
 	OAPIFUNC void *LoadModule(const char *path);
-	OAPIFUNC void AddOverlay(const char *path);
-	OAPIFUNC void SetWritePath(const char *path);
 	OAPIFUNC std::string GetWritePath();
-	OAPIFUNC void InitVFS();
 
 	class OAPIFUNC ifstream : public std::ifstream
 	{

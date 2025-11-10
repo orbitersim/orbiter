@@ -43,6 +43,7 @@
 #include "GraphicsAPI.h"
 #include "ConsoleManager.h"
 #include "VFSAPI.h"
+#include "VFS.h"
 
 using namespace std;
 using namespace oapi;
