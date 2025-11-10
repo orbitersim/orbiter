@@ -9,12 +9,15 @@
 static std::list<std::filesystem::path> s_overlays = { "./" };
 //static std::list<std::string> s_whiteouts;
 static std::filesystem::path s_writePath;
+static bool s_enabled = false;
 
 // Get the real path of a file, given a virtual path
-// When opening a file for modification, we need to copy if to the write
+// When opening a file for modification, we need to copy it to the write
 // directory if it's not already there
 static std::string GetRealPath(const char *path, bool modify = false)
 {
+	if(!s_enabled) return path;
+
 	if(s_writePath.empty()) modify = false;
 
 	std::error_code ec;
@@ -64,12 +67,16 @@ namespace VFS
 {
 	DLLEXPORT void InitVFS()
 	{
-		SetWritePath("Work");
+		s_enabled = false;
 
 		for(auto &entry: std::filesystem::directory_iterator("Addons")) {
-			if(std::filesystem::is_directory(entry))
+			if(std::filesystem::is_directory(entry)) {
 				AddOverlay(entry.path().string().c_str());
+				s_enabled = true;
+			}
 		}
+		if(s_enabled)
+			SetWritePath("Work");
 	}
 
 	DLLEXPORT void AddOverlay(const char *path)
