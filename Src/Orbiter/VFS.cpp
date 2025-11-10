@@ -70,6 +70,8 @@ namespace VFS
 	{
 		s_enabled = false;
 
+		if(!std::filesystem::is_directory("Addons")) return;
+
 		for(auto &entry: std::filesystem::directory_iterator("Addons")) {
 			if(std::filesystem::is_directory(entry)) {
 				AddOverlay(entry.path().string().c_str());
@@ -179,9 +181,11 @@ namespace VFS
 		std::set<std::string> mergednames;
 		std::string sdir = std::string(dir) + "/";
 
-		auto wpath = s_writePath / dir;
-		for (const auto& entry : std::filesystem::directory_iterator(wpath, ec)) {
-			mergednames.insert(sdir + entry.path().filename().string());
+		if(!s_writePath.empty()) {
+			auto wpath = s_writePath / dir;
+			for (const auto& entry : std::filesystem::directory_iterator(wpath, ec)) {
+				mergednames.insert(sdir + entry.path().filename().string());
+			}
 		}
 
 		for(auto &&overlay: s_overlays) {
