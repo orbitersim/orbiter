@@ -5,7 +5,7 @@
 #include "Celbody.h"
 #include "Planet.h"
 #include "Orbiter.h"
-#include "VFS.h"
+#include "VFSAPI.h"
 
 using std::min;
 using std::max;

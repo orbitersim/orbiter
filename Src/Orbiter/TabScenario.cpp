@@ -15,7 +15,7 @@
 #include "Help.h"
 #include "htmlctrl.h"
 #include "resource.h"
-#include "VFS.h"
+#include "VFSAPI.h"
 
 using namespace std;
 

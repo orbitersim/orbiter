@@ -8,7 +8,7 @@
 #include <Psapi.h>
 #include "Log.h"
 #include "Orbiter.h"
-#include "VFS.h"
+#include "VFSAPI.h"
 
 using namespace std;
 

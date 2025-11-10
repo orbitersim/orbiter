@@ -14,7 +14,7 @@
 #include "Camera.h"
 #include "resource.h"
 #include "Uxtheme.h"
-#include "VFS.h"
+#include "VFSAPI.h"
 
 using std::min;
 using std::max;

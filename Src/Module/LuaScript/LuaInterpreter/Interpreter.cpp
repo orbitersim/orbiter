@@ -8,7 +8,7 @@
 #include "MFDAPI.h"
 #include "DrawAPI.h"
 #include "gcCoreAPI.h"
-#include "VFS.h"
+#include "VFSAPI.h"
 #include <list>
 
 using std::min;

@@ -17,7 +17,7 @@
 #include "Util.h"
 #include "resource.h"
 #include <wincodec.h>
-#include "VFS.h"
+#include "VFSAPI.h"
 
 using std::min;
 

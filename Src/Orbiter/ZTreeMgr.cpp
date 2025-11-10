@@ -4,7 +4,7 @@
 #include "ZTreeMgr.h"
 #include "zlib.h"
 #include "util.h"
-#include "VFS.h"
+#include "VFSAPI.h"
 
 // =======================================================================
 // File header for compressed tree files

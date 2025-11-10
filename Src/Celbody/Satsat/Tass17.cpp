@@ -8,7 +8,7 @@
 #include <string.h>
 #include <stdlib.h>
 #include <math.h>
-#include "VFS.h"
+#include "VFSAPI.h"
 
 using namespace std;
 

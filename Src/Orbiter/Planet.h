@@ -21,7 +21,7 @@
 #include "Nav.h"
 #include "GraphicsAPI.h"
 #include "Orbiter.h"
-#include "VFS.h"
+#include "VFSAPI.h"
 #include <functional>
 
 #define FILETYPE_MARKER 1

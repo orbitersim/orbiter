@@ -18,7 +18,7 @@
 #include "Vessel.h"
 #include "Astro.h"
 #include "Util.h"
-#include "VFS.h"
+#include "VFSAPI.h"
 
 using namespace std;
 

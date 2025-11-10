@@ -14,7 +14,7 @@
 #include <stdio.h>
 
 #include <atlstr.h>		// for CString
-#include "VFS.h"
+#include "VFSAPI.h"
 
 const int MAX_LINE_LENGTH = 1024;
 const int MAX_NAME_LENGTH = 256;

@@ -42,7 +42,7 @@
 #include "DlgCtrl.h"
 #include "GraphicsAPI.h"
 #include "ConsoleManager.h"
-#include "VFS.h"
+#include "VFSAPI.h"
 
 using namespace std;
 using namespace oapi;

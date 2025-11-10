@@ -36,7 +36,7 @@
 #include "VectorHelpers.h"
 #include "OapiExtension.h"
 #include "IProcess.h"
-#include "VFS.h"
+#include "VFSAPI.h"
 
 using namespace oapi;
 

@@ -9,7 +9,7 @@
 #include "Star.h"
 #include "Camera.h"
 #include "Log.h"
-#include "VFS.h"
+#include "VFSAPI.h"
 
 using namespace std;
 

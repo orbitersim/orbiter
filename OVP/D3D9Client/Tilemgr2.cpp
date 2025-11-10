@@ -18,7 +18,7 @@
 
 #include <stack>
 #include <io.h>
-#include "VFS.h"
+#include "VFSAPI.h"
 
 // =======================================================================
 // Externals

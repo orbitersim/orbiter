@@ -9,7 +9,7 @@
 #include "Psys.h"
 #include "Mesh.h"
 #include "Log.h"
-#include "VFS.h"
+#include "VFSAPI.h"
 
 using std::min;
 using std::max;

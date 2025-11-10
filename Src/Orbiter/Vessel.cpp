@@ -37,7 +37,7 @@
 #include "State.h"
 #include "Util.h"
 #include "elevmgr.h"
-#include "VFS.h"
+#include "VFSAPI.h"
 #include <iomanip>
 #include <stdio.h>
 #include <stdlib.h>

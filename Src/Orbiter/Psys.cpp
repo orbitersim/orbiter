@@ -14,7 +14,7 @@
 #include "Vessel.h"
 #include "SuperVessel.h"
 #include "Log.h"
-#include "VFS.h"
+#include "VFSAPI.h"
 
 using namespace std;
 

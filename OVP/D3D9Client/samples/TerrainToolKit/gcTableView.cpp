@@ -11,7 +11,7 @@
 #include <CommCtrl.h>
 #include <locale>
 #include <codecvt>
-#include "VFS.h"
+#include "VFSAPI.h"
 
 
 list<gcPropertyTree *> g_gcPropertyTrees;

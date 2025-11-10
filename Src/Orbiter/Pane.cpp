@@ -13,7 +13,7 @@
 #include "Camera.h"
 #include "D3dmath.h"
 #include "Log.h"
-#include "VFS.h"
+#include "VFSAPI.h"
 #include <assert.h>
 
 using namespace std;

@@ -16,7 +16,7 @@
 #include "Log.h"
 #include "Orbitersdk.h"
 #include "PinesGrav.h"
-#include "VFS.h"
+#include "VFSAPI.h"
 
 using namespace std;
 

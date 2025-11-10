@@ -15,7 +15,7 @@
 #include "gcCoreAPI.h"
 #include "Orbit.h"
 #include "Reference.h"
-#include "VFS.h"
+#include "VFSAPI.h"
 
 #define NTEMP 5
 

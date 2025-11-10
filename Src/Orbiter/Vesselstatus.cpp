@@ -16,7 +16,7 @@
 #include "Base.h"
 #include "Util.h"
 #include "Log.h"
-#include "VFS.h"
+#include "VFSAPI.h"
 #include <stdio.h>
 #include <stdlib.h>
 

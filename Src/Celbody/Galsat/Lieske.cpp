@@ -10,7 +10,7 @@
 #include <memory.h>
 #include <math.h>
 #include "Galsat.h"
-#include "VFS.h"
+#include "VFSAPI.h"
 
 // Global variables
 

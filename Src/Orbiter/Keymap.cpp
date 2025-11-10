@@ -3,7 +3,7 @@
 
 #include "Keymap.h"
 #include "Config.h"
-#include "VFS.h"
+#include "VFSAPI.h"
 
 #define NKEY 95
 

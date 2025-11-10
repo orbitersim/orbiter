@@ -15,7 +15,7 @@
 
 #include "ZTreeMgr.h"
 #include "OrbiterAPI.h"
-#include "VFS.h"
+#include "VFSAPI.h"
 
 
 // =======================================================================

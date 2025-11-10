@@ -11,7 +11,7 @@
 #include "Orbiter.h"
 #include "TabVideo.h"
 #include "resource.h"
-#include "VFS.h"
+#include "VFSAPI.h"
 
 using namespace std;
 

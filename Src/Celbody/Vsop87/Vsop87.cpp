@@ -2,7 +2,7 @@
 // Licensed under the MIT License
 
 #include "Vsop87.h"
-#include "VFS.h"
+#include "VFSAPI.h"
 #include <stdio.h>
 
 #define DLLCLBK extern "C" __declspec(dllexport)

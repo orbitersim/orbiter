@@ -10,7 +10,7 @@
 #include "Launchpad.h"
 #include "TabModule.h"
 #include "resource.h"
-#include "VFS.h"
+#include "VFSAPI.h"
 
 using std::max;
 

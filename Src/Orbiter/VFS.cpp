@@ -1,6 +1,6 @@
 #define OAPI_IMPLEMENTATION
 
-#include "VFS.h"
+#include "VFSAPI.h"
 #include <filesystem>
 #include <list>
 #include <string>
