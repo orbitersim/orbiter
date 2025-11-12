@@ -563,9 +563,9 @@ HINSTANCE Orbiter::LoadModule (const char *path, const char *name)
 		{
 			// Convert to absolute path, otherwise LoadLibraryEx fails with error code 87.
 			// See https://stackoverflow.com/questions/36275535/loadlibraryex-error-87-the-parameter-is-incorrect
-			sprintf(cbuf, "%s\\%s", cwd, cbuf2);
 			char rpath[MAX_PATH];
 			VFS::realpath(cbuf, rpath);
+			VFS::sprintf(cbuf2, "%s\\%s", cwd, rpath);
 			hDLL = LoadLibraryEx(rpath, NULL, LOAD_LIBRARY_SEARCH_DLL_LOAD_DIR | LOAD_LIBRARY_SEARCH_DEFAULT_DIRS);
 		}
 		else

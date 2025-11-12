@@ -37,7 +37,7 @@ int DeltaGlider::Lua_InitInterpreter (void *context)
 	lua_State *L = (lua_State*)context;
 
 	// load atmospheric autopilot
-	luaL_dofile (L, "Script\\dg\\aap.lua");
+	luaL_dofile (L, VFS::realpath_ns("Script\\dg\\aap.lua"));
 
 	return 0;
 }

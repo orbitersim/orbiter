@@ -2237,7 +2237,7 @@ DLLEXPORT void oapiSetMainInfoVisibilityMode (DWORD mode)
 
 DLLEXPORT FILEHANDLE oapiOpenFile (const char *fname, FileAccessMode mode, PathRoot root)
 {
-	char cbuf[512];
+	char cbuf[MAX_PATH];
 	switch (root) {
 	case CONFIG:
 		strcpy (cbuf, g_pOrbiter->Cfg()->ConfigPathNoext (fname));

@@ -65,7 +65,7 @@ bool VSOPOBJ::ReadData (const char *name)
 	TERM3 **ppterm, *pterm;
 
 	char cbuf[256];
-	sprintf (cbuf, "Config\\%s\\Data\\Vsop87%c.dat", name, sid);
+	VFS::sprintf (cbuf, "Config\\%s\\Data\\Vsop87%c.dat", name, sid);
 	VFS::ifstream ifs (cbuf);
 	if (!ifs) {
 		oapiWriteLogError("VSOP87 %s: Data file not found: %s", name, cbuf);

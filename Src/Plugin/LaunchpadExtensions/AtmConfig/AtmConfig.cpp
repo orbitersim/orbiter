@@ -216,7 +216,7 @@ void AtmConfig::ScanCelbodies (HWND hWnd)
 	VFS::enumerate(CelbodyDir, [&](const char *entry) {
 		if (VFS::is_directory(entry)) {
 			char atmdir[MAX_PATH];
-			sprintf(atmdir, "%s/Atmosphere", entry);
+			VFS::sprintf(atmdir, "%s/Atmosphere", entry);
 			if(VFS::is_directory(atmdir)) {
 				SendDlgItemMessage(hWnd, IDC_COMBO2, CB_ADDSTRING, 0, (LPARAM)VFS::basename(entry));
 			}

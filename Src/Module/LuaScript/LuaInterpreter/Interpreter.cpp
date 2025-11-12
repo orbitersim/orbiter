@@ -1747,7 +1747,7 @@ void Interpreter::LoadVesselStatusAPI()
 
 void Interpreter::LoadStartupScript ()
 {
-	luaL_dofile (L, "./Script/oapi_init.lua");
+	luaL_dofile (L, VFS::realpath_ns("./Script/oapi_init.lua"));
 }
 
 bool Interpreter::InitialiseVessel (lua_State *L, VESSEL *v)

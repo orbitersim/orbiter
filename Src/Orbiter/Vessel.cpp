@@ -5965,7 +5965,7 @@ bool Vessel::LoadModule (VFS::ifstream &classf)
 bool Vessel::RegisterModule (const char *dllname)
 {
 	char cbuf[256];
-	sprintf (cbuf, "Modules\\%s.dll", dllname);
+	VFS::sprintf (cbuf, "Modules\\%s.dll", dllname);
 	hMod = (HINSTANCE)VFS::LoadModule(cbuf);
 	if (!hMod)
 		return false;

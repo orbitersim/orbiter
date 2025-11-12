@@ -459,7 +459,7 @@ Planet::~Planet ()
 
 void Planet::ScanBases (char *path)
 {
-	char cbuf[256], spath[256], *pc, *cut = 0;
+	char cbuf[256], spath[MAX_PATH], *pc, *cut = 0;
 
 	// check for period limiter
 	if ((pc = strstr (path, "PERIOD")) != NULL) {
@@ -484,7 +484,7 @@ void Planet::ScanBases (char *path)
 		trim_string (path);
 	}
 
-	sprintf (spath, "%s/dummy", path);
+	VFS::sprintf (spath, "%s/dummy", path);
 	strcpy (cbuf, g_pOrbiter->ConfigPath(spath));
 	char configdir[MAX_PATH];
 	VFS::dirname(cbuf, configdir);
@@ -498,7 +498,7 @@ void Planet::ScanBases (char *path)
 				} while (!pc[0]);
 				if (!_strnicmp(pc, "BASE-V2.0", 9)) {
 					char stem[MAX_PATH];
-					sprintf(spath, "%s\\%s", path, VFS::stem(filename , stem));
+					VFS::sprintf(spath, "%s\\%s", path, VFS::stem(filename , stem));
 					Base* base = new Base(spath, this); TRACENEW
 					if (!AddBase(base))
 						delete base;
@@ -621,10 +621,9 @@ void Planet::ScanLabelLists (VFS::ifstream &cfg)
 
 void Planet::ScanLabelLegend()
 {
-	char path[256];
-	if (labelpath) strncpy (path, labelpath, 256);
-	else           sprintf (path, "%s%s/", g_pOrbiter->Cfg()->CfgDirPrm.ConfigDir, name.c_str());
-	strcat (path, "Label.cfg");
+	char path[MAX_PATH];
+	if (labelpath) VFS::sprintf (path, "%s/Label.cfg", labelpath);
+	else           VFS::sprintf (path, "%s%s/Label.cfg", g_pOrbiter->Cfg()->CfgDirPrm.ConfigDir, name.c_str());
 	VFS::ifstream ifs(path);
 	while (ifs.good()) {
 		char typestr[16], activestr[16], markerstr[16], namebuf[256], *name;

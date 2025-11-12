@@ -59,11 +59,11 @@ ElevationManager::ElevationManager (const CelestialBody *_cbody)
 
 	// Check if Elev dir exists
 	char path[MAX_PATH]; char fname[MAX_PATH];
-	sprintf(fname, "%s\\Elev", cbody->Name());
+	VFS::sprintf(fname, "%s\\Elev", cbody->Name());
 	g_pOrbiter->Cfg()->PTexPath(path, fname);
 	bDirExists = VFS::is_directory(path);
 
-	sprintf(fname, "%s\\Elev_mod", cbody->Name());
+	VFS::sprintf(fname, "%s\\Elev_mod", cbody->Name());
 	g_pOrbiter->Cfg()->PTexPath(path, fname);
 	bModExists = VFS::is_directory(path);
 }
@@ -105,7 +105,7 @@ bool ElevationManager::HasElevationTile(int lvl, int ilat, int ilng) const
 	if (mode) {
 		if (tilesource & 0x0001 && bDirExists) {
 			char fname[256], path[256];
-			sprintf(fname, "%s\\Elev\\%02d\\%06d\\%06d.elv", cbody->Name(), lvl, ilat, ilng);
+			VFS::sprintf(fname, "%s\\Elev\\%02d\\%06d\\%06d.elv", cbody->Name(), lvl, ilat, ilng);
 			g_pOrbiter->Cfg()->PTexPath(path, fname);
 			if (VFS::exists(path)) return true;
 		}
@@ -128,7 +128,7 @@ INT16 *ElevationManager::LoadElevationTile (int lvl, int ilat, int ilng, double 
 		if (tilesource & 0x0001 && bDirExists) {
 			FILE *f;
 			char fname[256], path[256];
-			sprintf (fname, "%s\\Elev\\%02d\\%06d\\%06d.elv", cbody->Name(), lvl, ilat, ilng);
+			VFS::sprintf (fname, "%s\\Elev\\%02d\\%06d\\%06d.elv", cbody->Name(), lvl, ilat, ilng);
 			g_pOrbiter->Cfg()->PTexPath(path, fname);
 			if (f = VFS::fopen(path, "rb")) {
 				elev = new INT16[ndat];
@@ -212,7 +212,7 @@ bool ElevationManager::LoadElevationTile_mod (int lvl, int ilat, int ilng, doubl
 		if (tilesource & 0x0001 && bModExists) {
 			FILE *f;
 			char fname[256], path[256];
-			sprintf (fname, "%s\\Elev_mod\\%02d\\%06d\\%06d.elv", cbody->Name(), lvl, ilat, ilng);
+			VFS::sprintf (fname, "%s\\Elev_mod\\%02d\\%06d\\%06d.elv", cbody->Name(), lvl, ilat, ilng);
 			g_pOrbiter->Cfg()->PTexPath(path, fname);
 			if (f = VFS::fopen(path, "rb")) {
 				ELEVFILEHEADER hdr;

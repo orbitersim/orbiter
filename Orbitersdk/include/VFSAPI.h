@@ -3,22 +3,77 @@
 
 #include "OrbiterAPI.h"
 #include <functional>
+#include <array>
 
 namespace VFS
 {
-	OAPIFUNC FILE *fopen(const char * path, const char *mode);
+	class bounded_path {
+	private:
+		char *m_ptr;
+		size_t m_maxlen;
+	public:
+		template< std::size_t N >
+		constexpr bounded_path(char (&arr)[N]) noexcept {
+			m_ptr = arr;
+			m_maxlen = N;
+		}
+		constexpr char *data() { return m_ptr; }
+		constexpr size_t maxlen() { return m_maxlen; }
+
+		void copy(const char *str) {
+			strncpy(m_ptr, str, m_maxlen);
+			m_ptr[m_maxlen - 1] = '\0';
+		}
+		constexpr bounded_path &operator/=(const char *path) {
+			size_t offset = 0;
+			char *ptr = m_ptr;
+			while(*ptr) {
+                offset++;
+                ptr++;
+            }
+			if(offset < m_maxlen - 1) {
+				*ptr++ = '/';
+				offset++;
+			}
+
+			while(offset < m_maxlen - 1 && *path) {
+				*ptr++ = *path++;
+				offset++;
+			}
+			*ptr = '\0';
+
+			return *this;
+		}
+	};
+	template <typename... Paths>
+	constexpr void PathConcat(bounded_path path, Paths&&... paths) {
+		for(const auto p : {std::forward<Paths>(paths)...}) {
+			path/=p;
+		}
+	}
+	inline void PathInit(bounded_path path, const char *str) {
+		path.copy(str);
+	}
+	template <typename... Args>
+	void sprintf(bounded_path path, const char *fmt, Args&&... args ) {
+		::snprintf(path.data(), path.maxlen(), fmt, args...);
+		path.data()[path.maxlen() - 1] = '\0';
+	}
+
+
+	OAPIFUNC FILE *fopen(const char *path, const char *mode);
 	OAPIFUNC bool is_directory(const char *path);
 	OAPIFUNC bool exists(const char *path);
 	OAPIFUNC void enumerate(const char *dir, std::function<void(const char *)> callback);
 	OAPIFUNC bool has_extension(const char *path, const char *ext);
-	OAPIFUNC bool is_regular_file(const char *);
+	OAPIFUNC bool is_regular_file(const char *path);
 	OAPIFUNC const char *basename(const char *path);
-	OAPIFUNC const char *dirname(const char *path, char *dst);
-	OAPIFUNC const char *stem(const char *path, char *dst);
-	OAPIFUNC const char *realpath(const char *path, char *dst);
+	OAPIFUNC const char *dirname(const char *path, bounded_path dst);
+	OAPIFUNC const char *stem(const char *path, bounded_path dst);
+	OAPIFUNC const char *realpath(const char *path, bounded_path dst);
 	OAPIFUNC const char *realpath_ns(const char *path);
 	OAPIFUNC void create_directory(const char *path);
-	OAPIFUNC void remove_all(const char *);
+	OAPIFUNC void remove_all(const char *path);
 	OAPIFUNC void *LoadModule(const char *path);
 	OAPIFUNC std::string GetWritePath();
 

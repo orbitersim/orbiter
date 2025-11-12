@@ -262,7 +262,7 @@ void orbiter::ScenarioTab::ScanDirectory (const char *path, HTREEITEM hti)
 {
 	TV_INSERTSTRUCT tvis;
 	HTREEITEM ht, hts0, ht0;
-	char cbuf[256];
+	char cbuf[MAX_PATH];
 
 	tvis.hParent = hti;
 	tvis.item.mask = TVIF_TEXT | TVIF_CHILDREN | TVIF_IMAGE | TVIF_SELECTEDIMAGE;

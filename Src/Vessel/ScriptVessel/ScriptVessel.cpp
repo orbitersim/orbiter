@@ -299,7 +299,7 @@ void ScriptVessel::clbkSetClassCaps (FILEHANDLE cfg)
 	char parent_path[MAX_PATH];
 	VFS::dirname(script, parent_path);
 	// Add the script path to the package path so that we can "require" additional files
-	sprintf(cmd, "package.path = package.path .. ';Config/Vessels/%s/?.lua'", parent_path);
+	VFS::sprintf(cmd, "package.path = package.path .. ';Config/Vessels/%s/?.lua'", parent_path);
 	oapiExecScriptCmd(hInterp, cmd);
 
 	bool strictmode = false;
@@ -311,7 +311,7 @@ void ScriptVessel::clbkSetClassCaps (FILEHANDLE cfg)
 	}
 
 	// Load the vessel script
-	sprintf (cmd, "run_global('Config/Vessels/%s')", script);
+	VFS::sprintf (cmd, "run_global('Config/Vessels/%s')", script);
 	oapiExecScriptCmd (hInterp, cmd);
 
 	// find new global functions provided by the module

@@ -717,10 +717,10 @@ void CelestialBody::RegisterModule (char *dllname)
 	char cbuf[256];
 	module = 0;                              // reset new interface
 	memset (&modIntf, 0, sizeof (modIntf));  // reset old interface
-	sprintf (cbuf, "Modules\\Celbody\\%s.dll", dllname); // try new module location
+	VFS::sprintf (cbuf, "Modules\\Celbody\\%s.dll", dllname); // try new module location
 	hMod = (HINSTANCE)VFS::LoadModule(cbuf);
 	if (!hMod) {
-		sprintf (cbuf, "Modules\\%s.dll", dllname);  // try legacy module location
+		VFS::sprintf (cbuf, "Modules\\%s.dll", dllname);  // try legacy module location
 		hMod = (HINSTANCE)VFS::LoadModule(cbuf);
 	}
 	if (!hMod) return;

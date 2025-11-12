@@ -87,14 +87,14 @@ namespace VFS
 		s_overlays.push_back(path);
 
 		char modpath[MAX_PATH];
-		strcpy(modpath, path);
-		strcat(modpath, "\\Modules");
+		PathInit(modpath, path);
+		PathConcat(modpath, "Modules");
 		char *ppath = getenv ("PATH");
 		char *cbuf = new char[strlen(ppath)+strlen(modpath)+16];
 		if (ppath) {
-			sprintf (cbuf, "PATH=%s;%s", ppath, modpath);
+			::sprintf (cbuf, "PATH=%s;%s", ppath, modpath);
 		} else {
-			sprintf (cbuf, "PATH=%s", modpath);
+			::sprintf (cbuf, "PATH=%s", modpath);
 		}
 		_putenv (cbuf);
 		delete []cbuf;
@@ -106,14 +106,14 @@ namespace VFS
 		std::filesystem::create_directories(path);
 
 		char modpath[MAX_PATH];
-		strcpy(modpath, path);
-		strcat(modpath, "\\Modules");
+		PathInit(modpath, path);
+		PathConcat(modpath, "Modules");
 		char *ppath = getenv ("PATH");
 		char *cbuf = new char[strlen(ppath)+strlen(modpath)+16];
 		if (ppath) {
-			sprintf (cbuf, "PATH=%s;%s", ppath, modpath);
+			::sprintf (cbuf, "PATH=%s;%s", ppath, modpath);
 		} else {
-			sprintf (cbuf, "PATH=%s", modpath);
+			::sprintf (cbuf, "PATH=%s", modpath);
 		}
 		_putenv (cbuf);
 		delete []cbuf;
@@ -229,30 +229,30 @@ namespace VFS
 	}
 
 
-	DLLEXPORT const char *dirname(const char *path, char *dst)
+	DLLEXPORT const char *dirname(const char *path, bounded_path dst)
 	{
-		strcpy(dst, path);
+		dst.copy(path);
 
-		char *lsep = (char *)last_separator(dst); // safe because dst is non const
+		char *lsep = (char *)last_separator(dst.data()); // safe because dst is non const
 
 		if(!lsep) {
-			lsep = dst;
+			lsep = dst.data();
 		}
 
 		*lsep = '\0';
 
-		return dst;
+		return dst.data();
 	}
 
-	DLLEXPORT const char *stem(const char *path, char *dst)
+	DLLEXPORT const char *stem(const char *path, bounded_path dst)
 	{
-		strcpy(dst, basename(path));
+		dst.copy(basename(path));
 
-		char *fext = strrchr(dst, '.');
+		char *fext = strrchr(dst.data(), '.');
 		if(fext) {
 			*fext = '\0';
 		}
-		return dst;
+		return dst.data();
 	}
 
 	DLLEXPORT bool has_extension(const char *path, const char *extension)
@@ -272,11 +272,11 @@ namespace VFS
 		return lsep + 1;
 	}
 
-	DLLEXPORT const char *realpath(const char *path, char *dst)
+	DLLEXPORT const char *realpath(const char *path, bounded_path dst)
 	{
 		std::string rpath = GetRealPath(path);
-		strcpy(dst, rpath.c_str());
-		return dst;
+		dst.copy(rpath.c_str());
+		return dst.data();
 	}
 
 	DLLEXPORT const char *realpath_ns(const char *path)

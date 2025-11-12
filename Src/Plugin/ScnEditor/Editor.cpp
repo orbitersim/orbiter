@@ -746,7 +746,7 @@ void EditorTab_New::ScanConfigDir (const char *dir, HTREEITEM hti)
 	// recursively scans a directory tree and adds to the list
 	TV_INSERTSTRUCT tvis;
 	HTREEITEM hts0, ht0;
-	char cbuf[256];
+	char cbuf[MAX_PATH];
 
 	tvis.hParent = hti;
 	tvis.item.mask = TVIF_TEXT | TVIF_CHILDREN | TVIF_IMAGE | TVIF_SELECTEDIMAGE;

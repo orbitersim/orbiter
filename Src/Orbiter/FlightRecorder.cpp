@@ -358,7 +358,7 @@ bool Vessel::FRecorder_Read (const char *scname)
 
 	for (i = strlen(scname)-1; i > 0; i--)
 		if (scname[i-1] == '\\') break;
-	sprintf (fname, "Flights/%s/%s.pos", scname+i, name.c_str());
+	VFS::sprintf (fname, "Flights/%s/%s.pos", scname+i, name.c_str());
 
 	VFS::ifstream ifs (fname);
 	if (!ifs) {
@@ -773,7 +773,7 @@ void Orbiter::FRecorder_Reset ()
 bool Orbiter::FRecorder_PrepareDir (const char *fname, bool force)
 {
 	char path[MAX_PATH];
-	sprintf(path, "Flights/%s", fname);
+	VFS::sprintf(path, "Flights/%s", fname);
 
 	// don't overwrite existing recording
 	if(VFS::is_directory(path)) {
@@ -819,7 +819,7 @@ void Orbiter::FRecorder_OpenPlayback (const char *scname)
 
 	for (i = strlen(scname)-1; i > 0; i--)
 		if (scname[i-1] == '\\') break;
-	sprintf (cbuf, "Flights\\%s\\system.dat", scname+i);
+	VFS::sprintf (cbuf, "Flights\\%s\\system.dat", scname+i);
 	if (FRsysname) delete []FRsysname;
 	FRsysname = new char[strlen(cbuf)+1]; TRACENEW
 	strcpy (FRsysname, cbuf);
