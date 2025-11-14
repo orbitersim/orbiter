@@ -1,3 +1,4 @@
+#define STRICT 1
 #define OAPI_IMPLEMENTATION
 
 #include "VFSAPI.h"
@@ -15,9 +16,12 @@ static bool s_enabled = false;
 // Get the real path of a file, given a virtual path
 // When opening a file for modification, we need to copy it to the write
 // directory if it's not already there
-static std::string GetRealPath(const char *path, bool modify = false)
+static void GetRealPath(const char *path, VFS::bounded_path dst, bool modify = false)
 {
-	if(!s_enabled) return path;
+	if(!s_enabled) {
+		dst.copy(path);
+		return;
+	}
 
 	if(s_writePath.empty()) modify = false;
 
@@ -25,7 +29,8 @@ static std::string GetRealPath(const char *path, bool modify = false)
 	// First check in the write path
 	auto wpath = s_writePath / path;
 	if(std::filesystem::exists(wpath, ec)) {
-		return wpath.string();
+		dst.copy(wpath.string().c_str());
+		return;
 	}
 
 	// The check in the different overlays
@@ -38,9 +43,11 @@ static std::string GetRealPath(const char *path, bool modify = false)
 				if(std::filesystem::is_regular_file(rpath)) {
 					std::filesystem::copy(rpath, wpath, ec);
 				}
-				return wpath.string();
+				dst.copy(wpath.string().c_str());
+				return;
 			} else {
-				return rpath.string();
+				dst.copy(rpath.string().c_str());
+				return;
 			}
 		}
 	}
@@ -49,7 +56,7 @@ static std::string GetRealPath(const char *path, bool modify = false)
 	if(modify) {
 		std::filesystem::create_directories(wpath.parent_path(), ec);
 	}
-	return wpath.string();
+	dst.copy(wpath.string().c_str());
 }
 
 static const char *last_separator(const char *path)
@@ -126,14 +133,16 @@ namespace VFS
 
 	void ifstream::open(const char *path, std::ios_base::openmode mode)
 	{
-		std::string rpath = GetRealPath(path);
+		char rpath[MAX_PATH];
+		GetRealPath(path, rpath);
 		//printf("ifstream f=%s -> %s\n", path, rpath.c_str());
 		//fflush(stdout);
 		std::ifstream::open(rpath, mode);
 	}
 	void ofstream::open(const char *path, std::ios_base::openmode mode)
 	{
-		std::string rpath = GetRealPath(path, true);
+		char rpath[MAX_PATH];
+		GetRealPath(path, rpath, true);
 		//printf("ofstream f=%s -> %s\n",path, rpath.c_str());
 		//fflush(stdout);
 		std::ofstream::open(rpath, mode);
@@ -146,7 +155,8 @@ namespace VFS
 		if(mode[0] == 'r' && (mode[1] == 'b' || mode[1] == 't' || mode[1] == '\0'))
 			modify = false;
 
-		std::string rpath = GetRealPath(path, modify);
+		char rpath[MAX_PATH];
+		GetRealPath(path, rpath, modify);
 		//printf("mode=%s f=%s -> %s\n",mode, path, rpath.c_str());
 		//fflush(stdout);
 		FILE *ret;
@@ -154,7 +164,7 @@ namespace VFS
 //		if (fopen_s(&ret, rpath.c_str(), mode)) return NULL;
 		// Open file without exclusive access so we can e.g.
 		// open Orbiter.log while the program is running
-		ret = _fsopen(rpath.c_str(), mode, _SH_DENYNO );
+		ret = _fsopen(rpath, mode, _SH_DENYNO );
 #else
 		ret =  ::fopen(path, mode);
 #endif
@@ -163,14 +173,16 @@ namespace VFS
 
 	DLLEXPORT bool is_directory(const char *path)
 	{
-		std::string rpath = GetRealPath(path);
+		char rpath[MAX_PATH];
+		GetRealPath(path, rpath);
 		std::error_code ec;
 		return std::filesystem::is_directory(rpath, ec );
 	}
 
 	DLLEXPORT bool exists(const char *path)
 	{
-		std::string rpath = GetRealPath(path);
+		char rpath[MAX_PATH];
+		GetRealPath(path, rpath);
 		std::error_code ec;
 		return std::filesystem::exists(rpath, ec );
 	}
@@ -203,27 +215,31 @@ namespace VFS
 
 	DLLEXPORT void create_directory(const char *path)
 	{
-		std::string rpath = GetRealPath(path, true);
+		char rpath[MAX_PATH];
+		GetRealPath(path, rpath, true);
 		std::filesystem::create_directory(rpath);
 	}
 
 	DLLEXPORT void *LoadModule(const char *path) {
-		std::string rpath = GetRealPath(path);
+		char rpath[MAX_PATH];
+		GetRealPath(path, rpath);
 		//printf("LoadModules f=%s -> %s\n", path, rpath.c_str());
 		//fflush(stdout);
 
-		return LoadLibrary(rpath.c_str());
+		return LoadLibrary(rpath);
 	}
 
 	DLLEXPORT void remove_all(const char *path)
 	{
-		std::string rpath = GetRealPath(path, true);
+		char rpath[MAX_PATH];
+		GetRealPath(path, rpath, true);
 		std::filesystem::remove_all(rpath);
 	}
 
 	DLLEXPORT bool is_regular_file(const char *path)
 	{
-		std::string rpath = GetRealPath(path);
+		char rpath[MAX_PATH];
+		GetRealPath(path, rpath);
 		std::error_code ec;
 		return std::filesystem::is_regular_file(rpath, ec);
 	}
@@ -274,8 +290,7 @@ namespace VFS
 
 	DLLEXPORT const char *realpath(const char *path, bounded_path dst)
 	{
-		std::string rpath = GetRealPath(path);
-		dst.copy(rpath.c_str());
+		GetRealPath(path, dst);
 		return dst.data();
 	}
 

@@ -222,7 +222,6 @@ void Interpreter::Initialise ()
 	LoadXRSoundAPI ();
 #endif
 	LoadStartupScript (); // load default initialisation script
-
 }
 
 int Interpreter::Status () const
@@ -1747,7 +1746,8 @@ void Interpreter::LoadVesselStatusAPI()
 
 void Interpreter::LoadStartupScript ()
 {
-	luaL_dofile (L, VFS::realpath_ns("./Script/oapi_init.lua"));
+	char rpath[MAX_PATH];
+	luaL_dofile (L, VFS::realpath("./Script/oapi_init.lua", rpath));
 }
 
 bool Interpreter::InitialiseVessel (lua_State *L, VESSEL *v)

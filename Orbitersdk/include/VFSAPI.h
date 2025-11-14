@@ -21,8 +21,10 @@ namespace VFS
 		constexpr size_t maxlen() { return m_maxlen; }
 
 		void copy(const char *str) {
-			strncpy(m_ptr, str, m_maxlen);
-			m_ptr[m_maxlen - 1] = '\0';
+			size_t i;
+			for (i = 0; i < m_maxlen - 1 && str[i] != '\0'; i++)
+				m_ptr[i] = str[i];
+			m_ptr[i] = '\0';
 		}
 		constexpr bounded_path &operator/=(const char *path) {
 			size_t offset = 0;
