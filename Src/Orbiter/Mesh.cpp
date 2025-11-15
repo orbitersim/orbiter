@@ -1140,13 +1140,13 @@ bool LoadMesh (const char *meshname, Mesh &mesh)
 
 // =======================================================================
 // Create a sphere patch.
-// nlng is the number of patches required to span the full 360Â° in longitude
-// nlat is the number of patches required to span the latitude range from 0 to 90Â°
+// nlng is the number of patches required to span the full 360° in longitude
+// nlat is the number of patches required to span the latitude range from 0 to 90°
 // 0 <= ilat < nlat is the actual latitude strip the patch is to cover
 // res >= 1 is the resolution of the patch (= number of internal latitude strips in the patch)
 // bseg, if given, is the number of of polygon segments on the lower base line of the patch.
 // Default is (nlat-ilat)*res. bseg is ignored for triangular patches (i.e. where upper
-// latitude is 90Â°)
+// latitude is 90°)
 
 void CreateSpherePatch (Mesh &mesh, int nlng, int nlat, int ilat, int res, int bseg, bool reduce, bool outside)
 {

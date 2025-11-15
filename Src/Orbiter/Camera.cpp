@@ -868,7 +868,7 @@ void Camera::OutputGroundObserverParams () const
 		HWND dlg = dlgmgr->IsEntry (g_pOrbiter->GetInstance(), IDD_CAMERA);
 		if (dlg) {
 			char cbuf[256];
-			sprintf (cbuf, "Lng = %+0.6fÂ°\r\nLat = %+0.6fÂ°\r\nAlt = %0.2fm\r\nPhi = %0.2fÂ°\r\nTheta = %0.2fÂ°",
+			sprintf (cbuf, "Lng = %+0.6f°\r\nLat = %+0.6f°\r\nAlt = %0.2fm\r\nPhi = %0.2f°\r\nTheta = %0.2f°",
 				DEG*go.lng, DEG*go.lat, go.alt, DEG*go.phi, DEG*go.tht);
 			SendDlgMessage (1, cbuf);
 		}
