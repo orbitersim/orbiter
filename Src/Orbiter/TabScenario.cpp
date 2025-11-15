@@ -475,10 +475,21 @@ void orbiter::ScenarioTab::ScenarioChanged ()
 					strncpy(url_ref, trim_string(buf), 255);
 					path = strtok(url_ref, ",");
 					topic = strtok(NULL, "\n");
-					if (topic)
-						sprintf(url, "its:Html\\Scenarios\\%s.chm::%s.htm", path, topic);
-					else
-						sprintf(url, "%s\\Html\\Scenarios\\%s.htm", _getcwd(url, 256), path);
+					if (topic) {
+						char rpath[MAX_PATH];
+						VFS::sprintf(cbuf, "Html\\Scenarios\\%s.chm", path);
+						VFS::realpath(cbuf, rpath);
+						int offset = 0;
+						if(rpath[0]=='.' && rpath[1] == '/') offset = 2;
+						VFS::sprintf(url, "its:%s::%s.htm", rpath + offset, topic);
+					} else {
+						char rpath[MAX_PATH];
+						VFS::sprintf(cbuf, "Html\\Scenarios\\%s.htm", path);
+						VFS::realpath(cbuf, rpath);
+						// Looks like we need an absolute path...
+						VFS::sprintf(url, "%s\\%s", _getcwd(url, 256), rpath);
+
+					}
 					DisplayHTMLPage(GetDlgItem(hTab, IDC_SCN_HTML), url);
 					have_info = true;
 				}
