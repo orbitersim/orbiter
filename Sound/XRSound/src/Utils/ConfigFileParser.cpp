@@ -38,7 +38,7 @@ ConfigFileParser::ConfigFileParser(const char *pDefaultFilename, const char *pLo
         if (m_pLogFile == nullptr)
         {
             char temp[256];
-            sprintf(temp, "Error opening log file '%s' for writing; attempting to continue", pLogFilename);
+            VFS::sprintf(temp, "Error opening log file '%s' for writing; attempting to continue", pLogFilename);
             MessageBox(nullptr, temp, "XR Framework Warning", MB_OK | MB_SETFOREGROUND);
         }
     }
@@ -69,14 +69,14 @@ bool ConfigFileParser::ParseFile(const char *pFilename)
     static char temp[256]; // reused for messages
 
     // open the config file
-    sprintf(temp, "Parsing config file '%s'", pFilename);
+    VFS::sprintf(temp, "Parsing config file '%s'", pFilename);
     WriteLog(temp);
 
     FILE *pFile = VFS::fopen(pFilename, "rt");
 
     if (pFile == nullptr)
     {
-        sprintf(temp, "ERROR: fopen failed for '%s'; GetLastError=0x%X", pFilename, GetLastError());
+        VFS::sprintf(temp, "ERROR: fopen failed for '%s'; GetLastError=0x%X", pFilename, GetLastError());
         WriteLog(temp);
         m_parseFailed = true;
         return false;       // could not open file
@@ -134,7 +134,7 @@ bool ConfigFileParser::ParseFile(const char *pFilename)
             const char *pEquals = strchr(m_buffer, '=');
             if (pEquals == nullptr)
             {
-                sprintf(temp, "Error parsing line #%d of file '%s': missing '=' character.  Line='%s'", lineNumber, pFilename, m_buffer);
+                VFS::sprintf(temp, "Error parsing line #%d of file '%s': missing '=' character.  Line='%s'", lineNumber, pFilename, m_buffer);
                 WriteLog(temp);
                 retVal = false;
                 continue;  // do NOT stop parsing; just skip to the next line
@@ -144,7 +144,7 @@ bool ConfigFileParser::ParseFile(const char *pFilename)
             const int nameLength = static_cast<int>((pEquals - m_buffer));    // # of chars in parsed name
             if (nameLength > MAX_NAME_LENGTH)
             {
-                sprintf(temp, "Error parsing line #%d of file '%s': name parameter too long (exceeds %d characters).  Line='%s'", 
+                VFS::sprintf(temp, "Error parsing line #%d of file '%s': name parameter too long (exceeds %d characters).  Line='%s'", 
                     lineNumber, pFilename, MAX_NAME_LENGTH, m_buffer);
                 WriteLog(temp);
                 retVal = false;
@@ -156,7 +156,7 @@ bool ConfigFileParser::ParseFile(const char *pFilename)
             const int valueLength = static_cast<int>(strlen(pValue));
             if (valueLength > MAX_VALUE_LENGTH)
             {
-                sprintf(temp, "Error parsing line #%d of file '%s': value parameter too long (exceeds %d characters).  Line='%s'", 
+                VFS::sprintf(temp, "Error parsing line #%d of file '%s': value parameter too long (exceeds %d characters).  Line='%s'", 
                     lineNumber, pFilename, MAX_VALUE_LENGTH, m_buffer);
                 WriteLog(temp);
                 retVal = false;
@@ -176,7 +176,7 @@ bool ConfigFileParser::ParseFile(const char *pFilename)
             // invoke the subclass to parse these values
             if (ParseLine(m_section, m_parsedName, m_parsedValue, bParsingOverrideFile) == false)
             {
-                sprintf(temp, "Name/Value error parsing line #%d of file '%s': Line='%s'.  Check the above log message for details.", 
+                VFS::sprintf(temp, "Name/Value error parsing line #%d of file '%s': Line='%s'.  Check the above log message for details.", 
                     lineNumber, pFilename, m_buffer);
                 WriteLog(temp);
                 retVal = false;
@@ -193,7 +193,7 @@ bool ConfigFileParser::ParseFile(const char *pFilename)
     fclose(pFile);
     if (retVal)     // success?
     {
-        sprintf(temp, "Successfully parsed configuration file '%s'", pFilename);
+        VFS::sprintf(temp, "Successfully parsed configuration file '%s'", pFilename);
         WriteLog(temp);
     }
     else
@@ -296,13 +296,13 @@ bool ConfigFileParser::ValidateInt(const int value, const int min, const int max
     char temp[256];
     if (value < min)
     {
-        sprintf(temp, "Integer value '%d' is below minimum value of '%d'", value, min);
+        VFS::sprintf(temp, "Integer value '%d' is below minimum value of '%d'", value, min);
         WriteLog(temp);
         retVal = false;
     }
     else if (value > max)
     {
-        sprintf(temp, "Integer value '%d' is above maximum value of '%d'", value, max);
+        VFS::sprintf(temp, "Integer value '%d' is above maximum value of '%d'", value, max);
         WriteLog(temp);
         retVal = false;
     }
@@ -318,13 +318,13 @@ bool ConfigFileParser::ValidateDouble(const double value, const double min, cons
     char temp[256];
     if (value < min)
     {
-        sprintf(temp, "Double value '%lf' is below minimum value of '%lf'", value, min);
+        VFS::sprintf(temp, "Double value '%lf' is below minimum value of '%lf'", value, min);
         WriteLog(temp);
         retVal = false;
     }
     else if (value > max)
     {
-        sprintf(temp, "Double value '%lf' is above maximum value of '%lf'", value, max);
+        VFS::sprintf(temp, "Double value '%lf' is above maximum value of '%lf'", value, max);
         WriteLog(temp);
         retVal = false;
     }
@@ -340,13 +340,13 @@ bool ConfigFileParser::ValidateFloat(const float value, const float min, const f
     char temp[256];
     if (value < min)
     {
-        sprintf(temp, "Float value '%f' is below minimum value of '%f'", value, min);
+        VFS::sprintf(temp, "Float value '%f' is below minimum value of '%f'", value, min);
         WriteLog(temp);
         retVal = false;
     }
     else if (value > max)
     {
-        sprintf(temp, "Float value '%f' is above maximum value of '%f'", value, max);
+        VFS::sprintf(temp, "Float value '%f' is above maximum value of '%f'", value, max);
         WriteLog(temp);
         retVal = false;
     }

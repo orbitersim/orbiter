@@ -10,6 +10,7 @@
 
 #include <atlstr.h>		// for CString
 #include <vector>
+#include "Orbitersdk.h"
 
 using namespace std;
 
@@ -34,10 +35,10 @@ public:
 
     // Invoked for each file or folder node found; should return true if file node should be included or folder should be
     // recursed into, or false if the node should be skipped.
-    virtual bool clbkFilterNode(const fs::directory_entry &);
+    virtual bool clbkFilterNode(const char *);
 
     // Callback invoked for non-empty file nodes that passed the clbkFilterNode check; this is here for subclasses to hook.
-    virtual void clbkProcessFile(const fs::directory_entry &);
+    virtual void clbkProcessFile(const char *);
 
     int GetScannedFileCount() const { return static_cast<int>(m_allFiles.size()); }
     bool IsEmpty() const { return m_allFiles.empty(); }

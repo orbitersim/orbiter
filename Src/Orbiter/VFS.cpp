@@ -205,6 +205,14 @@ namespace VFS
 		return std::filesystem::exists(rpath, ec );
 	}
 
+	DLLEXPORT std::uintmax_t file_size(const char *path)
+	{
+		char rpath[MAX_PATH];
+		GetRealPath(path, rpath);
+		std::error_code ec;
+		return std::filesystem::file_size(rpath, ec );
+	}
+
 	DLLEXPORT void enumerate(const char *dir, std::function<void(const char *)> callback)
 	{
 		std::error_code ec;
@@ -289,11 +297,14 @@ namespace VFS
 		return dst.data();
 	}
 
-	DLLEXPORT bool has_extension(const char *path, const char *extension)
+	DLLEXPORT bool has_extension(const char *path, const char *extension, bool casesensitive)
 	{
 		const char *fext = strrchr(path, '.');
 		if(fext) {
-			return !strcmp(fext + 1, extension);
+			if(casesensitive)
+				return !strcmp(fext + 1, extension);
+			else
+				return !stricmp(fext + 1, extension);
 		}
 		return *extension == '\0';
 	}

@@ -66,8 +66,9 @@ namespace VFS
 	OAPIFUNC FILE *fopen(const char *path, const char *mode);
 	OAPIFUNC bool is_directory(const char *path);
 	OAPIFUNC bool exists(const char *path);
+	OAPIFUNC std::uintmax_t file_size(const char *path);
 	OAPIFUNC void enumerate(const char *dir, std::function<void(const char *)> callback);
-	OAPIFUNC bool has_extension(const char *path, const char *ext);
+	OAPIFUNC bool has_extension(const char *path, const char *ext, bool casesensitive = true);
 	OAPIFUNC bool is_regular_file(const char *path);
 	OAPIFUNC const char *basename(const char *path);
 	OAPIFUNC const char *dirname(const char *path, bounded_path dst);
