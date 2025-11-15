@@ -109,7 +109,7 @@ namespace VFS
 
 	void AddOverlay(const char *path)
 	{
-		s_overlays.push_back(path);
+		s_overlays.push_front(path);
 
 		char modpath[MAX_PATH];
 		PathInit(modpath, path);
