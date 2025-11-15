@@ -158,7 +158,7 @@ void Instrument_Landing::UpdateDraw (oapi::Sketchpad *skp)
 	if      (bdir <  0.0) bdir += Pi2;
 	else if (bdir >= Pi2) bdir -= Pi2;
 	dist = adist * sp->ref->Size();
-	sprintf (cbuf, "DIST%s  DIR %03.0fÂ°", DistStr(dist), DEG*bdir);
+	sprintf (cbuf, "DIST%s  DIR %03.0f°", DistStr(dist), DEG*bdir);
 	skp->Text (x, ch*2, cbuf, strlen(cbuf));
 
 	// horizontal airspeed
