@@ -484,10 +484,11 @@ void orbiter::ScenarioTab::ScenarioChanged ()
 						VFS::sprintf(url, "its:%s::%s.htm", rpath + offset, topic);
 					} else {
 						char rpath[MAX_PATH];
+						char cwd[MAX_PATH];
 						VFS::sprintf(cbuf, "Html\\Scenarios\\%s.htm", path);
 						VFS::realpath(cbuf, rpath);
 						// Looks like we need an absolute path...
-						VFS::sprintf(url, "%s\\%s", _getcwd(url, 256), rpath);
+						VFS::sprintf(url, "%s\\%s", _getcwd(cwd, MAX_PATH), rpath);
 
 					}
 					DisplayHTMLPage(GetDlgItem(hTab, IDC_SCN_HTML), url);
