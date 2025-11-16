@@ -297,7 +297,7 @@ void ScriptVessel::clbkSetClassCaps (FILEHANDLE cfg)
 
 	oapiReadItem_string (cfg, (char*)"Script", script);
 	char parent_path[MAX_PATH];
-	VFS::dirname(script, parent_path);
+	VFS::dirname(parent_path, script);
 	// Add the script path to the package path so that we can "require" additional files
 	VFS::sprintf(cmd, "package.path = package.path .. ';Config/Vessels/%s/?.lua'", parent_path);
 	oapiExecScriptCmd(hInterp, cmd);

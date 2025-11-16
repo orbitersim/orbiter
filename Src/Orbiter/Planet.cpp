@@ -487,7 +487,7 @@ void Planet::ScanBases (char *path)
 	VFS::sprintf (spath, "%s/dummy", path);
 	strcpy (cbuf, g_pOrbiter->ConfigPath(spath));
 	char configdir[MAX_PATH];
-	VFS::dirname(cbuf, configdir);
+	VFS::dirname(configdir, cbuf);
 	VFS::enumerate(configdir, [&](const char *filename) {
 		if (VFS::has_extension(filename, "cfg")) {
 			VFS::ifstream ifs(filename);
@@ -498,7 +498,7 @@ void Planet::ScanBases (char *path)
 				} while (!pc[0]);
 				if (!_strnicmp(pc, "BASE-V2.0", 9)) {
 					char stem[MAX_PATH];
-					VFS::sprintf(spath, "%s\\%s", path, VFS::stem(filename , stem));
+					VFS::sprintf(spath, "%s\\%s", path, VFS::stem(stem, filename));
 					Base* base = new Base(spath, this); TRACENEW
 					if (!AddBase(base))
 						delete base;

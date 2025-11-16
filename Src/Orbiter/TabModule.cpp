@@ -187,7 +187,7 @@ void orbiter::ModuleTab::RefreshLists ()
 			}
 
 			char rpath[MAX_PATH];
-			HMODULE hMod = LoadLibraryEx(VFS::realpath(filename, rpath), 0, LOAD_LIBRARY_AS_DATAFILE);
+			HMODULE hMod = LoadLibraryEx(VFS::realpath(rpath, filename), 0, LOAD_LIBRARY_AS_DATAFILE);
 			if (hMod) {
 				char buf[1024];
 				// read module info string

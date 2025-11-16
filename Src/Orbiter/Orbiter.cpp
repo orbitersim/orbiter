@@ -527,7 +527,7 @@ void Orbiter::LoadModules(const std::string& path)
 	VFS::enumerate(path.c_str(), [&](const char *entry) {
 		if (VFS::has_extension(entry, "dll")) {
 			char stem[MAX_PATH];
-			LoadModule(path.c_str(), VFS::stem(entry, stem));
+			LoadModule(path.c_str(), VFS::stem(stem, entry));
 		}
 	});
 }
@@ -564,7 +564,7 @@ HINSTANCE Orbiter::LoadModule (const char *path, const char *name)
 			// Convert to absolute path, otherwise LoadLibraryEx fails with error code 87.
 			// See https://stackoverflow.com/questions/36275535/loadlibraryex-error-87-the-parameter-is-incorrect
 			char rpath[MAX_PATH];
-			VFS::realpath(cbuf, rpath);
+			VFS::realpath(rpath, cbuf);
 			VFS::sprintf(cbuf2, "%s\\%s", cwd, rpath);
 			hDLL = LoadLibraryEx(rpath, NULL, LOAD_LIBRARY_SEARCH_DLL_LOAD_DIR | LOAD_LIBRARY_SEARCH_DEFAULT_DIRS);
 		}

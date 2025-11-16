@@ -71,9 +71,9 @@ namespace VFS
 	OAPIFUNC bool has_extension(const char *path, const char *ext, bool casesensitive = true);
 	OAPIFUNC bool is_regular_file(const char *path);
 	OAPIFUNC const char *basename(const char *path);
-	OAPIFUNC const char *dirname(const char *path, bounded_path dst);
-	OAPIFUNC const char *stem(const char *path, bounded_path dst);
-	OAPIFUNC const char *realpath(const char *path, bounded_path dst, bool modify = false);
+	OAPIFUNC const char *dirname(bounded_path dst, const char *path);
+	OAPIFUNC const char *stem(bounded_path dst, const char *path);
+	OAPIFUNC const char *realpath(bounded_path dst, const char *path, bool modify = false);
 	OAPIFUNC const char *realpath_ns(const char *path, bool modify = false);
 	OAPIFUNC void create_directory(const char *path);
 	OAPIFUNC void remove_all(const char *path);

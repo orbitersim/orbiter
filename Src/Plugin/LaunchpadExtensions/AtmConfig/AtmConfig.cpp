@@ -233,7 +233,7 @@ void AtmConfig::ScanModules (const char *celbody)
 	VFS::enumerate(path, [&](const char *entry) {
 		if (VFS::has_extension(entry, "dll")) {
 			char name[MAX_PATH];
-			VFS::stem(entry, name);
+			VFS::stem(name, entry);
 
 			MODULESPEC* ms = new MODULESPEC;
 			if (module_last) module_last->next = ms;
@@ -245,9 +245,7 @@ void AtmConfig::ScanModules (const char *celbody)
 			ms->next = 0;
 
 			// get info from the module
-			char rpath[MAX_PATH];
-			VFS::realpath(entry, rpath);
-			HINSTANCE hModule = (HINSTANCE)VFS::LoadModule(rpath);
+			HINSTANCE hModule = (HINSTANCE)VFS::LoadModule(entry);
 			if (hModule) {
 				char* (*name_func)() = (char* (*)())GetProcAddress(hModule, "ModelName");
 				if (name_func) strncpy(ms->model_name, name_func(), 255);

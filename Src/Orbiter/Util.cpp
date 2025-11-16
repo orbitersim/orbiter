@@ -35,7 +35,7 @@ double rand1()
 bool MakePath (const char *fname)
 {
 	char cbuf[256];
-	VFS::dirname(fname, cbuf);
+	VFS::dirname(cbuf, fname);
 	VFS::create_directory(cbuf);
 	return true;
 }

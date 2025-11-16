@@ -274,7 +274,7 @@ void orbiter::ScenarioTab::ScanDirectory (const char *path, HTREEITEM hti)
 
 	VFS::enumerate(path, [&](const char *filename) {
 		if (VFS::is_directory(filename)) {
-			VFS::stem(filename, cbuf);
+			VFS::stem(cbuf, filename);
 			ht = (HTREEITEM)SendDlgItemMessage(hTab, IDC_SCN_LIST, TVM_INSERTITEM, 0, (LPARAM)&tvis);
 			ScanDirectory(filename, ht);
 		}
@@ -290,7 +290,7 @@ void orbiter::ScenarioTab::ScanDirectory (const char *path, HTREEITEM hti)
 	tvis.item.iSelectedImage = treeicon_idx[3];
 	VFS::enumerate(path, [&](const char *filename) {
 		if(VFS::is_regular_file(filename) && VFS::has_extension(filename, "scn")) {
-			VFS::stem(filename, cbuf);
+			VFS::stem(cbuf, filename);
 
 			char ch[256];
 			TV_ITEM tvi = { TVIF_HANDLE | TVIF_TEXT, 0, 0, 0, ch, 256 };
@@ -478,7 +478,7 @@ void orbiter::ScenarioTab::ScenarioChanged ()
 					if (topic) {
 						char rpath[MAX_PATH];
 						VFS::sprintf(cbuf, "Html\\Scenarios\\%s.chm", path);
-						VFS::realpath(cbuf, rpath);
+						VFS::realpath(rpath, cbuf);
 						int offset = 0;
 						if(rpath[0]=='.' && rpath[1] == '/') offset = 2;
 						VFS::sprintf(url, "its:%s::%s.htm", rpath + offset, topic);
@@ -486,7 +486,7 @@ void orbiter::ScenarioTab::ScenarioChanged ()
 						char rpath[MAX_PATH];
 						char cwd[MAX_PATH];
 						VFS::sprintf(cbuf, "Html\\Scenarios\\%s.htm", path);
-						VFS::realpath(cbuf, rpath);
+						VFS::realpath(rpath, cbuf);
 						// Looks like we need an absolute path...
 						VFS::sprintf(url, "%s\\%s", _getcwd(cwd, MAX_PATH), rpath);
 
@@ -679,33 +679,11 @@ INT_PTR CALLBACK orbiter::ScenarioTab::SaveProc (HWND hWnd, UINT uMsg, WPARAM wP
 //-----------------------------------------------------------------------------
 void orbiter::ScenarioTab::ClearQSFolder()
 {
-#ifdef _WIN32
-	// SHFileOperation needs an absolute path
-	char rpath[MAX_PATH];
-	VFS::realpath(pLp->App()->ScnPath("Quicksave"), rpath);
-	size_t len = strlen(rpath);
-	rpath[len-4] = '\0'; // remove ".scn"
-	// pFrom needs to be null terminated twice
-	rpath[len-3] = '\0';
-	SHFILEOPSTRUCT op;
-	op.hwnd = LaunchpadWnd();
-	op.wFunc = FO_DELETE;
-	op.pFrom = rpath;
-	op.pTo = NULL;
-	op.fFlags = FOF_ALLOWUNDO;
-	if(!SHFileOperation(&op)) {
-		VFS::create_directory(rpath);
-	}
-#else
-	fs::path scnpath{ pLp->App()->ScnPath("Quicksave") };
-	scnpath.replace_extension(); // remove ".scn"
-
-	std::error_code ec;
-	fs::remove_all(scnpath, ec);
-	if (!ec) {
-		fs::create_directory(scnpath);
-	}
-#endif
+	const char *path = pLp->App()->ScnPath("Quicksave/dummy");
+	char sdir[MAX_PATH];
+	VFS::dirname(sdir, path);
+	VFS::remove_all(sdir);
+	VFS::create_directory(sdir);
 }
 
 //-----------------------------------------------------------------------------

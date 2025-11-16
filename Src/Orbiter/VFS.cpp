@@ -259,8 +259,22 @@ namespace VFS
 	{
 		char rpath[MAX_PATH];
 		GetRealPath(path, rpath, true);
+#ifdef _WIN32
+		std::error_code ec;
+		// SHFileOperation needs an absolute path and a twice NUL terminated string
+		std::filesystem::path absPath = std::filesystem::absolute(rpath, ec);
+		std::string strpath = absPath.string() + '\0';
+		SHFILEOPSTRUCT op;
+		op.hwnd = NULL;
+		op.wFunc = FO_DELETE;
+		op.pFrom = strpath.c_str();
+		op.pTo = NULL;
+		op.fFlags = FOF_ALLOWUNDO;
+		SHFileOperation(&op);
+#else
 		std::error_code ec;
 		std::filesystem::remove_all(rpath, ec);
+#endif
 	}
 
 	DLLEXPORT bool is_regular_file(const char *path)
@@ -272,7 +286,7 @@ namespace VFS
 	}
 
 
-	DLLEXPORT const char *dirname(const char *path, bounded_path dst)
+	DLLEXPORT const char *dirname(bounded_path dst, const char *path)
 	{
 		dst.copy(path);
 
@@ -287,7 +301,7 @@ namespace VFS
 		return dst.data();
 	}
 
-	DLLEXPORT const char *stem(const char *path, bounded_path dst)
+	DLLEXPORT const char *stem(bounded_path dst, const char *path)
 	{
 		dst.copy(basename(path));
 
@@ -318,7 +332,7 @@ namespace VFS
 		return lsep + 1;
 	}
 
-	DLLEXPORT const char *realpath(const char *path, bounded_path dst, bool modify)
+	DLLEXPORT const char *realpath(bounded_path dst, const char *path, bool modify)
 	{
 		GetRealPath(path, dst, modify);
 		return dst.data();
@@ -327,7 +341,7 @@ namespace VFS
 	DLLEXPORT const char *realpath_ns(const char *path, bool modify)
 	{
 		static char rpath[MAX_PATH];
-		return realpath(path, rpath, modify);
+		return realpath(rpath, path, modify);
 	}
 
 };
@@ -374,7 +388,7 @@ public:
 			char cbuf[MAX_PATH];
 			int length = WideCharToMultiByte(CP_UTF8, 0, path.c_str(), -1, cbuf, MAX_PATH, NULL, NULL);
 			char rpath[MAX_PATH];
-			VFS::realpath(cbuf, rpath);
+			VFS::realpath(rpath, cbuf);
 
 			MultiByteToWideChar(CP_UTF8, 0, rpath, -1, localFile, MAX_PATH);
 

@@ -784,7 +784,7 @@ void EditorTab_New::ScanConfigDir (const char *dir, HTREEITEM hti)
 			}
 			if (skip) return;
 
-			VFS::stem(entry, cbuf);
+			VFS::stem(cbuf, entry);
 
 			char ch[256];
 			TV_ITEM tvi = { TVIF_HANDLE | TVIF_TEXT, 0, 0, 0, ch, 256 };

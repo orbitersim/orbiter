@@ -110,7 +110,7 @@ static int vfs_dofile(lua_State *L) {
     const char *filename = luaL_checkstring(L, 1);
     if (VFS::is_regular_file(filename)) {
 		char rpath[MAX_PATH];
-		if(luaL_loadfile(L, VFS::realpath(filename, rpath))) {
+		if(luaL_loadfile(L, VFS::realpath(rpath, filename))) {
 			lua_pushnil(L);
 			lua_pushfstring(L, "Error loading %s\n", filename);
 			return 2;
@@ -1747,7 +1747,7 @@ void Interpreter::LoadVesselStatusAPI()
 void Interpreter::LoadStartupScript ()
 {
 	char rpath[MAX_PATH];
-	luaL_dofile (L, VFS::realpath("./Script/oapi_init.lua", rpath));
+	luaL_dofile (L, VFS::realpath(rpath, "./Script/oapi_init.lua"));
 }
 
 bool Interpreter::InitialiseVessel (lua_State *L, VESSEL *v)

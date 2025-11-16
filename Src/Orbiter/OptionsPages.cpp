@@ -1908,7 +1908,7 @@ void OptionsPage_Planetarium::RescanMarkerList(HWND hPage)
 	int n = 0;
 	g_psys->ForEach(FILETYPE_MARKER, [&](const char *entry) {
 		char stem[MAX_PATH];
-		SendDlgItemMessage(hPage, IDC_OPT_PLN_MKRLIST, LB_ADDSTRING, 0, (LPARAM)VFS::stem(entry, stem));
+		SendDlgItemMessage(hPage, IDC_OPT_PLN_MKRLIST, LB_ADDSTRING, 0, (LPARAM)VFS::stem(stem, entry));
 		if (n < list.size() && list[n].active)
 			SendDlgItemMessage(hPage, IDC_OPT_PLN_MKRLIST, LB_SETSEL, TRUE, n);
 		n++;
@@ -2083,7 +2083,7 @@ void OptionsPage_Labels::UpdateFeatureList(HWND hPage)
 		n = 0;
 		planet->ForEach(FILETYPE_MARKER, [&](const char *entry) {
 				char stem[MAX_PATH];
-				SendDlgItemMessage(hPage, IDC_OPT_MKR_FEATURELIST, LB_ADDSTRING, 0, (LPARAM)VFS::stem(entry, stem));
+				SendDlgItemMessage(hPage, IDC_OPT_MKR_FEATURELIST, LB_ADDSTRING, 0, (LPARAM)VFS::stem(stem, entry));
 				if (n < nlist && list[n].active)
 					SendDlgItemMessage(hPage, IDC_OPT_MKR_FEATURELIST, LB_SETSEL, TRUE, n);
 				n++;

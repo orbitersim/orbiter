@@ -160,14 +160,14 @@ void orbiter::DefVideoTab::ScanDir(HWND hTab, const char *dir)
 	VFS::enumerate(dir, [&](const char *entry) {
 		char clientname[MAX_PATH];
 		char modulepath[MAX_PATH];
-		VFS::stem(entry, clientname);
+		VFS::stem(clientname, entry);
 		if (VFS::is_directory(entry)) {
 			VFS::sprintf(modulepath, "%s/%s/%s.dll", dir, clientname, clientname);
 			if (!VFS::exists(modulepath))
 				return;
 		}
 		else if (VFS::has_extension(entry, "dll"))
-			VFS::realpath(entry, modulepath);
+			VFS::realpath(modulepath, entry);
 		else
 			return;
 

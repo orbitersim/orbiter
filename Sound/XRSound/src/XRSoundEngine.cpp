@@ -156,7 +156,7 @@ bool XRSoundEngine::LoadWav(const int soundID, const char *pSoundFilename, const
     }
 
 	char rpath[MAX_PATH];
-	VFS::realpath(pSoundFilename, rpath);
+	VFS::realpath(rpath, pSoundFilename);
 
     // if the wav file has not changed from what is currently in the slot, do not stop it and load it: it's a no-op instead.
     bool bEnabled = true;

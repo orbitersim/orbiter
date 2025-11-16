@@ -450,7 +450,7 @@ HBITMAP GraphicsClient::ReadImageFromMemory (BYTE *pBuf, DWORD nBuf, UINT w, UIN
 HBITMAP GraphicsClient::ReadImageFromFile (const char *fname, UINT w, UINT h)
 {
 	char rpath[MAX_PATH];
-	VFS::realpath(fname, rpath);
+	VFS::realpath(rpath, fname);
 	wchar_t wcbuf[MAX_PATH];
 	mbstowcs (wcbuf, rpath, 256);
 
