@@ -196,17 +196,16 @@ public:
 	{ return m_labelList; }
 	std::vector<oapi::GraphicsClient::LABELLIST>& LabelList()
 	{ return m_labelList; }
-	void ScanLabelLists (std::ifstream &cfg, bool bScanHeaders = false);
+	void ScanLabelLists (VFS::ifstream &cfg, bool bScanHeaders = false);
 
 	void ActivatePlanetLabels(bool activate);
 
-	void ForEach(int type, std::function<void(const fs::directory_entry&)> callback) {
-		std::error_code ec;
-		for (const auto& entry : fs::directory_iterator(m_labelPath, ec)) {
-			if (entry.path().extension().string() == ".mkr") {
-				callback(entry);
+	void ForEach(int type, std::function<void(const char *filename)> callback) {
+		VFS::enumerate(m_labelPath.c_str(), [&](const char *filename) {
+			if (VFS::has_extension(filename, "mkr")) {
+				callback(filename);
 			}
-		}
+		});
 	}
 
 private:

@@ -158,7 +158,7 @@ public:
 	void RedrawArea (int idx, int event);
 	void RedrawAllAreas (int event);
 
-	static bool Read (std::ifstream &ifs);
+	static bool Read (VFS::ifstream &ifs);
 	void Write (std::ostream &ofs) const;
 
 protected:

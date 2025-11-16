@@ -54,7 +54,7 @@ int LoadOGLBitmap(const char *filename)
    int num_texture=1; //we only use one OGL texture ,so...
    
 
-   if( (file = fopen(filename, "rb"))==NULL) return (-1); 
+   if( (file = VFS::fopen(filename, "rb"))==NULL) return (-1); 
    fread(&fileheader, sizeof(fileheader), 1, file); 
    fseek(file, sizeof(fileheader), SEEK_SET);
    fread(&infoheader, sizeof(infoheader), 1, file);

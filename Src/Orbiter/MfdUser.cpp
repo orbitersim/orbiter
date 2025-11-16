@@ -92,7 +92,7 @@ void Instrument_User::UpdateDraw (HDC hDC)
 	if (hDC && mfd) mfd->Update (hDC);
 }
 
-bool Instrument_User::ReadParams (ifstream &ifs)
+bool Instrument_User::ReadParams (VFS::ifstream &ifs)
 {
 	char cbuf[256], *pc, *modestr;
 	MFDMODESPECEX *spec;

@@ -152,7 +152,7 @@ public:
 	// create instrument of the required type
 	// if restore==true then parameters are restored from static saved
 
-	static Instrument *Create (std::ifstream &ifs, Pane *_pane,
+	static Instrument *Create (VFS::ifstream &ifs, Pane *_pane,
 		INT_PTR _id, const Spec &spec, Vessel *_vessel);
 	// create instrument from stream
 
@@ -264,9 +264,9 @@ protected:
 	DWORD GetDefaultColour (DWORD colidx, DWORD intens) const;
 	// Return one of the default MFD colours.
 
-	bool FindScnHeader (std::ifstream &ifs) const;
+	bool FindScnHeader (VFS::ifstream &ifs) const;
 
-	virtual bool ReadParams (std::ifstream &ifs) = 0;
+	virtual bool ReadParams (VFS::ifstream &ifs) = 0;
 	virtual void WriteParams (std::ostream &ofs) const = 0;
 
 	void OpenSelect_CelBody (const char *title, Select::Callbk enter_cbk, DWORD flag = 0);

@@ -664,7 +664,7 @@ bool Instrument_Map::ToggleDispParam (int which)
 
 // =======================================================================
 
-bool Instrument_Map::ReadParams (std::ifstream &ifs)
+bool Instrument_Map::ReadParams (VFS::ifstream &ifs)
 {
 	char cbuf[256], cref[128] = "", ctgt[128] = "", *pc;
 	char otgt[128] = "", btgt[128] = "";

@@ -155,13 +155,16 @@ bool XRSoundEngine::LoadWav(const int soundID, const char *pSoundFilename, const
         return false;
     }
 
+	char rpath[MAX_PATH];
+	VFS::realpath(rpath, pSoundFilename);
+
     // if the wav file has not changed from what is currently in the slot, do not stop it and load it: it's a no-op instead.
     bool bEnabled = true;
     WavContext *pContext = FindWavContext(soundID);
     if (pContext)
     {
         // already have a sound in this slot
-        if (pContext->csSoundFilename.CompareNoCase(pSoundFilename) == 0)
+        if (pContext->csSoundFilename.CompareNoCase(rpath) == 0)
             return true;    // file is unchanged, so nothing to load
         bEnabled = pContext->bEnabled;   // preserve the existing bEnabled flag
 
@@ -170,18 +173,18 @@ bool XRSoundEngine::LoadWav(const int soundID, const char *pSoundFilename, const
         {
             StopWav(soundID);   // in case something is still playing
             // only the filename changes here; other fields in the WavContext do not.
-            pContext->csSoundFilename = pSoundFilename;
+            pContext->csSoundFilename = rpath;
             VERBOSE_LOG(this, "XRSoundEngine::LoadWav for global MusicFolder success: %s", static_cast<const char *>(pContext->ToStr(false)));
             return true;
         }
     }
 
     // We are loading a new or different wav file into this slot
-    WavContext context(soundID, pSoundFilename, playbackType, bEnabled);
+    WavContext context(soundID, rpath, playbackType, bEnabled);
 
     // Note: "LoadWav" doesn't actually load the sound file data into memory; however, it does verify that
     // the sound file actually exists.
-    if (!ConfigFileParser::IsFileReadable(pSoundFilename))
+    if (!ConfigFileParser::IsFileReadable(rpath))
     {
         VERBOSE_LOG(this, "XRSoundEngine::LoadWav WARNING: Unable to open sound file for %s", static_cast<const char*>(context.ToStr(false)));
         return false;

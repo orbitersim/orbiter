@@ -26,8 +26,6 @@ extern "C" {
 #include <lua/lauxlib.h>
 }
 #include "orbitersdk.h"
-#include <filesystem>
-namespace fs = std::filesystem;
 
 enum {
 	SETCLASSCAPS,
@@ -298,10 +296,10 @@ void ScriptVessel::clbkSetClassCaps (FILEHANDLE cfg)
 	auto globals = GetGlobalFunctions(L);
 
 	oapiReadItem_string (cfg, (char*)"Script", script);
-	fs::path script_path(script);
-	std::string parent_path = script_path.parent_path().u8string();
+	char parent_path[MAX_PATH];
+	VFS::dirname(parent_path, script);
 	// Add the script path to the package path so that we can "require" additional files
-	sprintf(cmd, "package.path = package.path .. ';Config/Vessels/%s/?.lua'", parent_path.c_str());
+	VFS::sprintf(cmd, "package.path = package.path .. ';Config/Vessels/%s/?.lua'", parent_path);
 	oapiExecScriptCmd(hInterp, cmd);
 
 	bool strictmode = false;
@@ -313,7 +311,7 @@ void ScriptVessel::clbkSetClassCaps (FILEHANDLE cfg)
 	}
 
 	// Load the vessel script
-	sprintf (cmd, "run_global('Config/Vessels/%s')", script);
+	VFS::sprintf (cmd, "run_global('Config/Vessels/%s')", script);
 	oapiExecScriptCmd (hInterp, cmd);
 
 	// find new global functions provided by the module

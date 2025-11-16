@@ -36,7 +36,7 @@
 #include "VectorHelpers.h"
 #include "OapiExtension.h"
 #include "IProcess.h"
-#include <filesystem>
+#include "VFSAPI.h"
 
 using namespace oapi;
 
@@ -150,7 +150,7 @@ void ProcessPlanetFlats(OBJHANDLE hPlanet)
 	{
 		auto radius = oapiGetSize(hPlanet);
 		sprintf_s(fname, ARRAYSIZE(fname), "%s\\%s", name, file.c_str());
-		auto f = fopen(fname, "r");
+		auto f = VFS::fopen(fname, "r");
 		if (f != 0)
 		{
 			while (!feof(f))
@@ -514,14 +514,12 @@ vPlanet::vPlanet (OBJHANDLE _hObj, const Scene *scene) :
 	char msg[256]; char path[MAX_PATH];
 	// Check texture directory
 	GetClient()->PlanetTexturePath(GetName(), path);
-	auto x = filesystem::status(path);
-	bHasTextures = filesystem::is_directory(x);
+	bHasTextures = VFS::is_directory(path);
 
 	// Check *.tex file
 	string tf = string(GetName()) + ".tex";
 	GetClient()->PlanetTexturePath(tf.c_str(), path);
-	auto y = filesystem::status(path);
-	bHasTextures |= filesystem::exists(y);
+	bHasTextures |= VFS::exists(path);
 	
 	if (!bHasTextures) {
 		VESSEL* vss = oapiGetFocusInterface();
@@ -589,7 +587,7 @@ void vPlanet::Activate(bool isactive)
 bool vPlanet::ParseConfig(const char* fname)
 {
 	std::string dummy;   
-	std::ifstream fs(fname);
+	VFS::ifstream fs(fname);
 
 	if (fs.fail()) {
 		LogErr("Could not open a planet configuration file '%s'", fname);
@@ -1414,7 +1412,7 @@ void vPlanet::ParseMicroTexturesFile()
 	int         idx, found = 0;
 	_MicroCfg   currCfg = { 0 };
 
-	std::ifstream fs(filename.c_str());
+	VFS::ifstream fs(filename.c_str());
 	while (std::getline(fs, line))
 	{
 		// Empty or comment line?
@@ -1565,7 +1563,7 @@ void vPlanet::LoadMicroTextures(LPDIRECT3DDEVICE9 pDev)
 			
 			// If texture is not loaded, load it
 			if (MicroTextures.find(x.file) == MicroTextures.end()) {
-				if (D3DXCreateTextureFromFileA(pDev, file_path, &x.pTex) == S_OK) {
+				if (D3DXCreateTextureFromFileA(pDev, VFS::realpath_ns(file_path), &x.pTex) == S_OK) {
 					LogAlw("Microtexture [%s] loaded", x.file);
 					MicroTextures[x.file] = x.pTex;
 				}

@@ -53,25 +53,23 @@ void FileList::Scan(const char *pPath, const int recursionLevel)
 
     // This code was broken out from XRPayloadClassData::InitializeXRPayloadClassData().
 
-    for (auto& file : fs::directory_iterator(pPath)) {
-        if (file.path().stem().c_str()[0] != '.') {
-            if (clbkFilterNode(file))
+	VFS::enumerate(pPath, [&](const char *entry) {
+        if (clbkFilterNode(entry))
+        {
+            // node should be included
+            if (VFS::is_directory(entry))
             {
-                // node should be included
-                if (file.is_directory())
-                {
-                    // this is a directory, so recurse down into it
-                    Scan(file.path().string().c_str(), recursionLevel + 1);
-                }
-                else if (file.file_size() > 0)  // it's a file node; is it not empty?
-                {
-                    // it's a file and it's not empty, so add it to our master list of nodes and invoke the callback for subclasses to hook
-                    m_allFiles.push_back(file.path().string().c_str());
-                    clbkProcessFile(file);
-                }
+                // this is a directory, so recurse down into it
+                Scan(entry, recursionLevel + 1);
+            }
+            else if (VFS::file_size(entry) > 0)  // it's a file node; is it not empty?
+            {
+                // it's a file and it's not empty, so add it to our master list of nodes and invoke the callback for subclasses to hook
+                m_allFiles.push_back(entry);
+                clbkProcessFile(entry);
             }
         }
-    }
+    });
 }
 
 // Invoked for each file or folder node found.  The default method here looks at bRecurseSubfolders (for folder nodes) and
@@ -79,25 +77,22 @@ void FileList::Scan(const char *pPath, const int recursionLevel)
 // Subclasses should override this method if they want more advanced filtering.
 //
 // Returns true if file node should be included or folder should be recursed into, or false if the node should be skipped.
-bool FileList::clbkFilterNode(const fs::directory_entry& entry)
+bool FileList::clbkFilterNode(const char *entry)
 {
-    if (entry.is_directory())
+    if (VFS::is_directory(entry))
         return m_bRecurseSubfolders;
 
     // it's a file node
     bool bAcceptFile = false;
     if (!m_fileTypesToAccept.empty())
     {
-        if (entry.path().extension().string().length() > 0)     // e.g., ".flac"
+        // see if we have a case-insensitive match for this extension in our master list
+        for (auto it = m_fileTypesToAccept.begin(); it != m_fileTypesToAccept.end(); it++)
         {
-            // see if we have a case-insensitive match for this extension in our master list
-            for (auto it = m_fileTypesToAccept.begin(); it != m_fileTypesToAccept.end(); it++)
+            if (VFS::has_extension(entry, *it, false) == 0)
             {
-                if (stricmp(entry.path().extension().string().c_str(), *it) == 0)
-                {
-                    bAcceptFile = true;
-                    break;
-                }
+                bAcceptFile = true;
+                break;
             }
         }
     }
@@ -108,7 +103,7 @@ bool FileList::clbkFilterNode(const fs::directory_entry& entry)
 }
 
 // Callback invoked for non-empty file nodes that passed the clbkFilterNode check; this is here for subclasses to hook.
-void FileList::clbkProcessFile(const fs::directory_entry& entry)
+void FileList::clbkProcessFile(const char *entry)
 {
     // no-op; this method is for subclasses to use
 }

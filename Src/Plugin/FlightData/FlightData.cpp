@@ -230,7 +230,7 @@ void oapi::FlightData::clbkPreStep(double simt, double simdt, double mjd)
 	if (syst >= m_sysT + m_DT) {
 		FILE* f = 0;
 		if (m_bLogging) {
-			f = fopen(m_sLogfile.c_str(), "at");
+			f = VFS::fopen(m_sLogfile.c_str(), "at");
 			fprintf(f, "%10.2f", simt);
 		}
 		for (auto it = m_graph.begin(); it != m_graph.end(); it++)
@@ -448,7 +448,7 @@ LONG_PTR FAR PASCAL oapi::FlightData::PaintGraph(HWND hWnd)
 
 void oapi::FlightData::WriteLogHeader(bool start)
 {
-	FILE* f = fopen(m_sLogfile.c_str(), m_bResetLog ? "wt" : "at");
+	FILE* f = VFS::fopen(m_sLogfile.c_str(), m_bResetLog ? "wt" : "at");
 	if (m_bResetLog) { // write out header
 		fprintf(f, "Orbiter Flight Data Log Record\n");
 		fprintf(f, "==============================\n");

@@ -1338,7 +1338,7 @@ void Camera::InitState (const char *scn, Body *default_target)
 
 	// read state from scenario file
 	if (scn) {
-		ifstream ifs (g_pOrbiter->ScnPath(scn));
+		VFS::ifstream ifs (g_pOrbiter->ScnPath(scn));
 		if (ifs) Read (ifs);
 	}
 	Body *newtgt = target; target = NULL;

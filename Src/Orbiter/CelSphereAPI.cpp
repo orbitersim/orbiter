@@ -9,6 +9,7 @@
 #include "Psys.h"
 #include "Mesh.h"
 #include "Log.h"
+#include "VFSAPI.h"
 
 using std::min;
 using std::max;
@@ -176,7 +177,7 @@ const std::vector<oapi::CelestialSphere::StarDataRec> oapi::CelestialSphere::Loa
 	std::vector<StarDataRec> rec;
 
 	std::string fname = m_dataDir + std::string("star.bin");
-	FILE* f = fopen(fname.c_str(), "rb");
+	FILE* f = VFS::fopen(fname.c_str(), "rb");
 	if (f) {
 		const int chunksize = 0x1000;
 		StarDataRecPacked* packBuf = new StarDataRecPacked[chunksize + 1]; // "+1": padding for avoiding reading out of bounds on packed data
@@ -306,7 +307,7 @@ const std::vector<oapi::CelestialSphere::LineDataRec> oapi::CelestialSphere::Loa
 	std::vector<LineDataRec> rec;
 	rec.resize(0x1000);
 
-	FILE* f = fopen(fname.c_str(), "rb");
+	FILE* f = VFS::fopen(fname.c_str(), "rb");
 	if (f) {
 		const int chunksize = 0x1000;
 		LineDataRecPacked* packBuf = new LineDataRecPacked[chunksize + 1]; // "+1": padding for avoiding reading out of bounds on packed data
@@ -380,7 +381,7 @@ const std::vector<oapi::GraphicsClient::ConstLabelRec> oapi::CelestialSphere::Lo
 	std::vector<GraphicsClient::ConstLabelRec> rec;
 
 	std::string fname = m_dataDir + std::string("const_labels.bin");
-	FILE* f = fopen(fname.c_str(), "rb");
+	FILE* f = VFS::fopen(fname.c_str(), "rb");
 	if (f) {
 		double pos[2];
 		char abbr[4] = "xxx";

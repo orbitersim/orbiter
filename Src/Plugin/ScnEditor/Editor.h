@@ -17,8 +17,6 @@
 #include "ScnEditorAPI.h"
 #include "Convert.h"
 #include <commctrl.h>
-#include <filesystem>
-namespace fs = std::filesystem;
 
 class ScnEditorTab;
 typedef void (*CustomButtonFunc)(OBJHANDLE);
@@ -138,7 +136,7 @@ public:
 	static INT_PTR CALLBACK DlgProc (HWND, UINT, WPARAM, LPARAM);
 
 protected:
-	void ScanConfigDir (const fs::path &dir, HTREEITEM hti);
+	void ScanConfigDir (const char *dir, HTREEITEM hti);
 	void RefreshVesselTpList ();
 	int GetSelVesselTp (char *name, int len);
 	void VesselTpChanged ();

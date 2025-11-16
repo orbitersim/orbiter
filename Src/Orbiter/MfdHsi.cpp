@@ -353,7 +353,7 @@ int Instrument_HSI::BtnMenu (const MFDBUTTONMENU **menu) const
 	return 4;
 }
 
-bool Instrument_HSI::ReadParams (ifstream &ifs)
+bool Instrument_HSI::ReadParams (VFS::ifstream &ifs)
 {
 	char cbuf[256], *pc;
 	if (!FindScnHeader (ifs)) return false;

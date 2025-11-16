@@ -207,7 +207,7 @@ public:
 
 	// Flight recorder
 	char *FRsysname;             // system event playback name
-	std::ifstream *FRsys_stream; // system event playback file
+	VFS::ifstream *FRsys_stream; // system event playback file
 	double frec_sys_simt;        // system event timer
 	PlaybackEditor *FReditor;    // playback editor instance
 	void ToggleRecorder (bool force = false, bool append = false);

@@ -10,7 +10,6 @@
 #define __NAV_H
 
 #include <windows.h>
-#include <fstream>
 #include "Vessel.h"
 
 #define NAV_RADIO_FREQ_MIN 108.0
@@ -158,7 +157,7 @@ public:
 	DWORD nNav() const { return nnav; }
 	inline const Nav *GetNav (DWORD i) const { return nav[i]; }
 	inline Nav **GetNavlist () { return nav; }
-	DWORD Read (std::ifstream &ifs, const Planet *planet = NULL, bool append = false);
+	DWORD Read (VFS::ifstream &ifs, const Planet *planet = NULL, bool append = false);
 	
 private:
 	DWORD nnav;   // number of transmitters

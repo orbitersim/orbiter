@@ -593,7 +593,7 @@ int Instrument_OPlaneAlign::ProcessMessage (int msg, void *data)
 	return 0;
 }
 
-bool Instrument_OPlaneAlign::ReadParams (ifstream &ifs)
+bool Instrument_OPlaneAlign::ReadParams (VFS::ifstream &ifs)
 {
 	if (!FindScnHeader (ifs)) return false;
 	char cbuf[256], cref[128] = "", ctgt[128] = "", *pc;

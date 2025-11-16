@@ -182,7 +182,7 @@ bool MatMgr::LoadConfiguration(bool bAppend)
 
 	if (file.IsInvalid()) {
 		sprintf_s(path, 256, "%sGC\\%s.cfg", cfgdir, classname);
-		fopen_s(&file.pFile, path, "r");	
+		file.pFile = VFS::fopen(path, "r");	
 	}
 
 	if (file.IsInvalid()) return true;
@@ -349,7 +349,7 @@ bool MatMgr::SaveConfiguration()
 	// Load them before overwriting the file
 	LoadConfiguration(true);
 
-	fopen_s(&file.pFile, path, "w");
+	file.pFile = VFS::fopen(path, "w");
 
 	if (file.IsInvalid()) {
 		LogErr("Failed to write a file");
@@ -415,7 +415,7 @@ bool MatMgr::LoadCameraConfig()
 	AutoFile file;
 
 	sprintf_s(path, 256, "%sGC\\%s_ecam.cfg", cfgdir, classname);
-	fopen_s(&file.pFile, path, "r");	
+	file.pFile = VFS::fopen(path, "r");
 	
 	if (file.IsInvalid()) return true;
 

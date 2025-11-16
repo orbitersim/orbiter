@@ -549,7 +549,7 @@ void Panel2D::RedrawAllAreas (int event)
 		RedrawArea (i, event);
 }
 
-bool Panel2D::Read (ifstream &ifs)
+bool Panel2D::Read (VFS::ifstream &ifs)
 {
 	if (!FindLine (ifs, "BEGIN_PANEL")) return false;
 	// read panel parameters

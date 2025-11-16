@@ -75,7 +75,7 @@ ImageProcessing::ImageProcessing(LPDIRECT3DDEVICE9 pDev, const char *_file, cons
 
 	// Create a database of defines ----------------------------------------------------------------
 	std::string line;
-	std::ifstream fs(_file);
+	VFS::ifstream fs(_file);
 	while (std::getline(fs, line)) {
 		if (!line.length() || line.find("//") == 0) continue;
 		if (line.find("#define") == 0) def.push_front(line.substr(line.find("#define") + 8));

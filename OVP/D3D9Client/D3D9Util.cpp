@@ -1087,7 +1087,7 @@ LPDIRECT3DPIXELSHADER9 CompilePixelShader(LPDIRECT3DDEVICE9 pDev, const char *fi
 		}
 	}
 
-	HR(D3DXCompileShaderFromFileA(file, macro, NULL, function, "ps_3_0", flags, &pCode, &pErrors, pConst));
+	HR(D3DXCompileShaderFromFileA(VFS::realpath_ns(file), macro, NULL, function, "ps_3_0", flags, &pCode, &pErrors, pConst));
 
 	if (pErrors) {
 		LogErr("Compiling a Shader [%s] function [%s] Failed:\n %s", file, function, (char*)pErrors->GetBufferPointer());
@@ -1125,10 +1125,11 @@ LPDIRECT3DPIXELSHADER9 CompilePixelShader(LPDIRECT3DDEVICE9 pDev, const char *fi
 	if (bDisassemble && pCode) {
 		LPD3DXBUFFER pBuffer = NULL;
 		if (D3DXDisassembleShader((DWORD*)pCode->GetBufferPointer(), true, NULL, &pBuffer) == S_OK) {
-			FILE *fp = NULL;
 			char name[256];
 			sprintf_s(name, 256, "%s_%s_asm.html", RemovePath(file), function);
-			if (!fopen_s(&fp, name, "w")) {
+			FILE *fp = VFS::fopen(name, "w");
+
+			if (fp) {
 				fwrite(pBuffer->GetBufferPointer(), 1, pBuffer->GetBufferSize(), fp);
 				fclose(fp);
 			}
@@ -1222,7 +1223,7 @@ LPDIRECT3DVERTEXSHADER9 CompileVertexShader(LPDIRECT3DDEVICE9 pDev, const char *
 
 	LogAlw("Compiling a Shader [%s] function [%s]...", file, function);
 
-	HR(D3DXCompileShaderFromFileA(file, macro, NULL, function, "vs_3_0", flags, &pCode, &pErrors, pConst));
+	HR(D3DXCompileShaderFromFileA(VFS::realpath_ns(file), macro, NULL, function, "vs_3_0", flags, &pCode, &pErrors, pConst));
 
 	if (pErrors) {
 		LogErr("Compiling a Shader [%s] function [%s] Failed:\n %s", file, function, (char*)pErrors->GetBufferPointer());
@@ -1553,9 +1554,9 @@ int LoadPlanetTextures(const char* fname, LPDIRECT3DTEXTURE9* ppdds, DWORD flags
 
 	if (g_client->TexturePath(fname, path)) {
 
-		FILE* f;
+		FILE* f = VFS::fopen(path, "rb");
 
-		if (fopen_s(&f, path, "rb")) return 0;
+		if (!f) return 0;
 
 		int ntex = 0;
 		char* buffer, * location;

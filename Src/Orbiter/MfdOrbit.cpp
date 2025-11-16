@@ -497,7 +497,7 @@ void Instrument_Orbit::SetSize (const Spec &spec)
 	ICNTY = spec.h/2;
 }
 
-bool Instrument_Orbit::ReadParams (ifstream &ifs)
+bool Instrument_Orbit::ReadParams (VFS::ifstream &ifs)
 {
 	char cbuf[256], *pc;
 	char cref[128] = "", ctgt[128] = "", cprj[128] = "";

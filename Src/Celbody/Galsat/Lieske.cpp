@@ -10,6 +10,7 @@
 #include <memory.h>
 #include <math.h>
 #include "Galsat.h"
+#include "VFSAPI.h"
 
 // Global variables
 
@@ -717,7 +718,7 @@ int cd2com (const char *fname)
 /* common blocks /ebblok/ /trmblk/ /angblk/ /theory/ */
 
     int i;
-    FILE *fdat = fopen(fname, "rt");
+    FILE *fdat = VFS::fopen(fname, "rt");
 
     if (fdat) {
         /* read ebblok */

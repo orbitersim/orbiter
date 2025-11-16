@@ -21,9 +21,8 @@
 #include "Nav.h"
 #include "GraphicsAPI.h"
 #include "Orbiter.h"
+#include "VFSAPI.h"
 #include <functional>
-#include <filesystem>
-namespace fs = std::filesystem;
 
 #define FILETYPE_MARKER 1
 
@@ -184,23 +183,22 @@ public:
 	TileManager2<SurfTile> *SurfMgr2() const { return smgr2; }
 	ElevationManager *ElevMgr() const { return emgr; }
 	TileManager2<CloudTile> *CloudMgr2() const { return cmgr2; }
-	void ForEach(int type, std::function<void(const fs::directory_entry&)> callback) {
+	void ForEach(int type, std::function<void(const char *)> callback) {
 		extern Orbiter* g_pOrbiter;
-		fs::path path;
-		std::string ext;
+		char path[MAX_PATH];
+		char ext[4] = {'\0'};
 		switch (type) {
 		case FILETYPE_MARKER:
-			ext = ".mkr";
-			if (labelpath) path = labelpath;
-			else           path = fs::path(g_pOrbiter->Cfg()->CfgDirPrm.ConfigDir) / name / "Marker";
+			strcpy(ext, "mkr");
+			if (labelpath) strcpy(path, labelpath);
+			else           sprintf(path, "%s/%s/%s/", g_pOrbiter->Cfg()->CfgDirPrm.ConfigDir, name.c_str(), "Marker");
 			break;
 		}
-		std::error_code ec;
-		for (const auto& entry : fs::directory_iterator(path, ec)) {
-			if (entry.path().extension().string() == ext) {
-				callback(entry);
+		VFS::enumerate(path, [&](const char *filename) {
+			if (VFS::has_extension(filename, ext)) {
+				callback(filename);
 			}
-		}
+		});
 	}
 
 	//USERLABELSPEC const *GetUserLabel (int idx) const { return userlabel+idx; }
@@ -214,7 +212,7 @@ public:
 	//	bool active;
 	//};
 	oapi::GraphicsClient::LABELLIST *LabelList (int *nlist = 0) const { if (nlist) *nlist = nlabellist; return labellist; }
-	void ScanLabelLists (std::ifstream &cfg);
+	void ScanLabelLists (VFS::ifstream &cfg);
 	// read surface label lists as defined in config file
 
 	void ScanLabelLegend();

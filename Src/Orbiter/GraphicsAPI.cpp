@@ -17,8 +17,7 @@
 #include "Util.h"
 #include "resource.h"
 #include <wincodec.h>
-#include <filesystem>
-namespace fs = std::filesystem;
+#include "VFSAPI.h"
 
 using std::min;
 
@@ -180,13 +179,13 @@ bool GraphicsClient::TexturePath (const char *fname, char *path) const
 	// first try htex directory
 	strcpy (path, g_pOrbiter->Cfg()->CfgDirPrm.HightexDir);
 	strcat (path, fname);
-	if (fs::exists(path)) return true;
+	if (VFS::exists(path)) return true;
 
 	// try tex directory
 	strcpy (path, g_pOrbiter->Cfg()->CfgDirPrm.TextureDir);
 	strcat (path, fname);
 
-	if (fs::exists(path)) return true;
+	if (VFS::exists(path)) return true;
 
 	return false;
 }
@@ -450,8 +449,10 @@ HBITMAP GraphicsClient::ReadImageFromMemory (BYTE *pBuf, DWORD nBuf, UINT w, UIN
 
 HBITMAP GraphicsClient::ReadImageFromFile (const char *fname, UINT w, UINT h)
 {
-	wchar_t wcbuf[256];
-	mbstowcs (wcbuf, fname, 256);
+	char rpath[MAX_PATH];
+	VFS::realpath(rpath, fname);
+	wchar_t wcbuf[MAX_PATH];
+	mbstowcs (wcbuf, rpath, 256);
 
 	IWICBitmapDecoder *piDecoder = NULL;
 	m_pIWICFactory->CreateDecoderFromFilename (wcbuf, NULL, GENERIC_READ, WICDecodeMetadataCacheOnDemand, &piDecoder);
@@ -497,11 +498,11 @@ bool GraphicsClient::WriteImageDataToFile (const ImageData &data,
 		return false;
 	UINT bufsize = data.stride * data.height;
 
-	wchar_t wcbuf[256];
-	char cbuf[256];
+	wchar_t wcbuf[MAX_PATH];
+	char cbuf[MAX_PATH];
 	strcpy (cbuf, fname);
 	strcat (cbuf, extension[fmt]);
-	mbstowcs (wcbuf, cbuf, 256);
+	mbstowcs (wcbuf, VFS::realpath_ns(cbuf), 256);
 
 	IWICStream *piStream = NULL;
 	IWICBitmapEncoder *piEncoder = NULL;

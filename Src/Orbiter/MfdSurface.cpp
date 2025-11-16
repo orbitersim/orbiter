@@ -988,7 +988,7 @@ void Instrument_Surface::OptionChanged(DWORD cat, DWORD item)
 	}
 }
 
-bool Instrument_Surface::ReadParams (ifstream &ifs)
+bool Instrument_Surface::ReadParams (VFS::ifstream &ifs)
 {
 	char cbuf[256], *pc;
 	int n = 0;

@@ -6,7 +6,6 @@
 #include <stdio.h>
 #include <io.h>
 #include <time.h>
-#include <fstream>
 #include "Uxtheme.h"
 #include <commctrl.h>
 #include "Resource.h"

@@ -774,7 +774,7 @@ void Instrument_Docking::SetSize (const Spec &spec)
 	bar1x = (IW*11)/12-barw;
 }
 
-bool Instrument_Docking::ReadParams (ifstream &ifs)
+bool Instrument_Docking::ReadParams (VFS::ifstream &ifs)
 {
 	char cbuf[256], *pc;
 	if (!FindScnHeader (ifs)) return false;

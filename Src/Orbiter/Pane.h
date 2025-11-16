@@ -179,7 +179,7 @@ public:
 	double SetMFDRefreshIntervalMultiplier (int id, double multiplier);
 	// modify the refresh interval of an MFD
 
-	bool OpenMFD (INT_PTR id, int type, std::ifstream *ifs = 0);
+	bool OpenMFD (INT_PTR id, int type, VFS::ifstream *ifs = 0);
 	// open specified instrument as left/right MFD. Returns true if MFD mode has changed
 	// If scenario stream is provided, parameters are read from this stream
 
@@ -253,7 +253,7 @@ public:
 	// return global direction corresponding to screen coordinate x,y
 
 	void InitState (const char *scn);
-	bool Read (std::ifstream &ifs);
+	bool Read (VFS::ifstream &ifs);
 	void Write (std::ostream &ofs) const;
 
 	int f1W, f1H;  // Font1 character size (Courier)

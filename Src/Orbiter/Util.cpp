@@ -35,18 +35,9 @@ double rand1()
 bool MakePath (const char *fname)
 {
 	char cbuf[256];
-	int i, len = strlen(fname);
-	for (i = len; i > 0; i--)
-		if (fname[i-1] == '\\') break;
-	if (!i) return false;
-	if (fname[0] != '\\' && fname[1] != ':') {
-		GetCurrentDirectory (256, cbuf);
-		len = strlen(cbuf);
-		cbuf[len++] = '\\';
-	} else len = 0;
-	strncpy_s (cbuf+len, 256-len, fname, i);
-	int res = SHCreateDirectoryEx (NULL, cbuf, NULL);
-	return res == ERROR_SUCCESS;
+	VFS::dirname(cbuf, fname);
+	VFS::create_directory(cbuf);
+	return true;
 }
 
 bool iequal(const std::string& s1, const std::string& s2)

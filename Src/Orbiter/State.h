@@ -9,7 +9,6 @@
 #ifndef __STATE_H
 #define __STATE_H
 
-#include <iostream>
 #include <fstream>
 #include <string>
 

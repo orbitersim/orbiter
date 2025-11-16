@@ -13,8 +13,6 @@
 //#include <d3d.h>
 #include <windows.h>
 #include "Vecmat.h"
-#include <iostream>
-#include <fstream>
 #include <list>
 #include "GraphicsAPI.h"
 

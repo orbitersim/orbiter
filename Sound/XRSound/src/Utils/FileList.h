@@ -10,11 +10,9 @@
 
 #include <atlstr.h>		// for CString
 #include <vector>
+#include "Orbitersdk.h"
 
 using namespace std;
-
-#include <filesystem>
-namespace fs = std::filesystem;
 
 class FileList
 {
@@ -24,19 +22,11 @@ public:
     FileList(const char *pRootPath, const bool bRecurseSubfolders, const vector<CString> &fileTypesToAccept);
     virtual ~FileList();
 
-    static bool DirectoryExists(const char *pPath)
-    {
-        std::error_code ec;
-        auto status = fs::status(pPath, ec);
-     	if(ec) return false;
-    	return fs::is_directory(status);
-    }
-
     // Scan (or rescan) file tree.
     // Returns true on succeess, or false if the root path does not exist or is not a directory.
     bool Scan()
     {
-        if (!DirectoryExists(m_rootPath))
+        if (!VFS::is_directory(m_rootPath))
             return false;
 
         Scan(m_rootPath, 0);
@@ -45,10 +35,10 @@ public:
 
     // Invoked for each file or folder node found; should return true if file node should be included or folder should be
     // recursed into, or false if the node should be skipped.
-    virtual bool clbkFilterNode(const fs::directory_entry &);
+    virtual bool clbkFilterNode(const char *);
 
     // Callback invoked for non-empty file nodes that passed the clbkFilterNode check; this is here for subclasses to hook.
-    virtual void clbkProcessFile(const fs::directory_entry &);
+    virtual void clbkProcessFile(const char *);
 
     int GetScannedFileCount() const { return static_cast<int>(m_allFiles.size()); }
     bool IsEmpty() const { return m_allFiles.empty(); }

@@ -16,6 +16,7 @@
 #include "Log.h"
 #include "Orbitersdk.h"
 #include "PinesGrav.h"
+#include "VFSAPI.h"
 
 using namespace std;
 
@@ -48,7 +49,7 @@ CelestialBody::CelestialBody (char *fname)
 	DefaultParam ();
 	ClearModule ();
 
-	ifstream ifs (g_pOrbiter->ConfigPath (fname));
+	VFS::ifstream ifs (g_pOrbiter->ConfigPath (fname));
 	if (!ifs) {
 		LOGOUT_ERR_FILENOTFOUND_MSG(g_pOrbiter->ConfigPath (fname), "while initialising celestial body");
 		g_pOrbiter->TerminateOnError();
@@ -716,11 +717,11 @@ void CelestialBody::RegisterModule (char *dllname)
 	char cbuf[256];
 	module = 0;                              // reset new interface
 	memset (&modIntf, 0, sizeof (modIntf));  // reset old interface
-	sprintf (cbuf, "Modules\\Celbody\\%s.dll", dllname); // try new module location
-	hMod = LoadLibrary (cbuf);
+	VFS::sprintf (cbuf, "Modules\\Celbody\\%s.dll", dllname); // try new module location
+	hMod = (HINSTANCE)VFS::LoadModule(cbuf);
 	if (!hMod) {
-		sprintf (cbuf, "Modules\\%s.dll", dllname);  // try legacy module location
-		hMod = LoadLibrary (cbuf);
+		VFS::sprintf (cbuf, "Modules\\%s.dll", dllname);  // try legacy module location
+		hMod = (HINSTANCE)VFS::LoadModule(cbuf);
 	}
 	if (!hMod) return;
 

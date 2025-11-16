@@ -14,6 +14,7 @@
 #include "Camera.h"
 #include "resource.h"
 #include "Uxtheme.h"
+#include "VFSAPI.h"
 
 using std::min;
 using std::max;
@@ -1495,7 +1496,7 @@ void OptionsPage_CelSphere::PopulateStarmapList(HWND hPage)
 	SendDlgItemMessage(hPage, IDC_OPT_CSP_STARMAPIMAGE, CB_RESETCONTENT, 0, 0);
 	m_pathStarmap.clear();
 
-	std::ifstream ifs(Cfg()->ConfigPath("CSphere\\bkgimage"));
+	VFS::ifstream ifs(Cfg()->ConfigPath("CSphere\\bkgimage"));
 	if (ifs) {
 		char* c;
 		char cbuf[256];
@@ -1527,7 +1528,7 @@ void OptionsPage_CelSphere::PopulateBgImageList(HWND hPage)
 	SendDlgItemMessage(hPage, IDC_OPT_CSP_BKGIMAGE, CB_RESETCONTENT, 0, 0);
 	m_pathBgImage.clear();
 
-	std::ifstream ifs(Cfg()->ConfigPath("CSphere\\bkgimage"));
+	VFS::ifstream ifs(Cfg()->ConfigPath("CSphere\\bkgimage"));
 	if (ifs) {
 		char* c;
 		char cbuf[256];
@@ -1888,7 +1889,7 @@ BOOL OptionsPage_Planetarium::OnMarkerSelectionChanged(HWND hPage)
 			int sel = SendDlgItemMessage(hPage, IDC_OPT_PLN_MKRLIST, LB_GETSEL, i, 0);
 			list[i].active = (sel ? true : false);
 		}
-		std::ifstream fcfg(Cfg()->ConfigPath(g_psys->Name().c_str()));
+		VFS::ifstream fcfg(Cfg()->ConfigPath(g_psys->Name().c_str()));
 		g_psys->ScanLabelLists(fcfg);
 	}
 	return 0;
@@ -1905,8 +1906,9 @@ void OptionsPage_Planetarium::RescanMarkerList(HWND hPage)
 	if (!list.size()) return;
 
 	int n = 0;
-	g_psys->ForEach(FILETYPE_MARKER, [&](const fs::directory_entry& entry) {
-		SendDlgItemMessage(hPage, IDC_OPT_PLN_MKRLIST, LB_ADDSTRING, 0, (LPARAM)entry.path().stem().string().c_str());
+	g_psys->ForEach(FILETYPE_MARKER, [&](const char *entry) {
+		char stem[MAX_PATH];
+		SendDlgItemMessage(hPage, IDC_OPT_PLN_MKRLIST, LB_ADDSTRING, 0, (LPARAM)VFS::stem(stem, entry));
 		if (n < list.size() && list[n].active)
 			SendDlgItemMessage(hPage, IDC_OPT_PLN_MKRLIST, LB_SETSEL, TRUE, n);
 		n++;
@@ -2079,8 +2081,9 @@ void OptionsPage_Labels::UpdateFeatureList(HWND hPage)
 		if (!nlist) return;
 
 		n = 0;
-		planet->ForEach(FILETYPE_MARKER, [&](const fs::directory_entry& entry) {
-				SendDlgItemMessage(hPage, IDC_OPT_MKR_FEATURELIST, LB_ADDSTRING, 0, (LPARAM)entry.path().stem().string().c_str());
+		planet->ForEach(FILETYPE_MARKER, [&](const char *entry) {
+				char stem[MAX_PATH];
+				SendDlgItemMessage(hPage, IDC_OPT_MKR_FEATURELIST, LB_ADDSTRING, 0, (LPARAM)VFS::stem(stem, entry));
 				if (n < nlist && list[n].active)
 					SendDlgItemMessage(hPage, IDC_OPT_MKR_FEATURELIST, LB_SETSEL, TRUE, n);
 				n++;
@@ -2120,7 +2123,7 @@ void OptionsPage_Labels::RescanFeatures(HWND hPage)
 			list[i].active = (sel ? true : false);
 		}
 
-		std::ifstream fcfg(Cfg()->ConfigPath(planet->Name()));
+		VFS::ifstream fcfg(Cfg()->ConfigPath(planet->Name()));
 		planet->ScanLabelLists(fcfg);
 	}
 	else {

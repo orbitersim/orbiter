@@ -232,7 +232,7 @@ public:
 	Vessel (const PlanetarySystem *psys, const char *_name, const char *_classname, const void *status);
 	// Constructs a vessel instance from parameters in 'status' - uses VESSELSTATUSx interface (version >= 2)
 
-	Vessel (const PlanetarySystem *psys, const char *_name, const char *_classname, std::ifstream &ifs);
+	Vessel (const PlanetarySystem *psys, const char *_name, const char *_classname, VFS::ifstream &ifs);
 	// Constructs a vessel instance from parameters in scenario file 'ifs'
 
 	~Vessel();
@@ -241,7 +241,7 @@ public:
 	inline const char *ClassName () const { return classname; }
 	inline const char *HelpContext () const { return onlinehelp; }
 
-	void SetClassCaps (std::ifstream &classf);
+	void SetClassCaps (VFS::ifstream &classf);
 	// set class capabilities (from module code or class configuration file)
 
 	void SetState   (const VESSELSTATUS &status); // interface version 1 (defined in Vesselstatus.cpp)
@@ -1280,12 +1280,12 @@ public:
 	void LeanCamera (int dir, bool smooth = true);
 	// "lean" forward, left or right in cockpit mode
 
-	bool Read (std::ifstream &ifs);
+	bool Read (VFS::ifstream &ifs);
 	void Write (std::ostream &ofs) const;
 	// read/write vessel status from/to stream
 
 protected:
-	bool OpenConfigFile (std::ifstream &cfgfile) const;
+	bool OpenConfigFile (VFS::ifstream &cfgfile) const;
 	// returns configuration file for the vessel
 	// This first looks in Config\Vessels, then in Config
 
@@ -1340,10 +1340,10 @@ protected:
 	}
 	// Returns a thrust scaling factor for thruster th in ambient pressure p
 
-	bool ParseScenario (std::ifstream &scn, VESSELSTATUS &vs);
+	bool ParseScenario (VFS::ifstream &scn, VESSELSTATUS &vs);
 	// Read status parameters from scenario scn to vessel status vs - OBSOLETE
 
-	bool ParseScenarioEx (std::ifstream &scn, void *status);
+	bool ParseScenarioEx (VFS::ifstream &scn, void *status);
 	// Read status parameters from scenario scn to vessel dynamic vessel status 'status'
 
 	bool ParseScenarioLine   (char *line, VESSELSTATUS &vs); // interface version 1 (defined in Vesselstatus.cpp)
@@ -1375,7 +1375,7 @@ protected:
 	// set generic vessel caps to (fairly arbitrary) defaults to prevent
 	// catastropic failures for undefined caps
 
-	void ReadGenericCaps (std::ifstream &ifs);
+	void ReadGenericCaps (VFS::ifstream &ifs);
 	// read generic vessel caps from a class cfg file
 
 	UINT AddMesh (const char *mname, const VECTOR3 *ofs = 0);
@@ -1423,7 +1423,7 @@ protected:
 	int MeshModified (MESHHANDLE hMesh, UINT grp, DWORD modflag);
 	// Notify the visualisation subsystem of a modification of a mesh group
 
-	bool LoadModule (std::ifstream &classf);
+	bool LoadModule (VFS::ifstream &classf);
 	// Load vessel module, if defined in vessel class configuration file
 
 	bool RegisterModule (const char *dllname);
@@ -1730,7 +1730,7 @@ private:
 	// Flight recorder routines (should be a class!)
 
 private:
-	std::ifstream *FRatc_stream;
+	VFS::ifstream *FRatc_stream;
 
 	bool bRequestPlayback;
 	bool bFRplayback;

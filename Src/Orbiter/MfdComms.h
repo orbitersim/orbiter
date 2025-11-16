@@ -25,7 +25,7 @@ public:
 	int BtnMenu (const MFDBUTTONMENU **menu) const;
 
 protected:
-	bool ReadParams (std::ifstream &ifs) { return true; }
+	bool ReadParams (VFS::ifstream &ifs) { return true; }
 	void WriteParams (std::ostream &ofs) const;
 	void SwitchFreq (DWORD line, int step, bool minor);
 

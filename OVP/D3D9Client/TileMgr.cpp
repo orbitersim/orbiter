@@ -112,7 +112,6 @@ bool TileManager::LoadPatchData ()
 	// Read information about specular reflective patch masks
 	// from a binary data file
 
-	FILE *binf;
 	BYTE minres, maxres, flag;
 	int i, idx, npatch;
 	nmask = 0;
@@ -120,13 +119,17 @@ bool TileManager::LoadPatchData ()
 	strcpy_s(fname, ARRAYSIZE(fname), objname);
 	strcat_s(fname, ARRAYSIZE(fname), "_lmask.bin");
 
-	if (!(bGlobalSpecular || bGlobalLights) || !gc->TexturePath(fname, path) || fopen_s(&binf, path, "rb")) {
+	if (!(bGlobalSpecular || bGlobalLights) || !gc->TexturePath(fname, path)) {
 
 		for (i = 0; i < patchidx[maxbaselvl]; i++)
 			tiledesc[i].flag = 1;
 		return false; // no specular reflections, no city lights
 
-	} else {
+	}
+
+	FILE *binf = VFS::fopen(path, "rb");
+	
+	if(binf) {
 
 		WORD *tflag = 0;
 		LMASKFILEHEADER lmfh;
@@ -168,6 +171,7 @@ bool TileManager::LoadPatchData ()
 
 		return true;
 	}
+	return false;
 }
 
 // =======================================================================
@@ -185,7 +189,7 @@ bool TileManager::LoadTileData ()
 	strcpy_s (fname, ARRAYSIZE(fname), objname);
 	strcat_s (fname, ARRAYSIZE(fname), "_tile.bin");
 
-	if (!gc->TexturePath (fname, path) || fopen_s (&file, path, "rb")) {
+	if (!gc->TexturePath (fname, path) || !(file = VFS::fopen (path, "rb"))) {
 		LogWrn("Surface Tile TOC not found for %s", fname);
 		return false; // TOC file not found
 	}
@@ -1191,11 +1195,11 @@ HRESULT TileBuffer::ReadDDSSurface (LPDIRECT3DDEVICE9 pDev, const char *fname, L
 	DDSURFACEDESC2       ddsd;
 	DWORD                dwMagic;
 
-	FILE *f = NULL;
 
 	sprintf_s(cpath,256,"%s%s", OapiExtension::GetHightexDir(), fname);
 
-	if (fopen_s(&f, cpath, "rb")) return -3;
+	FILE *f = VFS::fopen(cpath, "rb");
+	if (!f) return -3;
 
 	fseek(f, (long)ofs, SEEK_SET);
 

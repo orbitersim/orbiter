@@ -17,5 +17,6 @@
 #include "CelBodyAPI.h"
 #include "VesselAPI.h"
 #include "MFDAPI.h"
+#include "VFSAPI.h"
 
 #endif // !__ORBITERSDK_H

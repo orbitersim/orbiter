@@ -366,7 +366,7 @@ int Instrument_OSync::ProcessMessage (int msg, void *data)
 	return 0;
 }
 
-bool Instrument_OSync::ReadParams (ifstream &ifs)
+bool Instrument_OSync::ReadParams (VFS::ifstream &ifs)
 {
 	char cbuf[256], ctgt[128] = "", cmode[128] = "", *pc;
 	int i, llen = 0;

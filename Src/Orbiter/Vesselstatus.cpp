@@ -16,8 +16,7 @@
 #include "Base.h"
 #include "Util.h"
 #include "Log.h"
-#include <fstream>
-#include <iomanip>
+#include "VFSAPI.h"
 #include <stdio.h>
 #include <stdlib.h>
 
@@ -711,7 +710,7 @@ int Vessel::TouchdownPointsFromFile (const char *fname)
 	char line[512], *c;
 	strcpy (line, fname);
 	strcat (line, ".dat");
-	std::ifstream ifs (g_pOrbiter->Cfg()->ConfigPathNoext (line));
+	VFS::ifstream ifs (g_pOrbiter->Cfg()->ConfigPathNoext (line));
 	if (!ifs.good()) return 1;
 
 	// parse the touchdown point specs

@@ -289,7 +289,7 @@ void Instrument_Landing::SetSize (const Spec &spec)
 	barw = circr/8;
 }
 
-bool Instrument_Landing::ReadParams (ifstream &ifs)
+bool Instrument_Landing::ReadParams (VFS::ifstream &ifs)
 {
 	char cbuf[256], *pc;
 	if (!FindScnHeader (ifs)) return false;

@@ -4,7 +4,6 @@
 #include "Orbiter.h"
 #include "Element.h"
 #include "Config.h"
-#include <fstream>
 #include <windows.h>
 #include <stdio.h>
 
@@ -59,7 +58,7 @@ Elements::Elements (const Elements &el)
 Elements::Elements (char *fname)
 {
 	double epoch;
-	ifstream ifs (g_pOrbiter->ConfigPath (fname));
+	VFS::ifstream ifs (g_pOrbiter->ConfigPath (fname));
 	if (!GetItemReal (ifs, "Epoch", epoch))           epoch  = 2000.0;
 	mjd_epoch = Jepoch2MJD (epoch);
 	t_epoch   = (mjd_epoch-td.MJD_ref)*86400.0;

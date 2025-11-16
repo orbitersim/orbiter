@@ -37,7 +37,7 @@
 #include "State.h"
 #include "Util.h"
 #include "elevmgr.h"
-#include <fstream>
+#include "VFSAPI.h"
 #include <iomanip>
 #include <stdio.h>
 #include <stdlib.h>
@@ -83,7 +83,7 @@ Vessel::Vessel (const PlanetarySystem *psys, const char *_name, const char *_cla
 	classname = new char[strlen(_classname)+1]; TRACENEW
 	strcpy (classname, _classname);
 
-	ifstream classf;
+	VFS::ifstream classf;
 	if (!OpenConfigFile (classf))
 		g_pOrbiter->TerminateOnError(); // PANIC!
 
@@ -117,7 +117,7 @@ Vessel::Vessel (const PlanetarySystem *psys, const char *_name, const char *_cla
 	classname = new char[strlen(_classname)+1]; TRACENEW
 	strcpy (classname, _classname);
 
-	ifstream classf;
+	VFS::ifstream classf;
 	if (!OpenConfigFile (classf))
 		g_pOrbiter->TerminateOnError(); // PANIC!
 
@@ -145,7 +145,7 @@ Vessel::Vessel (const PlanetarySystem *psys, const char *_name, const char *_cla
 
 // ==============================================================
 
-Vessel::Vessel (const PlanetarySystem *psys, const char *_name, const char *_classname, ifstream &ifs)
+Vessel::Vessel (const PlanetarySystem *psys, const char *_name, const char *_classname, VFS::ifstream &ifs)
 : VesselBase()
 {
 	char cbuf[256];
@@ -159,7 +159,7 @@ Vessel::Vessel (const PlanetarySystem *psys, const char *_name, const char *_cla
 	classname = new char[strlen(_classname)+1]; TRACENEW
 	strcpy (classname, _classname);
 
-	ifstream classf;
+	VFS::ifstream classf;
 	if (!OpenConfigFile (classf))
 		g_pOrbiter->TerminateOnError(); // PANIC!
 
@@ -233,7 +233,7 @@ Vessel::~Vessel ()
 
 // ==============================================================
 
-bool Vessel::OpenConfigFile (ifstream &cfgfile) const
+bool Vessel::OpenConfigFile (VFS::ifstream &cfgfile) const
 {
 	char cbuf[256];
 	strcpy (cbuf, "Vessels\\");
@@ -256,7 +256,7 @@ bool Vessel::OpenConfigFile (ifstream &cfgfile) const
 
 // ==============================================================
 
-void Vessel::SetClassCaps (ifstream &classf)
+void Vessel::SetClassCaps (VFS::ifstream &classf)
 {
 	// Query module for caps
 	if (modIntf.v->Version() >= 1)      // VESSEL2 interface
@@ -425,7 +425,7 @@ void Vessel::DefaultGenericCaps ()
 
 // ==============================================================
 
-void Vessel::ReadGenericCaps (ifstream &ifs)
+void Vessel::ReadGenericCaps (VFS::ifstream &ifs)
 {
 	char item[256], cbuf[256];
 	UINT i;
@@ -435,7 +435,7 @@ void Vessel::ReadGenericCaps (ifstream &ifs)
 
 	// recursively read base class specs
 	if (GetItemString (ifs, "BaseClass", cbuf)) {
-		ifstream basef (g_pOrbiter->ConfigPath (cbuf));
+		VFS::ifstream basef (g_pOrbiter->ConfigPath (cbuf));
 		if (basef) ReadGenericCaps (basef);
 	}
 
@@ -5935,7 +5935,7 @@ void Vessel::ClearAnimations (bool reset)
 	nanim = 0;
 }
 
-bool Vessel::LoadModule (ifstream &classf)
+bool Vessel::LoadModule (VFS::ifstream &classf)
 {
 	char cbuf[256];
 	bool found;
@@ -5965,8 +5965,8 @@ bool Vessel::LoadModule (ifstream &classf)
 bool Vessel::RegisterModule (const char *dllname)
 {
 	char cbuf[256];
-	sprintf (cbuf, "Modules\\%s.dll", dllname);
-	hMod = LoadLibrary (cbuf);
+	VFS::sprintf (cbuf, "Modules\\%s.dll", dllname);
+	hMod = (HINSTANCE)VFS::LoadModule(cbuf);
 	if (!hMod)
 		return false;
 
@@ -6019,7 +6019,7 @@ void Vessel::EndStateUpdate ()
 	}
 }
 
-bool Vessel::Read (ifstream &scn)
+bool Vessel::Read (VFS::ifstream &scn)
 {
 	bool res;
 	attmode = 1;
@@ -6059,7 +6059,7 @@ bool Vessel::Read (ifstream &scn)
 
 bool Vessel::EditorModule (char *cbuf) const
 {
-	ifstream classf;
+	VFS::ifstream classf;
 	if (!OpenConfigFile (classf)) return false;
 	return GetItemString (classf, "EditorModule", cbuf);
 }
@@ -6078,7 +6078,7 @@ bool Vessel::ParseScenarioLineEx (char *line, void *status)
 	}
 }
 
-bool Vessel::ParseScenario (ifstream &scn, VESSELSTATUS &vs)
+bool Vessel::ParseScenario (VFS::ifstream &scn, VESSELSTATUS &vs)
 {
 	char cbuf[256], *pc;
 	
@@ -6091,7 +6091,7 @@ bool Vessel::ParseScenario (ifstream &scn, VESSELSTATUS &vs)
 	return true;
 }
 
-bool Vessel::ParseScenarioEx (ifstream &scn, void *status)
+bool Vessel::ParseScenarioEx (VFS::ifstream &scn, void *status)
 {
 	char cbuf[256], *pc;
 	
@@ -8798,7 +8798,7 @@ void VESSEL2::clbkSaveState (FILEHANDLE scn)
 
 void VESSEL2::clbkLoadStateEx (FILEHANDLE scn, void *status)
 {
-	vessel->ParseScenarioEx (*(ifstream*)scn, status);
+	vessel->ParseScenarioEx (*(VFS::ifstream*)scn, status);
 }
 
 void VESSEL2::clbkSetStateEx (const void *status)

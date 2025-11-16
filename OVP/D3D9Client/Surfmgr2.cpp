@@ -202,13 +202,13 @@ INT16 *SurfTile::ReadElevationFile (const char *name, int lvl, int ilat, int iln
 
 	char path[MAX_PATH];
 	char fname[128];
-	FILE *f;
 	int i;
 
 	// Elevation data
 	if (smgr->DoLoadIndividualFiles(2)) { // try loading from individual tile file
 		sprintf_s(path, MAX_PATH, "%s\\Elev\\%02d\\%06d\\%06d.elv", mgr->DataRootDir().c_str(), lvl, ilat, ilng);
-		if (!fopen_s(&f, path, "rb")) {
+		FILE *f = VFS::fopen(path, "rb");
+		if (f) {
 			e = g_pMemgr_i->New(ndat);
 			elev = g_pMemgr_f->New(ndat);
 			// read the elevation file header
@@ -296,7 +296,8 @@ INT16 *SurfTile::ReadElevationFile (const char *name, int lvl, int ilat, int iln
 		ELEVFILEHEADER hdr;
 		if (smgr->DoLoadIndividualFiles(3)) { // try loading from individual tile file
 			sprintf_s (path, MAX_PATH, "%s\\Elev_mod\\%02d\\%06d\\%06d.elv", mgr->DataRootDir().c_str(), lvl, ilat, ilng);
-			if (!fopen_s(&f, path, "rb")) {
+			FILE *f = VFS::fopen(path, "rb");
+			if (f) {
 				fread (&hdr, sizeof(ELEVFILEHEADER), 1, f);
 				if (hdr.hdrsize != sizeof(ELEVFILEHEADER)) fseek (f, hdr.hdrsize, SEEK_SET);
 				LogClr("Teal", "NewElevMod[%s]: Lvl=%d, Scale=%g, Offset=%g", name, lvl - 4, hdr.scale, hdr.offset);
@@ -1638,7 +1639,7 @@ SURFHANDLE TileManager2<SurfTile>::SeekTileTexture(int iLng, int iLat, int level
 		{
 			char path[MAX_PATH];
 			sprintf_s(path, MAX_PATH, "%s\\Surf\\%02d\\%06d\\%06d.dds", m_dataRootDir.c_str(), level + 4, iLat, iLng);
-			bOk = (D3DXCreateTextureFromFileEx(Dev(), path, 0, 0, 0, 0, D3DFMT_FROM_FILE, D3DPOOL_DEFAULT,
+			bOk = (D3DXCreateTextureFromFileEx(Dev(), VFS::realpath_ns(path), 0, 0, 0, 0, D3DFMT_FROM_FILE, D3DPOOL_DEFAULT,
 				D3DX_FILTER_NONE, D3DX_FILTER_BOX, 0, NULL, NULL, &pTex) == S_OK);
 		}
 
@@ -1664,7 +1665,7 @@ SURFHANDLE TileManager2<SurfTile>::SeekTileTexture(int iLng, int iLat, int level
 		{
 			char path[MAX_PATH];
 			sprintf_s(path, MAX_PATH, "%s\\Mask\\%02d\\%06d\\%06d.dds", m_dataRootDir.c_str(), level + 4, iLat, iLng);
-			bOk = (D3DXCreateTextureFromFileEx(Dev(), path, 0, 0, 0, 0, D3DFMT_FROM_FILE, D3DPOOL_DEFAULT,
+			bOk = (D3DXCreateTextureFromFileEx(Dev(), VFS::realpath_ns(path), 0, 0, 0, 0, D3DFMT_FROM_FILE, D3DPOOL_DEFAULT,
 				D3DX_FILTER_NONE, D3DX_FILTER_BOX, 0, NULL, NULL, &pTex) == S_OK);
 		}
 
@@ -1736,13 +1737,13 @@ float* TileManager2<SurfTile>::BrowseElevationData(int lvl, int ilat, int ilng, 
 	float* elev = NULL;
 	char path[MAX_PATH];
 	char fname[128];
-	FILE* f;
 	int i;
 
 	// Elevation data
 	if (flags & gcTileFlags::CACHE) { // try loading from individual tile file
 		sprintf_s(path, MAX_PATH, "%s\\Elev\\%02d\\%06d\\%06d.elv", m_dataRootDir.c_str(), lvl + 4, ilat, ilng);
-		if (!fopen_s(&f, path, "rb")) {
+		FILE* f = VFS::fopen(path, "rb");
+		if (f) {
 			elev = new float[ndat];
 			fread(&ehdr, sizeof(ELEVFILEHEADER), 1, f);
 			if (ehdr.hdrsize != sizeof(ELEVFILEHEADER)) fseek(f, ehdr.hdrsize, SEEK_SET);
@@ -1805,40 +1806,42 @@ float* TileManager2<SurfTile>::BrowseElevationData(int lvl, int ilat, int ilng, 
 		if (flags & gcTileFlags::CACHE) { // try loading from individual tile file
 			sprintf_s(fname, ARRAYSIZE(fname), "%s\\Elev_mod\\%02d\\%06d\\%06d.elv", CbodyName(), lvl + 4, ilat, ilng);
 			bool found = GetClient()->TexturePath(fname, path);
-			if (found && !fopen_s(&f, path, "rb")) {
+			if (found) {
+				FILE *f = VFS::fopen(path, "rb");
+				if(f) {
+					fread(&hdr, sizeof(ELEVFILEHEADER), 1, f);
+					if (hdr.hdrsize != sizeof(ELEVFILEHEADER)) fseek(f, hdr.hdrsize, SEEK_SET);
 
-				fread(&hdr, sizeof(ELEVFILEHEADER), 1, f);
-				if (hdr.hdrsize != sizeof(ELEVFILEHEADER)) fseek(f, hdr.hdrsize, SEEK_SET);
+					switch (hdr.dtype)
+					{
+					case 0: // overwrite the entire tile with a flat offset
+						for (i = 0; i < ndat; i++) elev[i] = float(hdr.offset);
+						break;
 
-				switch (hdr.dtype)
-				{
-				case 0: // overwrite the entire tile with a flat offset
-					for (i = 0; i < ndat; i++) elev[i] = float(hdr.offset);
-					break;
-
-				case 8: {
-					const UINT8 mask = UCHAR_MAX;
-					UINT8* tmp = new UINT8[ndat];
-					fread(tmp, sizeof(UINT8), ndat, f);
-					for (i = 0; i < ndat; i++)
-						if (tmp[i] != mask)
-							elev[i] = float(trunc(float(tmp[i]) * hdr.scale) + trunc(hdr.offset));
-					delete[]tmp;
-					break;
+					case 8: {
+						const UINT8 mask = UCHAR_MAX;
+						UINT8* tmp = new UINT8[ndat];
+						fread(tmp, sizeof(UINT8), ndat, f);
+						for (i = 0; i < ndat; i++)
+							if (tmp[i] != mask)
+								elev[i] = float(trunc(float(tmp[i]) * hdr.scale) + trunc(hdr.offset));
+						delete[]tmp;
+						break;
+					}
+					case -16: {
+						const INT16 mask = SHRT_MAX;
+						INT16* tmp = new INT16[ndat];
+						fread(tmp, sizeof(INT16), ndat, f);
+						for (i = 0; i < ndat; i++)
+							if (tmp[i] != mask)
+								elev[i] = float(trunc(float(tmp[i]) * hdr.scale) + trunc(hdr.offset));
+						delete[]tmp;
+						break;
+					}
+					}
+					fclose(f);
+					ok = true;
 				}
-				case -16: {
-					const INT16 mask = SHRT_MAX;
-					INT16* tmp = new INT16[ndat];
-					fread(tmp, sizeof(INT16), ndat, f);
-					for (i = 0; i < ndat; i++)
-						if (tmp[i] != mask)
-							elev[i] = float(trunc(float(tmp[i]) * hdr.scale) + trunc(hdr.offset));
-					delete[]tmp;
-					break;
-				}
-				}
-				fclose(f);
-				ok = true;
 			}
 		}
 

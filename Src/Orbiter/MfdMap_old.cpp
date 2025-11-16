@@ -473,7 +473,7 @@ SURFHANDLE Instrument_MapOld::LoadBitmap (const char *cbuf, int *w, int *h)
 	if (!gc) return NULL;
 
 	// Load bitmap
-	char *path = g_pOrbiter->TexPath (cbuf, ".bmp");
+	const char *path = VFS::realpath_ns(g_pOrbiter->TexPath (cbuf, ".bmp"));
 	HBITMAP hbm = (HBITMAP)LoadImage (GetModuleHandle(NULL), path, IMAGE_BITMAP, 0, 0, LR_CREATEDIBSECTION);
 	if (!hbm)
 		hbm = (HBITMAP)LoadImage (NULL, path, IMAGE_BITMAP, 0, 0, LR_LOADFROMFILE|LR_CREATEDIBSECTION);
@@ -691,7 +691,7 @@ bool Instrument_MapOld::ClbkEnter_Map (Select *menu, int item, char *str, void *
 	return map->SelectMap (str);
 }
 
-bool Instrument_MapOld::ReadParams (ifstream &ifs)
+bool Instrument_MapOld::ReadParams (VFS::ifstream &ifs)
 {
 	char cbuf[256], cref[128] = "", cbtgt[128] = "", cotgt[128] = "", *pc;
 	if (!FindScnHeader (ifs)) return false;

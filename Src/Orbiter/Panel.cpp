@@ -432,7 +432,7 @@ void Panel::GetMouseState (int &idx, int &state, int &mx, int &my) const
 	idx = idx_mfocus; state = mstate; mx = mousex, my = mousey;
 }
 
-bool Panel::Read (ifstream &ifs)
+bool Panel::Read (VFS::ifstream &ifs)
 {
 	if (!FindLine (ifs, "BEGIN_PANEL")) return false;
 	// read panel parameters

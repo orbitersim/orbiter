@@ -648,7 +648,7 @@ int Instrument_Transfer::ProcessMessage (int msg, void *data)
 	return 0;
 }
 
-bool Instrument_Transfer::ReadParams (ifstream &ifs)
+bool Instrument_Transfer::ReadParams (VFS::ifstream &ifs)
 {
 	char cbuf[256], *pc;
 	char cref[128] = "", ctgt[128] = "", csrc[128] = "";

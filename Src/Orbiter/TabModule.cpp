@@ -10,8 +10,7 @@
 #include "Launchpad.h"
 #include "TabModule.h"
 #include "resource.h"
-#include <filesystem>
-namespace fs = std::filesystem;
+#include "VFSAPI.h"
 
 using std::max;
 
@@ -152,14 +151,14 @@ void orbiter::ModuleTab::RefreshLists ()
 	TV_INSERTSTRUCT tvis;
 	tvis.item.mask = TVIF_TEXT | TVIF_PARAM;
 
-	int idx, len;
-	char catstr[256];
+	int idx;
 
-	const fs::path moddir{ "Modules/Plugin" };
+	const char *moddir = "Modules/Plugin/";
 
-	for (const auto& file : fs::directory_iterator(moddir)) {
-		if (file.path().extension().string() == ".dll") {
-			auto name = file.path().filename().string();
+	VFS::enumerate(moddir, [this, moddir, &tvis, &hTree](const char *filename) {
+		if(VFS::has_extension(filename, "dll")) {
+			char catstr[256];
+			const char *name = VFS::basename(filename);
 			// add module record
 			MODULEREC** tmp = new MODULEREC * [nmodulerec + 1];
 			if (nmodulerec) {
@@ -169,9 +168,9 @@ void orbiter::ModuleTab::RefreshLists ()
 			modulerec = tmp;
 
 			MODULEREC* rec = modulerec[nmodulerec++] = new MODULEREC;
-			len = name.length() - 4;
+			int len = strlen(name) - 4;
 			rec->name = new char[len + 1];
-			strncpy(rec->name, name.c_str(), len);
+			strncpy(rec->name, name, len);
 			rec->name[len] = '\0';
 			rec->info = 0;
 			rec->active = false;
@@ -187,7 +186,8 @@ void orbiter::ModuleTab::RefreshLists ()
 				rec->locked = true; // modules activated from the command line are not to be unloaded
 			}
 
-			HMODULE hMod = LoadLibraryEx((moddir / name).string().c_str(), 0, LOAD_LIBRARY_AS_DATAFILE);
+			char rpath[MAX_PATH];
+			HMODULE hMod = LoadLibraryEx(VFS::realpath(rpath, filename), 0, LOAD_LIBRARY_AS_DATAFILE);
 			if (hMod) {
 				char buf[1024];
 				// read module info string
@@ -207,20 +207,19 @@ void orbiter::ModuleTab::RefreshLists ()
 				FreeLibrary(hMod);
 			}
 
-			if (!strcmp(catstr, "Graphics engines"))
-				continue; // graphics client modules are loaded via the Video tab
+			if (strcmp(catstr, "Graphics engines")) {
+				// find the category entry
+				HTREEITEM catItem = GetCategoryItem(catstr);
 
-			// find the category entry
-			HTREEITEM catItem = GetCategoryItem(catstr);
-
-			// tree view entry
-			tvis.item.pszText = rec->name;
-			tvis.item.lParam = (LPARAM)rec;
-			tvis.hInsertAfter = TVI_SORT;
-			tvis.hParent = catItem;
-			HTREEITEM hti = TreeView_InsertItem(hTree, &tvis);
+				// tree view entry
+				tvis.item.pszText = rec->name;
+				tvis.item.lParam = (LPARAM)rec;
+				tvis.hInsertAfter = TVI_SORT;
+				tvis.hParent = catItem;
+				HTREEITEM hti = TreeView_InsertItem(hTree, &tvis);
+			}
 		}
-	}
+	});
 	counter = 0;
 }
 

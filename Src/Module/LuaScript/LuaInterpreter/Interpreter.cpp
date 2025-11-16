@@ -8,6 +8,7 @@
 #include "MFDAPI.h"
 #include "DrawAPI.h"
 #include "gcCoreAPI.h"
+#include "VFSAPI.h"
 #include <list>
 
 using std::min;
@@ -46,6 +47,81 @@ VECTOR3 lua_tovector (lua_State *L, int idx)
 	lua_getfield (L, idx, "z");
 	vec.z = lua_tonumber (L, -1); lua_pop (L,1);
 	return vec;
+}
+
+// Split ';' separated string into a vector
+static std::vector<std::string> splitPaths(const std::string &s) {
+	std::vector<std::string> paths;
+	size_t start = 0, end;
+	while ((end = s.find(';', start)) != std::string::npos) {
+		paths.push_back(s.substr(start, end - start));
+		start = end + 1;
+	}
+	paths.push_back(s.substr(start));
+	return paths;
+}
+
+// Custom loader so that 'require' uses VFS
+static int vfs_loader(lua_State *L) {
+	const char *modname = luaL_checkstring(L, 1);
+
+	// Convert mod.submod -> mod/submod
+	std::string modpath(modname);
+	for (char &c : modpath)
+		if (c == '.') c = '/';
+
+	// Get package.path
+	lua_getglobal(L, "package");
+	lua_getfield(L, -1, "path");
+	const char *pathStr = lua_tostring(L, -1);
+	lua_pop(L, 2);
+
+	if (!pathStr) {
+		lua_pushnil(L);
+		lua_pushstring(L, "package.path is not defined");
+		return 2;
+	}
+
+	// Split package.path and iterate over each entry
+	for (auto &path: splitPaths(pathStr)) {
+		// Replace '?' with modpath
+		// We modify inplace since the containing vector is temporary
+		size_t pos = path.find('?');
+		if (pos != std::string::npos)
+			path.replace(pos, 1, modpath);
+
+		if (VFS::is_regular_file(path.c_str())) {
+			if(luaL_loadfile(L, VFS::realpath_ns(path.c_str()))) {
+				lua_pushnil(L);
+				lua_pushfstring(L, "Error loading %s\n", modname);
+				return 2;
+			}
+			return 1;
+		}
+	}
+
+	lua_pushnil(L);
+	lua_pushfstring(L, "Cannot open module '%s'", modname);
+	return 2;
+}
+
+// Custom implementation of dofile that takes VFS into account
+static int vfs_dofile(lua_State *L) {
+    const char *filename = luaL_checkstring(L, 1);
+    if (VFS::is_regular_file(filename)) {
+		char rpath[MAX_PATH];
+		if(luaL_loadfile(L, VFS::realpath(rpath, filename))) {
+			lua_pushnil(L);
+			lua_pushfstring(L, "Error loading %s\n", filename);
+			return 2;
+		}
+		lua_call(L, 0, LUA_MULTRET);
+		return lua_gettop(L);
+	}
+
+    lua_pushnil(L);
+    lua_pushfstring(L, "Cannot open '%s'", filename);
+    return 2;
 }
 
 // ============================================================================
@@ -109,9 +185,28 @@ Interpreter::~Interpreter ()
 	if (hWaitMutex) CloseHandle (hWaitMutex);
 }
 
+void Interpreter::LoadVFS()
+{
+	// Add our custom VFS loader to package.loaders
+	lua_getglobal(L, "package");
+	lua_getfield(L, -1, "loaders");
+
+	int len = lua_objlen(L, -1);
+	lua_pushcfunction(L, vfs_loader);
+	lua_rawseti(L, -2, len + 1);
+
+	lua_pop(L, 2);
+	
+	// Overwrite dofile with our custom VFS version
+	lua_pushcfunction(L, vfs_dofile);
+	lua_setglobal(L, "dofile");
+}
+
 void Interpreter::Initialise ()
 {
 	luaL_openlibs (L);    // load the default libraries
+	
+	LoadVFS();
 	LoadAPI ();           // load default set of API interface functions
 	LoadVesselAPI ();     // load vessel-specific part of API
 	LoadLightEmitterMethods (); // load light source methods
@@ -1651,7 +1746,8 @@ void Interpreter::LoadVesselStatusAPI()
 
 void Interpreter::LoadStartupScript ()
 {
-	luaL_dofile (L, "./Script/oapi_init.lua");
+	char rpath[MAX_PATH];
+	luaL_dofile (L, VFS::realpath(rpath, "./Script/oapi_init.lua"));
 }
 
 bool Interpreter::InitialiseVessel (lua_State *L, VESSEL *v)

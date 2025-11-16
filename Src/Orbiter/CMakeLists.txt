@@ -116,6 +116,7 @@ set(common_src
 	Memstat.cpp
 	Util.cpp
 	ZTreeMgr.cpp
+	VFS.cpp
 # Resources
 	Orbiter.rc
 	Orbiter.ico
@@ -163,9 +164,9 @@ set_target_properties(Orbiter
 	FOLDER Core
 )
 
-target_include_directories(Orbiter PUBLIC ${Orbiter_includes})
+target_include_directories(Orbiter PUBLIC ${Orbiter_includes} ${TRACY_CLIENT_INCLUDE})
 
-target_link_libraries(Orbiter ${Orbiter_common_libs} ${Orbiter_libs})
+target_link_libraries(Orbiter ${Orbiter_common_libs} ${Orbiter_libs} ${TRACY_CLIENT})
 
 add_dependencies(Orbiter ${Orbiter_depends})
 
