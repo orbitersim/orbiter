@@ -259,7 +259,8 @@ namespace VFS
 	{
 		char rpath[MAX_PATH];
 		GetRealPath(path, rpath, true);
-		std::filesystem::remove_all(rpath);
+		std::error_code ec;
+		std::filesystem::remove_all(rpath, ec);
 	}
 
 	DLLEXPORT bool is_regular_file(const char *path)
@@ -317,16 +318,16 @@ namespace VFS
 		return lsep + 1;
 	}
 
-	DLLEXPORT const char *realpath(const char *path, bounded_path dst)
+	DLLEXPORT const char *realpath(const char *path, bounded_path dst, bool modify)
 	{
-		GetRealPath(path, dst);
+		GetRealPath(path, dst, modify);
 		return dst.data();
 	}
 
-	DLLEXPORT const char *realpath_ns(const char *path)
+	DLLEXPORT const char *realpath_ns(const char *path, bool modify)
 	{
 		static char rpath[MAX_PATH];
-		return realpath(path, rpath);
+		return realpath(path, rpath, modify);
 	}
 
 };

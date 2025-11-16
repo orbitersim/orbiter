@@ -73,8 +73,8 @@ namespace VFS
 	OAPIFUNC const char *basename(const char *path);
 	OAPIFUNC const char *dirname(const char *path, bounded_path dst);
 	OAPIFUNC const char *stem(const char *path, bounded_path dst);
-	OAPIFUNC const char *realpath(const char *path, bounded_path dst);
-	OAPIFUNC const char *realpath_ns(const char *path);
+	OAPIFUNC const char *realpath(const char *path, bounded_path dst, bool modify = false);
+	OAPIFUNC const char *realpath_ns(const char *path, bool modify = false);
 	OAPIFUNC void create_directory(const char *path);
 	OAPIFUNC void remove_all(const char *path);
 	OAPIFUNC void *LoadModule(const char *path);
