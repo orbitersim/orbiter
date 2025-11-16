@@ -683,9 +683,10 @@ void orbiter::ScenarioTab::ClearQSFolder()
 	// SHFileOperation needs an absolute path
 	char rpath[MAX_PATH];
 	VFS::realpath(pLp->App()->ScnPath("Quicksave"), rpath);
-	rpath[strlen(rpath)-4] = '\0'; // remove ".scn"
+	size_t len = strlen(rpath);
+	rpath[len-4] = '\0'; // remove ".scn"
 	// pFrom needs to be null terminated twice
-	rpath[strlen(rpath)-3] = '\0';
+	rpath[len-3] = '\0';
 	SHFILEOPSTRUCT op;
 	op.hwnd = LaunchpadWnd();
 	op.wFunc = FO_DELETE;
