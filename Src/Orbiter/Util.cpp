@@ -61,28 +61,6 @@ bool iequal(const std::string& s1, const std::string& s2)
 	return true;
 }
 
-static bool need_timer_setup = true;
-static LARGE_INTEGER fine_counter_freq; // high-precision tick frequency
-static LARGE_INTEGER hi_start;
-
-void tic()
-{
-	if (need_timer_setup) {
-		QueryPerformanceFrequency (&fine_counter_freq);
-		need_timer_setup = false;
-	}
-	QueryPerformanceCounter (&hi_start);
-}
-
-double toc()
-{
-	LARGE_INTEGER hi_end;
-	QueryPerformanceCounter (&hi_end);
-	_int64 diff = hi_end.QuadPart-hi_start.QuadPart;
-	_int64 freq = fine_counter_freq.QuadPart;
-	return (double)diff/(double)freq;
-	return 0;
-}
 
 RECT GetClientPos (HWND hWnd, HWND hChild)
 {
