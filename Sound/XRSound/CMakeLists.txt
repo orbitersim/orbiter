@@ -4,9 +4,9 @@ if(NOT IRRKLANG_DIR)
 
 	if(NOT EXISTS ${IRRKLANG_DIR})
 		if(BUILD64)
-			set(IRRKLANG_URL https://cdn.orbithangar.com/irrKlang-64bit-1.6.0.zip)
+			set(IRRKLANG_URL https://web.archive.org/web/20250213015920/https://www.ambiera.at/downloads/irrKlang-64bit-1.6.0.zip)
 		else()
-			set(IRRKLANG_URL https://cdn.orbithangar.com/irrKlang-32bit-1.6.0.zip)
+			set(IRRKLANG_URL https://web.archive.org/web/20250225180248/http://www.ambiera.at/downloads/irrKlang-32bit-1.6.0.zip)
 		endif()
 
 		include(FetchContent)
