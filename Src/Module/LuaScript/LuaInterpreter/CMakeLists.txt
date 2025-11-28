@@ -6,10 +6,13 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${ORBITER_BINARY_ROOT_DIR})
 set(BUILD_OUT_DIR ${CMAKE_CURRENT_BINARY_DIR}/out)
 
 add_library(LuaInterpreter SHARED
-	Interpreter.cpp
-	lua_vessel_mtd.cpp
-  lua_xrsound.cpp
+        Interpreter.cpp
+        lua_vessel_mtd.cpp
 )
+
+if(ORBITER_BUILD_XRSOUND)
+  target_sources(LuaInterpreter PRIVATE lua_xrsound.cpp)
+endif()
 
 target_include_directories(LuaInterpreter
 	PUBLIC ${ORBITER_SOURCE_SDK_INCLUDE_DIR}
@@ -63,7 +66,7 @@ add_custom_command(
 	COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_CURRENT_SOURCE_DIR}/interpreter.hhp ${BUILD_OUT_DIR}
 	JOB_POOL htmlhelp
 )
-	
+
 add_custom_command(
 	POST_BUILD
 	OUTPUT ${ORBITER_BINARY_SDK_DIR}/doc/orbiter_lua.chm

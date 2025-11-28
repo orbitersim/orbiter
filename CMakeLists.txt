@@ -100,7 +100,7 @@ set(ldoc $<TARGET_FILE:lua::exe> ${ORBITER_BINARY_ROOT_DIR}/packages/LDoc/ldoc.l
 
 find_package(OpenGL QUIET)
 find_package(HTMLHelp)
-find_package(LATEX)		
+find_package(LATEX)
 find_package(MFC)
 
 # We don't query Qt with find_package because we need the 64-bit version here
@@ -193,7 +193,7 @@ option(
 option(
 	ORBITER_BUILD_XRSOUND
 	"Build XRSound module to enable sound in Orbiter"
-	ON
+	OFF
 )
 
 option(ORBITER_MAKE_DOC
@@ -210,6 +210,13 @@ option(ORBITER_SANITIZER
 	"Build binaries with Address Sanitizer"
 	OFF
 )
+
+option(ORBITER_TRACY_PROFILER
+	"Build orbiter with profiler support"
+	OFF
+)
+
+include(cmake/tracy.cmake)
 
 if(ORBITER_BUILD_XRSOUND)
 	set(IRRKLANG_DIR "" CACHE PATH "Path to the irrKlang library")
@@ -301,7 +308,7 @@ endif()
 
 configure_file(${CMAKE_SOURCE_DIR}/cmake/CPackOptions.cmake.in
 	${CMAKE_BINARY_DIR}/OrbiterCPackOptions.cmake)
-			   
+
 set(CPACK_GENERATOR "WIX;ZIP")
 set(CPACK_PACKAGE_NAME OpenOrbiter)
 set(CPACK_PACKAGE_VENDOR Orbitersim)

@@ -15,7 +15,7 @@ jobs:
     runs-on: 'ubuntu-latest'
     steps:
     - name: Get last run SHA
-      run: gh run list --limit 1 --workflow nightly.yml --json headSha --template "{{range .}}SHA={{.headSha}}{{end}}" --status completed --repo ${{ github.repository }} >> "$GITHUB_OUTPUT"
+      run: gh run list --limit 1 --workflow nightly.yml --json headSha --template "{{range .}}SHA={{.headSha}}{{end}}" --status success --repo ${{ github.repository }} >> "$GITHUB_OUTPUT"
       id: last_run
       env:
         GH_TOKEN: ${{ github.token }}
@@ -50,7 +50,7 @@ jobs:
     runs-on: windows-latest
     steps:
       - name: Download artifacts
-        uses: actions/download-artifact@v5
+        uses: actions/download-artifact@v6
 
       - name: Re-arrange artifacts
         shell: cmd

@@ -44,6 +44,9 @@
 #include "GraphicsAPI.h"
 #include "ConsoleManager.h"
 #include <filesystem>
+
+#include "Tracy.hpp"
+
 namespace fs = std::filesystem;
 
 using namespace std;
@@ -735,7 +738,7 @@ HWND Orbiter::CreateRenderWindow (Config *pCfg, const char *scenario)
 		return 0;
 	}
 	LOGOUT("Finished initialising world");
-	ms_prev = timeGetTime () - 1; // make sure SimDT > 0 for first frame
+	time_prev = std::chrono::steady_clock::now() - std::chrono::milliseconds(1); // make sure SimDT > 0 for first frame
 
 	g_psys->InitState (ScnPath (scenario));
 
@@ -978,6 +981,8 @@ HRESULT Orbiter::Render3DEnvironment ()
 		Output2DData ();
 		gclient->clbkDisplayFrame ();
 	}
+	// Mark frame boundary for when using the profiler
+	FrameMark;
     return S_OK;
 }
 
@@ -1798,52 +1803,23 @@ bool Orbiter::BeginTimeStep (bool running)
 	// an offset and increment, to avoid floating point underflow roundoff
 	// when adding the current time step
 	double deltat;
-	DWORD ms_curr = timeGetTime ();
-	LARGE_INTEGER hi_curr;
-	if (use_fine_counter) QueryPerformanceCounter (&hi_curr);
+	auto time_curr = std::chrono::steady_clock::now();
 
 	if (launch_tick) {
 		// control time interval in first few frames, when loading events occur
 		// enforce interval 10ms for first 3 time steps
 		deltat = 1e-2;
-		ms_prev = ms_curr-10;
-		if (use_fine_counter) fine_counter.QuadPart = hi_curr.QuadPart - fine_counter_freq.QuadPart/100;
+		time_prev = time_curr - std::chrono::milliseconds(10);
 		launch_tick--;
 	} else {
 		// standard time update
-		DWORD ms_delta = ms_curr - ms_prev;
-		if (ms_delta < 10000 && use_fine_counter) {
-			if (hi_curr.QuadPart <= fine_counter.QuadPart) {
-				if (hi_curr.QuadPart < fine_counter.QuadPart) {
-					static bool warn = true;
-					if (warn) {
-						LOGOUT(">>> WARNING: Inconsistent timer value");
-						LOGOUT("    The high-performance timer on this system generates negative time steps.");
-						LOGOUT("    Switching to low-resolution timer.");
-						warn = false;
-					}
-					if (pConfig->CfgDebugPrm.TimerMode == 0)
-						use_fine_counter = false;
-				}
-				return false;
-			}
-			// skip this step if the interval is smaller than the timer resolution
-			LONGLONG dt = hi_curr.QuadPart - fine_counter.QuadPart;
-			deltat = (double)dt * fine_counter_step;
-		} else {
-			if (!ms_delta) return false;
-			// skip this step if the interval is smaller than the timer resolution
-			deltat = ms_delta * 0.001;
-		}
+		std::chrono::duration<double> time_delta = time_curr - time_prev;
+		deltat = time_delta.count();
 	}
 
-	if (deltat < fine_counter_step) {
-		// this should never be triggered, given the previous timer checks
-		return false; // don't allow zero time step (will cause division by zero everywhere!)
-	}
+	if(deltat>0.1) deltat=0.1; // Prevent huge deltat when using breakpoints
 
-	ms_prev = ms_curr;
-	if (use_fine_counter) fine_counter = hi_curr;
+	time_prev = time_curr;
 	td.BeginStep (deltat, running);
 
 	if (!running) return true;
@@ -1910,15 +1886,13 @@ bool Orbiter::Timejump (double _mjd, int pmode)
 
 void Orbiter::Suspend (void)
 {
-	ms_suspend = timeGetTime ();
+	time_suspend = std::chrono::steady_clock::now();
 }
 
 void Orbiter::Resume (void)
 {
-	DWORD dt = timeGetTime() - ms_suspend;
-	ms_prev += dt;
-	if (use_fine_counter)
-		fine_counter.QuadPart += (LONGLONG)dt * (LONGLONG)(1e-3/fine_counter_step);
+	auto dt = std::chrono::steady_clock::now() - time_suspend;
+	time_prev += dt;
 }
 
 //-----------------------------------------------------------------------------

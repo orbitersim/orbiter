@@ -666,6 +666,22 @@ INT_PTR CALLBACK orbiter::ScenarioTab::SaveProc (HWND hWnd, UINT uMsg, WPARAM wP
 //-----------------------------------------------------------------------------
 void orbiter::ScenarioTab::ClearQSFolder()
 {
+#ifdef _WIN32
+	// SHFileOperation needs an absolute path
+	fs::path scnpath{ fs::absolute(pLp->App()->ScnPath("Quicksave")) };
+	scnpath.replace_extension(); // remove ".scn"
+	// pFrom needs to be null terminated twice
+	std::string strpath = scnpath.string() + '\0';
+	SHFILEOPSTRUCT op;
+	op.hwnd = LaunchpadWnd();
+	op.wFunc = FO_DELETE;
+	op.pFrom = strpath.c_str();
+	op.pTo = NULL;
+	op.fFlags = FOF_ALLOWUNDO;
+	if(!SHFileOperation(&op)) {
+		fs::create_directory(scnpath);
+	}
+#else
 	fs::path scnpath{ pLp->App()->ScnPath("Quicksave") };
 	scnpath.replace_extension(); // remove ".scn"
 
@@ -674,6 +690,7 @@ void orbiter::ScenarioTab::ClearQSFolder()
 	if (!ec) {
 		fs::create_directory(scnpath);
 	}
+#endif
 }
 
 //-----------------------------------------------------------------------------
