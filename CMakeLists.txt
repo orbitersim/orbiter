@@ -193,7 +193,7 @@ option(
 option(
 	ORBITER_BUILD_XRSOUND
 	"Build XRSound module to enable sound in Orbiter"
-	OFF
+	ON
 )
 
 option(ORBITER_MAKE_DOC
