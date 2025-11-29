@@ -123,9 +123,7 @@ void Interpreter::Initialise ()
 	LoadSketchpadAPI ();  // load Sketchpad methods
 	LoadAnnotationAPI (); // load screen annotation methods
 	LoadVesselStatusAPI ();
-#ifdef XRSOUND
 	LoadXRSoundAPI ();
-#endif
 	LoadStartupScript (); // load default initialisation script
 }
 
@@ -1062,13 +1060,11 @@ void Interpreter::LoadAPI ()
 	luaL_openlib (L, "term", termLib, 0);
 
 	// Load XRSound library
-#ifdef XRSOUND
 	static const struct luaL_reg XRSoundLib[] = {
 		{"create_instance", xrsound_create_instance},
 		{NULL, NULL}
 	};
 	luaL_openlib (L, "xrsound", XRSoundLib, 0);
-#endif
 
 	// Set up global tables of constants
 

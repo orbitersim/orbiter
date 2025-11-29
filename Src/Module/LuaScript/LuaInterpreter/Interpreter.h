@@ -59,9 +59,7 @@ class gcCore;
 class VESSEL;
 class MFD2;
 
-#ifdef XRSOUND
 class XRSound;
-#endif
 
 struct AirfoilContext {
 	lua_State *L;
@@ -1121,7 +1119,6 @@ protected:
 
 	friend int OpenHelp (void *context);
 
-#ifdef XRSOUND
 	// -------------------------------------------
 	// XRSound
 	// -------------------------------------------
@@ -1148,7 +1145,6 @@ protected:
 	static int xrsound_set_playposition(lua_State *L);
 	static int xrsound_get_playposition(lua_State *L);
 	static int xrsound_collect(lua_State *L);
-#endif
 
 private:
 	HANDLE hExecMutex; // flow control synchronisation
