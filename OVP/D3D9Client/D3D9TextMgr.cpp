@@ -20,7 +20,7 @@
 #include <stdio.h>
 #include <time.h>
 #include <d3d9.h> 
-#include <d3dx9.h>
+#include "MathAPI.h"
 #include "D3D9TextMgr.h"
 #include "Log.h"
 #include "D3D9Client.h"
@@ -445,18 +445,19 @@ float D3D9Text::PrintSkp(D3D9Pad *pSkp, float xpos, float ypos, const char *_str
 		c = str[idx++];
 	}
 
-	D3DXMATRIX rot, out, mBak;
+	FMATRIX4 rot, out, mBak;
 	bool bRestore = false;
 
 	if (fabs(rotation)>1e-3 || fabs(scaling - 1.0f)>0.001f) {
-		D3DXVECTOR2 center = D3DXVECTOR2((bbox_l + bbox_r)*0.5f, bbox_t);
-		D3DXVECTOR2 scale = D3DXVECTOR2(scaling, scaling);
+		FVECTOR2 center = FVECTOR2((bbox_l + bbox_r)*0.5f, bbox_t);
+		FVECTOR2 scale = FVECTOR2(scaling, scaling);
 		center.x = ceil(center.x);
 		center.y = ceil(center.y);
-		D3DXMatrixTransformation2D(&rot, &center, 0.0f, &scale, &center, -rotation*0.01745329f, NULL);
 
-		memcpy(&mBak, pSkp->WorldMatrix(), sizeof(D3DXMATRIX));
-		D3DXMatrixMultiply(pSkp->WorldMatrix(), &rot, &mBak);
+		D3DMAT_Transformation2D(&rot, &center, 0.0f, &scale, &center, -rotation*0.01745329f, NULL);
+
+		memcpy(&mBak, pSkp->WorldMatrix(), sizeof(FMATRIX4));
+		oapiMatrixMultiply(pSkp->WorldMatrix(), &rot, &mBak);
 		bRestore = true;
 	}
 
@@ -517,7 +518,7 @@ float D3D9Text::PrintSkp(D3D9Pad *pSkp, float xpos, float ypos, const char *_str
 	
 
 	if (bRestore) {
-		memcpy(pSkp->WorldMatrix(), &mBak, sizeof(D3DXMATRIX));
+		memcpy(pSkp->WorldMatrix(), &mBak, sizeof(FMATRIX4));
 	}
 
 	float l = xpos - x_orig;

@@ -87,17 +87,17 @@ void D3D9CelestialSphere::InitCelestialTransform()
 {
 	m_rotCelestial = Ecliptic_CelestialAtEpoch();
 
-	m_transformCelestial._11 = (float)m_rotCelestial.m11; m_transformCelestial._12 = (float)m_rotCelestial.m12; m_transformCelestial._13 = (float)m_rotCelestial.m13; m_transformCelestial._14 = 0.0f;
-	m_transformCelestial._21 = (float)m_rotCelestial.m21; m_transformCelestial._22 = (float)m_rotCelestial.m22; m_transformCelestial._23 = (float)m_rotCelestial.m23; m_transformCelestial._24 = 0.0f;
-	m_transformCelestial._31 = (float)m_rotCelestial.m31; m_transformCelestial._32 = (float)m_rotCelestial.m32; m_transformCelestial._33 = (float)m_rotCelestial.m33; m_transformCelestial._34 = 0.0f;
-	m_transformCelestial._41 = 0.0f;                      m_transformCelestial._42 = 0.0f;                      m_transformCelestial._43 = 0.0f;                      m_transformCelestial._44 = 1.0f;
+	m_transformCelestial.m11 = (float)m_rotCelestial.m11; m_transformCelestial.m12 = (float)m_rotCelestial.m12; m_transformCelestial.m13 = (float)m_rotCelestial.m13; m_transformCelestial.m14 = 0.0f;
+	m_transformCelestial.m21 = (float)m_rotCelestial.m21; m_transformCelestial.m22 = (float)m_rotCelestial.m22; m_transformCelestial.m23 = (float)m_rotCelestial.m23; m_transformCelestial.m24 = 0.0f;
+	m_transformCelestial.m31 = (float)m_rotCelestial.m31; m_transformCelestial.m32 = (float)m_rotCelestial.m32; m_transformCelestial.m33 = (float)m_rotCelestial.m33; m_transformCelestial.m34 = 0.0f;
+	m_transformCelestial.m41 = 0.0f;                      m_transformCelestial.m42 = 0.0f;                      m_transformCelestial.m43 = 0.0f;                      m_transformCelestial.m44 = 1.0f;
 
 	m_mjdPrecessionChecked = oapiGetSimMJD();
 }
 
 // ==============================================================
 
-bool D3D9CelestialSphere::LocalHorizonTransform(MATRIX3& R, D3DXMATRIX& T)
+bool D3D9CelestialSphere::LocalHorizonTransform(MATRIX3& R, FMATRIX4& T)
 {
 	MATRIX3 rot;
 	if (LocalHorizon_Ecliptic(rot)) {
@@ -141,7 +141,7 @@ void D3D9CelestialSphere::InitStars ()
 				v.x = (float)rec.pos.x;
 				v.y = (float)rec.pos.y;
 				v.z = (float)rec.pos.z;
-				v.col = D3DXCOLOR(rec.col.x, rec.col.y, rec.col.z, 1);
+				v.col = FVECTOR4(rec.col.x, rec.col.y, rec.col.z, 1.0).dword_abgr();
 				idx++;
 			}
 			(*it)->Unlock();
@@ -327,17 +327,17 @@ void D3D9CelestialSphere::Render(LPDIRECT3DDEVICE9 pDevice, const VECTOR3& skyCo
 	if (renderFlag & PLN_ENABLE) {
 
 		HR(s_FX->SetTechnique(s_eLine));
-		HR(s_FX->SetMatrix(s_eWVP, m_scene->GetProjectionViewMatrix()));
+		HR(s_FX->SetMatrix(s_eWVP, _DX(m_scene->GetProjectionViewMatrix())));
 
 		// render ecliptic grid
 		if (renderFlag & PLN_EGRID) {
 			FVECTOR4 baseCol1(0.0f, 0.2f, 0.3f, 1.0f);
-			D3DXVECTOR4 vColor1 = ColorAdjusted(baseCol1);
-			HR(s_FX->SetVector(s_eColor, &vColor1));
+			FVECTOR4 vColor1 = ColorAdjusted(baseCol1);
+			HR(s_FX->SetVector(s_eColor, _DX(vColor1)));
 			RenderGrid(s_FX, false);
 			FVECTOR4 baseCol2(0.0f, 0.4f, 0.6f, 1.0f);
-			D3DXVECTOR4 vColor2 = ColorAdjusted(baseCol2);
-			HR(s_FX->SetVector(s_eColor, &vColor2));
+			FVECTOR4 vColor2 = ColorAdjusted(baseCol2);
+			HR(s_FX->SetVector(s_eColor, _DX(vColor2)));
 			RenderGreatCircle(s_FX);
 			MATRIX3 ident = _M(1, 0, 0, 0, 1, 0, 0, 0, 1);
 			double dphi = ElevationScaleRotation(ident);
@@ -347,20 +347,20 @@ void D3D9CelestialSphere::Render(LPDIRECT3DDEVICE9 pDevice, const VECTOR3& skyCo
 		// render galactic grid
 		if (renderFlag & PLN_GGRID) {
 			static const MATRIX3& R = Ecliptic_Galactic();
-			static D3DXMATRIX T = { (float)R.m11, (float)R.m12, (float)R.m13, 0.0f,
+			static FMATRIX4 T = { (float)R.m11, (float)R.m12, (float)R.m13, 0.0f,
 						 		    (float)R.m21, (float)R.m22, (float)R.m23, 0.0f,
 								    (float)R.m31, (float)R.m32, (float)R.m33, 0.0f,
 								    0.0f,         0.0f,         0.0f,         1.0f };
-			D3DXMATRIX rot;
-			D3DXMatrixMultiply(&rot, &T, m_scene->GetProjectionViewMatrix());
-			HR(s_FX->SetMatrix(s_eWVP, &rot));
+			FMATRIX4 rot;
+			oapiMatrixMultiply(&rot, &T, m_scene->GetProjectionViewMatrix());
+			HR(s_FX->SetMatrix(s_eWVP, _DX(rot)));
 			FVECTOR4 baseCol1(0.3f, 0.0f, 0.0f, 1.0f);
-			D3DXVECTOR4 vColor1 = ColorAdjusted(baseCol1);
-			HR(s_FX->SetVector(s_eColor, &vColor1));
+			FVECTOR4 vColor1 = ColorAdjusted(baseCol1);
+			HR(s_FX->SetVector(s_eColor, _DX(vColor1)));
 			RenderGrid(s_FX, false);
 			FVECTOR4 baseCol2(0.7f, 0.0f, 0.0f, 1.0f);
-			D3DXVECTOR4 vColor2 = ColorAdjusted(baseCol2);
-			HR(s_FX->SetVector(s_eColor, &vColor2));
+			FVECTOR4 vColor2 = ColorAdjusted(baseCol2);
+			HR(s_FX->SetVector(s_eColor, _DX(vColor2)));
 			RenderGreatCircle(s_FX);
 			double dphi = ElevationScaleRotation(R);
 			RenderGridLabels(s_FX, 2, baseCol2, R, dphi);
@@ -370,16 +370,16 @@ void D3D9CelestialSphere::Render(LPDIRECT3DDEVICE9 pDevice, const VECTOR3& skyCo
 		if (renderFlag & PLN_CGRID) {
 			if (fabs(m_mjdPrecessionChecked - oapiGetSimMJD()) > 1e3)
 				InitCelestialTransform();
-			D3DXMATRIX rot;
-			D3DXMatrixMultiply(&rot, &m_transformCelestial, m_scene->GetProjectionViewMatrix());
-			HR(s_FX->SetMatrix(s_eWVP, &rot));
+			FMATRIX4 rot;
+			oapiMatrixMultiply(&rot, &m_transformCelestial, m_scene->GetProjectionViewMatrix());
+			HR(s_FX->SetMatrix(s_eWVP, _DX(rot)));
 			FVECTOR4 baseCol1(0.3f, 0.0f, 0.3f, 1.0f);
-			D3DXVECTOR4 vColor1 = ColorAdjusted(baseCol1);
-			HR(s_FX->SetVector(s_eColor, &vColor1));
+			FVECTOR4 vColor1 = ColorAdjusted(baseCol1);
+			HR(s_FX->SetVector(s_eColor, _DX(vColor1)));
 			RenderGrid(s_FX, false);
 			FVECTOR4 baseCol2(0.7f, 0.0f, 0.7f, 1.0f);
-			D3DXVECTOR4 vColor2 = ColorAdjusted(baseCol2);
-			HR(s_FX->SetVector(s_eColor, &vColor2));
+			FVECTOR4 vColor2 = ColorAdjusted(baseCol2);
+			HR(s_FX->SetVector(s_eColor, _DX(vColor2)));
 			RenderGreatCircle(s_FX);
 			double dphi = ElevationScaleRotation(m_rotCelestial);
 			RenderGridLabels(s_FX, 1, baseCol2, m_rotCelestial, dphi);
@@ -388,17 +388,17 @@ void D3D9CelestialSphere::Render(LPDIRECT3DDEVICE9 pDevice, const VECTOR3& skyCo
 		//  render local horizon grid
 		if (renderFlag & PLN_HGRID) {
 			MATRIX3 R;
-			D3DXMATRIX T, rot;
+			FMATRIX4 T, rot;
 			if (LocalHorizonTransform(R, T)) {
-				D3DXMatrixMultiply(&rot, &T, m_scene->GetProjectionViewMatrix());
-				HR(s_FX->SetMatrix(s_eWVP, &rot));
+				oapiMatrixMultiply(&rot, &T, m_scene->GetProjectionViewMatrix());
+				HR(s_FX->SetMatrix(s_eWVP, _DX(rot)));
 				oapi::FVECTOR4 baseCol1(0.2f, 0.2f, 0.0f, 1.0f);
-				D3DXVECTOR4 vColor1 = ColorAdjusted(baseCol1);
-				HR(s_FX->SetVector(s_eColor, &vColor1));
+				FVECTOR4 vColor1 = ColorAdjusted(baseCol1);
+				HR(s_FX->SetVector(s_eColor, _DX(vColor1)));
 				RenderGrid(s_FX, false);
 				oapi::FVECTOR4 baseCol2(0.5f, 0.5f, 0.0f, 1.0f);
-				D3DXVECTOR4 vColor2 = ColorAdjusted(baseCol2);
-				HR(s_FX->SetVector(s_eColor, &vColor2));
+				FVECTOR4 vColor2 = ColorAdjusted(baseCol2);
+				HR(s_FX->SetVector(s_eColor, _DX(vColor2)));
 				RenderGreatCircle(s_FX);
 				double dphi = ElevationScaleRotation(R);
 				RenderGridLabels(s_FX, 0, baseCol2, R, dphi);
@@ -411,38 +411,38 @@ void D3D9CelestialSphere::Render(LPDIRECT3DDEVICE9 pDevice, const VECTOR3& skyCo
 			if (hRef) {
 				MATRIX3 R;
 				oapiGetRotationMatrix(hRef, &R);
-				D3DXMATRIX iR = {
+				FMATRIX4 iR = {
 					(float)R.m11, (float)R.m21, (float)R.m31, 0.0f,
 					(float)R.m12, (float)R.m22, (float)R.m32, 0.0f,
 					(float)R.m13, (float)R.m23, (float)R.m33, 0.0f,
 					0.0f,         0.0f,         0.0f,         1.0f
 				};
-				D3DXMATRIX rot;
-				D3DXMatrixMultiply(&rot, &iR, m_scene->GetProjectionViewMatrix());
-				HR(s_FX->SetMatrix(s_eWVP, &rot));
+				FMATRIX4 rot;
+				oapiMatrixMultiply(&rot, &iR, m_scene->GetProjectionViewMatrix());
+				HR(s_FX->SetMatrix(s_eWVP, _DX(rot)));
 				FVECTOR4 baseCol(0.0f, 0.6f, 0.0f, 1.0f);
-				D3DXVECTOR4 vColor = ColorAdjusted(baseCol);
-				HR(s_FX->SetVector(s_eColor, &vColor));
+				FVECTOR4 vColor = ColorAdjusted(baseCol);
+				HR(s_FX->SetVector(s_eColor, _DX(vColor)));
 				RenderGreatCircle(s_FX);
 			}
 		}
 
 		// render constellation boundaries ----------------------------------------
 		if (renderFlag & PLN_CNSTBND) { // for now, hijack the constellation line flag
-			HR(s_FX->SetMatrix(s_eWVP, m_scene->GetProjectionViewMatrix()));
+			HR(s_FX->SetMatrix(s_eWVP, _DX(m_scene->GetProjectionViewMatrix())));
 			RenderConstellationBoundaries(s_FX);
 		}
 
 		// render constellation lines ---------------------------------------------
 		if (renderFlag & PLN_CONST) {
-			HR(s_FX->SetMatrix(s_eWVP, m_scene->GetProjectionViewMatrix()));
+			HR(s_FX->SetMatrix(s_eWVP, _DX(m_scene->GetProjectionViewMatrix())));
 			RenderConstellationLines(s_FX);
 		}
 	}
 
 	// render stars
 	HR(s_FX->SetTechnique(s_eStar));
-	HR(s_FX->SetMatrix(s_eWVP, m_scene->GetProjectionViewMatrix()));
+	HR(s_FX->SetMatrix(s_eWVP, _DX(m_scene->GetProjectionViewMatrix())));
 	RenderStars(s_FX);
 
 	// render markers and labels
@@ -497,8 +497,8 @@ void D3D9CelestialSphere::RenderStars(ID3DXEffect *FX)
 void D3D9CelestialSphere::RenderConstellationLines(ID3DXEffect *FX)
 {
 	const FVECTOR4 baseCol(0.5f, 0.3f, 0.2f, 1.0f);
-	D3DXVECTOR4 vColor = ColorAdjusted(baseCol);
-	HR(s_FX->SetVector(s_eColor, &vColor));
+	FVECTOR4 vColor = ColorAdjusted(baseCol);
+	HR(s_FX->SetVector(s_eColor, _DX(vColor)));
 
 	_TRACE;
 	UINT numPasses = 0;
@@ -516,8 +516,8 @@ void D3D9CelestialSphere::RenderConstellationLines(ID3DXEffect *FX)
 void D3D9CelestialSphere::RenderConstellationBoundaries(ID3DXEffect* FX)
 {
 	const FVECTOR4 baseCol(0.25f, 0.2f, 0.15f, 1.0f);
-	D3DXVECTOR4 vColor = ColorAdjusted(baseCol);
-	HR(s_FX->SetVector(s_eColor, &vColor));
+	FVECTOR4 vColor = ColorAdjusted(baseCol);
+	HR(s_FX->SetVector(s_eColor, _DX(vColor)));
 
 	_TRACE;
 	UINT numPasses = 0;
@@ -588,18 +588,18 @@ void D3D9CelestialSphere::RenderGridLabels(ID3DXEffect* FX, int az_idx, const oa
 	HR(FX->EndPass());
 	HR(FX->End());
 
-	D3DXMATRIX T0, T1;
+	FMATRIX4 T0, T1;
 	if (dphi) {
-		FX->GetMatrix(s_eWVP, &T0);
+		FX->GetMatrix(s_eWVP, (D3DXMATRIX*)&T0);
 		double cosp = cos(dphi), sinp = sin(dphi);
-		D3DXMATRIX R2 = {
+		FMATRIX4 R2 = {
 			(float)(cosp * R.m11 + sinp * R.m31),  (float)(cosp * R.m12 + sinp * R.m32),  (float)(cosp * R.m13 + sinp * R.m33),  0.0f,
 			(float)R.m21,                          (float)R.m22,                          (float)R.m23,                          0.0f,
 			(float)(-sinp * R.m11 + cosp * R.m31), (float)(-sinp * R.m12 + cosp * R.m32), (float)(-sinp * R.m13 + cosp * R.m33), 0.0f,
 			0.0f,                                  0.0f,                                  0.0f,                                  1.0f
 		};
-		D3DXMatrixMultiply(&T1, &R2, m_scene->GetProjectionViewMatrix());
-		FX->SetMatrix(s_eWVP, &T1);
+		oapiMatrixMultiply(&T1, &R2, m_scene->GetProjectionViewMatrix());
+		FX->SetMatrix(s_eWVP, _DX(T1));
 	}
 
 	HR(m_pDevice->SetStreamSource(0, m_elGridLabelVtx, 0, sizeof(VERTEX_XYZ_TEX)));
@@ -613,7 +613,7 @@ void D3D9CelestialSphere::RenderGridLabels(ID3DXEffect* FX, int az_idx, const oa
 	HR(FX->SetTechnique(s_eLine)); // Restore default tech
 
 	if (dphi)
-		FX->SetMatrix(s_eWVP, &T0);
+		FX->SetMatrix(s_eWVP, _DX(T0));
 }
 
 // ==============================================================
@@ -628,10 +628,8 @@ void D3D9CelestialSphere::RenderBkgImage(LPDIRECT3DDEVICE9 dev)
 
 bool D3D9CelestialSphere::EclDir2WindowPos(const VECTOR3& dir, int& x, int& y) const
 {
-	D3DXVECTOR3 homog;
-	D3DXVECTOR3 fdir((float)dir.x, (float)dir.y, (float)dir.z);
-
-	D3DXVec3TransformCoord(&homog, &fdir, m_scene->GetProjectionViewMatrix());
+	FVECTOR3 fdir((float)dir.x, (float)dir.y, (float)dir.z);
+	FVECTOR3 homog = oapiTransformCoord(&fdir, m_scene->GetProjectionViewMatrix());
 
 	if (homog.x >= -1.0f && homog.x <= 1.0f &&
 		homog.y >= -1.0f && homog.y <= 1.0f &&

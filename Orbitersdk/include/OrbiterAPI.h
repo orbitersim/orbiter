@@ -28,6 +28,7 @@
 #include <float.h>
 #include <math.h>
 #include <vector>
+#include <list>
 
 #if defined(_MSC_VER) && (_MSC_VER < 1920 ) // Microsoft Visual Studio Version 2017 and lower
 #include <algorithm>
@@ -128,6 +129,9 @@ namespace oapi {
 	class Pen;
 	class Brush;
 	union FVECTOR4;
+	union FVECTOR3;
+	union FVECTOR2;
+	union FMATRIX4;
 }
 
 // ======================================================================
@@ -330,6 +334,18 @@ typedef struct {
 	float TexMixEx[MAXTEX]; ///< texture mix values
 } MESHGROUPEX;
 
+
+typedef struct {
+	union {
+		VECTOR3 pt[4];
+		struct {
+			VECTOR3 cnt;
+			float rad;
+		};
+	};
+	int id, mode;
+} VCClickZone;
+
 /**
  * \ingroup defines
  * \defgroup surfacecaps Surface and texture attributes
@@ -353,6 +369,7 @@ typedef struct {
 #define OAPISURFACE_RENDER3D     0x0400 ///< Create a surface that can act as a target for rendering a 3D scene
 #define OAPISURFACE_ANTIALIAS    0x0800 ///< Create a surface with anti-aliasing the level will depend on launchpad settings.
 #define OAPISURFACE_SHARED		 0x1000 ///< Create a shared resource
+#define OAPISURFACE_DIFFUSE_ONLY 0x2000 ///< Load only a regular diffuse texture and ignore additional maps if exists
 //@}
 
 /**
@@ -475,10 +492,22 @@ namespace oapi {
 		IMAGE_PNG = 1,
 		IMAGE_JPG = 2,
 		IMAGE_TIF = 3,
-		IMAGE_DDS = 4	///< D3D9+ only
+		IMAGE_DDS = 4	///< vk+ only
 	};
 }
 
+enum class ScnChgEvent {
+	Invalid = 0,		///< Unspecified event
+	Added = 1,			///< Vessel dynamically added in scenario
+	Deleted = 2,		///< Vessel dynamically deleted from scenario
+	Docked = 3,			///< Vessels docked
+	UnDocked = 4,		///< Vessels undocked
+	Attached = 5,		///< Vessels attached
+	Detached = 6,		///< Vessels detached
+	VisualConfig = 7,	///< Vessel's rendering configuration has changed
+	VisualCreated = 8,	///< Vessel visual created
+	VisualDeleted = 9	///< Vessel visual deleted
+};
 
 /**
  * \brief Kepler orbital elements
@@ -2052,6 +2081,9 @@ typedef union {
 //@}
 
 #define MESHPROPERTY_MODULATEMATALPHA 1
+#define MESHPROPERTY_FLAGS 2
+#define MESHFLAG_VC				0x2		///< This mesh is a virtual cockpit
+#define MESHFLAG_SHADOW_VC		0x4 	///< This mesh casts shadows in virual cockpit
 
 // ===========================================================================
 /// \ingroup defines
@@ -4576,6 +4608,7 @@ OAPIFUNC DWORD oapiGetMeshFlags (MESHHANDLE hMesh);
 	* \note See 3DModel document for details of the mesh format.
 	*/
 OAPIFUNC DWORD oapiMeshGroupCount (MESHHANDLE hMesh);
+OAPIFUNC void oapiMeshGroupLabel(MESHHANDLE hMesh, DWORD grp, char* label, DWORD bufsize);
 
 	/**
 	* \brief Returns a pointer to the group specification of a mesh group.
@@ -4847,12 +4880,14 @@ OAPIFUNC int oapiSetMaterialEx(DEVMESHHANDLE hMesh, DWORD matidx, MatProp prp, c
 	 * \return \e true if the property tag was recognised and the request could be executed, \e false otherwise.
 	 * \note Currently only a single mesh property is recognised, but this may be
 	 *  extended in future versions:
-	 * - \c MESHPROPERTY_MODULATEMATALPHA \n \n
+	 * - \c MESHPROPERTY_MODULATEMATALPHA
+	 * - \c MESHPROPERTY_FLAGS\n \n
 	 * if value==0 (default) disable material alpha information in textured mesh groups (only use texture alpha channel).\n
 	 * if value<>0 modulate (mix) material alpha values with texture alpha maps.
 	 * \sa oapiSetMeshProperty(DEVMESHHANDLE,DWORD,DWORD)
 	 */
 OAPIFUNC bool oapiSetMeshProperty (MESHHANDLE hMesh, DWORD property, DWORD value);
+OAPIFUNC bool oapiGetMeshProperty (MESHHANDLE hMesh, DWORD property, DWORD *value);
 
 	/**
      * \brief Set custom properties for a device-specific mesh.
@@ -4862,7 +4897,8 @@ OAPIFUNC bool oapiSetMeshProperty (MESHHANDLE hMesh, DWORD property, DWORD value
 	 * \return \e true if the property tag was recognised and the request could be executed, \e false otherwise.
 	 * \note Currently only a single mesh property is recognised, but this may be
 	 *  extended in future versions:
-	 * - \c MESHPROPERTY_MODULATEMATALPHA \n \n
+	 * - \c MESHPROPERTY_MODULATEMATALPHA
+	 * - \c MESHPROPERTY_FLAGS\n \n
 	 * if value==0 (default) disable material alpha information in textured mesh groups (only use texture alpha channel).\n
 	 * if value<>0 modulate (mix) material alpha values with texture alpha maps.		
 	 * \sa oapiSetMeshProperty(MESHHANDLE,DWORD,DWORD)
@@ -5545,6 +5581,17 @@ OAPIFUNC SURFHANDLE oapiLoadSurfaceEx(const char* fname, DWORD attrib, bool bPat
 	*/
 OAPIFUNC bool oapiSaveSurface(const char* fname, SURFHANDLE hSrf, oapi::ImageFileFormat fmt, float quality = 0.7f);
 
+	/**
+	* \brief Load a diffuse/albedo texture and additional texture maps from a separate sources 
+	* \param diff difuse/albedo texture file name. If NULL, hOld must be specified 
+	* \param maps base name for texture maps, if NULL only diffuse is loaded.
+	* \param bPath if 'true' then 'fname' must contain absolute path to a file. If 'false' a normal Orbiter texture search path is used.
+	* \param hOld handle to an existing diffuse texture to receive additional maps, or NULL.
+	* \param bAll if true, auto load all existing additional maps. If false, load and add a simgle map. 
+	* \return Surface handle for the loaded texture, or NULL in a case of an error.
+	* \note A surface must always have a base diffuse texture. 
+	*/
+OAPIFUNC SURFHANDLE oapiLoadAdditionalTextureMaps(const char* diff, const char* maps = NULL, bool bPath = false, SURFHANDLE hOld = NULL, bool bAll = true);
 
 	/**
 	* \brief Create a surface from a bitmap. Bitmap surfaces are typically used for blitting
@@ -5877,6 +5924,8 @@ OAPIFUNC void       oapiVCSetAreaClickmode_Spherical (int id, const VECTOR3 &cnt
 	* \sa VESSEL2::clbkVCMouseEvent
 	*/
 OAPIFUNC void       oapiVCSetAreaClickmode_Quadrilateral (int id, const VECTOR3 &p1, const VECTOR3 &p2, const VECTOR3 &p3, const VECTOR3 &p4);
+
+OAPIFUNC void		oapiVCGetAreaClickZones(std::list<VCClickZone>* p_List);
 
 	/**
 	* \brief Defines the neighbouring virtual cockpit camera positions in relation to the current
@@ -6267,6 +6316,7 @@ OAPIFUNC void oapiWriteLine (FILEHANDLE file, char *line);
 	* \sa oapiWriteLogV
 	*/
 OAPIFUNC void oapiWriteLog (char *line);
+OAPIFUNC void oapiWriteLogVerbose(char* line);
 
 	/**
 	* \brief Writes a formatted string with variable number of arguments to orbiter.log.
@@ -6761,6 +6811,15 @@ OAPIFUNC void oapiTriggerPanelRedrawArea (int panel_id, int area_id);
 OAPIFUNC void oapiTriggerRedrawArea (int panel_id, int vc_id, int area_id);
 //@}
 
+
+OAPIFUNC void oapiMatrixIdentity(oapi::FMATRIX4 *x);
+OAPIFUNC oapi::FMATRIX4  mul(const oapi::FMATRIX4* a, const oapi::FMATRIX4* b);
+OAPIFUNC oapi::FMATRIX4* oapiMatrixMultiply(oapi::FMATRIX4* o, const oapi::FMATRIX4* a, const oapi::FMATRIX4* b);
+OAPIFUNC oapi::FMATRIX4* oapiMatrixInverse(oapi::FMATRIX4* o, float* d, const oapi::FMATRIX4* a);
+OAPIFUNC oapi::FMATRIX4* oapiMatrixRotationAxis(oapi::FMATRIX4* o, oapi::FVECTOR3* pAxis, float rad);
+OAPIFUNC oapi::FVECTOR3 oapiTransformCoord(const oapi::FVECTOR3* V, const oapi::FMATRIX4* M);
+OAPIFUNC oapi::FVECTOR3 oapiTransformNormal(const oapi::FVECTOR3* V, const oapi::FMATRIX4* M);
+
 //@}  -- End of Orbiter API interface methods --
 
 
@@ -7052,10 +7111,7 @@ OAPIFUNC void oapiTriggerRedrawArea (int panel_id, int vc_id, int area_id);
  * \param z z-component
  * \return vector defined as (x,y,z)
  */
-inline VECTOR3 _V(double x, double y, double z)
-{
-	VECTOR3 vec = {x,y,z}; return vec;
-}
+inline VECTOR3 _V(double x, double y, double z) { return { x, y, z }; }
 
 /**
  * \ingroup vec

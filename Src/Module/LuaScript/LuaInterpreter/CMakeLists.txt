@@ -32,7 +32,7 @@ add_dependencies(LuaInterpreter
 )
 
 if(ORBITER_BUILD_D3D9CLIENT)
-  add_dependencies(LuaInterpreter	D3D9Client D3D9Client_Interface)
+  add_dependencies(LuaInterpreter	VulkanClient D3D9Client_Interface)
 endif()
 
 if(ORBITER_BUILD_XRSOUND)

@@ -5,7 +5,7 @@
 
 
 #include <d3d9.h>
-#include <d3dx9.h>
+#include "MathAPI.h"
 #include "gcCore.h"
 #include "D3D9Surface.h"
 #include "D3D9Client.h"
@@ -386,11 +386,11 @@ void gcCore::RenderMesh(DEVMESHHANDLE hMesh, const oapi::FMATRIX4* pWorld)
 bool gcCore::PickMesh(PickMeshStruct* pm, DEVMESHHANDLE hMesh, const FMATRIX4* pWorld, short x, short y)
 {
 	Scene* pScene = g_client->GetScene();
-	D3D9Pick pk = pScene->PickMesh(hMesh, (const LPD3DXMATRIX)pWorld, x, y);
+	D3D9Pick pk = pScene->PickMesh(hMesh, (const FMATRIX4*)pWorld, x, y);
 	if (pk.group >= 0) {
 		if (pk.dist < pm->dist) {
-			pm->pos = _FV(pk.pos);
-			pm->normal = _FV(pk.normal);
+			pm->pos = pk.pos;
+			pm->normal = pk.normal;
 			pm->grp_inst = pk.group;
 			pm->dist = pk.dist;
 			return true;
@@ -449,7 +449,7 @@ SURFHANDLE gcCore::CompressSurface(SURFHANDLE hSurface, DWORD flags)
 //
 void gcCore::RenderLines(const FVECTOR3* pVtx, const WORD* pIdx, int nVtx, int nIdx, const FMATRIX4* pWorld, DWORD color)
 {
-	D3D9Effect::RenderLines((const D3DXVECTOR3*)pVtx, pIdx, nVtx, nIdx, (const D3DXMATRIX*)pWorld, color);
+	D3D9Effect::RenderLines((const FVECTOR3*)pVtx, pIdx, nVtx, nIdx, (const FMATRIX4*)pWorld, color);
 }
 
 
@@ -475,7 +475,7 @@ bool gcCore::ClearSurfaceInScene(SURFHANDLE tgt, DWORD color, LPRECT tr)
 	if (S_OK == g_client->BeginScene())
 	{
 		LPDIRECT3DSURFACE9 pts = SURFACE(tgt)->GetSurface();
-		HRESULT hr = g_client->GetDevice()->ColorFill(pts, tr, (D3DCOLOR)color);
+		HRESULT hr = g_client->GetDevice()->ColorFill(pts, tr, (DWORD)color);
 		g_client->EndScene();
 		return hr == S_OK;
 	}
@@ -520,8 +520,8 @@ gcCore::PickGround gcCore::ScanScreen(int scr_x, int scr_y)
 		pg.elev = tp.elev;
 		pg.level = pTile->Level();
 		pg.hTile = HTILE(pTile);
-		pg.normal = _FV(tp._n);
-		pg.pos = _FV(tp._p);
+		pg.normal = tp._n;
+		pg.pos = tp._p;
 	}
 	return pg;
 }
@@ -612,7 +612,7 @@ gcCore::PickGround gcCore2::GetTileData(HPLANETMGR vPl, double lng, double lat, 
 	pTile->GetElevation(lng, lat, &pg.elev, &pg.normal, NULL, true, false);
 
 	VECTOR3 pos = vP->GetUnitSurfacePos(lng, lat) * (vP->GetSize() + pg.elev);
-	MATRIX3 mRot; oapiGetRotationMatrix(vP->Object(), &mRot);
+	MATRIX3 mRot; oapiGetRotationMatrix(vP->GetObjHandle(), &mRot);
 
 	pos = mul(mRot, pos) + vP->PosFromCamera();
 

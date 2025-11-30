@@ -7,7 +7,7 @@
 #define __IPROCESS_H
 
 #include <d3d9.h> 
-#include <d3dx9.h>
+#include "MathAPI.h"
 #include <list>
 #include <map>
 #include "OrbiterAPI.h"
@@ -115,6 +115,7 @@ public:
 	void	SetDepthStencil(LPDIRECT3DSURFACE9 hSrf = NULL);
 	void	SetOutputNative(int id, LPDIRECT3DSURFACE9 hSrf);
 	void	SetTextureNative(const char *var, LPDIRECT3DBASETEXTURE9 hTex, DWORD flags);
+	void	SetTextureNative(int idx, LPDIRECT3DBASETEXTURE9 hTex, DWORD flags);
 
 private:
 
@@ -128,7 +129,7 @@ private:
 	struct {
 		LPDIRECT3DBASETEXTURE9 hTex;
 		DWORD flags;
-	} pTextures[8];
+	} pTextures[16];
 
 	gcIPInterface::ipicull mesh_cull;
 
@@ -142,8 +143,8 @@ private:
 	LPDIRECT3DVERTEXSHADER9 pVertex;
 	LPDIRECT3DPIXELSHADER9 pPixel;
 	D3DSURFACE_DESC desc;
-	D3DXMATRIX   mVP;
-	D3DXVECTOR4  vTemplate;
+	FMATRIX4   mVP;
+	FVECTOR4  vTemplate;
 	D3DVIEWPORT9 iVP;
 	D3DXHANDLE   hVP;
 	D3DXHANDLE   hPos;

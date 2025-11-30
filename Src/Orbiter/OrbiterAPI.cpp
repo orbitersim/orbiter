@@ -1452,6 +1452,13 @@ DLLEXPORT bool oapiSaveSurface(const char* fname, SURFHANDLE hSrf, oapi::ImageFi
 	return false;
 }
 
+DLLEXPORT SURFHANDLE oapiLoadAdditionalTextureMaps(const char* diff, const char* maps, bool bPath, SURFHANDLE hOld, bool bAll)
+{
+	oapi::GraphicsClient* gc = g_pOrbiter->GetGraphicsClient();
+	if (gc) return gc->clbkLoadMaps(diff, maps, bPath, hOld, bAll);
+	else return NULL;
+}
+
 DLLEXPORT void oapiReleaseTexture (SURFHANDLE hTex)
 {
 	oapi::GraphicsClient *gc = g_pOrbiter->GetGraphicsClient();
@@ -1494,6 +1501,12 @@ DLLEXPORT DWORD oapiGetMeshFlags (MESHHANDLE hMesh)
 		return 0;
 	}
 	return ((Mesh*)hMesh)->GetFlags();
+}
+
+DLLEXPORT void oapiMeshGroupLabel(MESHHANDLE hMesh, DWORD grp, char* label, DWORD bufsize)
+{
+	Mesh* pMesh = (Mesh*)hMesh;
+	strncpy(label, pMesh->GetLabel(grp).c_str(), bufsize);
 }
 
 DLLEXPORT MESHGROUP *oapiMeshGroup (MESHHANDLE hMesh, DWORD idx)
@@ -1600,6 +1613,23 @@ DLLEXPORT bool oapiSetMeshProperty (MESHHANDLE hMesh, DWORD property, DWORD valu
 	switch (property) {
 	case MESHPROPERTY_MODULATEMATALPHA:
 		mesh->EnableMatAlpha (value != 0);
+		return true;
+	case MESHPROPERTY_FLAGS:
+		mesh->SetFlags(value);
+		return true;
+	}
+	return false;
+}
+
+DLLEXPORT bool oapiGetMeshProperty(MESHHANDLE hMesh, DWORD property, DWORD *value)
+{
+	Mesh* mesh = (Mesh*)hMesh;
+	switch (property) {
+	case MESHPROPERTY_MODULATEMATALPHA:
+		*value = mesh->EnableMatAlpha() ? 1 : 0;
+		return true;
+	case MESHPROPERTY_FLAGS:
+		*value = mesh->GetFlags();
 		return true;
 	}
 	return false;
@@ -1874,6 +1904,11 @@ DLLEXPORT void oapiVCSetAreaClickmode_Spherical (int id, const VECTOR3 &cnt, dou
 DLLEXPORT void oapiVCSetAreaClickmode_Quadrilateral (int id, const VECTOR3 &p1, const VECTOR3 &p2, const VECTOR3 &p3, const VECTOR3 &p4)
 {
 	g_pane->SetVCAreaClickmode_Quadrilateral (id, Vector(p1.x, p1.y, p1.z), Vector(p2.x,p2.y,p2.z), Vector(p3.x,p3.y,p3.z), Vector(p4.x,p4.y,p4.z));
+}
+
+DLLEXPORT void oapiVCGetAreaClickZones(std::list<VCClickZone>* p_List)
+{
+	g_pane->GetVCAreaClickZones(p_List);
 }
 
 DLLEXPORT oapi::Sketchpad *oapiGetSketchpad (SURFHANDLE surf)
@@ -2310,6 +2345,11 @@ DLLEXPORT void oapiWriteLog (char *line)
 	LOGOUT (line);
 }
 
+DLLEXPORT void oapiWriteLogVerbose(char* line)
+{
+	LogOutFine(line);
+}
+
 DLLEXPORT void oapiExitOrbiter(int code)
 {
 	exit(code);
@@ -2632,3 +2672,65 @@ DLLEXPORT void sscan_state (char *str, AnimState &s)
 	s.action = (AnimState::Action)(a+1);
 	s.pos = p;
 }
+
+#include "MathAPI.h"
+
+using namespace oapi;
+
+DLLEXPORT void oapiMatrixIdentity(FMATRIX4 *x)
+{
+	x->m21 = x->m31 = x->m41 = x->m12 = x->m32 = x->m42 = 0.0f;
+	x->m13 = x->m23 = x->m43 = x->m14 = x->m24 = x->m34 = 0.0f;
+	x->m11 = x->m22 = x->m33 = x->m44 = 1.0f;
+}
+
+DLLEXPORT FMATRIX4 mul(const FMATRIX4* a, const FMATRIX4* b)
+{
+	return FMATRIX4(XMMatrixMultiply(a->XM(), b->XM()));
+}
+
+DLLEXPORT FMATRIX4* oapiMatrixMultiply(FMATRIX4* o, const FMATRIX4* a, const FMATRIX4* b)
+{
+	o->Load(XMMatrixMultiply(a->XM(), b->XM()));
+	return o;
+}
+
+DLLEXPORT FMATRIX4* oapiMatrixInverse(FMATRIX4* o, float* d, const FMATRIX4* a)
+{
+	XMVECTOR det;
+	o->Load(XMMatrixInverse(&det, a->XM()));
+	if (d != nullptr) *d = det.m128_f32[0];
+	return o;
+}
+
+DLLEXPORT FMATRIX4* oapiMatrixRotationAxis(FMATRIX4* o, FVECTOR3* pAxis, float rad)
+{
+	o->Load(XMMatrixRotationAxis(pAxis->XM(), rad));
+	return o;
+}
+
+/**
+* \brief Transform a position by matrix
+*/
+DLLEXPORT FVECTOR3 oapiTransformCoord(const FVECTOR3* V, const FMATRIX4* M)
+{
+	float x = V->x * M->m11 + V->y * M->m21 + V->z * M->m31 + M->m41;
+	float y = V->x * M->m12 + V->y * M->m22 + V->z * M->m32 + M->m42;
+	float z = V->x * M->m13 + V->y * M->m23 + V->z * M->m33 + M->m43;
+	float w = V->x * M->m14 + V->y * M->m24 + V->z * M->m34 + M->m44;
+	w = 1.0f / w;
+	return FVECTOR3(x * w, y * w, z * w);
+}
+
+
+/**
+* \brief Transform a normal or direction by matrix
+*/
+DLLEXPORT FVECTOR3 oapiTransformNormal(const FVECTOR3* V, const FMATRIX4* M)
+{
+	float x = V->x * M->m11 + V->y * M->m21 + V->z * M->m31;
+	float y = V->x * M->m12 + V->y * M->m22 + V->z * M->m32;
+	float z = V->x * M->m13 + V->y * M->m23 + V->z * M->m33;
+	return FVECTOR3(x, y, z);
+}
+

@@ -460,11 +460,19 @@ public:
 	virtual void clbkOptionChanged(DWORD cat, DWORD item) {}
 
 	/**
+	 * \brief React to vessel creation, deletion, docking, attaching events
+	 * \param hVesselA object handle of first vessel
+	 * \param hVesselB object handle of second vessel
+	 * \param type Event type
+	 */
+	virtual void clbkScenarioChanged(OBJHANDLE hVessel, ScnChgEvent type) {}
+
+	/**
 	 * \brief Print multiple debug strings onto a screen, will be cleared when printed on screen.
 	 * \param str Text string to print
 	 */
 	virtual void clbkDebugString(const char *str) {}
-	
+
 	/**
 	 * \brief Texture request
 	 *
@@ -517,6 +525,13 @@ public:
 	{ return NULL; }
 
 	/**
+	 */
+	virtual SURFHANDLE clbkLoadMaps(const char* diff, const char* maps, bool bPath, SURFHANDLE hOld = NULL, bool bAll = true)
+	{
+		return clbkLoadTexture(diff);
+	}
+
+	/**
 	 * \brief Save the contents of a surface to a formatted image file or to the clipboard
 	 * \param surf surface handle (0 for primary render surface)
 	 * \param fname image file path relative to orbiter root directory (excluding file extension), or NULL to save to clipboard
@@ -563,7 +578,7 @@ public:
 	 * \default None, returns 2 ("client does not support operation").
 	 */
 	virtual int clbkSetMeshMaterial (DEVMESHHANDLE hMesh, DWORD matidx, const MATERIAL *mat) { return 2; }
-	virtual int clbkSetMeshMaterialEx(DEVMESHHANDLE hMesh, DWORD matidx, MatProp prp, const oapi::FVECTOR4* in) { return 2; }
+	virtual int clbkSetMeshMaterialEx(DEVMESHHANDLE hMesh, DWORD matidx, MatProp prp, const FVECTOR4* in) { return 2; }
 
 	/**
 	 * \brief Retrieve the properties of one of the mesh materials.
@@ -574,7 +589,7 @@ public:
 	 * \default None, returns 2 ("client does not support operation").
 	 */
 	virtual int clbkMeshMaterial (DEVMESHHANDLE hMesh, DWORD matidx, MATERIAL *mat) { return 2; }
-	virtual int clbkMeshMaterialEx(DEVMESHHANDLE hMesh, DWORD matidx, MatProp prp, oapi::FVECTOR4* out) { return 2; }
+	virtual int clbkMeshMaterialEx(DEVMESHHANDLE hMesh, DWORD matidx, MatProp prp, FVECTOR4* out) { return 2; }
 
 	/**
      * \brief Set custom properties for a device-specific mesh.
@@ -590,7 +605,7 @@ public:
 	 * if value<>0 modulate (mix) material alpha values with texture alpha maps.
 	 * \default None, returns \e false.
 	 */
-	virtual bool clbkSetMeshProperty (DEVMESHHANDLE hMesh, DWORD property, DWORD value) { return false; }
+	virtual bool clbkSetMeshProperty(DEVMESHHANDLE hMesh, DWORD property, DWORD value) { return false; }
 
 	// ==================================================================
 	/// \name Visual object interface
@@ -654,6 +669,7 @@ public:
 	 * \sa RegisterVisObject, UnregisterVisObject, visevent
 	 */
 	virtual int clbkVisEvent (OBJHANDLE hObj, VISHANDLE vis, DWORD msg, DWORD_PTR context);
+	virtual void clbkSetVisualProperty(VISHANDLE vis, VisualProp prp, int idx, const type_info& t, const void* val) { }
 
 	/**
 	 * \brief Return a mesh handle for a visual, defined by its index

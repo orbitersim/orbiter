@@ -9,7 +9,7 @@
 #include "OrbiterAPI.h"
 #include "D3D9Client.h"
 #include <d3d9.h>
-#include <d3dx9.h>
+#include "MathAPI.h"
 #include <memory>
 #include <stack>
 #include "DrawAPI.h"
@@ -77,12 +77,12 @@ struct SkpColor {
 
 	SkpColor() {
 		dclr = 0;
-		fclr = D3DXCOLOR(0, 0, 0, 0);
+		fclr = FVECTOR4();
 	}
 
 	explicit SkpColor (DWORD c) {
 		dclr = c;
-		fclr = D3DXCOLOR(c);
+		fclr = FVECTOR4(c);
 		D3DXCOLORSWAP(&fclr);
 	}
 
@@ -93,7 +93,7 @@ struct SkpColor {
 	}
 
 	DWORD dclr;
-	D3DXCOLOR fclr;
+	FVECTOR4 fclr;
 };
 
 
@@ -203,7 +203,7 @@ class D3D9Pad : public Sketchpad
 	} QBrush;
 
 	struct {
-		D3DXVECTOR3 uDir;
+		FVECTOR3 uDir;
 		float ca, dst;
 		bool bEnable;
 	} ClipData[2];
@@ -553,9 +553,9 @@ public:
 
 	inline void FlushAll() { Flush(NULL); }
 
-	void SetViewProj(const D3DXMATRIX* pV, const D3DXMATRIX* pP);
+	void SetViewProj(const FMATRIX4* pV, const FMATRIX4* pP);
 
-	LPD3DXMATRIX WorldMatrix();
+	FMATRIX4* WorldMatrix();
 	DWORD GetLineHeight(); ///< Return height of a character in the currently selected font with "internal leading"
 	const char *GetName() const { return name; }
 	LPDIRECT3DSURFACE9 GetRenderTarget() const { return pTgt; }
@@ -615,17 +615,17 @@ private:
 	bool			 bMustEndScene;
 	bool			 bBeginDraw;
 	RECT			 ScissorRect;
-	D3DXCOLOR		 cColorKey;
+	FVECTOR4		 cColorKey;
 	SkpView			 vmode;
 	Topo			 tCurrent;
 	RenderState* 	 pRState;
 
 
 	WORD vI = 0, iI = 0;
-	mutable D3DXMATRIX mVP;
-	D3DXMATRIX mV, mP, mW, mO;
-	D3DXMATRIX mVOrig, mPOrig;
-	D3DXVECTOR4 vTarget;
+	mutable FMATRIX4 mVP;
+	FMATRIX4 mV, mP, mW, mO;
+	FMATRIX4 mVOrig, mPOrig;
+	FVECTOR4 vTarget;
 	DWORD bkmode;
 	BlendState dwBlendState;
 	TAlign_horizontal tah;
@@ -649,7 +649,7 @@ private:
 	FMATRIX4 ColorMatrix;
 	FVECTOR4 Gamma, Noise;
 
-	std::stack<D3DXMATRIX> mWStack;
+	std::stack<FMATRIX4> mWStack;
 
 
 
@@ -672,7 +672,7 @@ private:
 	static SkpVtx *Vtx;		// List of vertices
 	static D3D9Client *gc;
 	static LPDIRECT3DDEVICE9 pDev;
-	static LPD3DXVECTOR2 pSinCos[5];
+	static FVECTOR2* pSinCos[5];
 	static LPDIRECT3DTEXTURE9 pNoise;
 	// -------------------------------------------
 

@@ -29,13 +29,13 @@
 
 #pragma warning(push)
 #pragma warning(disable : 4838)
-#include <xnamath.h>
+#include <DirectXMath.h>
 #pragma warning(pop)
 
 typedef struct {
 	float rad;
 	float width, length, height;
-	D3DXVECTOR3 pos, min, max;
+	FVECTOR3 pos, min, max;
 } MeshStats;
 
 
@@ -44,7 +44,7 @@ void CheckMeshStats(MESHHANDLE hMesh, MeshStats *stats)
 	int nGrp = oapiMeshGroupCount(hMesh);
 	if (nGrp == 0) return;
 
-	XMVECTOR mi = XMLoadFloat3(ptr(XMFLOAT3(1e12f, 1e12f, 1e12f)));
+	XMVECTOR mi = XMLoadFloat3(&(XMFLOAT3(1e12f, 1e12f, 1e12f)));
 	XMVECTOR mx = -mi;
 
 	for (int i = 0; i < nGrp; i++) {
@@ -65,7 +65,7 @@ void CheckMeshStats(MESHHANDLE hMesh, MeshStats *stats)
 	stats->height = stats->max.y - stats->min.y;
 	stats->length = stats->max.z - stats->min.z;
 	stats->pos = (stats->max + stats->min) * 0.5f;
-	stats->rad = D3DXVec3Length(ptr(stats->max + stats->min)) * 0.5f;
+	stats->rad = length(stats->max + stats->min) * 0.5f;
 }
 
 
@@ -107,7 +107,7 @@ vBase::vBase (OBJHANDLE _hObj, const Scene *scene, vPlanet *_vP): vObject (_hObj
 
 	mGlobalRot = mul(plrot, mGlobalRot);
 
-	D3DXMatrixIdentity(&mGlobalRotDX);
+	oapiMatrixIdentity(&mGlobalRotDX);
 	D3DMAT_SetRotation(&mGlobalRotDX, &mGlobalRot);
 	//------------------------------------------------------------------------
 
@@ -197,10 +197,10 @@ VECTOR3 vBase::FromLocal(VECTOR3 pos) const
 
 // ===========================================================================================
 //
-void vBase::FromLocal(VECTOR3 pos, D3DXVECTOR3 *pTgt) const
+void vBase::FromLocal(VECTOR3 pos, FVECTOR3 *pTgt) const
 {
-	D3DXVECTOR3 pv(float(pos.x-vLocalPos.x), float(pos.y-vLocalPos.y), float(pos.z-vLocalPos.z));
-	D3DXVec3TransformNormal(pTgt, &pv, &mGlobalRotDX);
+	FVECTOR3 pv(float(pos.x-vLocalPos.x), float(pos.y-vLocalPos.y), float(pos.z-vLocalPos.z));
+	*pTgt = oapiTransformNormal(&pv, &mGlobalRotDX);
 }
 
 // ===========================================================================================
@@ -286,13 +286,13 @@ bool vBase::GetMinMaxDistance(float *zmin, float *zmax, float *dmin)
 {
 	if (bBSRecompute) UpdateBoundingBox();
 	
-	D3DXMATRIX mWorldView;
+	FMATRIX4 mWorldView;
 
 	Scene *scn = gc->GetScene();
 
-	D3DXVECTOR4 Field = D9LinearFieldOfView(scn->GetProjectionMatrix());
+	FVECTOR4 Field = D9LinearFieldOfView(scn->GetProjectionMatrix());
 	
-	D3DXMatrixMultiply(&mWorldView, &mWorld, scn->GetViewMatrix());
+	oapiMatrixMultiply(&mWorldView, &mWorld, scn->GetViewMatrix());
 	
 	if (tilemesh) {
 		D9ComputeMinMaxDistance(gc->GetDevice(), tilemesh->GetAABB(), &mWorldView, &Field, zmin, zmax, dmin);
@@ -386,22 +386,22 @@ bool vBase::RenderSurface(LPDIRECT3DDEVICE9 dev)
 	if (!active) return false;
 	if (!IsVisible()) return false;
 
-	pCurrentVisual = this;
+	g_pCurrentVisual = this;
 
 	// render tiles
 	if (tilemesh) {
-		uCurrentMesh = 0; // Used for debugging
+		g_uCurrentMesh = 0; // Used for debugging
 		tilemesh->SetSunLight(&sunLight);
 		tilemesh->RenderBaseTile(&mWorld);
-		++uCurrentMesh;
+		++g_uCurrentMesh;
 	}
 
 	// render generic objects under shadows
 	if (nstructure_bs) {
 		for (DWORD i = 0; i < nstructure_bs; ++i) {
 			structure_bs[i]->SetSunLight(&sunLight);
-			structure_bs[i]->Render(&mWorld, RENDER_BASEBS);
-			++uCurrentMesh;
+			structure_bs[i]->Render(&mWorld, nullptr, RENDER_BASEBS);
+			++g_uCurrentMesh;
 		}
 	}
 
@@ -416,20 +416,20 @@ bool vBase::RenderStructures(LPDIRECT3DDEVICE9 dev)
 	if (!active) return false;
 	if (!IsVisible()) return false;
 
-	pCurrentVisual = this;
-	uCurrentMesh = 0; // Used for debugging
+	g_pCurrentVisual = this;
+	g_uCurrentMesh = 0; // Used for debugging
 
-	if (tilemesh) uCurrentMesh++;
-	uCurrentMesh += nstructure_bs;
+	if (tilemesh) g_uCurrentMesh++;
+	g_uCurrentMesh += nstructure_bs;
 
 	// render generic objects above shadows
 	for (DWORD i=0; i<nstructure_as; i++) {
 		FVECTOR3 bs = structure_as[i]->GetBoundingSpherePos();
-		FVECTOR3 qw = TransformCoord(bs, mWorld);
+		FVECTOR3 qw = oapiTransformCoord(&bs, &mWorld);
 		D3D9Sun sp = vP->GetObjectAtmoParams(qw._V() + vP->CameraPos());
 		structure_as[i]->SetSunLight(&sp);
-		structure_as[i]->Render(&mWorld, RENDER_BASE);
-		++uCurrentMesh;
+		structure_as[i]->Render(&mWorld, nullptr, RENDER_BASE);
+		++g_uCurrentMesh;
 	}
 	return true;
 }
@@ -442,7 +442,7 @@ void vBase::RenderRunwayLights(LPDIRECT3DDEVICE9 dev)
 	if (!active) return;
 	if (!IsVisible()) return;
 
-	pCurrentVisual = this;
+	g_pCurrentVisual = this;
 
 	for(int i=0; i<numRunwayLights; i++)
 	{
@@ -459,8 +459,8 @@ void vBase::RenderRunwayLights(LPDIRECT3DDEVICE9 dev)
 		DWORD flags = *(DWORD*)gc->GetConfigParam(CFGPRM_GETDEBUGFLAGS);
 		if (flags&DBG_FLAGS_SELVISONLY && this!=DebugControls::GetVisual()) return; // Used for debugging
 		if (flags&DBG_FLAGS_BOXES) {
-			D3DXMATRIX id;
-			D3D9Effect::RenderBoundingBox(&mWorld, D3DXMatrixIdentity(&id), &BBox.min, &BBox.max, ptr(D3DXVECTOR4(1,0,1,0.75f)));
+			FMATRIX4 id;
+			D3D9Effect::RenderBoundingBox(&mWorld, &FMATRIX_Identity, &BBox.mn, &BBox.mx, &(FVECTOR4(1,0,1,0.75f)));
 		}
 	}
 }
@@ -475,14 +475,14 @@ void vBase::RenderGroundShadow(LPDIRECT3DDEVICE9 dev, float alpha)
 	if (!IsVisible()) return;
 	if (Config->TerrainShadowing == 0) return;
 
-	pCurrentVisual = this;
+	g_pCurrentVisual = this;
 
 	VECTOR3 sd;
 	oapiGetGlobalPos(hObj, &sd); normalise(sd);
 	
 	MATRIX3 mRot;
 	oapiGetRotationMatrix(hObj, &mRot);
-	D3DXVECTOR3 lsun = D3DXVEC(tmul(mRot, sd));
+	FVECTOR3 lsun = _F(tmul(mRot, sd));
 
 	if (lsun.y > -0.07f) return;
 
@@ -491,11 +491,11 @@ void vBase::RenderGroundShadow(LPDIRECT3DDEVICE9 dev, float alpha)
 	
 
 	// build shadow projection matrix
-	D3DXMATRIX mProj;
+	FMATRIX4 mProj;
 	
 	OBJHANDLE hPlanet = oapiGetBasePlanet(hObj); 
 	double prad = oapiGetSize(hPlanet);
-	D3DXVECTOR4 param = D9OffsetRange(prad, 30e3);
+	FVECTOR4 param = D9OffsetRange(prad, 30e3);
 
 	for (DWORD i=0; i<nstructure_as; i++) {
 		
@@ -524,31 +524,31 @@ void vBase::RenderGroundShadow(LPDIRECT3DDEVICE9 dev, float alpha)
 				
 			VECTOR3 n = -unit(crossp(vb - va, vc - va));
 
-			D3DXVECTOR3 hn = D3DXVEC(n); 
+			FVECTOR3 hn = _F(n); 
 				
 			float zo = float(-dotp(va, n));
-			float nd = D3DXVec3Dot(&hn, &lsun);
+			float nd = dotp(hn, lsun);
 			hn /= nd;
 			float ofs = zo / nd;
 
-			mProj._11 = 1.0f - (float)(lsun.x*hn.x);
-			mProj._12 = -(float)(lsun.y*hn.x);
-			mProj._13 = -(float)(lsun.z*hn.x);
-			mProj._14 = 0;
-			mProj._21 = -(float)(lsun.x*hn.y);
-			mProj._22 = 1.0f - (float)(lsun.y*hn.y);
-			mProj._23 = -(float)(lsun.z*hn.y);
-			mProj._24 = 0;
-			mProj._31 = -(float)(lsun.x*hn.z);
-			mProj._32 = -(float)(lsun.y*hn.z);
-			mProj._33 = 1.0f - (float)(lsun.z*hn.z);
-			mProj._34 = 0;
-			mProj._41 = -(float)(lsun.x*ofs);
-			mProj._42 = -(float)(lsun.y*ofs);
-			mProj._43 = -(float)(lsun.z*ofs);
-			mProj._44 = 1;
+			mProj.m11 = 1.0f - (float)(lsun.x*hn.x);
+			mProj.m12 = -(float)(lsun.y*hn.x);
+			mProj.m13 = -(float)(lsun.z*hn.x);
+			mProj.m14 = 0;
+			mProj.m21 = -(float)(lsun.x*hn.y);
+			mProj.m22 = 1.0f - (float)(lsun.y*hn.y);
+			mProj.m23 = -(float)(lsun.z*hn.y);
+			mProj.m24 = 0;
+			mProj.m31 = -(float)(lsun.x*hn.z);
+			mProj.m32 = -(float)(lsun.y*hn.z);
+			mProj.m33 = 1.0f - (float)(lsun.z*hn.z);
+			mProj.m34 = 0;
+			mProj.m41 = -(float)(lsun.x*ofs);
+			mProj.m42 = -(float)(lsun.y*ofs);
+			mProj.m43 = -(float)(lsun.z*ofs);
+			mProj.m44 = 1;
 				
-			D3DXVECTOR4 nrml = D3DXVECTOR4(float(n.x), float(n.y), float(n.z), zo);
+			FVECTOR4 nrml = FVECTOR4(float(n.x), float(n.y), float(n.z), zo);
 
 			structure_as[i]->RenderShadowsEx(scale, &mProj, &mWorld, &nrml, &param);
 		}

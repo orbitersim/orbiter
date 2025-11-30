@@ -124,6 +124,12 @@ set(IncludeFiles
 set(APIHeaders
     ${INCLUDE_TARGET_DIR}/gcGUI.h
 	${INCLUDE_TARGET_DIR}/gcCoreAPI.h
+	${CMAKE_SOURCE_DIR}/Orbitersdk/include/MathAPI.h
+	${CMAKE_SOURCE_DIR}/Orbitersdk/include/DrawAPI.h
+	${CMAKE_SOURCE_DIR}/Orbitersdk/include/OrbiterAPI.h
+	${CMAKE_SOURCE_DIR}/Orbitersdk/include/GraphicsAPI.h
+	${EXTERN_DIR}/dxmath/Inc/DirectXMath.h
+	${EXTERN_DIR}/dxmath/Inc/DirectXCollision.h
 )
 
 set(ShaderFiles
@@ -142,6 +148,8 @@ set(ShaderFiles
     ${ShaderDir}/NewPlanet.hlsl
     ${ShaderDir}/Scatter.hlsl
     ${ShaderDir}/Glare.hlsl
+    ${ShaderDir}/PreBakeLights.hlsl
+    ${ShaderDir}/Custom.hlsl
 	${ShaderDir}/Mesh.fx
 	${ShaderDir}/Metalness.fx
 	${ShaderDir}/Particle.fx
@@ -150,6 +158,7 @@ set(ShaderFiles
 	${ShaderDir}/SceneTech.fx
 	${ShaderDir}/Sketchpad.fx
 	${ShaderDir}/Vessel.fx
+    ${ShaderDir}/BakedVC.fx
 )
 
 source_group(APIHeaders FILES ${APIHeaders})
@@ -171,6 +180,7 @@ add_library(D3D9Client MODULE
 target_include_directories(D3D9Client PUBLIC
 	${ORBITER_SOURCE_SDK_INCLUDE_DIR}
 	${DXSDK_DIR}/Include
+	${EXTERN_DIR}/dxmath/Inc
 )
 
 target_link_directories(D3D9Client PUBLIC

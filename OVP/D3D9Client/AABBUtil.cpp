@@ -20,10 +20,12 @@
 #include "OrbiterAPI.h"
 #include "VectorHelpers.h"
 #include "Log.h"
+#include "D3D9Client.h"
+#include "MathAPI.h"
 
 #pragma warning(push)
 #pragma warning(disable : 4838)
-#include <xnamath.h>
+#include <DirectXMath.h>
 #pragma warning(pop)
 
 using std::min;
@@ -53,16 +55,14 @@ bool SolveLUSystem(int n, double *A, double *b, double *x, double *det)
 }
 
 
-D3DXVECTOR3 WorldPickRay(float x, float y, const LPD3DXMATRIX mProj, const LPD3DXMATRIX mView)
+FVECTOR3 WorldPickRay(float x, float y, const FMATRIX4* mProj, const FMATRIX4* mView)
 {
-	x = float((x*2.0-1.0)/mProj->_11);
-	y = float((y*2.0-1.0)/mProj->_22);
-	D3DXVECTOR3 pick(x, 1.0f, y);
-	D3DXMATRIX mViewI;
-	D3DXMatrixInverse(&mViewI, NULL, (const D3DXMATRIX *)&mView);
-	D3DXVec3TransformNormal(&pick, &pick, &mViewI);
-	D3DXVec3Normalize(&pick, &pick);
-	return pick;
+	x = float((x*2.0-1.0)/mProj->m11);
+	y = float((y*2.0-1.0)/mProj->m22);
+	XMVECTOR pick = FVECTOR3(x, 1.0f, y).XM();
+	XMMATRIX mViewI = XMMatrixInverse(NULL, mView->XM());
+	XMVECTOR R = XMVector3Normalize(XMVector3TransformNormal(pick, mViewI));	
+	return FVECTOR3(R);
 }
 
 
@@ -73,35 +73,35 @@ void D9ZeroAABB(D9BBox *box)
 
 void D9InitAABB(D9BBox *box)
 {
-	box->min = D3DXVECTOR4( 1e12f,  1e12f,  1e12f, 0); 
-	box->max = D3DXVECTOR4(-1e12f, -1e12f, -1e12f, 0);
-	box->bs  = D3DXVECTOR4(0,0,0,0);
+	box->mn = FVECTOR4( 1e12f,  1e12f,  1e12f, 0.0f); 
+	box->mx = FVECTOR4(-1e12f, -1e12f, -1e12f, 0.0f);
+	box->bs = FVECTOR4();
 }
 
 
-void D9AddPointAABB(D9BBox *box, LPD3DXVECTOR3 point)
+void D9AddPointAABB(D9BBox *box, FVECTOR3* point)
 {
-	XMVECTOR q = XMLoadFloat4((const XMFLOAT4*)&box->min);
-	XMVECTOR w = XMLoadFloat4((const XMFLOAT4*)&box->max);
+	XMVECTOR q = XMLoadFloat4((const XMFLOAT4*)&box->mn);
+	XMVECTOR w = XMLoadFloat4((const XMFLOAT4*)&box->mx);
 	XMVECTOR p = XMLoadFloat3((const XMFLOAT3*)point);
-	XMStoreFloat4((XMFLOAT4*)&box->min, XMVectorMin(q,p));
-	XMStoreFloat4((XMFLOAT4*)&box->max, XMVectorMax(w,p));	
+	XMStoreFloat4((XMFLOAT4*)&box->mn, XMVectorMin(q,p));
+	XMStoreFloat4((XMFLOAT4*)&box->mx, XMVectorMax(w,p));	
 }
 
 
-D3DXVECTOR4 D9LinearFieldOfView(const D3DXMATRIX *pProj)
+FVECTOR4 D9LinearFieldOfView(const FMATRIX4 *pProj)
 {
-	float a = 1.0f/pProj->_22;
-	float s = (pProj->_11/pProj->_22);
+	float a = 1.0f/pProj->m22;
+	float s = (pProj->m11/pProj->m22);
 	float l = 1.0f/cos(atan(a));
-	return D3DXVECTOR4(l, l/s, a, a/s);
+	return FVECTOR4(l, l/s, a, a/s);
 }
 
 
-float D9NearPlane(LPDIRECT3DDEVICE9 pDev, float znear, float zfar, float dmin, const D3DXMATRIX *pProj, bool bReduced)
+float D9NearPlane(LPDIRECT3DDEVICE9 pDev, float znear, float zfar, float dmin, const FMATRIX4 *pProj, bool bReduced)
 {
-	float b = 1.0f/pProj->_11;
-	float a = 1.0f/pProj->_22;
+	float b = 1.0f/pProj->m11;
+	float a = 1.0f/pProj->m22;
 	float q = atan(sqrt(a*a+b*b));
 
 	D3DVIEWPORT9 vp; pDev->GetViewport(&vp);
@@ -124,7 +124,7 @@ float D9NearPlane(LPDIRECT3DDEVICE9 pDev, float znear, float zfar, float dmin, c
 }
 
 
-D3DXVECTOR4 D9OffsetRange(double R, double r)
+FVECTOR4 D9OffsetRange(double R, double r)
 {
 	double t  = r*0.5;
 	double r2 = r*r;
@@ -132,16 +132,14 @@ D3DXVECTOR4 D9OffsetRange(double R, double r)
 	double h2 = sqrt(R*R+t*t)-R;
 	double a  =  (h2 - h1*0.0625)/(0.1875*r2);
 	double b  =  -(h2 - h1*0.25)/(0.1875*r2*r2);
-	return D3DXVECTOR4(float(a), float(b), 1.0f/float(r2), 0.0f);
+	return FVECTOR4(float(a), float(b), 1.0f/float(r2), 0.0f);
 }
 
 
-bool D9IsAABBVisible(const D9BBox *in, const D3DXMATRIX *pWV, const D3DXVECTOR4 *F)
+bool D9IsAABBVisible(const D9BBox *in, const FMATRIX4 *pWV, const FVECTOR4 *F)
 {
 	
-	D3DXVECTOR3 bv;
-	
-	D3DXVec3TransformCoord(&bv, (LPD3DXVECTOR3)&in->bs, pWV);
+	FVECTOR3 bv = oapiTransformCoord(&in->bs.xyz, pWV);
 	float w = in->bs.w;
 
 	if (bv.z<-w) return false; // Not visible
@@ -152,15 +150,14 @@ bool D9IsAABBVisible(const D9BBox *in, const D3DXMATRIX *pWV, const D3DXVECTOR4 
 	if (fabs(bv.y)-(F->x*w) > zz*F->z) return false; // Not visible
 	if (fabs(bv.x)-(F->y*w) > zz*F->w) return false; // Not visible
 	
-	D3DXVECTOR4 size = (in->max - in->min)*0.5f;
-	D3DXVECTOR3 xv,yv,zv;
-	D3DXVec3TransformNormal(&xv, (LPD3DXVECTOR3)&in->a, pWV);
-	D3DXVec3TransformNormal(&yv, (LPD3DXVECTOR3)&in->b, pWV);
-	D3DXVec3TransformNormal(&zv, (LPD3DXVECTOR3)&in->c, pWV);
+	FVECTOR4 size = (in->mx - in->mn)*0.5f;
+	FVECTOR3 xv = oapiTransformNormal(&in->a.xyz, pWV);
+	FVECTOR3 yv = oapiTransformNormal(&in->b.xyz, pWV);
+	FVECTOR3 zv = oapiTransformNormal(&in->c.xyz, pWV);
 
-	float dx = D3DXVec3Dot(&xv, &bv);
-	float dy = D3DXVec3Dot(&yv, &bv);
-	float dz = D3DXVec3Dot(&zv, &bv);
+	float dx = dotp(xv, bv);
+	float dy = dotp(yv, bv);
+	float dz = dotp(zv, bv);
 	
 	float adx = fabs(dx) - size.x;
 	float ady = fabs(dy) - size.y;
@@ -185,10 +182,10 @@ bool D9IsAABBVisible(const D9BBox *in, const D3DXMATRIX *pWV, const D3DXVECTOR4 
 }
 
 
-bool D9IsBSVisible(const D9BBox *in, const D3DXMATRIX *pWV, const D3DXVECTOR4 *F)
+bool D9IsBSVisible(const D9BBox *in, const FMATRIX4 *pWV, const FVECTOR4 *F)
 {
-	D3DXVECTOR3 bv = D3DXVECTOR3(in->bs.x, in->bs.y, in->bs.z);
-	D3DXVec3TransformCoord(&bv, &bv, pWV);
+	FVECTOR3 bv = FVECTOR3(in->bs.x, in->bs.y, in->bs.z);
+	bv = oapiTransformCoord(&bv, pWV);
 	float r = in->bs.w;
 
 	if (bv.z<-r) return false; // Not visible
@@ -203,11 +200,11 @@ bool D9IsBSVisible(const D9BBox *in, const D3DXMATRIX *pWV, const D3DXVECTOR4 *F
 	return true;
 }
 
-int D9ComputeMinMaxDistance(LPDIRECT3DDEVICE9 pDev, const D9BBox *in, const D3DXMATRIX *pWV, const D3DXVECTOR4 *F, float *zmin, float *zmax, float *dst)
+int D9ComputeMinMaxDistance(LPDIRECT3DDEVICE9 pDev, const D9BBox *in, const FMATRIX4 *pWV, const FVECTOR4 *F, float *zmin, float *zmax, float *dst)
 {
 	
-	D3DXVECTOR3 bv = D3DXVECTOR3(in->bs.x, in->bs.y, in->bs.z);
-	D3DXVec3TransformCoord(&bv, &bv, pWV);
+	FVECTOR3 bv = FVECTOR3(in->bs.x, in->bs.y, in->bs.z);
+	bv = oapiTransformCoord(&bv, pWV);
 	float r = in->bs.w;
 
 	if (bv.z<-r) return -1; // Not visible
@@ -218,16 +215,14 @@ int D9ComputeMinMaxDistance(LPDIRECT3DDEVICE9 pDev, const D9BBox *in, const D3DX
 	if (fabs(bv.y)-(F->x*r) > zz*F->z) return -3; // Not visible
 	if (fabs(bv.x)-(F->y*r) > zz*F->w) return -4; // Not visible
 	
-	
-	D3DXVECTOR4 size = (in->max - in->min)*0.5;
-	D3DXVECTOR3 xv,yv,zv;
-	D3DXVec3TransformNormal(&xv, (LPD3DXVECTOR3)&in->a, pWV);
-	D3DXVec3TransformNormal(&yv, (LPD3DXVECTOR3)&in->b, pWV);
-	D3DXVec3TransformNormal(&zv, (LPD3DXVECTOR3)&in->c, pWV);
+	FVECTOR4 size = (in->mx - in->mn)*0.5;
+	FVECTOR3 xv = oapiTransformNormal(&in->a.xyz, pWV);
+	FVECTOR3 yv = oapiTransformNormal(&in->b.xyz, pWV);
+	FVECTOR3 zv = oapiTransformNormal(&in->c.xyz, pWV);
 
-	float dx = D3DXVec3Dot(&xv, &bv);
-	float dy = D3DXVec3Dot(&yv, &bv);
-	float dz = D3DXVec3Dot(&zv, &bv);
+	float dx = dotp(xv, bv);
+	float dy = dotp(yv, bv);
+	float dz = dotp(zv, bv);
 	
 	float adx = fabs(dx) - size.x;
 	float ady = fabs(dy) - size.y;
@@ -293,14 +288,14 @@ int D9ComputeMinMaxDistance(LPDIRECT3DDEVICE9 pDev, const D9BBox *in, const D3DX
 }
 
 
-void D9UpdateAABB(D9BBox *box, const D3DXMATRIX *pFirst, const D3DXMATRIX *pSecond)
+void D9UpdateAABB(D9BBox *box, const FMATRIX4 *pFirst, const FMATRIX4 *pSecond)
 {
 
 	XMVECTOR x = XMVectorSet(1, 0, 0, 0);
 	XMVECTOR y = XMVectorSet(0, 1, 0, 0);
 	XMVECTOR z = XMVectorSet(0, 0, 1, 0);
-	XMVECTOR q = XMLoadFloat4((const XMFLOAT4*)&box->min);
-	XMVECTOR w = XMLoadFloat4((const XMFLOAT4*)&box->max);
+	XMVECTOR q = XMLoadFloat4((const XMFLOAT4*)&box->mn);
+	XMVECTOR w = XMLoadFloat4((const XMFLOAT4*)&box->mx);
 
 	if (pFirst) {
 		XMMATRIX MF = XMLoadFloat4x4((const XMFLOAT4X4*)pFirst);
@@ -334,7 +329,7 @@ void D9UpdateAABB(D9BBox *box, const D3DXMATRIX *pFirst, const D3DXMATRIX *pSeco
 
 	
 
-void D9AddAABB(const D9BBox *in, const D3DXMATRIX *pM, D9BBox *out, bool bReset)
+void D9AddAABB(const D9BBox *in, const FMATRIX4 *pM, D9BBox *out, bool bReset)
 {
 
 	XMVECTOR x,mi,mx;
@@ -344,12 +339,12 @@ void D9AddAABB(const D9BBox *in, const D3DXMATRIX *pM, D9BBox *out, bool bReset)
 		mx = XMVectorSet(-1e12f, -1e12f, -1e12f, 0); 
 	}
 	else {
-		mi = XMLoadFloat4((const XMFLOAT4*)&out->min); 
-		mx = XMLoadFloat4((const XMFLOAT4*)&out->max); 
+		mi = XMLoadFloat4((const XMFLOAT4*)&out->mn); 
+		mx = XMLoadFloat4((const XMFLOAT4*)&out->mx); 
 	}
 	
-	XMVECTOR q = XMLoadFloat4((const XMFLOAT4*)&in->min);
-	XMVECTOR w = XMLoadFloat4((const XMFLOAT4*)&in->max);
+	XMVECTOR q = XMLoadFloat4((const XMFLOAT4*)&in->mn);
+	XMVECTOR w = XMLoadFloat4((const XMFLOAT4*)&in->mx);
 
 	q = XMVectorSetW(q, 0);
 	w = XMVectorSetW(w, 0);
@@ -381,41 +376,41 @@ void D9AddAABB(const D9BBox *in, const D3DXMATRIX *pM, D9BBox *out, bool bReset)
 		mx = XMVectorMax(mx, XMVectorMax(q,w));	
 	}
 
-	XMStoreFloat4((XMFLOAT4*)&out->min, mi);
-	XMStoreFloat4((XMFLOAT4*)&out->max, mx);
+	XMStoreFloat4((XMFLOAT4*)&out->mn, mi);
+	XMStoreFloat4((XMFLOAT4*)&out->mx, mx);
 }
 
 
-void EnvMapDirection(int dir, D3DXVECTOR3 *Dir, D3DXVECTOR3 *Up)
+void EnvMapDirection(int dir, FVECTOR3 *Dir, FVECTOR3 *Up)
 {
     switch (dir) {
         case 0:
-            *Dir = D3DXVECTOR3(1.0f, 0.0f, 0.0f);
-            *Up  = D3DXVECTOR3(0.0f, 1.0f, 0.0f);
+            *Dir = FVECTOR3(1.0f, 0.0f, 0.0f);
+            *Up  = FVECTOR3(0.0f, 1.0f, 0.0f);
             break;
         case 1:
-            *Dir = D3DXVECTOR3(-1.0f, 0.0f, 0.0f);
-            *Up  = D3DXVECTOR3( 0.0f, 1.0f, 0.0f);
+            *Dir = FVECTOR3(-1.0f, 0.0f, 0.0f);
+            *Up  = FVECTOR3( 0.0f, 1.0f, 0.0f);
             break;
         case 2:
-            *Dir = D3DXVECTOR3(0.0f, 1.0f,  0.0f);
-            *Up  = D3DXVECTOR3(0.0f, 0.0f, -1.0f);
+            *Dir = FVECTOR3(0.0f, 1.0f,  0.0f);
+            *Up  = FVECTOR3(0.0f, 0.0f, -1.0f);
             break;
         case 3:
-            *Dir = D3DXVECTOR3(0.0f, -1.0f, 0.0f);
-            *Up  = D3DXVECTOR3(0.0f,  0.0f, 1.0f);
+            *Dir = FVECTOR3(0.0f, -1.0f, 0.0f);
+            *Up  = FVECTOR3(0.0f,  0.0f, 1.0f);
             break;
         case 4:
-            *Dir = D3DXVECTOR3(0.0f, 0.0f, 1.0f);
-            *Up  = D3DXVECTOR3(0.0f, 1.0f, 0.0f);
+            *Dir = FVECTOR3(0.0f, 0.0f, 1.0f);
+            *Up  = FVECTOR3(0.0f, 1.0f, 0.0f);
             break;
         case 5:
-            *Dir = D3DXVECTOR3(0.0f, 0.0f, -1.0f);
-            *Up  = D3DXVECTOR3(0.0f, 1.0f,  0.0f);
+            *Dir = FVECTOR3(0.0f, 0.0f, -1.0f);
+            *Up  = FVECTOR3(0.0f, 1.0f,  0.0f);
             break;
 		default:
-			*Dir = D3DXVECTOR3(0.0f, 0.0f, 0.0f);
-			*Up  = D3DXVECTOR3(0.0f, 0.0f, 0.0f);
+			*Dir = FVECTOR3(0.0f, 0.0f, 0.0f);
+			*Up  = FVECTOR3(0.0f, 0.0f, 0.0f);
 			break;
     }
 }

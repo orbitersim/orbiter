@@ -68,7 +68,7 @@ void SurfaceManager::SetMicrotexture (const char *fname)
 
 // =======================================================================
 
-void SurfaceManager::Render(LPDIRECT3DDEVICE9 dev, D3DXMATRIX &wmat, double scale, int level, double viewap, bool bfog)
+void SurfaceManager::Render(LPDIRECT3DDEVICE9 dev, FMATRIX4 &wmat, double scale, int level, double viewap, bool bfog)
 {
 	if (ntex==0) LoadData();
 
@@ -84,17 +84,17 @@ void SurfaceManager::Render(LPDIRECT3DDEVICE9 dev, D3DXMATRIX &wmat, double scal
 
 // ==============================================================
 
-void SurfaceManager::RenderSimple(int level, int npatch, TILEDESC *tile, LPD3DXMATRIX mWrld)
+void SurfaceManager::RenderSimple(int level, int npatch, TILEDESC *tile, FMATRIX4* mWrld)
 {
 	// render complete sphere (used at low LOD levels)
 	HR(FX->SetTechnique(ePlanetTile));
 	HR(FX->SetValue(eSun, gc->GetScene()->GetSun(), sizeof(D3D9Sun)));
-	HR(FX->SetMatrix(eW, mWrld));
+	HR(FX->SetMatrix(eW, _DX(mWrld)));
 	HR(FX->SetValue(eWater, &watermat, sizeof(D3DMATERIAL9)));
 	HR(FX->SetValue(eMat, &def_mat, sizeof(D3DMATERIAL9)));
-	HR(FX->SetValue(eColor, ptr(D3DXCOLOR(cAmbient)), sizeof(D3DXCOLOR)));
+	HR(FX->SetValue(eColor, &(FVECTOR4(cAmbient)), sizeof(FVECTOR4)));
 	HR(FX->SetFloat(eTime, float(fmod(oapiGetSimTime(),60.0))));
-	HR(FX->SetVector(eTexOff, ptr(D3DXVECTOR4(1.0f, 0.0f, 1.0f, 0.0f))));
+	HR(FX->SetVector(eTexOff, _DX(FVECTOR4(1.0f, 0.0f, 1.0f, 0.0f))));
 	HR(FX->SetFloat(eMix, 0.0f));
 
 	LPDIRECT3DDEVICE9 pDev = gc->GetDevice();
@@ -145,7 +145,7 @@ void SurfaceManager::InitRenderTile()
 	HR(FX->SetValue(eSun, gc->GetScene()->GetSun(), sizeof(D3D9Sun)));
 	HR(FX->SetValue(eMat, &def_mat, sizeof(D3DMATERIAL9)));
 	HR(FX->SetValue(eWater, &watermat, sizeof(D3DMATERIAL9)));
-	HR(FX->SetValue(eColor, ptr(D3DXCOLOR(cAmbient)), sizeof(D3DXCOLOR)));
+	HR(FX->SetValue(eColor, &(FVECTOR4(cAmbient)), sizeof(FVECTOR4)));
 	HR(FX->SetFloat(eTime, float(fmod(oapiGetSimTime(),60.0))));
 
 	LPDIRECT3DDEVICE9 pDev = gc->GetDevice();
@@ -173,12 +173,12 @@ void SurfaceManager::RenderTile (int lvl, int hemisp, int ilat, int nlat, int il
 	VBMESH &mesh = PATCH_TPL[lvl][ilat]; // patch template
 	
 	if (range.tumin == 0 && range.tumax == 1) {
-		HR(FX->SetVector(eTexOff, ptr(D3DXVECTOR4(1.0f, 0.0f, 1.0f, 0.0f))));
+		HR(FX->SetVector(eTexOff, _DX(FVECTOR4(1.0f, 0.0f, 1.0f, 0.0f))));
 	}
 	else {
 		float tuscale = range.tumax-range.tumin, tuofs = range.tumin;
 		float tvscale = range.tvmax-range.tvmin, tvofs = range.tvmin;
-		HR(FX->SetVector(eTexOff, ptr(D3DXVECTOR4(tuscale,tuofs,tvscale,tvofs))));
+		HR(FX->SetVector(eTexOff, _DX(FVECTOR4(tuscale,tuofs,tvscale,tvofs))));
 	}
 
 	DWORD flags = *(DWORD*)gc->GetConfigParam(CFGPRM_GETDEBUGFLAGS);
@@ -187,13 +187,13 @@ void SurfaceManager::RenderTile (int lvl, int hemisp, int ilat, int nlat, int il
 		if (flags&DBG_FLAGS_TILES) {
 			float x = 0.6f;
 			switch(lvl) {
-				case 14: FX->SetVector(eColor, ptr(D3DXVECTOR4(x, 0, 0, 0))); break;
-				case 13: FX->SetVector(eColor, ptr(D3DXVECTOR4(0, x, 0, 0))); break;
-				case 12: FX->SetVector(eColor, ptr(D3DXVECTOR4(0, 0, x, 0))); break;
-				case 11: FX->SetVector(eColor, ptr(D3DXVECTOR4(x, x, 0, 0))); break;
-				case 10: FX->SetVector(eColor, ptr(D3DXVECTOR4(x, 0, x, 0))); break;
-				case 9:  FX->SetVector(eColor, ptr(D3DXVECTOR4(0, x, x, 0))); break;
-				default: FX->SetVector(eColor, ptr(D3DXVECTOR4(0, 0, 0, 0))); break;
+				case 14: FX->SetVector(eColor, _DX(FVECTOR4(x, 0, 0, 0))); break;
+				case 13: FX->SetVector(eColor, _DX(FVECTOR4(0, x, 0, 0))); break;
+				case 12: FX->SetVector(eColor, _DX(FVECTOR4(0, 0, x, 0))); break;
+				case 11: FX->SetVector(eColor, _DX(FVECTOR4(x, x, 0, 0))); break;
+				case 10: FX->SetVector(eColor, _DX(FVECTOR4(x, 0, x, 0))); break;
+				case 9:  FX->SetVector(eColor, _DX(FVECTOR4(0, x, x, 0))); break;
+				default: FX->SetVector(eColor, _DX(FVECTOR4(0.0f, 0, 0, 0))); break;
 			}
 		}
 	}
@@ -203,7 +203,7 @@ void SurfaceManager::RenderTile (int lvl, int hemisp, int ilat, int nlat, int il
 	
 	if (ltex==NULL) ltex = gc->GetDefaultTexture()->GetTexture();
 
-	HR(FX->SetMatrix(eW, &mWorld));
+	HR(FX->SetMatrix(eW, _DX(mWorld)));
 	HR(FX->SetTexture(eTex0, tex));	  // Base Texture
 	HR(FX->SetTexture(eTex1, ltex));  // Specular Mask and Night Lights
 	

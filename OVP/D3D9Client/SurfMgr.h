@@ -20,14 +20,14 @@ class SurfaceManager: public TileManager {
 public:
 	SurfaceManager(oapi::D3D9Client *gclient, const vPlanet *vplanet);
 	void SetMicrotexture(const char *fname);
-	void Render(LPDIRECT3DDEVICE9 dev, D3DXMATRIX &wmat, double scale, int level, double viewap = 0.0, bool bfog = false);
+	void Render(LPDIRECT3DDEVICE9 dev, FMATRIX4 &wmat, double scale, int level, double viewap = 0.0, bool bfog = false);
 	void LoadData();
 
 protected:
 
 	void InitRenderTile();
 	void EndRenderTile();
-	void RenderSimple(int level, int npatch, TILEDESC *tile, LPD3DXMATRIX mWorld);
+	void RenderSimple(int level, int npatch, TILEDESC *tile, FMATRIX4* mWorld);
 
 	void RenderTile(int lvl, int hemisp, int ilat, int nlat, int ilng, int nlng, double sdist,
 		TILEDESC *tile, const TEXCRDRANGE &range, LPDIRECT3DTEXTURE9 tex, LPDIRECT3DTEXTURE9 ltex, DWORD flag);

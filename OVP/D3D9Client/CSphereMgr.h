@@ -136,14 +136,14 @@ private:
 	std::vector<LPDIRECT3DTEXTURE9> m_starbuf; // texture buffer for starfield textures (level <= 8)
 	bool bPreloadTile;               // preload high-resolution tile textures
 	MATRIX3 ecl2gal;                 // rotates from ecliptic to galactic frame
-	D3DXMATRIX trans;                 // transformation from ecliptic to galactic frame
-	D3DXMATRIX mWorld;
+	FMATRIX4 trans;                 // transformation from ecliptic to galactic frame
+	FMATRIX4 mWorld;
 
 	TileBuffer *tilebuf;
 	struct RENDERPARAM {
 		LPDIRECT3DDEVICE9 dev;       // render device
 		int tgtlvl;                  // target resolution level
-		D3DXMATRIX wmat;             // world matrix
+		FMATRIX4 wmat;             // world matrix
 		VECTOR3 camdir;              // camera direction in galactic frame
 		double viewap;               // viewport aperture (semi-diagonal)
 	} RenderParam;

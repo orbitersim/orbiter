@@ -727,39 +727,6 @@ public:
 	gc_interface void ReleaseLock(SURFHANDLE hSrf);
 
 	/**
-	* \brief Convert a floating point color to DWORD color value
-	* \param c A pointer to a color
-	* \return DWORD color in 0xAABBGGRR
-	* \note Alpha will range from 1 to 255. Zero is never returned because of backwards compatibility issues 0-alpha is mapped to 255
-	*/
-	inline DWORD Color(const COLOUR4* c)
-	{
-		return FVECTOR4(*c).dword_abgr();
-	}
-
-	/**
-	* \brief Convert a floating point color to DWORD color value
-	* \param c A pointer to a color
-	* \return DWORD color in 0xAABBGGRR
-	* \note Alpha will range from 1 to 255. Zero is never returned because of backwards compatibility issues 0-alpha is mapped to 255
-	*/
-	inline DWORD Color(const oapi::FVECTOR4* c)
-	{
-		return c->dword_abgr();
-	}
-
-	/**
-	* \brief Convert a DWORD color to floating point COLOUR4 value
-	* \param dwABGR A color in 0xAABBGGRR
-	* \return COLOUR4
-	* \note Alpha will range from 1 to 255. Zero is never used because of backwards compatibility issues 0-alpha is mapped to 255
-	*/
-	inline COLOUR4 Colour4(DWORD dwABGR)
-	{
-		return FVECTOR4(dwABGR).Colour4();
-	}
-
-	/**
 	* \brief Alters objects position. Matrix must be initially valid.
 	* \param mat [in/out] Pointer to a matrix to change
 	* \param pos New position
@@ -793,7 +760,7 @@ public:
 
 	inline void WorldMatrix(FMATRIX4* mat, const FVECTOR3& pos, const FVECTOR3& x, const FVECTOR3& z, float scale = 1.0f)
 	{
-		FVECTOR3 y = cross(x, z);
+		FVECTOR3 y = crossp(x, z);
 		mat->m11 = (x.x * scale); mat->m12 = (x.y * scale); mat->m13 = (x.z * scale); mat->m14 = 0.0f;
 		mat->m21 = (y.x * scale); mat->m22 = (y.y * scale); mat->m23 = (y.z * scale); mat->m24 = 0.0f;
 		mat->m31 = (z.x * scale); mat->m32 = (z.y * scale); mat->m33 = (z.z * scale); mat->m34 = 0.0f;

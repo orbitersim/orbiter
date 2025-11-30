@@ -22,8 +22,7 @@ struct VBMESH {
 	~VBMESH();
 
 	void MapVertices (LPDIRECT3DDEVICE9 dev, DWORD MemFlag=0); // copy vertices from vtx to vb
-	void ComputeSphere();
-
+	
 	LPDIRECT3DVERTEXBUFFER9 pVB;	// mesh vertex buffer
 	LPDIRECT3DINDEXBUFFER9  pIB;	// mesh index buffer
 
@@ -34,7 +33,7 @@ struct VBMESH {
 	DWORD nv_cur;					
 	DWORD nf_cur;					
 	VECTOR4 Box[8];					// bounding box vertices
-	D3DXVECTOR3 bsCnt;				// bounding sphere position
+	FVECTOR3 bsCnt;				// bounding sphere position
 	float  bsRad;					// bounding sphere radius
 	bool bBox;						// true if bounding box data is valid
 };

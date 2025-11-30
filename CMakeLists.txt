@@ -191,6 +191,12 @@ option(
 )
 
 option(
+	ORBITER_BUILD_VULKANCLIENT
+	"Build VulkanClient"
+	ON
+)
+
+option(
 	ORBITER_BUILD_XRSOUND
 	"Build XRSound module to enable sound in Orbiter"
 	ON
@@ -229,9 +235,20 @@ if(ORBITER_BUILD_D3D9CLIENT)
 		CACHE
 		PATH
 		"Installation directory of DirectX SDK (June 2010)"
+	)	
+	find_package(VULKAN REQUIRED)
+	set(VULKAN_DIR
+		${VULKAN_DIR}
+		CACHE
+		PATH
+		"Root directory of Vulkan SDK (containing include/lib directories)"
 	)
+	
 	if(${DXSDK_DIR} STREQUAL "DXSDK_DIR-NOTFOUND")
 		message(FATAL_ERROR "DirectX SDK not found. The D3D9 graphics client will not be built.")
+	endif()
+	if(${VULKAN_DIR} STREQUAL "VULKAN_DIR-NOTFOUND")
+		message(FATAL_ERROR "Vulkan SDK not found. The Vulkan graphics will not be built.")
 	endif()
 endif()
 

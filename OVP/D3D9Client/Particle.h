@@ -116,7 +116,7 @@ protected:
 	ParticleSpec *pfirst, *plast;
 	int np; // number of current particles
 	int stride; // number of particles rendered simultaneously
-	D3DXMATRIX mWorld; // ground shadow related matrix
+	FMATRIX4 mWorld; // ground shadow related matrix
 	SURFHANDLE tex; // particle texture
 	double ipht2;
 

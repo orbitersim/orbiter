@@ -21,7 +21,7 @@
 
 
 #include <d3d9.h>
-#include <d3dx9.h>
+#include "MathAPI.h"
 #include "WindowMgr.h"
 #include "windows.h"
 #include "WindowsX.h"

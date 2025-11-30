@@ -9,10 +9,11 @@
 
 #define D3D9SM_SPHERE	0x01
 #define D3D9SM_ARROW	0x02
+#define D3D9SM_BOX		0x03
 
 #include "D3D9Client.h"
 #include <d3d9.h> 
-#include <d3dx9.h>
+#include "MathAPI.h"
 
 // NOTE: a "bool" in HLSL is 32bits (i.e. int)
 // Must match with counterpart in D3D9Client.fx
@@ -27,6 +28,9 @@ struct TexFlow {
 	BOOL Norm;		// Enable normal map
 	BOOL Metl;		// Enable metalness map
 	BOOL Heat;		// Enable heat map
+	BOOL Baked;		// Enable pre-baked maps
+	BOOL BakedAO;	// Enable pre-baked AO map
+	BOOL BakedAmb;	// Enable pre-baked Ambient light map
 };
 
 
@@ -53,23 +57,23 @@ public:
 	static void EnablePlanetGlow(bool bEnabled);
 	static void UpdateEffectCamera(OBJHANDLE hPlanet);
 	static void InitLegacyAtmosphere(OBJHANDLE hPlanet, float GlobalAmbient);
-	static void SetViewProjMatrix(LPD3DXMATRIX pVP);
+	static void SetViewProjMatrix(FMATRIX4* pVP);
 
-	static void RenderLines(const D3DXVECTOR3 *pVtx, const WORD *pIdx, int nVtx, int nIdx, const D3DXMATRIX *pW, DWORD color);
-	static void RenderTileBoundingBox(const LPD3DXMATRIX pW, VECTOR4 *pVtx, const LPD3DXVECTOR4 color);
-	static void RenderBoundingBox(const LPD3DXMATRIX pW, const LPD3DXMATRIX pGT, const D3DXVECTOR4 *bmin, const D3DXVECTOR4 *bmax, const D3DXVECTOR4 *color);
-	static void RenderBoundingSphere(const LPD3DXMATRIX pW, const LPD3DXMATRIX pGT, const D3DXVECTOR4 *bs, const D3DXVECTOR4 *color);
-	static void RenderBillboard(const LPD3DXMATRIX pW, LPDIRECT3DTEXTURE9 pTex, float alpha = 1.0f);
-	static void RenderExhaust(const LPD3DXMATRIX pW, VECTOR3 &cdir, EXHAUSTSPEC *es, SURFHANDLE def);
-	static void RenderSpot(float intens, const LPD3DXCOLOR color, const LPD3DXMATRIX pW, SURFHANDLE pTex);
-	static void Render2DPanel(const MESHGROUP *mg, const SURFHANDLE pTex, const LPD3DXMATRIX pW, float alpha, float scale, bool additive);
-	static void RenderReEntry(const SURFHANDLE pTex, const LPD3DXVECTOR3 vPosA, const LPD3DXVECTOR3 vPosB, const LPD3DXVECTOR3 vDir, float alpha_a, float alpha_b, float size);
-	static void RenderArrow(OBJHANDLE hObj, const VECTOR3 *ofs, const VECTOR3 *dir, const VECTOR3 *rot, float size, const D3DXCOLOR *pColor);  
+	static void RenderLines(const FVECTOR3 *pVtx, const WORD *pIdx, int nVtx, int nIdx, const FMATRIX4 *pW, DWORD color);
+	static void RenderTileBoundingBox(const FMATRIX4* pW, VECTOR4 *pVtx, const FVECTOR4* color);
+	static void RenderBoundingBox(const FMATRIX4* pW, const FMATRIX4* pGT, const FVECTOR4 *bmin, const FVECTOR4 *bmax, const FVECTOR4 *color);
+	static void RenderBoundingSphere(const FMATRIX4* pW, const FMATRIX4* pGT, const FVECTOR4 *bs, const FVECTOR4 *color);
+	static void RenderBillboard(const FMATRIX4* pW, LPDIRECT3DTEXTURE9 pTex, float alpha = 1.0f);
+	static void RenderExhaust(const FMATRIX4* pW, VECTOR3 &cdir, EXHAUSTSPEC *es, SURFHANDLE def);
+	static void RenderSpot(float intens, const FVECTOR4* color, const FMATRIX4* pW, SURFHANDLE pTex);
+	static void Render2DPanel(const MESHGROUP *mg, const SURFHANDLE pTex, const FMATRIX4* pW, float alpha, float scale, bool additive);
+	static void RenderReEntry(const SURFHANDLE pTex, const FVECTOR3* vPosA, const FVECTOR3* vPosB, const FVECTOR3* vDir, float alpha_a, float alpha_b, float size);
+	static void RenderArrow(OBJHANDLE hObj, const VECTOR3 *ofs, const VECTOR3 *dir, const VECTOR3 *rot, float size, const FVECTOR4 *pColor);  
 	
 	static LPDIRECT3DDEVICE9 pDev;      ///< Static (global) render device
 	static LPDIRECT3DVERTEXBUFFER9 VB;  ///< Static (global) Vertex buffer pointer
 	
-	static D3DXVECTOR4 atm_color;		///< Earth glow color
+	static FVECTOR4 atm_color;		///< Earth glow color
 
 	// Rendering Technique related parameters
 	static ID3DXEffect	*FX;
@@ -116,7 +120,6 @@ public:
 
 	// Lighting related parameters ------------------------------------
 	static D3DXHANDLE   eMtrl;
-	static D3DXHANDLE   eTune;
 	static D3DXHANDLE	eMat;        ///< Material
 	static D3DXHANDLE	eWater;      ///< Water
 	static D3DXHANDLE	eSun;        ///< Sun
@@ -131,16 +134,17 @@ public:
 	static D3DXHANDLE	eShadowToggle; ///< BOOL
 	static D3DXHANDLE	eEnvMapEnable; ///< BOOL
 	static D3DXHANDLE	eInSpace;      ///< BOOL
-	static D3DXHANDLE	eNoColor;      ///< BOOL
 	static D3DXHANDLE	eLightsEnabled;///< BOOL
 	static D3DXHANDLE	eBaseBuilding; ///< BOOL
-	static D3DXHANDLE	eTuneEnabled;  ///< BOOL
+	static D3DXHANDLE	eCockpit;	   ///< BOOL
 	static D3DXHANDLE	eFresnel;	   ///< BOOL
 	static D3DXHANDLE   eSwitch;	   ///< BOOL
 	static D3DXHANDLE   eRghnSw;	   ///< BOOL
 	static D3DXHANDLE	eTextured;	   ///< BOOL
 	static D3DXHANDLE	eOITEnable;	   ///< BOOL
 	static D3DXHANDLE	eInvProxySize;
+	static D3DXHANDLE	eNoColor;
+	static D3DXHANDLE	eVCIrrad;
 	static D3DXHANDLE	eMix;          ///< FLOAT Auxiliary factor/multiplier
 	static D3DXHANDLE   eColor;        ///< Auxiliary color input
 	static D3DXHANDLE   eFogColor;     ///< Fog color input
@@ -152,6 +156,7 @@ public:
 	static D3DXHANDLE	eCameraPos;	
 	static D3DXHANDLE   eNorth;
 	static D3DXHANDLE	eEast;
+	static D3DXHANDLE	eVCAmbient;
 	static D3DXHANDLE   eDistScale;
 	static D3DXHANDLE   eGlowConst;
 	static D3DXHANDLE   eRadius;
@@ -163,6 +168,8 @@ public:
 	static D3DXHANDLE	eAttennuate;
 	static D3DXHANDLE	eInScatter;
 	static D3DXHANDLE	eSHD;
+	static D3DXHANDLE   eSHDPx;
+	static D3DXHANDLE	eSHDSubRect;
 	static D3DXHANDLE	eNight;
 
 	// Textures --------------------------------------------------------
@@ -172,15 +179,16 @@ public:
 	static D3DXHANDLE	eSpecMap;
 	static D3DXHANDLE	eEmisMap;
 	static D3DXHANDLE	eEnvMapA;
-	static D3DXHANDLE	eEnvMapB;
 	static D3DXHANDLE	eReflMap;
 	static D3DXHANDLE	eMetlMap;
 	static D3DXHANDLE	eHeatMap;
 	static D3DXHANDLE	eRghnMap;
 	static D3DXHANDLE	eTranslMap;
 	static D3DXHANDLE	eTransmMap;
-	static D3DXHANDLE	eShadowMap;
 	static D3DXHANDLE	eIrradMap;
+	static D3DXHANDLE	eAmbientMap;
+	static D3DXHANDLE	eCombinedMap;
+	static D3DXHANDLE	eCombSunMap;
 
 	// Legacy Atmosphere -----------------------------------------------
 	static D3DXHANDLE	eGlobalAmb;	 

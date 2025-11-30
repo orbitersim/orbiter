@@ -46,7 +46,7 @@ public:
 	 */
 	static void GlobalExit();
 
-	void Render (LPDIRECT3DDEVICE9 dev, D3DXMATRIX &wmat, bool dual = false);
+	void Render (LPDIRECT3DDEVICE9 dev, FMATRIX4 &wmat, bool dual = false);
 	
 private:
 	OBJHANDLE obj;
@@ -89,13 +89,13 @@ public:
 	static	void CreateSkydomeBuffers(int index);
 	static	void CreateRingBuffers();
 
-	void	Render(D3DXMATRIX &wmat, float hz_aperture_deg);
+	void	Render(FMATRIX4 &wmat, float hz_aperture_deg);
 	
 private:
 
 	void	RenderRing(VECTOR3 cpos, VECTOR3 cdir, double rad, double hralt);
 	void	RenderSky(VECTOR3 cpos, VECTOR3 cdir, double rad, double apr);
-	void	RenderSkySegment(D3DXMATRIX &wmat, double rad, double dmin, double dmax, int index);
+	void	RenderSkySegment(FMATRIX4 &wmat, double rad, double dmin, double dmax, int index);
 
 	OBJHANDLE obj;
 	vPlanet *vp;

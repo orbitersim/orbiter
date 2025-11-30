@@ -176,7 +176,7 @@ bool ImageProcessing::SetupViewPort()
 
 	// Setup view-projection matrix and viewport
 	//
-	D3DXMatrixOrthoOffCenterLH(&mVP, 0.0f, (float)desc.Width, (float)desc.Height, 0.0f, 0.0f, 1.0f);
+	D3DMAT_OrthoOffCenterLH(&mVP, 0.0f, (float)desc.Width, (float)desc.Height, 0.0f, 0.0f, 1.0f);
 
 	iVP.X = 0;
 	iVP.Y = 0;
@@ -186,9 +186,9 @@ bool ImageProcessing::SetupViewPort()
 	iVP.MaxZ = 1.0f;
 
 	HR(pDevice->SetViewport(&iVP));
-	HR(pVSConst->SetMatrix(pDevice, hVP, &mVP));
-	HR(pVSConst->SetVector(pDevice, hSiz, ptr(D3DXVECTOR4(float(desc.Width), float(desc.Height), 1.0f/float(desc.Width), 1.0f/float(desc.Height)))));
-	HR(pVSConst->SetVector(pDevice, hPos, &vTemplate));
+	HR(pVSConst->SetMatrix(pDevice, hVP, _DX(mVP)));
+	HR(pVSConst->SetVector(pDevice, hSiz, _DX(FVECTOR4(float(desc.Width), float(desc.Height), 1.0f/float(desc.Width), 1.0f/float(desc.Height)))));
+	HR(pVSConst->SetVector(pDevice, hPos, _DX(vTemplate)));
 	return true;
 }
 
@@ -197,7 +197,7 @@ bool ImageProcessing::SetupViewPort()
 //
 void ImageProcessing::SetTemplate(float w, float h, float x, float y)
 {
-	vTemplate = D3DXVECTOR4(w, h, x, y);
+	vTemplate = FVECTOR4(w, h, x, y);
 }
 
 
@@ -260,6 +260,7 @@ bool ImageProcessing::Execute(DWORD blendop, bool bInScene, gcIPInterface::ipite
 	HR(pDevice->SetRenderState(D3DRS_ALPHATESTENABLE, false));
 	HR(pDevice->SetRenderState(D3DRS_STENCILENABLE, false));
 	HR(pDevice->SetRenderState(D3DRS_COLORWRITEENABLE, 0xF));
+	HR(pDevice->SetRenderState(D3DRS_SCISSORTESTENABLE, false));
 
 	if (blendop == 1) {
 		HR(pDevice->SetRenderState(D3DRS_BLENDOP, D3DBLENDOP_ADD));
@@ -269,14 +270,14 @@ bool ImageProcessing::Execute(DWORD blendop, bool bInScene, gcIPInterface::ipite
 
 	// Define vertices --------------------------------------------------------
 	//
-	SMVERTEX Vertex[4] = {
+	static const SMVERTEX Vertex[4] = {
 		{0, 0, 0, 0, 0},
 		{0, 1, 0, 0, 1},
 		{1, 1, 0, 1, 1},
 		{1, 0, 0, 1, 0}
 	};
 
-	static WORD cIndex[6] = {0, 2, 1, 0, 3, 2};
+	static const WORD cIndex[6] = {0, 2, 1, 0, 3, 2};
 
 	// Set render targets -----------------------------------------------------
 	//
@@ -292,16 +293,18 @@ bool ImageProcessing::Execute(DWORD blendop, bool bInScene, gcIPInterface::ipite
 
 	// Set Depth-Stencil surface ----------------------------------------------
 	//
+
+	pDevice->GetDepthStencilSurface(&pDepthBak);
+
 	if (pDepth) {	
 		HR(pDevice->SetRenderState(D3DRS_ZENABLE, true));
 		HR(pDevice->SetRenderState(D3DRS_ZWRITEENABLE, true));
-
-		pDevice->GetDepthStencilSurface(&pDepthBak);
-		pDevice->SetDepthStencilSurface(pDepth);
+		HR(pDevice->SetDepthStencilSurface(pDepth));
 	}
 	else {
 		HR(pDevice->SetRenderState(D3DRS_ZENABLE, false));
 		HR(pDevice->SetRenderState(D3DRS_ZWRITEENABLE, false));
+		HR(pDevice->SetDepthStencilSurface(NULL));
 	}
 
 	// Set textures and samplers -----------------------------------------------
@@ -382,9 +385,9 @@ bool ImageProcessing::Execute(DWORD blendop, bool bInScene, gcIPInterface::ipite
 
 	// Disconnect render targets ----------------------------------------------
 	//
-	if (pDepth) {
-		pDevice->SetDepthStencilSurface(pDepthBak);
-	}
+	pDevice->SetDepthStencilSurface(pDepthBak);
+	SAFE_RELEASE(pDepthBak);
+	
 
 	// Disconnect render targets ----------------------------------------------
 	//
@@ -617,6 +620,23 @@ void ImageProcessing::SetTextureNative(const char *var, LPDIRECT3DBASETEXTURE9 h
 	}
 
 	DWORD idx = pPSConst->GetSamplerIndex(hVar);
+
+	if (!hTex) {
+		pTextures[idx].hTex = NULL;
+		pTextures[idx].flags = 0;
+		return;
+	}
+
+	pTextures[idx].hTex = hTex;
+	pTextures[idx].flags = flags;
+}
+
+
+// ================================================================================================
+//
+void ImageProcessing::SetTextureNative(int idx, LPDIRECT3DBASETEXTURE9 hTex, DWORD flags)
+{
+	if (idx < 0 || idx>15) return;
 
 	if (!hTex) {
 		pTextures[idx].hTex = NULL;
