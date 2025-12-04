@@ -193,7 +193,7 @@ option(
 option(
 	ORBITER_BUILD_XRSOUND
 	"Build XRSound module to enable sound in Orbiter"
-	OFF
+	ON
 )
 
 option(ORBITER_MAKE_DOC
@@ -210,6 +210,13 @@ option(ORBITER_SANITIZER
 	"Build binaries with Address Sanitizer"
 	OFF
 )
+
+option(ORBITER_TRACY_PROFILER
+	"Build orbiter with profiler support"
+	OFF
+)
+
+include(cmake/tracy.cmake)
 
 if(ORBITER_BUILD_XRSOUND)
 	set(IRRKLANG_DIR "" CACHE PATH "Path to the irrKlang library")

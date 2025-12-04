@@ -136,14 +136,14 @@ jobs:
 
     - name: Upload exports
       if: inputs.upload
-      uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@v5
       with:
         name: exports-${{ inputs.architecture }}
         path: ${{ github.workspace }}/exports.txt
         retention-days: 1
 
     - name: Upload Build Artifact
-      uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@v5
       if: inputs.upload
       with:
         name: Orbiter-${{ inputs.architecture }}

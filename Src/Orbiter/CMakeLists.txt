@@ -165,9 +165,9 @@ set_target_properties(Orbiter
 	FOLDER Core
 )
 
-target_include_directories(Orbiter PUBLIC ${Orbiter_includes} ${imgui_SOURCE_DIR}/ ${imgui_SOURCE_DIR}/backends)
+target_include_directories(Orbiter PUBLIC ${Orbiter_includes} ${TRACY_CLIENT_INCLUDE} ${imgui_SOURCE_DIR}/ ${imgui_SOURCE_DIR}/backends)
 
-target_link_libraries(Orbiter ${Orbiter_common_libs} ${Orbiter_libs})
+target_link_libraries(Orbiter ${Orbiter_common_libs} ${Orbiter_libs} ${TRACY_CLIENT})
 
 add_dependencies(Orbiter ${Orbiter_depends})
 
