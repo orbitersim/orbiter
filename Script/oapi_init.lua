@@ -108,7 +108,8 @@ function proc.skip ()
 		end
 		proc.Frameskip() -- hand control to orbiter for one cycle
             if wait_exit ~= nil then
-                error()   -- return to caller immediately
+                error("Lua thread terminated")   -- return to caller immediately
+                -- WARNING: then string must be matched in Interpreter::LuaCall
             end
 	else
 		coroutine.yield()

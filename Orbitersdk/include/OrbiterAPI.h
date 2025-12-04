@@ -355,6 +355,20 @@ typedef struct {
 #define OAPISURFACE_SHARED		 0x1000 ///< Create a shared resource
 //@}
 
+
+/**
+ * \ingroup defines
+ * \defgroup notification Notification type
+ * These constants specified the type of notification to display.
+ * \sa oapiAddNotification
+ */
+//@{
+#define OAPINOTIF_SUCCESS 0 ///< Success
+#define OAPINOTIF_WARNING 1 ///< Warning
+#define OAPINOTIF_ERROR   2 ///< Error
+#define OAPINOTIF_INFO    3 ///< Info
+//@}
+
 /**
  * \ingroup defines
  * \defgroup grpedit Mesh group editing flags
@@ -648,6 +662,56 @@ typedef struct {
 	SURFHANDLE tex;    ///<     particle texture handle (NULL for default)
 } PARTICLESTREAMSPEC;
 
+/**
+ * \defgroup imguidialog ImGui dialog
+ *
+ * This group defines ImGuiDialog definition.
+ */
+//@{
+/**
+ * \brief Base class for defining an ImGui dialog.
+ */
+class OAPIFUNC ImGuiDialog {
+	struct ImGuiDefaultSize {
+		float width;
+		float height;
+	};
+public:
+	/**
+	 * \brief Create an ImGui dialog object.
+	 * \param name Name of the dialog window
+	 * \note This class must by derived from in order to define a custom ImGui dialog
+	 */
+	ImGuiDialog(const char *n, ImGuiDefaultSize ds = {350.0,280.0}):name(n),defaultSize(ds) {}
+	virtual ~ImGuiDialog();
+	bool IsActive() { return active; }
+	void Activate() { active = true; }
+	virtual void Display();
+	void SetHelp(const char *file, const char *topic = NULL) {
+		helpfile = file;
+		if(topic)
+			helptopic = topic;
+		else
+			helptopic.clear();
+	}
+	bool HandleHelpButton();protected:
+	/**
+	 * \brief Callback that is executed when the dialog is closed.
+	 * \note The default behavior is to do nothing
+	 */
+	virtual void OnClose() {};
+	/**
+	 * \brief Callback that is executed when the dialog should be drawn.
+	 * \note Orbiter takes care of doing the ImGui::Begin() / ImGui::End() pair
+	 * required to create the window and handle its visibility.
+	 * \note ImGui documentation is available at https://github.com/ocornut/imgui
+	 */
+	virtual void OnDraw() = 0;
+	bool active = false;
+	const std::string name;
+	ImGuiDefaultSize defaultSize;
+	std::string helpfile;
+	std::string helptopic;};
 
 /**
  * \defgroup locallight Local lighting interface
@@ -6034,6 +6098,14 @@ OAPIFUNC bool       oapiUnregisterCustomCmd (int cmdId);
 OAPIFUNC HWND       oapiOpenDialog (HINSTANCE hDLLInst, int resourceId, DLGPROC msgProc, void *context = 0);
 
 	/**
+	* \brief Open a dialog box specified by an ImGuiDialog object.
+	* \param dlg pointer to an ImGuiDialog object responsible for drawing the dialog box.
+	* \note Only one instance of a dialog box can be open at a time. A second call to
+	*  oapiOpenDialog() with the same dialog will do nothing.
+	*/
+OAPIFUNC void       oapiOpenDialog (ImGuiDialog *dlg);
+
+	/**
 	* \brief Open a dialog box defined as a Windows resource. This version provides additional
 	*  functionality compared to oapiOpenDialog().
 	* \param hDLLInst module instance handle (as obtained from InitModule)
@@ -6071,6 +6143,21 @@ OAPIFUNC HWND       oapiFindDialog (HINSTANCE hDLLInst, int resourceId);
 	*  dialog message handler to close a dialog which was opened by oapiOpenDialog().
 	*/
 OAPIFUNC void       oapiCloseDialog (HWND hDlg);
+
+	/**
+	* \brief Close a dialog box.
+	* \param dlg object pointer that was used to open the dialog box.
+	*/
+OAPIFUNC void       oapiCloseDialog (ImGuiDialog *dlg);
+
+	/**
+	* \brief Show a notification.
+	* \param type Type of notification
+	* \param title One liner title of the notification
+	* \param content Content of the notification (possibly multiline)
+	* \note  title and content are copied and can be safely overwritten/freed after the call
+	*/
+OAPIFUNC void      oapiAddNotification(int type, const char *title, const char *content = "");
 
 	/**
 	* \brief Retrieves the context pointer of a dialog box which has been defined during the call to oapiOpenDialog().
