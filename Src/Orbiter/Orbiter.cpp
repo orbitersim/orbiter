@@ -669,7 +669,6 @@ VOID Orbiter::Launch (const char *scenario)
 		LOGOUT_ERR ("Scenario not found: %s", scenario);
 		TerminateOnError();
 	}
-	DlgHelp::SetScenarioHelp (pState->ScnHelp());
 
 	long m0 = memstat->HeapUsage();
 	CreateRenderWindow (pConfig, scenario);
@@ -1220,7 +1219,6 @@ Vessel *Orbiter::SetFocusObject (Vessel *vessel, bool setview)
 		it->pModule->clbkFocusChanged(g_focusobj, g_pfocusobj);
 
 	if (pDlgMgr) pDlgMgr->BroadcastMessage (MSG_FOCUSVESSEL, vessel);
-	DlgHelp::SetVesselHelp (g_focusobj->HelpContext());
 
 	return g_pfocusobj;
 }
@@ -2765,14 +2763,12 @@ HWND Orbiter::OpenDialogEx (HINSTANCE hInstance, int id, DLGPROC pDlg, DWORD fla
 	return (pDlgMgr ? pDlgMgr->OpenDialogEx (hInstance, id, hRenderWnd, pDlg, flag, context) : NULL);
 }
 
-HWND Orbiter::OpenHelp (const HELPCONTEXT *hcontext)
+void Orbiter::OpenHelp (const HELPCONTEXT *hcontext)
 {
 	if (pDlgMgr) {
 		DlgHelp *pHelp = pDlgMgr->EnsureEntry<DlgHelp> ();
-		HWND hHelp = pHelp->GetHwnd();
-		PostMessage (hHelp, WM_USER+1, 0, (LPARAM)hcontext);
-		return hHelp;
-	} else return NULL;
+		pHelp->OpenHelp(hcontext);
+	}
 }
 
 void Orbiter::OpenLaunchpadHelp (HELPCONTEXT *hcontext)
