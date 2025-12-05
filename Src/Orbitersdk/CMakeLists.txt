@@ -4,6 +4,7 @@
 # Static library containing the DLL entry point for Orbiter plugins.
 # To be included by all Orbiter plugin DLLs.
 FetchContent_MakeAvailable(imgui)
+FetchContent_MakeAvailable(implot)
 
 add_library(Orbitersdk STATIC
 	Orbitersdk.cpp
@@ -12,12 +13,20 @@ add_library(Orbitersdk STATIC
 	${imgui_SOURCE_DIR}/imgui_draw.cpp
 	${imgui_SOURCE_DIR}/imgui_tables.cpp
 	${imgui_SOURCE_DIR}/imgui_widgets.cpp
+	${implot_SOURCE_DIR}/implot.cpp
+	${implot_SOURCE_DIR}/implot_items.cpp
+	${implot_SOURCE_DIR}/implot_demo.cpp
 )
 
 set_target_properties(Orbitersdk
 	PROPERTIES
 	FOLDER Core
 )
+
+target_include_directories(Orbitersdk
+	PUBLIC ${imgui_SOURCE_DIR}
+)
+
 
 # Copy library to its Orbitersdk/lib location so that external project integrated into the build can find it
 add_custom_command(TARGET Orbitersdk

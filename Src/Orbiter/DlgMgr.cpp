@@ -1,4 +1,4 @@
-﻿// Copyright (c) Martin Schweiger
+// Copyright (c) Martin Schweiger
 // Licensed under the MIT License
 
 #define EXPORT_IMGUI_CONTEXT
@@ -14,11 +14,13 @@
 #include "imgui_internal.h"
 #include "imgui_extras.h"
 #include "imgui_impl_win32.h"
+#include "implot.h"
 #include "IconsFontAwesome6.h"
 #include <chrono>
 #include <algorithm>
 #include <vector>
 #include <string>
+#include <unordered_map>
 
 using namespace oapi;
 
@@ -416,29 +418,93 @@ DWORD WINAPI DlgThreadProc (void *data)
 // ====================================================================
 
 DLLEXPORT ImGuiContext* GImGui = NULL;
-
-const ImWchar* GetGlyphRangesOrbiter()
+DLLEXPORT ImPlotContext* GImPlot = NULL;
+static void ApplyGlowTheme(const ImVec4& accent)
 {
-	static const ImWchar ranges[] =
-	{
-		0x0020, 0x00FF, // Basic Latin + Latin Supplement
-		0x00A0, 0x02D9, // Polish characters 
-		0x0393, 0x03C2, // Greek characters
-		0x221A, 0x221A, // √
-		0x222B, 0x222B, // ∫
-		0x2260, 0x2264, // ≠ ≤ ≥
-		0x02DD, 0x02DD, // ˝
-		0,
-	};
-	return &ranges[0];
+    ImGuiStyle& style = ImGui::GetStyle();
+    ImVec4* colors = style.Colors;
+
+    // Base backgrounds
+    const ImVec4 bgDark   = ImVec4(0.02f, 0.03f, 0.05f, 1.0f);
+    const ImVec4 bgMed    = ImVec4(0.07f, 0.08f, 0.12f, 1.0f);
+
+    // Glow layers
+    ImVec4 glowSoft   = ImVec4(accent.x, accent.y, accent.z, 0.20f); // halo
+    ImVec4 glowMedium = ImVec4(accent.x, accent.y, accent.z, 0.35f);
+    ImVec4 glowStrong = ImVec4(accent.x * 1.2f, accent.y * 1.2f, accent.z * 1.2f, 1.0f);
+
+    // Neon text: bright foreground + soft glow shadow
+    colors[ImGuiCol_Text]         = ImVec4(1, 1, 1, 1);
+    colors[ImGuiCol_TextDisabled] = ImVec4(0.4f, 0.4f, 0.44f, 1);
+
+    // Window backgrounds
+    colors[ImGuiCol_WindowBg] = bgDark;
+    colors[ImGuiCol_ChildBg]  = bgDark;
+    colors[ImGuiCol_PopupBg]  = bgMed;
+
+    // Glow-ish borders
+    colors[ImGuiCol_Border]       = glowMedium;
+    colors[ImGuiCol_BorderShadow] = ImVec4(0,0,0,0);
+
+    // Frames (inputs, checkboxes, sliders)
+    colors[ImGuiCol_FrameBg]        = bgMed;
+    colors[ImGuiCol_FrameBgHovered] = glowSoft;     // soft halo
+    colors[ImGuiCol_FrameBgActive]  = glowMedium;   // bright glow
+
+    // Buttons
+    colors[ImGuiCol_Button]        = glowSoft;
+    colors[ImGuiCol_ButtonHovered] = glowMedium;
+    colors[ImGuiCol_ButtonActive]  = glowStrong;
+
+    // Headers (collapsing header, tree node)
+    colors[ImGuiCol_Header]        = glowSoft;
+    colors[ImGuiCol_HeaderHovered] = glowMedium;
+    colors[ImGuiCol_HeaderActive]  = glowStrong;
+
+    // Checkmark & sliders use bright neon
+    colors[ImGuiCol_CheckMark]       = glowStrong;
+    colors[ImGuiCol_SliderGrab]      = glowMedium;
+    colors[ImGuiCol_SliderGrabActive]= glowStrong;
+
+    // Scrollbar
+    colors[ImGuiCol_ScrollbarBg]          = bgDark;
+    colors[ImGuiCol_ScrollbarGrab]        = glowSoft;
+    colors[ImGuiCol_ScrollbarGrabHovered] = glowMedium;
+    colors[ImGuiCol_ScrollbarGrabActive]  = glowStrong;
+
+    // Separators: bright neon lines
+    colors[ImGuiCol_Separator]        = glowMedium;
+    colors[ImGuiCol_SeparatorHovered] = glowStrong;
+    colors[ImGuiCol_SeparatorActive]  = glowStrong;
+
+    // Title bar
+    colors[ImGuiCol_TitleBg]          = glowSoft;
+    colors[ImGuiCol_TitleBgActive]    = glowMedium;
+    colors[ImGuiCol_TitleBgCollapsed] = glowSoft;
+
+    // Resize grip
+    colors[ImGuiCol_ResizeGrip]        = glowSoft;
+    colors[ImGuiCol_ResizeGripHovered] = glowMedium;
+    colors[ImGuiCol_ResizeGripActive]  = glowStrong;
+
+    // Sizing for a sleek neon look
+    style.FrameRounding = 6;
+    style.GrabRounding  = 4;
+    style.WindowRounding = 4;
+
+    style.FrameBorderSize = 1.0f;  // Border = glow line
+    style.ChildBorderSize = 1.0f;
+    style.WindowBorderSize = 1.0f;
 }
 
 static void ImGuiSetStyle()
 {
-	// Setup Dear ImGui style
-	ImGui::StyleColorsDark();
-	ImGuiStyle& style = ImGui::GetStyle();
+    ImVec4 green = ImVec4(0.0f, 1.0f, 0.0f, 1.0f);
+    ApplyGlowTheme(green);
+
+    ImGuiStyle& style = ImGui::GetStyle();
     style.WindowMenuButtonPosition = ImGuiDir_Right;
+
     style.Colors[ImGuiCol_Separator] = style.Colors[ImGuiCol_Button];
 }
 
@@ -448,6 +514,7 @@ void DialogManager::InitImGui()
 
 	IMGUI_CHECKVERSION();
 	ImGui::CreateContext();
+	ImPlot::CreateContext();
 	ImGuiIO& io = ImGui::GetIO();
 	// Viewports don't play nice when in full screen mode
 	if(!pOrbiter->IsFullscreen())
@@ -467,11 +534,12 @@ void DialogManager::InitImGui()
 	icons_config.FontDataOwnedByAtlas = false;
 	
 	const CFG_FONTPRM &prm = g_pOrbiter->Cfg()->CfgFontPrm;
-	defaultFont = io.Fonts->AddFontFromFileTTF(prm.ImGui_FontFile, prm.ImGui_FontSize, &config, ImGui::GetIO().Fonts->GetGlyphRangesJapanese());
+
+	defaultFont = io.Fonts->AddFontFromFileTTF(prm.ImGui_FontFile, prm.ImGui_FontSize);
 	io.Fonts->AddFontFromFileTTF("fa-solid-900.ttf", prm.ImGui_FontSize, &icons_config, icons_ranges);
-	consoleFont = io.Fonts->AddFontFromFileTTF("Cousine-Regular.ttf", prm.ImGui_FontSize, &config, ImGui::GetIO().Fonts->GetGlyphRangesDefault());
-	monoFont = io.Fonts->AddFontFromFileTTF("Lekton-Bold.ttf", prm.ImGui_FontSize, &config, GetGlyphRangesOrbiter());
-	
+	consoleFont = io.Fonts->AddFontFromFileTTF("Cousine-Regular.ttf", prm.ImGui_FontSize);
+	monoFont = io.Fonts->AddFontFromFileTTF("Lekton-Bold.ttf", prm.ImGui_FontSize);
+	manuscriptFont = io.Fonts->AddFontFromFileTTF("architext.regular.ttf", prm.ImGui_FontSize);
 
 	ImGui_ImplWin32_Init(hWnd);
 	gc->clbkImGuiInit();
@@ -483,6 +551,7 @@ void DialogManager::ShutdownImGui()
 
 	gc->clbkImGuiShutdown();
 	ImGui_ImplWin32_Shutdown();
+	ImPlot::DestroyContext();
 	ImGui::DestroyContext();
 }
 
@@ -496,7 +565,7 @@ void DialogManager::ImGuiNewFrame()
 
 	RenderNotifications();
 
-	// We can't use a range-based loop here because Show() may unregister the current dialog
+	// We can't use a range-based loop here because Display() may unregister the current dialog
 	for (auto it = DlgImGuiList.begin(); it != DlgImGuiList.end();)
 	{
 		auto current = it++;
@@ -504,6 +573,7 @@ void DialogManager::ImGuiNewFrame()
 			(*current)->Display();
 		}
 	}
+
 	ImGui::EndFrame();
 }
 
@@ -513,8 +583,15 @@ ImFont *DialogManager::GetFont(ImGuiFont f)
 	case ImGuiFont::MONO: return monoFont;
 	case ImGuiFont::CONSOLE: return consoleFont;
 	case ImGuiFont::DEFAULT: return defaultFont;
+	case ImGuiFont::MANUSCRIPT: return manuscriptFont;
 	default: return defaultFont;
 	}
+}
+
+void DialogManager::SetMainColor(COLORREF col)
+{
+    ImVec4 color = ImVec4((col & 0xff) / 255.0f, ((col >> 8) & 0xff) / 255.0f, (col >> 16)/255.0f, 1.0f);
+    ApplyGlowTheme(color);
 }
 
 ImGuiDialog::~ImGuiDialog(){
@@ -547,6 +624,11 @@ void ImGuiDialog::Display() {
 	}
 	ImGui::End();
 	if (!active) OnClose();
+}
+
+void ImGuiDialog::Activate() {
+	active = true;
+	ImGui::SetWindowFocus(name.c_str());
 }
 
 /* 
@@ -628,7 +710,8 @@ struct Notification
 	float speed;
 	uint32_t type;
 
-	Notification(uint32_t type_, const char *title_, const char *content_, size_t hash_):title(title_),content(content_),hash(hash_),type(type_)	{
+	Notification(uint32_t type_, const char *title_, const char *content_, size_t hash_):title(title_),content(content_),hash(hash_),type(type_)
+	{
 		if(type >= OAPINOTIF_INFO) type = OAPINOTIF_INFO;
 		color = notifcolors[type];
 		icon = notificons[type];
@@ -677,9 +760,7 @@ static std::vector<Notification> notifications;
 
 static void RenderNotifications()
 {
-	ImVec2 vp_size = ImGui::GetMainViewport()->Size;
-	vp_size.x += ImGui::GetMainViewport()->Pos.x;
-	vp_size.y += ImGui::GetMainViewport()->Pos.y;
+	ImVec2 vp_size = ImGui::GetMainViewport()->Size + ImGui::GetMainViewport()->Pos;
 	float height = 0.0f;
 
 	int i = 0;
@@ -754,7 +835,6 @@ static void RenderNotifications()
 		}
 
 		ImGui::PopTextWrapPos();
-
 		ImGui::PopStyleVar(2);
 		// Save height for next notification
 		height += ImGui::GetWindowHeight() + NOTIFY_PADDING_MESSAGE_Y;
@@ -766,7 +846,6 @@ static void RenderNotifications()
     notifications.erase(std::remove_if(notifications.begin(), notifications.end(),
 										[=](auto &notif){return notif.expired;}),
 						notifications.end());
-
 }
 
 
@@ -835,11 +914,12 @@ namespace ImGui {
 	}
 
 
-	DLLEXPORT void PushFont(ImGuiFont f)
+	DLLEXPORT void PushFont(ImGuiFont f, float scale)
 	{
-		ImGui::PushFont(g_pOrbiter->DlgMgr()->GetFont(f));
+		ImGuiContext& g = *GImGui;
+		const ImGuiStyle& style = g.Style;
+		ImGui::PushFont(g_pOrbiter->DlgMgr()->GetFont(f), style.FontSizeBase * scale);
 	}
-
 
 	// From imgui_demo.cpp, with added sameline argument
 	DLLEXPORT void HelpMarker(const char* desc, bool sameline)
@@ -868,9 +948,12 @@ namespace ImGui {
 		float offset = titleBarRect.Max.x - width - titleBarRect.Min.x - g.Style.FramePadding.x;
 		offset -= xoffset;
 		ImGui::SetCursorPos( ImVec2( offset, 0.0f ) );
-        ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0,0,0,0));
+		ImGui::PushStyleVar(ImGuiStyleVar_FrameBorderSize, 0.0f);   // no border
+		ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0,0,0,0));
+		ImGui::PushStyleColor(ImGuiCol_Border, ImVec4(0,0,0,0));    // invisible border color		bool ret = ImGui::Button( label );
 		bool ret = ImGui::Button( label );
-		ImGui::PopStyleColor();
+		ImGui::PopStyleColor(2);
+		ImGui::PopStyleVar();
 		if(tooltip && ImGui::IsItemHovered())
 			ImGui::SetTooltip(tooltip);
 		ImGui::PopClipRect();
@@ -902,5 +985,219 @@ namespace ImGui {
 	{
         const char* elem_name = (*v >= 0 && *v < nvalues) ? values[*v] : "Unknown";
         return ImGui::SliderInt(label, v, 0, nvalues - 1, elem_name);
+	}
+
+
+	// "Animated" widgets for Combos and Popups
+
+	struct FadingState
+	{
+		enum State { Closed, Opening, Open } state = Closed;
+		float animstate = 0.0f;
+	};
+	static std::unordered_map<ImGuiID, FadingState> g_popupStates;
+
+	// A popup that will fade-in when open (making it fade-out is too tricky)
+	DLLEXPORT bool BeginAnimatedPopup(const char* name, float duration)
+	{
+		ImGuiContext& g = *GImGui;
+		ImGuiID id = g.CurrentWindow->GetID(name);
+		FadingState& S = g_popupStates[id];
+
+		if (ImGui::IsPopupOpen(name) && S.state == FadingState::Closed)	{
+			S.state = FadingState::Opening;
+			S.animstate = 0.0f;
+		}
+
+		if (S.state == FadingState::Opening) {
+			S.animstate += ImGui::GetIO().DeltaTime;
+			if (S.animstate >= duration)
+				S.state = FadingState::Open;
+		}
+
+		float x = ImClamp(S.animstate / duration, 0.0f, 1.0f);
+		float alpha = x * x * (3.0f - 2.0f * x);
+
+		ImGui::PushStyleVar(ImGuiStyleVar_Alpha, alpha);
+
+		if (!ImGui::BeginPopup(name)) {
+			ImGui::PopStyleVar();
+			S.state = FadingState::Closed;
+			return false;
+		}
+
+		return true;
+	}
+
+	DLLEXPORT void EndAnimatedPopup()
+	{
+		ImGui::PopStyleVar();
+		ImGui::EndPopup();
+	}
+
+	DLLEXPORT bool BeginAnimatedCombo(const char* label, const char* preview_value, ImGuiComboFlags flags, float duration)
+	{
+		ImGuiContext& g = *GImGui;
+		ImGuiID id = g.CurrentWindow->GetID(label);
+		FadingState& S = g_popupStates[id];
+
+		float alpha = 1.0f;
+		if (S.state == FadingState::Opening) {
+			S.animstate += ImGui::GetIO().DeltaTime;
+			if (S.animstate >= duration) {
+				S.state = FadingState::Open;
+			} else {
+				float x = ImClamp(S.animstate / duration, 0.0f, 1.0f);
+				alpha = x * x * (3.0f - 2.0f * x);
+			}
+		}
+
+		ImVec4 bc = ImGui::GetStyleColorVec4(ImGuiCol_Border);
+		ImVec4 bs = ImGui::GetStyleColorVec4(ImGuiCol_BorderShadow);
+		bc.w *= alpha;
+		bs.w *= alpha;
+		ImGui::PushStyleColor(ImGuiCol_Border, bc);
+		ImGui::PushStyleColor(ImGuiCol_BorderShadow, bs);
+		ImGui::SetNextWindowBgAlpha(alpha);
+
+		if (ImGui::BeginCombo(label, preview_value, flags)) {
+			ImGui::PushStyleVar(ImGuiStyleVar_Alpha, alpha);
+
+			if(S.state == FadingState::Closed) {
+				S.state = FadingState::Opening;
+				S.animstate = 0.0f;
+			}
+		} else {
+			S.state = FadingState::Closed;
+			ImGui::PopStyleColor(2);
+			return false;
+		}
+
+		return true;
+	}
+
+    DLLEXPORT void EndAnimatedCombo()
+	{
+		ImGui::PopStyleColor(2);
+		ImGui::PopStyleVar();
+		ImGui::EndCombo();
+	}
+
+	struct AnimatedHeaderState
+	{
+		enum State { Closed, Opening, Closing, Open } state = Closed;
+		float speed;
+		float height = 0.0f;
+		ImVec2 startPos;
+		std::string childname;
+	};
+	static std::unordered_map<ImGuiID, AnimatedHeaderState> g_headerStates;
+	static std::vector<ImGuiID> g_stackHeaders;
+	DLLEXPORT bool BeginAnimatedCollapsingHeader(const char* label, ImGuiTreeNodeFlags flags, float speed)
+	{
+		ImGuiWindow* window = GetCurrentWindow();
+		if (window->SkipItems)
+			return false;
+
+		ImGuiID id = ImGui::GetID(label);
+		auto found = g_headerStates.find(id);
+		auto& state = g_headerStates[id];
+		state.speed = speed;
+
+		// First time with see this widget, check to see if it should be open
+		if(found == g_headerStates.end() && (flags & ImGuiTreeNodeFlags_DefaultOpen)) {
+			state.state = AnimatedHeaderState::Open;
+			state.childname = std::string(label) + "_child";
+		}
+
+		bool visible = ImGui::CollapsingHeader(label, flags);
+
+		if(visible) {
+			switch(state.state) {
+				case AnimatedHeaderState::Closed:
+					state.state = AnimatedHeaderState::Opening;
+					break;
+				case AnimatedHeaderState::Closing:
+					state.state = AnimatedHeaderState::Opening;
+					break;
+				case AnimatedHeaderState::Opening:
+				case AnimatedHeaderState::Open:
+					break;
+			}
+		} else {
+			switch(state.state) {
+				case AnimatedHeaderState::Open:
+					state.state = AnimatedHeaderState::Closing;
+					break;
+				case AnimatedHeaderState::Opening:
+					state.state = AnimatedHeaderState::Closing;
+					break;
+				case AnimatedHeaderState::Closing:
+				case AnimatedHeaderState::Closed:
+					break;
+			}
+		}
+
+		// If it's closed, EndAnimatedCollapsingHeader won't be called
+		// so we need to exit before pushing the id to the stack
+		if(state.state == AnimatedHeaderState::Closed) return false;
+		g_stackHeaders.push_back(id);
+
+		// If the block is fully deployed, we use a BeginGroup/EndGroup section
+		// To compute the height of the whole block in EndAnimatedCollapsingHeader
+		if(state.state == AnimatedHeaderState::Open) {
+			state.startPos = ImGui::GetCursorScreenPos();
+			ImGui::BeginGroup();
+			return true;
+		}
+
+		// Use a child during the animation, we clamp its height to create
+		// a sliding effect
+		ImGui::BeginChild(state.childname.c_str(),
+							ImVec2(-FLT_MIN, state.height), ImGuiChildFlags_AutoResizeY, ImGuiWindowFlags_NoDecoration);
+			
+		return true;
+	}
+
+	DLLEXPORT void EndAnimatedCollapsingHeader()
+	{
+		auto id = g_stackHeaders.back();
+		g_stackHeaders.pop_back();
+
+		auto& state = g_headerStates[id];
+		// Compute the height of the block
+		if(state.state == AnimatedHeaderState::Open) {
+			ImGui::EndGroup();
+
+			ImVec2 endPos = ImGui::GetItemRectMax();
+			state.height = endPos.y - state.startPos.y;
+			return;
+		}
+
+		ImVec2 available = ImGui::GetContentRegionAvail();
+
+		switch(state.state) {
+			case AnimatedHeaderState::Opening:
+				// A negative available.y indicates that the content is
+				// too tall to fit in the given heigth -> we increase it
+				// Otherwise we can stop the animation
+				if(available.y < 0) {
+					state.height += ImGui::GetIO().DeltaTime * state.speed;
+				} else {
+					state.state = AnimatedHeaderState::Open;
+				}
+				break;
+			case AnimatedHeaderState::Closing:
+				state.height -= ImGui::GetIO().DeltaTime * state.speed;
+				if(state.height <= 0.0) {
+					state.height = 0;
+					state.state = AnimatedHeaderState::Closed;
+				}
+				break;
+			case AnimatedHeaderState::Open:
+			case AnimatedHeaderState::Closed:
+				break; // should not be here
+		}
+		ImGui::EndChild();
 	}
 }

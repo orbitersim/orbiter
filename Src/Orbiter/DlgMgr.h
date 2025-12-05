@@ -11,6 +11,7 @@
 #include "Orbiter.h"
 #include <list>
 #include "imgui.h"
+#include "imgui_extras.h"
 class ImGuiDialog;
 enum class ImGuiFont;
 
@@ -222,12 +223,16 @@ public:
 
 	void ImGuiNewFrame();
 	ImFont *GetFont(ImGuiFont f);
+
+	void SetMainColor(COLORREF col);
 private:
 	void InitImGui();
 	void ShutdownImGui();
 	ImFont *defaultFont;
 	ImFont *consoleFont;
-	ImFont *monoFont;};
+	ImFont *monoFont;
+	ImFont *manuscriptFont;
+};
 
 INT_PTR OrbiterDefDialogProc (HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam);
 

@@ -13,6 +13,7 @@
 #include "Camera.h"
 #include "D3dmath.h"
 #include "Log.h"
+#include "DlgMgr.h"
 #include <assert.h>
 
 using namespace std;
@@ -478,6 +479,10 @@ void Pane::SetHUDColour (int idx, double intens, bool force)
 	hudCol = ((DWORD)((hue & 0xff) * hudIntens)) +
 			 ((DWORD)(((hue >> 8) & 0xff) * hudIntens) << 8) +
              ((DWORD)((hue >> 16) * hudIntens) << 16);
+
+	DialogManager *dlgmgr = g_pOrbiter->DlgMgr();
+	dlgmgr->SetMainColor(hudCol);
+
 	if (hudpen) gc->clbkReleasePen (hudpen);
 	hudpen = gc->clbkCreatePen (1, 0, hudCol);
 	if (change_col) {
