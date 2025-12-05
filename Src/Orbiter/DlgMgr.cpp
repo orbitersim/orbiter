@@ -1104,10 +1104,12 @@ namespace ImGui {
 		auto& state = g_headerStates[id];
 		state.speed = speed;
 
-		// First time with see this widget, check to see if it should be open
-		if(found == g_headerStates.end() && (flags & ImGuiTreeNodeFlags_DefaultOpen)) {
-			state.state = AnimatedHeaderState::Open;
+		// First time with see this widget,
+		if(found == g_headerStates.end()) {
 			state.childname = std::string(label) + "_child";
+			// Check to see if it should be open
+			if(flags & ImGuiTreeNodeFlags_DefaultOpen)
+				state.state = AnimatedHeaderState::Open;
 		}
 
 		bool visible = ImGui::CollapsingHeader(label, flags);
