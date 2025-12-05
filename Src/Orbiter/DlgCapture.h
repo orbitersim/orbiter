@@ -8,22 +8,15 @@
 #ifndef __DLGCAPTURE_H
 #define __DLGCAPTURE_H
 
-#include "DialogWin.h"
-
+#include "OrbiterAPI.h"
 // ======================================================================
 // Class for screen capture dialog
 
-class DlgCapture: public DialogWin {
+class DlgCapture : public ImGuiDialog {
+	void AutoIncrement(char *);
 public:
-	DlgCapture (HINSTANCE hInstance, HWND hParent, void *context);
-	~DlgCapture ();
-	void Update ();
-	BOOL OnInitDialog (HWND hDlg, WPARAM wParam, LPARAM lParam);
-	BOOL OnCommand (HWND hDlg, WORD id, WORD code, HWND hControl);
-
-protected:
-	bool Take (HWND hDlg);
-	bool AutoIncrement (HWND hDlg);
+    DlgCapture();
+    void OnDraw() override;
 };
 
 #endif // !__DLGCAPTURE_H
