@@ -203,15 +203,16 @@ CFG_JOYSTICKPRM CfgJoystickPrm_default = {
 CFG_UIPRM CfgUIPrm_default = {
 	1,			// MouseFocusMode (click required for child windows)
 	2,          // MenuMode (auto-hide menu bar)
-	false,      // bMenuLabelOnly (display labels and icons)
+	35,         // MenuButtonSize
+	35,         // MenuButtonHoverSize
+	18,          // MenuButtonSpacing
+	false,      // bMenuLabelAlways (always display labels)
 	true,       // bWarpAlways (always display time acceleration != 1)
-	false,      // bWarpScientific (display time acceleration in fixed notation)
 	0,          // InfoMode (show info bars)
-	{0,0},      // InfoAuxIdx (don't show auxiliary info bars)
+	0,          // FPS (0=hidden, 1=on the left, 2=on the right)
 	2,          // MenuOpacity (menubar opacity, 0-10)
 	2,          // InfoOpacity (infobar opacity, 0-10)
 	10,         // MenuScrollspeed (1-20)
-	0,          // PauseIndMode (flash on pause/resume)
 	0,          // SelVesselTab: tab to open in vessel selection dialog
 	4,          // SelVesselRange "nearby" range for vessel selection dialog (100km)
 	false       // bSelVesselFlat (no flat assemblies) in vessel selection dialog)
@@ -717,24 +718,24 @@ bool Config::Load(const char *fname)
 		CfgUIPrm.MouseFocusMode = (DWORD)i;
 	if (GetInt (ifs, "MenubarMode", i) && i >= 0 && i <= 2)
 		CfgUIPrm.MenuMode = (DWORD)i;
-	GetBool (ifs, "MenubarLabelOnly", CfgUIPrm.bMenuLabelOnly);
+	GetBool (ifs, "MenubarLabelAlways", CfgUIPrm.bMenuLabelAlways);
+	if (GetInt (ifs, "MenuButtonHoverSize", i))
+		CfgUIPrm.MenuButtonHoverSize = i;
+	if (GetInt (ifs, "MenuButtonSize", i))
+		CfgUIPrm.MenuButtonSize = i;
+	if (GetInt (ifs, "MenuButtonSpacing", i))
+		CfgUIPrm.MenuButtonSpacing = i;
 	GetBool (ifs, "ShowWarpAlways", CfgUIPrm.bWarpAlways);
-	GetBool (ifs, "ShowWarpScientific", CfgUIPrm.bWarpScientific);
 	if (GetInt (ifs, "InfobarMode", i) && i >= 0 && i <= 2)
-		CfgUIPrm.InfoMode = (DWORD)i;
-	if (GetString (ifs, "InfoAuxIdx", cbuf)) {
-		sscanf (cbuf, "%d%d", CfgUIPrm.InfoAuxIdx+0, CfgUIPrm.InfoAuxIdx+1);
-		for (i = 0; i < 2; i++)
-			if (CfgUIPrm.InfoAuxIdx[i] > 3) CfgUIPrm.InfoAuxIdx[i] = 0;
-	}
+		CfgUIPrm.InfoMode = i;
+	if (GetInt (ifs, "FPS", i) && i >= 0 && i <= 2)
+		CfgUIPrm.FPS = i;
 	if (GetInt (ifs, "MenubarOpacity", i) && i >= 0 && i <= 10)
-		CfgUIPrm.MenuOpacity = (DWORD)i;
+		CfgUIPrm.MenuOpacity = i;
 	if (GetInt (ifs, "InfobarOpacity", i) && i >= 0 && i <= 10)
 		CfgUIPrm.InfoOpacity = (DWORD)i;
 	if (GetInt (ifs, "MenubarSpeed", i) && i >= 1 && i <= 20)
 		CfgUIPrm.MenuScrollspeed = (DWORD)i;
-	if (GetInt (ifs, "PauseIndicatorMode", i) && i >= 0 && i <= 2)
-		CfgUIPrm.PauseIndMode = (DWORD)i;
 	GetInt (ifs, "SelVesselTab", CfgUIPrm.SelVesselTab);
 	GetInt (ifs, "SelVesselRange", CfgUIPrm.SelVesselRange);
 	GetBool (ifs, "SelVesselFlat", CfgUIPrm.bSelVesselFlat);
@@ -1268,24 +1269,26 @@ BOOL Config::Write (const char *fname) const
 			ofs << "MouseFocusMode = " << CfgUIPrm.MouseFocusMode << '\n';
 		if (CfgUIPrm.MenuMode != CfgUIPrm_default.MenuMode || bEchoAll)
 			ofs << "MenubarMode = " << CfgUIPrm.MenuMode << '\n';
-		if (CfgUIPrm.bMenuLabelOnly != CfgUIPrm_default.bMenuLabelOnly || bEchoAll)
-			ofs << "MenubarLabelOnly = " << BoolStr (CfgUIPrm.bMenuLabelOnly) << '\n';
+		if (CfgUIPrm.bMenuLabelAlways != CfgUIPrm_default.bMenuLabelAlways || bEchoAll)
+			ofs << "MenubarLabelAlways = " << BoolStr (CfgUIPrm.bMenuLabelAlways) << '\n';
+		if (CfgUIPrm.MenuButtonSize != CfgUIPrm_default.MenuButtonSize || bEchoAll)
+			ofs << "MenuButtonSize = " << CfgUIPrm.MenuButtonSize << '\n';
+		if (CfgUIPrm.MenuButtonHoverSize != CfgUIPrm_default.MenuButtonHoverSize || bEchoAll)
+			ofs << "MenuButtonHoverSize = " << CfgUIPrm.MenuButtonHoverSize << '\n';
+		if (CfgUIPrm.MenuButtonSpacing != CfgUIPrm_default.MenuButtonSpacing || bEchoAll)
+			ofs << "MenuButtonSpacing = " << CfgUIPrm.MenuButtonSpacing << '\n';
 		if (CfgUIPrm.bWarpAlways != CfgUIPrm_default.bWarpAlways || bEchoAll)
 			ofs << "ShowWarpAlways = " << BoolStr (CfgUIPrm.bWarpAlways) << '\n';
-		if (CfgUIPrm.bWarpScientific != CfgUIPrm_default.bWarpScientific || bEchoAll)
-			ofs << "ShowWarpScientific = " << BoolStr (CfgUIPrm.bWarpScientific) << '\n';
 		if (CfgUIPrm.InfoMode != CfgUIPrm_default.InfoMode || bEchoAll)
 			ofs << "InfobarMode = " << CfgUIPrm.InfoMode << '\n';
-		if (CfgUIPrm.InfoAuxIdx[0] != CfgUIPrm_default.InfoAuxIdx[0] || CfgUIPrm.InfoAuxIdx[1] != CfgUIPrm_default.InfoAuxIdx[1] || bEchoAll)
-			ofs << "InfoAuxIdx = " << CfgUIPrm.InfoAuxIdx[0] << ' ' << CfgUIPrm.InfoAuxIdx[1] << '\n';
+		if (CfgUIPrm.FPS != CfgUIPrm_default.FPS || bEchoAll)
+			ofs << "FPS = " << CfgUIPrm.FPS << '\n';
 		if (CfgUIPrm.MenuOpacity != CfgUIPrm_default.MenuOpacity || bEchoAll)
 			ofs << "MenubarOpacity = " << CfgUIPrm.MenuOpacity << '\n';
 		if (CfgUIPrm.InfoOpacity != CfgUIPrm_default.InfoOpacity || bEchoAll)
 			ofs << "InfobarOpacity = " << CfgUIPrm.InfoOpacity << '\n';
 		if (CfgUIPrm.MenuScrollspeed != CfgUIPrm_default.MenuScrollspeed || bEchoAll)
 			ofs << "MenubarSpeed = " << CfgUIPrm.MenuScrollspeed << '\n';
-		if (CfgUIPrm.PauseIndMode != CfgUIPrm_default.PauseIndMode || bEchoAll)
-			ofs << "PauseIndicatorMode = " << CfgUIPrm.PauseIndMode << '\n';
 		if (CfgUIPrm.SelVesselTab != CfgUIPrm_default.SelVesselTab || bEchoAll)
 			ofs << "SelVesselTab = " << CfgUIPrm.SelVesselTab << '\n';
 		if (CfgUIPrm.SelVesselRange != CfgUIPrm_default.SelVesselRange || bEchoAll)

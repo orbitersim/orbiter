@@ -6077,6 +6077,9 @@ OAPIFUNC DWORD      oapiRegisterCustomCmd (char *label, char *desc, CustomFunc f
 	*/
 OAPIFUNC bool       oapiUnregisterCustomCmd (int cmdId);
 
+OAPIFUNC int        oapiRegisterCustomMenuCmd (const char *label, const char *imagepath, CustomFunc func, void *context);
+OAPIFUNC void       oapiUnregisterCustomMenuCmd (int cmdId);
+
 	/**
 	* \brief Open a dialog box defined as a Windows resource.
 	* \param hDLLInst module instance handle (as obtained from InitModule)

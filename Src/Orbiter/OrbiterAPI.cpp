@@ -2149,6 +2149,16 @@ DLLEXPORT bool oapiUnregisterCustomCmd (int cmdId)
 	return g_pOrbiter->UnregisterCustomCmd (cmdId);
 }
 
+DLLEXPORT int oapiRegisterCustomMenuCmd (const char *label, const char *imagepath, CustomFunc func, void *context)
+{
+	return g_pOrbiter->RegisterMenuCmd (label, imagepath, func, context);
+}
+
+DLLEXPORT void oapiUnregisterCustomMenuCmd (int cmdId)
+{
+	return g_pOrbiter->UnregisterMenuCmd (cmdId);
+}
+
 DLLEXPORT HWND oapiOpenDialog (HINSTANCE hDLLInst, int resourceId, DLGPROC msgProc, void *context)
 {
 	return g_pOrbiter->OpenDialog (hDLLInst, resourceId, msgProc, context);
@@ -2230,22 +2240,26 @@ DLLEXPORT bool oapiOpenLaunchpadHelp (HELPCONTEXT *hcontext)
 
 DLLEXPORT DWORD oapiGetMainMenuVisibilityMode()
 {
-	return g_pane->MIBar()->GetMenuMode();
+	CFG_UIPRM &prm = g_pOrbiter->Cfg()->CfgUIPrm;
+	return prm.MenuMode;
 }
 
 DLLEXPORT void oapiSetMainMenuVisibilityMode (DWORD mode)
 {
-	g_pane->MIBar()->SetMenuMode (mode);
+	CFG_UIPRM &prm = g_pOrbiter->Cfg()->CfgUIPrm;
+	prm.MenuMode = mode;
 }
 
 DLLEXPORT DWORD oapiGetMainInfoVisibilityMode()
 {
-	return g_pane->MIBar()->GetInfoMode();
+	CFG_UIPRM &prm = g_pOrbiter->Cfg()->CfgUIPrm;
+	return prm.InfoMode;
 }
 
 DLLEXPORT void oapiSetMainInfoVisibilityMode (DWORD mode)
 {
-	g_pane->MIBar()->SetInfoMode (mode);
+	CFG_UIPRM &prm = g_pOrbiter->Cfg()->CfgUIPrm;
+	prm.InfoMode = mode;
 }
 
 DLLEXPORT FILEHANDLE oapiOpenFile (const char *fname, FileAccessMode mode, PathRoot root)

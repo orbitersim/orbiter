@@ -246,10 +246,23 @@ public:
 		void *context;
 	} CUSTOMCMD;
 
+	struct CUSTOMMENUCMD {
+		std::string label;
+		std::string imagepath;
+		int id;
+		CustomFunc func;
+		void *context;
+
+		CUSTOMMENUCMD(const char *lbl, const char *ip, int n, CustomFunc f, void *ctx):label(lbl),imagepath(ip),id(n),func(f),context(ctx){}
+	};
+
 	TimeJumpData tjump;
 
 	DWORD RegisterCustomCmd (char *label, char *desc, CustomFunc func, void *context);
 	bool UnregisterCustomCmd (int cmdId);
+
+	int RegisterMenuCmd (const char *label, const char *imagepath, CustomFunc func, void *context = NULL);
+	void UnregisterMenuCmd (int cmdId);
 
 	MeshManager     meshmanager;    // global mesh manager
 
@@ -439,6 +452,10 @@ private:
 	CUSTOMCMD *customcmd;
 	DWORD ncustomcmd;
 	friend class DlgFunction;
+
+	// list of custom menu items
+	std::vector<CUSTOMMENUCMD> menuitems;
+	friend class DynamicMenuBar;
 
 public:
 	// external graphics client
