@@ -210,7 +210,6 @@ MFDWindow::MFDWindow(const MFDSPEC& spec) : ExternMFD(spec)
 
 MFDWindow::~MFDWindow()
 {
-	oapiCloseDialog(m_window.get());
 }
 
 void MFDWindow::SetVessel(OBJHANDLE hV)
