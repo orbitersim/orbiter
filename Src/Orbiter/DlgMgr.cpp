@@ -1189,12 +1189,17 @@ namespace ImGui {
 		switch(state.state) {
 			case AnimatedHeaderState::Opening:
 				// A negative available.y indicates that the content is
-				// too tall to fit in the given heigth -> we increase it
+				// too tall to fit in the given height -> we increase it
 				// Otherwise we can stop the animation
 				if(available.y < 0) {
 					state.height += ImGui::GetIO().DeltaTime * state.speed;
 				} else {
 					state.state = AnimatedHeaderState::Open;
+					// Prevent too much overshooting
+					float ypos = ImGui::GetCursorPosY();
+					ypos -= available.y;
+					ImGui::SetCursorPosY(ypos);
+					ImGui::Dummy(ImVec2(0,0));
 				}
 				break;
 			case AnimatedHeaderState::Closing:
