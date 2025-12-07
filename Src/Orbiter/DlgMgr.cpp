@@ -429,9 +429,11 @@ static void ApplyGlowTheme(const ImVec4& accent)
     const ImVec4 bgMed    = ImVec4(0.07f, 0.08f, 0.12f, 1.0f);
 
     // Glow layers
-    ImVec4 glowSoft   = ImVec4(accent.x, accent.y, accent.z, 0.20f); // halo
+    ImVec4 glowSoft   = ImVec4(accent.x, accent.y, accent.z, 0.20f);
     ImVec4 glowMedium = ImVec4(accent.x, accent.y, accent.z, 0.35f);
     ImVec4 glowStrong = ImVec4(accent.x * 1.2f, accent.y * 1.2f, accent.z * 1.2f, 1.0f);
+    ImVec4 title = ImVec4(accent.x * 0.2f, accent.y * 0.2f, accent.z * 0.2f, 1.0f);
+    ImVec4 titleActive = ImVec4(accent.x * 0.35f, accent.y * 0.35f, accent.z * 0.35f, 1.0f);
 
     // Neon text: bright foreground + soft glow shadow
     colors[ImGuiCol_Text]         = ImVec4(1, 1, 1, 1);
@@ -448,8 +450,8 @@ static void ApplyGlowTheme(const ImVec4& accent)
 
     // Frames (inputs, checkboxes, sliders)
     colors[ImGuiCol_FrameBg]        = bgMed;
-    colors[ImGuiCol_FrameBgHovered] = glowSoft;     // soft halo
-    colors[ImGuiCol_FrameBgActive]  = glowMedium;   // bright glow
+    colors[ImGuiCol_FrameBgHovered] = glowSoft;
+    colors[ImGuiCol_FrameBgActive]  = glowMedium;
 
     // Buttons
     colors[ImGuiCol_Button]        = glowSoft;
@@ -478,21 +480,27 @@ static void ApplyGlowTheme(const ImVec4& accent)
     colors[ImGuiCol_SeparatorActive]  = glowStrong;
 
     // Title bar
-    colors[ImGuiCol_TitleBg]          = glowSoft;
-    colors[ImGuiCol_TitleBgActive]    = glowMedium;
-    colors[ImGuiCol_TitleBgCollapsed] = glowSoft;
+    colors[ImGuiCol_TitleBg]          = title;
+    colors[ImGuiCol_TitleBgActive]    = titleActive;
+    colors[ImGuiCol_TitleBgCollapsed] = bgDark;
 
     // Resize grip
     colors[ImGuiCol_ResizeGrip]        = glowSoft;
     colors[ImGuiCol_ResizeGripHovered] = glowMedium;
     colors[ImGuiCol_ResizeGripActive]  = glowStrong;
 
-    // Sizing for a sleek neon look
+    // Tabs
+    colors[ImGuiCol_Tab]                = glowSoft;
+    colors[ImGuiCol_TabHovered]         = glowMedium;
+    colors[ImGuiCol_TabActive]          = glowMedium;
+    colors[ImGuiCol_TabUnfocused]       = ImVec4(glowSoft.x, glowSoft.y, glowSoft.z, 0.5f);
+    colors[ImGuiCol_TabUnfocusedActive] = glowMedium;
+
     style.FrameRounding = 6;
     style.GrabRounding  = 4;
     style.WindowRounding = 4;
 
-    style.FrameBorderSize = 1.0f;  // Border = glow line
+    style.FrameBorderSize = 1.0f;
     style.ChildBorderSize = 1.0f;
     style.WindowBorderSize = 1.0f;
 }
