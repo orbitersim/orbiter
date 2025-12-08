@@ -121,7 +121,7 @@ public:
 		for(size_t offset = 0; offset < len; offset += 64) {
 			char out[256] = "DATA ";
 			char *ptr = out + 5;
-			size_t block_size = std::min(64u, len - offset);
+			size_t block_size = std::min((size_t)64, len - offset);
 			// Save in hexa to prevent problems with special characters and the like
 			for(size_t i = 0; i < block_size; i++) {
 				char c = buf[i + offset];
