@@ -13,8 +13,11 @@
 
 #include "Atlantis.h"
 #include "AscentAP.h"
-#include "resource.h"
-#include "Common\Dialog\Graph.h"
+#include "IconsFontAwesome6.h"
+#include "imgui_extras.h"
+#include "implot.h"
+
+#define NDATA 256
 
 using std::min;
 using std::max;
@@ -25,7 +28,7 @@ extern GDIParams g_Param;
 // class AscentAP: ascent autopilot
 // ==============================================================
 
-AscentAP::AscentAP (Atlantis *atlantis)
+AscentAP::AscentAP (Atlantis *atlantis):ImGuiDialog("Atlantis Ascent Autopilot")
 {
 	vessel = atlantis;
 	n_pitch_profile = 0;
@@ -37,6 +40,13 @@ AscentAP::AscentAP (Atlantis *atlantis)
 	launch_lat = launch_lng = 0.0;
 	pt = -1.0; pspd = acc = 0.0;
 	pacc_valid = false;
+
+	m_historyAlt.resize(NDATA, NAN);
+	m_historySSME.resize(NDATA, NAN);
+	m_historySRB.resize(NDATA, NAN);
+
+	m_sysT = 0.0;
+	m_idx = 0;
 }
 
 // --------------------------------------------------------------
@@ -50,6 +60,15 @@ AscentAP::~AscentAP ()
 
 void AscentAP::Update (double simt)
 {
+	double syst = oapiGetSysTime(); // ignore time acceleration for graph updates
+	if (syst >= m_sysT + 1.0) {
+		double alt = vessel->GetAltitude();
+		double ssme = vessel->GetThrusterGroupLevel(THGROUP_MAIN);
+		double srb = vessel->GetSRBThrustLevel(0);
+		AddSamples(alt, ssme, srb);
+		m_sysT = syst;
+	}
+
 	const double eps=1e-5;
 
 	tgt.az = CalcTargetAzimuth();
@@ -529,6 +548,70 @@ bool AscentAP::ParseScenarioLine (const char *line)
 		return true;
 	}
 	return false;
+}
+
+void AscentAP::AddSamples(float alt, float ssme, float srb)
+{
+	m_historyAlt[m_idx] = alt / 1000.0f;
+	m_historySSME[m_idx] = ssme * 100.0f;
+	m_historySRB[m_idx] = srb * 100.0f;
+	// Force the axis to include 0
+	m_historyAlt[(m_idx + 1) % NDATA] = 0.0f;
+	m_historyAlt[(m_idx + 2) % NDATA] = NAN;
+	m_historySSME[(m_idx + 1) % NDATA] = 0.0f;
+	m_historySSME[(m_idx + 2) % NDATA] = NAN;
+	m_historySRB[(m_idx + 1) % NDATA] = 0.0f;
+	m_historySRB[(m_idx + 2) % NDATA] = NAN;
+	m_idx = (m_idx + 1) % NDATA;
+}
+
+void AscentAP::OnDraw()
+{
+	double laz = launch_azimuth * DEG;
+	ImGui::SetNextItemWidth(100.0f);
+	if(ImGui::InputDoubleEx(u8"Launch azimuth (°)", &laz, -180.0, 180.0, 0.5, 10.0,"%.1f"))
+		launch_azimuth = laz * RAD;
+
+	double alt = tgt_alt/1000.0;
+	ImGui::SameLine();
+	ImGui::SetNextItemWidth(100.0f);
+	if(ImGui::InputDoubleEx("Orbit Altitude (km)", &alt, 200.0, 2000.0, 1.0, 50.0, "%.1f")) {
+		tgt_alt = alt * 1000.0;
+	}
+
+	ImGui::SameLine();
+	if (active) {
+		if(ImGui::Button("Disengage"))
+			Disengage();
+	} else if (vessel->status == 0) {
+		if(ImGui::Button("Launch")) {
+			SetLaunchAzimuth(launch_azimuth);
+			Launch();
+		}
+	} else {
+		if(ImGui::Button("Engage")) {
+			Engage();
+		}
+	}
+
+	ImGui::Separator();
+
+	ImGui::Text("MET: %s", MetStr(met));
+
+	if (ImPlot::BeginPlot("Ascent Profile", ImVec2(-1,0), ImPlotFlags_NoMenus)) {
+		ImPlot::SetupAxis(ImAxis_X1, NULL, ImPlotAxisFlags_AutoFit | ImPlotAxisFlags_NoTickLabels);
+		ImPlot::SetupAxisLimitsConstraints(ImAxis_X1, 0, NDATA);
+
+		ImPlot::SetupAxis(ImAxis_Y1, "Thrust (%)", ImPlotAxisFlags_AutoFit);
+		ImPlot::SetupAxis(ImAxis_Y2, "Altitude (km)", ImPlotAxisFlags_AuxDefault | ImPlotAxisFlags_AutoFit);
+
+		ImPlot::SetAxes(ImAxis_X1, ImAxis_Y1);
+		ImPlot::PlotLine("SRB", m_historySRB.data(), NDATA, 1.0, 0.0, ImPlotLineFlags_None, m_idx);
+		ImPlot::PlotLine("SSME", m_historySSME.data(), NDATA, 1.0, 0.0, ImPlotLineFlags_None, m_idx);
+		ImPlot::SetAxes(ImAxis_X1, ImAxis_Y2);
+		ImPlot::PlotLine("Altitude", m_historyAlt.data(), NDATA, 1.0, 0.0, ImPlotLineFlags_None, m_idx);
+		ImPlot::EndPlot();
+	}
 }
 
 
@@ -1024,425 +1107,6 @@ OAPI_MSGTYPE AscentApMfd::MsgProc (UINT msg, UINT mfd, WPARAM wparam, LPARAM lpa
 		return (OAPI_MSGTYPE)(new AscentApMfd (LOWORD(wparam), HIWORD(wparam), (VESSEL*)lparam));
 	}
 	return 0;
-}
-
-
-// ==============================================================
-// class AscentAPDlg: dialog interface for ascent autopilot
-// ==============================================================
-
-AscentAPDlg::AscentAPDlg (AscentAP *_ap): TabbedDialog (IDD_ASCENTAP, IDC_TAB1)
-{
-	ap = _ap;
-}
-
-// --------------------------------------------------------------
-
-AscentAPDlg::~AscentAPDlg ()
-{
-	Close();
-}
-
-// --------------------------------------------------------------
-
-void AscentAPDlg::Update (double simt)
-{
-	if (DlgHandle()) {
-		static char title[64] = "Atlantis Ascent Autopilot | MET ";
-		strcpy (title+32, MetStr (ap->met)); 
-		SetWindowText (DlgHandle(), title);
-		for (int i = 0; i < TabCount(); i++)
-			Tab(i)->Update (simt);
-	}
-}
-
-// --------------------------------------------------------------
-
-int AscentAPDlg::OnInitDialog (WPARAM wParam)
-{
-	AddTab (new AscentAPDlgTabControl (this), "Control");
-	AddTab (new AscentAPDlgTabGimbal (this), "Gimbal");
-	AddTab (new AscentAPDlgTabThrust (this), "Thrust");
-	AddTab (new AscentAPDlgTabAltitude (this), "Altitude");
-	return TabbedDialog::OnInitDialog (wParam);
-}
-
-// --------------------------------------------------------------
-
-int AscentAPDlg::Closed ()
-{
-	ap->vessel->DestroyAscentAPDlg();
-	return TRUE;
-}
-
-
-// ==============================================================
-// class AscentAPDlgTab: base class for dialog tabs
-// ==============================================================
-
-AscentAPDlgTab::AscentAPDlgTab (AscentAPDlg *frame, int dlgId)
-: TabPage (frame, dlgId)
-{
-	ap = frame->AP();
-}
-
-
-// ==============================================================
-// class AscentAPDlgTabControl: AP control tab
-// ==============================================================
-
-AscentAPDlgTabControl::AscentAPDlgTabControl (AscentAPDlg *frame)
-: AscentAPDlgTab (frame, IDD_ASCENTAP_CTRL)
-{
-}
-
-// --------------------------------------------------------------
-
-int AscentAPDlgTabControl::OnInitTab (WPARAM wParam)
-{
-	char cbuf[256];
-	sprintf (cbuf, "%0.1f", ap->GetLaunchAzimuth()*DEG);
-	SetWindowText (GetDlgItem (TabHandle(), IDC_AZIMUTH), cbuf);
-	sprintf (cbuf, "%0.1f", ap->GetOrbitAltitude()*1e-3);
-	SetWindowText (GetDlgItem (TabHandle(), IDC_ALT), cbuf);
-	if (ap->Active())
-		SetWindowText (GetDlgItem (TabHandle(), IDC_LAUNCH), "Disengage AP");
-	else if (ap->GetVessel()->status == 0)
-		SetWindowText (GetDlgItem (TabHandle(), IDC_LAUNCH), "Launch");
-	else
-		SetWindowText (GetDlgItem (TabHandle(), IDC_LAUNCH), "Engage AP");
-
-	return TRUE;
-}
-
-// --------------------------------------------------------------
-
-int AscentAPDlgTabControl::OnLaunch ()
-{
-	if (!ap->Active()) {
-		if (ap->GetVessel()->status == 0) {
-			char cbuf[256];
-			double azimuth, alt;
-			GetWindowText (GetDlgItem (TabHandle(), IDC_AZIMUTH), cbuf, 256);
-			sscanf (cbuf, "%lf", &azimuth);
-			azimuth *= RAD;
-			GetWindowText (GetDlgItem (TabHandle(), IDC_ALT), cbuf, 256);
-			EnableWindow(GetDlgItem (TabHandle(), IDC_AZIMUTH), FALSE);
-			EnableWindow(GetDlgItem (TabHandle(), IDC_ALT), FALSE);
-			sscanf (cbuf, "%lf", &alt);
-			alt *= 1e3;
-			ap->SetLaunchAzimuth(azimuth);
-			ap->SetOrbitAltitude(alt);
-			ap->Launch ();
-		} else {
-			ap->Engage();
-		}
-		SetWindowText (GetDlgItem (TabHandle(), IDC_LAUNCH), "Disengage AP");
-	} else {
-		ap->Disengage();
-		SetWindowText (GetDlgItem (TabHandle(), IDC_LAUNCH), "Engage AP");
-	}
-	return TRUE;
-}
-
-// --------------------------------------------------------------
-
-int AscentAPDlgTabControl::OnCommand (WPARAM wParam, LPARAM lParam)
-{
-	switch (LOWORD(wParam)) {
-	case IDC_LAUNCH:
-		return OnLaunch();
-	}
-	return TabPage::OnCommand (wParam, lParam);
-}
-
-
-// ==============================================================
-// class AscentAPDlgTabGimbal: AP gimbal tab
-// ==============================================================
-
-AscentAPDlgTabGimbal::AscentAPDlgTabGimbal (AscentAPDlg *frame)
-: AscentAPDlgTab (frame, IDD_ASCENTAP_GIMBAL)
-{
-	pen1 = CreatePen (PS_SOLID, 0, 0xB0B0B0);
-	pen2 = CreatePen (PS_SOLID, 0, 0x0000FF);
-}
-
-// --------------------------------------------------------------
-
-AscentAPDlgTabGimbal::~AscentAPDlgTabGimbal ()
-{
-	DeleteObject (pen1);
-	DeleteObject (pen2);
-}
-
-// --------------------------------------------------------------
-
-INT_PTR AscentAPDlgTabGimbal::DlgProc (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
-{
-	switch (uMsg) {
-	case WM_INITDIALOG: {
-		RECT rect;
-		GetClientRect (GetDlgItem (hWnd, IDC_SSME_L), &rect);
-		rad = min (rect.right-rect.left, rect.bottom-rect.top)*0.5;
-		} return TRUE;
-	case WM_PAINT:
-		RepaintAll (hWnd);
-		break;
-	}
-	return FALSE;
-}
-
-// --------------------------------------------------------------
-
-void AscentAPDlgTabGimbal::Update (double simt)
-{
-	const double range = 10.5*RAD;
-	double pitch, yaw;
-	int i;
-	int DlgId[5] = {IDC_SSME_L, IDC_SSME_R, IDC_SSME_U, IDC_SRB_L, IDC_SRB_R};
-	for (i = 0; i < 5; i++) {
-		HWND hCtrl = GetDlgItem (TabHandle(), DlgId[i]);
-		if (i < 3)
-			ap->GetVessel()->GetSSMEGimbalPos (i, pitch, yaw);
-		else
-			ap->GetVessel()->GetSRBGimbalPos (i-3, pitch, yaw);
-		UpdateGimbalCross (hCtrl, i, pitch, yaw);
-	}
-}
-
-// --------------------------------------------------------------
-
-void AscentAPDlgTabGimbal::UpdateGimbalCross (HWND hCtrl, int idx, double pitch, double yaw)
-{
-	const double range = 10.5*RAD;
-	int x, y;
-	x = (int)(yaw/range * rad + 0.5);
-	y = (int)(pitch/range * rad + 0.5);
-	if (x != gimbalx[idx] || y != gimbaly[idx]) {
-		HDC hDC = GetDC (hCtrl);
-		RECT rect;
-		GetClientRect (hCtrl, &rect);
-		int cntx = (rect.left+rect.right)/2;
-		int cnty = (rect.top+rect.bottom)/2;
-		HPEN ppen = (HPEN)SelectObject (hDC, GetStockObject (WHITE_PEN));
-		SelectObject (hDC, GetStockObject (NULL_BRUSH));
-		PaintGimbalCross (hDC, rect, gimbalx[idx], gimbaly[idx]);
-		SelectObject (hDC, pen1);
-		MoveToEx (hDC, rect.left, cnty, NULL); LineTo (hDC, rect.right, cnty);
-		MoveToEx (hDC, cntx, rect.top, NULL); LineTo (hDC, cntx, rect.bottom);
-		Rectangle (hDC, (rect.left+cntx)/2, (rect.top+cnty)/2, (rect.right+cntx)/2, (rect.bottom+cnty)/2);
-		SelectObject (hDC, GetStockObject (BLACK_PEN));
-		Rectangle (hDC, rect.left, rect.top, rect.right, rect.bottom);
-		SelectObject (hDC, pen2);
-		PaintGimbalCross (hDC, rect, gimbalx[idx]=x, gimbaly[idx]=y);
-		SelectObject (hDC, ppen);
-		ReleaseDC (hCtrl, hDC);
-	}
-}
-
-// --------------------------------------------------------------
-
-void AscentAPDlgTabGimbal::PaintGimbalCross (HDC hDC, const RECT &rect, int x, int y)
-{
-	int xmin, xmax, ymin, ymax, cntx, cnty;
-	xmin = rect.left, xmax = rect.right;
-	ymin = rect.top, ymax = rect.bottom;
-	cntx = (xmin+xmax)/2;
-	cnty = (ymin+ymax)/2;
-	x += cntx, y += cnty;
-	if (x >= xmin && x < xmax) {
-		MoveToEx (hDC, x, max(y-10, ymin), NULL);
-		LineTo (hDC, x, min(y+11, ymax));
-	}
-	if (y >= ymin && y < ymax) {
-		MoveToEx (hDC, max(x-10, xmin), y, NULL);
-		LineTo (hDC, min(x+11,xmax), y);
-	}
-}
-
-// --------------------------------------------------------------
-
-void AscentAPDlgTabGimbal::RepaintAll (HWND hWnd)
-{
-	int DlgId[5] = {IDC_SSME_L, IDC_SSME_R, IDC_SSME_U, IDC_SRB_L, IDC_SRB_R};
-	for (int i = 0; i < 5; i++) {
-		HWND hCtrl = GetDlgItem (hWnd, DlgId[i]);
-		InvalidateRect (hCtrl, NULL, FALSE);
-		UpdateWindow (hCtrl);
-		PaintGimbalBox (hCtrl);
-		gimbalx[i] = gimbaly[i] = 0;
-	}
-}
-
-// --------------------------------------------------------------
-
-void AscentAPDlgTabGimbal::PaintGimbalBox (HWND hWnd)
-{
-	RECT rect;
-	int cntx, cnty;
-	HDC hDC = GetDC (hWnd);
-	GetClientRect (hWnd, &rect);
-	cntx = (rect.right+rect.left)/2;
-	cnty = (rect.bottom+rect.top)/2;
-	SelectObject (hDC, GetStockObject (WHITE_BRUSH));
-	SelectObject (hDC, GetStockObject (BLACK_PEN));
-	Rectangle (hDC, rect.left, rect.top, rect.right, rect.bottom);
-	SelectObject (hDC, pen1);
-	MoveToEx (hDC, rect.left, cnty, NULL); LineTo (hDC, rect.right, cnty);
-	MoveToEx (hDC, cntx, rect.top, NULL); LineTo (hDC, cntx, rect.bottom);
-	SelectObject (hDC, GetStockObject (BLACK_PEN));
-	ReleaseDC (hWnd, hDC);
-}
-
-
-// ==============================================================
-// class AscentAPDlgTabThrust: AP thrust tab
-// ==============================================================
-
-AscentAPDlgTabThrust::AscentAPDlgTabThrust (AscentAPDlg *frame)
-: AscentAPDlgTab (frame, IDD_ASCENTAP_THRUST)
-{
-	Graph::InitGDI ();
-	ssmegraph = new Graph(1);
-	ssmegraph->SetTitle ("SSME thrust");
-	ssmegraph->SetYLabel ("Thrust [%]");
-	srbgraph = new Graph(1);
-	srbgraph->SetTitle ("SRB thrust");
-	srbgraph->SetYLabel ("Thrust [%]");
-	updt = oapiGetSimTime();
-	dupdt = 1.0;
-}
-
-// --------------------------------------------------------------
-
-AscentAPDlgTabThrust::~AscentAPDlgTabThrust ()
-{
-	delete ssmegraph;
-	delete srbgraph;
-	Graph::FreeGDI();
-}
-
-// --------------------------------------------------------------
-
-void AscentAPDlgTabThrust::Update (double simt)
-{
-	if (ap->Active() && simt >= updt) {
-		double lvl;
-		lvl = ap->GetVessel()->GetThrusterGroupLevel(THGROUP_MAIN);
-		ssmegraph->AppendDataPoint ((float)lvl);
-		lvl = ap->GetVessel()->GetSRBThrustLevel(0);
-		srbgraph->AppendDataPoint ((float)lvl);
-		RefreshGraph (ssmegraph, IDC_SSMETHRUST);
-		RefreshGraph (srbgraph, IDC_SRBTHRUST);
-		updt += dupdt;
-	}
-}
-
-// --------------------------------------------------------------
-
-void AscentAPDlgTabThrust::RefreshGraph (Graph *graph, int GraphId)
-{
-
-	HWND hCtrl = GetDlgItem (TabHandle(), GraphId);
-	InvalidateRect (hCtrl, NULL, TRUE);
-	UpdateWindow (hCtrl);
-	RECT rect;
-	HDC hDC = GetDC (hCtrl);
-	GetClientRect (hCtrl, &rect);
-	graph->Refresh (hDC, rect.right-rect.left, rect.bottom-rect.top);
-	ReleaseDC (hCtrl, hDC);
-}
-
-// --------------------------------------------------------------
-
-int AscentAPDlgTabThrust::OnPaint ()
-{
-	RefreshGraph (ssmegraph, IDC_SSMETHRUST);
-	RefreshGraph (srbgraph, IDC_SRBTHRUST);
-	return FALSE;
-}
-
-// --------------------------------------------------------------
-
-INT_PTR AscentAPDlgTabThrust::DlgProc (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
-{
-	switch (uMsg) {
-	case WM_PAINT:
-		return OnPaint ();
-	}
-	return FALSE;
-}
-
-
-// ==============================================================
-// class AscentAPDlgTabAltitude: AP altitude tab
-// ==============================================================
-
-AscentAPDlgTabAltitude::AscentAPDlgTabAltitude (AscentAPDlg *frame)
-: AscentAPDlgTab (frame, IDD_ASCENTAP_ALT)
-{
-	Graph::InitGDI ();
-	altgraph = new Graph(1);
-	altgraph->SetTitle ("Altitude");
-	altgraph->SetYLabel ("alt [km]");
-	updt = oapiGetSimTime();
-	dupdt = 1.0;
-}
-
-// --------------------------------------------------------------
-
-AscentAPDlgTabAltitude::~AscentAPDlgTabAltitude ()
-{
-	delete altgraph;
-	Graph::FreeGDI();
-}
-
-// --------------------------------------------------------------
-
-void AscentAPDlgTabAltitude::Update (double simt)
-{
-	if (ap->Active() && simt >= updt) {
-		float alt;
-		alt = (float)(ap->GetVessel()->GetAltitude()*1e-3);
-		altgraph->AppendDataPoint (alt);
-		RefreshGraph (altgraph, IDC_ALTITUDE);
-		updt += dupdt;
-	}
-}
-
-// --------------------------------------------------------------
-
-void AscentAPDlgTabAltitude::RefreshGraph (Graph *graph, int GraphId)
-{
-
-	HWND hCtrl = GetDlgItem (TabHandle(), GraphId);
-	InvalidateRect (hCtrl, NULL, TRUE);
-	UpdateWindow (hCtrl);
-	RECT rect;
-	HDC hDC = GetDC (hCtrl);
-	GetClientRect (hCtrl, &rect);
-	graph->Refresh (hDC, rect.right-rect.left, rect.bottom-rect.top);
-	ReleaseDC (hCtrl, hDC);
-}
-
-// --------------------------------------------------------------
-
-int AscentAPDlgTabAltitude::OnPaint ()
-{
-	RefreshGraph (altgraph, IDC_ALTITUDE);
-	return FALSE;
-}
-
-// --------------------------------------------------------------
-
-INT_PTR AscentAPDlgTabAltitude::DlgProc (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
-{
-	switch (uMsg) {
-	case WM_PAINT:
-		return OnPaint ();
-	}
-	return FALSE;
 }
 
 // ==============================================================

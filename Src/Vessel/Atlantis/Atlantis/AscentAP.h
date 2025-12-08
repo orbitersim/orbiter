@@ -14,7 +14,7 @@
 #ifndef __ATLANTIS_ASCENTAP
 #define __ATLANTIS_ASCENTAP
 
-#include "Common\Dialog\TabDlg.h"
+#include "imgui.h"
 
 class Atlantis;
 class Graph;
@@ -28,9 +28,8 @@ struct ProfSample {
 // class AscentAP: ascent autopilot
 // ==============================================================
 
-class AscentAP {
+class AscentAP: public ImGuiDialog {
 	friend class AscentApMfd;
-	friend class AscentAPDlg;
 
 public:
 	AscentAP (Atlantis *atlantis);
@@ -62,6 +61,9 @@ public:
 	bool GetOMS2Schedule() const { return do_oms2; }
 	void SaveState (FILEHANDLE scn);
 	bool ParseScenarioLine (const char *line);
+
+	void OnDraw() override;
+	void AddSamples(float alt, float ssme, float srb);
 
 protected:
 	void SetDefaultProfiles ();
@@ -99,6 +101,12 @@ private:
 		double pitch; // current target pitch
 		MATRIX3 R;    // rotation from equator plane to target plane
 	} tgt;
+
+	std::vector<float> m_historyAlt;
+	std::vector<float> m_historySSME;
+	std::vector<float> m_historySRB;
+	int m_idx;
+	double m_sysT;
 };
 
 // ==============================================================
@@ -141,117 +149,6 @@ private:
 	DWORD cpg;  // current page
 	oapi::Pen *pen[2];
 };
-
-// ==============================================================
-// class AscentAPDlg: dialog interface for ascent autopilot
-// ==============================================================
-
-class AscentAPDlgTab;
-
-class AscentAPDlg: public TabbedDialog {
-public:
-	AscentAPDlg (AscentAP *_ap);
-	virtual ~AscentAPDlg ();
-	void Update (double simt);
-	AscentAP *AP() { return ap; }
-	int OnInitDialog (WPARAM wParam);
-	int Closed ();
-
-private:
-	AscentAP *ap;
-};
-
-// ==============================================================
-// class AscentAPDlgTab: base class for dialog tabs
-// ==============================================================
-
-class AscentAPDlgTab: public TabPage {
-public:
-	AscentAPDlgTab (AscentAPDlg *frame, int dlgId);
-
-protected:
-	AscentAP *ap;
-};
-
-// ==============================================================
-// class AscentAPDlgTabControl: AP control tab
-// ==============================================================
-
-class AscentAPDlgTabControl: public AscentAPDlgTab {
-public:
-	AscentAPDlgTabControl (AscentAPDlg *frame);
-
-protected:
-	int OnInitTab (WPARAM wParam);
-	int OnLaunch ();
-	int OnCommand (WPARAM wParam, LPARAM lParam);
-};
-
-// ==============================================================
-// class AscentAPDlgTabGimbal: AP gimbal tab
-// ==============================================================
-
-class AscentAPDlgTabGimbal: public AscentAPDlgTab {
-public:
-	AscentAPDlgTabGimbal (AscentAPDlg *frame);
-	~AscentAPDlgTabGimbal();
-	void Update (double simt);
-
-protected:
-	void RepaintAll (HWND hWnd);
-	void PaintGimbalCross (HDC hDC, const RECT &rect, int x, int y);
-	void UpdateGimbalCross (HWND hCtrl, int idx, double pitch, double yaw);
-	void PaintGimbalBox (HWND hWnd);
-	INT_PTR DlgProc (HWND, UINT, WPARAM, LPARAM);
-
-private:
-	int gimbalx[5], gimbaly[5];
-	double rad;
-	HPEN pen1, pen2;
-};
-
-// ==============================================================
-// class AscentAPDlgTabThrust: AP thrust tab
-// ==============================================================
-
-class AscentAPDlgTabThrust: public AscentAPDlgTab {
-public:
-	AscentAPDlgTabThrust (AscentAPDlg *frame);
-	~AscentAPDlgTabThrust ();
-	void Update (double simt);
-
-protected:
-	int OnPaint ();
-	void RefreshGraph (Graph *graph, int GraphId);
-	INT_PTR DlgProc (HWND, UINT, WPARAM, LPARAM);
-
-private:
-	Graph *ssmegraph, *srbgraph;
-	double updt;
-	double dupdt;
-};
-
-// ==============================================================
-// class AscentAPDlgTabAltitude: AP altitude tab
-// ==============================================================
-
-class AscentAPDlgTabAltitude: public AscentAPDlgTab {
-public:
-	AscentAPDlgTabAltitude (AscentAPDlg *frame);
-	~AscentAPDlgTabAltitude ();
-	void Update (double simt);
-
-protected:
-	int OnPaint ();
-	void RefreshGraph (Graph *graph, int GraphId);
-	INT_PTR DlgProc (HWND, UINT, WPARAM, LPARAM);
-
-private:
-	Graph *altgraph;
-	double updt;
-	double dupdt;
-};
-
 
 // ==============================================================
 // auxiliary functions

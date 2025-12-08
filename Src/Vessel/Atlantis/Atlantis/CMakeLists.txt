@@ -14,10 +14,7 @@ add_library(${VESSEL_NAME} SHARED
 	AscentAP.cpp
 	Atlantis.cpp
 	PlBayOp.cpp
-	Atlantis.rc
 	../Common.cpp
-	${ORBITER_SOURCE_MODULE_DIR}/Common/Dialog/Graph.cpp
-	${ORBITER_SOURCE_MODULE_DIR}/Common/Dialog/TabDlg.cpp
 )
 
 set_target_properties(${VESSEL_NAME}
@@ -38,6 +35,7 @@ target_link_libraries(${VESSEL_NAME}
 	${ORBITER_DLGCTRL_LIB}
 	UxTheme.lib
 	$<TARGET_LINKER_FILE:Atlantis_Tank>
+	imgui
 )
 
 # scan mesh files for labels and output to header file
@@ -84,7 +82,6 @@ add_custom_command(
 add_dependencies(${VESSEL_NAME}
 	${OrbiterTgt}
 	Orbitersdk
-	DlgCtrl
 	Atlantis_SRB
 	Atlantis_Tank
 	${VESSEL_NAME}_Prerequisites

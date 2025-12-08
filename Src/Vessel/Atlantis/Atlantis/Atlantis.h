@@ -13,7 +13,7 @@
 #ifndef __ATLANTIS_H
 #define __ATLANTIS_H
 
-#include "orbitersdk.h"
+#include "Orbitersdk.h"
 #include <math.h>
 
 #ifdef ATLANTIS_TANK_MODULE
@@ -225,7 +225,21 @@ typedef struct {
 } GDIParams;
 
 class Atlantis_Tank;
-class AscentAPDlg;
+class Atlantis;
+
+class AtlantisDialog: public ImGuiDialog {
+	Atlantis *m_atlantis;
+public:
+	AtlantisDialog(Atlantis *);
+	void OnDraw() override;
+};
+
+class RMSDialog: public ImGuiDialog {
+	Atlantis *m_atlantis;
+public:
+	RMSDialog(Atlantis *);
+	void OnDraw() override;
+};
 
 // ==========================================================
 // Interface for derived vessel class: Atlantis
@@ -234,7 +248,9 @@ class AscentAPDlg;
 class Atlantis: public VESSEL4 {
 	friend class AscentAP;
 	friend class PayloadBayOp;
-	friend INT_PTR CALLBACK RMS_DlgProc (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
+	friend class RMSDialog;
+	friend class AtlantisDialog;
+
 public:
 	AnimState::Action gear_status, spdb_status;
 	Atlantis (OBJHANDLE hObj, int fmodel);
@@ -242,8 +258,6 @@ public:
 
 	AscentAP *AscentAutopilot() { return ascap; }
 	int RegisterAscentApMfd();
-	void CreateAscentAPDlg();
-	void DestroyAscentAPDlg();
 
 	void SeparateBoosters (double srb_time);
 	// Jettison both SRBs from ET
@@ -286,6 +300,8 @@ public:
 	void RegisterVC_CntMFD ();
 	void RegisterVC_AftMFD ();
 	void RedrawPanel_MFDButton (SURFHANDLE surf, int mfd);
+
+	void OpenRMSDlg();
 
 	int status; // 0=launch configuration
 	            // 1=SRB's engaged
@@ -428,7 +444,8 @@ private:
 	LightEmitter *engine_light;
 	double engine_light_level;
 
-	AscentAPDlg *ascentApDlg;
+	std::unique_ptr<RMSDialog> rmsDlg;
+	std::unique_ptr<AtlantisDialog> ctlDlg;
 };
 
 // ==========================================================

@@ -9,7 +9,7 @@ if(ORBITER_MAKE_DOC)
 	add_subdirectory(Help)
 endif()
 
-set(ORBITER_SMAPLES ${ORBITER_INSTALL_ROOT_DIR}/Orbitersdk/samples)
+set(ORBITER_SAMPLES ${ORBITER_INSTALL_ROOT_DIR}/Orbitersdk/samples)
 
 
 
@@ -22,10 +22,10 @@ set(Exclude
 	PATTERN CMakeLists.txt EXCLUDE
 )
 
-install(FILES Common.cpp DESTINATION ${ORBITER_SMAPLES}/Atlantis)
-install(DIRECTORY Bitmaps DESTINATION ${ORBITER_SMAPLES}/Atlantis ${Exclude})
-install(DIRECTORY Data DESTINATION ${ORBITER_SMAPLES}/Atlantis ${Exclude})
-install(DIRECTORY Help DESTINATION ${ORBITER_SMAPLES}/Atlantis ${Exclude})
+install(FILES Common.cpp DESTINATION ${ORBITER_SAMPLES}/Atlantis)
+install(DIRECTORY Bitmaps DESTINATION ${ORBITER_SAMPLES}/Atlantis ${Exclude})
+install(DIRECTORY Data DESTINATION ${ORBITER_SAMPLES}/Atlantis ${Exclude})
+install(DIRECTORY Help DESTINATION ${ORBITER_SAMPLES}/Atlantis ${Exclude})
 
 set(IgnoreFiles
 	${Exclude}
@@ -36,7 +36,7 @@ set(IgnoreFiles
 	PATTERN Thumbnail EXCLUDE
 )
 
-install(DIRECTORY Atlantis/ DESTINATION ${ORBITER_SMAPLES}/Atlantis/Atlantis ${IgnoreFiles})
-install(DIRECTORY Atlantis_SRB/ DESTINATION ${ORBITER_SMAPLES}/Atlantis/Atlantis_SRB ${IgnoreFiles})
-install(DIRECTORY Atlantis_Tank/ DESTINATION ${ORBITER_SMAPLES}/Atlantis/Atlantis_Tank ${IgnoreFiles})
-install(DIRECTORY AtlantisConfig/ DESTINATION ${ORBITER_SMAPLES}/Atlantis/AtlantisConfig ${IgnoreFiles})
+install(DIRECTORY Atlantis/ DESTINATION ${ORBITER_SAMPLES}/Atlantis/Atlantis ${IgnoreFiles})
+install(DIRECTORY Atlantis_SRB/ DESTINATION ${ORBITER_SAMPLES}/Atlantis/Atlantis_SRB ${IgnoreFiles})
+install(DIRECTORY Atlantis_Tank/ DESTINATION ${ORBITER_SAMPLES}/Atlantis/Atlantis_Tank ${IgnoreFiles})
+install(DIRECTORY AtlantisConfig/ DESTINATION ${ORBITER_SAMPLES}/Atlantis/AtlantisConfig ${IgnoreFiles})
