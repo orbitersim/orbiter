@@ -109,27 +109,6 @@ INT_PTR CALLBACK Navaid_DlgProc (HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lPa
 }
 #endif
 
-// ======================================================================
-// "Recorder/player" dialog
-// ======================================================================
-
-INT_PTR CALLBACK FRecorderMsg_DlgProc (HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
-{
-	switch (uMsg) {
-	case WM_COMMAND:
-		switch (LOWORD(wParam)) {
-		case IDOK:
-			g_pOrbiter->ToggleRecorder (true);
-			// fall through
-		case IDCANCEL:
-			g_pOrbiter->CloseDialog (hDlg);
-			break;
-		}
-		break;
-	}
-	return OrbiterDefDialogProc (hDlg, uMsg, wParam, lParam);
-}
-
 // =========================================================================
 // Set up a combo box dialog control for selecting a celestial body
 

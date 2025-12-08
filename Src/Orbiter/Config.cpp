@@ -1569,38 +1569,3 @@ bool Config::GetVector (const char *category, Vector &val)
 	if (!ifs) return false;
 	return GetVector (ifs, category, val);
 }
-
-// =============================================================
-
-GDIResources::GDIResources (HWND hWnd, DWORD winW, DWORD winH, const Config &config)
-{
-	TEXTMETRIC tm;
-	int lineh = (int)(winH*0.02*config.CfgFontPrm.dlgFont_Scale);
-	if (lineh < 8) lineh = 8;
-	HDC hDC = GetDC (hWnd);
-
-	dlgF1r = CreateFont (lineh, 0, 0, 0, FW_NORMAL, 0, 0, 0, 0, 3, 2, 1, 49, config.CfgFontPrm.dlgFont1_Face);
-	HGDIOBJ ofont = SelectObject (hDC, dlgF1r);
-	GetTextMetrics (hDC, &tm);
-	dlgF1W = tm.tmAveCharWidth;
-	dlgF1H  = tm.tmHeight;
-
-	dlgF2 = CreateFont (lineh, 0, 0, 0, FW_NORMAL, 0, 0, 0, 0, 3, 2, 1, 49, "Courier New");
-	SelectObject (hDC, dlgF2);
-	GetTextMetrics (hDC, &tm);
-	dlgF2W = tm.tmAveCharWidth;
-	dlgF2H  = tm.tmHeight;
-
-	dlgF1i = CreateFont (lineh, 0, 0, 0, FW_NORMAL, TRUE, 0, 0, 0, 3, 2, 1, 49, config.CfgFontPrm.dlgFont1_Face);
-	// insert other resources here
-
-	SelectObject (hDC, ofont);
-	ReleaseDC (hWnd, hDC);
-}
-
-GDIResources::~GDIResources ()
-{
-	DeleteObject (dlgF1r);
-	DeleteObject (dlgF1i);
-	DeleteObject (dlgF2);
-}

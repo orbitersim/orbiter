@@ -335,8 +335,6 @@ inline int StrNComp (const char *str1, const char *str2, int n, bool ignorecase)
 // =============================================================
 
 class Config {
-	friend class GDIResources;
-
 public:
 	Config ();
 
@@ -462,29 +460,5 @@ private:
 
 	std::list<std::string> m_activeModules; ///< list of active modules
 };
-
-// =============================================================
-
-class GDIResources {
-public:
-	GDIResources (HWND hWnd, DWORD winW, DWORD winH, const Config &config);
-	~GDIResources ();
-
-	// ingame dialog fonts
-	HFONT dlgF1r, dlgF1i; // standard dialog font (roman and italic) - can be variable pitch
-	int dlgF1H, dlgF1W;   // line height, average character width
-
-	HFONT dlgF2;          // fixed pitch dialog font
-	int dlgF2H, dlgF2W;   // line height, character width
-};
-
-// =============================================================
-
-// OBSOLETE!
-#ifdef __CONFIG_CPP
-GDIResources *g_gdires = 0;
-#else
-extern GDIResources *g_gdires;
-#endif
 
 #endif // !__CONFIG_H

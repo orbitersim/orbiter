@@ -355,8 +355,6 @@ protected:
     HRESULT InitDeviceObjects ();
 	HRESULT RestoreDeviceObjects ();
     HRESULT DeleteDeviceObjects ();
-	void InitializeGDIResources (HWND hWnd);
-	void ReleaseGDIResources ();
 
 private:
 	Config         *pConfig;

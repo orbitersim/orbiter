@@ -13,7 +13,6 @@
 #include "imgui.h"
 #include "imgui_extras.h"
 class ImGuiDialog;
-enum class ImGuiFont;
 
 class oapi::GraphicsClient;
 extern Orbiter *g_pOrbiter;
@@ -30,48 +29,6 @@ public:
 
 	void Init (HWND hAppWnd);
 	void Clear ();
-
-	// Make sure that a dialog of type DlgType is open and return a pointer to it.
-	// This opens the dialog if not yet present.
-	// Use this function for dialogs that should only have a single instance
-	template<typename DlgType, std::enable_if_t<std::is_base_of_v<DialogWin, DlgType>, bool> = true>
-	DlgType *EnsureEntry (HINSTANCE hInst = 0, void *context = 0)
-	{
-		if (!hInst) hInst = g_pOrbiter->GetInstance();
-		DlgType *pDlg = EntryExists<DlgType> (hInst);
-		if (!pDlg) pDlg = MakeEntry<DlgType> (hInst, context);
-		return pDlg;
-	}
-
-	// Create a new instance of dialog type DlgType and return a pointer to it.
-	// This opens a new dialog, even if one of this type was open already.
-	// Use this function for dialogs that can have multiple instances.
-	template<typename DlgType, std::enable_if_t<std::is_base_of_v<DialogWin, DlgType>, bool> = true>
-	DlgType *MakeEntry (HINSTANCE hInst = 0, void *context = 0)
-	{
-		if (!hInst) hInst = g_pOrbiter->GetInstance();
-		HWND hParent = g_pOrbiter->GetRenderWnd();
-		DlgType *pDlg = new DlgType (hInst, hParent, context);
-		AddEntry (pDlg);
-		return pDlg;
-	}
-
-	// Returns a pointer to the first instance of dialog type DlgType,
-	// or 0 if no instance exists.
-	template<typename DlgType, std::enable_if_t<std::is_base_of_v<DialogWin, DlgType>, bool> = true>
-	DlgType *EntryExists (HINSTANCE hInst)
-	{
-		DIALOGENTRY *tmp = firstEntry;
-		while (tmp) {
-			DialogWin *dlg = tmp->dlg;
-			if (dlg->GetHinst() == hInst) {
-				DlgType *pdt = dynamic_cast<DlgType*>(dlg);
-				if (pdt) return pdt;
-			}
-			tmp = tmp->next;
-		}
-		return 0;
-	}
 
 	inline HWND OpenDialog (HINSTANCE hInst, int id, HWND hParent, DLGPROC pDlg, void *context)
 	{ return OpenDialogEx (hInst, id, hParent, pDlg, 0, context); }
