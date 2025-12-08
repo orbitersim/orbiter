@@ -43,7 +43,6 @@ set(common_src
 	TabVideo.cpp
 # Dialogs
 	CustomControls.cpp
-	Dialogs.cpp
 	DialogWin.cpp
 	DlgCamera.cpp
 	DlgCapture.cpp
