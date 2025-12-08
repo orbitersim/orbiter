@@ -313,13 +313,10 @@ AirlockCtrl::AirlockCtrl (PressureSubsystem *_subsys)
 
 void AirlockCtrl::OpenOuterLock ()
 {
-	extern void UpdateCtrlDialog (DeltaGlider *dg, HWND hWnd=0);
-
 	ostate.Open();
 	osw->SetState(DGSwitch1::UP);
 	DG()->TriggerRedrawArea(1, 0, ELID_OSWITCH);
 	DG()->UpdateStatusIndicators();
-	UpdateCtrlDialog (DG());
 	DG()->RecordEvent ("OLOCK", "OPEN");
 }
 
@@ -327,13 +324,10 @@ void AirlockCtrl::OpenOuterLock ()
 
 void AirlockCtrl::CloseOuterLock ()
 {
-	extern void UpdateCtrlDialog (DeltaGlider *dg, HWND hWnd=0);
-
 	ostate.Close();
 	osw->SetState(DGSwitch1::DOWN);
 	DG()->TriggerRedrawArea(1, 0, ELID_OSWITCH);
 	DG()->UpdateStatusIndicators();
-	UpdateCtrlDialog (DG());
 	DG()->RecordEvent ("OLOCK", "CLOSE");
 }
 
@@ -351,13 +345,10 @@ void AirlockCtrl::RevertOuterLock ()
 
 void AirlockCtrl::OpenInnerLock ()
 {
-	extern void UpdateCtrlDialog (DeltaGlider *dg, HWND hWnd=0);
-
 	istate.Open();
 	isw->SetState(DGSwitch1::UP);
 	DG()->TriggerRedrawArea(1, 0, ELID_ISWITCH);
 	DG()->UpdateStatusIndicators();
-	UpdateCtrlDialog (DG());
 	DG()->RecordEvent ("ILOCK", "OPEN");
 }
 
@@ -365,13 +356,10 @@ void AirlockCtrl::OpenInnerLock ()
 
 void AirlockCtrl::CloseInnerLock ()
 {
-	extern void UpdateCtrlDialog (DeltaGlider *dg, HWND hWnd=0);
-
 	istate.Close();
 	isw->SetState(DGSwitch1::DOWN);
 	DG()->TriggerRedrawArea(1, 0, ELID_ISWITCH);
 	DG()->UpdateStatusIndicators();
-	UpdateCtrlDialog (DG());
 	DG()->RecordEvent ("ILOCK", "CLOSE");
 }
 
@@ -646,8 +634,6 @@ TophatchCtrl::~TophatchCtrl ()
 
 void TophatchCtrl::OpenHatch ()
 {
-	extern void UpdateCtrlDialog (DeltaGlider *dg, HWND hWnd=0);
-
 	if (hatch_state.IsClosed() && !hatch_vent && DG()->GetAtmPressure() < 10e3) {
 		static PARTICLESTREAMSPEC airvent = {
 			0, 1.0, 15, 0.5, 0.3, 2, 0.3, 1.0, PARTICLESTREAMSPEC::EMISSIVE,
@@ -664,7 +650,6 @@ void TophatchCtrl::OpenHatch ()
 	sw->SetState(DGSwitch1::UP);
 	DG()->TriggerRedrawArea(1, 0, ELID_SWITCH);
 	DG()->UpdateStatusIndicators();
-	UpdateCtrlDialog (DG());
 	DG()->RecordEvent ("HATCH", "OPEN");
 }
 
@@ -672,13 +657,10 @@ void TophatchCtrl::OpenHatch ()
 
 void TophatchCtrl::CloseHatch ()
 {
-	extern void UpdateCtrlDialog (DeltaGlider *dg, HWND hWnd=0);
-
 	hatch_state.Close();
 	sw->SetState(DGSwitch1::DOWN);
 	DG()->TriggerRedrawArea(1, 0, ELID_SWITCH);
 	DG()->UpdateStatusIndicators();
-	UpdateCtrlDialog (DG());
 	DG()->RecordEvent ("HATCH", "CLOSE");
 }
 

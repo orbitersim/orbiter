@@ -253,14 +253,11 @@ Airbrake::Airbrake (AerodynCtrlSubsystem *_subsys)
 
 void Airbrake::Extend ()
 {
-	extern void UpdateCtrlDialog (DeltaGlider *dg, HWND hWnd=0);
-
 	const double eps = 1e-8;
 	brake_state.Open();
 	lever_state.Open();
 	airbrake_tgt = (lever_state.State() < 0.5-eps ? 1:2);
 	DG()->TriggerPanelRedrawArea (0, ELID_LEVER);
-	UpdateCtrlDialog (DG());
 	DG()->RecordEvent ("AIRBRAKE", "OPEN");
 }
 
@@ -268,14 +265,11 @@ void Airbrake::Extend ()
 
 void Airbrake::Retract ()
 {
-	extern void UpdateCtrlDialog (DeltaGlider *dg, HWND hWnd=0);
-
 	const double eps = 1e-8;
 	brake_state.Close();
 	lever_state.Close();
 	airbrake_tgt = (lever_state.State() > 0.5+eps ? 1:0);
 	DG()->TriggerPanelRedrawArea (0, ELID_LEVER);
-	UpdateCtrlDialog (DG());
 	DG()->RecordEvent ("AIRBRAKE", "CLOSE");
 }
 

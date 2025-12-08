@@ -135,14 +135,11 @@ NoseconeCtrl::NoseconeCtrl (DockingCtrlSubsystem *_subsys)
 
 void NoseconeCtrl::OpenNcone ()
 {
-	extern void UpdateCtrlDialog (DeltaGlider *dg, HWND hWnd=0);
-
 	ncone_state.Open();
 	nlever_state.Open();
 	DG()->UpdateStatusIndicators();
 	DG()->TriggerPanelRedrawArea (0, ELID_LEVER);
 	DG()->TriggerRedrawArea (0, 0, ELID_INDICATOR);
-	UpdateCtrlDialog (DG());
 	DG()->RecordEvent ("NOSECONE", "OPEN");
 }
 
@@ -150,8 +147,6 @@ void NoseconeCtrl::OpenNcone ()
 
 void NoseconeCtrl::CloseNcone ()
 {
-	extern void UpdateCtrlDialog (DeltaGlider *dg, HWND hWnd=0);
-
 	ncone_state.Close();
 	nlever_state.Close();
 	DG()->UpdateStatusIndicators();
@@ -161,7 +156,6 @@ void NoseconeCtrl::CloseNcone ()
 	if (!((DockingCtrlSubsystem*)Parent())->LadderState().IsClosed())
 		((DockingCtrlSubsystem*)Parent())->RetractLadder(); // retract ladder before closing the nose cone
 
-	UpdateCtrlDialog (DG());
 	DG()->RecordEvent ("NOSECONE", "CLOSE");
 }
 
@@ -553,8 +547,6 @@ EscapeLadderCtrl::EscapeLadderCtrl (DockingCtrlSubsystem *_subsys)
 
 void EscapeLadderCtrl::ExtendLadder ()
 {
-	extern void UpdateCtrlDialog (DeltaGlider *dg, HWND hWnd=0);
-
 	if (!((DockingCtrlSubsystem*)Parent())->NconeState().IsOpen()) return;
 	// don't extend ladder if nosecone is closed
 
@@ -562,7 +554,6 @@ void EscapeLadderCtrl::ExtendLadder ()
 	// don't extend ladder if dock is engaged
 
 	ladder_state.Open();
-	UpdateCtrlDialog(DG());
 	DG()->RecordEvent ("LADDER", "OPEN");
 }
 
@@ -570,10 +561,7 @@ void EscapeLadderCtrl::ExtendLadder ()
 
 void EscapeLadderCtrl::RetractLadder ()
 {
-	extern void UpdateCtrlDialog (DeltaGlider *dg, HWND hWnd=0);
-
 	ladder_state.Close();
-	UpdateCtrlDialog(DG());
 	DG()->RecordEvent ("LADDER", "CLOSE");
 }
 
