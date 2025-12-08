@@ -60,6 +60,7 @@ public:
 
 private:
 	DWORD dwCmd;         // custom command handle
+	int dwMenuCmd;       // custom menu command handle
 	DWORD nTab;          // total number of main dialog tabs
 	DWORD nTab0;         // number of standard tabs (excluding custom)
 	ScnEditorTab **pTab; // array of tab instances
