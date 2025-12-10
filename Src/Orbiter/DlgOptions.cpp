@@ -78,7 +78,7 @@ DlgOptions::DlgOptions(): ImGuiDialog(ICON_FA_LIST_CHECK " Orbiter: Options", {6
 
 void DlgOptions::OnDraw()
 {
-    const ImGuiWindowFlags window_flags = ImGuiChildFlags_Border | ImGuiChildFlags_ResizeX;
+    const ImGuiWindowFlags window_flags = ImGuiChildFlags_Borders | ImGuiChildFlags_ResizeX;
 	ImGui::BeginChild("OptionSelection", ImVec2(250, 0), window_flags);
 	int selected_idx = 0;
 	if(currentPage.empty()) {
