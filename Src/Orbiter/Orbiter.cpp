@@ -1428,11 +1428,6 @@ VOID Orbiter::SetFOV (double fov, bool limit_range)
 
 	fov = g_camera->SetAperture (fov, limit_range);
 	g_bForceUpdate = true;
-
-	// update Camera dialog
-	HWND hCamDlg;
-	if (pDlgMgr && (hCamDlg = pDlgMgr->IsEntry (hInst, IDD_CAMERA)))
-		SendMessage (hCamDlg, WM_APP, 0, (LPARAM)&fov);
 }
 
 //-----------------------------------------------------------------------------
@@ -1444,11 +1439,6 @@ VOID Orbiter::IncFOV (double dfov)
 {
 	double fov = g_camera->IncrAperture (dfov);
 	g_bForceUpdate = true;
-
-	// update Camera dialog
-	HWND hCamDlg;
-	if (pDlgMgr && (hCamDlg = pDlgMgr->IsEntry (hInst, IDD_CAMERA)))
-		SendMessage (hCamDlg, WM_APP, 0, (LPARAM)&fov);
 }
 
 //-----------------------------------------------------------------------------
@@ -1586,10 +1576,6 @@ void Orbiter::EndPlayback ()
 	FRecorder_ClosePlayback();
 	if (snote_playback) snote_playback->ClearText();
 	bPlayback = false;
-	if (pDlgMgr) {
-		HWND hDlg = pDlgMgr->IsEntry (hInst, IDD_RECPLAY);
-		if (hDlg) PostMessage (hDlg, WM_USER+1, 0, 0);
-	}
 }
 
 oapi::ScreenAnnotation *Orbiter::CreateAnnotation (bool exclusive, double size, COLORREF col)
