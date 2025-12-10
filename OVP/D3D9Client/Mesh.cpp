@@ -3059,6 +3059,12 @@ void D3D9Mesh::BoundingBox(const NMVERTEX *vtx, DWORD n, D9BBox *box)
 void D3D9Mesh::TransformGroup(DWORD n, const D3DXMATRIX *m)
 {
 	if (!IsOK()) return;
+	if(n>=nGrp) {
+		char buf[256];
+		snprintf(buf, 256, "Group %d for mesh %s does not exist", n, name);
+		oapiAddNotification(OAPINOTIF_ERROR, "Invalid mesh group", buf);
+		return;
+	}
 
 	bBSRecompute = true;
 
