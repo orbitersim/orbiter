@@ -13,6 +13,7 @@
 // ==============================================================
 
 #define ORBITER_MODULE
+#define IMGUI_DEFINE_MATH_OPERATORS
 #include "orbitersdk.h"
 #include "imgui.h"
 #include "imgui_extras.h"
@@ -62,6 +63,12 @@ public:
 	}
 
 	void Display() override {
+		// Position the window just below the cursor
+		ImVec2 mouse = ImGui::GetMousePos();
+		ImVec2 offset(-10.0f, 10.0f);
+		ImVec2 pos = mouse + offset;
+		ImGui::SetNextWindowPos(pos, ImGuiCond_FirstUseEver);
+
 		ImGui::SetNextWindowSize(ImVec2(defaultSize.width, defaultSize.height), ImGuiCond_FirstUseEver);
 
 		const ImVec4 bgColor = ImVec4(1.0f, 1.0f, 0.0f, 1.0f); // Yellow
