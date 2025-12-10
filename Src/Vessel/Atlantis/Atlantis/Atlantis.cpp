@@ -17,13 +17,15 @@
 #include "Atlantis.h"
 #include "PlBayOp.h"
 #include "AscentAP.h"
-#include "DlgCtrl.h"
 #include "meshres.h"
 #include "meshres_vc.h"
-#include "resource.h"
 #include "DrawAPI.h"
 #include <stdio.h>
 #include <fstream>
+
+#define IMGUI_DEFINE_MATH_OPERATORS
+#include "imgui.h"
+#include "IconsFontAwesome6.h"
 
 using std::min;
 using std::max;
@@ -32,8 +34,6 @@ using std::max;
     // D. Beachy: for BoundsChecker debugging
     extern int GrowStack();
 #endif
-
-#define LOADBMP(id) (LoadBitmap (g_Param.hDLL, MAKEINTRESOURCE (id)))
 
 // ==============================================================
 // Global (class-wide) parameters
@@ -53,9 +53,150 @@ HELPCONTEXT g_hc = {
 // ==============================================================
 // Local prototypes
 
-INT_PTR CALLBACK Atlantis_DlgProc (HWND, UINT, WPARAM, LPARAM);
-INT_PTR CALLBACK RMS_DlgProc (HWND, UINT, WPARAM, LPARAM);
 extern void GetSRB_State (double met, double &thrust_level, double &prop_level);
+
+AtlantisDialog::AtlantisDialog(Atlantis *atlantis):ImGuiDialog("Atlantis Control")
+{
+	m_atlantis = atlantis;
+}
+
+void AtlantisDialog::OnDraw()
+{
+	if(ImGui::Button("Ascent Autopilot")) {
+		oapiOpenDialog(m_atlantis->AscentAutopilot());
+	}
+	if(ImGui::Button("Payload Door Operation")) {
+		oapiOpenDialog(m_atlantis->plop);
+	}
+	if(ImGui::Button("RMS Operation")) {
+		m_atlantis->OpenRMSDlg();
+	}
+}
+
+RMSDialog::RMSDialog(Atlantis *atlantis):ImGuiDialog("Atlantis RMS Control")
+{
+	m_atlantis = atlantis;
+}
+void RMSDialog::OnDraw()
+{
+	double dt = oapiGetSimStep();
+
+	// show grapple points
+	bool show = oapiGetShowGrapplePoints ();
+	if(ImGui::Checkbox("Show Grapple Points", &show)) {
+		oapiSetShowGrapplePoints (show);
+	}
+
+	ImGui::SeparatorText("Wrist");
+	ImVec2 sz = ImGui::CalcTextSize(ICON_FA_ARROW_ROTATE_RIGHT) * 2.0f;
+
+	ImGui::Button(ICON_FA_ARROW_ROTATE_RIGHT"##Wrist", sz);
+	if(ImGui::IsItemActive()) {
+		m_atlantis->arm_wr = min (1.0, m_atlantis->arm_wr + dt*ARM_OPERATING_SPEED);
+		m_atlantis->SetAnimationArm (m_atlantis->anim_arm_wr, m_atlantis->arm_wr);
+	}
+	ImGui::SameLine();
+	ImGui::Button(ICON_FA_ARROW_UP"##Wrist", sz);
+	if(ImGui::IsItemActive()) {
+		m_atlantis->arm_wp = min (1.0, m_atlantis->arm_wp + dt*ARM_OPERATING_SPEED);
+		m_atlantis->SetAnimationArm (m_atlantis->anim_arm_wp, m_atlantis->arm_wp);
+	}
+	ImGui::SameLine();
+	ImGui::Button(ICON_FA_ARROW_ROTATE_LEFT"##Wrist", sz);
+	if(ImGui::IsItemActive()) {
+		m_atlantis->arm_wr = max (0.0, m_atlantis->arm_wr - dt*ARM_OPERATING_SPEED);
+		m_atlantis->SetAnimationArm (m_atlantis->anim_arm_wr, m_atlantis->arm_wr);
+	}
+
+	ImGui::Button(ICON_FA_ARROW_LEFT"##Wrist", sz);
+	if(ImGui::IsItemActive()) {
+		m_atlantis->arm_wy = min (1.0, m_atlantis->arm_wy + dt*ARM_OPERATING_SPEED);
+		m_atlantis->SetAnimationArm (m_atlantis->anim_arm_wy, m_atlantis->arm_wy);
+	}
+	ImGui::SameLine();
+	ImGui::Button(ICON_FA_ARROW_DOWN"##Wrist", sz);
+	if(ImGui::IsItemActive()) {
+		m_atlantis->arm_wp = max (0.0, m_atlantis->arm_wp - dt*ARM_OPERATING_SPEED);
+		m_atlantis->SetAnimationArm (m_atlantis->anim_arm_wp, m_atlantis->arm_wp);
+	}
+	ImGui::SameLine();
+	ImGui::Button(ICON_FA_ARROW_RIGHT"##Wrist", sz);
+	if(ImGui::IsItemActive()) {
+		m_atlantis->arm_wy = max (0.0, m_atlantis->arm_wy - dt*ARM_OPERATING_SPEED);
+		m_atlantis->SetAnimationArm (m_atlantis->anim_arm_wy, m_atlantis->arm_wy);
+	}
+
+
+
+	ImGui::SeparatorText("Elbow");
+	// up/down
+	ImGui::Dummy(sz);
+	ImGui::SameLine();
+	ImGui::Button(ICON_FA_ARROW_UP"##Elbow", sz);
+	if(ImGui::IsItemActive()) {
+		m_atlantis->arm_ep = max (0.0, m_atlantis->arm_ep - dt*ARM_OPERATING_SPEED);
+		m_atlantis->SetAnimationArm (m_atlantis->anim_arm_ep, m_atlantis->arm_ep);
+	}
+	ImGui::Dummy(sz);
+	ImGui::SameLine();
+	ImGui::Button(ICON_FA_ARROW_DOWN"##Elbow", sz);
+	if(ImGui::IsItemActive()) {
+		m_atlantis->arm_ep = min (1.0, m_atlantis->arm_ep + dt*ARM_OPERATING_SPEED);
+		m_atlantis->SetAnimationArm (m_atlantis->anim_arm_ep, m_atlantis->arm_ep);
+	}
+
+
+	ImGui::SeparatorText("Shoulder");
+
+	ImGui::Dummy(sz);
+	ImGui::SameLine();
+	ImGui::Button(ICON_FA_ARROW_UP"##Shoulder", sz);
+	if(ImGui::IsItemActive()) {
+		m_atlantis->arm_sp = min (1.0, m_atlantis->arm_sp + dt*ARM_OPERATING_SPEED);
+		m_atlantis->SetAnimationArm (m_atlantis->anim_arm_sp, m_atlantis->arm_sp);
+	}
+
+	ImGui::Button(ICON_FA_ARROW_LEFT"##Shoulder", sz);
+	if(ImGui::IsItemActive()) {
+		m_atlantis->arm_sy = min (1.0, m_atlantis->arm_sy + dt*ARM_OPERATING_SPEED);
+		m_atlantis->SetAnimationArm (m_atlantis->anim_arm_sy, m_atlantis->arm_sy);
+	}
+	ImGui::SameLine();
+	ImGui::Button(ICON_FA_ARROW_DOWN"##Shoulder", sz);
+	if(ImGui::IsItemActive()) {
+		m_atlantis->arm_sp = max (0.0, m_atlantis->arm_sp - dt*ARM_OPERATING_SPEED);
+		m_atlantis->SetAnimationArm (m_atlantis->anim_arm_sp, m_atlantis->arm_sp);
+	}
+	ImGui::SameLine();
+	ImGui::Button(ICON_FA_ARROW_RIGHT"##Shoulder", sz);
+	if(ImGui::IsItemActive()) {
+		m_atlantis->arm_sy = max (0.0, m_atlantis->arm_sy - dt*ARM_OPERATING_SPEED);
+		m_atlantis->SetAnimationArm (m_atlantis->anim_arm_sy, m_atlantis->arm_sy);
+	}
+
+	ImGui::SeparatorText("RMS");
+	ImGui::BeginDisabled(m_atlantis->SatGrappled());
+	if(ImGui::Button("Stow")) {
+		if (m_atlantis->center_arm = !m_atlantis->center_arm) {
+			m_atlantis->center_arm_t = oapiGetSimTime();
+		}
+	}
+	ImGui::EndDisabled();
+	ImGui::SameLine();
+	ImGui::BeginDisabled(m_atlantis->center_arm);
+	if(ImGui::Button(m_atlantis->SatGrappled() ? "Release" : "Grapple")) {
+		m_atlantis->ToggleGrapple();
+	}
+	ImGui::EndDisabled();
+
+	ImGui::SeparatorText("Payload");
+	ImGui::BeginDisabled(!m_atlantis->SatStowed() && !m_atlantis->CanArrest());
+	if(ImGui::Button(m_atlantis->SatStowed() ? "Purge" : "Arrest")) {
+		m_atlantis->ToggleArrest();
+	}
+	ImGui::EndDisabled();
+}
+
 
 // ==============================================================
 // Specialised vessel class Atlantis
@@ -82,6 +223,9 @@ Atlantis::Atlantis (OBJHANDLE hObj, int fmodel)
 	ldoor_drag      = rdoor_drag = 0.0;
 	spdb_status     = AnimState::CLOSED;
 	spdb_proc       = 0.0;
+
+	rmsDlg = std::make_unique<RMSDialog>(this);
+	ctlDlg = std::make_unique<AtlantisDialog>(this);
 
 	engine_light_level = 0.0;
 	COLOUR4 col_diff = {1,0.8,0.8,0};
@@ -145,8 +289,6 @@ Atlantis::Atlantis (OBJHANDLE hObj, int fmodel)
 		PARTICLESTREAMSPEC::LVL_FLAT, 1, 1, PARTICLESTREAMSPEC::ATM_PLIN, 6e7, 12e7
 	};
 	AddReentryStream (&rps);
-
-	ascentApDlg = 0;
 }
 
 // --------------------------------------------------------------
@@ -155,7 +297,6 @@ Atlantis::Atlantis (OBJHANDLE hObj, int fmodel)
 Atlantis::~Atlantis ()
 {
 	UnregisterMFDMode (ascapMfdId);
-	if (ascentApDlg) delete ascentApDlg;
 	delete ascap;
 	delete plop;
 	int i;
@@ -672,6 +813,11 @@ void Atlantis::DefineAnimations (void)
 	plop->DefineAnimations (vidx);
 }
 
+void Atlantis::OpenRMSDlg()
+{
+	oapiOpenDialog(rmsDlg.get());
+}
+
 // --------------------------------------------------------------
 // Register the MFD interface for the ascent autopilot
 // --------------------------------------------------------------
@@ -684,28 +830,6 @@ int Atlantis::RegisterAscentApMfd ()
 	spec.context = NULL;
 	spec.msgproc = AscentApMfd::MsgProc;
 	return RegisterMFDMode (spec);
-}
-
-// --------------------------------------------------------------
-// Open the dialog interface for the ascent autopilot
-// --------------------------------------------------------------
-void Atlantis::CreateAscentAPDlg ()
-{
-	if (!ascentApDlg) {
-		ascentApDlg = new AscentAPDlg(ascap);
-		ascentApDlg->Open (g_Param.hDLL, true);
-	}
-}
-
-// --------------------------------------------------------------
-// Close the dialog interface for the ascent autopilot
-// --------------------------------------------------------------
-void Atlantis::DestroyAscentAPDlg ()
-{
-	if (ascentApDlg) {
-		delete ascentApDlg;
-		ascentApDlg = 0;
-	}
 }
 
 // --------------------------------------------------------------
@@ -762,24 +886,15 @@ void Atlantis::DetachChildWithMass(ATTACHMENTHANDLE attachment, double vel)
 
 void Atlantis::ToggleGrapple (void)
 {
-	HWND hDlg;
 	OBJHANDLE hV = GetAttachmentStatus (rms_attach);
 
 	if (hV) {  // release satellite
-
 		ATTACHMENTHANDLE hAtt = CanArrest();
 		DetachChildWithMass(rms_attach);
-		if (hDlg = oapiFindDialog (g_Param.hDLL, IDD_RMS)) {
-			SetWindowText (GetDlgItem (hDlg, IDC_GRAPPLE), "Grapple");
-			EnableWindow (GetDlgItem (hDlg, IDC_STOW), TRUE);
-		}
+
 		// check whether the object being ungrappled is ready to be clamped into the payload bay
 		if (hAtt) {
 			AttachChildWithMass(hV, sat_attach, hAtt);
-			if (hDlg) {
-				SetWindowText (GetDlgItem (hDlg, IDC_PAYLOAD), "Purge");
-				EnableWindow (GetDlgItem (hDlg, IDC_PAYLOAD), TRUE);
-			}
 		}
 
 #ifdef UNDEF
@@ -824,10 +939,6 @@ void Atlantis::ToggleGrapple (void)
 						if (hV == GetAttachmentStatus(sat_attach))
 							DetachChildWithMass(sat_attach);
 						AttachChildWithMass(hV, rms_attach, hAtt);
-						if (hDlg = oapiFindDialog (g_Param.hDLL, IDD_RMS)) {
-							SetWindowText (GetDlgItem (hDlg, IDC_GRAPPLE), "Release");
-							EnableWindow (GetDlgItem (hDlg, IDC_STOW), FALSE);
-						}
 						return;
 					}
 				}
@@ -864,13 +975,8 @@ void Atlantis::GetSRBGimbalPos (int which, double &pitch, double &yaw)
 
 void Atlantis::ToggleArrest (void)
 {
-	HWND hDlg;
 	if (SatStowed()) { // purge satellite
 		DetachChildWithMass(sat_attach, 0.1);
-		if (hDlg = oapiFindDialog (g_Param.hDLL, IDD_RMS)) {
-			SetWindowText (GetDlgItem (hDlg, IDC_PAYLOAD), "Arrest");
-			EnableWindow (GetDlgItem (hDlg, IDC_PAYLOAD), CanArrest() ? TRUE:FALSE);
-		}
 	} else if (CanArrest()) {           // try to arrest satellite
 		ToggleGrapple();
 	}
@@ -1256,12 +1362,6 @@ void Atlantis::SetAnimationArm (UINT anim, double state)
 {
 	SetAnimation (anim, state);
 	arm_scheduled = true;
-
-	HWND hDlg;
-	if (!SatStowed() && (hDlg = oapiFindDialog (g_Param.hDLL, IDD_RMS))) {
-		SetWindowText (GetDlgItem (hDlg, IDC_PAYLOAD), "Arrest");
-		EnableWindow (GetDlgItem (hDlg, IDC_PAYLOAD), CanArrest() ? TRUE : FALSE);
-	}
 }
 
 void Atlantis::RedrawPanel_MFDButton (SURFHANDLE surf, int mfd)
@@ -1545,7 +1645,6 @@ void Atlantis::clbkFocusChanged (bool getfocus, OBJHANDLE newv, OBJHANDLE oldv)
 void Atlantis::clbkPreStep (double simt, double simdt, double mjd)
 {
 	ascap->Update (simt);
-	if (ascentApDlg) ascentApDlg->Update (simt);
 
 	//double met = (status == 0 ? 0.0 : simt-t0);
 	double met = ascap->GetMET (simt);
@@ -1715,8 +1814,6 @@ void Atlantis::clbkPreStep (double simt, double simdt, double mjd)
 		center_arm_t = t0;
 		if (da) {
 			center_arm = false; // finished stowing
-			HWND hDlg = oapiFindDialog (g_Param.hDLL, IDD_RMS);
-			if (hDlg) EnableWindow (GetDlgItem (hDlg, IDC_GRAPPLE), TRUE);
 		}
 	}
 
@@ -2194,7 +2291,7 @@ int Atlantis::clbkConsumeBufferedKey (DWORD key, bool down, char *kstate)
 	} else if (KEYMOD_CONTROL (kstate)) {
 		switch (key) {
 		case OAPI_KEY_SPACE: // open RMS control dialog
-			oapiOpenDialogEx (g_Param.hDLL, IDD_CTRL, Atlantis_DlgProc, 0, this);
+			oapiOpenDialog(ctlDlg.get());
 			return 1;
 		case OAPI_KEY_B: // deploy/retract speedbrake
 			if (!Playback()) RevertSpeedbrake ();
@@ -2238,8 +2335,7 @@ int Atlantis::clbkConsumeBufferedKey (DWORD key, bool down, char *kstate)
 DLLCLBK void InitModule (HINSTANCE hModule)
 {
 	g_Param.hDLL = hModule;
-	oapiRegisterCustomControls (hModule);
-	g_Param.tkbk_label = oapiCreateSurface (LOADBMP (IDB_TKBKLABEL));
+	g_Param.tkbk_label = oapiLoadTexture("Atlantis/tkbk_label.bmp");
 
 	// allocate GDI resources
 	g_Param.font[0] = oapiCreateFont(-11, false, (char*)"Arial");
@@ -2248,7 +2344,6 @@ DLLCLBK void InitModule (HINSTANCE hModule)
 
 DLLCLBK void ExitModule (HINSTANCE hModule)
 {
-	oapiUnregisterCustomControls (hModule);
 	oapiDestroySurface (g_Param.tkbk_label);
 }
 
@@ -2266,149 +2361,4 @@ DLLCLBK VESSEL *ovcInit (OBJHANDLE hvessel, int flightmodel)
 DLLCLBK void ovcExit (VESSEL *vessel)
 {
 	if (vessel) delete (Atlantis*)vessel;
-}
-
-// ==============================================================
-// Message callback function for Atlantis control dialog box
-// ==============================================================
-
-INT_PTR CALLBACK Atlantis_DlgProc (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
-{
-	Atlantis *sts = (uMsg == WM_INITDIALOG ? (Atlantis*)lParam : (Atlantis*)oapiGetDialogContext (hWnd));
-	// pointer to vessel instance was passed as dialog context
-
-	switch (uMsg) {
-	case WM_COMMAND:
-		switch (LOWORD(wParam)) {
-		case IDCANCEL:
-			oapiCloseDialog (hWnd);
-			return TRUE;
-		case IDC_ASCENTAP:
-			sts->CreateAscentAPDlg();
-			break;
-		case IDC_PLBAYOP:
-			sts->plop->OpenDialog ();
-			break;
-		case IDC_RMSOP:
-			oapiOpenDialogEx (g_Param.hDLL, IDD_RMS, RMS_DlgProc, 0, sts);
-			break;
-		}
-		break;
-	}
-	return oapiDefDialogProc (hWnd, uMsg, wParam, lParam);
-}
-
-// ==============================================================
-// Message callback function for RMS control dialog box
-// ==============================================================
-
-INT_PTR CALLBACK RMS_DlgProc (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
-{
-	Atlantis *sts = (uMsg == WM_INITDIALOG ? (Atlantis*)lParam : (Atlantis*)oapiGetDialogContext (hWnd));
-	// pointer to vessel instance was passed as dialog context
-
-	const double step = 0.05*RAD;
-	static double t0;
-	double t1;
-	HICON hIcon;
-
-	switch (uMsg) {
-	case WM_INITDIALOG:
-		hIcon = LoadIcon (g_Param.hDLL, MAKEINTRESOURCE(IDI_UP));
-		SendDlgItemMessage (hWnd, IDC_WRIST_PITCHUP, BM_SETIMAGE, IMAGE_ICON, (LPARAM)hIcon);
-		SendDlgItemMessage (hWnd, IDC_ELBOW_PITCHUP, BM_SETIMAGE, IMAGE_ICON, (LPARAM)hIcon);
-		SendDlgItemMessage (hWnd, IDC_SHOULDER_PITCHUP, BM_SETIMAGE, IMAGE_ICON, (LPARAM)hIcon);
-		hIcon = LoadIcon (g_Param.hDLL, MAKEINTRESOURCE(IDI_DOWN));
-		SendDlgItemMessage (hWnd, IDC_WRIST_PITCHDOWN, BM_SETIMAGE, IMAGE_ICON, (LPARAM)hIcon);
-		SendDlgItemMessage (hWnd, IDC_ELBOW_PITCHDOWN, BM_SETIMAGE, IMAGE_ICON, (LPARAM)hIcon);
-		SendDlgItemMessage (hWnd, IDC_SHOULDER_PITCHDOWN, BM_SETIMAGE, IMAGE_ICON, (LPARAM)hIcon);
-		hIcon = LoadIcon (g_Param.hDLL, MAKEINTRESOURCE(IDI_LEFT));
-		SendDlgItemMessage (hWnd, IDC_WRIST_YAWLEFT, BM_SETIMAGE, IMAGE_ICON, (LPARAM)hIcon);
-		SendDlgItemMessage (hWnd, IDC_SHOULDER_YAWLEFT, BM_SETIMAGE, IMAGE_ICON, (LPARAM)hIcon);
-		hIcon = LoadIcon (g_Param.hDLL, MAKEINTRESOURCE(IDI_RIGHT));
-		SendDlgItemMessage (hWnd, IDC_WRIST_YAWRIGHT, BM_SETIMAGE, IMAGE_ICON, (LPARAM)hIcon);
-		SendDlgItemMessage (hWnd, IDC_SHOULDER_YAWRIGHT, BM_SETIMAGE, IMAGE_ICON, (LPARAM)hIcon);
-		hIcon = LoadIcon (g_Param.hDLL, MAKEINTRESOURCE(IDI_RRIGHT));
-		SendDlgItemMessage (hWnd, IDC_WRIST_ROLLRIGHT, BM_SETIMAGE, IMAGE_ICON, (LPARAM)hIcon);
-		hIcon = LoadIcon (g_Param.hDLL, MAKEINTRESOURCE(IDI_RLEFT));
-		SendDlgItemMessage (hWnd, IDC_WRIST_ROLLLEFT, BM_SETIMAGE, IMAGE_ICON, (LPARAM)hIcon);
-		SendDlgItemMessage (hWnd, IDC_SHOWGRAPPLE, BM_SETCHECK, oapiGetShowGrapplePoints() ? BST_CHECKED:BST_UNCHECKED, 0);
-		SetWindowText (GetDlgItem (hWnd, IDC_GRAPPLE), sts->SatGrappled() ? "Release" : "Grapple");
-		EnableWindow (GetDlgItem (hWnd, IDC_STOW), sts->SatGrappled() ? FALSE : TRUE);
-		SetWindowText (GetDlgItem (hWnd, IDC_PAYLOAD), sts->SatStowed() ? "Purge" : "Arrest");
-		EnableWindow (GetDlgItem (hWnd, IDC_PAYLOAD), sts->SatStowed() || sts->CanArrest() ? TRUE:FALSE);
-		SetTimer (hWnd, 1, 50, NULL);
-		t0 = oapiGetSimTime();
-		return FALSE;
-	case WM_DESTROY:
-		KillTimer (hWnd, 1);
-		return 0;
-	case WM_TIMER:
-		if (wParam == 1) {
-			t1 = oapiGetSimTime();
-			if (SendDlgItemMessage (hWnd, IDC_SHOULDER_YAWLEFT, BM_GETSTATE, 0, 0) & BST_PUSHED) {
-				sts->arm_sy = min (1.0, sts->arm_sy + (t1-t0)*ARM_OPERATING_SPEED);
-				sts->SetAnimationArm (sts->anim_arm_sy, sts->arm_sy);
-			} else if (SendDlgItemMessage (hWnd, IDC_SHOULDER_YAWRIGHT, BM_GETSTATE, 0, 0) & BST_PUSHED) {
-				sts->arm_sy = max (0.0, sts->arm_sy - (t1-t0)*ARM_OPERATING_SPEED);
-				sts->SetAnimationArm (sts->anim_arm_sy, sts->arm_sy);
-			} else if (SendDlgItemMessage (hWnd, IDC_SHOULDER_PITCHUP, BM_GETSTATE, 0, 0) & BST_PUSHED) {
-				sts->arm_sp = min (1.0, sts->arm_sp + (t1-t0)*ARM_OPERATING_SPEED);
-				sts->SetAnimationArm (sts->anim_arm_sp, sts->arm_sp);
-			} else if (SendDlgItemMessage (hWnd, IDC_SHOULDER_PITCHDOWN, BM_GETSTATE, 0, 0) & BST_PUSHED) {
-				sts->arm_sp = max (0.0, sts->arm_sp - (t1-t0)*ARM_OPERATING_SPEED);
-				sts->SetAnimationArm (sts->anim_arm_sp, sts->arm_sp);
-			} else if (SendDlgItemMessage (hWnd, IDC_ELBOW_PITCHUP, BM_GETSTATE, 0, 0) & BST_PUSHED) {
-				sts->arm_ep = max (0.0, sts->arm_ep - (t1-t0)*ARM_OPERATING_SPEED);
-				sts->SetAnimationArm (sts->anim_arm_ep, sts->arm_ep);
-			} else if (SendDlgItemMessage (hWnd, IDC_ELBOW_PITCHDOWN, BM_GETSTATE, 0, 0) & BST_PUSHED) {
-				sts->arm_ep = min (1.0, sts->arm_ep + (t1-t0)*ARM_OPERATING_SPEED);
-				sts->SetAnimationArm (sts->anim_arm_ep, sts->arm_ep);
-			} else if (SendDlgItemMessage (hWnd, IDC_WRIST_PITCHUP, BM_GETSTATE, 0, 0) & BST_PUSHED) {
-				sts->arm_wp = min (1.0, sts->arm_wp + (t1-t0)*ARM_OPERATING_SPEED);
-				sts->SetAnimationArm (sts->anim_arm_wp, sts->arm_wp);
-			} else if (SendDlgItemMessage (hWnd, IDC_WRIST_PITCHDOWN, BM_GETSTATE, 0, 0) & BST_PUSHED) {
-				sts->arm_wp = max (0.0, sts->arm_wp - (t1-t0)*ARM_OPERATING_SPEED);
-				sts->SetAnimationArm (sts->anim_arm_wp, sts->arm_wp);
-			} else if (SendDlgItemMessage (hWnd, IDC_WRIST_YAWLEFT, BM_GETSTATE, 0, 0) & BST_PUSHED) {
-				sts->arm_wy = min (1.0, sts->arm_wy + (t1-t0)*ARM_OPERATING_SPEED);
-				sts->SetAnimationArm (sts->anim_arm_wy, sts->arm_wy);
-			} else if (SendDlgItemMessage (hWnd, IDC_WRIST_YAWRIGHT, BM_GETSTATE, 0, 0) & BST_PUSHED) {
-				sts->arm_wy = max (0.0, sts->arm_wy - (t1-t0)*ARM_OPERATING_SPEED);
-				sts->SetAnimationArm (sts->anim_arm_wy, sts->arm_wy);
-			} else if (SendDlgItemMessage (hWnd, IDC_WRIST_ROLLLEFT, BM_GETSTATE, 0, 0) & BST_PUSHED) {
-				sts->arm_wr = max (0.0, sts->arm_wr - (t1-t0)*ARM_OPERATING_SPEED);
-				sts->SetAnimationArm (sts->anim_arm_wr, sts->arm_wr);
-			} else if (SendDlgItemMessage (hWnd, IDC_WRIST_ROLLRIGHT, BM_GETSTATE, 0, 0) & BST_PUSHED) {
-				sts->arm_wr = min (1.0, sts->arm_wr + (t1-t0)*ARM_OPERATING_SPEED);
-				sts->SetAnimationArm (sts->anim_arm_wr, sts->arm_wr);
-			}
-			t0 = t1;
-		}
-		if (!sts->center_arm) EnableWindow (GetDlgItem (hWnd, IDC_GRAPPLE), TRUE);
-		break;
-	case WM_COMMAND:
-		switch (LOWORD(wParam)) {
-		case IDCANCEL:
-			oapiCloseDialog (hWnd);
-			return TRUE;
-		case IDC_STOW:
-			if (sts->center_arm = !sts->center_arm) {
-				sts->center_arm_t = oapiGetSimTime();
-				EnableWindow (GetDlgItem (hWnd, IDC_GRAPPLE), FALSE);
-			}
-			return 0;
-		case IDC_GRAPPLE:
-			sts->ToggleGrapple();
-			return 0;
-		case IDC_PAYLOAD:
-			sts->ToggleArrest();
-			return 0;
-		case IDC_SHOWGRAPPLE:
-			oapiSetShowGrapplePoints (SendDlgItemMessage (hWnd, IDC_SHOWGRAPPLE, BM_GETCHECK, 0, 0) == BST_CHECKED ? true : false);
-			return 0;
-		}
-		break;
-	}
-	return oapiDefDialogProc (hWnd, uMsg, wParam, lParam);
 }

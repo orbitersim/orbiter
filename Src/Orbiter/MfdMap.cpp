@@ -349,7 +349,7 @@ void Instrument_Map::UpdateDraw_Map (oapi::Sketchpad *skp)
 			const Body *b = (const Body*)sel.obj;
 			double lng, lat, rad;
 			refplanet->GlobalToEquatorial (b->GPos(), lng, lat, rad);
-			sprintf (cbuf, "%s [%6.2fº%c %6.2fº%c, Alt %s]",
+			sprintf (cbuf, "%s [%6.2fÂº%c %6.2fÂº%c, Alt %s]",
 				b->Name(), fabs(lng)*DEG, lng>=0.0 ? 'E':'W', fabs(lat)*DEG,
 				lat>=0.0 ? 'N':'S', DistStr(rad-refplanet->Size()));
 			skp->SetTextColor (draw[1][0].col);
@@ -362,14 +362,14 @@ void Instrument_Map::UpdateDraw_Map (oapi::Sketchpad *skp)
 			const Base *base = (const Base*)sel.obj;
 			double lng, lat, lng0, lat0, rad, adist, hdg;
 			base->EquPos (lng, lat);
-			sprintf (cbuf, "%s [%6.2fº%c %6.2fº%c]",
+			sprintf (cbuf, "%s [%6.2fÂº%c %6.2fÂº%c]",
 				base->Name(), fabs(lng)*DEG, lng>=0.0 ? 'E':'W', fabs(lat)*DEG,
 				lat>=0.0 ? 'N':'S');
 			if (sp) lng0 = sp->lng, lat0 = sp->lat;
 			else    refplanet->GlobalToEquatorial (g_focusobj->GPos(), lng0, lat0, rad);
 			rad = refplanet->Size();
 			Orthodome (lng0, lat0, lng, lat, adist, hdg);
-			sprintf (cbuf+strlen(cbuf)-1, ", Dst%s, Brg %05.1fº]", DistStr(adist*rad), Deg(posangle(hdg)));
+			sprintf (cbuf+strlen(cbuf)-1, ", Dst%s, Brg %05.1fÂº]", DistStr(adist*rad), Deg(posangle(hdg)));
 			skp->SetTextColor (draw[2][0].col);
 			if (!pfont) pfont = skp->SetFont (GetDefaultFont (1));
 			skp->Text (cw/2, y, "BSE:", 4);
@@ -379,14 +379,14 @@ void Instrument_Map::UpdateDraw_Map (oapi::Sketchpad *skp)
 		}
 		double lng, lat, rad;
 		refplanet->GlobalToEquatorial (g_focusobj->GPos(), lng, lat, rad);
-		sprintf (cbuf, "%s [%6.2fº%c %6.2fº%c, Alt %s]",
+		sprintf (cbuf, "%s [%6.2fÂº%c %6.2fÂº%c, Alt %s]",
 			g_focusobj->Name(), fabs(lng)*DEG, lng>=0.0 ? 'E':'W', fabs(lat)*DEG,
 			lat>=0.0 ? 'N':'S', DistStr(rad-refplanet->Size()));
 		if (sp) {
 			Vector hvel (tmul (sp->ref->GRot(), sp->groundvel_glob));
 			hvel.Set (mul (sp->L2H, hvel));
 			double crs = atan2 (hvel.x, hvel.z);
-			sprintf (cbuf+strlen(cbuf)-1, ", Crs %05.1fº]", Deg(posangle(crs)));
+			sprintf (cbuf+strlen(cbuf)-1, ", Crs %05.1fÂº]", Deg(posangle(crs)));
 		}
 		skp->SetTextColor (draw[0][0].col);
 		if (!pfont) pfont = skp->SetFont (GetDefaultFont (1));
@@ -518,15 +518,8 @@ void Instrument_Map::UpdateBlt ()
 	if (disp_mode) return;
 	if (!gc) return;
 	map->Update ();
-#ifdef ASYNC_DRAWMAP
-	if (!map->ThreadBusy()) {
-		gc->clbkCopyBitmap (surf, map->GetMap(), 0, 0, IW, IH);
-		map->AsyncDrawMap ();
-	}
-#else
 	map->DrawMap ();
-	gc->clbkCopyBitmap (surf, map->GetMap(), 0, 0, IW, IH);
-#endif
+	oapiBlt (surf, map->GetMap(), 0, 0, 0, 0, IW, IH);
 }
 
 // =======================================================================
@@ -654,8 +647,8 @@ bool Instrument_Map::ToggleDispParam (int which)
 			int i;
 			for (i = 0; i < cms.nset; i++)
 				if (cms.set[i].active) break;
-			if (i < cms.nset) dispflag = dispflag | DISP_CUSTOM1;
-			else              dispflag = dispflag & ~DISP_CUSTOM1;
+			if (i < cms.nset) dispflag = dispflag | DISP_CUSTOMMARKER;
+			else              dispflag = dispflag & ~DISP_CUSTOMMARKER;
 		}
 		return true;
 	}

@@ -997,11 +997,8 @@ RetroCoverControl::RetroCoverControl (MainRetroSubsystem *_subsys)
 
 void RetroCoverControl::OpenRetroCover ()
 {
-	void UpdateCtrlDialog (DeltaGlider *dg, HWND hWnd = 0);
-
 	rcover_state.Open();
 	DG()->UpdateStatusIndicators();
-	UpdateCtrlDialog (DG());
 	DG()->RecordEvent ("RCOVER", "OPEN");
 }
 
@@ -1009,11 +1006,8 @@ void RetroCoverControl::OpenRetroCover ()
 
 void RetroCoverControl::CloseRetroCover ()
 {
-	void UpdateCtrlDialog (DeltaGlider *dg, HWND hWnd = 0);
-
 	rcover_state.Close();
 	DG()->UpdateStatusIndicators();
-	UpdateCtrlDialog (DG());
 	DG()->EnableRetroThrusters (false);
 	DG()->RecordEvent ("RCOVER", "Close");
 }

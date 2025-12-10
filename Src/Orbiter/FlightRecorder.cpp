@@ -15,6 +15,7 @@
 #include "Pane.h"
 #include "State.h"
 #include "MenuInfoBar.h"
+#include "DlgMgr.h"
 #include <fstream>
 #include <string>
 #include <filesystem>
@@ -802,7 +803,6 @@ void Orbiter::FRecorder_Activate (bool active, const char *fname, bool append)
 	} else {
 		bRecord = false;
 	}
-	if (g_pane && g_pane->MIBar()) g_pane->MIBar()->SetRecording(bRecord);
 }
 
 // Save a system event
@@ -934,14 +934,10 @@ void Orbiter::FRecorder_Play ()
 }
 
 void Orbiter::FRecorder_ToggleEditor ()
-{
-	if (FReditor) {
-		delete FReditor;
-		FReditor = 0;
-	} else {
-		const char *playbackdir = pState->PlaybackDir();
-		FReditor = new PlaybackEditor (this, playbackdir); TRACENEW
-	}
+{	
+	DlgPlaybackEditor *m_DlgPlaybackEditor = g_pOrbiter->DlgMgr()->EnsureEntry<DlgPlaybackEditor>();
+	const char *playbackdir = pState->PlaybackDir();
+	m_DlgPlaybackEditor->Load(playbackdir);
 }
 
 // ================================================================

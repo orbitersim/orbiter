@@ -1658,16 +1658,16 @@ const HELPCONTEXT* OptionsPage_VisHelper::HelpContext() const
 
 void OptionsPage_VisHelper::UpdateControls(HWND hPage)
 {
-	DWORD& plnFlag = Cfg()->CfgVisHelpPrm.flagPlanetarium;
+	int& plnFlag = Cfg()->CfgVisHelpPrm.flagPlanetarium;
 	bool enable = plnFlag & PLN_ENABLE;
 	SendDlgItemMessage(hPage, IDC_OPT_PLN, BM_SETCHECK, enable ? BST_CHECKED : BST_UNCHECKED, 0);
-	DWORD& mkrFlag = Cfg()->CfgVisHelpPrm.flagMarkers;
+	int& mkrFlag = Cfg()->CfgVisHelpPrm.flagMarkers;
 	enable = mkrFlag & MKR_ENABLE;
 	SendDlgItemMessage(hPage, IDC_OPT_MKR, BM_SETCHECK, enable ? BST_CHECKED : BST_UNCHECKED, 0);
-	DWORD vecFlag = Cfg()->CfgVisHelpPrm.flagBodyForce;
+	int vecFlag = Cfg()->CfgVisHelpPrm.flagBodyForce;
 	enable = (vecFlag & BFV_ENABLE);
 	SendDlgItemMessage(hPage, IDC_OPT_VEC, BM_SETCHECK, enable ? BST_CHECKED : BST_UNCHECKED, 0);
-	DWORD crdFlag = Cfg()->CfgVisHelpPrm.flagFrameAxes;
+	int crdFlag = Cfg()->CfgVisHelpPrm.flagFrameAxes;
 	enable = (crdFlag & FAV_ENABLE);
 	SendDlgItemMessage(hPage, IDC_OPT_CRD, BM_SETCHECK, enable ? BST_CHECKED : BST_UNCHECKED, 0);
 }
@@ -1689,7 +1689,7 @@ BOOL OptionsPage_VisHelper::OnCommand(HWND hPage, WORD ctrlId, WORD notification
 		if (notification == BN_CLICKED) {
 			bool check = (SendDlgItemMessage(hPage, ctrlId, BM_GETCHECK, 0, 0) == BST_CHECKED);
 			DWORD flag = PLN_ENABLE;
-			DWORD& plnFlag = Cfg()->CfgVisHelpPrm.flagPlanetarium;
+			int& plnFlag = Cfg()->CfgVisHelpPrm.flagPlanetarium;
 			if (check) plnFlag |= flag;
 			else       plnFlag &= ~flag;
 			return TRUE;
@@ -1699,7 +1699,7 @@ BOOL OptionsPage_VisHelper::OnCommand(HWND hPage, WORD ctrlId, WORD notification
 		if (notification == BN_CLICKED) {
 			bool check = (SendDlgItemMessage(hPage, ctrlId, BM_GETCHECK, 0, 0) == BST_CHECKED);
 			DWORD flag = MKR_ENABLE;
-			DWORD& mkrFlag = Cfg()->CfgVisHelpPrm.flagMarkers;
+			int& mkrFlag = Cfg()->CfgVisHelpPrm.flagMarkers;
 			if (check) mkrFlag |= flag;
 			else       mkrFlag &= ~flag;
 			return TRUE;
@@ -1709,7 +1709,7 @@ BOOL OptionsPage_VisHelper::OnCommand(HWND hPage, WORD ctrlId, WORD notification
 		if (notification == BN_CLICKED) {
 			bool check = (SendDlgItemMessage(hPage, ctrlId, BM_GETCHECK, 0, 0) == BST_CHECKED);
 			DWORD flag = BFV_ENABLE;
-			DWORD& vecFlag = Cfg()->CfgVisHelpPrm.flagBodyForce;
+			int& vecFlag = Cfg()->CfgVisHelpPrm.flagBodyForce;
 			if (check) vecFlag |= flag;
 			else       vecFlag &= ~flag;
 		}
@@ -1718,7 +1718,7 @@ BOOL OptionsPage_VisHelper::OnCommand(HWND hPage, WORD ctrlId, WORD notification
 		if (notification == BN_CLICKED) {
 			bool check = (SendDlgItemMessage(hPage, ctrlId, BM_GETCHECK, 0, 0) == BST_CHECKED);
 			DWORD flag = FAV_ENABLE;
-			DWORD& crdFlag = Cfg()->CfgVisHelpPrm.flagFrameAxes;
+			int& crdFlag = Cfg()->CfgVisHelpPrm.flagFrameAxes;
 			if (check) crdFlag |= flag;
 			else       crdFlag &= ~flag;
 		}
@@ -1784,7 +1784,7 @@ void OptionsPage_Planetarium::UpdateControls(HWND hPage)
 		IDC_STATIC1, IDC_STATIC2, IDC_STATIC3
 	};
 
-	DWORD& plnFlag = Cfg()->CfgVisHelpPrm.flagPlanetarium;
+	int& plnFlag = Cfg()->CfgVisHelpPrm.flagPlanetarium;
 	bool enable = plnFlag & PLN_ENABLE;
 	SendDlgItemMessage(hPage, IDC_OPT_PLN, BM_SETCHECK, enable ? BST_CHECKED : BST_UNCHECKED, 0);
 	for (auto resid : residPlanetarium)
@@ -1870,7 +1870,7 @@ void OptionsPage_Planetarium::OnItemClicked(HWND hPage, WORD ctrlId)
 	case IDC_OPT_PLN_CNSTLABEL_SHORT: flag = PLN_CNSTLONG; check = !check; break;
 	default:                          flag = 0;             break;
 	}
-	DWORD& plnFlag = Cfg()->CfgVisHelpPrm.flagPlanetarium;
+	int& plnFlag = Cfg()->CfgVisHelpPrm.flagPlanetarium;
 	if (check) plnFlag |= flag;
 	else       plnFlag &= ~flag;
 
@@ -1953,7 +1953,7 @@ void OptionsPage_Labels::UpdateControls(HWND hPage)
 		IDC_STATIC1, IDC_STATIC2
 	};
 
-	DWORD& mkrFlag = Cfg()->CfgVisHelpPrm.flagMarkers;
+	int& mkrFlag = Cfg()->CfgVisHelpPrm.flagMarkers;
 	bool enable = mkrFlag & MKR_ENABLE;
 	SendDlgItemMessage(hPage, IDC_OPT_MKR, BM_SETCHECK, enable ? BST_CHECKED : BST_UNCHECKED, 0);
 	for (auto resid : residLabels)
@@ -2023,7 +2023,7 @@ void OptionsPage_Labels::OnItemClicked(HWND hPage, WORD ctrlId)
 	case IDC_OPT_MKR_FEATURES: flag = MKR_LMARK;  break;
 	default:                   flag = 0;          break;
 	}
-	DWORD& mkrFlag = Cfg()->CfgVisHelpPrm.flagMarkers;
+	int& mkrFlag = Cfg()->CfgVisHelpPrm.flagMarkers;
 	if (check) mkrFlag |= flag;
 	else       mkrFlag &= ~flag;
 
@@ -2250,7 +2250,7 @@ void OptionsPage_Forces::OnItemClicked(HWND hPage, WORD ctrlId)
 	case IDC_OPT_VEC_LOGSCL: flag = BFV_LOGSCALE; check = true;  break;
 	default:                 flag = 0;           break;
 	}
-	DWORD& vecFlag = Cfg()->CfgVisHelpPrm.flagBodyForce;
+	int& vecFlag = Cfg()->CfgVisHelpPrm.flagBodyForce;
 	if (check) vecFlag |= flag;
 	else       vecFlag &= ~flag;
 
@@ -2387,7 +2387,7 @@ void OptionsPage_Axes::OnItemClicked(HWND hPage, WORD ctrlId)
 	case IDC_OPT_CRD_NEGATIVE: flag = FAV_NEGATIVE; break;
 	default:                   flag = 0;            break;
 	}
-	DWORD& crdFlag = Cfg()->CfgVisHelpPrm.flagFrameAxes;
+	int& crdFlag = Cfg()->CfgVisHelpPrm.flagFrameAxes;
 	if (check) crdFlag |= flag;
 	else       crdFlag &= ~flag;
 

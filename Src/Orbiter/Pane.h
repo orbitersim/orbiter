@@ -97,12 +97,6 @@ public:
 	bool ProcessMouse_OnRunning (UINT event, DWORD state, DWORD x, DWORD y, const char *kstate);
 	// Process a mouse click/release
 
-	void SetFOV (double _fov);
-	// Register field of view for output
-
-	void SetWarp (double _warp);
-	// Register time acceleration for output
-
 	void RedrawCockpitAreas (int mode);
 	// Trigger a redraw of all active areas of the current cockpit
 

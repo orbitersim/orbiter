@@ -238,6 +238,7 @@ void PlanetarySystem::ScanLabelLists (ifstream &cfg, bool bScanHeaders)
 			list.distfac = 1.0f;
 			list.active = false;
 			list.flag = 0;
+			list.name = entry.path().stem().string();
 			if (FindLine(ulf, "BEGIN_HEADER")) {
 				char item[256], value[256];
 				for (;;) {

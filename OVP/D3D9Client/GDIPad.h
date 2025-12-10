@@ -98,7 +98,7 @@ public:
 
 	/**
 	 * \brief Returns the width of a text string in the currently selected font.
-	 * \param str text string
+	 * \param str text string in UTF-8
 	 * \param len string length, or 0 for auto (0-terminated string)
 	 * \return width of the string, drawn in the currently selected font [pixel]
 	 * \sa SetFont
@@ -133,7 +133,7 @@ public:
 	 * \brief Draws a text string.
 	 * \param x reference x position [pixel]
 	 * \param y reference y position [pixel]
-	 * \param str text string
+	 * \param str text string in UTF-8
 	 * \param len string length for output
 	 * \return \e true on success, \e false on failure.
 	 */
@@ -145,7 +145,7 @@ public:
 	 * \param y1 top edge [pixel]
 	 * \param x2 right edge [pixel]
 	 * \param y2 bottom edge [pixel]
-	 * \param str text string
+	 * \param str text string in UTF-8
 	 * \param len string length for output
 	 * \return \e true on success, \e false on failure.
 	 */

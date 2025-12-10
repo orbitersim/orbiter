@@ -51,6 +51,10 @@ install(FILES ScnEditorAPI.h
 	DESTINATION ${ORBITER_INSTALL_SDK_DIR}/include
 )
 
+install(FILES ScnEdit.png
+	DESTINATION ${ORBITER_INSTALL_TEXTURES_DIR}/MenuInfoBar
+)
+
 if(ORBITER_MAKE_DOC)
 	add_subdirectory(Help)
 endif()

@@ -345,6 +345,24 @@ Orbiter::Orbiter ()
 
 	memset (simkstate, 0, 256);
 
+
+	RegisterMenuCmd("Ship",     "MenuInfoBar/ship.png",     [](void *) {g_pOrbiter->DlgMgr()->EnsureEntry<DlgFocus>();});
+	RegisterMenuCmd("Camera",   "MenuInfoBar/camera.png",   [](void *) {g_pOrbiter->DlgMgr()->EnsureEntry<DlgCamera>();});
+	RegisterMenuCmd("Speed",    "MenuInfoBar/speed.png",    [](void *) {g_pOrbiter->DlgMgr()->EnsureEntry<DlgTacc>();});
+	RegisterMenuCmd("Pause",    "MenuInfoBar/pause.png",    [](void *) {g_pOrbiter->TogglePause();});
+	RegisterMenuCmd("Function", "MenuInfoBar/function.png", [](void *) {g_pOrbiter->DlgMgr()->EnsureEntry<DlgFunction>();});
+	RegisterMenuCmd("Info",     "MenuInfoBar/info.png",     [](void *) {g_pOrbiter->DlgMgr()->EnsureEntry<DlgInfo>();});
+	RegisterMenuCmd("Options",  "MenuInfoBar/options.png",  [](void *) {g_pOrbiter->DlgMgr()->EnsureEntry<DlgOptions>();});
+	RegisterMenuCmd("Map",      "MenuInfoBar/map.png",      [](void *) {g_pOrbiter->DlgMgr()->EnsureEntry<DlgMap>();});
+	RegisterMenuCmd("Record",   "MenuInfoBar/record.png",   [](void *) {g_pOrbiter->DlgMgr()->EnsureEntry<DlgRecorder>();});
+	RegisterMenuCmd("Help",     "MenuInfoBar/help.png",     [](void *) {
+			extern HELPCONTEXT DefHelpContext;
+			DefHelpContext.topic = (char*)"/mainmenu.htm";
+			g_pOrbiter->OpenHelp (&DefHelpContext);			
+		});
+	RegisterMenuCmd("Save",     "MenuInfoBar/save.png",     [](void *) {g_pOrbiter->Quicksave();});
+	RegisterMenuCmd("Exit",     "MenuInfoBar/exit.png",     [](void *) {PostMessage(g_pOrbiter->GetRenderWnd(), WM_CLOSE, 0, 0);});
+
 }
 
 //-----------------------------------------------------------------------------
@@ -669,7 +687,6 @@ VOID Orbiter::Launch (const char *scenario)
 		LOGOUT_ERR ("Scenario not found: %s", scenario);
 		TerminateOnError();
 	}
-	DlgHelp::SetScenarioHelp (pState->ScnHelp());
 
 	long m0 = memstat->HeapUsage();
 	CreateRenderWindow (pConfig, scenario);
@@ -718,8 +735,6 @@ HWND Orbiter::CreateRenderWindow (Config *pCfg, const char *scenario)
 	}
 
 	if (gclient) {
-		// GDI resources - NOT VALID FOR ALL CLIENTS!
-		InitializeGDIResources (hRenderWnd);
 		pDlgMgr = new DialogManager (this, hRenderWnd);
 
 		// global dialog resources
@@ -774,7 +789,6 @@ HWND Orbiter::CreateRenderWindow (Config *pCfg, const char *scenario)
 
 	if (g_camera) {
 		g_camera->InitState (scenario, g_focusobj);
-		if (g_pane) g_pane->SetFOV (g_camera->Aperture());
 	}
 	LOGOUT ("Finished initialising camera");
 
@@ -794,7 +808,6 @@ HWND Orbiter::CreateRenderWindow (Config *pCfg, const char *scenario)
 	FRecorder_Reset();
 	if ((g_focusobj) && (bPlayback = g_focusobj->bFRplayback)) {
 		FRecorder_OpenPlayback (pState->PlaybackDir());
-		if (g_pane && g_pane->MIBar()) g_pane->MIBar()->SetPlayback(true);
 	}
 
 	// let plugins read their states from the scenario file
@@ -915,7 +928,6 @@ void Orbiter::CloseSession ()
 		if (g_pane) { delete g_pane;   g_pane = 0; }
 		if (pDlgMgr)  { delete pDlgMgr; pDlgMgr = 0; }
 		Instrument::GlobalExit (gclient);
-		ReleaseGDIResources();
 		meshmanager.Flush(); // destroy buffered meshes
 		DestroyWorld ();     // destroy logical objects
 		if (gclient)
@@ -975,7 +987,6 @@ void Orbiter::GetRenderParameters ()
 void Orbiter::BroadcastGlobalInit ()
 {
 	Instrument::GlobalInit (gclient);
-	DlgMap::GlobalInit();
 }
 
 // =======================================================================
@@ -1220,7 +1231,6 @@ Vessel *Orbiter::SetFocusObject (Vessel *vessel, bool setview)
 		it->pModule->clbkFocusChanged(g_focusobj, g_pfocusobj);
 
 	if (pDlgMgr) pDlgMgr->BroadcastMessage (MSG_FOCUSVESSEL, vessel);
-	DlgHelp::SetVesselHelp (g_focusobj->HelpContext());
 
 	return g_pfocusobj;
 }
@@ -1356,8 +1366,6 @@ void Orbiter::SetWarpFactor (double warp, bool force, double delay)
 	if (fabs (warp-td.Warp()) > EPS) {
 		td.SetWarp (warp, delay);
 		if (td.WarpChanged()) ApplyWarpFactor();
-		DlgTacc *pDlg = (pDlgMgr ? pDlgMgr->EntryExists<DlgTacc> (hInst) : NULL);
-		if (pDlg) pDlg->RegisterWarp(pDlg->GetHwnd(), warp, false, true, true);
 		if (bRecord && pConfig->CfgRecPlayPrm.bRecordWarp) {
 			char cbuf[256];
 			if (delay) sprintf (cbuf, "%f %f", warp, delay);
@@ -1407,8 +1415,6 @@ void Orbiter::ApplyWarpFactor ()
 	// notify plugins
 	for (auto it = m_Plugin.begin(); it != m_Plugin.end(); it++)
 		it->pModule->clbkTimeAccChanged(nwarp, td.Warp());
-
-	if (g_pane) g_pane->SetWarp (nwarp);
 }
 
 //-----------------------------------------------------------------------------
@@ -1421,13 +1427,7 @@ VOID Orbiter::SetFOV (double fov, bool limit_range)
 	if (g_camera->Aperture() == fov) return;
 
 	fov = g_camera->SetAperture (fov, limit_range);
-	if (g_pane) g_pane->SetFOV (fov);
 	g_bForceUpdate = true;
-
-	// update Camera dialog
-	HWND hCamDlg;
-	if (pDlgMgr && (hCamDlg = pDlgMgr->IsEntry (hInst, IDD_CAMERA)))
-		SendMessage (hCamDlg, WM_APP, 0, (LPARAM)&fov);
 }
 
 //-----------------------------------------------------------------------------
@@ -1438,13 +1438,7 @@ VOID Orbiter::SetFOV (double fov, bool limit_range)
 VOID Orbiter::IncFOV (double dfov)
 {
 	double fov = g_camera->IncrAperture (dfov);
-	if (g_pane) g_pane->SetFOV (fov);
 	g_bForceUpdate = true;
-
-	// update Camera dialog
-	HWND hCamDlg;
-	if (pDlgMgr && (hCamDlg = pDlgMgr->IsEntry (hInst, IDD_CAMERA)))
-		SendMessage (hCamDlg, WM_APP, 0, (LPARAM)&fov);
 }
 
 //-----------------------------------------------------------------------------
@@ -1517,27 +1511,14 @@ void Orbiter::CaptureVideoFrame ()
 
 void Orbiter::TogglePlanetariumMode()
 {
-	DWORD& plnFlag = pConfig->CfgVisHelpPrm.flagPlanetarium;
-	plnFlag ^= PLN_ENABLE;
-
-	if (pDlgMgr) {
-		DlgOptions* dlg = pDlgMgr->EntryExists<DlgOptions>(hInst);
-		if (dlg) dlg->Update();
-	}
-
+	pConfig->CfgVisHelpPrm.flagPlanetarium ^= PLN_ENABLE;
 }
 
 //-----------------------------------------------------------------------------
 
 void Orbiter::ToggleLabelDisplay()
 {
-	DWORD& mkrFlag = pConfig->CfgVisHelpPrm.flagMarkers;
-	mkrFlag ^= MKR_ENABLE;
-
-	if (pDlgMgr) {
-		DlgOptions* dlg = pDlgMgr->EntryExists<DlgOptions>(hInst);
-		if (dlg) dlg->Update();
-	}
+	pConfig->CfgVisHelpPrm.flagMarkers^= MKR_ENABLE;
 }
 
 //-----------------------------------------------------------------------------
@@ -1561,11 +1542,11 @@ const char *Orbiter::GetDefRecordName (void) const
 	return playbackdir+i;
 }
 
-void Orbiter::ToggleRecorder (bool force, bool append)
+bool Orbiter::ToggleRecorder (bool force, bool append)
 {
-	if (bPlayback) return; // don't allow recording during playback
+	if (bPlayback) return true; // don't allow recording during playback
 
-	DlgRecorder *pDlg = (pDlgMgr ? pDlgMgr->EntryExists<DlgRecorder> (hInst) : NULL);
+	DlgRecorder *pDlg = (pDlgMgr ? pDlgMgr->EntryExists<DlgRecorder> () : NULL);
 	int i, n = g_psys->nVessel();
 	const char *sname;
 	char cbuf[256];
@@ -1577,8 +1558,7 @@ void Orbiter::ToggleRecorder (bool force, bool append)
 		} else sname = GetDefRecordName();
 		if (!append && !FRecorder_PrepareDir (sname, force)) {
 			bStartRecorder = false;
-			OpenDialogEx (IDD_MSG_FRECORDER, (DLGPROC)FRecorderMsg_DlgProc, DLG_CAPTIONCLOSE);
-			return;
+			return false;
 		}
 	} else sname = 0;
 	FRecorder_Activate (bStartRecorder, sname, append);
@@ -1586,7 +1566,7 @@ void Orbiter::ToggleRecorder (bool force, bool append)
 		g_psys->GetVessel(i)->FRecorder_Activate (bStartRecorder, sname, append);
 	if (bStartRecorder)
 		SavePlaybackScn (sname);
-	if (pDlg) PostMessage (pDlg->GetHwnd(), WM_USER+1, 0, 0);
+	return true;
 }
 
 void Orbiter::EndPlayback ()
@@ -1596,11 +1576,6 @@ void Orbiter::EndPlayback ()
 	FRecorder_ClosePlayback();
 	if (snote_playback) snote_playback->ClearText();
 	bPlayback = false;
-	if (pDlgMgr) {
-		HWND hDlg = pDlgMgr->IsEntry (hInst, IDD_RECPLAY);
-		if (hDlg) PostMessage (hDlg, WM_USER+1, 0, 0);
-	}
-	if (g_pane && g_pane->MIBar()) g_pane->MIBar()->SetPlayback(false);
 }
 
 oapi::ScreenAnnotation *Orbiter::CreateAnnotation (bool exclusive, double size, COLORREF col)
@@ -1712,26 +1687,6 @@ void Orbiter::OutputLoadTick (int line, bool ok)
 }
 
 //-----------------------------------------------------------------------------
-// Name: InitializeGDIResources()
-// Desc: Allocate resources required for GDI display (HUD, MFD)
-//-----------------------------------------------------------------------------
-void Orbiter::InitializeGDIResources (HWND hWnd)
-{
-	// Allocate global GDI resources
-	if (g_gdires) delete g_gdires;
-	g_gdires = new GDIResources (hWnd, viewW, viewH, *pConfig); TRACENEW
-}
-
-//-----------------------------------------------------------------------------
-// Name: ReleaseGDIResources()
-// Desc: Release resources used by GDI
-//-----------------------------------------------------------------------------
-void Orbiter::ReleaseGDIResources ()
-{
-	if (g_gdires) delete g_gdires, g_gdires = 0;
-}
-
-//-----------------------------------------------------------------------------
 // Name: OpenTextureFile()
 // Desc: Return file handle for texture file (0=error)
 //       First searches in hightex dir, then in standard dir
@@ -1804,7 +1759,6 @@ bool Orbiter::BeginTimeStep (bool running)
 	if (bRequestRunning != running) {
 		running = bRunning = bRequestRunning;
 		bool isPaused = !running;
-		if (g_pane && g_pane->MIBar()) g_pane->MIBar()->SetPaused (isPaused);
 		pDlgMgr->BroadcastMessage (MSG_PAUSE, (void*)isPaused);
 
 		// broadcast pause state to plugins
@@ -1951,6 +1905,25 @@ bool Orbiter::UnregisterCustomCmd (int cmdId)
 	ncustomcmd--;
 	return true;
 }
+
+int Orbiter::RegisterMenuCmd (const char *label, const char *imagepath, CustomFunc func, void *context)
+{
+	// share g_customcmdid for unique id
+	menuitems.emplace_back(label, imagepath, g_customcmdid++, func, context);
+	if(g_pane) {
+		g_pane->MIBar()->RegisterMenuItem(label, imagepath, g_customcmdid, func, context);
+	}
+
+	return g_customcmdid;
+}
+void Orbiter::UnregisterMenuCmd (int cmdId)
+{
+	menuitems.erase(std::remove_if(menuitems.begin(), menuitems.end(), [cmdId](const auto &item) { return item.id == cmdId; }), menuitems.end());
+	if(g_pane) {
+		g_pane->MIBar()->UnregisterMenuItem(cmdId);
+	}
+}
+
 
 //-----------------------------------------------------------------------------
 // Name: ModulePreStep()
@@ -2311,7 +2284,10 @@ void Orbiter::KbdInputBuffered_System (char *kstate, DIDEVICEOBJECTDATA *dod, DW
 		else if (keymap.IsLogicalKey(key, kstate, OAPI_LKEY_Quicksave))            Quicksave();
 		else if (keymap.IsLogicalKey(key, kstate, OAPI_LKEY_StepIncFOV))           SetFOV(ceil((g_camera->Aperture() * DEG + 1e-6) / 5.0) * 5.0 * RAD);
 		else if (keymap.IsLogicalKey(key, kstate, OAPI_LKEY_StepDecFOV))           SetFOV(floor((g_camera->Aperture() * DEG - 1e-6) / 5.0) * 5.0 * RAD);
-		else if (keymap.IsLogicalKey(key, kstate, OAPI_LKEY_MainMenu)) { if (g_pane->MIBar()) g_pane->MIBar()->ToggleAutohide(); }
+		else if (keymap.IsLogicalKey(key, kstate, OAPI_LKEY_MainMenu)) { 
+			CFG_UIPRM &prm = g_pOrbiter->Cfg()->CfgUIPrm;
+			prm.MenuMode = prm.MenuMode == 0 ? 2:0;
+		}
 		else if (keymap.IsLogicalKey(key, kstate, OAPI_LKEY_DlgHelp))              pDlgMgr->EnsureEntry<DlgHelp>();
 		else if (keymap.IsLogicalKey(key, kstate, OAPI_LKEY_DlgCamera))            pDlgMgr->EnsureEntry<DlgCamera>();
 		else if (keymap.IsLogicalKey(key, kstate, OAPI_LKEY_DlgSimspeed))          pDlgMgr->EnsureEntry<DlgTacc>();
@@ -2487,7 +2463,6 @@ bool Orbiter::MouseEvent (UINT event, DWORD state, DWORD x, DWORD y)
 		if (g_camera->ProcessMouse(event, state, x, y, simkstate)) return true;
 	}
 
-	if (g_pane->MIBar() && g_pane->MIBar()->ProcessMouse (event, state, x, y)) return true;
 	if (BroadcastMouseEvent (event, state, x, y)) return true;
 	if (event == WM_MOUSEMOVE) return false; // may be lifted later
 
@@ -2544,7 +2519,7 @@ void Orbiter::BroadcastBufferedKeyboardEvent (char *kstate, DIDEVICEOBJECTDATA *
 LRESULT Orbiter::MsgProc (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
 	if (ImGui_ImplWin32_WndProcHandler(hWnd, uMsg, wParam, lParam))
-		return true;
+		return 0;
 
 	switch (uMsg) {
 
@@ -2590,18 +2565,19 @@ LRESULT Orbiter::MsgProc (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 			break; //return 0;
 		} break;
 	case WM_MOUSEMOVE: {
-		if (ImGuiIO& io = ImGui::GetIO(); io.WantCaptureMouse) {
-			return 0;
-		}
+			if (ImGuiIO& io = ImGui::GetIO(); io.WantCaptureMouse) {
+				return 0;
+			}
 
-		int x = LOWORD(lParam);
-		int y = HIWORD(lParam);
-		MouseEvent(uMsg, wParam, x, y);
-		if (!bKeepFocus && pConfig->CfgUIPrm.MouseFocusMode != 0 && GetFocus() != hWnd) {
-			if (GetWindowThreadProcessId(hWnd, NULL) == GetWindowThreadProcessId(GetFocus(), NULL))
-				SetFocus(hWnd);
+			int x = LOWORD(lParam);
+			int y = HIWORD(lParam);
+			MouseEvent(uMsg, wParam, x, y);
+			if (!bKeepFocus && pConfig->CfgUIPrm.MouseFocusMode != 0 && GetFocus() != hWnd) {
+				if (GetWindowThreadProcessId(hWnd, NULL) == GetWindowThreadProcessId(GetFocus(), NULL))
+					SetFocus(hWnd);
+			}
 		}
-	    }return 0;
+		return 0;
 
 #ifdef UNDEF
 		// These messages could be intercepted to suspend the simulation
@@ -2765,14 +2741,12 @@ HWND Orbiter::OpenDialogEx (HINSTANCE hInstance, int id, DLGPROC pDlg, DWORD fla
 	return (pDlgMgr ? pDlgMgr->OpenDialogEx (hInstance, id, hRenderWnd, pDlg, flag, context) : NULL);
 }
 
-HWND Orbiter::OpenHelp (const HELPCONTEXT *hcontext)
+void Orbiter::OpenHelp (const HELPCONTEXT *hcontext)
 {
 	if (pDlgMgr) {
 		DlgHelp *pHelp = pDlgMgr->EnsureEntry<DlgHelp> ();
-		HWND hHelp = pHelp->GetHwnd();
-		PostMessage (hHelp, WM_USER+1, 0, (LPARAM)hcontext);
-		return hHelp;
-	} else return NULL;
+		pHelp->OpenHelp(hcontext);
+	}
 }
 
 void Orbiter::OpenLaunchpadHelp (HELPCONTEXT *hcontext)

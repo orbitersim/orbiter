@@ -13,54 +13,57 @@
 #ifndef __DLGOPTIONS_H
 #define __DLGOPTIONS_H
 
-#include "DialogWin.h"
-#include "OptionsPages.h"
-#include "CustomControls.h"
-#include <windows.h>
-#include <commctrl.h>
-#include <winuser.h>
+#include "OrbiterAPI.h"
+#include <string>
 
-class OptionsPage;
-
-/************************************************************************
- * \brief Options frame dialog.
- * 
- * This dialog acts as the frame for the individual options pages.
- */
-class DlgOptions : public DialogWin, public OptionsPageContainer {
+class CelestialBody;
+class DlgOptions: public ImGuiDialog {
 public:
-	/**
-	 * \brief Contructor for Options dialog object.
-	 * \param hInstance application instance handle
-	 * \param hParent parent window handle
-	 * \param context pointer to context data
-	 */
-	DlgOptions(HINSTANCE hInstance, HWND hParent, void* context);
+	DlgOptions();
+	void OnDraw();
+	void SwitchPage(const char *page) { currentPage = page; }
+	std::string currentPage;
+	std::string featuretarget;
 
-	/**
-	 * \brief Destructor for Options dialog object.
-	 */
-	~DlgOptions();
+	//TODO: add when converting Launchpad
+	//void DrawVisual();
+	//void DrawPhysics();
+	void DrawInstrument();
+	void DrawVessel();
+	void DrawUI();
+	 void DrawJoystick();
+	void DrawCelSphere();
+	void DrawVisHelper();
+	 void DrawPlanetarium();
+	 void DrawLabels();
+	 void DrawForces();
+	 void DrawAxes();
 
-	/**
-	 * \brief Disables per-timestep updates.
-	 */
-	bool UpdateContinuously() const { return false; }
+	void AddCbodyNode(const CelestialBody *cbody);
 
-	void Update();
+	struct OptionTab {
+		const char *name;
+		const char *helptopic;
+		void (DlgOptions::* func)();
+	};
 
-	BOOL OnInitDialog(HWND hDlg, WPARAM wParam, LPARAM lParam);
+	static inline OptionTab tabs[] = {
+		{"Instruments & panels", "/tab_param.htm",      &DlgOptions::DrawInstrument},
+		{"Vessel settings",      "/tab_param.htm",      &DlgOptions::DrawVessel},
+		{"User interface",       "/tab_param.htm",      &DlgOptions::DrawUI},
+		{"      Joystick",       "/tab_joystick.htm",   &DlgOptions::DrawJoystick},
+		{"Celestial sphere",     "/opt_celsphere.htm",  &DlgOptions::DrawCelSphere},
+		{"Visual helpers",       "/vishelper.htm",      &DlgOptions::DrawVisHelper},
+		{"      Planetarium",    "/vh_planetarium.htm", &DlgOptions::DrawPlanetarium},
+		{"      Labels",         "/vh_labels.htm",      &DlgOptions::DrawLabels},
+		{"      Body forces",    "/vh_force.htm",       &DlgOptions::DrawForces},
+		{"      Object axes",    "/vh_coord.htm",       &DlgOptions::DrawAxes},
+	};
 
-	BOOL OnCommand(HWND hDlg, WORD ctrlId, WORD notification, HWND hCtrl);
-
-	BOOL OnSize(HWND hDlg, WPARAM wParam, int w, int h);
-
-	BOOL OnVScroll(HWND hDlg, WORD request, WORD curpos, HWND hControl);
-
-	BOOL OnNotify(HWND hDlg, int idCtrl, LPNMHDR pnmh);
-
-protected:
-	void SetSize(HWND hDlg);
+	std::vector<std::pair<std::string, std::string>> m_pathStarmap;
+	std::vector<std::pair<std::string, std::string>> m_pathBgImage;
+	std::string currentstarmap;
+	std::string currentbgimage;
 };
 
 #endif // !__DLGOPTIONS_H

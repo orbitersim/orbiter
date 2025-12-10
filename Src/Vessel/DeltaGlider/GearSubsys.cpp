@@ -130,8 +130,6 @@ GearControl::GearControl (GearSubsystem *_subsys)
 
 void GearControl::LowerGear ()
 {
-	extern void UpdateCtrlDialog (DeltaGlider *dg, HWND hWnd=0);
-
 	if (DG()->GroundContact()) {
 		VECTOR3 nml = {0,1,0}, vnml;
 		DG()->HorizonInvRot(nml, vnml);
@@ -144,7 +142,6 @@ void GearControl::LowerGear ()
 	DG()->UpdateStatusIndicators();
 	DG()->TriggerPanelRedrawArea (0, ELID_LEVER);
 	DG()->TriggerRedrawArea (2, 0, ELID_INDICATOR);
-	UpdateCtrlDialog (DG());
 	DG()->RecordEvent ("GEAR", "DOWN");
 }
 
@@ -152,14 +149,11 @@ void GearControl::LowerGear ()
 
 void GearControl::RaiseGear ()
 {
-	extern void UpdateCtrlDialog (DeltaGlider *dg, HWND hWnd=0);
-
 	gear_state.Close();
 	glever_state.Close();
 	DG()->UpdateStatusIndicators();
 	DG()->TriggerPanelRedrawArea (0, ELID_LEVER);
 	DG()->TriggerRedrawArea (2, 0, ELID_INDICATOR);
-	UpdateCtrlDialog (DG());
 	DG()->RecordEvent ("GEAR", "UP");
 }
 

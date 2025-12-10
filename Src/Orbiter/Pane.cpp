@@ -13,6 +13,7 @@
 #include "Camera.h"
 #include "D3dmath.h"
 #include "Log.h"
+#include "DlgMgr.h"
 #include <assert.h>
 
 using namespace std;
@@ -58,7 +59,7 @@ Pane::Pane (oapi::GraphicsClient *gclient, HWND hwnd, int width, int height, int
 	panel     = 0;
 	vcockpit  = 0;
 	
-	if (gc) mibar = new MenuInfoBar (this);
+	if (gc) mibar = new MenuInfoBar ();
 	else    mibar = NULL;
 
 	
@@ -478,6 +479,10 @@ void Pane::SetHUDColour (int idx, double intens, bool force)
 	hudCol = ((DWORD)((hue & 0xff) * hudIntens)) +
 			 ((DWORD)(((hue >> 8) & 0xff) * hudIntens) << 8) +
              ((DWORD)((hue >> 16) * hudIntens) << 16);
+
+	DialogManager *dlgmgr = g_pOrbiter->DlgMgr();
+	dlgmgr->SetMainColor(hudCol);
+
 	if (hudpen) gc->clbkReleasePen (hudpen);
 	hudpen = gc->clbkCreatePen (1, 0, hudCol);
 	if (change_col) {
@@ -516,23 +521,10 @@ void Pane::RenderCustomHUD (MESHHANDLE hMesh, SURFHANDLE *hTex)
 	if (hud) hud->RenderCustom (hMesh, hTex);
 }
 
-void Pane::SetFOV (double _fov)
-{
-	if (mibar) mibar->SetFOV (_fov);
-}
-
-void Pane::SetWarp (double _warp)
-{
-	if (mibar) mibar->SetWarp (_warp);
-}
-
 // Update GDI elements of 2D pane
 void Pane::Update (double simt, double syst)
 {
 	DWORD j;
-
-	// update menu bar
-	if (mibar) mibar->Update (simt);
 
 	// update external MFDs
 	for (j = 0; j < nemfd; j++)
@@ -649,9 +641,6 @@ void Pane::Render ()
 			defpanel->Render ();
 		}
 	}
-
-	// Render info boxes at top left and right screen corners
-	if (mibar) mibar->Render ();
 }
 
 void Pane::Timejump ()

@@ -964,7 +964,7 @@ void basefunction::doupdate(oapi::Sketchpad *sketchpad,int tw, int th,int viewmo
 				sketchpad->Text(wpos,hpos,buffer, length);
 				hpos+=linespacing;
 				VECTOR3 south = {0, -1, 0};
-				length = snprintf(buffer, sizeof(buffer) - 1, "Inc:      %.4g°", 180/PI*acos(cosangle(south, craft.getplanevector())));
+				length = snprintf(buffer, sizeof(buffer) - 1, "Inc:      %.4gÂ°", 180/PI*acos(cosangle(south, craft.getplanevector())));
 				sketchpad->Text(wpos,hpos,buffer, length);
 				hpos+=linespacing;
 			}

@@ -36,6 +36,8 @@
 #include <stdio.h>
 #include <math.h>
 #include <time.h>
+#include "OrbiterSDK.h"
+#include <imgui.h>
 
 using std::min;
 using std::max;
@@ -90,9 +92,6 @@ static TOUCHDOWNVTX tdvtx_gearup[ntdvtx_gearup] = {
 // ==============================================================
 // Local prototypes
 
-INT_PTR CALLBACK Ctrl_DlgProc (HWND, UINT, WPARAM, LPARAM);
-void UpdateCtrlDialog (DeltaGlider *dg, HWND hWnd = 0);
-
 //INT_PTR CALLBACK Damage_DlgProc (HWND, UINT, WPARAM, LPARAM);
 //void UpdateDamageDialog (DeltaGlider *dg, HWND hWnd = 0);
 
@@ -145,6 +144,131 @@ void HLiftCoeff (VESSEL *v, double beta, double M, double Re, void *context, dou
 	*cm = 0.0;
 	*cd = 0.015 + oapiGetInducedDrag (*cl, 1.5, 0.6) + oapiGetWaveDrag (M, 0.75, 1.0, 1.1, 0.04);
 }
+
+class DlgControl: public ImGuiDialog {
+	DeltaGlider *m_dg;
+
+	static void DrawState(const AnimState2 &state, const char *closed, const char *closing, const char *opening, const char *opened) {
+		const char *desc = "Half-extended";
+		if(state.IsOpen())    desc = opened;
+		if(state.IsClosed())  desc = closed;
+		if(state.IsOpening()) desc = opening;
+		if(state.IsClosing()) desc = closing;
+		ImGui::SetNextItemWidth(80.0f);
+		float progress = state.State();
+		ImGui::BeginDisabled(true);
+		ImGui::SameLine();
+		ImGui::SliderFloat("##slider", &progress, 0.0f, 1.0f, desc);
+		ImGui::SameLine();
+		ImGui::EndDisabled();
+
+}
+public:
+	DlgControl(DeltaGlider *dg):ImGuiDialog("DG Controls"), m_dg(dg) {}
+	void OnDraw() {
+		const float child_height = 50.0f;
+		const ImVec2 button_sz(ImVec2(60, 20));
+		ImGui::BeginChild("Landing Gear", ImVec2(ImGui::GetContentRegionAvail().x * 0.5f, child_height));
+		ImGui::SeparatorText("Landing Gear");
+		if(ImGui::Button("Up###lgearup", button_sz)) { m_dg->SubsysGear()->RaiseGear(); }
+		DrawState(m_dg->SubsysGear()->GearState(), "Raised", "Raising", "Lowering", "Lowered");
+		if(ImGui::Button("Down###lgeardown", button_sz)) { m_dg->SubsysGear()->LowerGear(); }
+		ImGui::EndChild();
+		ImGui::SameLine();
+		ImGui::BeginChild("Retro Doors", ImVec2(0.0f, child_height));
+		ImGui::SeparatorText("Retro Doors");
+		if(ImGui::Button("Close###rdoorsc", button_sz)) { m_dg->SubsysMainRetro()->CloseRetroCover(); }
+		DrawState(m_dg->SubsysMainRetro()->RetroCoverState(), "Closed", "Closing", "Opening", "Opened");
+		if(ImGui::Button("Open###rdoorso", button_sz)) { m_dg->SubsysMainRetro()->OpenRetroCover(); }
+		ImGui::EndChild();
+
+		ImGui::BeginChild("Airbrake", ImVec2(ImGui::GetContentRegionAvail().x * 0.5f, child_height));
+		ImGui::SeparatorText("Airbrake");
+		if(ImGui::Button("Retract###airbraker", button_sz)) { m_dg->SubsysAerodyn()->RetractAirbrake(); }
+		DrawState(m_dg->SubsysAerodyn()->AirbrakeSubsys()->State(), "Retracted", "Retracting", "Extending", "Extended");
+		if(ImGui::Button("Extend###airbrakee", button_sz)) { m_dg->SubsysAerodyn()->ExtendAirbrake(); }
+		ImGui::EndChild();
+		ImGui::SameLine();
+		ImGui::BeginChild("Top Hatch", ImVec2(0.0f, child_height));
+		ImGui::SeparatorText("Top Hatch");
+		if(ImGui::Button("Close###tophatchc", button_sz)) { m_dg->SubsysPressure()->CloseHatch(); }
+		DrawState(m_dg->SubsysPressure()->HatchState(), "Closed", "Closing", "Opening", "Opened");
+		if(ImGui::Button("Open###tophatcho", button_sz)) { m_dg->SubsysPressure()->OpenHatch(); }
+		ImGui::EndChild();
+
+		ImGui::BeginChild("Inner Airlock", ImVec2(ImGui::GetContentRegionAvail().x * 0.5f, child_height));
+		ImGui::SeparatorText("Inner Airlock");
+		if(ImGui::Button("Close###ilockc", button_sz)) { m_dg->SubsysPressure()->CloseInnerAirlock(); }
+		DrawState(m_dg->SubsysPressure()->ILockState(), "Closed", "Closing", "Opening", "Opened");
+		if(ImGui::Button("Open###ilocko", button_sz)) { m_dg->SubsysPressure()->OpenInnerAirlock(); }
+		ImGui::EndChild();
+		ImGui::SameLine();
+		ImGui::BeginChild("Outer Airlock", ImVec2(0.0f, child_height));
+		ImGui::SeparatorText("Outer Airlock");
+		if(ImGui::Button("Close###olockc", button_sz)) { m_dg->SubsysPressure()->CloseOuterAirlock(); }
+		DrawState(m_dg->SubsysPressure()->OLockState(), "Closed", "Closing", "Opening", "Opened");
+		if(ImGui::Button("Open###olocko", button_sz)) { m_dg->SubsysPressure()->OpenOuterAirlock(); }
+		ImGui::EndChild();
+
+		ImGui::BeginChild("Nose Cone", ImVec2(ImGui::GetContentRegionAvail().x * 0.5f, child_height));
+		ImGui::SeparatorText("Nose Cone");
+		if(ImGui::Button("Close###nconec", button_sz)) { m_dg->SubsysDocking()->CloseNcone(); }
+		DrawState(m_dg->SubsysDocking()->NconeState(), "Closed", "Closing", "Opening", "Opened");
+		if(ImGui::Button("Open###nconeo", button_sz)) { m_dg->SubsysDocking()->OpenNcone(); }
+		ImGui::EndChild();
+		ImGui::SameLine();
+		ImGui::BeginChild("Escape Ladder", ImVec2(0.0f, child_height));
+		ImGui::SeparatorText("Escape Ladder");
+		if(ImGui::Button("Stow###eladders", button_sz)) { m_dg->SubsysDocking()->RetractLadder(); }
+		DrawState(m_dg->SubsysDocking()->LadderState(), "Stowed", "Stowing", "Extending", "Extended");
+		if(ImGui::Button("Extend###eladdere", button_sz)) { m_dg->SubsysDocking()->ExtendLadder(); }
+		ImGui::EndChild();
+
+		ImGui::BeginChild("Radiator", ImVec2(0.0f, child_height));
+		ImGui::SeparatorText("Radiator");
+		if(ImGui::Button("Stow###radiators", button_sz)) { m_dg->SubsysThermal()->CloseRadiator(); }
+		DrawState(m_dg->SubsysThermal()->RadiatorState(), "Stowed", "Stowing", "Extending", "Extended");
+		if(ImGui::Button("Extend###radiatore", button_sz)) { m_dg->SubsysThermal()->OpenRadiator(); }
+		ImGui::EndChild();
+
+		ImGui::BeginChild("Lights");
+		ImGui::SeparatorText("Lights");
+		bool instrument_light = m_dg->SubsysLights()->InstrumentlightSubsys()->GetLight();
+		if(ImGui::Checkbox("Instruments", &instrument_light)) {
+			m_dg->SubsysLights()->InstrumentlightSubsys()->SetLight(instrument_light);
+		}
+		ImGui::SameLine();
+		bool strobe_light = m_dg->SubsysLights()->StrobelightSubsys()->GetLight();
+		if(ImGui::Checkbox("Strobe", &strobe_light)) {
+			m_dg->SubsysLights()->StrobelightSubsys()->SetLight(strobe_light);
+		}
+		ImGui::SameLine();
+		bool navigation_light = m_dg->SubsysLights()->NavlightSubsys()->GetLight();
+		if(ImGui::Checkbox("Navigation", &navigation_light)) {
+			m_dg->SubsysLights()->NavlightSubsys()->SetLight(navigation_light);
+		}
+
+		ImGui::BeginChild("Landing / Docking", ImVec2(0.0f, child_height));
+		ImGui::SeparatorText("Landing / Docking");
+		int ld_light = m_dg->SubsysLights()->LandDocklightSubsys()->GetLight();
+		ImGui::RadioButton("Off###ldlightoff", &ld_light, 0); ImGui::SameLine();
+		ImGui::RadioButton("Docking", &ld_light, 1); ImGui::SameLine();
+		ImGui::RadioButton("Landing", &ld_light, 2);
+		m_dg->SubsysLights()->LandDocklightSubsys()->SetLight(ld_light);
+		ImGui::EndChild();
+
+		ImGui::BeginChild("Flood Light", ImVec2(0.0f, child_height));
+		ImGui::SeparatorText("Flood Light");
+		int flood_light = m_dg->SubsysLights()->CockpitlightSubsys()->GetLight();
+		ImGui::RadioButton("Off###floodlightoff", &flood_light, 0); ImGui::SameLine();
+		ImGui::RadioButton("White", &flood_light, 1); ImGui::SameLine();
+		ImGui::RadioButton("Red", &flood_light, 2);
+		m_dg->SubsysLights()->CockpitlightSubsys()->SetLight(flood_light);
+		ImGui::EndChild();
+		ImGui::EndChild();
+		
+	}
+};
 
 // ==============================================================
 // Specialised vessel class DeltaGlider
@@ -206,6 +330,8 @@ DeltaGlider::DeltaGlider (OBJHANDLE hObj, int fmodel)
 	for (i = 0; i < 4; i++) aileronfail[i] = false;
 
 	DefineAnimations();
+
+	dlg_ctrl = std::make_unique<DlgControl>(this);
 }
 
 // --------------------------------------------------------------
@@ -1569,7 +1695,7 @@ int DeltaGlider::clbkConsumeBufferedKey (DWORD key, bool down, char *kstate)
 	if (Playback()) return 0; // don't allow manual user input during a playback
 
 	if (!KEYMOD_ALT (kstate) && !KEYMOD_SHIFT (kstate) && KEYMOD_CONTROL (kstate) && key == OAPI_KEY_SPACE) {
-		oapiOpenDialogEx (g_Param.hDLL, IDD_CTRL, Ctrl_DlgProc, DLG_CAPTIONCLOSE, this);
+		oapiOpenDialog(dlg_ctrl.get());
 		return 1;
 	}
 	return ComponentVessel::clbkConsumeBufferedKey (key, down, kstate);
@@ -1838,188 +1964,6 @@ DLLCLBK void secInit (HWND hEditor, OBJHANDLE hVessel)
 		EditorPageSpec eps3 = {"Damage", g_Param.hDLL, IDD_EDITOR_PG3, EdPg3Proc};
 		SendMessage (hEditor, WM_SCNEDITOR, SE_ADDPAGEBUTTON, (LPARAM)&eps3);
 	}
-}
-
-// ==============================================================
-// Message callback function for control dialog box
-// ==============================================================
-
-INT_PTR CALLBACK Ctrl_DlgProc (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
-{
-	DeltaGlider *dg = (uMsg == WM_INITDIALOG ? (DeltaGlider*)lParam : (DeltaGlider*)oapiGetDialogContext (hWnd));
-	// pointer to vessel instance was passed as dialog context
-
-	switch (uMsg) {
-	case WM_INITDIALOG:
-		UpdateCtrlDialog (dg, hWnd);
-		return FALSE;
-	case WM_COMMAND:
-		switch (LOWORD(wParam)) {
-		case IDCANCEL:
-			oapiCloseDialog (hWnd);
-			return TRUE;
-		case IDC_GEAR_UP:
-			dg->SubsysGear()->RaiseGear();
-			return 0;
-		case IDC_GEAR_DOWN:
-			dg->SubsysGear()->LowerGear();
-			return 0;
-		case IDC_RETRO_CLOSE:
-			dg->SubsysMainRetro()->CloseRetroCover();
-			return 0;
-		case IDC_RETRO_OPEN:
-			dg->SubsysMainRetro()->OpenRetroCover();
-			return 0;
-		case IDC_AIRBRAKE_RETRACT:
-			if (SendDlgItemMessage (hWnd, IDC_AIRBRAKE_RETRACT, BM_GETCHECK, 0, 0) == BST_CHECKED)
-				dg->SubsysAerodyn()->RetractAirbrake();
-			return 0;
-		case IDC_AIRBRAKE_EXTEND:
-			if (SendDlgItemMessage (hWnd, IDC_AIRBRAKE_EXTEND, BM_GETCHECK, 0, 0) == BST_CHECKED)
-				dg->SubsysAerodyn()->ExtendAirbrake();
-			return 0;
-		case IDC_NCONE_CLOSE:
-			dg->SubsysDocking()->CloseNcone();
-			return 0;
-		case IDC_NCONE_OPEN:
-			dg->SubsysDocking()->OpenNcone();
-			return 0;
-		case IDC_OLOCK_CLOSE:
-			dg->SubsysPressure()->CloseOuterAirlock();
-			return 0;
-		case IDC_OLOCK_OPEN:
-			dg->SubsysPressure()->OpenOuterAirlock();
-			return 0;
-		case IDC_ILOCK_CLOSE:
-			dg->SubsysPressure()->CloseInnerAirlock();
-			return 0;
-		case IDC_ILOCK_OPEN:
-			dg->SubsysPressure()->OpenInnerAirlock();
-			return 0;
-		case IDC_LADDER_RETRACT:
-			dg->SubsysDocking()->RetractLadder();
-			return 0;
-		case IDC_LADDER_EXTEND:
-			dg->SubsysDocking()->ExtendLadder();
-			return 0;
-		case IDC_HATCH_CLOSE:
-			dg->SubsysPressure()->CloseHatch();
-			return 0;
-		case IDC_HATCH_OPEN:
-			dg->SubsysPressure()->OpenHatch();
-			return 0;
-		case IDC_RADIATOR_RETRACT:
-			dg->SubsysThermal()->CloseRadiator();
-			return 0;
-		case IDC_RADIATOR_EXTEND:
-			dg->SubsysThermal()->OpenRadiator();
-			return 0;
-		case IDC_INSTRUMENTLIGHT:
-			dg->SubsysLights()->InstrumentlightSubsys()->SetLight(SendDlgItemMessage (hWnd, IDC_INSTRUMENTLIGHT, BM_GETCHECK, 0, 0) == BST_CHECKED);
-			return 0;
-		case IDC_FLOODWLIGHT:
-			dg->SubsysLights()->CockpitlightSubsys()->SetLight(SendDlgItemMessage (hWnd, IDC_FLOODWLIGHT, BM_GETCHECK, 0, 0) == BST_CHECKED ? 1 : 0);
-			break;
-		case IDC_FLOODRLIGHT:
-			dg->SubsysLights()->CockpitlightSubsys()->SetLight(SendDlgItemMessage (hWnd, IDC_FLOODRLIGHT, BM_GETCHECK, 0, 0) == BST_CHECKED ? 2 : 0);
-			break;
-		case IDC_DOCKINGLIGHT:
-			dg->SubsysLights()->LandDocklightSubsys()->SetLight(SendDlgItemMessage (hWnd, IDC_DOCKINGLIGHT, BM_GETCHECK, 0, 0) == BST_CHECKED ? 1 : 0);
-			return 0;
-		case IDC_LANDINGLIGHT:
-			dg->SubsysLights()->LandDocklightSubsys()->SetLight(SendDlgItemMessage (hWnd, IDC_LANDINGLIGHT, BM_GETCHECK, 0, 0) == BST_CHECKED ? 2 : 0);
-			return 0;
-		case IDC_STROBELIGHT:
-			dg->SubsysLights()->StrobelightSubsys()->SetLight(SendDlgItemMessage (hWnd, IDC_STROBELIGHT, BM_GETCHECK, 0, 0) == BST_CHECKED);
-			return 0;
-		case IDC_NAVLIGHT:
-			dg->SubsysLights()->NavlightSubsys()->SetLight(SendDlgItemMessage (hWnd, IDC_NAVLIGHT, BM_GETCHECK, 0, 0) == BST_CHECKED);
-			return 0;
-		//case IDC_DAMAGE:
-		//	oapiOpenDialog (g_Param.hDLL, IDD_DAMAGE, Damage_DlgProc, dg);
-
-		}
-		break;
-	}
-	return oapiDefDialogProc (hWnd, uMsg, wParam, lParam);
-}
-
-void UpdateCtrlDialog (DeltaGlider *dg, HWND hWnd)
-{
-	static int bstatus[2] = {BST_UNCHECKED, BST_CHECKED};
-
-	if (!hWnd) hWnd = oapiFindDialog (g_Param.hDLL, IDD_CTRL);
-	if (!hWnd) return;
-
-	int op;
-
-	op = (dg->SubsysGear()->GearState().IsOpening() ? 1 :
-		  dg->SubsysGear()->GearState().IsClosing() ? 0 :
-		  dg->SubsysGear()->GearState().State() > 0.5 ? 1 : 0);
-	SendDlgItemMessage (hWnd, IDC_GEAR_DOWN, BM_SETCHECK, bstatus[op], 0);
-	SendDlgItemMessage (hWnd, IDC_GEAR_UP, BM_SETCHECK, bstatus[1-op], 0);
-
-	op = (dg->SubsysMainRetro()->RetroCoverState().IsOpening() ? 1 :
-		  dg->SubsysMainRetro()->RetroCoverState().IsClosing() ? 0 :
-		  dg->SubsysMainRetro()->RetroCoverState().State() > 0.5 ? 1 : 0);
-	SendDlgItemMessage (hWnd, IDC_RETRO_OPEN, BM_SETCHECK, bstatus[op], 0);
-	SendDlgItemMessage (hWnd, IDC_RETRO_CLOSE, BM_SETCHECK, bstatus[1-op], 0);
-
-	op = dg->SubsysAerodyn()->AirbrakeSubsys()->TargetState();
-	SendDlgItemMessage (hWnd, IDC_AIRBRAKE_RETRACT, BM_SETCHECK, op == 0 ? BST_CHECKED : BST_UNCHECKED, 0);
-	SendDlgItemMessage (hWnd, IDC_AIRBRAKE_EXTEND, BM_SETCHECK, op == 2 ? BST_CHECKED : BST_UNCHECKED, 0);
-
-	op = (dg->SubsysDocking()->NconeState().IsOpening() ? 1 :
-		  dg->SubsysDocking()->NconeState().IsClosing() ? 0 :
-		  dg->SubsysDocking()->NconeState().State() > 0.5 ? 1 : 0);
-	SendDlgItemMessage (hWnd, IDC_NCONE_OPEN, BM_SETCHECK, bstatus[op], 0);
-	SendDlgItemMessage (hWnd, IDC_NCONE_CLOSE, BM_SETCHECK, bstatus[1-op], 0);
-
-	op = (dg->SubsysPressure()->OLockState().IsOpening() ? 1 :
-		  dg->SubsysPressure()->OLockState().IsClosing() ? 0 :
-		  dg->SubsysPressure()->OLockState().State() > 0.5 ? 1 : 0);
-	SendDlgItemMessage (hWnd, IDC_OLOCK_OPEN, BM_SETCHECK, bstatus[op], 0);
-	SendDlgItemMessage (hWnd, IDC_OLOCK_CLOSE, BM_SETCHECK, bstatus[1-op], 0);
-
-	op = (dg->SubsysPressure()->ILockState().IsOpening() ? 1 :
-		  dg->SubsysPressure()->ILockState().IsClosing() ? 0 :
-		  dg->SubsysPressure()->ILockState().State() > 0.5 ? 1 : 0);
-	SendDlgItemMessage (hWnd, IDC_ILOCK_OPEN, BM_SETCHECK, bstatus[op], 0);
-	SendDlgItemMessage (hWnd, IDC_ILOCK_CLOSE, BM_SETCHECK, bstatus[1-op], 0);
-
-	op = (dg->SubsysDocking()->LadderState().IsOpening() ? 1 :
-		  dg->SubsysDocking()->LadderState().IsClosing() ? 0 :
-		  dg->SubsysDocking()->LadderState().State() > 0.5 ? 1 : 0);
-	SendDlgItemMessage (hWnd, IDC_LADDER_EXTEND, BM_SETCHECK, bstatus[op], 0);
-	SendDlgItemMessage (hWnd, IDC_LADDER_RETRACT, BM_SETCHECK, bstatus[1-op], 0);
-
-	op = (dg->SubsysPressure()->HatchState().IsOpening() ? 1 :
-		  dg->SubsysPressure()->HatchState().IsClosing() ? 0 :
-		  dg->SubsysPressure()->HatchState().State() > 0.5 ? 1 : 0);
-	SendDlgItemMessage (hWnd, IDC_HATCH_OPEN, BM_SETCHECK, bstatus[op], 0);
-	SendDlgItemMessage (hWnd, IDC_HATCH_CLOSE, BM_SETCHECK, bstatus[1-op], 0);
-
-	op = (dg->SubsysThermal()->RadiatorState().IsOpening() ? 1 :
-		  dg->SubsysThermal()->RadiatorState().IsClosing() ? 0 :
-		  dg->SubsysThermal()->RadiatorState().State() > 0.5 ? 1 : 0);
-	SendDlgItemMessage (hWnd, IDC_RADIATOR_EXTEND, BM_SETCHECK, bstatus[op], 0);
-	SendDlgItemMessage (hWnd, IDC_RADIATOR_RETRACT, BM_SETCHECK, bstatus[1-op], 0);
-
-	op = dg->SubsysLights()->InstrumentlightSubsys()->GetLight();
-	SendDlgItemMessage (hWnd, IDC_INSTRUMENTLIGHT, BM_SETCHECK, bstatus[op], 0);
-
-	op = dg->SubsysLights()->CockpitlightSubsys()->GetLight();
-	SendDlgItemMessage (hWnd, IDC_FLOODWLIGHT, BM_SETCHECK, op == 1 ? BST_CHECKED : BST_UNCHECKED, 0);
-	SendDlgItemMessage (hWnd, IDC_FLOODRLIGHT, BM_SETCHECK, op == 2 ? BST_CHECKED : BST_UNCHECKED, 0);
-
-	op = dg->SubsysLights()->LandDocklightSubsys()->GetLight();
-	SendDlgItemMessage (hWnd, IDC_DOCKINGLIGHT, BM_SETCHECK, op == 1 ? BST_CHECKED : BST_UNCHECKED, 0);
-	SendDlgItemMessage (hWnd, IDC_LANDINGLIGHT, BM_SETCHECK, op == 2 ? BST_CHECKED : BST_UNCHECKED, 0);
-
-	op = dg->beacon[0].active ? 1:0;
-	SendDlgItemMessage (hWnd, IDC_NAVLIGHT, BM_SETCHECK, bstatus[op], 0);
-	op = dg->beacon[5].active ? 1:0;
-	SendDlgItemMessage (hWnd, IDC_STROBELIGHT, BM_SETCHECK, bstatus[op], 0);
 }
 
 // ==============================================================

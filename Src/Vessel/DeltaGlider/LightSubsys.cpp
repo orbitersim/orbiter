@@ -64,11 +64,9 @@ void InstrumentLight::SetLight (bool on, bool force)
 	if (on == light_on && !force) return; // nothing to do
 
 	if (on != light_on) {
-		extern void UpdateCtrlDialog (DeltaGlider *dg, HWND hWnd=0);
 		light_on = on;
 		sw->SetState (light_on ? DGSwitch1::UP : DGSwitch1::DOWN);
 		DG()->TriggerRedrawArea(1, 0, ELID_SWITCH);
-		UpdateCtrlDialog (DG());
 	}
 
 	if (DG()->vcmesh) {
@@ -226,11 +224,9 @@ void CockpitLight::SetLight (int mode, bool force)
 	if (mode == light_mode && !force) return; // nothing to do
 
 	if (mode != light_mode) {
-		extern void UpdateCtrlDialog (DeltaGlider *dg, HWND hWnd=0);
 		light_mode = mode;
 		sw->SetState (mode == 0 ? DGSwitch1::CENTER : mode == 1 ? DGSwitch1::UP : DGSwitch1::DOWN);
 		DG()->TriggerRedrawArea(1, 0, ELID_SWITCH);
-		UpdateCtrlDialog (DG());
 	}
 
 	if (light) {
@@ -372,11 +368,9 @@ void LandDockLight::SetLight (int mode, bool force)
 	if (mode == light_mode && !force) return; // nothing to do
 
 	if (mode != light_mode) {
-		extern void UpdateCtrlDialog (DeltaGlider *dg, HWND hWnd=0);
 		light_mode = mode;
 		sw->SetState(mode == 0 ? DGSwitch1::CENTER : mode == 1 ? DGSwitch1::UP : DGSwitch1::DOWN);
 		DG()->TriggerRedrawArea(1, 0, ELID_SWITCH);
-		UpdateCtrlDialog (DG());
 	}
 		
 	if (light) {
@@ -513,14 +507,11 @@ StrobeLight::StrobeLight (LightCtrlSubsystem *_subsys)
 
 void StrobeLight::SetLight (bool on)
 {
-	extern void UpdateCtrlDialog (DeltaGlider *dg, HWND hWnd=0);
-
 	if (on != light_on) {
 		light_on = on;
 		for (int i = 3; i <= 6; i++) DG()->beacon[i].active = on;
 		sw->SetState(on ? DGSwitch1::UP : DGSwitch1::DOWN);
 		DG()->TriggerRedrawArea(1, 0, ELID_SWITCH);
-		UpdateCtrlDialog (DG());
 	}
 }
 
@@ -642,14 +633,11 @@ NavLight::NavLight (LightCtrlSubsystem *_subsys)
 
 void NavLight::SetLight (bool on)
 {
-	extern void UpdateCtrlDialog (DeltaGlider *dg, HWND hWnd=0);
-
 	if (on != light_on) {
 		light_on = on;
 		for (int i = 0; i <= 2; i++) DG()->beacon[i].active = on;
 		sw->SetState(on ? DGSwitch1::UP : DGSwitch1::DOWN);
 		DG()->TriggerRedrawArea(1, 0, ELID_SWITCH);
-		UpdateCtrlDialog (DG());
 	}
 }
 

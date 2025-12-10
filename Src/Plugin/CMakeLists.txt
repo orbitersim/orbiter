@@ -17,6 +17,7 @@ add_subdirectory(ScnEditor)
 add_subdirectory(ScriptMFD)
 add_subdirectory(TrackIR)
 add_subdirectory(TransX)
+add_subdirectory(Notes)
 
 # ==========================================================================
 # SDK Sample Installation
@@ -38,5 +39,3 @@ install(DIRECTORY
 	TransX
 	DESTINATION ${ORBITER_INSTALL_SDK_DIR}/samples ${IgnoreFiles}
 )
-
-install(DIRECTORY Common/Dialog/ DESTINATION ${ORBITER_INSTALL_SDK_DIR}/samples/Common/Dialog/ ${IgnoreFiles})

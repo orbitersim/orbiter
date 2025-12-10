@@ -168,6 +168,7 @@ class DockingCtrlSubsystem;
 class LightCtrlSubsystem;
 class FailureSubsystem;
 class AAPSubsystem;
+class DlgControl;
 
 // ==========================================================
 // Interface for derived vessel class: DeltaGlider
@@ -186,8 +187,6 @@ public:
 	void InitPanel (int panel);
 	void InitVC (int vc);
 	inline bool ScramVersion() const { return ssys_scram != NULL; }
-	void DrawHUD (int mode, const HUDPAINTSPEC *hps, HDC hDC);
-	void DrawNeedle (oapi::Sketchpad* pSkp, int x, int w, double rad, double angle, double *pangle = 0, double speed = PI);
 	void UpdateStatusIndicators();
 	void SetPassengerVisuals ();
 	void SetDamageVisuals ();
@@ -330,6 +329,8 @@ private:
 
 	int mainflowidx[2], retroflowidx[2], hoverflowidx, scflowidx[2];
 	int mainTSFCidx, scTSFCidx[2];
+
+	std::unique_ptr<DlgControl> dlg_ctrl;
 };
 
 // ==============================================================

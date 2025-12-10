@@ -379,9 +379,6 @@ bool CameraMFD::Update(oapi::Sketchpad *pSkp)
 			}
 		}
 
-		//pSkp3->TextW(50, H / 2, L"©®ΒΓΔαβγθΣΩ™Ӕ€", -1);
-
-
 		// Draw the cross-hairs
 		if (bCross) {
 
@@ -448,7 +445,7 @@ bool CameraMFD::Update(oapi::Sketchpad *pSkp)
 
 	hShell->Title (pSkp, text);
 
-	sprintf_s(text, 256, "[%s] FOV=%0.0f%c Ofs=%2.2f[m]", paci[bParent], fov*2.0, (char)176/*°*/, offset);
+	sprintf_s(text, 256, "[%s] FOV=%0.0f° Ofs=%2.2f[m]", paci[bParent], fov*2.0, offset);
 
 	pSkp->Text(10, H - tbgh, text, lstrlen(text));
 	
