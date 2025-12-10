@@ -47,9 +47,9 @@ void DlgFocus::OnDraw() {
 
 void DlgFocus::DrawAll() {
     ImGuiWindowFlags window_flags =  ImGuiChildFlags_ResizeX;
-    ImGui::Text("Spacecraft : %s", m_SelectedShip.c_str());
-    ImGui::BeginChild("ChildL", ImVec2(150, 0), true, window_flags);
-
+    ImGui::BeginChild("ChildL", ImVec2(150, 0), 0, window_flags);
+    ImGui::SeparatorText("Available targets");
+	ImGui::BeginChild("ChildL_inner");
     for (int i = 0; i < g_psys->nVessel(); i++) {
         Vessel *vessel = g_psys->GetVessel(i);
         if (vessel->GetEnableFocus()) {
@@ -65,8 +65,11 @@ void DlgFocus::DrawAll() {
 	}
 
     ImGui::EndChild();
+    ImGui::EndChild();
     ImGui::SameLine();
     ImGui::BeginChild("ChildR");
+    ImGui::SeparatorText("Selected target");
+    ImGui::TextUnformatted(m_SelectedShip.c_str());
     ImVec2 button_sz(ImVec2(ImGui::GetContentRegionAvail().x, 20));
     if(ImGui::Button("Select", button_sz)) {
         Vessel *vessel = g_psys->GetVessel (m_SelectedShip.c_str(), true);
@@ -84,8 +87,9 @@ void DlgFocus::DrawAll() {
 }
 void DlgFocus::DrawNearby() {
     ImGuiWindowFlags window_flags = ImGuiChildFlags_ResizeX;
-    ImGui::Text("Spacecraft : %s", m_SelectedShip.c_str());
-    ImGui::BeginChild("ChildL", ImVec2(150, 0), true, window_flags);
+    ImGui::BeginChild("ChildL", ImVec2(150, 0), 0, window_flags);
+    ImGui::SeparatorText("Available targets");
+	ImGui::BeginChild("ChildL_inner");
 
     const Vector &campos = g_camera->GPos();
     for (int i = 0; i < g_psys->nVessel(); i++) {
@@ -108,8 +112,11 @@ void DlgFocus::DrawNearby() {
 	}
 
     ImGui::EndChild();
+    ImGui::EndChild();
     ImGui::SameLine();
     ImGui::BeginChild("ChildR");
+    ImGui::SeparatorText("Selected target");
+    ImGui::TextUnformatted(m_SelectedShip.c_str());
     ImVec2 button_sz(ImVec2(ImGui::GetContentRegionAvail().x, 20));
     if(ImGui::Button("Select", button_sz)) {
         Vessel *vessel = g_psys->GetVessel (m_SelectedShip.c_str(), true);
@@ -141,8 +148,9 @@ void DlgFocus::DrawLocation() {
     }
 
     ImGuiWindowFlags window_flags =  ImGuiChildFlags_ResizeX;
-    ImGui::Text("Spacecraft : %s", m_SelectedShip.c_str());
-    ImGui::BeginChild("ChildL", ImVec2(150,0), true, window_flags);
+    ImGui::BeginChild("ChildL", ImVec2(150,0), 0, window_flags);
+    ImGui::SeparatorText("Available targets");
+	ImGui::BeginChild("ChildL_inner");
 
     for(auto &kw : vesselMap) {
         if(ImGui::TreeNodeEx(kw.first)) {
@@ -160,8 +168,11 @@ void DlgFocus::DrawLocation() {
         }
     }
     ImGui::EndChild();
+    ImGui::EndChild();
     ImGui::SameLine();
     ImGui::BeginChild("ChildR");
+    ImGui::SeparatorText("Selected target");
+    ImGui::TextUnformatted(m_SelectedShip.c_str());
     ImVec2 button_sz(ImVec2(ImGui::GetContentRegionAvail().x, 20));
     if(ImGui::Button("Select", button_sz)) {
         Vessel *vessel = g_psys->GetVessel (m_SelectedShip.c_str(), true);
@@ -188,8 +199,9 @@ void DlgFocus::DrawClass() {
     }
 
     ImGuiWindowFlags window_flags = ImGuiChildFlags_ResizeX;
-    ImGui::Text("Spacecraft : %s", m_SelectedShip.c_str());
-    ImGui::BeginChild("ChildL", ImVec2(150,0), true, window_flags);
+    ImGui::BeginChild("ChildL", ImVec2(150,0), 0, window_flags);
+    ImGui::SeparatorText("Available targets");
+	ImGui::BeginChild("ChildL_inner");
 
     for(auto &kw : vesselMap) {
         if(ImGui::TreeNodeEx(kw.first.c_str())) {
@@ -207,8 +219,11 @@ void DlgFocus::DrawClass() {
         }
     }
     ImGui::EndChild();
+    ImGui::EndChild();
     ImGui::SameLine();
     ImGui::BeginChild("ChildR");
+    ImGui::SeparatorText("Selected target");
+    ImGui::TextUnformatted(m_SelectedShip.c_str());
     ImVec2 button_sz(ImVec2(ImGui::GetContentRegionAvail().x, 20));
     if(ImGui::Button("Select", button_sz)) {
         Vessel *vessel = g_psys->GetVessel (m_SelectedShip.c_str(), true);

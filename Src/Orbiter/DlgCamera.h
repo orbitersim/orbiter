@@ -21,7 +21,6 @@ private:
     void DrawTarget();
     void DrawTrack();
     void DrawGround();
-    void DrawFoV();
     void DrawPreset();
 
 	ExtCamMode extmode;
@@ -55,7 +54,6 @@ private:
 		{"Target",  "/cam_target.htm",  &DlgCamera::DrawTarget},
 		{"Track",   "/cam_track.htm",   &DlgCamera::DrawTrack},
 		{"Ground",  "/cam_ground.htm",  &DlgCamera::DrawGround},
-		{"FoV",     "/cam_fov.htm",     &DlgCamera::DrawFoV},
 		{"Preset",  "/cam_preset.htm",  &DlgCamera::DrawPreset},
 	};
 

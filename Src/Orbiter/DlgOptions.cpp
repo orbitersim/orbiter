@@ -100,7 +100,8 @@ void DlgOptions::OnDraw()
 
 	ImGui::EndChild();
 	ImGui::SameLine();
-	ImGui::BeginChild("OptionContent", ImVec2(0, 0), window_flags | ImGuiChildFlags_AutoResizeX);
+	ImVec2 avail = ImGui::GetContentRegionAvail();
+	ImGui::BeginChild("OptionContent", avail, ImGuiChildFlags_ResizeX | ImGuiChildFlags_AutoResizeX);
     (this->*tabs[selected_idx].func)();
 	ImGui::EndChild();
 

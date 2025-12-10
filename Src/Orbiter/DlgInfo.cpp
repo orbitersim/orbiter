@@ -17,6 +17,7 @@ extern PlanetarySystem *g_psys;
 
 DlgInfo::DlgInfo() : ImGuiDialog(ICON_FA_CIRCLE_INFO " Orbiter: Object info", {753,423}) {
 	SetHelp("html/orbiter.chm", "/objinfo.htm");
+	m_SelectedTarget = g_psys->GetStar(0)->Name();
 }
 
 void DlgInfo::AddCbodyNode(const CelestialBody *cbody) {
@@ -907,7 +908,7 @@ void DlgInfo::OnDraw() {
         }
         ImGui::EndChild();
         ImGui::SameLine();
-        ImGui::BeginChild("ChildR", ImVec2(0, 0), true);
+        ImGui::BeginChild("ChildR", ImVec2(0, 0), 0);
             ImVec2 button_sz(ImVec2(ImGui::GetContentRegionAvail().x, 20));
             ImGui::Text("Object: %s", m_SelectedTarget.c_str());
 

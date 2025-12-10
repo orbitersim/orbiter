@@ -43,75 +43,90 @@ void DlgCamera::OnDraw() {
 }
 
 void DlgCamera::DrawControl() {
-    const char *cameraMode = "Internal";
-	if (extcam) {
-		switch (extmode) {
-		case CAMERA_TARGETRELATIVE:
-            cameraMode = "Target Relative"; break;
-		case CAMERA_ABSDIRECTION:
-            cameraMode = "Absolute Direction"; break;
-		case CAMERA_GLOBALFRAME:
-            cameraMode = "Global Frame"; break;
-		case CAMERA_TARGETTOOBJECT:
-            cameraMode = "Target Object"; break;
-		case CAMERA_TARGETFROMOBJECT:
-            cameraMode = "Target from Object"; break;
-		case CAMERA_GROUNDOBSERVER:
-			if (ground_lock) {
-                cameraMode = "Ground Observer (locked)"; break;
-			} else {
-                cameraMode = "Ground Observer"; break;
+    ImGuiWindowFlags window_flags = ImGuiChildFlags_ResizeX;
+    ImGui::BeginChild("ChildL", ImVec2(250, 0), window_flags);
+        ImGui::SeparatorText("Camera mode");
+
+		const char *cameraMode = "Internal";
+		if (extcam) {
+			switch (extmode) {
+			case CAMERA_TARGETRELATIVE:
+				cameraMode = "Target Relative"; break;
+			case CAMERA_ABSDIRECTION:
+				cameraMode = "Absolute Direction"; break;
+			case CAMERA_GLOBALFRAME:
+				cameraMode = "Global Frame"; break;
+			case CAMERA_TARGETTOOBJECT:
+				cameraMode = "Target Object"; break;
+			case CAMERA_TARGETFROMOBJECT:
+				cameraMode = "Target from Object"; break;
+			case CAMERA_GROUNDOBSERVER:
+				if (ground_lock) {
+					cameraMode = "Ground Observer (locked)"; break;
+				} else {
+					cameraMode = "Ground Observer"; break;
+				}
+				break;
 			}
-			break;
 		}
-	}
-    ImGui::Text("Camera mode : %s", cameraMode);
+		ImGui::Text("Camera mode : %s", cameraMode);
 
-    ImVec2 pos;
-	double dt = td.SysDT;
+		ImVec2 pos;
+		double dt = td.SysDT;
 
-    pos.x = 50;
-    pos.y = 75;
-    ImGui::SetCursorPos(pos); 
-    ImGui::ArrowButton("##up", ImGuiDir_Up);
-    if(ImGui::IsItemActive()){
-		if (rot_is_tilt) g_camera->Rotate   ( 0,  dt);
-		else             g_camera->ShiftTheta (-dt);
+		pos.x = 50;
+		pos.y = 75;
+		ImGui::SetCursorPos(pos); 
+		ImGui::ArrowButton("##up", ImGuiDir_Up);
+		if(ImGui::IsItemActive()){
+			if (rot_is_tilt) g_camera->Rotate   ( 0,  dt);
+			else             g_camera->ShiftTheta (-dt);
+		}
+
+		pos.x = 50;
+		pos.y = 125;
+		ImGui::SetCursorPos(pos); 
+		ImGui::ArrowButton("##down", ImGuiDir_Down);
+		if(ImGui::IsItemActive()){
+			if (rot_is_tilt) g_camera->Rotate   ( 0, -dt);
+			else             g_camera->ShiftTheta ( dt);
+		}
+
+		pos.x = 25;
+		pos.y = 100;
+		ImGui::SetCursorPos(pos); 
+		ImGui::ArrowButton("##left", ImGuiDir_Left);
+		if(ImGui::IsItemActive()){
+			if (rot_is_tilt) g_camera->Rotate   ( dt,  0);
+			else             g_camera->ShiftPhi   (-dt);
+		}
+
+		pos.x = 75;
+		pos.y = 100;
+		ImGui::SetCursorPos(pos); 
+		ImGui::ArrowButton("##right", ImGuiDir_Right);
+		if(ImGui::IsItemActive()){
+			if (rot_is_tilt) g_camera->Rotate   (-dt,  0);
+			else             g_camera->ShiftPhi   ( dt);
+		}
+
+		pos.x = 35;
+		pos.y = 155;
+		ImGui::SetCursorPos(pos); 
+		if(ImGui::Button("Forward")) {
+			g_camera->ResetCockpitDir();
+		}
+    ImGui::EndChild();
+    ImGui::SameLine();
+    ImGui::BeginChild("ChildR");
+        ImGui::SeparatorText("Field of view");
+		float fov=oapiCameraAperture()/RAD/0.5;
+		if(ImGui::SliderFloat("Field of View", &fov, 10.0, 90.0, "%.1f")) {
+			if(fov < 10.0f) fov = 10.0f;
+			else if(fov>90.0f) fov = 90.0f;
+			oapiCameraSetAperture(fov*RAD*0.5);
     }
-
-    pos.x = 50;
-    pos.y = 125;
-    ImGui::SetCursorPos(pos); 
-    ImGui::ArrowButton("##down", ImGuiDir_Down);
-    if(ImGui::IsItemActive()){
-		if (rot_is_tilt) g_camera->Rotate   ( 0, -dt);
-		else             g_camera->ShiftTheta ( dt);
-    }
-
-    pos.x = 25;
-    pos.y = 100;
-    ImGui::SetCursorPos(pos); 
-    ImGui::ArrowButton("##left", ImGuiDir_Left);
-    if(ImGui::IsItemActive()){
-        if (rot_is_tilt) g_camera->Rotate   ( dt,  0);
-		else             g_camera->ShiftPhi   (-dt);
-    }
-
-    pos.x = 75;
-    pos.y = 100;
-    ImGui::SetCursorPos(pos); 
-    ImGui::ArrowButton("##right", ImGuiDir_Right);
-    if(ImGui::IsItemActive()){
-		if (rot_is_tilt) g_camera->Rotate   (-dt,  0);
-		else             g_camera->ShiftPhi   ( dt);
-    }
-
-    pos.x = 35;
-    pos.y = 155;
-    ImGui::SetCursorPos(pos); 
-    if(ImGui::Button("Forward")) {
-        g_camera->ResetCockpitDir();
-    }
+    ImGui::EndChild();
 }
 
 void DlgCamera::AddCbodyNode(const CelestialBody *cbody) {
@@ -137,9 +152,11 @@ void DlgCamera::AddCbodyNode(const CelestialBody *cbody) {
 }
 
 void DlgCamera::DrawTarget() {
-    const ImGuiWindowFlags window_flags = ImGuiChildFlags_Border | ImGuiChildFlags_ResizeX;
+    const ImGuiWindowFlags window_flags = ImGuiChildFlags_ResizeX;
 
 	ImGui::BeginChild("ChildL", ImVec2(250, 0), window_flags);
+        ImGui::SeparatorText("Available targets");
+		ImGui::BeginChild("ChildL_inner");
         for (int i = 0; i < g_psys->nStar(); i++)
             AddCbodyNode (g_psys->GetStar(i));
 
@@ -177,11 +194,13 @@ void DlgCamera::DrawTarget() {
             }
             ImGui::TreePop();
         }
+	    ImGui::EndChild();
     ImGui::EndChild();
     ImGui::SameLine();
     ImGui::BeginChild("ChildR");
+        ImGui::SeparatorText("Selected target");
         ImVec2 button_sz(ImVec2(ImGui::GetContentRegionAvail().x, 20));
-        ImGui::Text("Target : %s", m_SelectedTarget.c_str());
+        ImGui::TextUnformatted(m_SelectedTarget.c_str());
         if(ImGui::Button("Apply", button_sz)) {
             Body *obj = g_psys->GetObj (m_SelectedTarget.c_str(), true);
             if (!obj) obj = g_psys->GetBase (m_SelectedTarget.c_str(), true);
@@ -370,14 +389,6 @@ void DlgCamera::SetCurrentGroundpos() {
 		g_camera->SetGroundObserver_TerrainLimit (std::max(1.0,alt));
 }
 
-void DlgCamera::DrawFoV() {
-    float fov=oapiCameraAperture()/RAD/0.5;
-    if(ImGui::SliderFloat("Field of View", &fov, 10.0, 90.0, "%.1f")) {
-        if(fov < 10.0f) fov = 10.0f;
-        else if(fov>90.0f) fov = 90.0f;
-        oapiCameraSetAperture(fov*RAD*0.5);
-    }
-}
 void DlgCamera::DrawPreset() {
     ImGuiWindowFlags window_flags = ImGuiChildFlags_ResizeX;;;
     static float sz1 = 0.0;
