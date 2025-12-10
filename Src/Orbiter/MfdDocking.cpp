@@ -174,18 +174,18 @@ void Instrument_Docking::UpdateDraw (oapi::Sketchpad *skp)
 	skp->SetTextColor(draw[2][0].col);
 	skp->SetTextAlign(oapi::Sketchpad::CENTER);
 
-	skp->Text(circx, circy - (circr * 116) / 100, "0บ", 2);
+	skp->Text(circx, circy - (circr * 116) / 100, "0ยบ", 3);
 	if (scale) {
-		skp->Text(circx + circr / 2, circy+1, "2บ", 2);
-		skp->Text(circx + circr, circy+1, "4บ", 2);
-		skp->Text(circx - (circr * 54) / 100, circy - (circr * 102) / 100, "3บ", 2);
-		skp->Text(circx + (circr * 54) / 100, circy - (circr * 102) / 100, "3บ", 2);
+		skp->Text(circx + circr / 2, circy+1, "2ยบ", 3);
+		skp->Text(circx + circr, circy+1, "4ยบ", 3);
+		skp->Text(circx - (circr * 54) / 100, circy - (circr * 102) / 100, "3ยบ", 3);
+		skp->Text(circx + (circr * 54) / 100, circy - (circr * 102) / 100, "3ยบ", 3);
 	}
 	else {
-		skp->Text(circx + circr / 2, circy+1, "10บ", 3);
-		skp->Text(circx + circr, circy+1, "20บ", 3);
-		skp->Text(circx - (circr*54)/100, circy - (circr*102)/100, "30บ", 3);
-		skp->Text(circx + (circr*54)/100, circy - (circr*102)/100, "30บ", 3);
+		skp->Text(circx + circr / 2, circy+1, "10ยบ", 4);
+		skp->Text(circx + circr, circy+1, "20ยบ", 4);
+		skp->Text(circx - (circr*54)/100, circy - (circr*102)/100, "30ยบ", 4);
+		skp->Text(circx + (circr*54)/100, circy - (circr*102)/100, "30ยบ", 4);
 	}
 
 	skp->SetTextAlign(oapi::Sketchpad::LEFT);

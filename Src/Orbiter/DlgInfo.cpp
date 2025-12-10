@@ -156,7 +156,7 @@ void DlgInfo::DrawInfoVessel(Vessel *vessel) {
                 ImGui::TableSetColumnIndex(0);
                 ImGui::TextUnformatted("P. moments of inertia");
                 ImGui::TableSetColumnIndex(1);
-                ImGui::Text(u8"(%4g, %4g, %4g) kg.m²", vessel->PMI().x, vessel->PMI().y, vessel->PMI().z);
+                ImGui::Text("(%4g, %4g, %4g) kg.mÂ²", vessel->PMI().x, vessel->PMI().y, vessel->PMI().z);
 
             ImGui::EndTable();
         }
@@ -211,27 +211,27 @@ void DlgInfo::DrawInfoVessel(Vessel *vessel) {
 
             ImGui::TableNextRow();
                 ImGui::TableSetColumnIndex(0);
-                ImGui::TextUnformatted(u8"Inclination (igg)");
+                ImGui::TextUnformatted("Inclination (igg)");
                 ImGui::TableSetColumnIndex(1);
-                ImGui::Text(u8"%0.2f°", el->i*DEG);
+                ImGui::Text("%0.2fÂ°", el->i*DEG);
 
             ImGui::TableNextRow();
                 ImGui::TableSetColumnIndex(0);
                 ImGui::TextUnformatted("Longitude of Ascending Node");
                 ImGui::TableSetColumnIndex(1);
-                ImGui::Text(u8"%0.2f°", el->theta*DEG);
+                ImGui::Text("%0.2fÂ°", el->theta*DEG);
 
             ImGui::TableNextRow();
                 ImGui::TableSetColumnIndex(0);
                 ImGui::TextUnformatted("Longitude of Periapsis");
                 ImGui::TableSetColumnIndex(1);
-                ImGui::Text(u8"%0.2f°", el->omegab*DEG);
+                ImGui::Text("%0.2fÂ°", el->omegab*DEG);
 
             ImGui::TableNextRow();
                 ImGui::TableSetColumnIndex(0);
                 ImGui::TextUnformatted("Mean longitude");
                 ImGui::TableSetColumnIndex(1);
-                ImGui::Text(u8"%0.2f°", el->MeanLng()*DEG);
+                ImGui::Text("%0.2fÂ°", el->MeanLng()*DEG);
             ImGui::EndTable();
         }
         ImGui::EndAnimatedCollapsingHeader();
@@ -252,7 +252,7 @@ void DlgInfo::DrawInfoVessel(Vessel *vessel) {
                 ImGui::TableSetColumnIndex(0);
                 ImGui::TextUnformatted("Position");
                 ImGui::TableSetColumnIndex(1);
-                ImGui::Text(u8"%07.3f°%c %06.3f°%c", fabs(sp->lng)*DEG, sp->lng >= 0.0 ? 'E':'W', fabs(sp->lat)*DEG, sp->lat >= 0.0 ? 'N':'S');
+                ImGui::Text("%07.3fÂ°%c %06.3fÂ°%c", fabs(sp->lng)*DEG, sp->lng >= 0.0 ? 'E':'W', fabs(sp->lat)*DEG, sp->lat >= 0.0 ? 'N':'S');
 
             ImGui::TableNextRow();
                 ImGui::TableSetColumnIndex(0);
@@ -277,19 +277,19 @@ void DlgInfo::DrawInfoVessel(Vessel *vessel) {
                 ImGui::TableSetColumnIndex(0);
                 ImGui::TextUnformatted("Heading");
                 ImGui::TableSetColumnIndex(1);
-                ImGui::Text(u8"%0.0f°", sp->dir*DEG);
+                ImGui::Text("%0.0fÂ°", sp->dir*DEG);
 
             ImGui::TableNextRow();
                 ImGui::TableSetColumnIndex(0);
                 ImGui::TextUnformatted("Pitch");
                 ImGui::TableSetColumnIndex(1);
-                ImGui::Text(u8"%0.0f°", sp->pitch*DEG);
+                ImGui::Text("%0.0fÂ°", sp->pitch*DEG);
 
             ImGui::TableNextRow();
                 ImGui::TableSetColumnIndex(0);
                 ImGui::TextUnformatted("Bank");
                 ImGui::TableSetColumnIndex(1);
-                ImGui::Text(u8"%0.0f° %s", fabs(sp->bank)*DEG, sp->bank >= 0.0 ? "left":"right");
+                ImGui::Text("%0.0fÂ° %s", fabs(sp->bank)*DEG, sp->bank >= 0.0 ? "left":"right");
 
             ImGui::EndTable();
         }
@@ -386,7 +386,7 @@ void DlgInfo::DrawInfoVessel(Vessel *vessel) {
                     ImGui::TextUnformatted("Angle of Attack");
                     ImGui::TableSetColumnIndex(1);
                     if(sp)
-                        ImGui::Text(u8"%+0.1f°", -atan2 (sp->groundvel_ship.y, sp->groundvel_ship.z)*DEG);
+                        ImGui::Text("%+0.1fÂ°", -atan2 (sp->groundvel_ship.y, sp->groundvel_ship.z)*DEG);
                     else
                         ImGui::TextUnformatted("N/A");
 
@@ -564,7 +564,7 @@ void DlgInfo::DrawInfoCelestialBody(CelestialBody *cbody) {
                 ImGui::TableSetColumnIndex(1);
                 ImGui::TextUnformatted(cbuf);
 
-            if (planet) sprintf (cbuf, u8"%0.2f°", planet->Obliquity()*DEG);
+            if (planet) sprintf (cbuf, "%0.2fÂ°", planet->Obliquity()*DEG);
             else strcpy (cbuf, "N/A");
 
             ImGui::TableNextRow();
@@ -654,25 +654,25 @@ void DlgInfo::DrawInfoCelestialBody(CelestialBody *cbody) {
                 ImGui::TableSetColumnIndex(0);
                 ImGui::TextUnformatted("Inclination (i)");
                 ImGui::TableSetColumnIndex(1);
-                ImGui::Text(u8"%0.2f°", el->i*DEG);
+                ImGui::Text("%0.2fÂ°", el->i*DEG);
 
             ImGui::TableNextRow();
                 ImGui::TableSetColumnIndex(0);
                 ImGui::TextUnformatted("Longitude of Ascending Node");
                 ImGui::TableSetColumnIndex(1);
-                ImGui::Text(u8"%0.2f°", el->theta*DEG);
+                ImGui::Text("%0.2fÂ°", el->theta*DEG);
 
             ImGui::TableNextRow();
                 ImGui::TableSetColumnIndex(0);
                 ImGui::TextUnformatted("Longitude of Periapsis");
                 ImGui::TableSetColumnIndex(1);
-                ImGui::Text(u8"%0.2f°", el->omegab*DEG);
+                ImGui::Text("%0.2fÂ°", el->omegab*DEG);
 
             ImGui::TableNextRow();
                 ImGui::TableSetColumnIndex(0);
                 ImGui::TextUnformatted("Mean Longitude");
                 ImGui::TableSetColumnIndex(1);
-                ImGui::Text(u8"%0.2f°", el->MeanLng()*DEG);
+                ImGui::Text("%0.2fÂ°", el->MeanLng()*DEG);
 
             ImGui::EndTable();
         }
@@ -707,7 +707,7 @@ void DlgInfo::DrawInfoCelestialBody(CelestialBody *cbody) {
                 ImGui::TableSetColumnIndex(0);
                 ImGui::TextUnformatted("Declination (Dec)");
                 ImGui::TableSetColumnIndex(1);
-    			sprintf (cbuf, u8"%+02.0f° %02.0f' %02.2f''", dcd, dcm, dcs);
+    			sprintf (cbuf, "%+02.0fÂ° %02.0f' %02.2f''", dcd, dcm, dcs);
                 ImGui::TextUnformatted(cbuf);
 
             ImGui::EndTable();
@@ -727,13 +727,13 @@ void DlgInfo::DrawInfoCelestialBody(CelestialBody *cbody) {
                 ImGui::TableSetColumnIndex(0);
                 ImGui::TextUnformatted("Longitude");
                 ImGui::TableSetColumnIndex(1);
-                ImGui::Text(u8"%0.3f°", DEG*posangle(lng));
+                ImGui::Text("%0.3fÂ°", DEG*posangle(lng));
 
             ImGui::TableNextRow();
                 ImGui::TableSetColumnIndex(0);
                 ImGui::TextUnformatted("Latitude");
                 ImGui::TableSetColumnIndex(1);
-                ImGui::Text(u8"%0.3f°", DEG*lat);
+                ImGui::Text("%0.3fÂ°", DEG*lat);
 
             ImGui::TableNextRow();
                 ImGui::TableSetColumnIndex(0);
@@ -807,7 +807,7 @@ void DlgInfo::DrawInfoBase(Base *base) {
                 ImGui::TableSetColumnIndex(0);
                 ImGui::TextUnformatted("Position");
                 ImGui::TableSetColumnIndex(1);
-                ImGui::Text(u8"%07.3f°%c  %06.3f°%c",fabs(lng)*DEG, lng >= 0.0 ? 'E':'W',fabs(lat)*DEG, lat >= 0.0 ? 'N':'S');
+                ImGui::Text("%07.3fÂ°%c  %06.3fÂ°%c",fabs(lng)*DEG, lng >= 0.0 ? 'E':'W',fabs(lat)*DEG, lat >= 0.0 ? 'N':'S');
 
             ImGui::EndTable();
         }

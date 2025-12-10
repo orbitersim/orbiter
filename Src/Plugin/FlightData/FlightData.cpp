@@ -185,7 +185,7 @@ namespace oapi {
 			mass.AddDataStream("Total",      ImAxis_Y1, lmass, " _TOTMASS", " %8.0f");
 			mass.AddDataStream("Propellant", ImAxis_Y1, lprop, " _PRPMASS", " %8.0f");
 
-			StreamGraph &aoa = CreateGraph("AoA", u8"Angle (°)");
+			StreamGraph &aoa = CreateGraph("AoA", "Angle (Â°)");
 			aoa.AddDataStream("AOA",  ImAxis_Y1, laoa,  " ____AOA", " %7.1f");
 			aoa.AddDataStream("Slip", ImAxis_Y1, lslip, " ___SLIP", " %7.1f");
 

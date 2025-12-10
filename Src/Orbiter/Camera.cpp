@@ -294,7 +294,6 @@ void Camera::SetCMode (const CameraMode *cm)
 
 	double newap = cm->GetFOV()*0.5*RAD;
 	if (newap && fabs(newap - *ap) > 1e-6) g_pOrbiter->SetFOV (newap);
-	SendDlgMessage (3, 0);
 }
 
 CameraMode *Camera::GetCMode () const
@@ -405,7 +404,6 @@ void Camera::Attach (Body *_target, int mode)
 	tref.Set(0,0,0);
 	vphi = vtht = dphi = dtht = 0.0;
 	has_tref = false;
-	SendDlgMessage (3, 0);
 }
 
 bool Camera::Direction2Viewport(const Vector &dir, int &x, int &y)
@@ -730,7 +728,6 @@ void Camera::SetTrackMode (ExtCamMode mode, const Body *ref)
 		break;
 	}
 	extmode = mode;
-	SendDlgMessage (3, 0);
 }
 
 double Camera::GroundElevation (const Planet *ref, double lng, double lat, double alt) const
@@ -776,7 +773,6 @@ void Camera::SetGroundMode (ExtCamMode mode, const Body *ref, double lng, double
 		strcpy (gos.site, _gos->site);
 		strcpy (gos.addr, _gos->addr);
 	}
-	SendDlgMessage (3, 0);
 }
 
 //bool Camera::GetGroundMode (const Body **ref, double *lng, double *lat, double *alt)
@@ -806,10 +802,7 @@ void Camera::SetGroundObserver_TargetLock (bool lock)
 			Vector hdir = tmul (go.R, tmul (dirref->GRot(), gdir));
 			go.tht = asin (hdir.y);
 			go.phi = atan2 (-hdir.x, hdir.z);
-			OutputGroundObserverParams();
 		}
-		
-		SendDlgMessage (2, this);
 	}
 }
 
@@ -841,38 +834,12 @@ void Camera::GroundObserverShift (double dx, double dz, double dh)
 	go.R.Set ( clng*slat, clng*clat, -slng,   // rotate from local
 	          -clat,      slat,       0,      // observer to local
 		       slng*slat, slng*clat,  clng);  // planet coords
-	OutputGroundObserverParams();
 }
 
 void Camera::GroundObserverTilt (double dphi, double dtht)
 {
 	go.phi += dphi;
 	go.tht += dtht;
-	OutputGroundObserverParams();
-}
-
-void Camera::SendDlgMessage (int msgid, void *msg) const
-{
-	DialogManager *dlgmgr = g_pOrbiter->DlgMgr();
-	if (dlgmgr) {
-		HWND dlg = dlgmgr->IsEntry (g_pOrbiter->GetInstance(), IDD_CAMERA);
-		if (dlg)
-			PostMessage (dlg, WM_APP, msgid, (LPARAM)msg);
-	}
-}
-
-void Camera::OutputGroundObserverParams () const
-{
-	DialogManager *dlgmgr = g_pOrbiter->DlgMgr();
-	if (dlgmgr) {
-		HWND dlg = dlgmgr->IsEntry (g_pOrbiter->GetInstance(), IDD_CAMERA);
-		if (dlg) {
-			char cbuf[256];
-			sprintf (cbuf, "Lng = %+0.6f°\r\nLat = %+0.6f°\r\nAlt = %0.2fm\r\nPhi = %0.2f°\r\nTheta = %0.2f°",
-				DEG*go.lng, DEG*go.lat, go.alt, DEG*go.phi, DEG*go.tht);
-			SendDlgMessage (1, cbuf);
-		}
-	}
 }
 
 void Camera::ResizeViewport (int w, int h)

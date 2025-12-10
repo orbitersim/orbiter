@@ -541,7 +541,7 @@ public:
 
 		ImGui::BeginChild("ChildL", ImVec2(ImGui::GetContentRegionAvail().x - HISTORY_SIZE - 8.0, 0), ImGuiChildFlags_AutoResizeY);
 		ImGui::TextColored(white, "F/s:%.0f", g.IO.Framerate);
-		ImGui::TextColored(white, u8"Î”T/F:%0.*fs", td.SimDT < 1e-1 ? 3 : td.SimDT < 1 ? 2 : td.SimDT < 10 ? 1 : 0, td.SimDT);
+		ImGui::TextColored(white, "ΔT/F:%0.*fs", td.SimDT < 1e-1 ? 3 : td.SimDT < 1 ? 2 : td.SimDT < 10 ? 1 : 0, td.SimDT);
 		ImGui::EndChild();
 		ImGui::SameLine();
 		ImGui::BeginChild("ChildR");//, ImVec2(ImGui::GetContentRegionAvail().x / 3.0f * 2.0f, 0), ImGuiChildFlags_AutoResizeY);
@@ -742,7 +742,7 @@ public:
 			} else {
 				ImGui::TextColored(white, "Cam Cockpit");
 			}
-			ImGui::TextColored(white, u8"FoV % 0.0f°", 2.0*Deg(g_camera->Aperture()));
+			ImGui::TextColored(white, "FoV % 0.0f°", 2.0*Deg(g_camera->Aperture()));
 			if (g_camera->IsExternal()) {
 				ImGui::SameLine();
 				ImGui::TextColored(white, "   Dst %s", DistStr (g_camera->Distance())+1);
