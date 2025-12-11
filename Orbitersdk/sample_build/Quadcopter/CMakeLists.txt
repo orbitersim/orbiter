@@ -24,7 +24,7 @@ set(Headers
 	${SAMPLES_SRC_DIR}/Common/Vessel/Instrument.h
 )
 set(Other
-	${MESH_DIR}/quadcopter.msh
+	${MESH_DIR}/${PRJ}/quadcopter.msh
 )
 	
 source_group(APIHeaders FILES ${APIHeaders})
