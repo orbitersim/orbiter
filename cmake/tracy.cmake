@@ -5,7 +5,7 @@
 #
 # The profiler is split in 2 parts:
 #    - client code that needs to be added to the process to profile
-#    - server process that handles aggregating amd displaying the profiling data.
+#    - server process that handles aggregating and displaying the profiling data.
 #
 # Since Orbiter uses multiple DLLs, we must use a shared library for the client code.
 # This TracyClient library must be added as dependency to DLLs wanting to use the profiler.
@@ -16,7 +16,7 @@
 # We build the server ourselves to make sure the version is compatible with the client.
 #
 # The default behavior makes the installation step copy files in bin/include/lib/cmake directories.
-# We don't want that so with use EXCLUDE_FROM_ALL and then manually install the files where needed.
+# We don't want that so we use EXCLUDE_FROM_ALL and then manually install the files where needed.
 #
 # The profiler is meant for the Orbiter core and possibly for in tree modules, but not external plugins,
 # so we don't add the dependencies in the Orbiter SDK.
@@ -57,6 +57,7 @@ set(TRACY_ON_DEMAND ON)
 set(TRACY_ONLY_IPV4 ON)
 
 Include(FetchContent)
+include(ExternalProject)
 
 FetchContent_Declare(tracy
 	GIT_REPOSITORY https://github.com/wolfpld/tracy.git
@@ -78,16 +79,10 @@ if(ORBITER_TRACY_PROFILER)
 
 	# The root CMakeLists.txt file of the repo only handles the client side.
 	# The server is inside the profiler subdirectory.
-	# Use EXCLUDE_FROM_ALL because we don't want to be polluted with bin/include/lib directories.
-	add_subdirectory("${tracy_SOURCE_DIR}/profiler" EXCLUDE_FROM_ALL)
-
-	# Since we excluded the profiler, we now need to make it compile anyway...
-	add_custom_target(BuildProfiler ALL DEPENDS tracy-profiler)
-
-	# Copy the profiler and its dependencies into the Utils directory.
-	install(TARGETS tracy-profiler RUNTIME DESTINATION ${ORBITER_INSTALL_UTILS_DIR})
-	install(TARGETS freetype RUNTIME DESTINATION ${ORBITER_INSTALL_UTILS_DIR})
-	install(TARGETS nfd RUNTIME DESTINATION ${ORBITER_INSTALL_UTILS_DIR})
-	install(TARGETS capstone RUNTIME DESTINATION ${ORBITER_INSTALL_UTILS_DIR})
-	install(TARGETS glfw RUNTIME DESTINATION ${ORBITER_INSTALL_UTILS_DIR})
+	ExternalProject_Add(profiler
+		SOURCE_DIR "${tracy_SOURCE_DIR}/profiler"
+		INSTALL_DIR ${CMAKE_INSTALL_PREFIX}/Orbiter/Utils
+		CMAKE_ARGS -DCMAKE_INSTALL_PREFIX=<INSTALL_DIR>
+               -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE} -DCMAKE_INSTALL_BINDIR=.
+	)
 endif()
