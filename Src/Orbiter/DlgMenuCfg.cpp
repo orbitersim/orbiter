@@ -30,6 +30,7 @@ void DlgMenuCfg::OnDraw()
 
 	if(ImGui::BeginTabBar("##MenuCfgTab")) {
 		if(ImGui::BeginTabItem("Appearance")) {
+			ImGui::BeginChild("##Child");
 			ImGui::SeparatorText("Menu bar");
 			ImGui::PushID(1);
 			ImGui::RadioButton("Show", &prm.MenuMode, 0);
@@ -61,6 +62,7 @@ void DlgMenuCfg::OnDraw()
 			const char *fpsmode[]={"None", "On the left", "On the right"};
 			ImGui::Combo("##FPSMode", &prm.FPS, fpsmode, IM_ARRAYSIZE(fpsmode));
 
+			ImGui::EndChild();
 			ImGui::EndTabItem();
 		}
 		if(ImGui::BeginTabItem("Menu items")) {
