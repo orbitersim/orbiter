@@ -533,9 +533,6 @@ void DialogManager::InitImGui()
 
 	ImGuiSetStyle();
 
-	ImFontConfig config;
-
-	static const ImWchar icons_ranges[] = { ICON_MIN_FA, ICON_MAX_FA, 0 };
 	ImFontConfig icons_config;
 	icons_config.MergeMode = true;
 	icons_config.PixelSnapH = true;
@@ -543,11 +540,11 @@ void DialogManager::InitImGui()
 	
 	const CFG_FONTPRM &prm = g_pOrbiter->Cfg()->CfgFontPrm;
 
-	defaultFont = io.Fonts->AddFontFromFileTTF(prm.ImGui_FontFile, prm.ImGui_FontSize);
-	io.Fonts->AddFontFromFileTTF("fa-solid-900.ttf", prm.ImGui_FontSize, &icons_config, icons_ranges);
-	consoleFont = io.Fonts->AddFontFromFileTTF("Cousine-Regular.ttf", prm.ImGui_FontSize);
-	monoFont = io.Fonts->AddFontFromFileTTF("Lekton-Bold.ttf", prm.ImGui_FontSize);
-	manuscriptFont = io.Fonts->AddFontFromFileTTF("architext.regular.ttf", prm.ImGui_FontSize);
+	defaultFont = io.Fonts->AddFontFromFileTTF(prm.ImGui_DefaultFontFile, prm.ImGui_FontSize);
+	io.Fonts->AddFontFromFileTTF("Fonts/fa-solid-900.ttf", prm.ImGui_FontSize, &icons_config);
+	consoleFont = io.Fonts->AddFontFromFileTTF(prm.ImGui_ConsoleFontFile, prm.ImGui_FontSize);
+	monoFont = io.Fonts->AddFontFromFileTTF(prm.ImGui_MonospacedFontFile, prm.ImGui_FontSize);
+	manuscriptFont = io.Fonts->AddFontFromFileTTF(prm.ImGui_ManuscriptFontFile, prm.ImGui_FontSize);
 
 	ImGui_ImplWin32_Init(hWnd);
 	gc->clbkImGuiInit();

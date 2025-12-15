@@ -12,7 +12,7 @@ FetchContent_Declare(
 FetchContent_MakeAvailable(imgui)
 
 install(FILES ${imgui_SOURCE_DIR}/misc/fonts/Roboto-Medium.ttf fa-solid-900.ttf ${imgui_SOURCE_DIR}/misc/fonts/Cousine-Regular.ttf Lekton-Bold.ttf architext.regular.ttf
-	DESTINATION ${ORBITER_INSTALL_ROOT_DIR}
+	DESTINATION ${ORBITER_INSTALL_ROOT_DIR}/Fonts
 )
 
 install(FILES ${imgui_SOURCE_DIR}/imgui.h ${imgui_SOURCE_DIR}/imconfig.h

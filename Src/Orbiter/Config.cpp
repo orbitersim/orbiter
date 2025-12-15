@@ -230,7 +230,10 @@ CFG_FONTPRM CfgFontPrm_default = {
 	1.0f,		// dlgFont_Scale (scaling factor for inline dialog fonts)
 	"Arial",	// dlgFont1_Face (default dialog font face name)
 	14.0f,		// ImGui_FontSize
-	"Roboto-Medium.ttf" // ImGui_FontFile
+	"Fonts/Roboto-Medium.ttf",    // ImGui_DefaultFontFile
+	"Fonts/Cousine-Regular.ttf",  // ImGui_ConsoleFontFile
+	"Fonts/Lekton-Bold.ttf",      // ImGui_MonospacedFontFile
+	"Fonts/architext.regular.ttf" // ImGui_ManuscriptFontFile
 };
 
 CFG_CAMERAPRM CfgCameraPrm_default = {
@@ -762,7 +765,10 @@ bool Config::Load(const char *fname)
 	if (GetReal (ifs, "DialogFont_Scale", d)) CfgFontPrm.dlgFont_Scale = (float)d;
 	GetString (ifs, "DialogFont1_Face", CfgFontPrm.dlgFont1_Face);
 	if (GetReal (ifs, "ImGui_FontSize", d)) CfgFontPrm.ImGui_FontSize = (float)d;
-	GetString (ifs, "ImGui_FontFile", CfgFontPrm.ImGui_FontFile);
+	GetString (ifs, "ImGui_DefaultFontFile", CfgFontPrm.ImGui_DefaultFontFile);
+	GetString (ifs, "ImGui_ConsoleFontFile", CfgFontPrm.ImGui_ConsoleFontFile);
+	GetString (ifs, "ImGui_MonospacedFontFile", CfgFontPrm.ImGui_MonospacedFontFile);
+	GetString (ifs, "ImGui_ManuscriptFontFile", CfgFontPrm.ImGui_ManuscriptFontFile);
 
 	// misc. options
 	if (GetString (ifs, "LPadRect", cbuf)) {
@@ -1341,8 +1347,14 @@ BOOL Config::Write (const char *fname) const
 			ofs << "DialogFont1_Face = " << CfgFontPrm.dlgFont1_Face << '\n';
 		if (CfgFontPrm.ImGui_FontSize != CfgFontPrm_default.ImGui_FontSize || bEchoAll)
 			ofs << "ImGui_FontSize = " << CfgFontPrm.ImGui_FontSize << '\n';
-		if (strcmp (CfgFontPrm.ImGui_FontFile, CfgFontPrm_default.ImGui_FontFile) || bEchoAll)
-			ofs << "ImGui_FontFile = " << CfgFontPrm.ImGui_FontFile << '\n';
+		if (strcmp (CfgFontPrm.ImGui_DefaultFontFile, CfgFontPrm_default.ImGui_DefaultFontFile) || bEchoAll)
+			ofs << "ImGui_DefaultFontFile = " << CfgFontPrm.ImGui_DefaultFontFile << '\n';
+		if (strcmp (CfgFontPrm.ImGui_ConsoleFontFile, CfgFontPrm_default.ImGui_ConsoleFontFile) || bEchoAll)
+			ofs << "ImGui_ConsoleFontFile = " << CfgFontPrm.ImGui_ConsoleFontFile << '\n';
+		if (strcmp (CfgFontPrm.ImGui_MonospacedFontFile, CfgFontPrm_default.ImGui_MonospacedFontFile) || bEchoAll)
+			ofs << "ImGui_MonospacedFontFile = " << CfgFontPrm.ImGui_MonospacedFontFile << '\n';
+		if (strcmp (CfgFontPrm.ImGui_ManuscriptFontFile, CfgFontPrm_default.ImGui_ManuscriptFontFile) || bEchoAll)
+			ofs << "ImGui_ManuscriptFontFile = " << CfgFontPrm.ImGui_ManuscriptFontFile << '\n';
 	}
 
 	if (memcmp (&CfgWindowPos, &CfgWindowPos_default, sizeof(CFG_WINDOWPOS)) || bEchoAll) {
