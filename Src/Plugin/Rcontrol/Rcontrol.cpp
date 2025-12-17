@@ -13,8 +13,10 @@
 
 #define ORBITER_MODULE
 #include "Orbitersdk.h"
-#include "DlgCtrl.h"
-#include "resource.h"
+#define IMGUI_DEFINE_MATH_OPERATORS
+#include "imgui.h"
+#include "imgui_extras.h"
+#include "IconsFontAwesome6.h"
 
 // ==============================================================
 // The module interface class - singleton implementation
@@ -23,60 +25,30 @@ namespace oapi {
 
 	/// \brief Plugin for controlling a spacecrafts's engines via
 	///   a dialog box.
-	class RControl: public Module {
+	class RControl: public Module, public ImGuiDialog {
 	public:
-		/// \brief Soliton instance server for RControl plugin
-		/// \param hDLL nodule instance handle
-		static RControl* GetInstance(HINSTANCE hDLL);
-
-		/// \brief Soliton instance destructor
-		static void DelInstance();
-
 		/// \brief Entry point for open dialog callback
 		static void hookOpenDlg(void* context);
 
-		/// \brief Open dialog callback
-		void clbkOpenDlg(void* context);
+		void clbkSimulationStart (RenderMode mode) override;
 
-		/// \brief Callback for time frame start 
-		/// \param simt simulation time [s]
-		/// \param simdt simulation step [s]
-		/// \param mjd MJD date [days]
-		void clbkPreStep(double simt, double simdt, double mjd);
+		void OnDraw();
 
-		/// \brief Entry point for dialog message procedure
-		static INT_PTR CALLBACK hookDlgMsgProc(HWND hDlg, UINT uInt, WPARAM wParam, LPARAM lParam);
-
-		/// \brief Dialog message procedure
-		INT_PTR DlgMsgProc(HWND hDlg, UINT uInt, WPARAM wParam, LPARAM lParam);
-
-	protected:
-		/// \brief Protected constructor 
 		/// \param hDLL module instance handle
 		RControl(HINSTANCE hDLL);
 
 		/// \brief Protected destructor
 		~RControl();
 
-		/// \brief Init dialog message handler
-		INT_PTR InitDialog(HWND hDlg);
-
-		/// \brief Destroy dialog message handler
-		INT_PTR DestroyDialog();
-
-		/// \brief Populate the vessel list
-		/// \param hDlg dialog handle
-		void CreateVesselList(HWND hDlg);
+		void SetVessel(VESSEL*);
 
 	private:
-		static RControl* self; ///> Soliton instance pointer
 		DWORD m_dwCmd;         ///> Handle for plugin entry in custom command list
-		HWND m_hDlg;           ///> Dialog window handle
+		int m_dwMenuCmd;
 
 		VESSEL* m_pVessel;     ///> vessel pointer
-		int m_maingauge;       ///> main throttle slider position
-		int m_retrogauge;      ///> retro throttle slider position
-		int m_hovergauge;      ///> hover throttle slider position
+		std::string m_vesselName;
+		float m_RCSlevel;
 	};
 
 } // namespace oapi
@@ -86,12 +58,14 @@ namespace oapi {
 // API interface
 // ==============================================================
 
+static oapi::RControl *g_rcontrol;
 /// \brief Module entry point 
 /// \param hDLL module handle
 DLLCLBK void InitModule(HINSTANCE hDLL)
 {
 	// Create and register the module
-	oapiRegisterModule(oapi::RControl::GetInstance(hDLL));
+	g_rcontrol = new oapi::RControl(hDLL);
+	oapiRegisterModule(g_rcontrol);
 }
 
 /// \brief Module exit point 
@@ -99,53 +73,28 @@ DLLCLBK void InitModule(HINSTANCE hDLL)
 DLLCLBK void ExitModule(HINSTANCE hDLL)
 {
 	// Delete the module
-	oapi::RControl::DelInstance();
+	delete g_rcontrol;
 }
 
-
-// ==============================================================
-// RControl module interface class
-// ==============================================================
-
-oapi::RControl* oapi::RControl::self = nullptr;
-
-// --------------------------------------------------------------
-
-oapi::RControl* oapi::RControl::GetInstance(HINSTANCE hDLL)
-{
-	if (!self)
-		self = new RControl(hDLL);
-	return self;
-}
-
-// --------------------------------------------------------------
-
-void oapi::RControl::DelInstance()
-{
-	if (self) {
-		delete self;
-		self = nullptr;
-	}
+void oapi::RControl::hookOpenDlg(void *ctx) {
+	oapi::RControl *self = (oapi::RControl *)ctx;
+	oapiOpenDialog(self);
 }
 
 // --------------------------------------------------------------
 
 oapi::RControl::RControl(HINSTANCE hDLL)
-	: Module(hDLL)
-	, m_hDlg(NULL)
+	: Module(hDLL), ImGuiDialog("Orbiter Remote Vessel Control", {344,328})
 {
 	// Register the custom command for the plugin
 	m_dwCmd = oapiRegisterCustomCmd((char*)"Remote Vessel Control",
 		(char*)"Operate the engines of any spacecraft from a dialog box.",
-		hookOpenDlg, NULL);
+		hookOpenDlg, this);
 
-	// Register custom dialog controls
-	oapiRegisterCustomControls(hDLL);
+	m_dwMenuCmd = oapiRegisterCustomMenuCmd ("Rcontrol", "MenuInfoBar/Rcontrol.png", hookOpenDlg, this);
 
-	m_maingauge = 0;
-	m_retrogauge = 0;
-	m_hovergauge = 0;
 	m_pVessel = nullptr;
+	m_RCSlevel = 1.0f;
 }
 
 // --------------------------------------------------------------
@@ -154,207 +103,158 @@ oapi::RControl::~RControl()
 {
 	// Unregister the custom command for calling the plugin
 	oapiUnregisterCustomCmd(m_dwCmd);
-
-	// Unregister custom dialog controls
-	oapiUnregisterCustomControls(GetModule());
+	oapiUnregisterCustomMenuCmd(m_dwMenuCmd);
 }
 
 // --------------------------------------------------------------
-
-INT_PTR oapi::RControl::InitDialog(HWND hDlg)
+void oapi::RControl::SetVessel(VESSEL *vessel)
 {
-	CreateVesselList(hDlg);
-	return TRUE;
+	m_pVessel = vessel;
+	m_vesselName = vessel->GetName();
 }
 
-// --------------------------------------------------------------
-
-INT_PTR oapi::RControl::DestroyDialog()
+void oapi::RControl::clbkSimulationStart (RenderMode mode)
 {
-	m_hDlg = NULL;
-	return 0;
+	SetVessel(oapiGetFocusInterface());
 }
 
-// --------------------------------------------------------------
+bool ButtonPressed(const char *label, const ImVec2 &size)
+{
+	ImGui::Button(label, size);
+	return ImGui::IsItemActive();
+}
 
-void oapi::RControl::CreateVesselList(HWND hDlg)
+void oapi::RControl::OnDraw()
 {
 	char cbuf[128];
-	DWORD i, n = oapiGetVesselCount();
-	SendDlgItemMessage(hDlg, IDC_VESSELLIST, CB_RESETCONTENT, 0, 0);
-	for (i = 0; i < n; i++) {
-		OBJHANDLE hVessel = oapiGetVesselByIndex(i);
-		oapiGetObjectName(hVessel, cbuf, 128);
-		SendDlgItemMessage(hDlg, IDC_VESSELLIST, CB_ADDSTRING, 0, (LPARAM)cbuf);
-	}
-	m_pVessel = oapiGetFocusInterface();
-	SendDlgItemMessage(hDlg, IDC_VESSELLIST, CB_SELECTSTRING, 0, (LPARAM)m_pVessel->GetName());
-}
+	ImGui::SeparatorText("Vessel");
+	ImGui::SetNextItemWidth(160.0f);
+	if(ImGui::BeginAnimatedCombo("##Vessel", m_vesselName.c_str(), ImGuiComboFlags_HeightLargest)) {
+		for (int i = 0; i < oapiGetVesselCount(); i++) {
+			OBJHANDLE hVessel = oapiGetVesselByIndex(i);
+			VESSEL *vessel = oapiGetVesselInterface(hVessel);
+			if (vessel->GetEnableFocus()) {
+				const bool is_selected = m_pVessel == vessel;
+				if(ImGui::Selectable(vessel->GetName(), is_selected)) {
+					if(m_pVessel != vessel) {
+						SetVessel(vessel);
+					}
+				}
 
-// --------------------------------------------------------------
-
-void oapi::RControl::clbkPreStep (double simt, double simdt, double mjd)
-{
-	if (!m_hDlg) return;
-
-	int slider;
-	slider = (int)(m_pVessel->GetThrusterGroupLevel (THGROUP_MAIN) * 100.0 + 0.5);
-	if (slider != m_maingauge)
-		oapiSetGaugePos (GetDlgItem (m_hDlg, IDC_MAIN_GAUGE), m_maingauge = slider);
-	slider = (int)(m_pVessel->GetThrusterGroupLevel (THGROUP_RETRO) * 100.0 + 0.5);
-	if (slider != m_retrogauge)
-		oapiSetGaugePos (GetDlgItem (m_hDlg, IDC_RETRO_GAUGE), m_retrogauge = slider);
-	slider = (int)(m_pVessel->GetThrusterGroupLevel (THGROUP_HOVER) * 100.0 + 0.5);
-	if (slider != m_hovergauge)
-		oapiSetGaugePos (GetDlgItem (m_hDlg, IDC_HOVER_GAUGE), m_hovergauge = slider);
-
-	// RCS button status
-	double rcslevel = oapiGetGaugePos (GetDlgItem (m_hDlg, IDC_RCSLEVEL)) * 0.01;
-	if (SendDlgItemMessage (m_hDlg, IDC_RCS_PITCHUP, BM_GETSTATE, 0, 0) & BST_PUSHED)
-		m_pVessel->IncThrusterGroupLevel_SingleStep (THGROUP_ATT_PITCHUP, rcslevel);
-	else if (SendDlgItemMessage (m_hDlg, IDC_RCS_PITCHDOWN, BM_GETSTATE, 0, 0) & BST_PUSHED)
-		m_pVessel->IncThrusterGroupLevel_SingleStep (THGROUP_ATT_PITCHDOWN, rcslevel);
-	else if (SendDlgItemMessage (m_hDlg, IDC_RCS_YAWLEFT, BM_GETSTATE, 0, 0) & BST_PUSHED)
-		m_pVessel->IncThrusterGroupLevel_SingleStep (THGROUP_ATT_YAWLEFT, rcslevel);
-	else if (SendDlgItemMessage (m_hDlg, IDC_RCS_YAWRIGHT, BM_GETSTATE, 0, 0) & BST_PUSHED)
-		m_pVessel->IncThrusterGroupLevel_SingleStep (THGROUP_ATT_YAWRIGHT, rcslevel);
-	else if (SendDlgItemMessage (m_hDlg, IDC_RCS_BANKLEFT, BM_GETSTATE, 0, 0) & BST_PUSHED)
-		m_pVessel->IncThrusterGroupLevel_SingleStep (THGROUP_ATT_BANKLEFT, rcslevel);
-	else if (SendDlgItemMessage (m_hDlg, IDC_RCS_BANKRIGHT, BM_GETSTATE, 0, 0) & BST_PUSHED)
-		m_pVessel->IncThrusterGroupLevel_SingleStep (THGROUP_ATT_BANKRIGHT, rcslevel);
-	else if (SendDlgItemMessage (m_hDlg, IDC_RCS_UP, BM_GETSTATE, 0, 0) & BST_PUSHED)
-		m_pVessel->IncThrusterGroupLevel_SingleStep (THGROUP_ATT_UP, rcslevel);
-	else if (SendDlgItemMessage (m_hDlg, IDC_RCS_DOWN, BM_GETSTATE, 0, 0) & BST_PUSHED)
-		m_pVessel->IncThrusterGroupLevel_SingleStep (THGROUP_ATT_DOWN, rcslevel);
-	else if (SendDlgItemMessage (m_hDlg, IDC_RCS_LEFT, BM_GETSTATE, 0, 0) & BST_PUSHED)
-		m_pVessel->IncThrusterGroupLevel_SingleStep (THGROUP_ATT_LEFT, rcslevel);
-	else if (SendDlgItemMessage (m_hDlg, IDC_RCS_RIGHT, BM_GETSTATE, 0, 0) & BST_PUSHED)
-		m_pVessel->IncThrusterGroupLevel_SingleStep (THGROUP_ATT_RIGHT, rcslevel);
-	else if (SendDlgItemMessage (m_hDlg, IDC_RCS_FORWARD, BM_GETSTATE, 0, 0) & BST_PUSHED)
-		m_pVessel->IncThrusterGroupLevel_SingleStep (THGROUP_ATT_FORWARD, rcslevel);
-	else if (SendDlgItemMessage (m_hDlg, IDC_RCS_BACK, BM_GETSTATE, 0, 0) & BST_PUSHED)
-		m_pVessel->IncThrusterGroupLevel_SingleStep (THGROUP_ATT_BACK, rcslevel);
-}
-
-// --------------------------------------------------------------
-
-void oapi::RControl::hookOpenDlg(void* context)
-{
-	self->clbkOpenDlg(context);
-}
-
-// --------------------------------------------------------------
-
-void oapi::RControl::clbkOpenDlg(void* context)
-{
-	HWND hDlg = oapiOpenDialog(GetModule(), IDD_INTERFACE, hookDlgMsgProc);
-	if (hDlg) {
-		m_hDlg = hDlg;
-
-		GAUGEPARAM gp = { 0, 100, GAUGEPARAM::LEFT, GAUGEPARAM::BLACK };
-		oapiSetGaugeParams(GetDlgItem(hDlg, IDC_RCSLEVEL), &gp);
-		oapiSetGaugePos(GetDlgItem(hDlg, IDC_RCSLEVEL), 100);
-		gp.color = GAUGEPARAM::RED;
-		oapiSetGaugeParams(GetDlgItem(hDlg, IDC_MAIN_GAUGE), &gp);
-		oapiSetGaugePos(GetDlgItem(hDlg, IDC_MAIN_GAUGE), m_maingauge = 0);
-		gp.base = GAUGEPARAM::RIGHT;
-		oapiSetGaugeParams(GetDlgItem(hDlg, IDC_RETRO_GAUGE), &gp);
-		oapiSetGaugePos(GetDlgItem(hDlg, IDC_RETRO_GAUGE), m_retrogauge = 0);
-		gp.base = GAUGEPARAM::BOTTOM;
-		oapiSetGaugeParams(GetDlgItem(hDlg, IDC_HOVER_GAUGE), &gp);
-		oapiSetGaugePos(GetDlgItem(hDlg, IDC_HOVER_GAUGE), m_hovergauge = 0);
-	}
-}
-
-// --------------------------------------------------------------
-
-INT_PTR CALLBACK oapi::RControl::hookDlgMsgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
-{
-	return self->DlgMsgProc(hDlg, uMsg, wParam, lParam);
-}
-
-// --------------------------------------------------------------
-
-INT_PTR oapi::RControl::DlgMsgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
-{
-	char cbuf[128];
-	int idx;
-	OBJHANDLE hVessel;
-
-	switch (uMsg) {
-	case WM_INITDIALOG:
-		return InitDialog(hDlg);
-	case WM_DESTROY:
-		return DestroyDialog();
-	case WM_COMMAND:
-		switch (LOWORD(wParam)) {
-		case IDCANCEL:
-			oapiCloseDialog(hDlg);
-			return TRUE;
-		case IDC_FOCUS:
-			oapiSetFocusObject(m_pVessel->GetHandle());
-			break;
-		case IDC_VESSELLIST:
-			if (HIWORD(wParam) == CBN_SELCHANGE) {
-				idx = SendDlgItemMessage(hDlg, IDC_VESSELLIST, CB_GETCURSEL, 0, 0);
-				SendDlgItemMessage(hDlg, IDC_VESSELLIST, CB_GETLBTEXT, idx, (LPARAM)cbuf);
-				hVessel = oapiGetVesselByName(cbuf);
-				if (hVessel) m_pVessel = oapiGetVesselInterface(hVessel);
 			}
-			break;
-
-		case IDC_KILLROT:
-		case IDC_KILLROT2:
-			m_pVessel->ToggleNavmode(NAVMODE_KILLROT);
-			return TRUE;
-		case IDC_HLEVEL:
-			m_pVessel->ToggleNavmode(NAVMODE_HLEVEL);
-			return TRUE;
-		case IDC_PROGRADE:
-			m_pVessel->ToggleNavmode(NAVMODE_PROGRADE);
-			return TRUE;
-		case IDC_RETROGRADE:
-			m_pVessel->ToggleNavmode(NAVMODE_RETROGRADE);
-			return TRUE;
-		case IDC_NORMAL:
-			m_pVessel->ToggleNavmode(NAVMODE_NORMAL);
-			return TRUE;
-		case IDC_ANTINORMAL:
-			m_pVessel->ToggleNavmode(NAVMODE_ANTINORMAL);
-			return TRUE;
 		}
-		break;
-	case WM_HSCROLL:
-		switch (GetDlgCtrlID((HWND)lParam)) {
-		case IDC_MAIN_GAUGE:
-			switch (LOWORD(wParam)) {
-			case SB_THUMBTRACK:
-			case SB_LINELEFT:
-			case SB_LINERIGHT:
-				m_pVessel->SetThrusterGroupLevel(THGROUP_MAIN, HIWORD(wParam) * 0.01);
-				return 0;
-			}
-			break;
-		case IDC_RETRO_GAUGE:
-			switch (LOWORD(wParam)) {
-			case SB_THUMBTRACK:
-			case SB_LINELEFT:
-			case SB_LINERIGHT:
-				m_pVessel->SetThrusterGroupLevel(THGROUP_RETRO, HIWORD(wParam) * 0.01);
-				return 0;
-			}
-			break;
-		case IDC_HOVER_GAUGE:
-			switch (LOWORD(wParam)) {
-			case SB_THUMBTRACK:
-			case SB_LINELEFT:
-			case SB_LINERIGHT:
-				m_pVessel->SetThrusterGroupLevel(THGROUP_HOVER, HIWORD(wParam) * 0.01);
-				return 0;
-			}
-			break;
-		}
-		break;
+		ImGui::EndAnimatedCombo();
 	}
-	return oapiDefDialogProc(hDlg, uMsg, wParam, lParam);
+	ImGui::SameLine();
+	if(ImGui::Button("Set focus")) {
+		oapiSetFocusObject(m_pVessel->GetHandle());
+	}
+	ImGui::SeparatorText("Engines");
+	float lvl = -m_pVessel->GetThrusterGroupLevel (THGROUP_RETRO);
+	ImGui::SetNextItemWidth(160.0f);
+	if(ImGui::SliderFloat("##Retro", &lvl, -1.0, 0.0, ICON_FA_ANGLES_LEFT " Retro", ImGuiSliderFlags_AlwaysClamp)) {
+		m_pVessel->SetThrusterGroupLevel (THGROUP_RETRO, -lvl);
+	}
+	ImGui::SameLine();
+	lvl = m_pVessel->GetThrusterGroupLevel (THGROUP_MAIN);
+	ImGui::SetNextItemWidth(160.0f);
+	if(ImGui::SliderFloat("##Main", &lvl, 0.0, 1.0, "Main " ICON_FA_ANGLES_RIGHT, ImGuiSliderFlags_AlwaysClamp)) {
+		m_pVessel->SetThrusterGroupLevel (THGROUP_MAIN, lvl);
+	}
+
+	lvl = m_pVessel->GetThrusterGroupLevel (THGROUP_HOVER);
+	ImGui::SetNextItemWidth(160.0f);
+	if(ImGui::SliderFloat("##Hover", &lvl, 0.0, 1.0, "Hover", ImGuiSliderFlags_AlwaysClamp)) {
+		m_pVessel->SetThrusterGroupLevel (THGROUP_HOVER, lvl);
+	}
+	ImGui::SameLine();
+	ImGui::SetNextItemWidth(160.0f);
+	ImGui::SliderFloat("##RCS", &m_RCSlevel, 0.0, 1.0, "RCS level", ImGuiSliderFlags_AlwaysClamp);
+
+	float w = ImGui::CalcTextSize(ICON_FA_ARROW_UP).x * 2.0f;
+	ImVec2 btnSize = ImVec2(w, w);
+	w = ImGui::GetContentRegionAvail().x / 2.0f;
+	ImVec2 childSize = ImVec2(w, btnSize.y * 5.0f);
+	ImGui::BeginChild("Left", childSize);
+	ImGui::SeparatorText("RCS Rotation");
+
+	ImGui::Dummy(btnSize);
+	ImGui::SameLine();
+	if(ButtonPressed(ICON_FA_ARROW_UP, btnSize))
+		m_pVessel->IncThrusterGroupLevel_SingleStep (THGROUP_ATT_PITCHDOWN, m_RCSlevel);
+
+	if(ButtonPressed(ICON_FA_ARROW_ROTATE_LEFT, btnSize))
+		m_pVessel->IncThrusterGroupLevel_SingleStep (THGROUP_ATT_BANKLEFT, m_RCSlevel);
+
+	ImGui::SameLine();
+	if(ButtonPressed(ICON_FA_ARROWS_TO_DOT, btnSize))
+		m_pVessel->ToggleNavmode(NAVMODE_KILLROT);
+
+	ImGui::SameLine();
+	if(ButtonPressed(ICON_FA_ARROW_ROTATE_RIGHT, btnSize))
+		m_pVessel->IncThrusterGroupLevel_SingleStep (THGROUP_ATT_BANKRIGHT, m_RCSlevel);
+
+	if(ButtonPressed(ICON_FA_ARROW_LEFT, btnSize))
+		m_pVessel->IncThrusterGroupLevel_SingleStep (THGROUP_ATT_YAWLEFT, m_RCSlevel);
+	ImGui::SameLine();
+	if(ButtonPressed(ICON_FA_ARROW_DOWN, btnSize))
+		m_pVessel->IncThrusterGroupLevel_SingleStep (THGROUP_ATT_PITCHUP, m_RCSlevel);
+	ImGui::SameLine();
+	if(ButtonPressed(ICON_FA_ARROW_RIGHT, btnSize))
+		m_pVessel->IncThrusterGroupLevel_SingleStep (THGROUP_ATT_YAWRIGHT, m_RCSlevel);
+
+
+	ImGui::EndChild();
+	ImGui::SameLine();
+	ImGui::BeginChild("Right", childSize);
+	ImGui::SeparatorText("RCS Translation");
+	ImGui::Dummy(btnSize);
+	ImGui::SameLine();
+	if(ButtonPressed(ICON_FA_ARROW_UP, btnSize))
+		m_pVessel->IncThrusterGroupLevel_SingleStep (THGROUP_ATT_DOWN, m_RCSlevel);
+	ImGui::SameLine();
+	if(ButtonPressed(ICON_FA_ANGLES_UP, btnSize))
+		m_pVessel->IncThrusterGroupLevel_SingleStep (THGROUP_ATT_FORWARD, m_RCSlevel);
+	ImGui::Dummy(btnSize);
+	ImGui::SameLine();
+	ImGui::Dummy(btnSize);
+	ImGui::SameLine();
+	if(ButtonPressed(ICON_FA_ANGLES_DOWN, btnSize))
+		m_pVessel->IncThrusterGroupLevel_SingleStep (THGROUP_ATT_BACK, m_RCSlevel);
+
+	if(ButtonPressed(ICON_FA_ARROW_LEFT, btnSize))
+		m_pVessel->IncThrusterGroupLevel_SingleStep (THGROUP_ATT_LEFT, m_RCSlevel);
+	ImGui::SameLine();
+	if(ButtonPressed(ICON_FA_ARROW_DOWN, btnSize))
+		m_pVessel->IncThrusterGroupLevel_SingleStep (THGROUP_ATT_UP, m_RCSlevel);
+	ImGui::SameLine();
+	if(ButtonPressed(ICON_FA_ARROW_RIGHT, btnSize))
+		m_pVessel->IncThrusterGroupLevel_SingleStep (THGROUP_ATT_RIGHT, m_RCSlevel);
+	ImGui::EndChild();
+
+	ImGui::SeparatorText("Nav mode");
+	
+	btnSize.x = ImGui::GetContentRegionAvail().x / 3.0f - ImGui::GetStyle().FramePadding.x * 4.0f / 3.0f;
+	if(ImGui::Button("Killrot", btnSize))
+		m_pVessel->ToggleNavmode(NAVMODE_KILLROT);
+
+	ImGui::SameLine();
+	if(ImGui::Button("Prograde", btnSize))
+		m_pVessel->ToggleNavmode(NAVMODE_PROGRADE);
+
+	ImGui::SameLine();
+	if(ImGui::Button("Normal", btnSize))
+		m_pVessel->ToggleNavmode(NAVMODE_NORMAL);
+
+
+	if(ImGui::Button("HLevel", btnSize))
+		m_pVessel->ToggleNavmode(NAVMODE_HLEVEL);
+
+	ImGui::SameLine();
+	if(ImGui::Button("Retrograde", btnSize))
+		m_pVessel->ToggleNavmode(NAVMODE_RETROGRADE);
+
+	ImGui::SameLine();
+	if(ImGui::Button("Anti Normal", btnSize))
+		m_pVessel->ToggleNavmode(NAVMODE_ANTINORMAL);
 }

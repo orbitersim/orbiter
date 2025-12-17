@@ -21,6 +21,7 @@
 // ==============================================================
 
 DWORD g_dwCmd;        // custom function identifier
+int g_dwMenuCmd;
 
 // ==============================================================
 // Local prototypes
@@ -44,6 +45,8 @@ DLLCLBK void InitModule (HINSTANCE hDLL)
 	g_dwCmd = oapiRegisterCustomCmd ((char*)"External MFD",
 		(char*)"Opens a multifunctional display in an external window",
 		OpenDlgClbk, NULL);
+
+	g_dwMenuCmd = oapiRegisterCustomMenuCmd ("MFD", "MenuInfoBar/ExtMFD.png", OpenDlgClbk, NULL);
 }
 
 // ==============================================================
@@ -54,6 +57,7 @@ DLLCLBK void ExitModule (HINSTANCE hDLL)
 {
 	// Unregister the custom function in Orbiter
 	oapiUnregisterCustomCmd (g_dwCmd);
+	oapiUnregisterCustomMenuCmd (g_dwMenuCmd);
 }
 
 

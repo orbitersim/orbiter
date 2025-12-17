@@ -11,8 +11,6 @@
 
 #include "LpadTab.h"
 #include "OptionsPages.h"
-#include "CustomControls.h"
-#include "DlgOptions.h"
 
 namespace orbiter {
 

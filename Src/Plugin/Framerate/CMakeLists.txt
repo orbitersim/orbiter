@@ -3,9 +3,6 @@
 
 add_library(Framerate SHARED
 	Framerate.cpp
-	Framerate.rc
-	../Common/Dialog/Graph.cpp
-	../Common/Dialog/TabDlg.cpp
 )
 
 target_include_directories(Framerate
@@ -16,7 +13,7 @@ target_include_directories(Framerate
 target_link_libraries(Framerate
 	${ORBITER_LIB}
 	${ORBITER_SDK_LIB}
-	UxTheme.lib
+	imgui
 )
 
 add_dependencies(Framerate

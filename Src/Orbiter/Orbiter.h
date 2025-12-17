@@ -97,7 +97,7 @@ public:
 	HWND OpenDialog (HINSTANCE hInst, int id, DLGPROC pDlg, void *context = 0); // use this version for for calls from external dlls
 	HWND OpenDialogEx (int id, DLGPROC pDlg, DWORD flag = 0, void *context = 0); // extended version
 	HWND OpenDialogEx (HINSTANCE hInst, int id, DLGPROC pDlg, DWORD flag = 0, void *context = 0); // extended version
-	HWND OpenHelp (const HELPCONTEXT *hcontext);
+	void OpenHelp (const HELPCONTEXT *hcontext);
 	void OpenLaunchpadHelp (HELPCONTEXT *hcontext);
 	HELPCONTEXT DefaultHelpPage(const char* topic);
 	//void OpenDialogAsync (int id, DLGPROC pDlg, void *context = 0);
@@ -211,7 +211,7 @@ public:
 	std::ifstream *FRsys_stream; // system event playback file
 	double frec_sys_simt;        // system event timer
 	PlaybackEditor *FReditor;    // playback editor instance
-	void ToggleRecorder (bool force = false, bool append = false);
+	bool ToggleRecorder (bool force = false, bool append = false);
 	void EndPlayback ();
 	inline int RecorderStatus() const { return (bRecord ? 1 : bPlayback ? 2 : 0); }
 	inline bool IsPlayback() const { return bPlayback; }
@@ -246,10 +246,23 @@ public:
 		void *context;
 	} CUSTOMCMD;
 
+	struct CUSTOMMENUCMD {
+		std::string label;
+		std::string imagepath;
+		int id;
+		CustomFunc func;
+		void *context;
+
+		CUSTOMMENUCMD(const char *lbl, const char *ip, int n, CustomFunc f, void *ctx):label(lbl),imagepath(ip),id(n),func(f),context(ctx){}
+	};
+
 	TimeJumpData tjump;
 
 	DWORD RegisterCustomCmd (char *label, char *desc, CustomFunc func, void *context);
 	bool UnregisterCustomCmd (int cmdId);
+
+	int RegisterMenuCmd (const char *label, const char *imagepath, CustomFunc func, void *context = NULL);
+	void UnregisterMenuCmd (int cmdId);
 
 	MeshManager     meshmanager;    // global mesh manager
 
@@ -342,8 +355,6 @@ protected:
     HRESULT InitDeviceObjects ();
 	HRESULT RestoreDeviceObjects ();
     HRESULT DeleteDeviceObjects ();
-	void InitializeGDIResources (HWND hWnd);
-	void ReleaseGDIResources ();
 
 private:
 	Config         *pConfig;
@@ -439,6 +450,10 @@ private:
 	CUSTOMCMD *customcmd;
 	DWORD ncustomcmd;
 	friend class DlgFunction;
+
+	// list of custom menu items
+	std::vector<CUSTOMMENUCMD> menuitems;
+	friend class DynamicMenuBar;
 
 public:
 	// external graphics client

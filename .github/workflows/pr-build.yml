@@ -1,0 +1,22 @@
+name: Manual PR Build
+
+on:
+  workflow_dispatch:
+    inputs:
+      architecture:
+        description: Build architecture
+        required: true
+        default: x86
+        type: choice
+        options:
+          - x86
+          - x64
+
+jobs:
+  build:
+    uses: ./.github/workflows/reusable-build.yml
+    with:
+      os: windows-2022
+      architecture: ${{ inputs.architecture }}
+      configuration: release
+      upload: true

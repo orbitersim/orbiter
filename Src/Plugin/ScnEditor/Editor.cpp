@@ -63,12 +63,15 @@ ScnEditor::ScnEditor (HINSTANCE hDLL)
 		(char*)"Scenario Editor",
 		(char*)"Create, delete and configure spacecraft",
 		::OpenDialog, this);
+
+	dwMenuCmd = oapiRegisterCustomMenuCmd("ScnEdit", "MenuInfoBar/ScnEdit.png", ::OpenDialog, this);
 }
 
 ScnEditor::~ScnEditor ()
 {
 	CloseDialog();
 	oapiUnregisterCustomCmd (dwCmd);
+	oapiUnregisterCustomMenuCmd (dwMenuCmd);
 	ImageList_Destroy (imglist);
 }
 

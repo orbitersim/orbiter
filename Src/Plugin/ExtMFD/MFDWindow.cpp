@@ -12,6 +12,7 @@
 // Class implementation for MFDWindow. Defines the properties and
 // state of an MFD display in a dialog box
 // ==============================================================
+#define IMGUI_DEFINE_MATH_OPERATORS
 #include "MFDWindow.h"
 #include <stdio.h>
 #include <cstring>
@@ -65,6 +66,12 @@ static void AspectRatio(ImGuiSizeCallbackData* data)
 }
 
 void DlgExtMFD::Display() {
+	// Position the window just below the cursor
+	ImVec2 mouse = ImGui::GetMousePos();
+	ImVec2 offset(-10.0f, 10.0f);
+	ImVec2 pos = mouse + offset;
+	ImGui::SetNextWindowPos(pos, ImGuiCond_FirstUseEver);
+
 	ImGui::SetNextWindowSize(ImVec2(defaultSize.width, defaultSize.height), ImGuiCond_Once);
 	ImGui::SetNextWindowSizeConstraints(ImVec2(382,366), ImVec2(FLT_MAX, FLT_MAX), AspectRatio, m_mfd);
 	
@@ -210,7 +217,6 @@ MFDWindow::MFDWindow(const MFDSPEC& spec) : ExternMFD(spec)
 
 MFDWindow::~MFDWindow()
 {
-	oapiCloseDialog(m_window.get());
 }
 
 void MFDWindow::SetVessel(OBJHANDLE hV)

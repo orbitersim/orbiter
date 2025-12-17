@@ -234,7 +234,6 @@ public:
 	void SetGroundObserver_TargetLock (bool lock);
 	double GroundObserver_TerrainLimit() const { return go.terrain_limit; }
 	void SetGroundObserver_TerrainLimit (double alt);
-	void OutputGroundObserverParams () const;
 
 	bool ProcessMouse (UINT event, DWORD state, DWORD x, DWORD y, const char *kstate);
 	void UpdateMouse ();
@@ -261,9 +260,6 @@ public:
 	void Update ();
 	// Propagate camera state from S0 to S1. Note: This is called after world state has
 	// been propagated to S1, but before S1 is copied back to S0.
-
-	void SendDlgMessage (int msgid, void *msg) const;
-	// Notify Camera dialog box of a change
 
 	//inline D3DMATRIX *D3D_ViewMatrix ()
 	//{ return &view_mat; }

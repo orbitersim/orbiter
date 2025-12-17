@@ -3,7 +3,6 @@
 
 add_library(Rcontrol SHARED
 	Rcontrol.cpp
-	Rcontrol.rc
 )
 
 target_include_directories(Rcontrol
@@ -14,12 +13,12 @@ target_link_libraries(Rcontrol
 	${ORBITER_LIB}
 	${ORBITER_SDK_LIB}
 	${ORBITER_DLGCTRL_LIB}
+	imgui
 )
 
 add_dependencies(Rcontrol
 	${OrbiterTgt}
 	Orbitersdk
-	DlgCtrl
 )
 
 set_target_properties(Rcontrol
@@ -31,4 +30,8 @@ set_target_properties(Rcontrol
 install(TARGETS Rcontrol
 	RUNTIME
 	DESTINATION ${ORBITER_INSTALL_PLUGIN_DIR}
+)
+
+install(FILES Rcontrol.png
+	DESTINATION ${ORBITER_INSTALL_TEXTURES_DIR}/MenuInfoBar
 )

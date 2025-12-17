@@ -16,6 +16,32 @@
 using namespace oapi;
 
 
+static std::string UTF8ToCP1252(const char *utf8, int ulen)
+{
+	// Convert UTF-8 to Windows-1252
+	std::wstring utf16(ulen, L'\0');
+	MultiByteToWideChar(CP_UTF8, 0, utf8,
+                        ulen, utf16.data(), ulen);
+
+	int wlen = WideCharToMultiByte(28591, 0, utf16.c_str(),
+                                  utf16.length(), nullptr, 0,
+                                  nullptr, nullptr);
+	// In case of problem, return the original string
+	// to help with backward compatibility
+	if (wlen == 0) return std::string(utf8, ulen);
+
+	// The string will be at most ulen in length since
+	// it won't contain multibyte characters
+	std::string str(ulen, '\0');
+	int len = WideCharToMultiByte(28591, 0, utf16.c_str(),
+                        utf16.length(), &str[0], wlen, 
+                        nullptr, nullptr);
+
+	// Resize to proper length
+	str.resize(len);
+	return str;
+}
+
 // ===============================================================================================
 // class GDIPad
 // ===============================================================================================
@@ -151,12 +177,14 @@ DWORD GDIPad::GetCharSize ()
 
 // ===============================================================================================
 //
-DWORD GDIPad::GetTextWidth (const char *str, int len)
+DWORD GDIPad::GetTextWidth (const char *utf8, int len)
 {
-	if (str) if (str[0] == '_') if (strcmp(str, "_SkpVerInfo") == 0) return 1;
+	if (utf8) if (utf8[0] == '_') if (strcmp(utf8, "_SkpVerInfo") == 0) return 1;
 	SIZE size;
-	if (!len) len = lstrlen(str);
-	GetTextExtentPoint32 (hDC, str, len, &size);
+	if (!len) len = lstrlen(utf8);
+	std::string str = UTF8ToCP1252(utf8, len);
+
+	GetTextExtentPoint32 (hDC, str.c_str(), str.length(), &size);
 	return (DWORD)size.cx;
 }
 
@@ -179,9 +207,10 @@ void GDIPad::GetOrigin (int *x, int *y) const
 
 // ===============================================================================================
 //
-bool GDIPad::Text (int x, int y, const char *str, int len)
+bool GDIPad::Text (int x, int y, const char *utf8, int len)
 {
-	return (TextOut (hDC, x, y, str, len) != FALSE);
+	std::string str = UTF8ToCP1252(utf8, len);
+	return (TextOut (hDC, x, y, str.c_str(), str.length()) != FALSE);
 }
 
 // ===============================================================================================
@@ -193,14 +222,15 @@ bool GDIPad::TextW (int x, int y, const LPWSTR str, int len)
 
 // ===============================================================================================
 //
-bool GDIPad::TextBox (int x1, int y1, int x2, int y2, const char *str, int len)
+bool GDIPad::TextBox (int x1, int y1, int x2, int y2, const char *utf8, int len)
 {
+	std::string str = UTF8ToCP1252(utf8, len);
 	RECT r;
 	r.left =   x1;
 	r.top =    y1;
 	r.right =  x2;
 	r.bottom = y2;
-	return (DrawText (hDC, str, len, &r, DT_LEFT|DT_NOPREFIX|DT_WORDBREAK) != 0);
+	return (DrawText (hDC, str.c_str(), str.length(), &r, DT_LEFT|DT_NOPREFIX|DT_WORDBREAK) != 0);
 }
 
 // ===============================================================================================

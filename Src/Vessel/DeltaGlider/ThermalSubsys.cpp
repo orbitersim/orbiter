@@ -1053,8 +1053,6 @@ RadiatorControl::RadiatorControl (ThermalSubsystem *_subsys)
 
 void RadiatorControl::OpenRadiator ()
 {
-	void UpdateCtrlDialog (DeltaGlider *dg, HWND hWnd = 0);
-
 	radiator_extend = true;
 	radiator_state.Open();
 	if (sw->GetState() != DGSwitch1::UP) {
@@ -1062,7 +1060,6 @@ void RadiatorControl::OpenRadiator ()
 		DG()->TriggerRedrawArea(1, 0, ELID_SWITCH);
 	}
 	DG()->UpdateStatusIndicators();
-	UpdateCtrlDialog (DG());
 	DG()->RecordEvent ("RADIATOR", "OPEN");
 }
 
@@ -1070,8 +1067,6 @@ void RadiatorControl::OpenRadiator ()
 
 void RadiatorControl::CloseRadiator ()
 {
-	void UpdateCtrlDialog (DeltaGlider *dg, HWND hWnd = 0);
-
 	radiator_extend = false;
 	radiator_state.Close();
 	if (sw->GetState() != DGSwitch1::DOWN) {
@@ -1079,7 +1074,6 @@ void RadiatorControl::CloseRadiator ()
 		DG()->TriggerRedrawArea(1, 0, ELID_SWITCH);
 	}
 	DG()->UpdateStatusIndicators();
-	UpdateCtrlDialog (DG());
 	DG()->RecordEvent ("RADIATOR", "CLOSE");
 }
 

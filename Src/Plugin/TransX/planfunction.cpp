@@ -339,7 +339,7 @@ void minorejectplan::wordupdate(oapi::Sketchpad *sketchpad, int width, int heigh
 	// Get the target inclination (absolute wrt global coordinates)
 	VECTOR3 down = {0, -1, 0};
 	double targetInc = 180/PI*acos(cosangle(down, planorbit.getplanevector()));
-	sprintf(buffer, "Incl.  :%.4g°", targetInc);
+	sprintf(buffer, "Incl.  :%.4gÂ°", targetInc);
 	sketchpad->Text( 0, pos, buffer, strlen(buffer));
 	pos += linespacing;
 
@@ -348,7 +348,7 @@ void minorejectplan::wordupdate(oapi::Sketchpad *sketchpad, int width, int heigh
 	double lan = atan2(LAN.z, LAN.x) * 180 / PI;
 	if(lan < 0)
 		lan += 360;
-	sprintf(buffer, "LAN    :%.4g°", lan);
+	sprintf(buffer, "LAN    :%.4gÂ°", lan);
 	sketchpad->Text( 0, pos, buffer, strlen(buffer));
 	pos += linespacing;
 
@@ -368,11 +368,11 @@ void minorejectplan::wordupdate(oapi::Sketchpad *sketchpad, int width, int heigh
 			if(angle > 360)
 				angle -= 360;
 		}
-		len=sprintf(buffer,"Heading:%.4g°", angle);
+		len=sprintf(buffer,"Heading:%.4gÂ°", angle);
 	}
 	else
 	{
-		len=sprintf(buffer, "Rel Inc:%.4g°", angle);
+		len=sprintf(buffer, "Rel Inc:%.4gÂ°", angle);
 	}
 	sketchpad->Text( 0, pos, buffer, len);
 

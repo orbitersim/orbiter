@@ -3,9 +3,6 @@
 
 add_library(FlightData SHARED
 	FlightData.cpp
-	FlightData.rc
-	FDGraph.cpp
-	../Common/Dialog/Graph.cpp
 )
 
 target_include_directories(FlightData
@@ -16,6 +13,7 @@ target_include_directories(FlightData
 target_link_libraries(FlightData
 	${ORBITER_LIB}
 	${ORBITER_SDK_LIB}
+	imgui
 )
 
 add_dependencies(FlightData
@@ -32,4 +30,8 @@ set_target_properties(FlightData
 install(TARGETS FlightData
 	RUNTIME
 	DESTINATION ${ORBITER_INSTALL_PLUGIN_DIR}
+)
+
+install(FILES FlightData.png
+	DESTINATION ${ORBITER_INSTALL_TEXTURES_DIR}/MenuInfoBar
 )

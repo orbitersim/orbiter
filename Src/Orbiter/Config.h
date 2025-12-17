@@ -142,20 +142,20 @@ struct CFG_INSTRUMENTPRM {
 };
 
 struct CFG_VISHELPPRM {
-	DWORD  flagPlanetarium;		// bitflags for items to be displayed in planetarium mode
+	int    flagPlanetarium;		// bitflags for items to be displayed in planetarium mode
 		// bit 0: enable planetarium mode         bit 5: constellation patterns
 		// bit 1: celestial grid                  bit 6: constellation labels
 		// bit 2: ecliptic grid                   bit 7: long constellation names
 		// bit 3: galactic grid                   bit 8: constellation boundaries
 		// bit 4: equator of current target       bit 9: celestial sphere feature markers
-	DWORD  flagMarkers;         // bitflags for surface and object marker display
+	int    flagMarkers;         // bitflags for surface and object marker display
 	    // bit 0: enable markers                  bit 3: surface bases
 	    // bit 1: solar system bodies             bit 4: VOR transmitters
 	    // bit 2: vessels                         bit 5: surface features
-	DWORD  flagBodyForce;		// body force vector display
+	int    flagBodyForce;		// body force vector display
 	float  scaleBodyForce;		// force vector scaling factor
 	float  opacBodyForce;		// force vector opacity factor
-	DWORD  flagFrameAxes;		// frame axes vector display
+	int    flagFrameAxes;		// frame axes vector display
 	float  scaleFrameAxes;		// frame axes scaling factor
 	float  opacFrameAxes;		// frame axes opacity factor
 };
@@ -219,24 +219,25 @@ struct CFG_DEVPRM {
 
 struct CFG_JOYSTICKPRM {
 	DWORD  Joy_idx;				// joystick device index (0=disabled)
-	DWORD  Deadzone;			// central deadzone range for all axes (0-10000)
+	int    Deadzone;			// central deadzone range for all axes (0-10000)
 	DWORD  ThrottleAxis;		// joystick throttle axis (0=none, 1=z-axis, 2=slider 0, 3=slider 1)
-	DWORD  ThrottleSaturation;	// saturation level for joystick throttle control (0-10000)
+	int    ThrottleSaturation;	// saturation level for joystick throttle control (0-10000)
 	bool   bThrottleIgnore;		// ignore joystick throttle setting on start
 };
 
 struct CFG_UIPRM {              // user interface options
-	DWORD  MouseFocusMode;	    // 0: focus requires click; 1: focus requires click for child windows only; 2: focus follow mouse
-	DWORD  MenuMode;            // 0=show, 1=hide, 2=auto-hide
-	bool   bMenuLabelOnly;      // display only menu labels?
+	int    MouseFocusMode;	    // 0: focus requires click; 1: focus requires click for child windows only; 2: focus follow mouse
+	int    MenuMode;            // 0=show, 1=hide, 2=auto-hide
+	int    MenuButtonSize;      // Size of buttons in the menubar (in pixels)
+	int    MenuButtonHoverSize; // Size of buttons in the menubar when hovered (in pixels)
+	int    MenuButtonSpacing;   // Size of the padding between buttons in the menubar (in pixels)
+	bool   bMenuLabelAlways;    // display menu labels when buttons are hidden
 	bool   bWarpAlways;         // always display time acceleration != 1
-	bool   bWarpScientific;     // display time acceleration in scientific notation?
-	DWORD  InfoMode;            // 0=show, 1=hide, 2=auto-hide
-	DWORD  InfoAuxIdx[2];       // index for auxiliary info bars left/right (0=none)
-	DWORD  MenuOpacity;         // menubar opacity (0-10)
-	DWORD  InfoOpacity;         // infobar opacity (0-20)
-	DWORD  MenuScrollspeed;     // menubar scroll speed (1-20)
-	DWORD  PauseIndMode;        // 0=flash on pause/resume, 1=show on pause, 2=don't show
+	int    InfoMode;            // 0=show, 1=hide, 2=auto-hide
+	int    FPS;					// 0=hidden, 1=on the left, 2=on the right
+	int    MenuOpacity;         // menubar opacity (0-10)
+	int    InfoOpacity;         // infobar opacity (0-20)
+	int    MenuScrollspeed;     // menubar scroll speed (1-20)
 	int    SelVesselTab;        // tab to open in vessel selection dialog
  	int    SelVesselRange;      // "nearby" range for vessel selection dialog
 	bool   bSelVesselFlat;      // flat assemblies for vessel selection dialog
@@ -251,10 +252,13 @@ struct CFG_DEMOPRM {
 };
 
 struct CFG_FONTPRM {
-	float  dlgFont_Scale;		// font scaling factor
-	char   dlgFont1_Face[64];	// dialog font face name
-	float  ImGui_FontSize;		// Font size for ImGui dialogs
-	char   ImGui_FontFile[256];	// Font file for ImGui default font
+	float  dlgFont_Scale;		            // font scaling factor
+	char   dlgFont1_Face[64];	            // dialog font face name
+	float  ImGui_FontSize;		            // Font size for ImGui dialogs
+	char   ImGui_DefaultFontFile[MAX_PATH];	    // Font file for ImGui default font
+	char   ImGui_ConsoleFontFile[MAX_PATH];	    // Font file for ImGui default font
+	char   ImGui_MonospacedFontFile[MAX_PATH];  // Font file for ImGui default font
+	char   ImGui_ManuscriptFontFile[MAX_PATH];  // Font file for ImGui default font
 };
 
 struct CFG_CAMERAPRM {
@@ -304,7 +308,7 @@ char *readline (std::istream &is);
 bool GetItemString (std::istream &is, const char *label, char *val);
 bool GetItemReal   (std::istream &is, const char *label, double &val);
 bool GetItemInt    (std::istream &is, const char *label, int &val);
-bool GetItemSize   (std::istream& is, const char* label, size_t& val);
+bool GetItemSize   (std::istream &is, const char *label, size_t &val);
 bool GetItemHex    (std::istream &is, const char *label, int &val);
 bool GetItemBool   (std::istream &is, const char *label, bool &val);
 bool GetItemVector (std::istream &is, const char *label, Vector &val);
@@ -334,8 +338,6 @@ inline int StrNComp (const char *str1, const char *str2, int n, bool ignorecase)
 // =============================================================
 
 class Config {
-	friend class GDIResources;
-
 public:
 	Config ();
 
@@ -461,29 +463,5 @@ private:
 
 	std::list<std::string> m_activeModules; ///< list of active modules
 };
-
-// =============================================================
-
-class GDIResources {
-public:
-	GDIResources (HWND hWnd, DWORD winW, DWORD winH, const Config &config);
-	~GDIResources ();
-
-	// ingame dialog fonts
-	HFONT dlgF1r, dlgF1i; // standard dialog font (roman and italic) - can be variable pitch
-	int dlgF1H, dlgF1W;   // line height, average character width
-
-	HFONT dlgF2;          // fixed pitch dialog font
-	int dlgF2H, dlgF2W;   // line height, character width
-};
-
-// =============================================================
-
-// OBSOLETE!
-#ifdef __CONFIG_CPP
-GDIResources *g_gdires = 0;
-#else
-extern GDIResources *g_gdires;
-#endif
 
 #endif // !__CONFIG_H

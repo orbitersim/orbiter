@@ -1,1039 +1,803 @@
 // Copyright (c) Martin Schweiger
 // Licensed under the MIT License
+#define IMGUI_DEFINE_MATH_OPERATORS
+#include "OrbiterAPI.h"
+#include "imgui.h"
+#include "imgui_internal.h"
 
 #include "MenuInfoBar.h"
-#include "Pane.h"
 #include "Camera.h"
-#include "Resource.h"
 #include "Dialogs.h"
-#include "DlgMgr.h"
 #include "DlgMenuCfg.h"
-#include "Log.h"
-#include "GraphicsAPI.h"
-
-using std::min;
-using std::max;
 
 // =======================================================================
 // Externs
 
-extern char DBG_MSG[256];
 extern Orbiter *g_pOrbiter;
 extern Camera *g_camera;
-extern DWORD g_vtxcount;
-extern DWORD g_tilecount;
 extern TimeData td;
 
-class MenuInfoBar;
+const ImGuiWindowFlags INFOFLAGS = ImGuiWindowFlags_NoTitleBar |
+	ImGuiWindowFlags_NoInputs |
+	ImGuiWindowFlags_NoNav |
+	ImGuiWindowFlags_NoScrollbar |
+	ImGuiWindowFlags_AlwaysAutoResize |
+	ImGuiWindowFlags_NoCollapse |
+	ImGuiWindowFlags_NoMove |
+	ImGuiWindowFlags_NoSavedSettings |
+	ImGuiWindowFlags_NoFocusOnAppearing |
+	ImGuiWindowFlags_NoBringToFrontOnFocus |
+	ImGuiWindowFlags_NoDocking;
 
-// extra info mode ids
-#define EXTRAINFO_NONE       0
-#define EXTRAINFO_FRAMERATE  1
-#define EXTRAINFO_RENDERSTAT 2
-#define EXTRAINFO_VIEWPORT   3
 
-const int tgtTexH = 128;
-const int infoLine1 = tgtTexH-106;
-const int infoLine2 = tgtTexH- 89;
-const int infoLine3 = tgtTexH- 72;
+class DynamicMenuBar: public ImGuiDialog
+{
+	static inline const float strength = 0.3f;
+	CFG_UIPRM &prm;
 
-const double blink_t = 0.8;
-const double tmax = blink_t * 4.0;
-
-// =======================================================================
-// class ExtraInfoBar: base class for "extra info" bar modes
-// =======================================================================
-
-class ExtraInfoBar {
+	// Until we get it from C++20
+	static inline float lerp(float a, float b, float t) {
+			return a + t * (b - a);
+	}
 public:
-	ExtraInfoBar (MenuInfoBar *_mibar, int side);
-	virtual ~ExtraInfoBar ();
-	virtual void Update (double t, bool sys_tick) {}
-	virtual int Mode () const = 0;
-	static ExtraInfoBar *Create (MenuInfoBar *_mibar, int side, int _mode);
+	struct MenuItem {
+		std::string label;
+		SURFHANDLE texture;
+		CustomFunc func;
+		void *context;
+		ImTextureID texId;
+		int id;
+		float lastItemSize;
+		bool dragging;
+		float animStateScroll;
+		float animStateScale;
+		bool enabled;
+		MenuItem(const char *label_, const char *path, int id_, CustomFunc func_, void *context_):label(label_),func(func_),context(context_),id(id_) {
+			texture = oapiLoadTexture(path);
+			if(!texture) oapiAddNotification(OAPINOTIF_ERROR, "Cannot find menu item texture", path);
+			texId = ImGui::GetImTextureID(texture);
+			lastItemSize = g_pOrbiter->Cfg()->CfgUIPrm.MenuButtonSize;
+			dragging = false;
+			enabled = true;
+			animStateScroll = 0.0f;
+			animStateScale = 0.0f;
+		}
+		~MenuItem() {
+			if(texture)
+				oapiDestroySurface(texture);
+		}
 
-protected:
-	void Init ();
-	inline int TexBltString (const char *str, int tgtx, int tgty, int cleantox, char *curstr = 0, int maxn=1024)
-	{ return mibar->TexBltString (str, tgtx, tgty, cleantox, curstr, maxn); }
+		// We don't want to be able to copy because of the SURFHANDLE
+		MenuItem(const MenuItem&) = delete;
+		MenuItem& operator=(const MenuItem&) = delete;
+		MenuItem(MenuItem&& other) noexcept {
+			*this = std::move(other);
+		}
+		MenuItem& MenuItem::operator=(MenuItem&& other) noexcept {
+			label = std::move(other.label);
+			texture = other.texture;
+			other.texture = NULL;
+			func = other.func;
+			context = other.context;
+			texId = other.texId;
+			lastItemSize = other.lastItemSize;
+			id = other.id;
+			dragging = other.dragging;
+			enabled = other.enabled;
+			animStateScroll = other.animStateScroll;
+			animStateScale = other.animStateScale;
+			return *this;
+		}
+	};
 
-	MenuInfoBar *mibar;         // parent menu/info bar instance
-	const Pane *pane;           // pane instance (should be replaced with UILayer instance)
-	oapi::GraphicsClient *gc;   // client instance
-	SURFHANDLE infoSrc, infoTgt;// texture surface for the info panes
-	int texofs;                 // texture x-offset for left/right extra info bar
+	const ImGuiWindowFlags MENUFLAGS = ImGuiWindowFlags_NoTitleBar |
+		ImGuiWindowFlags_NoScrollbar |
+		ImGuiWindowFlags_AlwaysAutoResize |
+		ImGuiWindowFlags_NoCollapse |
+		ImGuiWindowFlags_NoMove |
+		ImGuiWindowFlags_NoSavedSettings |
+		ImGuiWindowFlags_NoBackground |
+		ImGuiWindowFlags_NoFocusOnAppearing |
+		ImGuiWindowFlags_DockNodeHost |
+		ImGuiWindowFlags_NoBringToFrontOnFocus |
+		ImGuiWindowFlags_NoDocking;
+	void OnDraw() {}
+	std::vector<MenuItem> items;
+	float animState;
+	float animStateSpacing;
+	std::vector<MenuInfoBar::MenuPreference> preferedOrder;
+
+	// Dragging
+	ImVec2 dragPos = {0,0};
+	bool isDragging;
+	bool oneDrag;
+	bool isDraggingOutside;
+	int swapId = -1;
+	ImTextureID dragTexId = 0;
+	int dragId = -1;
+	float holePos;
+
+
+	DynamicMenuBar(): ImGuiDialog("DynamicMenu"), prm(g_pOrbiter->Cfg()->CfgUIPrm) {
+		animState = 0.0f;
+		isDragging = false;
+		oneDrag = false;
+		isDraggingOutside = false;
+		animStateSpacing = prm.MenuButtonSpacing;
+
+		FILEHANDLE f = oapiOpenFile("MenuInfoBar.cfg", FILE_IN, CONFIG);
+		if(f) {
+			for(int i = 1;;i++) {
+				char buf[64];
+				char dst[256];
+				bool state;
+				sprintf(buf, "MenuItem%d", i);
+				bool s = oapiReadItem_string (f, buf, dst);
+				sprintf(buf, "MenuItemEnabled%d", i);
+				s &= oapiReadItem_bool (f, buf, state);
+				if(!s)
+					break;
+				preferedOrder.emplace_back(MenuInfoBar::MenuPreference{dst, state});
+			}
+
+			oapiCloseFile(f, FILE_IN);
+		}
+
+		items.reserve(g_pOrbiter->menuitems.size());
+		for(auto &item: g_pOrbiter->menuitems) {
+			AddMenuItem(item.label.c_str(), item.imagepath.c_str(), item.id, item.func, item.context);
+		}
+		// Save the current state if the file did not exist
+		if(!f) {
+			SavePreferedOrder();
+		}
+	}
+	// Test if labela appears before labelb in preferedOrder 
+	bool Before(const char *labela, const char *labelb) {
+		for(const auto &item: preferedOrder) {
+			if(item.label == labela)
+				return true;
+			if(item.label == labelb)
+				return false;
+		}
+		return false;
+	}
+
+	void AddMenuItem(const char *label, const char *imagepath, int id, CustomFunc func, void *context = NULL) {
+		const auto &known = std::find_if(preferedOrder.begin(), preferedOrder.end(), [label](const auto &item){ return item.label == label;});
+		if(known != preferedOrder.end()) {
+			// Insert the new item so that it respects the order provided by preferedOrder
+			for(auto it = items.begin(); it!=items.end();++it) {
+				if(!Before(it->label.c_str(), label)) {
+					auto newItem = items.emplace(it, label, imagepath, id, func, context);
+					newItem->enabled = known->enabled;
+					return;
+				}
+			}
+			// Add to the back if no candidate was found
+			auto &newItem = items.emplace_back(label, imagepath, id, func, context);
+			newItem.enabled = known->enabled;
+		} else {
+			// Unknown item, push to the back
+			items.emplace_back(label, imagepath, id, func, context);
+		}
+	}
+	void DelMenuItem(int id) {
+		items.erase(std::remove_if(items.begin(), items.end(), [id](const auto &item) { return item.id == id; }), items.end());
+		SavePreferedOrder();
+	}
+	void SyncPreferedOrder() {
+		// Refresh item state from preferedOrder
+		// Used when changing properties from DlgMenuCfg
+		for(auto &item: items) {
+			const auto &known = std::find_if(preferedOrder.begin(), preferedOrder.end(), [&item](const auto &el){ return el.label == item.label;});
+			if(known != preferedOrder.end()) {
+				if(item.enabled != known->enabled) {
+					if(!known->enabled) {
+						item.animStateScale = 1.0f;
+					} else {
+						item.animStateScale = -1.0f;
+						item.enabled = true;
+					}
+				}
+			}
+		}
+		SavePreferedOrder();
+	}
+	void SavePreferedOrder() {
+		preferedOrder.clear();
+		FILEHANDLE f = oapiOpenFile("MenuInfoBar.cfg", FILE_OUT, CONFIG);
+		int i = 0;
+		for(const auto &item:items) {
+			char buf[64];
+			i++;
+			preferedOrder.emplace_back(MenuInfoBar::MenuPreference{item.label, item.enabled});
+			sprintf(buf, "MenuItem%d", i);
+			oapiWriteItem_string(f, buf, const_cast<char *>(item.label.c_str()));
+			sprintf(buf, "MenuItemEnabled%d", i);
+			oapiWriteItem_bool(f, buf, item.enabled);
+		}
+		oapiCloseFile(f, FILE_OUT);
+	}
+
+	void SwapItems() {
+		if(swapId != -1) {
+			auto swappedItem = std::find_if(items.begin(), items.end(), [this](const MenuItem &a){return a.id == swapId;});
+			auto draggedItem = std::find_if(items.begin(), items.end(), [](const MenuItem &a){return a.dragging;});
+			// If the user moves the mouse quickly, or if there are disabled items,
+			// there can be several buttons between the "hole" and the target.
+			// We need to do a swap for each.
+			if(draggedItem != items.end() && swappedItem != items.end()) {
+				if(draggedItem < swappedItem) {
+					for (auto it = draggedItem; it != swappedItem; ++it) {
+						(it + 1)->animStateScroll = -1.0;
+						std::iter_swap(it, it + 1);
+					}
+				} else {
+					auto rdraggedItem = std::make_reverse_iterator(draggedItem + 1);
+					auto rswappedItem = std::make_reverse_iterator(swappedItem + 1);
+					for (auto it = rdraggedItem; it != rswappedItem; ++it) {
+						(it + 1)->animStateScroll = 1.0;
+						std::iter_swap(it, it + 1);
+					}
+				}
+			}
+			swapId = -1;
+		}
+	}
+	void Display() {
+		BeginMenuInfoBar();
+		ImGuiWindow* window = ImGui::GetCurrentWindow();
+		if (!window->SkipItems) {
+			ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.f, 0.f, 0.f, prm.MenuOpacity/10.0f));
+			ImGui::PushStyleColor(ImGuiCol_ButtonActive, ImVec4(0.f, 0.f, 0.f, prm.MenuOpacity/10.0f));
+			ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(0.6f, 0.6f, 0.6f, 0.6f));
+			ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(0,0));
+			SwapItems();
+			// MenuInfoBarItem uses isDragging so we cannot clear it here
+			// oneDrag will be set in case one item is being dragged this frame
+			oneDrag = false;
+			for(auto &item: items) {
+				if(item.enabled) {
+					if(MenuInfoBarItem(item)) {
+						item.func(item.context);
+					}
+				}
+			}
+			if(isDragging && !oneDrag) {
+				SavePreferedOrder();
+			}
+			isDragging = oneDrag;
+			ImGui::PopStyleVar();
+			ImGui::PopStyleColor(3);
+		}
+		EndMenuInfoBar();
+	}
+
+	void BeginMenuInfoBar() {
+		ImGuiViewport *viewport = ImGui::GetMainViewport();
+		// Force viewport, we don't want the menu bar to pop out
+		// of the main window when we scroll it outside of view
+		ImGui::SetNextWindowViewport(viewport->ID);
+
+		// Calculate the menu position
+		ImGuiStyle &style = ImGui::GetStyle();
+		ImGuiContext &g = *GImGui;
+		float yoffset = 0;
+			
+		switch(prm.MenuMode) {
+		case 0: // show
+			break;
+		case 1: // hide
+			yoffset -= style.WindowPadding.y;
+			yoffset -= prm.MenuButtonHoverSize;
+			yoffset -= g.FontSize;
+			break;
+		case 2: // auto-hide
+			yoffset -= style.WindowPadding.y;
+			yoffset -= prm.MenuButtonSize;
+			if(!prm.bMenuLabelAlways)
+				yoffset -= g.FontSize;
+			yoffset *= (1.0f - animState);
+			break;
+		}
+		// The menu is always centered horizontally by using ImVec2(0.5, 0) as a pivot
+		// and targeting the middle of the main window
+		ImGui::SetNextWindowPos(ImVec2(viewport->Pos.x + viewport->Size.x / 2.0f, viewport->Pos.y + yoffset), ImGuiCond_Always, ImVec2(0.5, 0));
+		
+		if(ImGui::Begin("##MenuInfoBar", nullptr, MENUFLAGS)) {
+			ImGuiStyle &style = ImGui::GetStyle();
+			ImVec2 bbmin = ImGui::GetCursorScreenPos() - style.WindowPadding;
+			ImVec2 bbmax = bbmin + ImGui::GetContentRegionAvail() + style.WindowPadding * 2.0f;
+			// Expand the bounding box a bit above the window so that the menubar
+			// doesn't disappear when the user overshoots when the mouse cursor
+			bbmin.y-=100;
+			bool isHovering = ImGui::IsMouseHoveringRect(bbmin, bbmax, false);
+
+			isDraggingOutside = !isHovering && isDragging;
+
+			if(isHovering || isDragging) {
+				if(ImGui::IsMouseClicked(ImGuiMouseButton_Right)) {
+					g_pOrbiter->DlgMgr()->EnsureEntry<DlgMenuCfg> ();
+				}
+
+				// Lower the menu
+				if (animState < 1.0f) {
+					animState += prm.MenuScrollspeed * g.IO.DeltaTime;
+					if(animState > 1.0f) animState = 1.0f;
+				}
+			} else {
+				// Release focus so we can use the keyboard without having to click
+				// on the screen after interacting with the menu bar
+				if(ImGui::IsWindowFocused())
+					ImGui::SetWindowFocus(NULL);
+
+				// Retract the menu
+				if (animState > 0.0f) {
+					animState -= prm.MenuScrollspeed * g.IO.DeltaTime;
+					if(animState < 0.0f) animState = 0.0f;
+				}
+			}
+
+			// Remove the button if it's dropped outside the menubar
+			if(ImGui::IsMouseReleased(ImGuiMouseButton_Left) && isDraggingOutside) {
+				int itemsEnabled = std::count_if(items.begin(), items.end(), [](const auto &item){return item.enabled;});
+				if(itemsEnabled > 1) { // Prevent removing the last button
+					auto draggedItem = std::find_if(items.begin(), items.end(), [](const MenuItem &a){return a.dragging;});
+					if(draggedItem != items.end()) {
+						draggedItem->animStateScale = 1.0;
+					}
+				}
+			}
+		}
+	}
+	bool MenuInfoBarItem(MenuItem &item) {
+		// Filter button spacing in time to prevent excessive jittering
+		// when modifying MenuButtonSpacing
+		if(animStateSpacing < prm.MenuButtonSpacing) animStateSpacing+=0.1f;
+		else if(animStateSpacing > prm.MenuButtonSpacing) animStateSpacing-=0.1f;
+		ImGui::SameLine(0.0f, animStateSpacing);
+		ImGuiWindow* window = ImGui::GetCurrentWindow();
+		ImGuiContext& g = *GImGui;
+
+		// Compute the item's position and size
+		float buttonCenterPos = ImGui::GetCursorScreenPos().x + item.lastItemSize / 2.0f;
+		float deltaPos = (ImGui::GetMousePos().x - buttonCenterPos) / item.lastItemSize;
+
+		// Keep the button fully sized when hovered
+		if(fabs(deltaPos) < 0.5f) {
+			deltaPos = 0;
+		}
+
+		// Use a gaussian bell contour to compute the button size
+		// given its distance from the cursor
+		float scale = exp(-deltaPos * deltaPos * strength) * animState;
+		float buttonSize = lrint(lerp(prm.MenuButtonSize, prm.MenuButtonHoverSize, scale));
+		item.lastItemSize = buttonSize;
+		
+		// Do a scale animation got the button
+		bool disableText = false;
+		if(item.animStateScale > 0.0f) {
+			disableText = true;
+			item.animStateScale -= prm.MenuScrollspeed * g.IO.DeltaTime;
+			if(item.animStateScale <= 0.0f) {
+				item.animStateScale = 0.0f;
+				// Button has shrunk away, disable it
+				item.enabled = false;
+				SavePreferedOrder();
+				return false;
+			}
+			buttonSize *= item.animStateScale;
+		} else if(item.animStateScale < 0.0f) {
+			disableText = true;
+			item.animStateScale += prm.MenuScrollspeed * g.IO.DeltaTime;
+			if(item.animStateScale >= 0.0f) {
+				item.animStateScale = 0.0f;
+			}
+			buttonSize *= 1.0f + item.animStateScale;
+		}
+
+		ImRect bb(window->DC.CursorPos, window->DC.CursorPos + ImVec2(buttonSize, buttonSize));
+		const char *label = item.label.c_str();
+		bool ret = false;
+		
+		if(item.dragging) {
+			// If this button is currently being dragged, we use an invisible
+			// button to keep a "hole" in the menu bar and keep track of its
+			// original position.
+			// It will be drawn at its dragged position in EndMenuInfoBar()
+			ImGui::InvisibleButton(label, ImVec2(buttonSize, buttonSize));
+			holePos = bb.Min.x;
+		} else {
+			// If another button is being dragged, test if the current one needs to
+			// be swapped with it
+			if(isDragging) {
+				// Different check if the button is to the right or to the left of the "hole"
+				if(dragPos.x < holePos) {
+					if(dragPos.x < bb.Min.x && (dragPos.x + prm.MenuButtonHoverSize > bb.Min.x)) {
+						swapId = item.id;
+					}
+				} else {
+					if((dragPos.x + prm.MenuButtonHoverSize)> bb.Max.x && (dragPos.x < bb.Max.x)) {
+						swapId = item.id;
+					}
+				}
+			}
+			ImVec2 textsize = ImGui::CalcTextSize(label, NULL, true);
+			ImVec2 textpos = ImVec2(bb.Min.x + (bb.Max.x - bb.Min.x) / 2.0f - textsize.x / 2.0f, bb.Max.y);
+			if (item.animStateScroll != 0.0f) {
+				// If animState != 0, it means the current button has been swapped recently
+				// We do the swapping animation by using an invisible button at its final position
+				// and drawing it's animated position with the DrawList 
+				if(item.animStateScroll < 0.0) {
+					item.animStateScroll += prm.MenuScrollspeed * g.IO.DeltaTime;
+					if(item.animStateScroll > 0.0) item.animStateScroll = 0.0;
+				} else if(item.animStateScroll > 0.0) {
+					item.animStateScroll -= prm.MenuScrollspeed * g.IO.DeltaTime;
+					if(item.animStateScroll < 0.0) item.animStateScroll = 0.0;
+				}
+				ImGuiContext& g = *GImGui;
+				ImGui::InvisibleButton(label, ImVec2(buttonSize, buttonSize));
+				ImVec2 offset = ImVec2(item.animStateScroll * buttonSize, 0);
+				window->DrawList->AddImage(item.texId, bb.Min - offset, bb.Max - offset);
+				window->DrawList->AddText(textpos - offset, 0xffffffff, label);
+			} else {
+				ret = ImGui::ImageButton(label, item.texId, ImVec2(buttonSize, buttonSize));
+				if(!disableText)
+					window->DrawList->AddText(textpos, 0xffffffff, label);
+			}
+		}
+
+		bool active = ImGui::IsItemActive();
+		bool dragging = ImGui::IsMouseDragging(ImGuiMouseButton_Left);
+
+		if(active && dragging) {
+			// This item is being pressed and dragged.
+			// If it's the first time we save the item's position and texture ID.
+			// If not, we update the drag position according to the mouse movement.
+			// dragPos will be used for drawing the button later and  for checking
+			// if we need to swap items
+			oneDrag = true;
+			ImGuiIO& io = ImGui::GetIO();
+			if(!item.dragging) {
+				dragPos = ImGui::GetItemRectMin();
+				item.dragging = true;
+				dragTexId = item.texId;
+			} else {
+				dragPos += io.MouseDelta;
+			}
+		} else if(!dragging) {
+			item.dragging = false;
+		}
+		return ret;
+	}
+
+	void EndMenuInfoBar() {
+		// If we're dragging a button, draw it last from here so it stays on top of the other items
+		if(isDragging) {
+			ImGuiWindow* window = ImGui::GetCurrentWindow();
+			int itemsEnabled = std::count_if(items.begin(), items.end(), [](const auto &item){return item.enabled;});
+			ImVec2 imageSize = ImVec2(prm.MenuButtonHoverSize, prm.MenuButtonHoverSize);
+			if(isDraggingOutside && itemsEnabled > 1) {
+				// If it's outside the menu and it's not the only button remaining,
+				// add a red background and show a removal message
+				window->DrawList->AddRectFilled(dragPos, dragPos + imageSize, 0xbfbfbfff);
+				const char *label = "Remove from menu";
+				ImVec2 textSize = ImGui::CalcTextSize(label, NULL, true);
+				window->DrawList->AddText(dragPos + ImVec2(prm.MenuButtonHoverSize / 2.0f - textSize.x / 2.0f, prm.MenuButtonHoverSize), 0xffffffff, label);
+			} else {
+				window->DrawList->AddRectFilled(dragPos, dragPos + imageSize, 0xbfbfbfbf);
+			}
+			window->DrawList->AddImage(dragTexId, dragPos, dragPos + imageSize);
+		}
+
+		// Add some padding at the bottom so we can hover over the menu bar even when it's fully hidden
+		if(prm.MenuMode != 0) {
+			ImGui::NewLine();
+			ImGui::NewLine();
+		}
+		ImGui::End();
+	}
 };
 
-ExtraInfoBar::ExtraInfoBar (MenuInfoBar *_mibar, int side)
-{
-	mibar = _mibar;
-	pane = mibar->pane;
-	gc = mibar->gc;
-	infoSrc = mibar->menuSrc;
-	infoTgt = mibar->menuTgt;
-	texofs = (side ? 400 : 205);
-	Init ();
-}
 
-ExtraInfoBar::~ExtraInfoBar()
-{
-}
-
-void ExtraInfoBar::Init ()
-{
-	gc->clbkBlt (infoTgt, texofs, 20, infoSrc, 800, 148, 196, 54); // clear
-}
-
-// =======================================================================
-// class GraphInfoBar: base class for graph-based info modes
-// =======================================================================
-
-class GraphInfoBar: public ExtraInfoBar {
+class InfoFrameRate {
+	static const int HISTORY_SIZE = 64;
+	float history[HISTORY_SIZE];
+	float fpsMax;
+	int historyOffset;
 public:
-	GraphInfoBar (MenuInfoBar *_mibar, int side);
+	InfoFrameRate() {
+		for(int i = 0; i < HISTORY_SIZE; i++) {
+			history[i] = 0.1;
+		}
+		historyOffset = 0;
+		fpsMax = 0.0f;
+	}
+	void Update() {
+		int offset = ((int)td.SysT0) % HISTORY_SIZE;
+		if(offset != historyOffset) {
+			historyOffset = offset;
+			history[historyOffset] = 0.0f;
+			UpdateMinMax();
+		}
+		ImGuiContext &g = *GImGui;
+		float fps = g.IO.Framerate;
+		history[historyOffset] = fps;
+		fpsMax = std::max(fpsMax, fps);
+	}
+	void UpdateMinMax() {
+		fpsMax = 0.0;
+		for(int i = 0; i < HISTORY_SIZE; i++) {
+			if(history[i] > fpsMax) {
+				fpsMax = history[i];
+			}
+		}
+	}
+	void Display() {
+		Update();
+		ImVec4 white{1,1,1,1};
+		ImGuiContext &g = *GImGui;
 
-protected:
-	void Init ();
-	double ScanSmax ();
-	void LabelSmax (double smax);
-	void RescaleGraph (double smax);
-	void SetCurrentSample (double s);
-
-	int nsample, isample;              // number of samples, current sample
-	double smax, sample[FPSMAXSAMPLE]; // graph upper bound, sample array
-	int bufofs;                        // x-offset of graph preparation buffer
+		ImGui::BeginChild("ChildL", ImVec2(ImGui::GetContentRegionAvail().x - HISTORY_SIZE - 8.0, 0), ImGuiChildFlags_AutoResizeY);
+		ImGui::TextColored(white, "F/s:%.0f", g.IO.Framerate);
+		ImGui::TextColored(white, "ΔT/F:%0.*fs", td.SimDT < 1e-1 ? 3 : td.SimDT < 1 ? 2 : td.SimDT < 10 ? 1 : 0, td.SimDT);
+		ImGui::EndChild();
+		ImGui::SameLine();
+		ImGui::BeginChild("ChildR");//, ImVec2(ImGui::GetContentRegionAvail().x / 3.0f * 2.0f, 0), ImGuiChildFlags_AutoResizeY);
+		if(fpsMax != 0.0) {
+			ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(1,1,1,1));
+			ImGui::PushStyleColor(ImGuiCol_PopupBg, ImVec4(0,0,0,0));
+			ImGui::PushStyleColor(ImGuiCol_FrameBg, ImVec4(0.3,0.3,0.3,0.3));
+			ImGui::PushStyleColor(ImGuiCol_PlotLines, ImVec4(0,1,0,1));
+			ImGui::PushStyleColor(ImGuiCol_Border, ImVec4(0.7,0.7,0.7,1));
+			ImGui::PushStyleVar(ImGuiStyleVar_FrameBorderSize, 1.0);
+			ImGui::PushStyleVar(ImGuiStyleVar_FrameRounding, 0.0);
+			char fps[16];
+			sprintf(fps, "%d", (int)fpsMax);
+			ImGui::PlotLines("###FPS", history, HISTORY_SIZE, historyOffset + 1, fps, 0.0, fpsMax, ImVec2(HISTORY_SIZE, ImGui::GetContentRegionAvail().y));
+			ImGui::PopStyleVar(2);
+			ImGui::PopStyleColor(5);
+		}
+		ImGui::EndChild();
+	}
 };
 
-GraphInfoBar::GraphInfoBar (MenuInfoBar *_mibar, int side)
-: ExtraInfoBar (_mibar, side)
+const float OPACITY_NONE = 0.001f;
+void AnimateOpacity(float &animStateOpacity)
 {
-	bufofs = 1024-FPSMAXSAMPLE*(side+1);
-	Init ();
-}
-
-void GraphInfoBar::Init ()
-{
-	nsample = isample = 0; // number of samples and current sample index
-	smax = 1.0;            // graph range
-	gc->clbkBeginBltGroup (infoSrc);
-	for (int i = 0; i < FPSMAXSAMPLE; i++)                           // graph background
-		gc->clbkBlt (infoSrc, bufofs+i,96,infoTgt,1023,2,1,48);
-	gc->clbkEndBltGroup ();
-	gc->clbkBeginBltGroup (infoTgt);
-	gc->clbkBlt (infoTgt, texofs+99, infoLine1, infoSrc, 1021, 2, 1, 48);  // left graph frame
-	gc->clbkBlt (infoTgt, texofs+160, infoLine1, infoSrc, 1021, 2, 1, 48); // right graph frame
-	gc->clbkBlt (infoTgt,texofs+100,infoLine1,infoSrc,bufofs,96,FPSMAXSAMPLE,48); // copy into info texture area
-	gc->clbkBlt (infoTgt,texofs+102+FPSMAXSAMPLE,tgtTexH-66,infoSrc,857,0,6,8);    // '0' (lower bound)
-	gc->clbkEndBltGroup ();
-	LabelSmax (smax);                                                       // upper bound
-}
-
-double GraphInfoBar::ScanSmax ()
-{
-	int i;
-	double s = 1.0;
-	for (i = 0; i < nsample; i++)
-		if (sample[i] > s) s = sample[i];
-	if (s <= 100.0) {
-		return ceil(s*0.1)*10.0;
-	} else if (s <= 1e3) {
-		return ceil(s*0.01)*100.0;
-	} else if (s <= 1e4) {
-		return ceil(s*1e-3)*1e3;
+	CFG_UIPRM &prm = g_pOrbiter->Cfg()->CfgUIPrm;
+	if(prm.InfoMode == 0) { // show
+		animStateOpacity = 1.0f;
+		return;
+	}
+	ImGuiIO& io = ImGui::GetIO();
+	bool show = io.MousePos.y < (ImGui::GetCursorScreenPos().y + ImGui::GetContentRegionAvail().y);
+	if(show) {
+		if(animStateOpacity < 1.0f) {
+			animStateOpacity += prm.MenuScrollspeed * io.DeltaTime / 3.0f;
+			if(animStateOpacity > 1.0f) animStateOpacity = 1.0f;
+		}
 	} else {
-		s *= 1e-4;
-		int e = 4;
-		while (s >= 10.0) {
-			s *= 0.1;
-			e++;
-		}
-		return ceil(s) * pow(10.0,(double)e);
-	}
-}
-
-void GraphInfoBar::LabelSmax (double smax)
-{
-	char cbuf[32];
-	if (smax < 1e4) {
-		sprintf (cbuf, "%0.0f", smax);
-		for (char *c = cbuf; *c; c++)
-			*c += 128-'0';
-	} else {
-		double smax0 = smax; // DEBUG
-		smax = (smax-0.5)*1e-4;
-		int e = 4;
-		while (smax >= 10.0) {
-			smax *= 0.1;
-			e++;
-		}
-		int a = (int)(ceil(smax)+0.5);
-		if (a == 10) { a = 1; e++; }
-		sprintf (cbuf, "%de%d", a, e);
-		for (char *c = cbuf; *c; c++) {
-			if (*c == 'e') *c = '\036';
-			else *c += 128-'0';
+		if(animStateOpacity > OPACITY_NONE) {
+			animStateOpacity -= prm.MenuScrollspeed * io.DeltaTime / 3.0f;
+			// Don't set it to 0 or ImGui will optimize the drawing away and return false on Begin
+			if(animStateOpacity < OPACITY_NONE) animStateOpacity = OPACITY_NONE;
 		}
 	}
-	TexBltString (cbuf, texofs+102+FPSMAXSAMPLE,infoLine1,texofs+194);
 }
 
-void GraphInfoBar::RescaleGraph (double smax)
-{
-	gc->clbkBeginBltGroup (infoSrc);
-	int i, i0 = 0, i1, n, y0, y1, h;
-	for (n = nsample-1, i = isample; n > 0; n--, i--) {
-		i1 = i;
-		if (i1 < 0) i1 += FPSMAXSAMPLE;
-		i0 = i1-1;
-		if (i0 < 0) i0 += FPSMAXSAMPLE;
-		y0 = 145-(int)(sample[i0]/smax*46);
-		y1 = 145-(int)(sample[i1]/smax*46);
-		if (y1 < y0) { int tmp = y0; y0 = y1; y1 = tmp; }
-		h = min (max (y1-y0,1), 46);
-		gc->clbkBlt (infoSrc, bufofs+i1,96,infoTgt,1023,2,1,48);
-		gc->clbkBlt (infoSrc, bufofs+i1,y0,infoTgt,1022,2,1,h);
-	}
-	y0 = 145-(int)(sample[i0]/smax*46);
-	gc->clbkBlt (infoSrc, bufofs+i0,96,infoTgt,1023,2,1,48);
-	gc->clbkBlt (infoSrc, bufofs+i0,y0,infoTgt,1022,2,1,1);
-	gc->clbkEndBltGroup ();
-	LabelSmax (smax);
-}
-
-void GraphInfoBar::SetCurrentSample (double s)
-{
-	if (nsample < FPSMAXSAMPLE) nsample++;
-	sample[isample] = s;
-
-	if (nsample >= 2) {
-		double mf = ScanSmax();
-		if (mf != smax)
-			RescaleGraph (smax = mf);
-		double s0 = sample[isample > 0 ? isample-1:FPSMAXSAMPLE-1];
-		int y0 = 145-(int)(s0/smax*46);
-		int y1 = 145-(int)(s/smax*46);
-		if (y1 < y0) { int tmp = y0; y0 = y1; y1 = tmp; }
-		int h = min (max (y1-y0,1), 46);
-		gc->clbkBeginBltGroup (infoSrc);
-		gc->clbkBlt (infoSrc, bufofs+isample,96,infoTgt,1023,2,1,48);
-		gc->clbkBlt (infoSrc, bufofs+isample,y0,infoTgt,1022,2,1,h);
-		gc->clbkEndBltGroup ();
-		gc->clbkBeginBltGroup (infoTgt);
-		if (isample < FPSMAXSAMPLE-1)
-			gc->clbkBlt (infoTgt, texofs+100,infoLine1,infoSrc,bufofs+isample+1,96,FPSMAXSAMPLE-isample-1,48);
-		if (isample > 0)
-			gc->clbkBlt (infoTgt, texofs+100+FPSMAXSAMPLE-isample-1,infoLine1,infoSrc,bufofs,96,isample+1,48);
-		gc->clbkEndBltGroup ();
-	}
-	if (++isample == FPSMAXSAMPLE) isample = 0;
-}
-
-// =======================================================================
-// class ViewportInfoBar: render device specs (window size, bpp, T&L)
-// =======================================================================
-
-class ViewportInfoBar: public ExtraInfoBar {
+class InfoTime: public ImGuiDialog {
+	InfoFrameRate *fps;
+	float animStateOpacity;
 public:
-	ViewportInfoBar (MenuInfoBar *_mibar, int side);
-	int Mode () const { return EXTRAINFO_VIEWPORT; }
+	InfoTime(InfoFrameRate *fps_):ImGuiDialog("InfoTime"),fps(fps_),animStateOpacity(OPACITY_NONE) {}
+	void OnDraw() {}
 
-protected:
-	void Init ();
+	void DrawSymbol(int type) {
+		float alpha = ImGui::GetStyle().Alpha;
+		ImVec2 pos = ImGui::GetCursorScreenPos();
+		ImDrawList* drawList = ImGui::GetWindowDrawList();
+		ImVec2 size = ImGui::CalcTextSize("__");
+		ImVec2 endpos = pos + size;
+		drawList->AddRect(pos, endpos, ImGui::ColorConvertFloat4ToU32(ImVec4(0.75,0.75,0.75,alpha)));
+		switch(type) {
+		case 0: // REC
+			if(fmod (td.SysT1, 1.0) < 0.5) {
+				ImVec2 center = (pos + endpos)/2.0;
+				drawList->AddCircleFilled(center, size.y/4.0, ImGui::ColorConvertFloat4ToU32(ImVec4(1.0,0.0,0.0,alpha)));
+			}
+			break;
+		case 1: // Pause
+			{
+				ImVec2 tl = pos + ImVec2(size.x / 4.5f, size.y / 4.0f);
+				ImVec2 br = pos + ImVec2(size.x / 4.5f * 2.0f, size.y / 4.0f * 3.0f);
+				drawList->AddRectFilled(tl, br, ImGui::ColorConvertFloat4ToU32(ImVec4(1.0,1.0,0.0,alpha)));
+				tl.x += size.x/4.5f*1.5f;
+				br.x += size.x/4.5f*1.5f;
+				drawList->AddRectFilled(tl, br, ImGui::ColorConvertFloat4ToU32(ImVec4(1.0,1.0,0.0,alpha)));
+				drawList->AddText(pos + ImVec2(size.x + 2,0), ImGui::ColorConvertFloat4ToU32(ImVec4(1.0,1.0,1.0,alpha)), "Pause");
+			}
+			break;
+		case 2: // Fast forward
+			{
+				ImVec2 p1 = pos + ImVec2(size.x / 4.5f, size.y / 5.0f);
+				ImVec2 p2 = pos + ImVec2(size.x / 4.5f * 2.0f, size.y / 2.0f);
+				ImVec2 p3 = pos + ImVec2(size.x / 4.5f, size.y / 5.0f * 4.0f);
+				drawList->AddTriangleFilled(p1, p2, p3, ImGui::ColorConvertFloat4ToU32(ImVec4(1.0,1.0,1.0,alpha)));
+				p1.x += size.x/4.5f*1.5f;
+				p2.x += size.x/4.5f*1.5f;
+				p3.x += size.x/4.5f*1.5f;
+				drawList->AddTriangleFilled(p1, p2, p3, ImGui::ColorConvertFloat4ToU32(ImVec4(1.0,1.0,1.0,alpha)));
+				char buf[64];
+				sprintf(buf, "%0.*fx", td.Warp() < 9.99 ? 1:0, td.Warp());
+				drawList->AddText(pos + ImVec2(size.x + 2,0), ImGui::ColorConvertFloat4ToU32(ImVec4(1.0,1.0,1.0,alpha)), buf);
+			}
+			break;
+		case 3: // Playback
+			{
+				ImVec2 p1 = pos + ImVec2(size.x / 4.5f * 2.0f, size.y / 5.0f);
+				ImVec2 p2 = pos + ImVec2(size.x / 4.5f * 3.0f, size.y / 2.0f);
+				ImVec2 p3 = pos + ImVec2(size.x / 4.5f * 2.0f, size.y / 5.0f * 4.0f);
+				drawList->AddTriangleFilled(p1, p2, p3, ImGui::ColorConvertFloat4ToU32(ImVec4(1.0,1.0,0.0,alpha)));
+			}
+		}
+		ImGui::NewLine();
+	}
+
+	void Display() {
+		CFG_UIPRM &prm = g_pOrbiter->Cfg()->CfgUIPrm;
+		if(prm.InfoMode == 1)
+			return;
+		ImGuiViewport *viewport = ImGui::GetMainViewport();
+		ImGui::SetNextWindowViewport(viewport->ID);
+		ImGui::SetNextWindowPos(viewport->Pos+ImVec2(viewport->Size.x,0),ImGuiCond_Always, ImVec2(1,0));
+		
+		ImGui::PushStyleColor(ImGuiCol_Border, ImVec4(0.f, 0.f, 0.f, 0.f));
+		ImGui::PushStyleVar(ImGuiStyleVar_Alpha, animStateOpacity);
+		ImGui::SetNextWindowBgAlpha(prm.InfoOpacity/10.0f * animStateOpacity);
+		ImGui::PushStyleColor(ImGuiCol_ChildBg, ImVec4(0.f, 0.f, 0.f, 0.f));
+		if(ImGui::Begin("##InfoTime", nullptr, INFOFLAGS)) {
+			AnimateOpacity(animStateOpacity);
+
+			ImVec4 white{1,1,1,1};
+			ImVec4 red{1,0,0,1};
+			ImVec4 yellow{1,1,0,1};
+			ImGui::PushFont(ImGuiFont::MONO);
+			ImGui::TextColored(white, DateStr (td.MJD1));
+			ImGui::TextColored(white, "MJD %0.4f", td.MJD1);
+
+			if(g_pOrbiter->RecorderStatus() == 1) {
+				ImGui::SameLine();
+				DrawSymbol(0);
+			} else if(g_pOrbiter->IsPlayback()) {
+				ImGui::SameLine();
+				DrawSymbol(3);
+			}
+			if(td.SimT1 < 1e7) {
+				ImGui::TextColored(white, "Sim % 9.0fs", td.SimT1);
+			} else {
+				ImGui::TextColored(white, "Sim ..%07.0fs", fmod (td.SimT1, 1e7));
+			}
+
+			if(!g_pOrbiter->IsRunning()) {
+				ImGui::SameLine();
+				DrawSymbol(1);
+			} else if(td.Warp() != 1.0 || prm.bWarpAlways) {
+				ImGui::SameLine();
+				DrawSymbol(2);
+			}
+
+			if(prm.FPS == 2)
+				fps->Display();
+
+			ImGui::PopFont();
+		}
+		if(ImGui::IsWindowFocused(ImGuiFocusedFlags_ChildWindows))
+			ImGui::SetWindowFocus(NULL);
+		ImGui::End();
+
+		ImGui::PopStyleVar();
+		ImGui::PopStyleColor(2);
+	}
 };
 
-ViewportInfoBar::ViewportInfoBar (MenuInfoBar *_mibar, int side)
-: ExtraInfoBar (_mibar, side)
-{
-	Init();
-}
-
-void ViewportInfoBar::Init ()
-{
-	char cbuf[128];
-	sprintf (cbuf, "Viewport: %dx%d, %dbpp", pane->Width(), pane->Height(), pane->BitsPerPixel());
-	TexBltString (cbuf, texofs+5, infoLine1, texofs+190);
-	DWORD is_tl;
-	strcpy (cbuf, "T&L support: ");
-	if (gc->clbkGetRenderParam (RP_ISTLDEVICE, &is_tl))
-		strcat (cbuf, is_tl ? "yes" : "no");
-	else strcat (cbuf, "unknown");
-	TexBltString (cbuf, texofs+5, infoLine2, texofs+190);
-}
-
-// =======================================================================
-// class RenderstatInfoBar: render statistics
-// (vertices, surface tiles in last frame)
-// =======================================================================
-
-class RenderstatInfoBar: public GraphInfoBar {
+class InfoTarget: public ImGuiDialog {
+	InfoFrameRate *fps;
+	float animStateOpacity;
 public:
-	RenderstatInfoBar (MenuInfoBar *_mibar, int side);
-	int Mode () const { return EXTRAINFO_RENDERSTAT; }
-	void Update (double t, bool sys_tick);
+	InfoTarget(InfoFrameRate *fps_):ImGuiDialog("InfoTarget"),fps(fps_),animStateOpacity(OPACITY_NONE) {}
+	void OnDraw() {}
+	void Display() {
+		CFG_UIPRM &prm = g_pOrbiter->Cfg()->CfgUIPrm;
+		if(prm.InfoMode == 1) {
+			animStateOpacity = OPACITY_NONE;
+			return;
+		}
+		ImGuiViewport *viewport = ImGui::GetMainViewport();
+		ImGui::SetNextWindowViewport(viewport->ID);
+		ImGui::SetNextWindowPos(viewport->Pos);
+		ImGui::PushStyleColor(ImGuiCol_Border, ImVec4(0.f, 0.f, 0.f, 0.f));
+		ImGui::PushStyleVar(ImGuiStyleVar_Alpha, animStateOpacity);
+		ImGui::SetNextWindowBgAlpha(prm.InfoOpacity/10.0f * animStateOpacity);
+		ImGui::PushStyleColor(ImGuiCol_ChildBg, ImVec4(0.f, 0.f, 0.f, 0.f));
+		if(ImGui::Begin("##InfoTarget", nullptr, INFOFLAGS)) {
+			AnimateOpacity(animStateOpacity);
 
-protected:
-	void Init ();
+			ImVec4 white{1,1,1,1};
+			ImGui::PushFont(ImGuiFont::MONO);
 
-private:
-	int framecount;
-	DWORD vtxsum;
+			Body *tgt = g_camera->Target();
+			ImGui::TextColored(white, "Tgt %s", tgt->Name());
+
+			if (g_camera->IsExternal()) {
+				switch (g_camera->GetExtMode()) {
+					case CAMERA_TARGETRELATIVE:   ImGui::TextColored(white, "Cam track (rel-pos)"); break;
+					case CAMERA_ABSDIRECTION:     ImGui::TextColored(white, "Cam track (abs-dir)"); break;
+					case CAMERA_GLOBALFRAME:      ImGui::TextColored(white, "Cam track (global frame)"); break;
+					case CAMERA_TARGETTOOBJECT:   ImGui::TextColored(white, "Cam target to %s", g_camera->GetDirRef()->Name()); break;
+					case CAMERA_TARGETFROMOBJECT: ImGui::TextColored(white, "Cam target from %s", g_camera->GetDirRef()->Name()); break;
+					case CAMERA_GROUNDOBSERVER:   ImGui::TextColored(white, "Cam ground %s", g_camera->GroundObserver_TargetLock() ? "(tgt-lock)" : "(free)"); break;
+				}
+			} else {
+				ImGui::TextColored(white, "Cam Cockpit");
+			}
+			ImGui::TextColored(white, "FoV % 0.0f°", 2.0*Deg(g_camera->Aperture()));
+			if (g_camera->IsExternal()) {
+				ImGui::SameLine();
+				ImGui::TextColored(white, "   Dst %s", DistStr (g_camera->Distance())+1);
+			} else {
+				ImGui::SameLine();
+				ImGui::TextColored(ImVec4(0,0,0,0), "   Dst %s", DistStr (g_camera->Distance())+1);
+			}
+
+			if(prm.FPS == 1)
+				fps->Display();
+
+			ImGui::PopFont();
+		}
+		if(ImGui::IsWindowFocused(ImGuiFocusedFlags_ChildWindows))
+			ImGui::SetWindowFocus(NULL);
+		ImGui::End();
+		ImGui::PopStyleVar();
+		ImGui::PopStyleColor(2);
+	}
 };
-
-RenderstatInfoBar::RenderstatInfoBar (MenuInfoBar *_mibar, int side)
-: GraphInfoBar (_mibar, side)
-{
-	Init();
-}
-
-void RenderstatInfoBar::Init ()
-{
-	framecount = 0;
-	vtxsum = 0;
-	TexBltString ("Vtx", texofs+5, infoLine1, texofs+35);
-	TexBltString ("Tile", texofs+5, infoLine2, texofs+35);
-}
-
-void RenderstatInfoBar::Update (double t, bool sys_tick)
-{
-	framecount++;
-	vtxsum += g_vtxcount;
-	if (sys_tick && framecount) {
-		char cbuf[32];
-		DWORD nvtx = vtxsum/framecount;
-		SetCurrentSample (nvtx);
-		sprintf (cbuf, "%d", g_vtxcount);
-		TexBltString (cbuf, texofs+35, infoLine1, texofs+98);
-		sprintf (cbuf, "%d", g_tilecount);
-		TexBltString (cbuf, texofs+35, infoLine2, texofs+98);
-		framecount = 0;
-		vtxsum = 0;
-	}
-}
-
-// =======================================================================
-// class FramerateInfoBar: performance stats
-// (frames/second, sim time interval/frame)
-// =======================================================================
-
-class FramerateInfoBar: public GraphInfoBar {
-public:
-	FramerateInfoBar (MenuInfoBar *_mibar, int side);
-	int Mode () const { return EXTRAINFO_FRAMERATE; }
-	void Update (double t, bool sys_tick);
-
-protected:
-	void Init ();
-
-private:
-	int framecount;
-	double sysdt, simdt;
-};
-
-FramerateInfoBar::FramerateInfoBar (MenuInfoBar *_mibar, int side)
-: GraphInfoBar (_mibar, side)
-{
-	Init ();
-}
-
-void FramerateInfoBar::Init ()
-{
-	framecount = 0;
-	sysdt = simdt = 0.0;
-	TexBltString ("F/s", texofs+5, infoLine1, texofs+35);
-	TexBltString ("\037t/F", texofs+5, infoLine2, texofs+35);
-}
-
-void FramerateInfoBar::Update (double t, bool sys_tick)
-{
-	framecount++;
-	sysdt += td.SysDT;
-	simdt += td.SimDT;
-	if (sys_tick && framecount) {
-		char cbuf[32];
-		double fps = framecount/sysdt;
-		SetCurrentSample (fps);
-		sprintf (cbuf, "%0.*f", fps < 100 ? 1:0, fps);
-		TexBltString (cbuf, texofs+35, infoLine1, texofs+98);
-		double dt = simdt/framecount;
-		sprintf (cbuf, "%0.*fs", dt < 1e-1 ? 3 : dt < 1 ? 2 : dt < 10 ? 1 : 0, dt);
-		TexBltString (cbuf, texofs+35, infoLine2, texofs+98);
-		framecount = 0;
-		sysdt = simdt = 0.0;
-	}
-}
-
-// =======================================================================
-
-ExtraInfoBar *ExtraInfoBar::Create (MenuInfoBar *_mibar, int side, int mode)
-{
-	switch (mode) {
-	case EXTRAINFO_FRAMERATE:
-		return new FramerateInfoBar (_mibar, side);
-	case EXTRAINFO_RENDERSTAT:
-		return new RenderstatInfoBar (_mibar, side);
-	case EXTRAINFO_VIEWPORT:
-		return new ViewportInfoBar (_mibar, side);
-	default:
-		return NULL;
-	}
-}
-
 
 // =======================================================================
 // class MenuInfoBar
 // =======================================================================
 
-MenuInfoBar::MenuInfoBar (const Pane *_pane)
+MenuInfoBar::MenuInfoBar ()
 {
-	pane = _pane;
-	gc   = pane->gc;
-	time_upd = -1;
-	sys_upd = 0;
-	paused = recording = playback = false;
-	show_action = action_blink = false;
-	action_time = 0.0;
-	warp = 1.0;
-	datestr[0] = mjdstr[0] = timestr[0] = '\0';
-	tgtstr[0] = dststr[0] = camstr[0] = recstr[0] = '\0';
-	viewW = pane->W;
-	itemN = 12;
-	itemW = 48;
-	flagW = 68;
-	flagH = 54;
-	itemHighlight = -1;
-	menuW = itemN*itemW;
-	menuH = 54;
-	infoW = 200;
-
-	scrollzone = (gc->clbkFullscreenMode() ? 0:16);
-	scrollspeed = g_pOrbiter->Cfg()->CfgUIPrm.MenuScrollspeed;
-	scrollrange = (g_pOrbiter->Cfg()->CfgUIPrm.bMenuLabelOnly ? 17 : menuH);
-	opacity = g_pOrbiter->Cfg()->CfgUIPrm.MenuOpacity;
-	opacity_info = g_pOrbiter->Cfg()->CfgUIPrm.InfoOpacity;
-	menumode = g_pOrbiter->Cfg()->CfgUIPrm.MenuMode;
-	infomode = g_pOrbiter->Cfg()->CfgUIPrm.InfoMode;
-	pausemode = g_pOrbiter->Cfg()->CfgUIPrm.PauseIndMode;
-	fixedstep = (td.FixedStep() > 0.0);
-	warp_always = g_pOrbiter->Cfg()->CfgUIPrm.bWarpAlways;
-	warp_scientific = g_pOrbiter->Cfg()->CfgUIPrm.bWarpScientific;
-	menustate = (menumode == 0 ? 1:0);
-	infostate = (infomode == 0 ? 1:0);
-	scrollpos = (menumode == 0 ? scrollrange : 0.0);
-	scrollpos_info = (infomode == 0 ? menuH : 0.0);
-	scrolldir = scrolldir_info = 0;
-	menuSrc = gc->clbkLoadSurface("main_menu.dds", OAPISURFACE_RENDERTARGET | OAPISURFACE_TEXTURE);
-	menuTgt = gc->clbkLoadSurface("main_menu_tgt.dds", OAPISURFACE_RENDERTARGET | OAPISURFACE_TEXTURE);
-	dCHECK(menuSrc && menuTgt, "MenuInfoBar: main_menu.dds or main_menu_tgt.dds could not be loaded from Textures directory.")
-	gc->clbkBlt (menuTgt, 0, tgtTexH-menuH, menuSrc, 0, 23+menuH, menuW, menuH);
-	int yofs = (menumode == 0 ? -menuH+scrollrange:-menuH);
-	int yofs_info = (infomode == 0 ? 0:-menuH);
-	int miniW = 100, miniH = menuH/3;
-	float xofs_flag = viewW-flagW-20.5f, yofs_flag = menuH+20.5f;
-
-	NTVERTEX vtx[24] = {
-		// menu bar
-		{0,(float)yofs        ,0, 0,0,0, 0,0.0020f},
-		{0,(float)(yofs+menuH),0, 0,0,0, 0,0.0020f},
-		{0,(float)yofs        ,0, 0,0,0, 0,0.0020f},
-		{0,(float)(yofs+menuH),0, 0,0,0, 0,0.0020f},
-		{0,(float)yofs        ,0, 0,0,0, 0,(tgtTexH-menuH-0.5f)/(float)tgtTexH},
-		{0,(float)(yofs+menuH),0, 0,0,0, 0,(tgtTexH-0.5f)/(float)tgtTexH},
-		{0,(float)yofs        ,0, 0,0,0, 0,(tgtTexH-menuH-0.5f)/(float)tgtTexH},
-		{0,(float)(yofs+menuH),0, 0,0,0, 0,(tgtTexH-0.5f)/(float)tgtTexH},
-
-		// left info bar
-		{0,(float)yofs_info,        0, 0,0,0, 0,0.0020f},
-		{0,(float)(yofs_info+menuH),0, 0,0,0, 0,0.0020f},
-		{0,(float)yofs_info,        0, 0,0,0, 0,0.0020f},
-		{0,(float)(yofs_info+menuH),0, 0,0,0, 0,0.0020f},
-		{0,(float)yofs_info,        0, 0,0,0, 0,(tgtTexH-2*menuH-0.5f)/(float)tgtTexH},
-		{0,(float)(yofs_info+menuH),0, 0,0,0, 0,(tgtTexH-menuH-0.5f)/(float)tgtTexH},
-		{0,(float)yofs_info,        0, 0,0,0, 0,(tgtTexH-2*menuH-0.5f)/(float)tgtTexH},
-		{0,(float)(yofs_info+menuH),0, 0,0,0, 0,(tgtTexH-menuH-0.5f)/(float)tgtTexH},
-
-		// right info bar
-		{0,(float)yofs_info,        0, 0,0,0, 0,0.0020f},
-		{0,(float)(yofs_info+menuH),0, 0,0,0, 0,0.0020f},
-		{0,(float)yofs_info,        0, 0,0,0, 0,0.0020f},
-		{0,(float)(yofs_info+menuH),0, 0,0,0, 0,0.0020f},
-		{0,(float)yofs_info,        0, 0,0,0, 0,(tgtTexH-2*menuH-0.5f)/(float)tgtTexH},
-        {0,(float)(yofs_info+menuH),0, 0,0,0, 0,(tgtTexH-menuH-0.5f)/(float)tgtTexH},
-        {0,(float)yofs_info,        0, 0,0,0, 0,(tgtTexH-2*menuH-0.5f)/(float)tgtTexH},
-		{0,(float)(yofs_info+menuH),0, 0,0,0, 0,(tgtTexH-menuH-0.5f)/(float)tgtTexH}
-	};
-
-	NTVERTEX minivtx[8] = {
-		{(float)(viewW-miniW),0           ,0, 0,0,0, 0,0.0020f},
-		{(float)(viewW-miniW),(float)miniH,0, 0,0,0, 0,0.0020f},
-		{(float)viewW,        0           ,0, 0,0,0, 0,0.0020f},
-		{(float)viewW,        (float)miniH,0, 0,0,0, 0,0.0020f},
-		{(float)(viewW-miniW),0           ,0, 0,0,0, 700.5f/1024.0f,(tgtTexH-menuH-miniH-0.5f)/(float)tgtTexH},
-		{(float)(viewW-miniW),(float)miniH,0, 0,0,0, 700.5f/1024.0f,(tgtTexH-menuH-0.5f)/(float)tgtTexH},
-		{(float)viewW,        0           ,0, 0,0,0, 800.5f/1024.0f,(tgtTexH-menuH-miniH-0.5f)/(float)tgtTexH},
-		{(float)viewW,        (float)miniH,0, 0,0,0, 800.5f/1024.0f,(tgtTexH-menuH-0.5f)/(float)tgtTexH}
-	};
-
-	WORD idx[36] = {
-		0,2,1, 1,2,3, 4,6,5, 5,6,7,            // menu bar
-		8,10,9, 9,10,11, 12,14,13, 13,14,15,   // left info bar
-		16,18,17, 17,18,19, 20,22,21, 21,22,23 // right info bar
-	};
-	barMesh.AddGroup (vtx, 24, idx, 36, 0, 0, 0, 0, true);
-	miniMesh.AddGroup (minivtx, 8, idx, 12, 0, 0, 0, 0, true);
-	transf = identity();
-	eibar[0] = eibar[1] = NULL;
-	UpdateMeshVertices();
-	for (int i = 0; i < 2; i++)
-		SetAuxInfobar (i, g_pOrbiter->Cfg()->CfgUIPrm.InfoAuxIdx[i]);
-
-	// Add a mesh for the pause/run indicator
-	int tw = 1024, th = 128;
-	NTVERTEX flagvtx[4] = {
-		{(float)xofs_flag,         (float)yofs_flag,         0, 0,0,0, (float)(tw-flagW)/(float)tw, (float)(th-flagH)/(float)th},
-		{(float)xofs_flag,         (float)(yofs_flag+flagH), 0, 0,0,0, (float)(tw-flagW)/(float)tw, 1.0f},
-		{(float)(xofs_flag+flagW), (float)yofs_flag,         0, 0,0,0, (float)tw/(float)tw, (float)(th-flagH)/(float)th},
-		{(float)(xofs_flag+flagW), (float)(yofs_flag+flagH), 0, 0,0,0, (float)tw/(float)tw, 1.0f}
-	};
-	flagMesh.AddGroup (flagvtx, 4, idx, 6, 0, 0, 0, 0, true);
-
-	SetFOV (0);
-	SetWarp (td.Warp());
+	dynMenu  = std::make_unique<DynamicMenuBar>();
+	infoFps  = std::make_unique<InfoFrameRate>();
+	infoTime = std::make_unique<InfoTime>(infoFps.get());
+	infoTgt  = std::make_unique<InfoTarget>(infoFps.get());
+	oapiOpenDialog(dynMenu.get());
+	oapiOpenDialog(infoTime.get());
+	oapiOpenDialog(infoTgt.get());
 }
 
 MenuInfoBar::~MenuInfoBar ()
 {
-	for (int i = 0; i < 2; i++)
-		if (eibar[i]) delete eibar[i];
-	gc->clbkReleaseSurface (menuSrc);
-	gc->clbkReleaseTexture (menuTgt);
+}
+void MenuInfoBar::RegisterMenuItem(const char *label, const char *imagepath, int id, CustomFunc func, void *context)
+{
+	dynMenu->AddMenuItem(label, imagepath, id, func, context);
 }
 
-void MenuInfoBar::Update (double t)
+void MenuInfoBar::UnregisterMenuItem(int id)
 {
-	if (scrolldir) {
-		double dy = (scrollspeed == 20 ? menuH: td.SysDT * (scrollspeed*30+2));
-		double y = scrollpos + dy*scrolldir;
-		if (y < 0.0) {
-			y = 0.0;
-			scrolldir = 0;
-			menustate = 0;
-		} else if (y > scrollrange) {
-			y = scrollrange;
-			scrolldir = 0;
-			menustate = 1;
-		}
-		scrollpos = y;
-		static const float y0[8] = {-(float)menuH,0,-(float)menuH,0,-(float)menuH,0,-(float)menuH,0};
-		int i;
-		GroupSpec *grp = barMesh.GetGroup (0);
-		NTVERTEX *vtx = grp->Vtx;
-		for (i = 0; i < 8; i++) vtx[i].y = y0[i] + (float)y;
-	}
-
-	if (scrolldir_info) {
-		double dy = (scrollspeed == 20 ? menuH: td.SysDT * (scrollspeed*30+2));
-		double y = scrollpos_info + dy*scrolldir_info;
-		if (y < 0.0) {
-			y = 0.0;
-			scrolldir_info = 0;
-			infostate = 0;
-		} else if (y > menuH) {
-			y = menuH;
-			scrolldir_info = 0;
-			infostate = 1;
-		}
-		scrollpos_info = y;
-		static const float y0[8] = {-(float)menuH,0,-(float)menuH,0,-(float)menuH,0,-(float)menuH,0};
-		int i, j;
-		GroupSpec *grp = barMesh.GetGroup (0);
-		NTVERTEX *vtx = grp->Vtx+8;
-		for (j = 0; j < 2; j++)
-			for (i = 0; i < 8; i++, vtx++) vtx->y = y0[i] + (float)y;
-	}
-
-	// Update the info boxes
-	int it = (int)t, sit = (int)td.SysT1;
-	bool tick_one, sys_one;
-	char cbuf[256];
-	if (tick_one = (it != time_upd))  time_upd = it;
-	if (sys_one = (sit != sys_upd)) sys_upd = sit;
-
-	if (tick_one) {
-		strcpy  (cbuf, DateStr (td.MJD1));
-		if (strcmp (cbuf, datestr))
-			TexBltString (cbuf, 604, infoLine1, 800, datestr);
-
-		sprintf (cbuf, "%0.4f", td.MJD1);
-		if (strcmp (cbuf, mjdstr))
-			TexBltString (cbuf, 638, infoLine2, 714, mjdstr, 29);
-
-		if (t < 1e7) sprintf (cbuf, "%0.0fs", t);
-		else         sprintf (cbuf, "...%07.0fs", fmod (t, 1e7));
-		if (strcmp (cbuf, timestr))
-			TexBltString (cbuf, 638, infoLine3, 714, timestr, 29);
-
-		Body *tgt = g_camera->Target();
-		if (strncmp (tgt->Name(), tgtstr, 63))
-			TexBltString (tgt->Name(), 36, infoLine1, 200, tgtstr, 63);
-	}
-	if (g_camera->IsExternal()) {
-		switch (g_camera->GetExtMode()) {
-		case CAMERA_TARGETRELATIVE:   strcpy (cbuf, "track (rel-pos)"); break;
-		case CAMERA_ABSDIRECTION:     strcpy (cbuf, "track (abs-dir)"); break;
-		case CAMERA_GLOBALFRAME:      strcpy (cbuf, "track (global frame)"); break;
-		case CAMERA_TARGETTOOBJECT:   strcpy (cbuf, "target to "); strcat (cbuf, g_camera->GetDirRef()->Name()); break;
-		case CAMERA_TARGETFROMOBJECT: strcpy (cbuf, "target from "); strcat (cbuf, g_camera->GetDirRef()->Name()); break;
-		case CAMERA_GROUNDOBSERVER:   
-			strcpy (cbuf, "ground ");
-			strcat (cbuf, g_camera->GroundObserver_TargetLock() ? "(tgt-lock)" : "(free)");
-			break;
-		}
-	} else {
-		strcpy (cbuf, "Cockpit");
-	}
-	if (strncmp (cbuf, camstr, 63))
-		TexBltString (cbuf, 36, infoLine2, 200, camstr, 93);
-	if (g_camera->IsExternal())
-		sprintf (cbuf, "Dst %s", DistStr (g_camera->Distance())+1);
-	else
-		cbuf[0] = '\0';
-	if (strncmp (cbuf, dststr, 29))
-		TexBltString (cbuf, 69, infoLine3, 199, dststr, 29);
-	if (recording) {
-		bool blink = (fmod (td.SysT1, 1.0) < 0.5);
-		TexBltString (blink ? "\003":"\004", 714, infoLine2, 744, recstr, 1);
-	}
-
-	// update auxiliary info bars
-	for (int i = 0; i < 2; i++)
-		if (eibar[i]) eibar[i]->Update (t, sys_one);
-
-	// update action blinker
-	if (show_action) {
-		if (pausemode == 1) {
-			action_blink = true;
-		} else {
-			double dt = td.SysT0-action_time;
-			if (dt > tmax) {
-				action_blink = show_action = false;
-			} else {
-				double s = fmod (dt, blink_t);
-				action_blink = (s < blink_t*0.5);
-			}
-		}
-	}
+	dynMenu->DelMenuItem(id);
 }
 
-bool MenuInfoBar::ProcessMouse (UINT event, DWORD state, DWORD x, DWORD y)
+std::vector<MenuInfoBar::MenuPreference> &MenuInfoBar::GetPreferences()
 {
-	x = (DWORD)(x / transf.m11); // account for menu squeezing
-
-	if (event == WM_MOUSEMOVE) {
-		if (menumode == 2) {
-			if (y <= scrollzone && menustate != 1) {
-				menustate = 2;
-				scrolldir = 1;
-			} else if (menustate != 0 && y >= scrollpos) {
-				menustate = 2;
-				scrolldir = -1;
-			}
-		}
-		if (infomode == 2) {
-			if (y <= scrollzone && infostate != 1) {
-				infostate = 2;
-				scrolldir_info = 1;
-			} else if (infostate != 0 && y >= scrollpos) {
-				infostate = 2;
-				scrolldir_info = -1;
-			}
-		}
-		int item = -1;
-		if (y < scrollpos && x >= menuX && x < menuX+menuW)
-			item = (x-menuX)/itemW;
-		if (item != itemHighlight) {
-			if (itemHighlight >= 0)
-				pane->gc->clbkBlt (menuTgt, itemHighlight*itemW, tgtTexH-menuH, menuSrc, itemHighlight*itemW, 23+menuH, itemW, menuH);
-			if (item >= 0)
-				pane->gc->clbkBlt (menuTgt, item*itemW, tgtTexH-menuH, menuSrc, item*itemW, 23, itemW, menuH);
-			itemHighlight = item;
-		}
-	}
-	if (event == WM_LBUTTONDOWN && itemHighlight >= 0) {
-		switch (itemHighlight) {
-		case 0:
-			g_pOrbiter->DlgMgr()->EnsureEntry<DlgFocus> ();
-			return true;
-		case 1:
-			g_pOrbiter->DlgMgr()->EnsureEntry<DlgCamera> ();
-			return true;
-		case 2:
-			g_pOrbiter->DlgMgr()->EnsureEntry<DlgTacc> ();
-			return true;
-		case 3:
-			g_pOrbiter->TogglePause();
-			return true;
-		case 4:
-			g_pOrbiter->DlgMgr()->EnsureEntry<DlgInfo> ();
-			return true;
-		case 5:
-			g_pOrbiter->DlgMgr()->EnsureEntry<DlgFunction> ();
-			return true;
-		case 6:
-			g_pOrbiter->DlgMgr()->EnsureEntry<DlgOptions> ();
-			return true;
-		case 7:
-			g_pOrbiter->DlgMgr()->EnsureEntry<DlgMap> ();
-			return true;
-		case 8:
-			g_pOrbiter->DlgMgr()->EnsureEntry<DlgRecorder> ();
-			return true;
-		case 9:
-			extern HELPCONTEXT DefHelpContext;
-			DefHelpContext.topic = (char*)"/mainmenu.htm";
-			g_pOrbiter->OpenHelp (&DefHelpContext);
-			return true;
-		case 10:
-			g_pOrbiter->Quicksave ();
-			return true;
-		case 11:
-			g_pOrbiter->PreCloseSession();
-			DestroyWindow (g_pOrbiter->GetRenderWnd());
-			return true;
-		}
-	}
-	if (event == WM_RBUTTONDOWN && y <= scrollpos && x >= menuX && x < menuX+menuW) {
-		g_pOrbiter->DlgMgr()->EnsureEntry<DlgMenuCfg> ();
-		return true;
-	}
-	return false;
+	return dynMenu->preferedOrder;
 }
 
-void MenuInfoBar::Render ()
+void MenuInfoBar::SyncPreferences()
 {
-	gc->clbkRender2DPanel (&menuTgt, (MESHHANDLE)&barMesh, &transf, false);
-	if (warp_always && scrollpos_info < 17 && (warp != 1.0 || paused)) {
-		float scalx = (float)transf.m11;
-		transf.m11 = 1.0; // undo squeeze
-		gc->clbkRender2DPanel (&menuTgt, (MESHHANDLE)&miniMesh, &transf, false);
-		transf.m11 = scalx;
-	}
-	if (action_blink) {
-		float scalx = (float)transf.m11;
-		transf.m11 = 1.0; // undo squeeze
-		gc->clbkRender2DPanel (&menuTgt, (MESHHANDLE)&flagMesh, &transf, false);
-		transf.m11 = scalx;
-	}
-}
-
-void MenuInfoBar::SetFOV (double fov)
-{
-	char cbuf[32];
-	sprintf (cbuf, "%0.0f\272", 2.0*Deg(fov)); // convert to degrees (full angle)
-	TexBltString (cbuf, 36, infoLine3, 69);
-}
-
-void MenuInfoBar::SetWarp (double _warp)
-{
-	char cbuf[32];
-	warp = _warp;
-	if (fixedstep)
-		sprintf (cbuf, "(%gs/f)", td.FixedStep()*warp);
-	else if (fabs(warp-1.0) > 1e-6) {
-		if (!warp_scientific || warp < 100.0) {
-			sprintf (cbuf, "\002 %0.*fx", warp < 9.99 ? 1:0, warp);
-		} else {
-			char tmp[32], *cs = tmp, *ct = cbuf;
-			sprintf (tmp, "%0.1e", warp);
-			*ct++ = '\002'; *ct++ = ' ';
-			if (strncmp (tmp, "1.0", 3)) {
-				*ct++ = *cs++;
-				if (cs[1] != '0') {
-					*ct++ = *cs++;
-					*ct++ = *cs++;
-				} else {
-					cs += 2;
-				}
-				*ct++ = '\271';
-			} else cs += 3;
-			*ct++ = '1';
-			*ct++ = '0';
-			cs++; // skip 'e'
-			while (*cs == '+' || *cs == '0') cs++; // skip leading + and 0
-			while (*cs != '\0') *ct++ = *cs++ -'0'+128;
-			*ct++ = 'x';
-			*ct++ = '\0';
-		}
-	}
-	else cbuf[0] = '\0';
-	TexBltString (cbuf, 714, infoLine3, 804);
-}
-
-void MenuInfoBar::SetWarpAlways (bool on)
-{
-	warp_always = on;
-}
-
-void MenuInfoBar::SetWarpScientific (bool scientific)
-{
-	if (scientific != warp_scientific) {
-		warp_scientific = scientific;
-		SetWarp (warp);
-	}
-}
-
-void MenuInfoBar::SetPaused (bool _paused)
-{
-	paused = _paused;
-	show_action = (pausemode == 0 || pausemode == 1 && (paused || recording || playback));
-	action_time = td.SysT0;
-	if (paused)
-		TexBltString ("\001 Pause", 714, infoLine3, 804);
-	else
-		SetWarp (warp);
-
-	gc->clbkBlt (menuTgt, 1024-flagW, 128-flagH, menuSrc, 1024-(paused ? 2*flagW : recording ? 3*flagW : playback ? 4*flagW : flagW), 256-flagH, flagW, flagH);
-	action_blink = show_action;
-}
-
-void MenuInfoBar::SetRecording (bool rec)
-{
-	recording = rec;
-	show_action = pausemode != 2 && rec;
-	action_time = td.SysT0;
-	if (!rec) TexBltString ("", 714, infoLine2, 744, recstr, 1);
-
-	if (recording) {
-		gc->clbkBlt (menuTgt, 1024-flagW, 128-flagH, menuSrc, 1024-3*flagW, 256-flagH, flagW, flagH);
-		action_blink = show_action;
-	} else
-		action_blink = false;
-}
-
-void MenuInfoBar::SetPlayback (bool pback)
-{
-	playback = pback;
-	SetRecording (false); // sanity
-	show_action = (pausemode == 0 || pausemode == 1 && playback);
-	action_time = td.SysT0;
-	TexBltString (playback ? "\005":"", 714, infoLine2, 744, recstr, 1);
-
-	gc->clbkBlt (menuTgt, 1024-flagW, 128-flagH, menuSrc, 1024-(playback ? 4*flagW : flagW), 256-flagH, flagW, flagH);
-	action_blink = show_action;
-}
-
-void MenuInfoBar::ToggleAutohide ()
-{
-	SetMenuMode (menumode == 0 ? 2:0);
-}
-
-void MenuInfoBar::SetMenuMode (DWORD mode)
-{
-	if (menumode != mode) {
-		menumode = mode;
-		if (mode != 0) {
-			if (menustate != 0) scrolldir = -1;
-		} else if (mode != 1) {
-			if (menustate != 1) scrolldir = 1;
-		}
-		g_pOrbiter->Cfg()->CfgUIPrm.MenuMode = mode;
-	}
-}
-
-void MenuInfoBar::SetInfoMode (DWORD mode)
-{
-	if (infomode != mode) {
-		infomode = mode;
-		if (mode != 0) {
-			if (infostate != 0) scrolldir_info = -1;
-		} else if (mode != 1) {
-			if (infostate != 1) scrolldir_info = 1;
-		}
-		g_pOrbiter->Cfg()->CfgUIPrm.InfoMode = mode;
-	}
-}
-
-void MenuInfoBar::SetPauseIndicatorMode (DWORD mode)
-{
-	if (pausemode != mode) {
-		pausemode = mode;
-		switch (pausemode) {
-		case 0:
-			show_action = true; //td.SysT0-action_time < tmax;
-			action_time = td.SysT0;
-			break;
-		case 1:
-			show_action = action_blink = (paused || recording || playback);
-			break;
-		case 2:
-			show_action = action_blink = false;
-			break;
-		}
-	}
-}
-
-void MenuInfoBar::SetOpacity (int opac)
-{
-	if (opac != opacity) {
-		opacity = opac;
-		GroupSpec *grp = barMesh.GetGroup (0);
-		NTVERTEX *vtx = grp->Vtx;
-		for (int i = 0; i < 4; i++)
-			vtx[i].tu = (float)((1013.5+opacity)/1024.0);
-	}
-}
-
-void MenuInfoBar::SetOpacityInfo (int opac)
-{
-	if (opac != opacity_info) {
-		opacity_info = opac;
-		GroupSpec *grp = barMesh.GetGroup (0);
-		NTVERTEX *vtx = grp->Vtx+8;
-		int i;
-		for (i = 0; i < 4; i++)
-			vtx[i].tu = (float)((1013.5+opacity_info)/1024.0);
-		for (i = 8; i < 12; i++)
-			vtx[i].tu = (float)((1013.5+opacity_info)/1024.0);
-		grp = miniMesh.GetGroup (0);
-		vtx = grp->Vtx;
-		for (i = 0; i < 4; i++)
-			vtx[i].tu = (float)((1013.5+opacity_info)/1024.0);
-	}
-}
-
-void MenuInfoBar::SetScrollspeed (int speed)
-{
-	if (speed != scrollspeed) {
-		scrollspeed = speed;
-	}
-}
-
-void MenuInfoBar::SetLabelOnly (bool labelonly)
-{
-	scrollrange = (labelonly ? 17 : menuH);
-	if (labelonly) {
-		if (scrollpos > scrollrange)
-			scrolldir = -1;
-	} else {
-		if (menustate != 0)
-			scrolldir = 1;
-	}
-}
-
-void MenuInfoBar::SetAuxInfobar (int side, DWORD idx)
-{
-	DWORD curidx = (eibar[side] ? eibar[side]->Mode() : 0);
-	if (idx != curidx) {
-		if (eibar[side]) delete eibar[side];
-		eibar[side] = ExtraInfoBar::Create (this, side, idx);
-		UpdateMeshVertices();
-	}
-}
-
-void MenuInfoBar::UpdateMeshVertices ()
-{
-	int i;
-	GroupSpec *gs = barMesh.GetGroup(0);
-	NTVERTEX *vtx = gs->Vtx;
-	const int nvtx = 24;
-
-	linfoW = (eibar[0] ? infoW*2:infoW);
-	rinfoW = (eibar[1] ? infoW*2:infoW);
-	menuX = linfoW+(viewW-menuW-linfoW-rinfoW)/2;
-	float barW = (float)viewW;
-	double scalx = 1.0;
-	if (viewW-menuW-linfoW-rinfoW < 10) {
-		scalx = (viewW-10.0)/(menuW+linfoW+rinfoW);
-		barW /= (float)scalx;
-		menuX = linfoW+5;
-	}
-	transf.m11 = scalx;
-	float x[nvtx] = {
-		(float)menuX, (float)menuX, (float)(menuX+menuW), (float)(menuX+menuW),
-		(float)menuX, (float)menuX, (float)(menuX+menuW), (float)(menuX+menuW),
-		0, 0, (float)linfoW, (float)linfoW,
-		0, 0, (float)linfoW, (float)linfoW,
-		(float)(barW-rinfoW),(float)(barW-rinfoW),(float)barW,(float)barW,
-		(float)(barW-rinfoW),(float)(barW-rinfoW),(float)barW,(float)barW
-	};
-	float menu_opac = (float)((1013.5+opacity)/1024.0);
-	float info_opac = (float)((1013.5+opacity_info)/1024.0);
-	float tu[nvtx] = {
-		menu_opac,menu_opac,menu_opac,menu_opac,
-		4.8828e-004f,4.8828e-004f,(menuW+0.5f)/1024.0f,(menuW+0.5f)/1024.0f,
-		info_opac,info_opac,info_opac,info_opac,
-		0.5f/1024.0f,0.5f/1024.0f,(linfoW+0.5f)/1024.0f,(linfoW+0.5f)/1024.0f,
-		info_opac,info_opac,info_opac,info_opac,
-		(infoW*4-rinfoW+0.5f)/1024.0f,(infoW*4-rinfoW+0.5f)/1024.0f,(infoW*4+0.5f)/1024.0f,(infoW*4+0.5f)/1024.0f
-	};
-	for (i = 0; i < nvtx; i++) {
-		vtx[i].x = x[i];
-		vtx[i].tu = tu[i];
-	}
-
-	gs = miniMesh.GetGroup(0);
-	vtx = gs->Vtx;
-	for (i = 0; i < 4; i++)
-		vtx[i].tu = info_opac;
-}
-
-int MenuInfoBar::TexBltString (const char *str, int tgtx, int tgty, int cleantox, char *curstr, int maxn)
-{
-	static const int x0[256] = {
-		0,955/*(paused)*/,974/*(ffwd)*/,936/*(rec)*/,917/*(empty)*/,993/*(playback)*/,0,0,0,0,0,0,0,0,0,0,
-		0,0,0,0,0,0,0,0,0,0,0,0,0,0,29/*supE*/,36/*Delta*/,
-		47/* */,51/*!*/,56/*"*/,63/*#*/,71/*$*/,79/*%*/,91/*&*/,101/*'*/,105/*(*/,110/*)*/,115/***/,121/*+*/,129/*,*/,135/*-*/,143/*.*/,148/* / */,
-		153/*0*/,160/*1*/,167/*2*/,175/*3*/,183/*4*/,191/*5*/,199/*6*/,207/*7*/,215/*8*/,223/*9*/,231/*:*/,236/*;*/,241/*<*/,250/*=*/,259/*>*/,0,
-		0,292/*A*/,303/*B*/,314/*C*/,325/*D*/,336/*E*/,346/*F*/,355/*G*/,366/*H*/,376/*I*/,381/*J*/,390/*K*/,400/*L*/,409/*M*/,422/*N*/,432/*O*/,
-		444/*P*/,454/*Q*/,465/*R*/,476/*S*/,486/*T*/,496/*U*/,507/*V*/,517/*W*/,531/*X*/,541/*Y*/,551/*Z*/,561/*[*/,567/*\*/,573/*]*/,579/*^*/,587/*_*/,
-		595/*`*/,601/*a*/,610/*b*/,619/*c*/,627/*d*/,636/*e*/,645/*f*/,651/*g*/,660/*h*/,668/*i*/,673/*j*/,679/*k*/,687/*l*/,692/*m*/,703/*n*/,712/*o*/,
-		721/*p*/,730/*q*/,739/*r*/,746/*s*/,755/*t*/,761/*u*/,770/*v*/,779/*w*/,791/*x*/,800/*y*/,809/*z*/,0,0,0,0,0,
-		857/*sup0*/,863/*sup1*/,869/*sup2*/,875/*sup3*/,881/*sup4*/,887/*sup5*/,893/*sup6*/,899/*sup7*/,905/*sup8*/,911/*sup9*/,0,0,0,0,0,0,
-		0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
-		0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
-		0,0,0,0,0,0,0,0,0,852/*cdot*/,844/*deg*/,0,0,0,0,0,
-		0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
-		0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
-		0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
-		0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
-	};
-	static const int dx[256] = {
-		0,20/*(paused)*/,20/*(ffwd)*/,20/*(rec)*/,20/*(empty)*/,20/*(playback)*/,0,0,0,0,0,0,0,0,0,0,
-		0,0,0,0,0,0,0,0,0,0,0,0,0,0,7/*supE*/,9/*Delta*/,
-		4/* */,4/*!*/,6/*"*/,7/*#*/,7/*$*/,11/*%*/,9/*&*/,3/*'*/,4/*(*/,4/*)*/,5/***/,7/*+*/,5/*,*/,7/*-*/,4/*.*/,4/* / */,
-		7/*0*/,7/*1*/,7/*2*/,7/*3*/,7/*4*/,7/*5*/,7/*6*/,7/*7*/,7/*8*/,7/*9*/,4/*:*/,4/*;*/,7/*<*/,7/*=*/,7/*>*/,0,
-		0,9/*A*/,9/*B*/,9/*C*/,9/*D*/,8/*E*/,8/*F*/,10/*G*/,9/*H*/,4/*I*/,7/*J*/,9/*K*/,8/*L*/,11/*M*/,9/*N*/,10/*O*/,
-		8/*P*/,10/*Q*/,9/*R*/,8/*S*/,8/*T*/,9/*U*/,8/*V*/,12/*W*/,8/*X*/,8/*Y*/,8/*Z*/,4/*[*/,4/*\*/,4/*]*/,7/*^*/,7/*_*/,
-		4/*`*/,7/*a*/,8/*b*/,7/*c*/,8/*d*/,7/*e*/,5/*f*/,8/*g*/,8/*h*/,4/*i*/,4/*j*/,7/*k*/,4/*l*/,10/*m*/,8/*n*/,8/*o*/,
-		8/*p*/,8/*q*/,5/*r*/,7/*s*/,4/*t*/,8/*u*/,7/*v*/,10/*w*/,7/*x*/,7/*y*/,6/*z*/,0,0,0,0,0,
-		6/*sup0*/,6/*sup1*/,6/*sup2*/,6/*sup3*/,6/*sup4*/,6/*sup5*/,6/*sup6*/,6/*sup7*/,6/*sup8*/,6/*sup9*/,0,0,0,0,0,0,
-		0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
-		0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
-		0,0,0,0,0,0,0,0,0,4/*cdot*/,6/*deg*/,0,0,0,0,0,
-		0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
-		0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
-		0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
-		0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
-	};
-	static const int y0 = 0;
-	static const int dy = 16;
-	int i = 0, tgtx0 = tgtx;
-	const unsigned char *c = (const unsigned char*)str;
-
-	if (curstr) {
-		for (; *c && *curstr && i < maxn; c++, curstr++, i++) {
-			if (*c != *curstr) break;
-			tgtx += dx[*c];
-		}
-	}
-	gc->clbkBeginBltGroup (menuTgt);
-	for (; *c && i < maxn; c++, i++) {
-		gc->clbkBlt (menuTgt, tgtx, tgty, menuSrc, x0[*c], y0, dx[*c], dy);
-		tgtx += dx[*c];
-		if (curstr) *curstr++ = *c;
-	}
-	if (curstr) *curstr = '\0';
-	if (cleantox > tgtx)
-		gc->clbkBlt (menuTgt, tgtx, tgty, menuSrc, 673, 21, cleantox-tgtx, dy);
-	gc->clbkEndBltGroup ();
-	return tgtx;
+	return dynMenu->SyncPreferedOrder();
 }

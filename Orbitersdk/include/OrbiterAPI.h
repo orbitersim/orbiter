@@ -685,7 +685,7 @@ public:
 	ImGuiDialog(const char *n, ImGuiDefaultSize ds = {350.0,280.0}):name(n),defaultSize(ds) {}
 	virtual ~ImGuiDialog();
 	bool IsActive() { return active; }
-	void Activate() { active = true; }
+	void Activate();
 	virtual void Display();
 	void SetHelp(const char *file, const char *topic = NULL) {
 		helpfile = file;
@@ -694,7 +694,8 @@ public:
 		else
 			helptopic.clear();
 	}
-	bool HandleHelpButton();protected:
+	bool HandleHelpButton();
+protected:
 	/**
 	 * \brief Callback that is executed when the dialog is closed.
 	 * \note The default behavior is to do nothing
@@ -711,7 +712,8 @@ public:
 	const std::string name;
 	ImGuiDefaultSize defaultSize;
 	std::string helpfile;
-	std::string helptopic;};
+	std::string helptopic;
+};
 
 /**
  * \defgroup locallight Local lighting interface
@@ -6075,6 +6077,9 @@ OAPIFUNC DWORD      oapiRegisterCustomCmd (char *label, char *desc, CustomFunc f
 	*/
 OAPIFUNC bool       oapiUnregisterCustomCmd (int cmdId);
 
+OAPIFUNC int        oapiRegisterCustomMenuCmd (const char *label, const char *imagepath, CustomFunc func, void *context);
+OAPIFUNC void       oapiUnregisterCustomMenuCmd (int cmdId);
+
 	/**
 	* \brief Open a dialog box defined as a Windows resource.
 	* \param hDLLInst module instance handle (as obtained from InitModule)
@@ -6163,6 +6168,19 @@ OAPIFUNC void      oapiAddNotification(int type, const char *title, const char *
 	* \brief Retrieves the context pointer of a dialog box which has been defined during the call to oapiOpenDialog().
 	* \param hDlg dialog window handle
 	* \note  This function returns NULL if no context pointer was specified in oapiOpenDialog().
+	* \n <b> Typical usage:</b>\n
+	* \code
+	* SURFHANDLE surf = m_mfd->GetDisplaySurface();
+	* if (surf) {
+	* 	ImVec2 uv_min = ImVec2(0.0f, 0.0f);                 // Top-left
+	* 	ImVec2 uv_max = ImVec2(1.0f, 1.0f);                 // Lower-right
+	* 	ImVec4 tint_col = ImVec4(1.0f, 1.0f, 1.0f, 1.0f);   // No tint
+	* 	ImVec4 border_col = ImVec4(1.0f, 1.0f, 1.0f, 0.0f);
+	* 	ImTextureID txt = oapiGetImTextureID(surf);
+	* 	ImGui::Image(txt, ImVec2(sz.x, sz.y), uv_min, uv_max, tint_col, border_col);
+	* }
+	* \endcode
+	* 
 	*/
 OAPIFUNC void      *oapiGetDialogContext (HWND hDlg);
 

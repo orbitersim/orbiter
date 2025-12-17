@@ -47,6 +47,34 @@ oapi::Font * deffont = 0;
 oapi::Pen * defpen = 0;
 
 
+static std::string UTF8ToCP1252(const char *utf8, int ulen)
+{
+	// Convert UTF-8 to Windows-1252
+	std::wstring utf16(ulen, L'\0');
+	MultiByteToWideChar(CP_UTF8, 0, utf8,
+                        ulen, utf16.data(), ulen);
+
+	int wlen = WideCharToMultiByte(28591, 0, utf16.c_str(),
+                                  utf16.length(), nullptr, 0,
+                                  nullptr, nullptr);
+
+	// In case of problem, return the original string
+	// to help with backward compatibility
+	if (wlen == 0) return std::string(utf8, ulen);
+
+	// The string will be at most ulen in length since
+	// it won't contain multibyte characters
+	std::string str(ulen, '\0');
+	int len = WideCharToMultiByte(28591, 0, utf16.c_str(),
+                        utf16.length(), &str[0], wlen, 
+                        nullptr, nullptr);
+
+	// Resize to proper length
+	str.resize(len);
+	return str;
+}
+
+
 // ===============================================================================================
 //
 void D3D9Pad::SinCos(int n, int k)
@@ -928,11 +956,14 @@ DWORD D3D9Pad::GetLineHeight () // ... *with* "internal leading"
 
 // ===============================================================================================
 //
-DWORD D3D9Pad::GetTextWidth (const char *str, int len)
+DWORD D3D9Pad::GetTextWidth (const char *utf8, int ulen)
 {
-	if (str) if (str[0] == '_') if (strcmp(str, "_SkpVerInfo") == 0) return 2;
+	if (utf8) if (utf8[0] == '_') if (strcmp(utf8, "_SkpVerInfo") == 0) return 2;
 	if (cfont==NULL) return 0;
-	return DWORD(static_cast<D3D9PadFont *>(cfont)->pFont->Length2(str, len));
+
+	std::string str = UTF8ToCP1252(utf8, ulen);
+
+	return DWORD(static_cast<D3D9PadFont *>(cfont)->pFont->Length2(str.c_str(), str.length()));
 }
 
 
@@ -1051,8 +1082,10 @@ void D3D9Pad::WrapOneLine (char* str, int len, int maxWidth)
 
 // ===============================================================================================
 //
-bool D3D9Pad::TextBox (int x1, int y1, int x2, int y2, const char *str, int len)
+bool D3D9Pad::TextBox (int x1, int y1, int x2, int y2, const char *utf8, int ulen)
 {
+	std::string str = UTF8ToCP1252(utf8, ulen);
+
 #ifdef SKPDBG 
 	Log("TextBox()");
 #endif
@@ -1064,9 +1097,9 @@ bool D3D9Pad::TextBox (int x1, int y1, int x2, int y2, const char *str, int len)
 	bool result = true;
 	int lineSpace = static_cast<D3D9PadFont *>(cfont)->pFont->GetLineSpace();
 
-	ToSaveBuffer(str, len);
+	ToSaveBuffer(str.c_str(), str.length());
 
-	char *pch, *pEnd =_saveBuffer+len; // <= point to terminating zero
+	char *pch, *pEnd =_saveBuffer+str.length(); // <= point to terminating zero
 	for (pch = strtok(_saveBuffer, "\n"); pch != NULL; pch = strtok(NULL, "\n"))
 	{
 		int _len = lstrlen(pch);
@@ -1084,10 +1117,13 @@ bool D3D9Pad::TextBox (int x1, int y1, int x2, int y2, const char *str, int len)
 	return result;
 }
 
+
 // ===============================================================================================
 //
-bool D3D9Pad::Text (int x, int y, const char *str, int len)
+bool D3D9Pad::Text (int x, int y, const char *utf8, int ulen)
 {
+	std::string str = UTF8ToCP1252(utf8, ulen);
+
 #ifdef SKPDBG 
 	Log("Text(%s)", str);
 #endif
@@ -1113,7 +1149,7 @@ bool D3D9Pad::Text (int x, int y, const char *str, int len)
 
 	pText->SetRotation(static_cast<D3D9PadFont *>(cfont)->rotation);
 	pText->SetScaling(1.0f);
-	pText->PrintSkp(this, float(x - 1), float(y - 1), str, len, (bkmode == OPAQUE));
+	pText->PrintSkp(this, float(x - 1), float(y - 1), str.c_str(), str.length(), (bkmode == OPAQUE));
 
 	return true;
 }
