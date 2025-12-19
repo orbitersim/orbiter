@@ -50,27 +50,35 @@ oapi::Pen * defpen = 0;
 static std::string UTF8ToCP1252(const char *utf8, int ulen)
 {
 	// Convert UTF-8 to Windows-1252
-	std::wstring utf16(ulen, L'\0');
-	MultiByteToWideChar(CP_UTF8, 0, utf8,
-                        ulen, utf16.data(), ulen);
+	// Get the required length to convert from UTF-8 to UTF-16
+	int wlen = MultiByteToWideChar(CP_UTF8, 0, utf8, ulen, nullptr, 0);
 
-	int wlen = WideCharToMultiByte(28591, 0, utf16.c_str(),
+	// In case of a problem, return the original string
+	// to help with backward compatibility
+	if (wlen == 0) {
+		return std::string(utf8);
+	}
+	std::wstring utf16(wlen, L'\0');
+	MultiByteToWideChar(CP_UTF8, 0, utf8,
+                        ulen, utf16.data(), wlen);
+
+	int len = WideCharToMultiByte(28591, 0, utf16.c_str(),
                                   utf16.length(), nullptr, 0,
                                   nullptr, nullptr);
 
-	// In case of problem, return the original string
-	// to help with backward compatibility
-	if (wlen == 0) return std::string(utf8, ulen);
+	if (len == 0) {
+		return std::string(utf8);
+	}
 
-	// The string will be at most ulen in length since
-	// it won't contain multibyte characters
-	std::string str(ulen, '\0');
-	int len = WideCharToMultiByte(28591, 0, utf16.c_str(),
-                        utf16.length(), &str[0], wlen, 
+	std::string str(len, '\0');
+	len = WideCharToMultiByte(28591, 0, utf16.c_str(),
+                        utf16.length(), str.data(), len,
                         nullptr, nullptr);
 
-	// Resize to proper length
-	str.resize(len);
+	if (len == 0) {
+		return std::string(utf8);
+	}
+
 	return str;
 }
 
@@ -1084,8 +1092,6 @@ void D3D9Pad::WrapOneLine (char* str, int len, int maxWidth)
 //
 bool D3D9Pad::TextBox (int x1, int y1, int x2, int y2, const char *utf8, int ulen)
 {
-	std::string str = UTF8ToCP1252(utf8, ulen);
-
 #ifdef SKPDBG 
 	Log("TextBox()");
 #endif
@@ -1097,9 +1103,9 @@ bool D3D9Pad::TextBox (int x1, int y1, int x2, int y2, const char *utf8, int ule
 	bool result = true;
 	int lineSpace = static_cast<D3D9PadFont *>(cfont)->pFont->GetLineSpace();
 
-	ToSaveBuffer(str.c_str(), str.length());
+	ToSaveBuffer(utf8, ulen);
 
-	char *pch, *pEnd =_saveBuffer+str.length(); // <= point to terminating zero
+	char *pch, *pEnd =_saveBuffer+ulen; // <= point to terminating zero
 	for (pch = strtok(_saveBuffer, "\n"); pch != NULL; pch = strtok(NULL, "\n"))
 	{
 		int _len = lstrlen(pch);
