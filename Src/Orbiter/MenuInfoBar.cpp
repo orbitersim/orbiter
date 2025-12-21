@@ -118,7 +118,8 @@ public:
 		ImGuiWindowFlags_NoFocusOnAppearing |
 		ImGuiWindowFlags_DockNodeHost |
 		ImGuiWindowFlags_NoBringToFrontOnFocus |
-		ImGuiWindowFlags_NoDocking;
+		ImGuiWindowFlags_NoDocking |
+		ImGuiWindowFlags_NoNav;
 	void OnDraw() {}
 	std::vector<MenuItem> items;
 	float animState;
