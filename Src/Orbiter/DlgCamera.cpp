@@ -352,7 +352,9 @@ void DlgCamera::DrawGround() {
             ApplyObserver();
         }
 
-        ImGui::Checkbox("Target lock", &m_TargetLock);
+        if(ImGui::Checkbox("Target lock", &m_TargetLock))
+			g_camera->SetGroundObserver_TargetLock (m_TargetLock);
+
     ImGui::EndChild();
 }
 
