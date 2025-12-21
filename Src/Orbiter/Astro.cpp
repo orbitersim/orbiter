@@ -199,23 +199,15 @@ char *FloatStr (double f, int precision)
 	return strbuf;
 }
 
-char *SciStr (double f, int precision, char prefix)
+char *SciStr (double f, int precision)
 {
-	const char *fmtstr[3] = {
-		"%0.*g", "% 0.*g", "%+0.*g"
-	};
-	const char *fstr = fmtstr[0];
-	if (prefix == ' ') fstr = fmtstr[1];
-	else if (prefix == '+') fstr = fmtstr[2];
-
-	int i, len, e;
-	sprintf (strbuf, fstr, precision, f);
-	len = strlen (strbuf);
-	for (i = 0; i < len; i++) {
-		if (strbuf[i] == 'e') {
-			sscanf(strbuf+i+1, "%d", &e);
-			sprintf (strbuf+i, "·10^%d", e);
-		}
+	if (f < 1e4)
+	{
+		sprintf (strbuf, "%0.*g", precision, f);
+	}
+	else
+	{
+		sprintf (strbuf, "%0.*e", precision, f);
 	}
 	return strbuf;
 }
