@@ -154,14 +154,20 @@ char *DistStr (double dist, int precision)
 		if      (absd < 1e8)  sprintf (strbuf, "% 0.*fM", precision-2, dist*1e-6);
 		else if (absd < 1e9)  sprintf (strbuf, "% 0.*fM", precision-3, dist*1e-6);
 		else                  sprintf (strbuf, "% 0.*fG", precision-1, dist*1e-9);
-	} else if (absd < 1e2*AU) {
+	} else if (absd < 1e1*AU) {
 		if      (absd < 1e11) sprintf (strbuf, "% 0.*fG", precision-2, dist*1e-9);
 		else if (absd < 1e12) sprintf (strbuf, "% 0.*fG", precision-3, dist*1e-9);
-		else                  sprintf (strbuf, "% 0.*fAU",precision-2, dist*iAU);
+		else                  sprintf (strbuf, "% 0.*fAU",precision-1, dist*iAU);
+	} else if (absd < 1e1*parsec) {
+		if      (absd < 1e2*AU) sprintf (strbuf, "% 0.*fAU", precision-2, dist*iAU);
+		else if (absd < 1e3*AU) sprintf (strbuf, "% 0.*fAU", precision-3, dist*iAU);
+		else                    sprintf (strbuf, "% 0.*fpc", precision-1, dist*iparsec);
+	} else if (absd < 1e4*parsec) {
+		if      (absd < 1e2*parsec) sprintf (strbuf, "% 0.*fpc", precision-2, dist*iparsec);
+		else if (absd < 1e3*parsec) sprintf (strbuf, "% 0.*fpc", precision-3, dist*iparsec);
+		else                        sprintf (strbuf, "% 0.0fpc", dist*iparsec);
 	} else {
-		sprintf (strbuf, "% 0.0fAU", dist*iAU);
-		//FloatStr (dist*iparsec, precision+1);
-		//strcat (strbuf, "pc");
+		sprintf (strbuf, "% 0.3epc", dist*iparsec);
 	}
 	return strbuf;
 }
