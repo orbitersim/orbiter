@@ -203,8 +203,6 @@ ConsoleConfig *g_Config = NULL;
 
 LuaConsole::LuaConsole (HINSTANCE hDLL): Module (hDLL)
 {
-	hThread = NULL;
-	interp = NULL;
 	cConsoleCmd[0]=0;
 
 	// Register a custom command for opening the console window
@@ -244,21 +242,8 @@ void LuaConsole::clbkSimulationStart (RenderMode mode)
 void LuaConsole::clbkSimulationEnd ()
 {
 	// Kill the interpreter thread
-	if (interp) {
-		if (hThread) {
-			termInterp = true;
-			interp->Terminate();
-			interp->EndExec(); // give the thread opportunity to close
-			if (WaitForSingleObject (hThread, 1000) != 0) {
-				oapiWriteLog ((char*)"LuaConsole: timeout while waiting for interpreter thread");
-				TerminateThread (hThread, 0);
-			}
-			CloseHandle (hThread);
-			hThread = NULL;
-		}
-		delete interp;
-		interp = NULL;
-	}
+	delete interp;
+	interp = NULL;
 }
 
 // ==============================================================
@@ -266,11 +251,6 @@ void LuaConsole::clbkSimulationEnd ()
 void LuaConsole::clbkPreStep (double simt, double simdt, double mjd)
 {
 	if (interp) {
-		if (interp->IsBusy() || cConsoleCmd[0] || interp->nJobs()) { // let the interpreter do some work
-			interp->EndExec();        // orbiter hands over control
-			// At this point the interpreter is performing one cycle
-			interp->WaitExec();   // orbiter waits to get back control
-		}
 		interp->PostStep (simt, simdt, mjd);
 	}
 }
@@ -340,26 +320,5 @@ Interpreter *LuaConsole::CreateInterpreter ()
 	termInterp = false;
 	interp = new ConsoleInterpreter (this);
 	interp->Initialise();
-	hThread = (HANDLE)_beginthreadex (NULL, 4096, &InterpreterThreadProc, this, 0, &id);
 	return interp;
-}
-// Interpreter thread function
-unsigned int WINAPI LuaConsole::InterpreterThreadProc (LPVOID context)
-{
-	int res;
-	LuaConsole *console = (LuaConsole*)context;
-	ConsoleInterpreter *interp = (ConsoleInterpreter*)console->interp;
-
-	// interpreter loop
-	for (;;) {
-		interp->WaitExec(); // wait for execution permission
-		if (console->termInterp) break; // close thread requested
-		res = interp->RunChunk (console->cConsoleCmd, strlen (console->cConsoleCmd)); // run command from buffer
-		if (interp->Status() == 1) break; // close thread requested
-		console->cConsoleCmd[0] = '\0';    // free buffer
-		interp->EndExec();        // return control
-	}
-	interp->EndExec();  // release mutex (is this necessary?)
-	_endthreadex(0);
-	return 0;
 }

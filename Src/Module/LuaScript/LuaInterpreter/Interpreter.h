@@ -103,55 +103,7 @@ public:
 	 */
 	lua_State *GetState() { return L; }
 
-	/**
-	 * \brief Returns interpreter status.
-	 * \return 0=normal, 1=kill pending
-	 */
-	int Status () const;
-
-	/**
-	 * \brief Returns interpreter execution status.
-	 * \return \e true if interpreter is busy (in the process of running a
-	 *   command or script), \e false if it is waiting for intput.
-	 */
-	bool IsBusy () const;
-
-	/**
-	 * \brief Returns the number of background jobs active during idle phase.
-	 * \return number of background jobs
-	 * \note A command may create background jobs that are still active after
-	 *   the command returns. The interpreter idle loop continues processing
-	 *   the remaining jobs until all are finished, or until a new command
-	 *   is entered which takes over control of the background jobs.
-	 */
-	inline int nJobs () const { return jobs; }
-
-	/**
-	 * \brief Request interpreter termination.
-	 * \note This sets the interpreter Status() to 1 (kill pending). It is
-	 *   up to the client to delete the interpreter instance and clean up
-	 *   (terminate interpreter thread etc.)
-	 */
-	void Terminate ();
-	
 	void PostStep (double simt, double simdt, double mjd);
-
-	/**
-	 * \brief Wait for thread execution.
-	 * \note This is called by either the orbiter thread or the interpreter
-	 *   thread when they are waiting to regain execution control.
-	 */
-	virtual void WaitExec (DWORD timeout = INFINITE);
-
-	/**
-	 * \brief Release thread execution.
-	 * \param timeout time [ms] to wait for the mutex. Default is infinite
-	 *   (wait does not time out).
-	 * \note This is called by either the orbiter thread or the interpreter
-	 *   thread after finishing a cycle to hand control over to the other
-	 *   thread.
-	 */
-	virtual void EndExec ();
 
 	/**
 	 * \brief Define functions for interfacing with Orbiter API
@@ -177,8 +129,6 @@ public:
 	 * \brief Run the interpreter initialisation script
 	 */
 	virtual void LoadStartupScript ();
-
-	virtual int ProcessChunk (const char *chunk, int n);
 
 	/**
 	 * \brief Executes a command or script.
@@ -265,9 +215,6 @@ protected:
 	static int AssertMtdMinPrmCount(lua_State *L, int n, const char *funcname);
 	static int AssertMtdNumber(lua_State *L, int idx, const char *funcname);
 	static int AssertMtdHandle(lua_State *L, int idx, const char *funcname);
-
-	// suspend script execution for one cycle
-	void frameskip (lua_State *L);
 
 	// extract interpreter pointer from lua state
 	static Interpreter *GetInterpreter (lua_State *L);
@@ -379,9 +326,6 @@ protected:
 	static int bit_arshift(lua_State* L);
 	static int bit_rol(lua_State* L);
 	static int bit_ror(lua_State* L);
-
-	// process library functions
-	static int procFrameskip (lua_State *L);
 
 	// -------------------------------------------
 	// oapi library functions
@@ -1146,19 +1090,11 @@ protected:
 	static int xrsound_collect(lua_State *L);
 
 private:
-	HANDLE hExecMutex; // flow control synchronisation
-	HANDLE hWaitMutex;
 	static inline gcCore *pCore;
 	static inline bool gcCoreInitialized = false;
 
 	static void LazyInitGCCore();
 
-	bool bExecLocal;   // flag for locally created mutexes
-	bool bWaitLocal;
-
-	int status;              // interpreter status
-	bool is_busy;            // interpreter busy (running a script)
-	int jobs;                // number of background jobs left over after command terminates
 	int (*postfunc)(void*);
 	void *postcontext;
 

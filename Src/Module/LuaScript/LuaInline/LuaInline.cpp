@@ -32,28 +32,12 @@
 
 InterpreterList::Environment::Environment()
 {
-	cmd = NULL;
-	singleCmd = false;
-	hThread = NULL;
 	interp = CreateInterpreter ();
 }
 
 InterpreterList::Environment::~Environment()
 {
-	if (interp) {
-		if (hThread) {
-			termInterp = true;
-			interp->Terminate();
-			interp->EndExec(); // give the thread opportunity to close
-
-			if (WaitForSingleObject (hThread, 1000) != 0) {
-				oapiWriteLog((char*)"LuaInline: timeout while waiting for interpreter thread");
-				TerminateThread (hThread, 0);
-			}
-			CloseHandle (hThread);
-		}
-		delete interp;
-	}
+	delete interp;
 }
 
 Interpreter *InterpreterList::Environment::CreateInterpreter ()
@@ -62,34 +46,8 @@ Interpreter *InterpreterList::Environment::CreateInterpreter ()
 	termInterp = false;
 	interp = new Interpreter ();
 	interp->Initialise();
-	hThread = (HANDLE)_beginthreadex (NULL, 4096, &InterpreterThreadProc, this, 0, &id);
 	return interp;
 }
-
-unsigned int WINAPI InterpreterList::Environment::InterpreterThreadProc (LPVOID context)
-{
-	InterpreterList::Environment *env = (InterpreterList::Environment*)context;
-	Interpreter *interp = env->interp;
-	// interpreter loop
-	for (;;) {
-		interp->WaitExec(); // wait for execution permission
-		if (env->termInterp) break; // close thread requested
-		if (env->cmd) {
-			interp->RunChunk (env->cmd, strlen (env->cmd)); // run command from buffer
-			delete []env->cmd;
-			env->cmd = 0;
-			if (env->singleCmd) break;
-		} else {
-			interp->RunChunk ("", 0); // idle loop
-		}
-		if (interp->Status() == 1) break;
-		interp->EndExec();  // return control
-	}
-	interp->EndExec();  // return mutex (is this necessary?)
-	_endthreadex(0);
-	return 0;
-}
-
 
 // ==============================================================
 // class InterpreterList: implementation
@@ -120,10 +78,7 @@ void InterpreterList::clbkPostStep (double simt, double simdt, double mjd)
 		if (!list[i]->interp) DelInterpreter (list[i--]);
 
 	for (i = 0; i < nlist; i++) { // let the interpreter do some work
-		if (list[i]->interp->IsBusy() || list[i]->cmd || list[i]->interp->nJobs()) {
-			list[i]->interp->EndExec();
-			list[i]->interp->WaitExec();
-		}
+		list[i]->interp->PostStep(simt, simdt, mjd);
 	}
 }
 
@@ -177,10 +132,8 @@ DLLCLBK void InitModule (HINSTANCE hDLL)
 
 DLLCLBK void ExitModule (HINSTANCE hDLL)
 {
-	if (g_IList) {
-		delete g_IList;
-		g_IList = nullptr;
-	}
+	delete g_IList;
+	g_IList = nullptr;
 }
 
 // interpreter-specific callback functions
@@ -206,50 +159,21 @@ DLLCLBK INTERPRETERHANDLE opcRunInterpreter (const char *cmd)
 {
 	if (g_IList) {
 		InterpreterList::Environment *env = g_IList->AddInterpreter();
-		env->cmd = new char[strlen(cmd)+10];
-		sprintf (env->cmd, "run('%s')", cmd);
+		char *runcmd = new char[strlen(cmd)+32];
+		sprintf (runcmd, "proc.bgFile('Script/%s.lua')", cmd);
+		env->interp->RunChunk(runcmd, strlen(runcmd));
+		delete[] runcmd;
 		return (INTERPRETERHANDLE)env;
 	} else {
 		return NULL;
 	}
 }
 
-DLLCLBK bool opcAsyncScriptCmd (INTERPRETERHANDLE hInterp, const char *cmd)
-{
-	InterpreterList::Environment *env = (InterpreterList::Environment*)hInterp;
-	char *str;
-	if (env->cmd) { // command still waiting: append new command
-		str = new char[strlen(env->cmd)+strlen(cmd)+2];
-		strcpy(str,env->cmd);
-		strcat(str,";");
-		strcat(str,cmd);
-		char *tmp = env->cmd;
-		env->cmd = str;
-		delete []tmp;
-	} else {
-		str = new char[strlen(cmd)+1];
-		strcpy (str, cmd);
-		env->cmd = str;
-	}
-	return true;
-}
-
 DLLCLBK bool opcExecScriptCmd (INTERPRETERHANDLE hInterp, const char *cmd)
 {
 	InterpreterList::Environment *env = (InterpreterList::Environment*)hInterp;
-	char *str = new char[strlen(cmd)+1];
-	char *cmd_async = 0;
-	strcpy (str, cmd);
-	if (env->cmd) // asynchronous request is waiting
-		cmd_async = env->cmd;
-	env->cmd = str;
-	while (env->cmd) {
-		// wait until command has been executed
-		env->interp->EndExec();
-		env->interp->WaitExec();
-	}
-	if (cmd_async) // restore the asynchronous request
-		env->cmd = cmd_async;
+
+	env->interp->RunChunk (cmd, strlen (cmd));
 	return true;
 }
 

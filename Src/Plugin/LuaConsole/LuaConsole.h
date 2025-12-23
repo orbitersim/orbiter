@@ -40,7 +40,6 @@ private:
 	static unsigned int WINAPI InterpreterThreadProc (LPVOID context);
 	static void OpenDlgClbk (void *context); // called when user requests console window
 	Interpreter *CreateInterpreter ();
-	HANDLE hThread;    // interpreter thread handle
 	bool termInterp;
 
 	Interpreter *interp; // interpreter instance

@@ -140,13 +140,7 @@ InterpreterList::Environment::Environment (OBJHANDLE hV)
 
 InterpreterList::Environment::~Environment()
 {
-	if (interp) {
-		if (hThread) {
-			TerminateThread (hThread, 0);
-			CloseHandle (hThread);
-		}
-		delete interp;
-	}
+	delete interp;
 }
 
 MFDInterpreter *InterpreterList::Environment::CreateInterpreter (OBJHANDLE hV)
@@ -155,28 +149,7 @@ MFDInterpreter *InterpreterList::Environment::CreateInterpreter (OBJHANDLE hV)
 	interp = new MFDInterpreter ();
 	interp->Initialise();
 	interp->SetSelf (hV);
-	hThread = (HANDLE)_beginthreadex (NULL, 4096, &InterpreterThreadProc, this, 0, &id);
 	return interp;
-}
-
-// Interpreter thread function
-unsigned int WINAPI InterpreterList::Environment::InterpreterThreadProc (LPVOID context)
-{
-	InterpreterList::Environment *env = (InterpreterList::Environment*)context;
-	MFDInterpreter *interp = (MFDInterpreter*)env->interp;
-
-	// interpreter loop
-	for (;;) {
-		interp->WaitExec(); // wait for execution permission
-		if (interp->Status() == 1) break; // close thread requested
-		interp->RunChunk (env->cmd, strlen (env->cmd)); // run command from buffer
-		if (interp->Status() == 1) break;
-		env->cmd[0] = '\0'; // free buffer
-		interp->EndExec();  // return control
-	}
-	interp->EndExec();  // release mutex (is this necessary?)
-	_endthreadex(0);
-	return 0;
 }
 
 // ==============================================================
@@ -198,10 +171,6 @@ void InterpreterList::Update (double simt, double simdt, double mjd)
 	for (i = 0; i < nlist; i++) {
 		for (j = 0; j < list[i].nenv; j++) {
 			Environment *env = list[i].env[j];
-			if (env->interp->IsBusy() || env->cmd[0] || env->interp->nJobs()) { // let the interpreter do some work
-				env->interp->EndExec();
-				env->interp->WaitExec();
-			}
 			env->interp->PostStep (simt, simdt, mjd);
 		}
 	}

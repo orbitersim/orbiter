@@ -53,9 +53,7 @@ public:
 		~Environment();
 		MFDInterpreter *CreateInterpreter (OBJHANDLE hV);
 		MFDInterpreter *interp;
-		HANDLE hThread;
 		char cmd[1024];
-		static unsigned int WINAPI InterpreterThreadProc (LPVOID context);
 	};
 	struct VesselInterp {
 		OBJHANDLE hVessel;
