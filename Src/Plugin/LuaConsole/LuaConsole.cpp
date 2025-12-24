@@ -203,6 +203,7 @@ ConsoleConfig *g_Config = NULL;
 
 LuaConsole::LuaConsole (HINSTANCE hDLL): Module (hDLL)
 {
+	interp = NULL;
 	cConsoleCmd[0]=0;
 
 	// Register a custom command for opening the console window
@@ -251,21 +252,23 @@ void LuaConsole::clbkSimulationEnd ()
 void LuaConsole::clbkPreStep (double simt, double simdt, double mjd)
 {
 	if (interp) {
+		if(cConsoleCmd[0]) {
+			interp->RunChunk(cConsoleCmd, strlen(cConsoleCmd));
+			cConsoleCmd[0] = '\0';
+		}
 		interp->PostStep (simt, simdt, mjd);
 	}
 }
 
 // ==============================================================
 
-HWND LuaConsole::Open ()
+void LuaConsole::Open ()
 {
 	oapiOpenDialog(hDlg);
 
-	// create the interpreter and execution thread
+	// create the interpreter
 	if (!interp)
 		interp = CreateInterpreter ();
-
-	return NULL;
 }
 
 // ==============================================================
