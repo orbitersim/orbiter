@@ -78,6 +78,12 @@ static int traceback(lua_State *L) {
     return 1;
 }
 
+void Interpreter::OnError(const char *msg)
+{
+	oapiWriteLogError("%s", msg);
+	oapiAddNotification(OAPINOTIF_ERROR, "Lua error", msg);
+}
+
 int Interpreter::LuaCall(lua_State *L, int narg, int nres)
 {
 	int base = lua_gettop(L) - narg;
@@ -86,9 +92,9 @@ int Interpreter::LuaCall(lua_State *L, int narg, int nres)
 	int res = lua_pcall(L, narg, nres, base);
 	lua_remove(L, base);
 	if(res != 0) {
+		Interpreter *interp = GetInterpreter (L);
 		const char *msg = lua_tostring(L, -1);
-		oapiWriteLogError("%s", msg);
-		oapiAddNotification(OAPINOTIF_ERROR, "Lua error", msg);
+		interp->OnError(msg);
 	}
 	return res;
 }

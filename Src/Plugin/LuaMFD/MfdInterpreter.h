@@ -33,6 +33,7 @@ public:
 	void term_clear ();
 
 protected:
+	void OnError(const char *msg) override { term_strout(msg, true); }
 	static int termOut (lua_State *L);
 	static int termLineUp (lua_State *L);
 	static int termSetVerbosity (lua_State *L);

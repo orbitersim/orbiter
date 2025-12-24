@@ -140,6 +140,12 @@ public:
 	virtual int RunChunk (const char *chunk, int n);
 
 	/**
+	 * \brief Callback for displaying error
+	 * \param Error message
+	 */
+	virtual void OnError(const char *msg);
+
+	/**
 	 * \brief Copies a string to the terminal.
 	 * \param str string to be displayed.
 	 * \note Terminal-type derived classes should implement this method.
