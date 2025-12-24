@@ -93,6 +93,30 @@ int Interpreter::LuaCall(lua_State *L, int narg, int nres)
 	return res;
 }
 
+void Interpreter::hookTimeout(lua_State* L, lua_Debug* ar)
+{
+	Interpreter *interp = GetInterpreter (L);
+    auto now = std::chrono::steady_clock::now();
+    int elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(now - interp->startTime).count();
+	static int i;
+	i++;
+    if (elapsed > 100) { // milliseconds
+        luaL_error(L, "Script execution time exceeded");
+    }
+}
+
+int Interpreter::LuaCallTimeout(lua_State *L, int nargs, int nres)
+{
+	startTime = std::chrono::steady_clock::now();
+
+	// Call hook every 100000 instructions
+	lua_sethook(L, hookTimeout, LUA_MASKCOUNT, 100000);
+	int res = LuaCall(L, nargs, nres);
+	lua_sethook(L, nullptr, 0, 0);
+
+	return res;
+}
+
 Interpreter::~Interpreter ()
 {
 	lua_close (L);
@@ -132,7 +156,7 @@ void Interpreter::PostStep (double simt, double simdt, double mjd)
 
 	if (hasTasks) {
 		lua_getfield(L, -1, "update");
-		LuaCall(L, 0, 0);
+		LuaCallTimeout(L, 0, 0);
 	}
 
 	lua_pop(L, 1);
@@ -659,7 +683,7 @@ int Interpreter::RunChunk (const char *chunk, int n)
 	if (chunk[0]) {
 		// run command
 		luaL_loadbuffer (L, chunk, n, "line");
-		LuaCall (L, 0, 0);
+		LuaCallTimeout (L, 0, 0);
 	}
 	return res;
 }

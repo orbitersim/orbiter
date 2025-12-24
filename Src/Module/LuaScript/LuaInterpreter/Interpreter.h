@@ -13,6 +13,7 @@ extern "C" {
 #include "OrbiterAPI.h"
 #include "VesselAPI.h" // for TOUCHDOWNVTX
 #include <unordered_set>
+#include <chrono>
 
 class gcCore;
 
@@ -1100,6 +1101,9 @@ private:
 
 	static inline std::unordered_set<VESSEL *>knownVessels; // for lua_isvessel
 
+	std::chrono::steady_clock::time_point startTime;
+	static void hookTimeout(lua_State* L, lua_Debug* ar);
+	int LuaCallTimeout(lua_State *L, int nargs, int nres);
 
 	static int lua_tointeger_safe (lua_State *L, int idx, int prmno, const char *funcname);
 	static double lua_tonumber_safe (lua_State *L, int idx, int prmno, const char *funcname);
