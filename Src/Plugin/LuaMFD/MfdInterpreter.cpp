@@ -134,7 +134,6 @@ void MFDInterpreter::AddLine (const char *line, COLORREF col)
 
 InterpreterList::Environment::Environment (OBJHANDLE hV)
 {
-	cmd[0] = '\0';
 	interp = CreateInterpreter (hV);
 }
 

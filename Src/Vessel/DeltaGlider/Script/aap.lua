@@ -258,5 +258,7 @@ function aap.hdg (hdg)
     end
 end
 
+v = V
+
 term.out('DG: Atmospheric autopilot loaded.')
 term.out('For help, type: help(dg_aap)')

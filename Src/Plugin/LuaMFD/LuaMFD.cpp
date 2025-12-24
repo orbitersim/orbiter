@@ -110,8 +110,7 @@ bool ScriptMFD::Input (const char *line)
 {
 	InterpreterList::Environment *env = vi->env[pg];
 	env->interp->AddLine (line, 0xFFFFFF);
-	if (env->cmd[0]) return false;
-	strncpy (env->cmd, line, 1024);
+	env->interp->RunChunk(line, strlen(line));
 	return true;
 }
 

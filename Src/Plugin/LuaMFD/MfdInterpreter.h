@@ -53,7 +53,6 @@ public:
 		~Environment();
 		MFDInterpreter *CreateInterpreter (OBJHANDLE hV);
 		MFDInterpreter *interp;
-		char cmd[1024];
 	};
 	struct VesselInterp {
 		OBJHANDLE hVessel;
