@@ -56,14 +56,6 @@ bool ScriptInterface::ExecScriptCmd (INTERPRETERHANDLE hInterp, const char *cmd)
 	else      return false;
 }
 
-bool ScriptInterface::AsyncScriptCmd (INTERPRETERHANDLE hInterp, const char *cmd)
-{
-	if (!hLib && !LoadInterpreterLib()) return false;
-	bool(*proc)(INTERPRETERHANDLE,const char*) = (bool(*)(INTERPRETERHANDLE,const char*))GetProcAddress (hLib, "opcAsyncScriptCmd");
-	if (proc) return proc(hInterp, cmd);
-	else      return false;
-}
-
 lua_State *ScriptInterface::GetLua (INTERPRETERHANDLE hInterp)
 {
 	if (!hLib && !LoadInterpreterLib()) return NULL;
