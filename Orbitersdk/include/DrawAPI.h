@@ -1141,6 +1141,8 @@ public:
 	 * \return width of the string, drawn in the currently selected font [pixel]
 	 * \default None, returns 0.
 	 * \sa SetFont
+	 * \note If the user provides a Windows-1252 encoded string, an heuristic is used
+	 *   that *may* provide the expected result
 	 */
 	virtual DWORD GetTextWidth (const char *str, int len = 0) { assert(false); return 0; }
 
@@ -1181,6 +1183,8 @@ public:
 	 * \param len string length for output
 	 * \return \e true on success, \e false on failure.
 	 * \default None, returns false.
+	 * \note If the user provides a Windows-1252 encoded string, an heuristic is used
+	 *   that *may* provide the expected result
 	 */
 	virtual bool Text (int x, int y, const char *str, int len) { assert(false); return false; }
 
@@ -1199,6 +1203,8 @@ public:
 	 *   be applied as required to fit the text in the box.
 	 * \note The bottom edge (y2) should probably be ignored, so text isn't
 	 *   truncated if it doesn't fit the box.
+	 * \note If the user provides a Windows-1252 encoded string, an heuristic is used
+	 *   that *may* provide the expected result
 	 */
 	virtual bool TextBox (int x1, int y1, int x2, int y2, const char *str, int len);
 
