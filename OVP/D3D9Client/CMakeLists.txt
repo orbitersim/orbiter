@@ -221,7 +221,7 @@ add_custom_command(
 add_custom_command(OUTPUT ${INCLUDE_TARGET_DIR}/gcCoreAPI.h ${INCLUDE_TARGET_DIR}/gcGUI.h
 	DEPENDS ${D3D9_SOURCE_DIR}/gcGUI.h ${D3D9_SOURCE_DIR}/gcCore.h ${D3D9_SOURCE_DIR}/gcCore.cpp
 	COMMAND ${InterfaceBuilder} ${D3D9_SOURCE_DIR}/gcCore.h ${INCLUDE_TARGET_DIR}/gcCoreAPI.h ${D3D9_SOURCE_DIR}/gcCore.cpp
-	COMMAND ${CMAKE_COMMAND} -E copy_if_different ${D3D9_SOURCE_DIR}/gcGUI.h ${INCLUDE_TARGET_DIR}/gcGUI.h
+	COMMAND ${CMAKE_COMMAND} -E copy ${D3D9_SOURCE_DIR}/gcGUI.h ${INCLUDE_TARGET_DIR}/gcGUI.h
 	VERBATIM
 )
 add_custom_target(D3D9Client_Interface
