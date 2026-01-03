@@ -20,7 +20,7 @@ public:
            bool paused);
 	~ISound();
 	bool isFinished() { return m_started && !m_paused && !ma_sound_is_playing(&m_sound); }
-	void setVolume(float vol) { ma_sound_set_volume(&m_sound, vol); }
+	void setVolume(float vol) { ma_sound_set_fade_in_milliseconds(&m_sound, -1, vol, 5); }
     void setIsLooped(bool looped);
     void setIsPaused(bool paused);
     void setPan(float pan);
