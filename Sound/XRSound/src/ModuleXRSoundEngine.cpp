@@ -8,11 +8,12 @@
 #include "ModuleXRSoundEngine.h"
 #include "XRSoundConfigFileParser.h"
 #include "XRSoundDLL.h"   // for XRSoundDLL::GetAbsoluteSimTime()
+#include "ISound.h"
 
 // Static method to create a new instance of an XRSoundEngine for a module.  This is the ONLY place where new 
 // XRSoundEngine instances for modules are constructed.
 //
-// This also handles static one-time initialization of our singleton irrKlang engine.
+// This also handles static one-time initialization of our singleton sound engine.
 ModuleXRSoundEngine *ModuleXRSoundEngine::CreateInstance(const char *pUniqueModuleName)
 {
     _ASSERTE(pUniqueModuleName);
@@ -21,12 +22,12 @@ ModuleXRSoundEngine *ModuleXRSoundEngine::CreateInstance(const char *pUniqueModu
     if (!pUniqueModuleName || !*pUniqueModuleName)
         return nullptr;
 
-    // Must handle initializing the irrKlang engine here since clbkSimulationStart is too late: it needs to be done
+    // Must handle initializing the sound engine here since clbkSimulationStart is too late: it needs to be done
     // before the first call to LoadWav.
-    if (s_bIrrKlangEngineNeedsInitialization)
+    if (s_bSoundEngineNeedsInitialization)
     {
-        s_bIrrKlangEngineNeedsInitialization = false;
-        InitializeIrrKlangEngine();
+        s_bSoundEngineNeedsInitialization = false;
+        InitializeSoundEngine();
     }
 
     return new ModuleXRSoundEngine(pUniqueModuleName);
@@ -59,7 +60,7 @@ void ModuleXRSoundEngine::FreeResources()
         static_cast<const char *>(m_csModuleName));
     s_globalConfig.WriteLog(msg);
 
-    // stop all of this module's sounds and free all irrKlang resources for them
+    // stop all of this module's sounds and free all sound resources for them
     StopAllWav();
 }
 
@@ -98,7 +99,7 @@ void ModuleXRSoundEngine::UpdateSoundState(WavContext &context)
     {
         if (!pISound->isFinished())
         {
-            // update the irrKlang state for this sound
+            // update the state for this sound
             pISound->setVolume(context.volume);  // Note: context.volume has already been adjusted for MasterVolume setting in config
             pISound->setIsLooped(context.bLoop);
             pISound->setIsPaused(context.bPaused);
@@ -106,7 +107,7 @@ void ModuleXRSoundEngine::UpdateSoundState(WavContext &context)
         else
         {
             // sound has finished, so release its resources
-            pISound->drop();
+			s_SoundEngine->Release(pISound);
             context.pISound = nullptr;
         }
     }

@@ -72,6 +72,5 @@ public:
 protected:
     HINSTANCE m_hDLL;  // our DLL's handle
     double m_nextSoundEnginesRefreshSimt;
-    double m_nextIrrKlangUpdateRealtime;
     double m_absoluteSimTime;   // replaces simt and oapiGetSimTime(), both of which are unreliable!  See note in XRSoundDLL::clbkPreStep.
 };
