@@ -3,6 +3,7 @@
 
 add_subdirectory(Sol)
 add_subdirectory(Vsop87)
+add_subdirectory(SPICE)
 add_subdirectory(Moon)
 add_subdirectory(Phobos)
 add_subdirectory(Deimos)
