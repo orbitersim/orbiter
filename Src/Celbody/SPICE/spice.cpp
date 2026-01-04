@@ -1,3 +1,6 @@
+// Copyright(c) Alex Frost
+// Licensed under the MIT License
+
 #define STRICT
 #define ORBITER_MODULE
 #include <string>
@@ -7,7 +10,7 @@
 #include "orbitersdk.h"
 // #include "OrbiterAPI.h"
 // #include "CelbodyAPI.h"
-#include "SpiceUsr.h"
+#include "cspice/win_x86/include/SpiceUsr.h" // There has to be a better way to do this with CMAKE -- MWH
 
 using namespace std;
 
