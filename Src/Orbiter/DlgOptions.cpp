@@ -518,7 +518,7 @@ void DlgOptions::DrawAxes()
 		ImGui::BeginChild("##right");
 			ImGui::SeparatorText(_("Display"));
 			ImGui::CheckboxFlags(_("Show negative axis"), &prm.flagFrameAxes, FAV_NEGATIVE);
-			ImGui::BeginDisabled(!(prm.flagFrameAxes, FAV_NEGATIVE));
+			ImGui::BeginDisabled(!(prm.flagFrameAxes & FAV_NEGATIVE));
 				ImGui::SliderFloat(_("Scale"), &prm.scaleFrameAxes, 0.25, 4.0, "%0.2f", ImGuiSliderFlags_AlwaysClamp);
 				ImGui::SliderFloat(_("Opacity"), &prm.opacFrameAxes, 0.0, 1.0, "%0.2f", ImGuiSliderFlags_AlwaysClamp);
 			ImGui::EndDisabled();

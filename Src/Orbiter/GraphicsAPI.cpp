@@ -168,13 +168,6 @@ ParticleStream *GraphicsClient::clbkCreateReentryStream (PARTICLESTREAMSPEC *pss
 
 // ======================================================================
 
-ScreenAnnotation *GraphicsClient::clbkCreateAnnotation ()
-{
-	TRACENEW; return new ScreenAnnotation (this);
-}
-
-// ======================================================================
-
 bool GraphicsClient::TexturePath (const char *fname, char *path) const
 {
 	// first try htex directory
@@ -796,15 +789,20 @@ ScreenAnnotation::ScreenAnnotation (GraphicsClient *_gc)
 	buflen = 0;
 	txtscale = 0;
 	font = NULL;
-	//hFont = NULL;
 	Reset();
+	DialogManager *dlg = g_pOrbiter->DlgMgr();
+	if(dlg) {
+		dlg->RegisterAnnotation(this);
+	}
 }
 
 ScreenAnnotation::~ScreenAnnotation ()
 {
+	DialogManager *dlg = g_pOrbiter->DlgMgr();
+	if(dlg) {
+		dlg->UnregisterAnnotation(this);
+	}
 	if (txt) delete[]txt;
-	if (font) gc->clbkReleaseFont (font);
-	//DeleteObject (hFont);
 }
 
 void ScreenAnnotation::Reset ()
@@ -847,11 +845,9 @@ void ScreenAnnotation::SetSize (double scale)
 {
 	if (scale != txtscale) {
 		txtscale = scale;
-		hf = (int)(viewH*txtscale/35.0);
-		if (font) gc->clbkReleaseFont (font);
-		font = gc->clbkCreateFont (-hf, true, "Sans");
-		//if (hFont) DeleteObject (hFont);
-		//hFont = CreateFont (-hf, 0, 0, 0, 400, 0, 0, 0, 0, 3, 2, 1, 49, "Arial");
+		// The size in CreateFont was the cell size whereas in ImGui it's the glyph size
+		// We multiply by 1.15 for it to look about the same as before
+		hf = (int)(viewH*txtscale/35.0*1.15);
 	}
 }
 
@@ -860,24 +856,38 @@ void ScreenAnnotation::SetColour (const VECTOR3 &col)
 	int r = min (255, (int)(col.x*256.0));
 	int g = min (255, (int)(col.y*256.0));
 	int b = min (255, (int)(col.z*256.0));
-	txtcol  = r | (g << 8) | (b << 16);
-	txtcol2 = (r/2) | ((g/2) << 8) | ((b/2) << 16);
+	// Reuse COLORREF since it's also 32bit and we don't want to change the API
+	txtcol = IM_COL32(r,g,b,255);
+	txtcol2 = IM_COL32(r/2,g/2,b/2,255);
 }
 
 void ScreenAnnotation::Render ()
 {
-	if (!txtlen) return;
+    if (!txtlen)
+        return;
 
-	Sketchpad *skp = gc->clbkGetSketchpad (0);
-	if (skp) {
-		skp->SetFont (font);
-		skp->SetTextColor (txtcol2);
-		skp->SetBackgroundMode (oapi::Sketchpad::BK_TRANSPARENT);
-		skp->TextBox (nx1+1, ny1+1, nx2+1, ny2+1, txt, txtlen);
-		skp->SetTextColor (txtcol);
-		skp->TextBox (nx1, ny1, nx2, ny2, txt, txtlen);
-		gc->clbkReleaseSketchpad (skp);
-	}
+    ImGuiViewport* vp = ImGui::GetMainViewport();
+    ImDrawList* draw = ImGui::GetBackgroundDrawList(vp);
+    ImFont* font = ImGui::GetFont();
+    ImVec2 pos(vp->Pos.x + nx1, vp->Pos.y + ny1);
+
+    // Outline (1px offset)
+    draw->AddText(
+        font,
+        hf,
+        ImVec2(pos.x + 1, pos.y + 1),
+        txtcol2,
+        txt, 0, nw
+    );
+
+    // Normal text
+    draw->AddText(
+        font,
+        hf,
+        pos,
+        txtcol,
+        txt, 0, nw
+    );
 }
 
 // ======================================================================
