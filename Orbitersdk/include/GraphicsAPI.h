@@ -778,14 +778,6 @@ public:
 	// @}
 
 	/**
-	 * \brief Create an annotation object for displaying on-screen text.
-	 * \return Pointer to new screen annotation object.
-	 * \default Dynamically allocates a 'ScreenAnnotation' instance and returns
-	 *   a pointer to it.
-	 */
-	virtual ScreenAnnotation *clbkCreateAnnotation ();
-
-	/**
 	 * \brief Returns the handle of the main render window.
 	 */
 	HWND GetRenderWindow () const { return hRenderWnd; }
