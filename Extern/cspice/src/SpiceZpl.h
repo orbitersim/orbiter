@@ -119,7 +119,7 @@
 #define HAVE_PLATFORM_MACROS_H
  
  
-   #define   CSPICE_PC_LINUX_64BIT_GCC
+   #define   CSPICE_PC_64BIT_MS
  
 #endif
  

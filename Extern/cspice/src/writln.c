@@ -342,6 +342,14 @@ static integer c__1 = 1;
 /*     SPICELIB functions */
 
 
+/*     Local Parameters */
+
+/*     Set a value for the logical unit which represents the standard */
+/*     output device, commonly a terminal. A value of 6 is widely used, */
+/*     but the Fortran standard does not specify a value, so it may be */
+/*     different for different fortran implementations. */
+
+
 /*     Local variables */
 
 

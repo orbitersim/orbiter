@@ -43,7 +43,7 @@ static integer c__0 = 0;
     integer first;
     extern integer rtrim_(char *, ftnlen);
     extern logical failed_(void);
-    char device[255];
+    char device[128];
     extern /* Subroutine */ int getact_(integer *);
     integer action;
     extern /* Subroutine */ int getdev_(char *, ftnlen);
@@ -799,11 +799,11 @@ L_chkin:
 		    );
 	} else {
 	    ++ovrflw;
-	    getdev_(device, (ftnlen)255);
-	    wrline_(device, "SPICE(TRACEBACKOVERFLOW)", (ftnlen)255, (ftnlen)
+	    getdev_(device, (ftnlen)128);
+	    wrline_(device, "SPICE(TRACEBACKOVERFLOW)", (ftnlen)128, (ftnlen)
 		    24);
 	    wrline_(device, "CHKIN:  The trace storage is completely full.  "
-		    "No further module names can be added.", (ftnlen)255, (
+		    "No further module names can be added.", (ftnlen)128, (
 		    ftnlen)84);
 	}
 
@@ -813,10 +813,10 @@ L_chkin:
 	    maxdep = modcnt + ovrflw;
 	}
     } else {
-	getdev_(device, (ftnlen)255);
-	wrline_(device, "SPICE(BLANKMODULENAME)", (ftnlen)255, (ftnlen)22);
+	getdev_(device, (ftnlen)128);
+	wrline_(device, "SPICE(BLANKMODULENAME)", (ftnlen)128, (ftnlen)22);
 	wrline_(device, "CHKIN:  An attempt to check in was made without sup"
-		"plying a module name.", (ftnlen)255, (ftnlen)72);
+		"plying a module name.", (ftnlen)128, (ftnlen)72);
     }
 
 /*     We're done now, so return. */
@@ -1154,8 +1154,8 @@ L_chkout:
 		    module + (first - 1), (ftnlen)32, l - (first - 1)) != 0) {
 		s_copy(tmpnam, module + (first - 1), (ftnlen)80, module_len - 
 			(first - 1));
-		getdev_(device, (ftnlen)255);
-		wrline_(device, "SPICE(NAMESDONOTMATCH)", (ftnlen)255, (
+		getdev_(device, (ftnlen)128);
+		wrline_(device, "SPICE(NAMESDONOTMATCH)", (ftnlen)128, (
 			ftnlen)22);
 /* Writing concatenation */
 		i__3[0] = 19, a__1[0] = "CHKOUT:  Caller is ";
@@ -1168,18 +1168,18 @@ L_chkout:
 			s_rnge("stack", i__1, "trcpkg_", (ftnlen)1189)) << 5);
 		i__3[4] = 1, a__1[4] = ".";
 		s_cat(ch__1, a__1, i__3, &c__5, (ftnlen)149);
-		wrline_(device, ch__1, (ftnlen)255, rtrim_(tmpnam, (ftnlen)80)
+		wrline_(device, ch__1, (ftnlen)128, rtrim_(tmpnam, (ftnlen)80)
 			 + 36 + rtrim_(stack + (((i__2 = modcnt - 1) < 100 && 
 			0 <= i__2 ? i__2 : s_rnge("stack", i__2, "trcpkg_", (
 			ftnlen)1189)) << 5), (ftnlen)32) + 1);
 	    }
 	    --modcnt;
 	} else {
-	    getdev_(device, (ftnlen)255);
-	    wrline_(device, "SPICE(TRACESTACKEMPTY)", (ftnlen)255, (ftnlen)22)
+	    getdev_(device, (ftnlen)128);
+	    wrline_(device, "SPICE(TRACESTACKEMPTY)", (ftnlen)128, (ftnlen)22)
 		    ;
 	    wrline_(device, "CHKOUT: An attempt to check out was made when n"
-		    "o modules were checked in.", (ftnlen)255, (ftnlen)73);
+		    "o modules were checked in.", (ftnlen)128, (ftnlen)73);
 	}
     } else {
 
@@ -1926,8 +1926,8 @@ L_trcnam:
 /*           Invalid index...we output the error messages directly */
 /*           in this case: */
 
-	    getdev_(device, (ftnlen)255);
-	    wrline_(device, "SPICE(INVALIDINDEX)", (ftnlen)255, (ftnlen)19);
+	    getdev_(device, (ftnlen)128);
+	    wrline_(device, "SPICE(INVALIDINDEX)", (ftnlen)128, (ftnlen)19);
 	    intstr_(index, string, (ftnlen)11);
 /* Writing concatenation */
 	    i__4[0] = 52, a__2[0] = "TRCNAM: An invalid index was input.  Th"
@@ -1935,7 +1935,7 @@ L_trcnam:
 	    i__4[1] = rtrim_(string, (ftnlen)11), a__2[1] = string;
 	    i__4[2] = 1, a__2[2] = ".";
 	    s_cat(ch__2, a__2, i__4, &c__3, (ftnlen)64);
-	    wrline_(device, ch__2, (ftnlen)255, rtrim_(string, (ftnlen)11) + 
+	    wrline_(device, ch__2, (ftnlen)128, rtrim_(string, (ftnlen)11) + 
 		    53);
 	    return 0;
 	}
@@ -1962,8 +1962,8 @@ L_trcnam:
 /*           Invalid index...we output the error messages directly */
 /*           in this case: */
 
-	    getdev_(device, (ftnlen)255);
-	    wrline_(device, "SPICE(INVALIDINDEX)", (ftnlen)255, (ftnlen)19);
+	    getdev_(device, (ftnlen)128);
+	    wrline_(device, "SPICE(INVALIDINDEX)", (ftnlen)128, (ftnlen)19);
 	    intstr_(index, string, (ftnlen)11);
 /* Writing concatenation */
 	    i__4[0] = 52, a__2[0] = "TRCNAM: An invalid index was input.  Th"
@@ -1971,7 +1971,7 @@ L_trcnam:
 	    i__4[1] = rtrim_(string, (ftnlen)11), a__2[1] = string;
 	    i__4[2] = 1, a__2[2] = ".";
 	    s_cat(ch__2, a__2, i__4, &c__3, (ftnlen)64);
-	    wrline_(device, ch__2, (ftnlen)255, rtrim_(string, (ftnlen)11) + 
+	    wrline_(device, ch__2, (ftnlen)128, rtrim_(string, (ftnlen)11) + 
 		    53);
 	    return 0;
 	}

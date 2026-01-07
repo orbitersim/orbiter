@@ -27,7 +27,7 @@
     extern /* Subroutine */ int chkin_(char *, ftnlen);
     extern doublereal dpmax_(void);
     extern /* Subroutine */ int errdp_(char *, doublereal *, ftnlen);
-    static doublereal pairs[20], lbound;
+    static doublereal pairs[18], lbound;
     extern /* Subroutine */ int sigerr_(char *, ftnlen), chkout_(char *, 
 	    ftnlen), setmsg_(char *, ftnlen);
 
@@ -573,8 +573,8 @@
 
     if (first) {
 	first = FALSE_;
-	for (i__ = 1; i__ <= 20; ++i__) {
-	    pairs[(i__1 = i__ - 1) < 20 && 0 <= i__1 ? i__1 : s_rnge("pairs", 
+	for (i__ = 1; i__ <= 18; ++i__) {
+	    pairs[(i__1 = i__ - 1) < 18 && 0 <= i__1 ? i__1 : s_rnge("pairs", 
 		    i__1, "stmp03_", (ftnlen)604)] = 1. / ((doublereal) i__ * 
 		    (doublereal) (i__ + 1));
 	}
@@ -704,8 +704,8 @@
 /*     LPAIR3 will be 18. */
 
     *c3 = 1.;
-    for (i__ = 20; i__ >= 4; i__ += -2) {
-	*c3 = 1. - *x * pairs[(i__1 = i__ - 1) < 20 && 0 <= i__1 ? i__1 : 
+    for (i__ = 18; i__ >= 4; i__ += -2) {
+	*c3 = 1. - *x * pairs[(i__1 = i__ - 1) < 18 && 0 <= i__1 ? i__1 : 
 		s_rnge("pairs", i__1, "stmp03_", (ftnlen)748)] * *c3;
     }
     *c3 = pairs[1] * *c3;
@@ -732,8 +732,8 @@
 /*     LPAIR2 will be 17. */
 
     *c2 = 1.;
-    for (i__ = 19; i__ >= 3; i__ += -2) {
-	*c2 = 1. - *x * pairs[(i__1 = i__ - 1) < 20 && 0 <= i__1 ? i__1 : 
+    for (i__ = 17; i__ >= 3; i__ += -2) {
+	*c2 = 1. - *x * pairs[(i__1 = i__ - 1) < 18 && 0 <= i__1 ? i__1 : 
 		s_rnge("pairs", i__1, "stmp03_", (ftnlen)779)] * *c2;
     }
     *c2 = pairs[0] * *c2;

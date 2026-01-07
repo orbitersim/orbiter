@@ -355,10 +355,11 @@ static integer c__6 = 6;
 /*        Platform/Environment specific assignments follow. */
 
 	s_copy(attcpy + 32, "PC", (ftnlen)32, (ftnlen)2);
-	s_copy(attcpy + 64, "LINUX", (ftnlen)32, (ftnlen)5);
-	s_copy(attcpy + 96, "GCC/64BIT", (ftnlen)32, (ftnlen)9);
+	s_copy(attcpy + 64, "MICROSOFT WINDOWS", (ftnlen)32, (ftnlen)17);
+	s_copy(attcpy + 96, "MICROSOFT VISUAL C++/64BIT", (ftnlen)32, (ftnlen)
+		26);
 	s_copy(attcpy + 128, "LTL-IEEE", (ftnlen)32, (ftnlen)8);
-	s_copy(attcpy + 160, "LF", (ftnlen)32, (ftnlen)2);
+	s_copy(attcpy + 160, "CR-LF", (ftnlen)32, (ftnlen)5);
 	s_copy(attcpy + 192, "BIG-IEEE LTL-IEEE", (ftnlen)32, (ftnlen)17);
 
 /*        Don't execute these assignments again. */

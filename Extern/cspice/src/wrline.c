@@ -41,7 +41,7 @@ static integer c__2 = 2;
     extern /* Subroutine */ int ljust_(char *, char *, ftnlen, ftnlen);
     logical opened;
     extern /* Subroutine */ int fndlun_(integer *);
-    char tmpnam[255];
+    char tmpnam[128];
     integer iostat;
     extern /* Subroutine */ int suffix_(char *, integer *, char *, ftnlen, 
 	    ftnlen);
@@ -601,14 +601,14 @@ static integer c__2 = 2;
 	case 1: goto L_clline;
 	}
 
-    ljust_(device, tmpnam, device_len, (ftnlen)255);
-    ucase_(tmpnam, tmpnam, (ftnlen)255, (ftnlen)255);
+    ljust_(device, tmpnam, device_len, (ftnlen)128);
+    ucase_(tmpnam, tmpnam, (ftnlen)128, (ftnlen)128);
 
 /*     TMPNAM is now left justified and is in upper case. */
 
-    if (s_cmp(tmpnam, "NULL", (ftnlen)255, (ftnlen)4) == 0) {
+    if (s_cmp(tmpnam, "NULL", (ftnlen)128, (ftnlen)4) == 0) {
 	return 0;
-    } else if (s_cmp(tmpnam, "SCREEN", (ftnlen)255, (ftnlen)6) == 0) {
+    } else if (s_cmp(tmpnam, "SCREEN", (ftnlen)128, (ftnlen)6) == 0) {
 	ci__1.cierr = 1;
 	ci__1.ciunit = 6;
 	ci__1.cifmt = "(A)";

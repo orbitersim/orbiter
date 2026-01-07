@@ -684,7 +684,7 @@ static integer c__1 = 1;
     extern logical failed_(void);
     static integer endrec, loccch;
     extern /* Subroutine */ int cleari_(integer *, integer *);
-    static char locdas[255];
+    static char locdas[128];
     static integer dirrec[256], loccrc;
     static char locifn[60];
     extern integer lnknfn_(integer *);
@@ -4468,11 +4468,11 @@ L_dasops:
 /*     Assign a name to the scratch file. This name is required */
 /*     by the DDH subsystem. */
 
-    s_copy(locdas, "DAS SCRATCH FILE", (ftnlen)255, (ftnlen)16);
+    s_copy(locdas, "DAS SCRATCH FILE", (ftnlen)128, (ftnlen)16);
 
 /*     Open a DAS file for scratch access. */
 
-    zzddhopn_(locdas, "SCRATCH", "DAS", handle, (ftnlen)255, (ftnlen)7, (
+    zzddhopn_(locdas, "SCRATCH", "DAS", handle, (ftnlen)128, (ftnlen)7, (
 	    ftnlen)3);
     if (failed_()) {
 	chkout_("DASOPS", (ftnlen)6);
@@ -6121,7 +6121,7 @@ L100003:
 		ioin__1.inopen = 0;
 		ioin__1.innum = 0;
 		ioin__1.innamed = 0;
-		ioin__1.innamlen = 255;
+		ioin__1.innamlen = 128;
 		ioin__1.inname = locdas;
 		ioin__1.inacc = 0;
 		ioin__1.inseq = 0;
@@ -6140,7 +6140,7 @@ L100003:
 		}
 		setmsg_("Attempt to update file record failed. File was '#'."
 			"  Value of IOSTAT was '#'.", (ftnlen)77);
-		errch_("#", locdas, (ftnlen)1, (ftnlen)255);
+		errch_("#", locdas, (ftnlen)1, (ftnlen)128);
 		errint_("#", &iostat, (ftnlen)1);
 		sigerr_("SPICE(DASWRITEFAIL)", (ftnlen)19);
 		chkout_("DASUFS", (ftnlen)6);

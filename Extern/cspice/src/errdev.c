@@ -16,7 +16,7 @@ static integer c__2 = 2;
     /* System generated locals */
     address a__1[2];
     integer i__1[2];
-    char ch__1[378], ch__2[65];
+    char ch__1[251], ch__2[65];
 
     /* Builtin functions */
     integer s_cmp(char *, char *, ftnlen, ftnlen);
@@ -27,9 +27,9 @@ static integer c__2 = 2;
     char upop[3];
     extern /* Subroutine */ int chkin_(char *, ftnlen), ucase_(char *, char *,
 	     ftnlen, ftnlen);
-    char locop[3], upnam[255];
+    char locop[3], upnam[128];
     extern /* Subroutine */ int ljust_(char *, char *, ftnlen, ftnlen);
-    char locnam[255];
+    char locnam[128];
     extern /* Subroutine */ int getdev_(char *, ftnlen);
     extern integer lastnb_(char *, ftnlen);
     extern /* Subroutine */ int sigerr_(char *, ftnlen), chkout_(char *, 
@@ -405,27 +405,27 @@ static integer c__2 = 2;
 /*        case for our own use.  So, save the input value */
 /*        and get an upper case version: */
 
-	ljust_(device, upnam, device_len, (ftnlen)255);
-	ucase_(upnam, upnam, (ftnlen)255, (ftnlen)255);
-	if (lastnb_(upnam, (ftnlen)255) > 255) {
-	    s_copy(locnam, device, (ftnlen)255, device_len);
+	ljust_(device, upnam, device_len, (ftnlen)128);
+	ucase_(upnam, upnam, (ftnlen)128, (ftnlen)128);
+	if (lastnb_(upnam, (ftnlen)128) > 128) {
+	    s_copy(locnam, device, (ftnlen)128, device_len);
 /* Writing concatenation */
 	    i__1[0] = 123, a__1[0] = "ERRDEV:  Device name exceeds FILEN cha"
 		    "racters; device selection not updated. The first FILEN c"
 		    "haracters of the name were:  ";
-	    i__1[1] = 255, a__1[1] = locnam;
-	    s_cat(ch__1, a__1, i__1, &c__2, (ftnlen)378);
-	    setmsg_(ch__1, (ftnlen)378);
+	    i__1[1] = 128, a__1[1] = locnam;
+	    s_cat(ch__1, a__1, i__1, &c__2, (ftnlen)251);
+	    setmsg_(ch__1, (ftnlen)251);
 	    sigerr_("SPICE(DEVICENAMETOOLONG)", (ftnlen)24);
 	    chkout_("ERRDEV", (ftnlen)6);
 	    return 0;
 	}
-	if (s_cmp(upnam, "SCREEN", (ftnlen)255, (ftnlen)6) == 0 || s_cmp(
-		upnam, "NULL", (ftnlen)255, (ftnlen)4) == 0) {
+	if (s_cmp(upnam, "SCREEN", (ftnlen)128, (ftnlen)6) == 0 || s_cmp(
+		upnam, "NULL", (ftnlen)128, (ftnlen)4) == 0) {
 
 /*           Store upper case version of DEVICE: */
 
-	    putdev_(upnam, (ftnlen)255);
+	    putdev_(upnam, (ftnlen)128);
 	} else {
 
 /*           We assume we've got a file name... */

@@ -36,7 +36,7 @@ logical prtpkg_0_(int n__, logical *short__, logical *long__, logical *expl,
     extern /* Subroutine */ int ucase_(char *, char *, ftnlen, ftnlen);
     char ltype[10];
     extern /* Subroutine */ int ljust_(char *, char *, ftnlen, ftnlen);
-    char device[255];
+    char device[128];
     extern /* Subroutine */ int getdev_(char *, ftnlen), wrline_(char *, char 
 	    *, ftnlen, ftnlen);
     char loctyp[10];
@@ -372,11 +372,11 @@ logical prtpkg_0_(int n__, logical *short__, logical *long__, logical *expl,
 
 /*     Executable Code: */
 
-    getdev_(device, (ftnlen)255);
+    getdev_(device, (ftnlen)128);
     wrline_(device, "PRTPKG:  You have called an entry point which has no ru"
 	    "n-time function; this may indicate a program bug.  Please check "
-	    "the PRTPKG documentation.  ", (ftnlen)255, (ftnlen)146);
-    wrline_(device, "SPICE(BOGUSENTRY)", (ftnlen)255, (ftnlen)17);
+	    "the PRTPKG documentation.  ", (ftnlen)128, (ftnlen)146);
+    wrline_(device, "SPICE(BOGUSENTRY)", (ftnlen)128, (ftnlen)17);
     ret_val = FALSE_;
     return ret_val;
 /* $Procedure SETPRT ( Store Error Message Types to be Output ) */
@@ -811,9 +811,9 @@ L_msgsel:
 /*        avoid recursion, we output the messages directly, */
 /*        rather than call SIGERR. */
 
-	getdev_(device, (ftnlen)255);
-	wrline_(device, "SPICE(INVALIDMSGTYPE)", (ftnlen)255, (ftnlen)21);
-	wrline_(device, " ", (ftnlen)255, (ftnlen)1);
+	getdev_(device, (ftnlen)128);
+	wrline_(device, "SPICE(INVALIDMSGTYPE)", (ftnlen)128, (ftnlen)21);
+	wrline_(device, " ", (ftnlen)128, (ftnlen)1);
 	s_copy(loctyp, type__, (ftnlen)10, type_len);
 
 /*        Note:  What looks like a typo below isn't; there's */
@@ -825,7 +825,7 @@ L_msgsel:
 		"supplied as input; the type specifiedwas:  ";
 	i__1[1] = 10, a__1[1] = loctyp;
 	s_cat(ch__1, a__1, i__1, &c__2, (ftnlen)96);
-	wrline_(device, ch__1, (ftnlen)255, (ftnlen)96);
+	wrline_(device, ch__1, (ftnlen)128, (ftnlen)96);
     }
     return ret_val;
 } /* prtpkg_ */
