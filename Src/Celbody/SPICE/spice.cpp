@@ -10,7 +10,7 @@
 #include "orbitersdk.h"
 // #include "OrbiterAPI.h"
 // #include "CelbodyAPI.h"
-#include "cspice/win_x86/include/SpiceUsr.h" // There has to be a better way to do this with CMAKE -- MWH
+#include "SpiceUsr.h" // There has to be a better way to do this with CMAKE -- MWH
 
 using namespace std;
 

@@ -7,9 +7,23 @@ set(CELBODY "spice")
 
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/Modules/Celbody)
 
+
+if(NOT BUILD64 AND CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
+  set(SPICE_PLATFORM "cspice/win_x86/")
+endif()
+if(NOT BUILD64 AND CMAKE_CXX_COMPILER_ID STREQUAL "GNUCXX")
+	set(SPICE_PLATFORM "cspice/linux_x86/")
+endif()
+if(BUILD64 AND CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
+	set(SPICE_PLATFORM "cspice/win_x64/")
+endif()
+if(BUILD64 AND CMAKE_CXX_COMPILER_ID STREQUAL "GNUCXX")
+	set(SPICE_PLATFORM "cspice/linux_x64/")
+endif()
+
+
 add_library(${CELBODY} SHARED
-	${CELBODY}.cpp
-	cspice/win_x86/include/SpiceUsr.h
+  spice.cpp  
 )
 
 add_dependencies(${CELBODY}
@@ -19,12 +33,13 @@ add_dependencies(${CELBODY}
 
 target_include_directories(${CELBODY}
 	PUBLIC ${CMAKE_SOURCE_DIR}/Orbitersdk/include
+	${CMAKE_SOURCE_DIR}/Src/Celbody/SPICE/${SPICE_PLATFORM}/include/
 )
 
 target_link_libraries(${CELBODY}
 	${ORBITER_LIB}
 	${ORBITER_SDK_LIB}
-	${CMAKE_SOURCE_DIR}/Src/Celbody/SPICE/cspice/win_x86/lib/cspice.lib
+	${CMAKE_SOURCE_DIR}/Src/Celbody/SPICE/${SPICE_PLATFORM}/lib/cspice.lib
 )
 
 add_custom_command(
