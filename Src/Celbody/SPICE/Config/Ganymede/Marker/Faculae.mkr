@@ -1,0 +1,23 @@
+BEGIN_HEADER
+InitialState on
+ColourIdx 5
+END_HEADER
+
+BEGIN_DATA
++206.60	+33.40	:	Abydos Facula
++170.50	+27.70	:	Akhmin Facula
++265.70	+29.00	:	Bigeh Facula
++144.60	+15.70	:	Busiris Facula
++156.50	+13.20	:	Buto Facula
++150.80	+9.90	:	Coptos Facula
++103.00	+0.00	:	[Dendera Facula]
++212.90	+25.70	:	Edfu Facula
++212.80	+18.50	:	Heliopolis Facula
++164.70	+22.40	:	Hermopolis Facula
++228.10	+14.10	:	Memphis Facula
++124.00	+4.80	:	Ombos Facula
++117.80	-26.10	:	[Punt Facula]
++345.80	+37.90	:	[Sais Facula]
++216.90	+7.00	:	Siwah Facula
++198.80	+37.60	:	Tettu Facula
++157.60	+7.10	:	Thebes Facula

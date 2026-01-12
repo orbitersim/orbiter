@@ -157,6 +157,12 @@ set(OrbiterTgt Orbiter)
 set(ORBITER_LIB $<TARGET_LINKER_FILE:Orbiter>)
 
 # =====================================================================================
+# Build Spice module for celbodies. If false, build legacy (VSOP87/ELP82,etc)
+set(SPICE_BUILD TRUE)
+
+# =====================================================================================
+
+# =====================================================================================
 # Configure Orbiter.cfg for externally installed planet textures
 
 set(ORBITER_PLANET_TEXTURE_INSTALL_DIR

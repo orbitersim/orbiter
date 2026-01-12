@@ -7,20 +7,22 @@ set(CELBODY "spice")
 
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/Modules/Celbody)
 
-
 if(NOT BUILD64 AND CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
   set(SPICE_PLATFORM "cspice/win_x86/")
+  set(SPICE_LIB_EXTENSION ".lib")
 endif()
 if(NOT BUILD64 AND CMAKE_CXX_COMPILER_ID STREQUAL "GNUCXX")
 	set(SPICE_PLATFORM "cspice/linux_x86/")
+  set(SPICE_LIB_EXTENSION ".so")
 endif()
 if(BUILD64 AND CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
 	set(SPICE_PLATFORM "cspice/win_x64/")
+  set(SPICE_LIB_EXTENSION ".lib")
 endif()
 if(BUILD64 AND CMAKE_CXX_COMPILER_ID STREQUAL "GNUCXX")
 	set(SPICE_PLATFORM "cspice/linux_x64/")
+  set(SPICE_LIB_EXTENSION ".so")
 endif()
-
 
 add_library(${CELBODY} SHARED
   spice.cpp  
@@ -39,7 +41,7 @@ target_include_directories(${CELBODY}
 target_link_libraries(${CELBODY}
 	${ORBITER_LIB}
 	${ORBITER_SDK_LIB}
-	${CMAKE_SOURCE_DIR}/Src/Celbody/SPICE/${SPICE_PLATFORM}/lib/cspice.lib
+	${CMAKE_SOURCE_DIR}/Src/Celbody/SPICE/${SPICE_PLATFORM}/lib/cspice${SPICE_LIB_EXTENSION}
 )
 
 add_custom_command(
