@@ -51,10 +51,12 @@ static std::string UTF8ToCP1252(const char *utf8, int ulen)
 {
 	// Convert UTF-8 to Windows-1252
 	// Get the required length to convert from UTF-8 to UTF-16
-	int wlen = MultiByteToWideChar(CP_UTF8, 0, utf8, ulen, nullptr, 0);
+	// Use MB_ERR_INVALID_CHARS to have the call fail if the string
+	// contains invalid characters. In that case we assume it's
+	// a legacy plugin providing a Windows-1252 string instead of UTF-8
+	int wlen = MultiByteToWideChar(CP_UTF8, MB_ERR_INVALID_CHARS, utf8, ulen, nullptr, 0);
 
-	// In case of a problem, return the original string
-	// to help with backward compatibility
+	// Return the original string and hope it was already using Windows-1252
 	if (wlen == 0) {
 		return std::string(utf8);
 	}
