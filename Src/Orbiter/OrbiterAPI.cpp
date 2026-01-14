@@ -1362,11 +1362,6 @@ DLLEXPORT bool oapiExecScriptCmd (INTERPRETERHANDLE hInterp, const char *cmd)
 	return g_pOrbiter->Script()->ExecScriptCmd (hInterp, cmd);
 }
 
-DLLEXPORT bool oapiAsyncScriptCmd (INTERPRETERHANDLE hInterp, const char *cmd)
-{
-	return g_pOrbiter->Script()->AsyncScriptCmd (hInterp, cmd);
-}
-
 DLLEXPORT lua_State *oapiGetLua (INTERPRETERHANDLE hInterp)
 {
 	return g_pOrbiter->Script()->GetLua (hInterp);
