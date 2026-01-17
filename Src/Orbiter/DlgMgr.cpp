@@ -568,6 +568,11 @@ void DialogManager::ImGuiNewFrame()
 	ImGui_ImplWin32_NewFrame();
 	ImGui::NewFrame();
 
+	for(auto &annotation: annotations) {
+		annotation->Render();
+	}
+
+
 	RenderNotifications();
 
 	// We can't use a range-based loop here because Display() may unregister the current dialog
@@ -598,6 +603,17 @@ void DialogManager::SetMainColor(COLORREF col)
     ImVec4 color = ImVec4((col & 0xff) / 255.0f, ((col >> 8) & 0xff) / 255.0f, (col >> 16)/255.0f, 1.0f);
     ApplyGlowTheme(color);
 }
+
+void DialogManager::RegisterAnnotation(oapi::ScreenAnnotation *an)
+{
+	annotations.push_back(an);
+}
+
+void DialogManager::UnregisterAnnotation(oapi::ScreenAnnotation *an)
+{
+	annotations.remove(an);
+}
+
 
 ImGuiDialog::~ImGuiDialog(){
 	// Make sure this dialog is no longer referenced in the DialogManager
@@ -917,7 +933,6 @@ namespace ImGui {
 		}
 		return ret;
 	}
-
 
 	DLLEXPORT void PushFont(ImGuiFont f, float scale)
 	{
