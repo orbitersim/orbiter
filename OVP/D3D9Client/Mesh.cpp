@@ -1608,9 +1608,8 @@ void D3D9Mesh::Render(const LPD3DXMATRIX pW, int iTech, LPDIRECT3DCUBETEXTURE9 *
 	bool bRefl = true;
 
 	for (DWORD g=0; g<nGrp; g++) {
-
-
 		bool bHUD = (Grp[g].MFDScreenId == 0x100);
+		bool bTransl = (Grp[g].UsrFlag & 0x40) != 0;
 
 		// Inline engine renders HUD/MFDs in a separate rendering pass and flag 0x2 is used to disable rendering during the main rendering pass
 		if ((Grp[g].UsrFlag & 0x2) && (!bHUD)) continue;
@@ -1792,6 +1791,7 @@ void D3D9Mesh::Render(const LPD3DXMATRIX pW, int iTech, LPDIRECT3DCUBETEXTURE9 *
 
 			if (Grp[g].MtrlIdx==SPEC_DEFAULT) mat = &defmat;
 			else							  mat = &Mtrl[Grp[g].MtrlIdx];
+			bTransl = bTransl || mat->Diffuse.w != 1.0f;
 
 			if (mat!=old_mat) {
 
@@ -1919,6 +1919,10 @@ void D3D9Mesh::Render(const LPD3DXMATRIX pW, int iTech, LPDIRECT3DCUBETEXTURE9 *
 			pDev->SetRenderState(D3DRS_ZENABLE, 0);
 			pDev->SetRenderState(D3DRS_DESTBLEND, D3DBLEND_ONE);
 		}
+		
+		if (bTransl) {
+			pDev->SetRenderState(D3DRS_ZWRITEENABLE, 0);
+		}
 
 		if (Grp[g].bDualSided) {
 			pDev->SetRenderState(D3DRS_CULLMODE, D3DCULL_CW);
@@ -1949,6 +1953,10 @@ void D3D9Mesh::Render(const LPD3DXMATRIX pW, int iTech, LPDIRECT3DCUBETEXTURE9 *
 		if (bHUD) {
 			pDev->SetRenderState(D3DRS_ZENABLE, 1);
 			pDev->SetRenderState(D3DRS_DESTBLEND, D3DBLEND_INVSRCALPHA);
+		}
+
+		if (bTransl) {
+			pDev->SetRenderState(D3DRS_ZWRITEENABLE, 1);
 		}
 
 		D3D9Stats.Mesh.Vertices += Grp[g].nVert;
@@ -2067,6 +2075,7 @@ void D3D9Mesh::RenderSimplified(const LPD3DXMATRIX pW, LPDIRECT3DCUBETEXTURE9 *p
 	// Render MeshGroups ----------------------------------------------------
 	//
 	for (DWORD g = 0; g<nGrp; g++) {
+		bool bTransl = (Grp[g].UsrFlag & 0x40) != 0;
 
 		// Check skip conditions --------------------------------------------
 		//
@@ -2143,7 +2152,7 @@ void D3D9Mesh::RenderSimplified(const LPD3DXMATRIX pW, LPDIRECT3DCUBETEXTURE9 *p
 				FC.Rghn = (pRghn != NULL);
 				FC.Spec = (pSpec != NULL);
 				FC.Refl = (pRefl != NULL);
-			}	
+			}
 		}
 
 
@@ -2158,6 +2167,7 @@ void D3D9Mesh::RenderSimplified(const LPD3DXMATRIX pW, LPDIRECT3DCUBETEXTURE9 *p
 				if (bModulateMatAlpha || bTextured == false) FX->SetFloat(eMtrlAlpha, mat->Diffuse.w);
 				else FX->SetFloat(eMtrlAlpha, 1.0f);
 			}
+			bTransl = bTransl || mat->Diffuse.w != 1.0f;
 		}
 
 		// Must update FlowControl ?
@@ -2208,11 +2218,19 @@ void D3D9Mesh::RenderSimplified(const LPD3DXMATRIX pW, LPDIRECT3DCUBETEXTURE9 *p
 			pDev->SetRenderState(D3DRS_MULTISAMPLEANTIALIAS, 0);
 		}
 
+		if (bTransl) {
+			pDev->SetRenderState(D3DRS_ZWRITEENABLE, 0);
+		}
+
 		pDev->DrawIndexedPrimitive(D3DPT_TRIANGLELIST, Grp[g].VertOff, 0, Grp[g].nVert, Grp[g].IdexOff, Grp[g].nFace);
 		Grp[g].bRendered = true;
 
 		if (bOIT && dwMSAA) {
 			pDev->SetRenderState(D3DRS_MULTISAMPLEANTIALIAS, dwMSAA);		
+		}
+
+		if (bTransl) {
+			pDev->SetRenderState(D3DRS_ZWRITEENABLE, 1);
 		}
 	}
 
@@ -2379,6 +2397,7 @@ void D3D9Mesh::RenderFast(const LPD3DXMATRIX pW, int iTech)
 		if ((Grp[g].UsrFlag & 0x2) && (Grp[g].MFDScreenId != 0x100)) continue;
 
 		bool bHUD = Grp[g].MFDScreenId == 0x100;
+		bool bTransl = (Grp[g].UsrFlag & 0x40) != 0;
 
 		// Mesh Debugger -------------------------------------------------------------------------------------------
 		//
@@ -2492,6 +2511,7 @@ void D3D9Mesh::RenderFast(const LPD3DXMATRIX pW, int iTech)
 				if (bModulateMatAlpha || bTextured == false)  FX->SetFloat(eMtrlAlpha, mat->Diffuse.w);
 				else										  FX->SetFloat(eMtrlAlpha, 1.0f);
 			}
+			bTransl = bTransl || mat->Diffuse.w != 1.0f;
 		}
 
 
@@ -2525,6 +2545,10 @@ void D3D9Mesh::RenderFast(const LPD3DXMATRIX pW, int iTech)
 			pDev->SetRenderState(D3DRS_DESTBLEND, D3DBLEND_ONE);
 		}
 
+		if (bTransl) {
+			pDev->SetRenderState(D3DRS_ZWRITEENABLE, 0);
+		}
+
 		if (Grp[g].bDualSided) {
 			pDev->SetRenderState(D3DRS_CULLMODE, D3DCULL_CW);
 			pDev->SetRenderState(D3DRS_ZWRITEENABLE, 0);
@@ -2543,6 +2567,10 @@ void D3D9Mesh::RenderFast(const LPD3DXMATRIX pW, int iTech)
 		if (bHUD) {
 			pDev->SetRenderState(D3DRS_ZENABLE, 1);
 			pDev->SetRenderState(D3DRS_DESTBLEND, D3DBLEND_INVSRCALPHA);
+		}
+
+		if (bTransl) {
+			pDev->SetRenderState(D3DRS_ZWRITEENABLE, 1);
 		}
 
 		D3D9Stats.Mesh.Vertices += Grp[g].nVert;
@@ -2777,7 +2805,12 @@ void D3D9Mesh::RenderShadowMap(const LPD3DXMATRIX pW, const LPD3DXMATRIX pVP, in
 	{
 		if (Grp[g].UsrFlag & 0x2) continue;
 		if (Grp[g].UsrFlag & 0x1) continue;
-		
+
+		const D3D9MatExt* mat = nullptr;
+		if (Grp[g].MtrlIdx==SPEC_DEFAULT) mat = &defmat;
+		else				  mat = &Mtrl[Grp[g].MtrlIdx];
+		if ((Grp[g].UsrFlag & 0x40 != 0) || mat->Diffuse.w != 1.0f) { continue; } // Skip recording depth and normals for translucent objects
+
 		MeshShader::ps_bools.bOIT = (Grp[g].UsrFlag & 0x20) != 0;
 
 		if (MeshShader::ps_bools.bOIT) {
