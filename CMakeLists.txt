@@ -218,10 +218,6 @@ option(ORBITER_TRACY_PROFILER
 
 include(cmake/tracy.cmake)
 
-if(ORBITER_BUILD_XRSOUND)
-	set(IRRKLANG_DIR "" CACHE PATH "Path to the irrKlang library")
-endif()
-
 if(ORBITER_BUILD_D3D9CLIENT)
 	find_package(DXSDK REQUIRED)
 	set(DXSDK_DIR

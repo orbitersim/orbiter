@@ -10,6 +10,7 @@
 #include "DefaultSoundGroupPreSteps.h"
 #include "AnimationState.h"
 #include "XRSoundDLL.h"   // for XRSoundDLL::GetAbsoluteSimTime()
+#include "ISound.h"
 
 // static pressure threshold at which OAT and Mach values are valid; matches the XR constant value
 // (APPROX) AS SEEN ON SURFACE MFD, BUT TOO RISKY TO USE IN PRODUCTION: const double OAT_VALID_STATICP_THRESHOLD = 0.014;  // in pascals
@@ -24,7 +25,7 @@ void VesselXRSoundEngine::FreeResources()
         static_cast<const char *>(GetVesselName()));
     s_globalConfig.WriteLog(msg);
 
-    // stop all of this vessel's sounds and free all irrKlang resources for them
+    // stop all of this vessel's sounds and free all resources for them
     StopAllWav();
 
     // free all our DefaultSoundPreStep objects
@@ -34,19 +35,19 @@ void VesselXRSoundEngine::FreeResources()
 // Static method to create a new instance of an XRSoundEngine for a vessel.  This is the ONLY place where new 
 // XRSoundEngine instances for vessels are constructed.
 //
-// This also handles static one-time initialization of our singleton irrKlang engine.
+// This also handles static one-time initialization of our singleton sound engine.
 VesselXRSoundEngine *VesselXRSoundEngine::CreateInstance(const OBJHANDLE hVessel)
 {
     _ASSERTE(oapiIsVessel(hVessel));
     if (!oapiIsVessel(hVessel))
         return nullptr;
 
-    // Must handle initializing the irrKlang engine here since clbkSimulationStart is too late: it needs to be done
+    // Must handle initializing the sound engine here since clbkSimulationStart is too late: it needs to be done
     // before the first call to LoadWav.
-    if (s_bIrrKlangEngineNeedsInitialization)
+    if (s_bSoundEngineNeedsInitialization)
     {
-        s_bIrrKlangEngineNeedsInitialization = false;
-        InitializeIrrKlangEngine();
+        s_bSoundEngineNeedsInitialization = false;
+        InitializeSoundEngine();
     }
 
     VesselXRSoundEngine *pEngine = new VesselXRSoundEngine(hVessel);
@@ -89,7 +90,7 @@ VesselXRSoundEngine::~VesselXRSoundEngine()
 // Returns true on success, false if XRSound.dll not present this default sound is disabled via config file (i.e., this default sound is not loaded).
 bool VesselXRSoundEngine::SetDefaultSoundEnabled(const XRSound::DefaultSoundID soundID, const bool bEnabled)
 {
-    if (!IsKlangEngineInitialized())
+    if (!IsSoundEngineInitialized())
         return false;
 
     bool bSuccess = false;
@@ -123,7 +124,7 @@ bool VesselXRSoundEngine::SetDefaultSoundEnabled(const XRSound::DefaultSoundID s
 //   option: which default sound ID to check
 bool VesselXRSoundEngine::GetDefaultSoundEnabled(const XRSound::DefaultSoundID soundID)
 {
-    if (!IsKlangEngineInitialized())
+    if (!IsSoundEngineInitialized())
         return false;
 
     bool bEnabled = false;
@@ -146,7 +147,7 @@ bool VesselXRSoundEngine::GetDefaultSoundEnabled(const XRSound::DefaultSoundID s
 // Returns true on success, false if XRSound.dll not present or defaultSoundID is not a valid group sound ID.
 bool VesselXRSoundEngine::SetDefaultSoundGroupFolder(const XRSound::DefaultSoundID defaultSoundID, const char *pSubfolderPath)
 {
-    if (!IsKlangEngineInitialized())
+    if (!IsSoundEngineInitialized())
         return false;
 
     bool bSuccess = false;
@@ -173,7 +174,7 @@ bool VesselXRSoundEngine::SetDefaultSoundGroupFolder(const XRSound::DefaultSound
 //   groupdefaultSoundID: which default XRSound group to update (only DefaultSoundIDs that end in "Group" are valid for this call)
 const char *VesselXRSoundEngine::GetDefaultSoundGroupFolder(const XRSound::DefaultSoundID defaultSoundID) const
 {
-    if (!IsKlangEngineInitialized())
+    if (!IsSoundEngineInitialized())
         return nullptr;
 
     const char *pSoundFolder = nullptr;
@@ -194,7 +195,7 @@ const char *VesselXRSoundEngine::GetDefaultSoundGroupFolder(const XRSound::Defau
 //   mjd simulation time afte the currently processed step into modified Julian Date format[days]
 void VesselXRSoundEngine::clbkPreStep(const double simt, const double simdt, const double mjd)
 {
-    if (IsKlangEngineInitialized())
+    if (IsSoundEngineInitialized())
     {
         // Update our map of all animation (door) IDs -> animation states.  This data is used by our DefaultSoundPreStep 
         // handlers to determine when a given door is changing states.  In addition, this method logs animation states to
@@ -279,7 +280,7 @@ void VesselXRSoundEngine::UpdateSoundState(WavContext &context)
                 goto release_sound;
             }
 
-            // update the irrKlang state for this sound
+            // update the state for this sound
             pISound->setVolume(volume);
             pISound->setIsLooped(context.bLoop);
             pISound->setIsPaused(context.bPaused);
@@ -288,7 +289,7 @@ void VesselXRSoundEngine::UpdateSoundState(WavContext &context)
         {
         release_sound:
             // sound has finished, so release its resources
-            pISound->drop();
+            s_SoundEngine->Release(pISound);
             context.pISound = nullptr;
         }
     }
@@ -752,7 +753,7 @@ double VesselXRSoundEngine::GetPlasmaLevel()
     // This code is lifted from SetHullTempsPostStep::AddHeat in XR1PostSteps.cpp.  It does not need to be precise; it is just to get an approximate 
     // level of plasma for the vessel in at atmosphere.
     const double HULL_HEATING_FACTOR = 3.1034e-10;
-    const double workingHullHeatingFactor = HULL_HEATING_FACTOR * 0.642; // tweaked very carefully…
+    const double workingHullHeatingFactor = HULL_HEATING_FACTOR * 0.642; // tweaked very carefullyâ€¦
 
     const double atmPressure = pVessel->GetAtmPressure();
     const double airspeed = pVessel->GetAirspeed();   // check *airspeed* here, not ground speed

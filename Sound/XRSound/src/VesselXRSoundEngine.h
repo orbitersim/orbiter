@@ -122,7 +122,7 @@ public:
     }
 
     double GetCameraDistance();
-    // invoked ~20 times per second to update this sound's position relative to Orbiter's camera as well as update sounds via irrKlang engine
+    // invoked ~20 times per second to update this sound's position relative to Orbiter's camera as well as update sounds via sound engine
     void clbkPreStep(const double simt, const double simdt, const double mjd);
 
 protected:
