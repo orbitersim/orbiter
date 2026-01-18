@@ -13,7 +13,7 @@ if(NOT BUILD64 AND CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
 endif()
 if(NOT BUILD64 AND CMAKE_CXX_COMPILER_ID STREQUAL "GNUCXX")
 	set(SPICE_PLATFORM "cspice/linux_x86/")
-  set(SPICE_LIB_EXTENSION ".so")
+  set(SPICE_LIB_EXTENSION ".a")
 endif()
 if(BUILD64 AND CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
 	set(SPICE_PLATFORM "cspice/win_x64/")
@@ -21,7 +21,7 @@ if(BUILD64 AND CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
 endif()
 if(BUILD64 AND CMAKE_CXX_COMPILER_ID STREQUAL "GNUCXX")
 	set(SPICE_PLATFORM "cspice/linux_x64/")
-  set(SPICE_LIB_EXTENSION ".so")
+  set(SPICE_LIB_EXTENSION ".a")
 endif()
 
 add_library(${CELBODY} SHARED
@@ -34,7 +34,7 @@ add_dependencies(${CELBODY}
 )
 
 target_include_directories(${CELBODY}
-	PUBLIC ${CMAKE_SOURCE_DIR}/Orbitersdk/include
+	PUBLIC ${CMAKE_SOURCE_DIR}/Orbitersdk/include/
 	${CMAKE_SOURCE_DIR}/Src/Celbody/SPICE/${SPICE_PLATFORM}/include/
 )
 

@@ -7,10 +7,8 @@
 #include <iostream>
 #include <set>
 #include <vector>
-#include "orbitersdk.h"
-// #include "OrbiterAPI.h"
-// #include "CelbodyAPI.h"
-#include "SpiceUsr.h" // There has to be a better way to do this with CMAKE -- MWH
+#include "Orbitersdk.h"
+#include "SpiceUsr.h"
 
 using namespace std;
 
@@ -468,7 +466,10 @@ int SpiceBody::clbkEphemeris(double mjd, int req, double* r)
 	int resp = 0;
 
 	if (error)
+	{
 		return 0;
+		//oapiExitOrbiter(1); //Shut down Orbiter in the case of error. User should read log.
+	}
 
 	r[0] = r[1] = r[2] = r[3] = r[4] = r[5] = r[6] = r[7] = r[8] = r[9] = r[10] = r[11] = 0.0;
 
