@@ -273,7 +273,7 @@ endfunction()
 
 
 # Installation
-install(DIRECTORY Scenarios Textures Meshes Config GravityModels Script Flights BinAssets/
+install(DIRECTORY Scenarios Textures Meshes Config GravityModels Kernels Script Flights BinAssets/
 	DESTINATION ${ORBITER_INSTALL_ROOT_DIR}
 )
 
