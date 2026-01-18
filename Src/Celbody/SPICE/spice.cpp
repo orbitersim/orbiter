@@ -1,6 +1,8 @@
 // Copyright(c) Alex Frost
 // Licensed under the MIT License
 
+//#pragma warning( disable : 6067 )
+
 #define STRICT
 #define ORBITER_MODULE
 #include <string>
@@ -83,13 +85,13 @@ private:
 	char origin_name[256];
 	char bary_name[256];
 	char parent_bary_name[256];
-	double kernel_begin;
-	double kernel_end;
-	int body_id;
-	int origin_id;
-	int bary_id;
-	int parent_bary_id;
-	bool error;
+	double kernel_begin = 0.0;
+	double kernel_end = 0.0;
+	int body_id = 0;
+	int origin_id = 0;
+	int bary_id = 0;
+	int parent_bary_id = 0;
+	bool error = false;
 	double elts_begin[8];
 	double elts_end[8];
 	double elts_sys_begin[8];
@@ -116,10 +118,16 @@ SpiceBody::SpiceBody(OBJHANDLE hCBody) : CELBODY2(hCBody)
 {
 	// add constructor code here
 	version = 2;
-	kernel_begin = 0;
-	kernel_end = 0;
+	kernel_begin = 0.0;
+	kernel_end = 0.0;
 	error = false;
 	atm = NULL;
+	body_id = 0;
+	origin_id = 0;
+	bary_id = 0;
+	parent_bary_id = 0;
+	gm = 0.0;
+	gm_sys = 0.0;
 }
 
 bool SpiceBody::bEphemeris() const
