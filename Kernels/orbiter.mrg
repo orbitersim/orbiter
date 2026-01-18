@@ -1,0 +1,41 @@
+LEAPSECONDS_KERNEL    = naif0012.tls
+SPK_KERNEL            = orbiter.bsp
+
+   BEGIN_TIME         = 1950 JAN 01 00:00:00.000 TDB
+   END_TIME           = 2050 JAN 01 00:00:00.000 TDB
+
+SOURCE_SPK_KERNEL     = de442.bsp
+   INCLUDE_COMMENTS   = yes
+   BODIES             = 10, 1, 199, 2, 299, 3, 399, 301, 4, 5, 6, 7, 8, 9
+
+SOURCE_SPK_KERNEL     = mar097.bsp
+   INCLUDE_COMMENTS   = yes
+   BODIES             = 499, 401, 402
+
+SOURCE_SPK_KERNEL     = jup365.bsp
+   INCLUDE_COMMENTS   = yes
+   BODIES             = 599, 501, 502, 503, 504, 505 
+
+SOURCE_SPK_KERNEL     = jup344.bsp
+   INCLUDE_COMMENTS   = yes
+   BODIES             = 506
+
+SOURCE_SPK_KERNEL     = sat441.bsp
+   INCLUDE_COMMENTS   = yes
+   BODIES             = 699, 601, 602, 603, 604, 605, 606, 607, 608, 609
+
+SOURCE_SPK_KERNEL     = ura182.bsp
+   INCLUDE_COMMENTS   = yes
+   BODIES             = 799, 701, 702, 703, 704, 705
+
+SOURCE_SPK_KERNEL     = nep095.bsp
+   INCLUDE_COMMENTS   = yes
+   BODIES             = 899, 801, 802, 808
+
+SOURCE_SPK_KERNEL     = plu058.bsp
+   INCLUDE_COMMENTS   = yes
+   BODIES             = 999, 901, 902, 903
+
+SOURCE_SPK_KERNEL     = codes_300ast_20100725.bsp
+   INCLUDE_COMMENTS   = yes
+   BODIES             = 2000004
