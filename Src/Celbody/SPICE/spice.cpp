@@ -16,6 +16,8 @@ using namespace std;
 
 static set<string> loaded_kernels;
 
+#define DONT_ALLOW_EXECUTION_OUTSIDE_KERNEL_DATE_RANGE
+
 bool load_kernel(const string& kernel_name)
 {
 	char s[1024];
@@ -476,7 +478,6 @@ int SpiceBody::clbkEphemeris(double mjd, int req, double* r)
 	if (error)
 	{
 		return 0;
-		//oapiExitOrbiter(1); //Shut down Orbiter in the case of error. User should read log.
 	}
 
 	r[0] = r[1] = r[2] = r[3] = r[4] = r[5] = r[6] = r[7] = r[8] = r[9] = r[10] = r[11] = 0.0;
@@ -522,6 +523,15 @@ int SpiceBody::clbkEphemeris(double mjd, int req, double* r)
 	}
 	else
 	{
+
+		//Error handeling for allowing conic orbit approximateion outside of the loaded kernels. If not allowed, we want to exit quickly.
+		char s[256];
+		sprintf_s(s, 256, "spice.dll: Scenerio MJD for %s is outside loaded kernel data. Closing Simulation", body_name);
+		show_error(s);
+		exit(1);
+//This code is disabled as there isn't a good way currently of notifying the user what is happening or the source of errors.
+// causing orbiter to close will at least make people look at the log.
+#ifndef DONT_ALLOW_EXECUTION_OUTSIDE_KERNEL_DATE_RANGE
 		// elliptical orbit
 		if (t < kernel_begin)
 		{
@@ -576,6 +586,7 @@ int SpiceBody::clbkEphemeris(double mjd, int req, double* r)
 			}
 		}
 	}
+#endif
 
 	if (failed_c())
 	{
@@ -587,6 +598,7 @@ int SpiceBody::clbkEphemeris(double mjd, int req, double* r)
 	}
 
 	return resp;
+
 }
 
 int SpiceBody::clbkFastEphemeris(double simt, int req, double* r)
