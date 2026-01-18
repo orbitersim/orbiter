@@ -585,8 +585,8 @@ int SpiceBody::clbkEphemeris(double mjd, int req, double* r)
 				resp |= EPHEM_BARYPOS | EPHEM_BARYVEL | EPHEM_PARENTBARY | EPHEM_BARYISTRUE;
 			}
 		}
-	}
 #endif
+	}
 
 	if (failed_c())
 	{
