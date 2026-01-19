@@ -29,6 +29,24 @@ const ImGuiWindowFlags INFOFLAGS = ImGuiWindowFlags_NoTitleBar |
 	ImGuiWindowFlags_NoBringToFrontOnFocus |
 	ImGuiWindowFlags_NoDocking;
 
+template<std::size_t N>
+struct MovingAverage {
+    float buf[N]{};
+    std::size_t idx = 0;
+    std::size_t count = 0;
+    float sum = 0.0;
+
+    float add(float x) {
+        sum -= buf[idx];
+        buf[idx] = x;
+        sum += x;
+
+        idx = (idx + 1) % N;
+        if (count < N) ++count;
+
+        return sum / count;
+    }
+};
 
 class DynamicMenuBar: public ImGuiDialog
 {
@@ -100,7 +118,8 @@ public:
 		ImGuiWindowFlags_NoFocusOnAppearing |
 		ImGuiWindowFlags_DockNodeHost |
 		ImGuiWindowFlags_NoBringToFrontOnFocus |
-		ImGuiWindowFlags_NoDocking;
+		ImGuiWindowFlags_NoDocking |
+		ImGuiWindowFlags_NoNav;
 	void OnDraw() {}
 	std::vector<MenuItem> items;
 	float animState;
@@ -506,6 +525,7 @@ class InfoFrameRate {
 	float history[HISTORY_SIZE];
 	float fpsMax;
 	int historyOffset;
+	MovingAverage<16> dtavg;
 public:
 	InfoFrameRate() {
 		for(int i = 0; i < HISTORY_SIZE; i++) {
@@ -540,8 +560,32 @@ public:
 		ImGuiContext &g = *GImGui;
 
 		ImGui::BeginChild("ChildL", ImVec2(ImGui::GetContentRegionAvail().x - HISTORY_SIZE - 8.0, 0), ImGuiChildFlags_AutoResizeY);
-		ImGui::TextColored(white, "F/s:%.0f", g.IO.Framerate);
-		ImGui::TextColored(white, "ΔT/F:%0.*fs", td.SimDT < 1e-1 ? 3 : td.SimDT < 1 ? 2 : td.SimDT < 10 ? 1 : 0, td.SimDT);
+
+		ImGui::TextColored(white, "%s", "F/s");
+		char buf[64];
+		snprintf(buf, 64, "%.0f", td.FPS());
+		buf[63] = '\n';
+		// Right align
+		ImGui::SameLine();
+		ImGui::SetCursorPosX(
+			ImGui::GetCursorPosX() +
+			ImGui::GetContentRegionAvail().x -
+			ImGui::CalcTextSize(buf).x
+		);
+		ImGui::TextColored(white, "%s", buf);
+
+		ImGui::TextColored(white, "%s", "ΔT/F");
+		float simdt = dtavg.add(td.SimDT);
+		snprintf(buf, 64, "%0.*fs", simdt < 1e-1 ? 3 : simdt < 1 ? 2 : simdt < 10 ? 1 : 0, simdt);
+		buf[63] = '\n';
+		// Right align
+		ImGui::SameLine();
+		ImGui::SetCursorPosX(
+			ImGui::GetCursorPosX() +
+			ImGui::GetContentRegionAvail().x -
+			ImGui::CalcTextSize(buf).x
+		);
+		ImGui::TextColored(white, "%s", buf);
 		ImGui::EndChild();
 		ImGui::SameLine();
 		ImGui::BeginChild("ChildR");//, ImVec2(ImGui::GetContentRegionAvail().x / 3.0f * 2.0f, 0), ImGuiChildFlags_AutoResizeY);
