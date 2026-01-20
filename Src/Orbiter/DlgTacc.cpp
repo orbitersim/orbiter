@@ -16,25 +16,25 @@
 extern TimeData td;
 extern Orbiter *g_pOrbiter;
 
-// "Snap" a value to a 1, 2 or 5 mantissa in base 10
-static float SnapTo125(float v, float min_v, float max_v)
+// Snap to 1..9,10 per decade (1,2,3,...,9,10,20,30,...)
+static float SnapToDecimal(float v, float min_v, float max_v)
 {
     v = std::clamp(v, min_v, max_v);
 
     float decade = floorf(log10f(v));
-    float base = powf(10.0f, decade);
+    float base   = powf(10.0f, decade);
 
     float norm = v / base;
+    float snapped = roundf(norm);
 
-    float snapped;
-    if (norm < 1.5f)      snapped = 1.0f;
-    else if (norm < 3.5f) snapped = 2.0f;
-    else if (norm < 7.5f) snapped = 5.0f;
-    else                  snapped = 10.0f;
+    // Handle rounding up to next decade cleanly
+    if (snapped >= 10.0f)
+    {
+        snapped = 10.0f;
+    }
 
     float result = snapped * base;
 
-    // Clamp again in case we snapped past bounds
     return std::clamp(result, min_v, max_v);
 }
 
@@ -98,7 +98,7 @@ void DlgTacc::OnDraw() {
     bool dragging = active && ImGui::IsMouseDragging(ImGuiMouseButton_Left);
 
     if(active && !io.KeyShift)
-        warp = SnapTo125(warp, warp_min, warp_max);
+        warp = SnapToDecimal(warp, warp_min, warp_max);
 
     g_pOrbiter->SetWarpFactor(warp);
 
