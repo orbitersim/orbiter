@@ -195,29 +195,33 @@ void SpiceBody::clbkInit(FILEHANDLE cfg)
 
 	if (!oapiReadItem_string(cfg, "Kernel", s))
 	{
-		sprintf_s(s, 256, "spice.dll: Error in %s - Not specified kernel file!", cfg);
+		sprintf_s(s, 256, "spice.dll: Error in %s - No kernel file specified!", cfg);
 		show_error(s);
+		exit(1);
 		return;
 	}
 
 	if (!stringsplit(s, ",", kernels))
 	{
-		sprintf_s(s, 256, "spice.dll: Error in %s - Kernel parameter is wrong!", cfg);
+		sprintf_s(s, 256, "spice.dll: Error in %s - Kernel parameter is wrong or misformatted!", cfg);
 		show_error(s);
+		exit(1);
 		return;
 	}
 
 	if (!oapiReadItem_string(cfg, "Body", body_name))
 	{
-		sprintf_s(s, 256, "spice.dll: Error in %s - Not specified: body name!", cfg);
+		sprintf_s(s, 256, "spice.dll: Error in %s - Not specified: Body!", cfg);
 		show_error(s);
+		exit(1);
 		return;
 	}
 
 	if (!oapiReadItem_string(cfg, "Barycenter", bary_name))
 	{
-		sprintf_s(s, 256, "spice.dll: Error in %s - Not specified: barycenter name!", cfg);
+		sprintf_s(s, 256, "spice.dll: Error in %s - Not specified: Barycenter!", cfg);
 		show_error(s);
+		exit(1);
 		return;
 	}
 
@@ -228,8 +232,9 @@ void SpiceBody::clbkInit(FILEHANDLE cfg)
 
 	if (!oapiReadItem_string(cfg, "ParentBarycenter", parent_bary_name))
 	{
-		sprintf_s(s, 256, "spice.dll: Error in %s - Not specified the ParentBarycenter!", cfg);
+		sprintf_s(s, 256, "spice.dll: Error in %s - Not specified: ParentBarycenter!", cfg);
 		show_error(s);
+		exit(1);
 		return;
 	}
 
@@ -237,13 +242,15 @@ void SpiceBody::clbkInit(FILEHANDLE cfg)
 	{
 		sprintf_s(s, 256, "spice.dll: Couldn't find SPICE ID for %s", parent_bary_name);
 		show_error(s);
+		exit(1);
 		return;
 	}
 
 	if (!oapiReadItem_string(cfg, "Origin", origin_name))
 	{
-		sprintf_s(s, 256, "spice.dll: Error in %s - Not specified the origin name!", cfg);
+		sprintf_s(s, 256, "spice.dll: Error in %s - Not specified: Origin!", cfg);
 		show_error(s);
+		exit(1);
 		return;
 	}
 
@@ -276,6 +283,7 @@ void SpiceBody::clbkInit(FILEHANDLE cfg)
 		{
 			sprintf_s(s, 256, "spice.dll: Couldn't load kernel: %s", (*i).c_str());
 			show_error(s);
+			exit(1);
 			return;
 		}
 	}
@@ -284,6 +292,7 @@ void SpiceBody::clbkInit(FILEHANDLE cfg)
 	{
 		sprintf_s(s, 256, "spice.dll: Couldn't find SPICE ID for %s", body_name);
 		show_error(s);
+		exit(1);
 		return;
 	}
 
@@ -291,6 +300,7 @@ void SpiceBody::clbkInit(FILEHANDLE cfg)
 	{
 		sprintf_s(s, 256, "spice.dll: Couldn't find SPICE ID for %s", origin_name);
 		show_error(s);
+		exit(1);
 		return;
 	}
 
@@ -298,6 +308,7 @@ void SpiceBody::clbkInit(FILEHANDLE cfg)
 	{
 		sprintf_s(s, 256, "spice.dll: Couldn't find SPICE ID for %s", bary_name);
 		show_error(s);
+		exit(1);
 		return;
 	}
 
@@ -354,6 +365,7 @@ void SpiceBody::clbkInit(FILEHANDLE cfg)
 		{
 			sprintf_s(s, 256, "spice.dll: Specified time interval for target %s not available.", body_name);
 			show_error(s);
+			exit(1);
 			return;
 		}
 	}
@@ -525,8 +537,8 @@ int SpiceBody::clbkEphemeris(double mjd, int req, double* r)
 	{
 
 		//Error handeling for allowing conic orbit approximateion outside of the loaded kernels. If not allowed, we want to exit quickly.
-		char s[256];
-		sprintf_s(s, 256, "spice.dll: Scenerio MJD for %s is outside loaded kernel data. Closing Simulation", body_name);
+		char s[512];
+		sprintf_s(s, 512, "spice.dll: Scenerio MJD for %s is outside loaded kernel data. Closing Simulation\n\tUse kernel with longer date range or remove %s from sol.cfg", body_name, body_name);
 		show_error(s);
 		exit(1);
 //This code is disabled as there isn't a good way currently of notifying the user what is happening or the source of errors.
