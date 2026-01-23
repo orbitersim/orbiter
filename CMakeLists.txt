@@ -127,6 +127,7 @@ add_custom_target(CopyData ALL
 	COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_SOURCE_DIR}/Script/ ${CMAKE_BINARY_DIR}/Script
 	COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_SOURCE_DIR}/Config/ ${CMAKE_BINARY_DIR}/Config
 	COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_SOURCE_DIR}/GravityModels/ ${CMAKE_BINARY_DIR}/GravityModels
+	COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_SOURCE_DIR}/Kernels/ ${CMAKE_BINARY_DIR}/Kernels
 	COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_SOURCE_DIR}/Flights/ ${CMAKE_BINARY_DIR}/Flights
 	COMMAND ${CMAKE_COMMAND} -E make_directory ${ORBITER_BINARY_SDK_DIR}/lib/Lua
 )
@@ -155,6 +156,12 @@ configure_file(${CMAKE_CURRENT_SOURCE_DIR}/cmake/pdftex_fix.bat.in ${PDFTEX_CMD}
 
 set(OrbiterTgt Orbiter)
 set(ORBITER_LIB $<TARGET_LINKER_FILE:Orbiter>)
+
+# =====================================================================================
+# Build Spice module for celbodies. If false, build legacy (VSOP87/ELP82,etc)
+set(SPICE_BUILD TRUE)
+
+# =====================================================================================
 
 # =====================================================================================
 # Configure Orbiter.cfg for externally installed planet textures
@@ -266,7 +273,7 @@ endfunction()
 
 
 # Installation
-install(DIRECTORY Scenarios Textures Meshes Config GravityModels Script Flights BinAssets/
+install(DIRECTORY Scenarios Textures Meshes Config GravityModels Kernels Script Flights BinAssets/
 	DESTINATION ${ORBITER_INSTALL_ROOT_DIR}
 )
 
