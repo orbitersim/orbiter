@@ -340,6 +340,7 @@ void SpiceBody::clbkInit(FILEHANDLE cfg)
 		{
 			reset_c();
 		}
+		exit(1);
 		return;
 	}
 
