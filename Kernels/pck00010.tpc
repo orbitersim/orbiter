@@ -1,0 +1,4061 @@
+KPL/PCK
+ 
+ 
+P_constants (PcK) SPICE kernel file
+===========================================================================
+
+        By: Nat Bachman (NAIF)    2011 October 21
+ 
+ 
+Purpose
+--------------------------------------------------------
+
+     This file makes available for use in SPICE-based application
+     software orientation and size/shape data for natural bodies. The
+     principal source of the data is a published report by the IAU
+     Working Group on Cartographic Coordinates and Rotational Elements
+     [1].
+
+     Orientation and size/shape data not provided by this file may be
+     available in mission-specific PCK files. Such PCKs may be the
+     preferred data source for mission-related applications.
+     Mission-specific PCKs can be found in PDS archives or on the NAIF
+     web site at URL:
+
+        http://naif.jpl.nasa.gov/naif/data
+
+
+File Organization
+--------------------------------------------------------
+ 
+     The contents of this file are as follows.
+ 
+     Introductory Information:
+
+         --   Purpose
+
+         --   File Organization
+ 
+         --   Version description
+ 
+         --   Disclaimer
+ 
+         --   Sources
+ 
+         --   Explanatory notes
+ 
+         --   Body numbers and names
+ 
+
+     PcK Data:
+ 
+
+        Orientation Data
+        ----------------
+
+         --   Orientation constants for the Sun, planets, and
+              Pluto. Additional items included in this section:
+
+                 - Earth north geomagnetic centered dipole value
+                   for the epochs 2012
+
+         --   Orientation constants for satellites
+ 
+         --   Orientation constants for asteroids 
+
+                 Davida
+                 Eros
+                 Gaspra
+                 Ida
+                 Itokawa
+                 Lutetia
+                 Pallas
+                 Steins
+                 Vesta
+ 
+         --   Orientation constants for comets 
+
+                 19P/Borrelly
+                 9P/Tempel 1
+
+
+         Orientation data provided in this file are used
+         by the SPICE Toolkit to evaluate the orientation
+         of body-fixed, body-centered reference frames
+         with respect to the ICRF frame ("J2000" in
+         SPICE documentation). These body-fixed frames
+         have names of the form
+
+            IAU_<body name>
+
+         for example
+
+            IAU_JUPITER
+
+         See the PCK Required Reading file pck.req for details.
+
+
+
+        Radii of Bodies
+        ---------------
+
+         --   Radii of Sun, planets, and Pluto
+         
+         --   Radii of satellites, where available
+         
+         --   Radii of asteroids 
+
+                 Ceres
+                 Davida
+                 Eros
+                 Gaspra
+                 Ida 
+                 Itokawa
+                 Lutetia
+                 Mathilde
+                 Steins
+                 Toutatis
+                 Vesta
+            
+         --   Radii of comets 
+
+                 19P/Borrelly
+                 81P/Wild 2
+                 9P/Tempel 1
+                 Halley
+
+
+
+Version Description
+--------------------------------------------------------
+ 
+     This file was created on October 21, 2011 at NASA's Navigation and
+     Ancillary Information Facility (NAIF), located at the Jet
+     Propulsion Laboratory, Pasadena, CA.
+
+     The previous version of the file was
+     
+        pck00009.tpc
+
+     That file was published March 3 2010.
+
+     This version incorporates data from reference [1]. This file
+     contains size, shape, and orientation data for all objects covered
+     by the previous version of the file.
+
+     New objects covered by this file but not the previous
+     version are:
+
+        Anthe
+        Daphnis
+        Davida
+        Lutetia
+        Methone
+        Pallas
+        Pallene
+        Polydeuces
+        Steins
+ 
+                         
+ 
+Disclaimer
+--------------------------------------------------------
+ 
+Applicability of Data
+
+     This P_constants file may not contain the parameter values that
+     you prefer. NAIF suggests that you inspect this file visually
+     before proceeding with any critical or extended data processing.
+
+File Modifications by Users
+
+     Note that this file may be readily modified by you to change
+     values or add/delete parameters. NAIF requests that you update the
+     "by line," date, version description section, and file name
+     if you modify this file.
+     
+     A user-modified file should be thoroughly tested before 
+     being published or otherwise distributed.
+
+     P_constants files must conform to the standards described
+     in the two SPICE technical reference documents:
+
+        PCK Required Reading
+        Kernel Required Reading
+
+
+Known Limitations and Caveats
+
+     Accuracy
+     --------
+
+     In general, the orientation models given here are claimed by the
+     IAU Working Group Report [1] to be accurate to 0.1 degree
+     ([1], p.158). However, NAIF notes that orientation models for
+     natural satellites and asteroids have in some cases changed
+     substantially with the availability of new observational data, so
+     users are urged to investigate the suitability for their
+     applications of the models presented here.
+
+     Earth orientation
+     -----------------
+
+     NAIF strongly cautions against using the earth rotation model
+     (from [1]), corresponding to the SPICE reference frame name
+     IAU_EARTH, for work demanding high accuracy. This model has been
+     determined by NAIF to have an error in the prime meridian location
+     of magnitude at least 150 arcseconds, with a local minimum
+     occurring during the year 1999. Regarding availability of better
+     earth orientation data for use with the SPICE system:
+
+        Earth orientation data are available from NAIF in the form of
+        binary earth PCK files. These files provide orientation data
+        for the ITRF93 (terrestrial) reference frame relative to the
+        ICRF.
+
+        NAIF employs an automated process to create these files; each
+        time JPL's Tracking Systems and Applications Section produces a
+        new earth orientation parameter (EOP) file, a new PCK is
+        produced. These PCKs cover a roughly 10 year time span starting
+        at Jan. 1, 2000. In these PCK files, the following effects are
+        accounted for in modeling the earth's rotation:
+
+           - Precession:                   1976 IAU model
+
+           - Nutation:                     1980 IAU model, plus interpolated
+                                           EOP nutation corrections
+
+           - Polar motion:                 interpolated from EOP file
+
+           - True sidereal time:
+
+                  UT1 - UT1R (if needed):  given by analytic formula
+                + TAI - UT1 (or UT1R):     interpolated from EOP file
+                + UT1 - GMST:              given by analytic formula
+                + equation of equinoxes:   given by analytic formula
+
+             where
+
+                TAI    =   International Atomic Time
+                UT1    =   Greenwich hour angle of computed mean sun - 12h
+                UT1R   =   Regularized UT1
+                GMST   =   Greenwich mean sidereal time                   
+
+        These kernels are available from the NAIF web site
+
+           http://naif.jpl.nasa.gov
+
+        (follow the links to Data, generic_kernels, and PCK data) or
+
+           ftp://naif.jpl.nasa.gov/pub/naif/generic_kernels/pck
+
+        or via anonymous ftp from the server
+ 
+           naif.jpl.nasa.gov
+
+        The kernels are in the path
+
+           pub/naif/generic_kernels/pck
+
+        At this time, these kernels have file names of the form
+
+           earth_000101_yymmdd_yymmdd.bpc
+
+        The first date in the file name, meaning 2000 January 1, is the
+        file's coverage begin time. The second and third dates are,
+        respectively, the file's coverage end time and the epoch of the
+        last datum.
+ 
+        These binary PCK files are very accurate (error < 0.1
+        microradian) for epochs preceding the epoch of the last datum.
+        For later epochs, the error rises to several microradians.
+
+        Binary PCK files giving accurate earth orientation from 1972 to
+        2007 and *low accuracy* predicted earth orientation from
+        2007 to 2037 are also available in the same location. See the
+        aareadme.txt file at the "pck" URL above for details.
+
+        Characteristics and names of the binary kernels described here
+        are subject to change. See the "pck" URL above for information
+        on current binary earth PCKs.
+
+
+     Lunar orientation
+     -----------------
+
+     The lunar orientation formula provided by this file is a
+     trigonometric polynomial approximation yielding the orientation of
+     the lunar "Mean Earth/Polar Axis" (ME) reference frame. The
+     SPICE reference frame name corresponding to this model is
+     IAU_MOON.
+
+     A more accurate approximation can be obtained by using both the
+     NAIF lunar frame kernel and the binary lunar orientation PCK file.
+     These files provide orientation data for the both the Mean
+     Earth/Polar Axis frame, which has the SPICE name MOON_ME, and the
+     Lunar Principal Axes frame, which has the SPICE name MOON_PA.
+
+     These files are available on the NAIF web site (see URLs above)
+     and in the NAIF server's ftp area. The lunar frame kernel is
+     located in the path
+ 
+        pub/naif/generic_kernels/fk/satellites
+
+     and has a name of the form
+
+        moon_yymmdd.tf
+
+     The binary lunar PCK is in the path
+
+        pub/naif/generic_kernels/pck
+
+     and has a name of the form
+
+        moon_pa_dennn_yyyy-yyyy.bpc
+
+     See the "aareadme.txt" files in the paths shown above for details
+     on file contents and versions. We also suggest you refer to the
+     SPICE tutorial named "lunar_earth_pck-fk," which is available from
+     the NAIF web site.
+
+
+     Earth geomagnetic dipole
+     ------------------------
+
+     The SPICE Toolkit doesn't currently contain software to model the
+     earth's north geomagnetic centered dipole as a function of time.
+     As a convenience for users, the north dipole location from the
+     epoch 2012.0 was selected as a representative datum, and the
+     planetocentric longitude and latitude of this location have been
+     associated with the keywords
+       
+        BODY399_N_GEOMAG_CTR_DIPOLE_LON
+        BODY399_N_GEOMAG_CTR_DIPOLE_LAT
+     
+     Values for the earth's north geomagnetic centered dipole are
+     presented in comments as a discrete time series for the time range
+     1945-2000. For details concerning the geomagnetic field model from
+     which these values were derived, including a discussion of the
+     model's accuracy, see [9] and [11].
+ 
+
+     Prime meridian offsets
+     ----------------------
+
+     Prime meridian offset kernel variables, which have names
+     of the form
+
+        BODYnnn_LONG_AXIS
+
+     are not used by SPICE geometry software. These variables should be
+     considered deprecated; however, they will be retained for
+     backwards compatibility.
+
+     Users wishing to specify an offset reflecting the orientation of a
+     reference ellipsoid relative to a body-fixed reference frame
+     specified here should do so by creating a constant-offset frame
+     (also called a "TK" frame) specification. See the Frames Required
+     Reading frames.req for details.
+ 
+     The Mars prime meridian offset given by [5] is provided for 
+     informational purposes only.
+
+
+     Software limitations
+     --------------------
+
+     SPICE Toolkits prior to version N0057 cannot make use of
+     trigonometric polynomial terms in the formulas for orientation of
+     the planets.
+ 
+     The second nutation precession angle (M2) for Mars is represented
+     by a quadratic polynomial in the 2006 IAU report. The SPICELIB
+     subroutine BODEUL can not handle this term (which is extremely
+     small), so we truncate the polynomial to a linear one. The 
+     resulting orientation error has a maximum magnitude of less
+     than 0.0032 degrees over the time span 1996-2015 and less than
+     0.0082 degrees over the time span 1986-2025.
+
+
+Sources and References
+--------------------------------------------------------
+ 
+     The sources for the constants listed in this file are:
+
+
+        [1]   Archinal, B.A., A'Hearn, M.F., Bowell, E., Conrad, A.,
+              Consolmagno, G.J., Courtin, R., Fukushima, T., 
+              Hestroffer, D., Hilton, J.L., Krasinsky, G.A.,
+              Neumann, G., Oberst, J., Seidelmann, P.K., Stooke, P.,
+              Tholen, D.J., Thomas, P.C., and Williams, I.P. 
+              "Report of the IAU Working Group on Cartographic Coordinates 
+              and Rotational Elements: 2009."
+
+        [2]   Archinal, B.A., A'Hearn, M.F., Conrad, A.,
+              Consolmagno, G.J., Courtin, R., Fukushima, T., 
+              Hestroffer, D., Hilton, J.L., Krasinsky, G.A.,
+              Neumann, G., Oberst, J., Seidelmann, P.K., Stooke, P.,
+              Tholen, D.J., Thomas, P.C., and Williams, I.P. 
+              "Erratum to: Reports of the IAU Working Group on
+              Cartographic Coordinates and Rotational Elements: 2006 &
+              2009."
+
+        [3]   Seidelmann, P.K., Archinal, B.A., A'Hearn, M.F., 
+              Conrad, A., Consolmagno, G.J., Hestroffer, D.,
+              Hilton, J.L., Krasinsky, G.A., Neumann, G.,
+              Oberst, J., Stooke, P., Tedesco, E.F., Tholen, D.J., 
+              and Thomas, P.C. "Report of the IAU/IAG Working Group 
+              on cartographic coordinates and rotational elements: 2006."
+ 
+        [4]   Nautical Almanac Office, United States Naval Observatory
+              and H.M. Nautical Almanac Office, Rutherford Appleton
+              Laboratory (2010). "The Astronomical Almanac for
+              the Year 2010," U.S. Government Printing Office,
+              Washington, D.C.: and The Stationary Office, London.
+
+        [5]   Duxbury, Thomas C. (2001). "IAU/IAG 2000 Mars Cartographic
+              Conventions,"  presentation to the Mars Express Data
+              Archive Working Group, Dec. 14, 2001.
+
+        [6]   Russell, C.T. and Luhmann, J.G. (1990). "Earth: Magnetic 
+              Field and Magnetosphere." <http://www-ssc.igpp.ucla.
+              edu/personnel/russell/papers/earth_mag>. Originally
+              published in "Encyclopedia of Planetary Sciences," J.H.
+              Shirley and R.W. Fainbridge, eds. Chapman and Hall,
+              New York, pp 208-211.
+
+        [7]   Russell, C.T. (1971). "Geophysical Coordinate 
+              Transformations," Cosmic Electrodynamics 2  184-186.
+              NAIF document 181.0.
+     
+        [8]   ESA/ESTEC Space Environment Information System (SPENVIS)
+              (2003). Web page:  "Dipole approximations of the
+              geomagnetic field."  <http://www.spenvis.oma.be/spenvis/
+              help/background/magfield/cd.html>.
+ 
+        [9]   International Association of Geomagnetism and Aeronomy
+              and International Union of Geodesy and Geophysics (2004).
+              Web page:  "The 9th Generation International Geomagnetic
+              Reference Field." <http://www.ngdc.noaa.gov/
+              IAGA/vmod/igrf.html>.
+                             
+        [10]  Davies, M.E., Abalakin, V.K., Bursa, M., Hunt, G.E.,
+              and Lieske, J.H. (1989). "Report of the IAU/IAG/COSPAR
+              Working Group on Cartographic Coordinates and Rotational
+              Elements of the Planets and Satellites: 1988," Celestial
+              Mechanics and Dynamical Astronomy, v.46, no.2, pp.
+              187-204.
+
+        [11]  International Association of Geomagnetism and Aeronomy
+              Web page:  "International Geomagnetic Reference Field."  
+              Discussion URL:
+
+                 http://www.ngdc.noaa.gov/IAGA/vmod/igrf.html
+
+              Coefficients URL:
+
+                 http://www.ngdc.noaa.gov/IAGA/vmod/igrf11coeffs.txt
+
+         
+
+     Most values are from [1]. All exceptions are 
+     commented where they occur in this file. The exceptions are:
+ 
+                 
+         --   Radii for the Sun are from [4].
+
+         --   Prime meridian constant (W0) terms for Pluto, Charon,
+              and Ida are from [2].
+             
+         --   The second nutation precession angle (M2) for Mars is
+              represented by a quadratic polynomial in the 2000
+              IAU report. The SPICELIB subroutine BODEUL can not
+              handle this term (which is extremely small), so we
+              truncate the polynomial to a linear one.
+           
+          --  Earth north geomagnetic centered dipole values are from
+              [11]. The values were also computed from the 11th
+              generation IGRF by Nat Bachman.
+         
+
+     "Old values" listed are from the SPICE P_constants file
+     pck00009.tpc dated March 3, 2010. Most of these values came
+     from the 2006 IAU report [3].
+ 
+ 
+ 
+ 
+Explanatory Notes
+--------------------------------------------------------
+
+     This file, which is logically part of the SPICE P-kernel, contains
+     constants used to model the orientation, size and shape of the
+     Sun, planets, natural satellites, and selected comets and
+     asteroids. The orientation models express the direction of the
+     pole and location of the prime meridian of a body as a function of
+     time. The size/shape models ("shape models" for short) represent
+     all bodies as ellipsoids, using two equatorial radii and a polar
+     radius. Spheroids and spheres are obtained when two or all three
+     radii are equal.
+
+     The SPICE Toolkit routines that use this file are documented in
+     the SPICE "Required Reading" file pck.req. They are also 
+     documented in the "PCK" SPICE tutorial, which is available on
+     the NAIF web site.
+
+File Format
+        
+     A terse description of the PCK file format is given here. See the
+     SPICE "Required Reading" files pck.req and kernel.req for a
+     detailed explanation of the SPICE text kernel file format. The
+     files pck.req and kernel.req are included in the documentation
+     provided with the SPICE Toolkit.
+
+     The file starts out with the ``ID word'' string
+
+        KPL/PCK
+
+     This string identifies the file as a text kernel containing PCK 
+     data.
+
+     This file consists of a series of comment blocks and data blocks.
+     Comment blocks, which contain free-form descriptive or explanatory
+     text, are preceded by a \begintext token. Data blocks follow a
+     \begindata token. In order to be recognized, each of these tokens
+     must be placed on a line by itself.
+
+     The portion of the file preceding the first data block is treated
+     as a comment block; it doesn't require an initial \begintext
+     token.
+
+     This file identifies data using a series of
+
+        KEYWORD = VALUE
+
+     assignments. The left hand side of each assignment is a
+     "kernel variable" name; the right hand side is an associated value
+     or list of values. The SPICE subroutine API allows SPICE routines
+     and user applications to retrieve the set of values associated
+     with each kernel variable name.
+
+     Kernel variable names are case-sensitive and are limited to
+     32 characters in length. 
+
+     Numeric values may be integer or floating point. String values
+     are normally limited to 80 characters in length; however, SPICE
+     provides a mechanism for identifying longer, "continued" strings.
+     See the SPICE routine STPOOL for details.
+
+     String values are single quoted.
+
+     When the right hand side of an assignment is a list of values,
+     the list items may be separated by commas or simply by blanks.
+     The list must be bracketed by parentheses. Example:
+
+        BODY399_RADII     = ( 6378.1366   6378.1366   6356.7519 )
+ 
+     Any blanks preceding or following keyword names, values and equal
+     signs are ignored.
+  
+     Assignments may be spread over multiple lines, for example:
+
+        BODY399_RADII     = ( 6378.1366  
+                              6378.1366
+                              6356.7519 )
+
+     This file may contain blank lines anywhere. Non-printing
+     characters including TAB should not be present in the file: the
+     presence of such characters may cause formatting errors when the
+     file is viewed.
+
+Time systems and reference frames
+
+     The 2009 IAU Working Group Report [1] states the time scale used
+     as the independent variable for the rotation formulas is
+     Barycentric Dynamical Time (TDB) and that the epoch of variable
+     quantities is J2000 TDB (2000 Jan 1 12:00:00 TDB, Julian ephemeris
+     date 2451545.0 TDB). Throughout SPICE documentation and in this
+     file, we use the names "J2000 TDB" and "J2000" for this epoch. The
+     name "J2000.0" is equivalent.
+
+     SPICE documentation refers to the time system used in this file 
+     as either "ET" or "TDB." SPICE software makes no distinction 
+     between TDB and the time system associated with the independent
+     variable of the JPL planetary ephemerides T_eph.
+ 
+     The inertial reference frame used for the rotational elements in
+     this file is identified by [1] as the ICRF (International
+     Celestial Reference Frame). 
+
+     The SPICE PCK software that reads this file uses the label "J2000"
+     to refer to the ICRF; this is actually a mislabeling which has
+     been retained in the interest of backward compatibility. Using
+     data from this file, by means of calls to the SPICE frame
+     transformation routines, will actually compute orientation
+     relative to the ICRF.
+
+     The difference between the J2000 frame and the ICRF is
+     on the order of tens of milliarcseconds and is well below the
+     accuracy level of the formulas in this file.
+
+Orientation models
+ 
+     All of the orientation models use three Euler angles to describe
+     the orientation of the coordinate axes of the "Body Equator and
+     Prime Meridian" system with respect to an inertial system. By
+     default, the inertial system is the ICRF (labeled as "J2000"), but
+     other inertial frames can be specified in the file. See the PCK
+     Required Reading for details.
+ 
+     The first two angles, in order, are the ICRF right ascension and
+     declination (henceforth RA and DEC) of the north pole of a body as
+     a function of time. The third angle is the prime meridian location
+     (represented by "W"), which is expressed as a rotation about the
+     north pole, and is also a function of time.
+ 
+     For each body, the expressions for the north pole's right
+     ascension and declination, as well as prime meridian location, are
+     sums (as far as the models that appear in this file are concerned)
+     of quadratic polynomials and trigonometric polynomials, where the
+     independent variable is time.
+ 
+     In this file, the time arguments in expressions always refer to
+     Barycentric Dynamical Time (TDB), measured in centuries or days
+     past a reference epoch. By default, the reference epoch is the
+     J2000 epoch, which is Julian ephemeris date 2451545.0 (2000 Jan 1
+     12:00:00 TDB), but other epochs can be specified in the file. See
+     the PCK Required Reading for details.
+
+     Orientation models for satellites and some planets (including
+     Jupiter) involve both polynomial terms and trigonometric terms.
+     The arguments of the trigonometric terms are linear polynomials.
+     In this file, we call the arguments of these trigonometric terms
+     "nutation precession angles."
+
+     Example: 2009 IAU Model for orientation of Jupiter.  Note that 
+     these values are used as an example only; see the data area below 
+     for current values.
+
+        Right ascension
+        ---------------
+ 
+        alpha   =  268.056595 - 0.006499 T        +  0.000117 sin(Ja) 
+             0                + 0.000938 sin(Jb)  +  0.001432 sin(Jc)
+                              + 0.000030 sin(Jd)  +  0.002150 sin(Je)
+
+        Declination
+        -----------
+ 
+        delta   =   64.495303 + 0.002413 T        +  0.000050 cos(Ja)
+             0                + 0.000404 cos(Jb)  +  0.000617 cos(Jc)
+                              - 0.000013 cos(Jd)  +  0.000926 cos(Je)
+
+        Prime meridian
+        --------------
+
+        W       =  284.95  + 870.5366420 d
+ 
+
+     Here
+
+        T represents centuries past J2000 ( TDB ),
+ 
+        d represents days past J2000 ( TDB ).
+
+        Ja-Je are nutation precession angles.
+
+     In this file, the polynomials' coefficients above are assigned 
+     to kernel variable names (left-hand-side symbols) as follows
+
+        BODY599_POLE_RA        = (   268.056595     -0.006499       0. )
+        BODY599_POLE_DEC       = (    64.495303      0.002413       0. )
+        BODY599_PM             = (   284.95        870.5360000      0. )
+
+     and the trigonometric polynomials' coefficients are assigned 
+     as follows
+
+        BODY599_NUT_PREC_RA  = ( 0. 0. 0. 0. 0. 0. 0. 0. 0. 0.  0.000117
+                                                                0.000938
+                                                                0.001432
+                                                                0.000030
+                                                                0.002150 )
+
+        BODY599_NUT_PREC_DEC = ( 0. 0. 0. 0. 0. 0. 0. 0. 0. 0.  0.000050
+                                                                0.000404
+                                                                0.000617
+                                                               -0.000013
+                                                                0.000926 )
+
+        BODY599_NUT_PREC_PM  = ( 0. 0. 0. 0. 0. 0. 0. 0. 0. 0.  0.0
+                                                                0.0
+                                                                0.0
+                                                                0.0
+                                                                0.0  ) 
+
+     Note the number "599"; this is the NAIF ID code for Jupiter.
+
+     In this file, the polynomial expressions for the nutation
+     precession angles are listed along with the planet's RA, DEC, and
+     prime meridian terms. Below are the 2006 IAU nutation precession
+     angles for the Jupiter system.
+
+        J1  =   73.32      +  91472.9 T
+        J2  =   24.62      +  45137.2 T
+        J3  =  283.90      +   4850.7 T
+        J4  =  355.80      +   1191.3 T
+        J5  =  119.90      +    262.1 T
+        J6  =  229.80      +     64.3 T
+        J7  =  352.25      +   2382.6 T
+        J8  =  113.35      +   6070.0 T
+
+        J9  =  146.64      + 182945.8 T
+        J10 =   49.24      +  90274.4 T 
+
+        Ja  =   99.360714  +   4850.4046 T
+        Jb  =  175.895369  +   1191.9605 T
+        Jc  =  300.323162  +    262.5475 T
+        Jd  =  114.012305  +   6070.2476 T
+        Je  =   49.511251  +     64.3000 T
+
+     Here
+
+        T represents centuries past J2000 ( TDB )
+
+        J1-J10 and Ja-Je are the nutation precession angles. The angles
+        J9 and J10 are equal to 2*J1 and 2*J2, respectively.
+ 
+        Angles J9 and J10 are not present in [1]; they have been added
+        to fit the terms 2*J1 and 2*J2, which appear in the orientation
+        models of several satellites, into a form that can be accepted
+        by the PCK system.
+
+     The assignment of the nutation precession angles for the
+     Jupiter system is as follows:
+ 
+        BODY5_NUT_PREC_ANGLES  = (    73.32      91472.9
+                                      24.62      45137.2
+                                     283.90       4850.7
+                                     355.80       1191.3
+                                     119.90        262.1
+                                     229.80         64.3
+                                     352.25       2382.6
+                                     113.35       6070.0   
+                                     146.64     182945.8
+                                      49.24      90274.4  
+                                      99.360714   4850.4046
+                                     175.895369   1191.9605
+                                     300.323162    262.5475
+                                     114.012305   6070.2476
+                                      49.511251     64.3000  )
+
+     You'll see an additional symbol grouped with the ones listed
+     above; it is
+ 
+        BODY599_LONG_AXIS
+ 
+     This is a deprecated feature; see the note on "Prime meridian
+     offsets" under "Known Limitations and Caveats" above.
+
+     The pattern of the formulas for satellite orientation is similar
+     to that for Jupiter. Example: 2006 IAU values for Io. Again, these
+     values are used as an example only; see the data area below for
+     current values.
+ 
+        Right ascension
+        ---------------
+
+        alpha  = 268.05  -  0.009 T  + 0.094 sin(J3)  +  0.024 sin(J4)
+             0  
+
+        Declination
+        -----------
+
+        delta  =  64.50  +  0.003 T  + 0.040 cos(J3)  +  0.011 cos(J4)
+             0           
+                          
+        Prime meridian
+        --------------
+
+        W      = 200.39  +  203.4889538 d  -  0.085 sin(J3)  -  0.022 sin(J4)
+
+ 
+        d represents days past J2000.
+ 
+        J3 and J4 are nutation precession angles.
+ 
+     The polynomial terms are assigned to symbols by the statements
+ 
+        BODY501_POLE_RA       = (  268.05          -0.009      0. )
+        BODY501_POLE_DEC      = (   64.50           0.003      0. )
+        BODY501_PM            = (  200.39         203.4889538  0. )
+ 
+     The coefficients of the trigonometric terms are assigned to symbols by
+     the statements
+
+        BODY501_NUT_PREC_RA   = (    0.   0.     0.094    0.024   )
+        BODY501_NUT_PREC_DEC  = (    0.   0.     0.040    0.011   )
+        BODY501_NUT_PREC_PM   = (    0.   0.    -0.085   -0.022   )
+
+     501 is the NAIF ID code for Io.
+ 
+     SPICE software expects the models for satellite orientation to
+     follow the form of the model shown here: the polynomial portions of the
+     RA, DEC, and W expressions are expected to be quadratic, the 
+     trigonometric terms for RA and W (satellite prime meridian) are expected 
+     to be linear combinations of sines of nutation precession angles, the 
+     trigonometric terms for DEC are expected to be linear combinations of 
+     cosines of nutation precession angles, and the polynomials for the 
+     nutation precession angles themselves are expected to be linear.
+ 
+     Eventually, the software will handle more complex expressions, we
+     expect.
+ 
+ 
+Shape models
+ 
+     There is only one kind of shape model supported by the SPICE
+     Toolkit software at present: the triaxial ellipsoid. The 2009 IAU
+     report [1] does not use any other models, except in the case of
+     Mars, where separate values are given for the north and south
+     polar radii. In this file, we provide as a datum the mean Mars
+     polar radius provided by [1]. The North and South values are
+     included as comments.
+
+     For each body, three radii are listed:  The first number is
+     the largest equatorial radius (the length of the semi-axis
+     containing the prime meridian), the second number is the smaller
+     equatorial radius, and the third is the polar radius.
+ 
+     Example: Radii of the Earth.
+ 
+        BODY399_RADII     = ( 6378.1366   6378.1366   6356.7519 )
+
+ 
+ 
+Body Numbers and Names
+--------------------------------------------------------
+ 
+ 
+     The following NAIF body ID codes and body names appear in this
+     file. See the NAIF IDs Required Reading file naif_ids.req for
+     a detailed discussion and a complete list of ID codes and names.
+
+
+        1  Mercury barycenter
+        2  Venus barycenter
+        3  Earth barycenter
+        4  Mars barycenter
+        5  Jupiter barycenter
+        6  Saturn barycenter
+        7  Uranus barycenter
+        8  Neptune barycenter
+        9  Pluto barycenter
+        10 Sun
+
+ 
+        199 Mercury
+ 
+ 
+        299 Venus
+ 
+ 
+        399 Earth
+ 
+        301 Moon
+ 
+ 
+        499 Mars
+ 
+        401 Phobos      402 Deimos
+ 
+ 
+        599 Jupiter
+ 
+        501 Io          502 Europa      503 Ganymede    504 Callisto
+        505 Amalthea    506 Himalia     507 Elara       508 Pasiphae
+        509 Sinope      510 Lysithea    511 Carme       512 Ananke
+        513 Leda        514 Thebe       515 Adrastea    516 Metis
+ 
+ 
+        699 Saturn
+ 
+        601 Mimas       602 Enceladus   603 Tethys      604 Dione
+        605 Rhea        606 Titan       607 Hyperion    608 Iapetus
+        609 Phoebe      610 Janus       611 Epimetheus  612 Helene
+        613 Telesto     614 Calypso     615 Atlas       616 Prometheus
+        617 Pandora     618 Pan         632 Methone     633 Pallene
+        634 Polydeuces  635 Daphnis     649 Anthe
+ 
+ 
+        799 Uranus
+ 
+        701 Ariel       702 Umbriel     703 Titania     704 Oberon
+        705 Miranda     706 Cordelia    707 Ophelia     708 Bianca
+        709 Cressida    710 Desdemona   711 Juliet      712 Portia
+        713 Rosalind    714 Belinda     715 Puck
+ 
+ 
+        899 Neptune
+ 
+        801 Triton      802 Nereid      803 Naiad       804 Thalassa
+        805 Despina     806 Galatea     807 Larissa     808 Proteus
+ 
+ 
+        999 Pluto
+ 
+        901 Charon
+ 
+ 
+        1000005 Comet 19P/Borrelly
+        1000036 Comet Halley
+        1000093 Comet 9P/Tempel 1
+        1000107 Comet 81P/Wild 2
+
+        2000001 Asteroid Ceres
+        2000002 Asteroid Pallas
+        2000004 Asteroid Vesta
+        2000021 Asteroid Lutetia
+        2000216 Asteroid Kleopatra
+        2000253 Asteroid Mathilde
+        2000433 Asteroid Eros
+        2000511 Asteroid Davida
+        2002867 Asteroid Steins
+        2004179 Asteroid Toutatis
+        2025143 Asteroid Itokawa
+        2431010 Asteroid Ida
+        9511010 Asteroid Gaspra
+        
+ 
+Orientation Constants for the Sun and Planets
+--------------------------------------------------------
+ 
+
+Sun
+ 
+     Old values:
+
+        Values are unchanged in the 2009 IAU report.
+
+     Current values:
+ 
+        \begindata
+ 
+        BODY10_POLE_RA         = (  286.13       0.          0. )
+        BODY10_POLE_DEC        = (   63.87       0.          0. )
+        BODY10_PM              = (   84.176     14.18440     0. )
+        BODY10_LONG_AXIS       = (    0.                        )
+
+        \begintext
+ 
+Mercury
+ 
+     Old values:
+ 
+        Values are from the 2006 IAU report.
+
+        body199_pole_ra          = (  281.01     -0.033      0. )
+        body199_pole_dec         = (   61.45     -0.005      0. )
+        body199_pm               = (  329.548     6.1385025  0. )
+
+
+     Current values:
+  
+        \begindata
+
+        BODY199_POLE_RA          = (  281.0097   -0.0328     0. )
+        BODY199_POLE_DEC         = (   61.4143   -0.0049     0. )
+        BODY199_PM               = (  329.5469    6.1385025  0. )
+ 
+        BODY199_LONG_AXIS        = (    0.                        )
+
+        BODY199_NUT_PREC_RA  = ( 0. 0. 0. 0. 0. )
+
+        BODY199_NUT_PREC_DEC = ( 0. 0. 0. 0. 0. )
+
+        BODY199_NUT_PREC_PM  = (    0.00993822
+                                   -0.00104581
+                                   -0.00010280
+                                   -0.00002364
+                                   -0.00000532  )  
+        \begintext 
+
+           The linear coefficients have been scaled up from degrees/day
+           to degrees/century, because the SPICELIB PCK reader expects
+           these units.  The original constants were:
+                         
+                                    174.791086      4.092335
+                                    349.582171      8.184670
+                                    164.373257     12.277005
+                                    339.164343     16.369340
+                                    153.955429     20.461675
+
+
+        \begindata
+
+        BODY1_NUT_PREC_ANGLES  = ( 174.791086  0.14947253587500003E+06   
+                                   349.582171  0.29894507175000006E+06
+                                   164.373257  0.44841760762500006E+06  
+                                   339.164343  0.59789014350000012E+06    
+                                   153.955429  0.74736267937499995E+06 )
+        \begintext
+ 
+  
+Venus
+ 
+     Old values:
+ 
+        Values are unchanged in the 2009 IAU report. 
+ 
+     Current values:
+ 
+        \begindata
+ 
+        BODY299_POLE_RA          = (  272.76       0.          0. )
+        BODY299_POLE_DEC         = (   67.16       0.          0. )
+        BODY299_PM               = (  160.20      -1.4813688   0. )
+ 
+        BODY299_LONG_AXIS        = (    0.                        )
+ 
+        \begintext
+
+
+Earth
+ 
+     Old values:
+ 
+        Values are unchanged in the 2009 report.
+ 
+     Current values:
+ 
+        \begindata 
+ 
+        BODY399_POLE_RA        = (    0.      -0.641         0. )
+        BODY399_POLE_DEC       = (   90.      -0.557         0. )
+        BODY399_PM             = (  190.147  360.9856235     0. )
+        BODY399_LONG_AXIS      = (    0.                        )
+
+        \begintext
+
+
+        Nutation precession angles for the Earth-Moon system:
+
+           The linear coefficients have been scaled up from degrees/day
+           to degrees/century, because the SPICELIB PCK reader expects
+           these units.  The original constants were:
+        
+                                    125.045D0   -0.0529921D0
+                                    250.089D0   -0.1059842D0
+                                    260.008D0   13.0120009D0
+                                    176.625D0   13.3407154D0
+                                    357.529D0    0.9856003D0
+                                    311.589D0   26.4057084D0
+                                    134.963D0   13.0649930D0
+                                    276.617D0    0.3287146D0
+                                     34.226D0    1.7484877D0
+                                     15.134D0   -0.1589763D0
+                                    119.743D0    0.0036096D0
+                                    239.961D0    0.1643573D0
+                                     25.053D0   12.9590088D0 
+
+
+        \begindata
+
+       
+        BODY3_NUT_PREC_ANGLES  = (  125.045         -1935.5364525000
+                                    250.089         -3871.0729050000
+                                    260.008        475263.3328725000  
+                                    176.625        487269.6299850000
+                                    357.529         35999.0509575000
+                                    311.589        964468.4993100000
+                                    134.963        477198.8693250000
+                                    276.617         12006.3007650000
+                                     34.226         63863.5132425000 
+                                     15.134         -5806.6093575000
+                                    119.743           131.8406400000
+                                    239.961          6003.1503825000 
+                                     25.053        473327.7964200000 )
+
+
+        \begintext
+ 
+
+     Earth north geomagnetic centered dipole:
+
+           The north dipole location is time-varying.  The values shown
+           below, taken from [8], represent a discrete sampling of the
+           north dipole location from 1945 to 2000. The terms DGRF and
+           IGRF refer to, respectively, "Definitive Geomagnetic
+           Reference Field" and "International Geomagnetic Reference
+           Field."  See references [6], [8], and [9] for details.
+
+           Coordinates are planetocentric. 
+
+             Data source    Lat      Lon
+             -----------   -----    ------
+              DGRF 1945    78.47    291.47
+              DGRF 1950    78.47    291.15
+              DGRF 1955    78.46    290.84
+              DGRF 1960    78.51    290.53
+              DGRF 1965    78.53    290.15
+              DGRF 1970    78.59    289.82
+              DGRF 1975    78.69    289.53
+              DGRF 1980    78.81    289.24 
+              DGRF 1985    78.97    289.10
+              DGRF 1990    79.13    288.89
+              IGRF 1995    79.30    288.59
+              IGRF 2000    79.54    288.43      
+
+        Original values:
+
+           Values are from [7].  Note the year of publication was 1971.
+
+           body399_mag_north_pole_lon  =  ( -69.761 )
+           body399_mag_north_pole_lat  =  (  78.565 )
+
+        Previous values:
+
+           body399_n_geomag_ctr_dipole_lon  =  ( 288.43 )
+           body399_n_geomag_ctr_dipole_lat  =  (  79.54 )
+
+
+        Current values:
+
+           Values are given for the epoch 2012.0 and were derived
+           by Nat Bachman from constants provided by [11].
+
+        \begindata
+       
+        BODY399_N_GEOMAG_CTR_DIPOLE_LON  =  ( 287.62 )
+        BODY399_N_GEOMAG_CTR_DIPOLE_LAT  =  (  80.13 )
+
+        \begintext
+
+
+
+ 
+Mars
+ 
+     Old values:
+ 
+        Values are unchanged in the 2009 IAU report.
+   
+     Current values:
+ 
+        \begindata
+ 
+        BODY499_POLE_RA          = (  317.68143   -0.1061      0.  )
+        BODY499_POLE_DEC         = (   52.88650   -0.0609      0.  )
+        BODY499_PM               = (  176.630    350.89198226  0.  )
+
+        \begintext
+ 
+        Source [5] specifies the following value for the lambda_a term
+        (BODY499_LONG_AXIS ) for Mars. This term is the POSITIVE EAST
+        LONGITUDE, measured from the prime meridian, of the meridian
+        containing the longest axis of the reference ellipsoid.
+        (CAUTION: previous values were POSITIVE WEST.)
+
+           body499_long_axis        = (  252.  )
+ 
+        We list this lambda_a value for completeness. The IAU report
+        [1] gives equal values for both equatorial radii, so the
+        lambda_a offset does not apply to the IAU model.
+ 
+        The 2003 IAU report defines M2, the second nutation precession angle,
+        by:
+ 
+                                                2
+           192.93  +  1128.4096700 d  +  8.864 T
+ 
+        We truncate the M2 series to a linear expression, because the PCK
+        software cannot handle the quadratic term.
+ 
+        Again, the linear terms are scaled by 36525.0:
+ 
+            -0.4357640000000000       -->     -15916.28010000000
+          1128.409670000000           -->   41215163.19675000
+            -1.8151000000000000E-02   -->       -662.9652750000000
+ 
+        We also introduce a fourth nutation precession angle, which
+        is the pi/2-complement of the third angle.  This angle is used
+        in computing the prime meridian location for Deimos.  See the
+        discussion of this angle below in the section containing orientation
+        constants for Deimos.
+ 
+        \begindata
+
+        BODY4_NUT_PREC_ANGLES  = (  169.51     -15916.2801
+                                    192.93   41215163.19675
+                                     53.47       -662.965275
+                                     36.53        662.965275  )
+ 
+        \begintext
+ 
+ 
+Jupiter
+ 
+     Old values:
+ 
+        The rotation rate is from the 2006 IAU report; all other
+        values are unchanged in the 2009 report.
+
+           body599_pm             = (   284.95        870.5366420      0. )
+
+                   
+     Current values:
+ 
+        The number of nutation precession angles is 15. The ninth and
+        tenth are twice the first and second, respectively. The
+        eleventh through fifteenth correspond to angles JA-JE in
+        the 2006 IAU report; angles JA-JE were not used prior to that
+        report.
+
+        \begindata
+ 
+ 
+        BODY599_POLE_RA        = (   268.056595     -0.006499       0. )
+        BODY599_POLE_DEC       = (    64.495303      0.002413       0. )
+        BODY599_PM             = (   284.95        870.5360000      0. )
+        BODY599_LONG_AXIS      = (     0.                        )
+ 
+        BODY599_NUT_PREC_RA  = ( 0. 0. 0. 0. 0. 0. 0. 0. 0. 0.  0.000117
+                                                                0.000938
+                                                                0.001432
+                                                                0.000030
+                                                                0.002150 )
+
+        BODY599_NUT_PREC_DEC = ( 0. 0. 0. 0. 0. 0. 0. 0. 0. 0.  0.000050
+                                                                0.000404
+                                                                0.000617
+                                                               -0.000013
+                                                                0.000926 )
+
+        BODY599_NUT_PREC_PM  = ( 0. 0. 0. 0. 0. 0. 0. 0. 0. 0.  0.0
+                                                                0.0
+                                                                0.0
+                                                                0.0
+                                                                0.0  ) 
+
+
+        BODY5_NUT_PREC_ANGLES  = (    73.32      91472.9
+                                      24.62      45137.2
+                                     283.90       4850.7
+                                     355.80       1191.3
+                                     119.90        262.1
+                                     229.80         64.3
+                                     352.25       2382.6
+                                     113.35       6070.0   
+                                     146.64     182945.8
+                                      49.24      90274.4  
+                                      99.360714   4850.4046
+                                     175.895369   1191.9605
+                                     300.323162    262.5475
+                                     114.012305   6070.2476
+                                      49.511251     64.3000  )
+        \begintext
+ 
+ 
+Saturn
+ 
+     Old values:
+ 
+        Values are from the 2006 IAU report.
+
+
+        body699_pole_ra        = (    40.589    -0.036      0.  )
+        body699_pole_dec       = (    83.537    -0.004      0.  )
+        body699_pm             = (    38.90    810.7939024  0.  )
+        body699_long_axis      = (     0.                       )
+ 
+ 
+        The first seven angles given here are the angles S1 
+        through S7 from the 2000 report; the eighth and
+        ninth angles are 2*S1 and 2*S2, respectively.
+ 
+ 
+        body6_nut_prec_angles  = (  353.32   75706.7
+                                     28.72   75706.7  
+                                    177.40  -36505.5 
+                                    300.00   -7225.9 
+                                    316.45     506.2
+                                    345.20   -1016.3  
+                                     29.80     -52.1
+                                    706.64  151413.4
+                                     57.44  151413.4  )
+
+
+     Current values:
+ 
+
+        The change from the previous set of values is the
+        removal of S7. This causes BODY6_NUT_PREC_ANGLES 
+        elements that formerly corresponded to 2*S1 and 2*S1
+        to be shifted toward the start of the array.
+
+        \begindata
+
+        BODY699_POLE_RA        = (    40.589    -0.036      0.  )
+        BODY699_POLE_DEC       = (    83.537    -0.004      0.  )
+        BODY699_PM             = (    38.90    810.7939024  0.  )
+        BODY699_LONG_AXIS      = (     0.                       )
+ 
+        \begintext
+ 
+        The first six angles given here are the angles S1 
+        through S6 from the 2009 report; the seventh and
+        eigth angles are 2*S1 and 2*S2, respectively.
+ 
+ 
+        \begindata
+
+        BODY6_NUT_PREC_ANGLES  = (  353.32   75706.7
+                                     28.72   75706.7  
+                                    177.40  -36505.5 
+                                    300.00   -7225.9 
+                                    316.45     506.2
+                                    345.20   -1016.3  
+                                    706.64  151413.4
+                                     57.44  151413.4  )
+        \begintext
+ 
+ 
+Uranus
+ 
+     Old values:
+ 
+        Values are unchanged in the 2009 IAU report.
+ 
+     Current values:
+ 
+        \begindata
+ 
+        BODY799_POLE_RA        = (  257.311     0.         0.  )
+        BODY799_POLE_DEC       = (  -15.175     0.         0.  )
+        BODY799_PM             = (  203.81   -501.1600928  0.  )
+        BODY799_LONG_AXIS      = (    0.                       )
+ 
+        \begintext
+        
+        The first 16 angles given here are the angles U1 
+        through U16 from the 2000 report; the 17th and
+        18th angles are 2*U11 and 2*U12, respectively.
+        
+        \begindata
+         
+        BODY7_NUT_PREC_ANGLES  = (  115.75   54991.87
+                                    141.69   41887.66
+                                    135.03   29927.35
+                                     61.77   25733.59  
+                                    249.32   24471.46
+                                     43.86   22278.41 
+                                     77.66   20289.42  
+                                    157.36   16652.76  
+                                    101.81   12872.63   
+                                    138.64    8061.81
+                                    102.23   -2024.22 
+                                    316.41    2863.96  
+                                    304.01     -51.94  
+                                    308.71     -93.17 
+                                    340.82     -75.32 
+                                    259.14    -504.81 
+                                    204.46   -4048.44
+                                    632.82    5727.92     )
+                                    
+        \begintext
+ 
+ 
+ 
+Neptune
+ 
+     Old values:
+ 
+        Values are unchanged in the 2009 IAU report. 
+ 
+     Current values:
+
+        \begindata        
+ 
+           BODY899_POLE_RA        = (  299.36     0.         0. )
+           BODY899_POLE_DEC       = (   43.46     0.         0. )
+           BODY899_PM             = (  253.18   536.3128492  0. )
+           BODY899_LONG_AXIS      = (    0.                     )
+
+
+           BODY899_NUT_PREC_RA    = (  0.70 0. 0. 0. 0. 0. 0. 0. ) 
+           BODY899_NUT_PREC_DEC   = ( -0.51 0. 0. 0. 0. 0. 0. 0. )
+           BODY899_NUT_PREC_PM    = ( -0.48 0. 0. 0. 0. 0. 0. 0. )
+
+        \begintext
+ 
+           The 2000 report defines the nutation precession angles
+ 
+              N, N1, N2, ... , N7
+ 
+           and also uses the multiples of N1 and N7
+ 
+              2*N1
+ 
+           and
+ 
+              2*N7, 3*N7, ..., 9*N7
+ 
+           In this file, we treat the angles and their multiples as
+           separate angles.  In the kernel variable
+ 
+              BODY8_NUT_PREC_ANGLES
+ 
+           the order of the angles is
+ 
+              N, N1, N2, ... , N7, 2*N1, 2*N7, 3*N7, ..., 9*N7
+ 
+           Each angle is defined by a linear polynomial, so two
+           consecutive array elements are allocated for each
+           angle.  The first term of each pair is the constant term,
+           the second is the linear term.
+ 
+        \begindata 
+
+              BODY8_NUT_PREC_ANGLES = (   357.85         52.316
+                                          323.92      62606.6
+                                          220.51      55064.2 
+                                          354.27      46564.5
+                                           75.31      26109.4 
+                                           35.36      14325.4
+                                          142.61       2824.6  
+                                          177.85         52.316 
+                                          647.840    125213.200
+                                          355.700       104.632
+                                          533.550       156.948
+                                          711.400       209.264
+                                          889.250       261.580
+                                         1067.100       313.896
+                                         1244.950       366.212
+                                         1422.800       418.528
+                                         1600.650       470.844   )
+                                         
+        \begintext
+ 
+ 
+ 
+
+Orientation Constants for the Dwarf Planet Pluto
+--------------------------------------------------------
+ 
+Pluto
+ 
+     Old values:
+ 
+        Values are from the 2006 IAU report. 
+
+        body999_pole_ra        = (  312.993   0.          0. )
+        body999_pole_dec       = (    6.163   0.          0. )
+        body999_pm             = (  237.305  -56.3625225  0. )
+        body999_long_axis      = (    0.                     )
+
+
+     Current values:
+
+        Due to the new definition of planetocentric coordinates
+        for small bodies, and to the reclassification of Pluto
+        as a dwarf planet, Pluto's north pole direction has been
+        inverted. 
+
+        The PM constant W0 is from [2]. 
+
+        \begindata
+ 
+        BODY999_POLE_RA        = (  132.993   0.          0. )
+        BODY999_POLE_DEC       = (   -6.163   0.          0. )
+        BODY999_PM             = (  302.695   56.3625225  0. )
+        BODY999_LONG_AXIS      = (    0.                     )
+
+        \begintext
+ 
+ 
+ 
+ 
+Orientation constants for the satellites
+--------------------------------------------------------
+ 
+ 
+Satellites of Earth
+ 
+     Old values:
+ 
+        Values are unchanged in the 2009 IAU report. 
+ 
+     New values:
+ 
+        \begindata
+ 
+
+        BODY301_POLE_RA      = (  269.9949        0.0031        0.      )
+        BODY301_POLE_DEC     = (   66.5392        0.0130        0.      )
+        BODY301_PM           = (   38.3213       13.17635815   -1.4D-12 )
+        BODY301_LONG_AXIS    = (    0.                                  )
+   
+        BODY301_NUT_PREC_RA  = (   -3.8787   -0.1204   0.0700   -0.0172
+                                    0.0       0.0072   0.0       0.0
+                                    0.0      -0.0052   0.0       0.0
+                                    0.0043                              )
+        
+        BODY301_NUT_PREC_DEC = (   1.5419     0.0239  -0.0278    0.0068
+                                   0.0       -0.0029   0.0009    0.0
+                                   0.0        0.0008   0.0       0.0     
+                                  -0.0009                               )
+        
+        BODY301_NUT_PREC_PM  = (   3.5610     0.1208  -0.0642    0.0158
+                                   0.0252    -0.0066  -0.0047   -0.0046
+                                   0.0028     0.0052   0.0040    0.0019
+                                  -0.0044                               )
+        \begintext
+ 
+
+ 
+Satellites of Mars
+ 
+ 
+     Phobos
+ 
+          Old values:
+ 
+             Values are unchanged in the 2009 IAU report.
+ 
+
+          Current values:
+ 
+            The quadratic prime meridian term is scaled by 1/36525**2:
+ 
+               8.864000000000000   --->   6.6443009930565219E-09
+ 
+        \begindata
+ 
+          BODY401_POLE_RA  = ( 317.68    -0.108     0.                     )
+          BODY401_POLE_DEC = (  52.90    -0.061     0.                     )
+          BODY401_PM       = (  35.06  1128.8445850 6.6443009930565219E-09 )
+                                       
+          BODY401_LONG_AXIS     = (    0.   )
+ 
+          BODY401_NUT_PREC_RA   = (   1.79    0.    0.   0. )
+          BODY401_NUT_PREC_DEC  = (  -1.08    0.    0.   0. )
+          BODY401_NUT_PREC_PM   = (  -1.42   -0.78  0.   0. )
+
+
+        \begintext
+ 
+ 
+     Deimos
+ 
+        Old values:
+ 
+           Values are unchanged in the 2009 IAU report.
+  
+        New values:
+ 
+           The Deimos prime meridian expression is:
+ 
+ 
+                                                     2
+              W = 79.41  +  285.1618970 d  -  0.520 T  -  2.58 sin M
+                                                                    3
+ 
+                                                       +  0.19 cos M .
+                                                                    3
+ 
+ 
+           At the present time, the PCK kernel software (the routine
+           BODEUL in particular) cannot handle the cosine term directly,
+           but we can represent it as
+ 
+              0.19 sin M
+                        4
+ 
+           where
+ 
+              M   =  90.D0 - M
+               4              3
+ 
+           Therefore, the nutation precession angle assignments for Phobos
+           and Deimos contain four coefficients rather than three.
+ 
+           The quadratic prime meridian term is scaled by 1/36525**2:
+ 
+              -0.5200000000000000  --->   -3.8978300049519307E-10
+ 
+        \begindata
+ 
+           BODY402_POLE_RA       = (  316.65     -0.108       0.           )
+           BODY402_POLE_DEC      = (   53.52     -0.061       0.           )
+           BODY402_PM            = (   79.41    285.1618970  -3.897830D-10 )
+           BODY402_LONG_AXIS     = (    0.                                 )
+ 
+           BODY402_NUT_PREC_RA   = (    0.   0.   2.98    0.   )
+           BODY402_NUT_PREC_DEC  = (    0.   0.  -1.78    0.   )
+           BODY402_NUT_PREC_PM   = (    0.   0.  -2.58    0.19 )
+
+        \begintext
+ 
+ 
+ 
+ 
+Satellites of Jupiter
+ 
+ 
+     Io
+ 
+          Old values:
+ 
+             Values are unchanged in the 2009 IAU report.
+ 
+          Current values:
+         
+        \begindata
+ 
+        BODY501_POLE_RA       = (  268.05          -0.009      0. )
+        BODY501_POLE_DEC      = (   64.50           0.003      0. )
+        BODY501_PM            = (  200.39         203.4889538  0. )
+        BODY501_LONG_AXIS     = (    0.                           )
+ 
+        BODY501_NUT_PREC_RA   = (    0.   0.     0.094    0.024   )
+        BODY501_NUT_PREC_DEC  = (    0.   0.     0.040    0.011   )
+        BODY501_NUT_PREC_PM   = (    0.   0.    -0.085   -0.022   )
+
+        \begintext
+ 
+ 
+ 
+     Europa
+ 
+ 
+        Old values:
+
+           Values are unchanged in the 2009 IAU report.      
+
+
+        Current values:
+ 
+        \begindata 
+ 
+        BODY502_POLE_RA       = (  268.08          -0.009      0.   )
+        BODY502_POLE_DEC      = (   64.51           0.003      0.   )
+        BODY502_PM            = (   36.022        101.3747235  0.   )
+        BODY502_LONG_AXIS     = (    0.                             )
+ 
+        BODY502_NUT_PREC_RA   = ( 0. 0. 0.   1.086   0.060   0.015   0.009 )
+        BODY502_NUT_PREC_DEC  = ( 0. 0. 0.   0.468   0.026   0.007   0.002 )
+        BODY502_NUT_PREC_PM   = ( 0. 0. 0.  -0.980  -0.054  -0.014  -0.008 )
+ 
+        \begintext
+ 
+ 
+     Ganymede
+ 
+        Old values:
+ 
+             Values are unchanged in the 2009 IAU report.
+
+        Current values:
+        
+        \begindata
+    
+        BODY503_POLE_RA       = (  268.20         -0.009       0.  )
+        BODY503_POLE_DEC      = (   64.57          0.003       0.  )
+        BODY503_PM            = (   44.064        50.3176081   0.  )
+        BODY503_LONG_AXIS     = (    0.                            )
+
+        BODY503_NUT_PREC_RA   = ( 0. 0. 0.  -0.037   0.431   0.091   )
+        BODY503_NUT_PREC_DEC  = ( 0. 0. 0.  -0.016   0.186   0.039   )
+        BODY503_NUT_PREC_PM   = ( 0. 0. 0.   0.033  -0.389  -0.082   )
+ 
+        \begintext
+ 
+ 
+     Callisto
+ 
+        Old values:
+
+             Values are unchanged in the 2009 IAU report.
+                
+        Current values:
+        
+        
+        \begindata
+  
+        BODY504_POLE_RA       = (   268.72    -0.009       0.  )
+        BODY504_POLE_DEC      = (    64.83     0.003       0.  )
+        BODY504_PM            = (   259.51    21.5710715   0.  )
+        BODY504_LONG_AXIS     = (     0.                       )
+ 
+        BODY504_NUT_PREC_RA   = ( 0. 0. 0. 0.  -0.068   0.590  0.   0.010 )
+        BODY504_NUT_PREC_DEC  = ( 0. 0. 0. 0.  -0.029   0.254  0.  -0.004 )
+        BODY504_NUT_PREC_PM   = ( 0. 0. 0. 0.   0.061  -0.533  0.  -0.009 )
+ 
+        \begintext
+ 
+ 
+     Amalthea
+ 
+ 
+        Old values:
+        
+           Values are unchanged in the 2009 IAU report.        
+        
+        Current values:
+         
+        \begindata
+ 
+        BODY505_POLE_RA       = (   268.05    -0.009      0.  )
+        BODY505_POLE_DEC      = (    64.49     0.003      0.  )
+        BODY505_PM            = (   231.67   722.6314560  0.  )
+        BODY505_LONG_AXIS     = (     0.                      )
+ 
+        BODY505_NUT_PREC_RA  = ( -0.84  0. 0. 0. 0. 0. 0. 0.   0.01  0. )
+        BODY505_NUT_PREC_DEC = ( -0.36  0. 0. 0. 0. 0. 0. 0.   0.    0. )
+        BODY505_NUT_PREC_PM  = (  0.76  0. 0. 0. 0. 0. 0. 0.  -0.01  0. )
+ 
+        \begintext
+ 
+ 
+     Thebe
+ 
+ 
+        Old values:
+                
+           Values are unchanged in the 2009 IAU report.                
+          
+        Current values:
+        
+        \begindata
+ 
+        BODY514_POLE_RA       = (  268.05     -0.009       0.  )
+        BODY514_POLE_DEC      = (   64.49      0.003       0.  )
+        BODY514_PM            = (    8.56    533.7004100   0.  )
+        BODY514_LONG_AXIS     = (    0.                        )
+ 
+        BODY514_NUT_PREC_RA  = ( 0.  -2.11  0. 0. 0. 0. 0. 0. 0.  0.04 )
+        BODY514_NUT_PREC_DEC = ( 0.  -0.91  0. 0. 0. 0. 0. 0. 0.  0.01 )
+        BODY514_NUT_PREC_PM  = ( 0.   1.91  0. 0. 0. 0. 0. 0. 0. -0.04 )
+ 
+        \begintext
+ 
+ 
+     Adrastea
+ 
+        Old values:
+                
+           Values are unchanged in the 2009 IAU report.                
+        
+        Current values:
+        
+        \begindata 
+ 
+        BODY515_POLE_RA       = (  268.05     -0.009       0.  )
+        BODY515_POLE_DEC      = (   64.49      0.003       0.  )
+        BODY515_PM            = (   33.29   1206.9986602   0.  )
+        BODY515_LONG_AXIS     = (    0.                        )
+
+        \begintext
+ 
+ 
+     Metis
+  
+        Old values:
+        
+           Values are unchanged in the 2009 IAU report.  
+              
+        Current values:
+           
+        \begindata
+
+        BODY516_POLE_RA       = (  268.05     -0.009       0.  )
+        BODY516_POLE_DEC      = (   64.49      0.003       0.  )
+        BODY516_PM            = (  346.09   1221.2547301   0.  )
+        BODY516_LONG_AXIS     = (    0.                        )
+ 
+        \begintext
+ 
+ 
+ 
+Satellites of Saturn
+      
+     
+     Mimas
+ 
+        Old values:
+        
+           Values are from the 2006 IAU report.
+               
+           body601_pole_ra       = (   40.66     -0.036      0.  )
+           body601_pole_dec      = (   83.52     -0.004      0.  )
+           body601_pm            = (  337.46    381.9945550  0.  )
+           body601_long_axis     = (     0.                      )
+ 
+           body601_nut_prec_ra   = ( 0. 0.   13.56  0.    0.    0. 0. 0. 0. )
+           body601_nut_prec_dec  = ( 0. 0.   -1.53  0.    0.    0. 0. 0. 0. )
+           body601_nut_prec_pm   = ( 0. 0.  -13.48  0.  -44.85  0. 0. 0. 0. )
+
+
+        Current values:
+
+        \begindata
+  
+           BODY601_POLE_RA       = (   40.66     -0.036      0.  )
+           BODY601_POLE_DEC      = (   83.52     -0.004      0.  )
+           BODY601_PM            = (  333.46    381.9945550  0.  )
+           BODY601_LONG_AXIS     = (     0.                      )
+ 
+           BODY601_NUT_PREC_RA   = ( 0. 0.   13.56  0.    0.    0. 0. 0.  )
+           BODY601_NUT_PREC_DEC  = ( 0. 0.   -1.53  0.    0.    0. 0. 0.  )
+           BODY601_NUT_PREC_PM   = ( 0. 0.  -13.48  0.  -44.85  0. 0. 0.  )
+
+        \begintext
+ 
+ 
+     Enceladus
+ 
+ 
+        Old values:
+        
+           Values are from the 2006 IAU report.  
+               
+           body602_pole_ra       = (   40.66    -0.036       0. )
+           body602_pole_dec      = (   83.52    -0.004       0. )
+           body602_pm            = (    2.82   262.7318996   0. )
+           body602_long_axis     = (    0.                      )
+
+
+        Current values:
+ 
+        \begindata
+ 
+           BODY602_POLE_RA       = (   40.66    -0.036       0. )
+           BODY602_POLE_DEC      = (   83.52    -0.004       0. )
+           BODY602_PM            = (    6.32   262.7318996   0. )
+           BODY602_LONG_AXIS     = (    0.                      )
+
+        \begintext
+ 
+ 
+ 
+     Tethys
+ 
+ 
+        Old values:
+        
+           Values are from the 2006 IAU report. 
+ 
+           body603_pole_ra       = (   40.66    -0.036       0. )
+           body603_pole_dec      = (   83.52    -0.004       0. )
+           body603_pm            = (   10.45   190.6979085   0. )
+           body603_long_axis     = (    0.                      )
+ 
+           body603_nut_prec_ra   = ( 0. 0. 0.   9.66   0.    0.  0.  0.  0. )
+           body603_nut_prec_dec  = ( 0. 0. 0.  -1.09   0.    0.  0.  0.  0. )
+           body603_nut_prec_pm   = ( 0. 0. 0.  -9.60   2.23  0.  0.  0.  0. )
+
+
+        Current values:
+ 
+        \begindata
+ 
+           BODY603_POLE_RA       = (   40.66    -0.036       0. )
+           BODY603_POLE_DEC      = (   83.52    -0.004       0. )
+           BODY603_PM            = (    8.95   190.6979085   0. )
+           BODY603_LONG_AXIS     = (    0.                      )
+ 
+           BODY603_NUT_PREC_RA   = ( 0. 0. 0.   9.66   0.    0.  0.  0. )
+           BODY603_NUT_PREC_DEC  = ( 0. 0. 0.  -1.09   0.    0.  0.  0. )
+           BODY603_NUT_PREC_PM   = ( 0. 0. 0.  -9.60   2.23  0.  0.  0. )
+
+        \begintext
+ 
+ 
+     Dione
+ 
+ 
+        Old values:
+        
+           Values are from the 2006 IAU report. 
+ 
+           body604_pole_ra       = (  40.66      -0.036      0.  )
+           body604_pole_dec      = (  83.52      -0.004      0.  )
+           body604_pm            = (  357.00    131.5349316  0.  )
+           body604_long_axis     = (    0.                       )
+
+
+        Current values:
+ 
+        \begindata
+   
+           BODY604_POLE_RA       = (  40.66      -0.036      0.  )
+           BODY604_POLE_DEC      = (  83.52      -0.004      0.  )
+           BODY604_PM            = (  357.6     131.5349316  0.  )
+           BODY604_LONG_AXIS     = (    0.                       )
+
+        \begintext
+ 
+ 
+ 
+     Rhea
+     
+ 
+        Old values:
+        
+           Values are from the 2009 IAU report.
+
+           body605_pole_ra       = (   40.38   -0.036       0. )
+           body605_pole_dec      = (   83.55   -0.004       0. )
+           body605_pm            = (  235.16   79.6900478   0. )
+           body605_long_axis     = (    0.                     )
+ 
+           body605_nut_prec_ra   = ( 0. 0. 0. 0. 0.   3.10   0. 0. 0. )
+           body605_nut_prec_dec  = ( 0. 0. 0. 0. 0.  -0.35   0. 0. 0. )
+           body605_nut_prec_pm   = ( 0. 0. 0. 0. 0.  -3.08   0. 0. 0. )
+
+ 
+        Current values:
+ 
+           Data values are unchanged in the 2009 IAU report. However
+           the kernel variable contents have changed due to removal of
+           the angle S7.
+
+        \begindata
+   
+           BODY605_POLE_RA       = (   40.38   -0.036       0. )
+           BODY605_POLE_DEC      = (   83.55   -0.004       0. )
+           BODY605_PM            = (  235.16   79.6900478   0. )
+           BODY605_LONG_AXIS     = (    0.                     )
+ 
+           BODY605_NUT_PREC_RA   = ( 0. 0. 0. 0. 0.   3.10   0. 0. )
+           BODY605_NUT_PREC_DEC  = ( 0. 0. 0. 0. 0.  -0.35   0. 0. )
+           BODY605_NUT_PREC_PM   = ( 0. 0. 0. 0. 0.  -3.08   0. 0. )
+ 
+        \begintext
+ 
+ 
+ 
+     Titan
+ 
+ 
+        Old values:
+        
+           Values are from the 2006 IAU report. 
+
+           BODY606_POLE_RA       = (    36.41   -0.036      0. )
+           BODY606_POLE_DEC      = (    83.94   -0.004      0. )
+           BODY606_PM            = (   189.64   22.5769768  0. )
+           BODY606_LONG_AXIS     = (     0.                    )
+ 
+           BODY606_NUT_PREC_RA   = ( 0. 0. 0. 0. 0. 0.  2.66  0. 0 )
+           BODY606_NUT_PREC_DEC  = ( 0. 0. 0. 0. 0. 0. -0.30  0. 0 )
+           BODY606_NUT_PREC_PM   = ( 0. 0. 0. 0. 0. 0. -2.64  0. 0 )
+
+
+        Current values:
+
+              Note removal of dependence on the nutation precession
+              angles.
+ 
+        \begindata
+ 
+           BODY606_POLE_RA       = (    39.4827    0.         0. )
+           BODY606_POLE_DEC      = (    83.4279    0.         0. )
+           BODY606_PM            = (   186.5855   22.5769768  0. )
+           BODY606_LONG_AXIS     = (     0.                      )
+ 
+           BODY606_NUT_PREC_RA   = ( 0. 0. 0. 0. 0. 0. 0. 0 )
+           BODY606_NUT_PREC_DEC  = ( 0. 0. 0. 0. 0. 0. 0. 0 )
+           BODY606_NUT_PREC_PM   = ( 0. 0. 0. 0. 0. 0. 0. 0 )
+
+        \begintext
+ 
+ 
+ 
+     Hyperion
+ 
+         The IAU report does not give an orientation model for Hyperion.
+         Hyperion's rotation is in chaotic and is not predictable for
+         long periods.
+
+ 
+     Iapetus
+ 
+ 
+        Old values:
+        
+           Values are from the 2006 IAU report. 
+
+           body608_pole_ra       = (   318.16  -3.949      0.  )
+           body608_pole_dec      = (    75.03  -1.143      0.  )
+           body608_pm            = (   350.20   4.5379572  0.  )
+           body608_long_axis     = (     0.                    )
+
+
+        Current values:
+ 
+        \begindata
+ 
+           BODY608_POLE_RA       = (   318.16  -3.949      0.  )
+           BODY608_POLE_DEC      = (    75.03  -1.143      0.  )
+           BODY608_PM            = (   355.2    4.5379572  0.  )
+           BODY608_LONG_AXIS     = (     0.                    )
+
+        \begintext
+ 
+ 
+ 
+     Phoebe
+ 
+
+        Old values:
+        
+           Values are unchanged in the 2009 IAU report. 
+  
+        Current values:
+ 
+        \begindata 
+  
+           BODY609_POLE_RA       = ( 356.90       0.         0.  )
+           BODY609_POLE_DEC      = (  77.80       0.         0.  )
+           BODY609_PM            = ( 178.58     931.639      0.  )
+           BODY609_LONG_AXIS     = (    0.                       )
+
+        \begintext
+ 
+ 
+     Janus
+ 
+ 
+        Old values:
+        
+           Values are unchanged in the 2009 IAU report. 
+
+
+        Current values:
+
+           Data values are unchanged in the 2009 IAU report. However
+           the kernel variable contents have changed due to removal of
+           the angle S7.
+ 
+        \begindata
+
+           BODY610_POLE_RA       = (  40.58    -0.036       0. )
+           BODY610_POLE_DEC      = (  83.52    -0.004       0. )
+           BODY610_PM            = (  58.83   518.2359876   0. )
+           BODY610_LONG_AXIS     = (   0.                      )
+ 
+           BODY610_NUT_PREC_RA   = ( 0. -1.623  0. 0. 0. 0. 0.  0.023 )
+           BODY610_NUT_PREC_DEC  = ( 0. -0.183  0. 0. 0. 0. 0.  0.001 )
+           BODY610_NUT_PREC_PM   = ( 0.  1.613  0. 0. 0. 0. 0. -0.023 )
+ 
+        \begintext
+ 
+ 
+ 
+     Epimetheus
+ 
+ 
+        Old values:
+        
+           Values are unchanged in the 2009 IAU report. 
+         
+        Current values:
+ 
+           Data values are unchanged in the 2009 IAU report. However
+           the kernel variable contents have changed due to removal of
+           the angle S7.
+
+        \begindata 
+  
+           BODY611_POLE_RA       = (  40.58    -0.036        0. )
+           BODY611_POLE_DEC      = (  83.52    -0.004        0. )
+           BODY611_PM            = ( 293.87   518.4907239    0. )
+           BODY611_LONG_AXIS     = (   0.                       )
+ 
+           BODY611_NUT_PREC_RA   = ( -3.153   0. 0. 0. 0. 0.   0.086  0. )
+           BODY611_NUT_PREC_DEC  = ( -0.356   0. 0. 0. 0. 0.   0.005  0. )
+           BODY611_NUT_PREC_PM   = (  3.133   0. 0. 0. 0. 0.  -0.086  0. )
+
+        \begintext
+ 
+ 
+ 
+     Helene
+ 
+ 
+        Old values:
+        
+           Values are unchanged in the 2009 IAU report. 
+
+        Current values:
+ 
+        \begindata 
+ 
+           BODY612_POLE_RA       = (  40.85     -0.036        0. )
+           BODY612_POLE_DEC      = (  83.34     -0.004        0. )
+           BODY612_PM            = ( 245.12    131.6174056    0. )
+           BODY612_LONG_AXIS     = (   0.                        )
+
+        \begintext
+ 
+ 
+ 
+     Telesto
+ 
+ 
+        Old values:
+        
+           Values are unchanged in the 2009 IAU report. 
+
+        Current values:
+ 
+        \begindata 
+ 
+           BODY613_POLE_RA       = ( 50.51    -0.036      0.  )
+           BODY613_POLE_DEC      = ( 84.06    -0.004      0.  )
+           BODY613_PM            = ( 56.88   190.6979332  0.  )
+           BODY613_LONG_AXIS     = (  0.                      )
+
+        \begintext
+
+ 
+ 
+     Calypso
+ 
+ 
+        Old values:
+        
+           Values are unchanged in the 2009 IAU report. 
+
+        Current values:
+ 
+        \begindata
+  
+           BODY614_POLE_RA       = (   36.41    -0.036        0.  )
+           BODY614_POLE_DEC      = (   85.04    -0.004        0.  )
+           BODY614_PM            = (  153.51   190.6742373    0.  )
+           BODY614_LONG_AXIS     = (    0.                        )
+ 
+        \begintext
+ 
+ 
+ 
+     Atlas
+ 
+ 
+        Old values:
+        
+           Values are unchanged in the 2009 IAU report. 
+
+        Current values:
+ 
+        \begindata
+ 
+           BODY615_POLE_RA       = (   40.58     -0.036      0. )
+           BODY615_POLE_DEC      = (   83.53     -0.004      0. )  
+           BODY615_PM            = (  137.88    598.3060000  0. )
+           BODY615_LONG_AXIS     = (    0.                      )
+
+        \begintext
+ 
+ 
+ 
+     Prometheus
+ 
+ 
+        Old values:
+        
+           Values are unchanged in the 2009 IAU report. 
+
+        Current values:
+ 
+        \begindata
+  
+           BODY616_POLE_RA       = (  40.58      -0.036    )
+           BODY616_POLE_DEC      = (  83.53      -0.004    )
+           BODY616_PM            = ( 296.14     587.289000 )
+           BODY616_LONG_AXIS     = (   0.                  )
+ 
+        \begintext
+ 
+ 
+ 
+     Pandora
+ 
+ 
+        Old values:
+        
+           Values are unchanged in the 2009 IAU report. 
+
+        Current values:
+ 
+        \begindata
+ 
+           BODY617_POLE_RA       = (   40.58     -0.036      0.  )
+           BODY617_POLE_DEC      = (   83.53     -0.004      0.  )
+           BODY617_PM            = (  162.92    572.7891000  0.  )
+           BODY617_LONG_AXIS     = (     0.                      )
+ 
+        \begintext
+ 
+ 
+ 
+     Pan
+ 
+ 
+        Old values:
+        
+           Values are unchanged in the 2009 IAU report. 
+
+        Current values:
+ 
+        \begindata
+ 
+           BODY618_POLE_RA       = (   40.6     -0.036       0. )
+           BODY618_POLE_DEC      = (   83.5     -0.004       0. )
+           BODY618_PM            = (   48.8    626.0440000   0. )
+           BODY618_LONG_AXIS     = (    0.                      )
+
+        \begintext
+ 
+ 
+ 
+ 
+ 
+Satellites of Uranus
+ 
+  
+ 
+     Ariel
+ 
+        Old values:
+        
+           Values are unchanged in the 2009 IAU report. 
+ 
+        Current values:
+
+        \begindata 
+
+           BODY701_POLE_RA       = ( 257.43     0.          0. )
+           BODY701_POLE_DEC      = ( -15.10     0.          0. )
+           BODY701_PM            = ( 156.22  -142.8356681   0. )
+           BODY701_LONG_AXIS     = (   0.                      )
+ 
+           BODY701_NUT_PREC_RA   = (  0. 0. 0. 0. 0.
+                                      0. 0. 0. 0. 0.  0.    0.    0.29 )
+ 
+           BODY701_NUT_PREC_DEC  = (  0. 0. 0. 0. 0.
+                                      0. 0. 0. 0. 0.  0.    0.    0.28 )
+ 
+           BODY701_NUT_PREC_PM   = (  0. 0. 0. 0. 0.
+                                      0. 0. 0. 0. 0.  0.   0.05   0.08 )
+        \begintext
+ 
+ 
+ 
+     Umbriel
+ 
+        Old values:
+        
+           Values are unchanged in the 2009 IAU report. 
+
+        Current values:
+ 
+        \begindata 
+ 
+           BODY702_POLE_RA       = (  257.43     0.          0. )
+           BODY702_POLE_DEC      = (  -15.10     0.          0. )
+           BODY702_PM            = (  108.05   -86.8688923   0. )
+           BODY702_LONG_AXIS     = (    0.                      )
+ 
+           BODY702_NUT_PREC_RA   = ( 0. 0. 0. 0. 0. 
+                                     0. 0. 0. 0. 0.   0.   0.    0.   0.21 )
+ 
+           BODY702_NUT_PREC_DEC  = ( 0. 0. 0. 0. 0. 
+                                     0. 0. 0. 0. 0.   0.   0.    0.   0.20 )
+ 
+           BODY702_NUT_PREC_PM   = ( 0. 0. 0. 0. 0.  
+                                     0. 0. 0. 0. 0.   0.  -0.09  0.   0.06 )
+
+        \begintext
+ 
+ 
+ 
+     Titania
+ 
+        Old values:
+        
+           Values are unchanged in the 2009 IAU report. 
+
+        Current values:
+ 
+        \begindata
+ 
+           BODY703_POLE_RA       = (  257.43    0.          0. )
+           BODY703_POLE_DEC      = (  -15.10    0.          0. )
+           BODY703_PM            = (   77.74  -41.3514316   0. )
+           BODY703_LONG_AXIS     = (    0.                     )
+ 
+           BODY703_NUT_PREC_RA   = ( 0. 0. 0. 0. 0. 
+                                     0. 0. 0. 0. 0.   0. 0. 0. 0.   0.29 )
+ 
+           BODY703_NUT_PREC_DEC  = ( 0. 0. 0. 0. 0. 
+                                     0. 0. 0. 0. 0.   0. 0. 0. 0.   0.28 )
+ 
+           BODY703_NUT_PREC_PM   = ( 0. 0. 0. 0. 0.  
+                                     0. 0. 0. 0. 0.   0. 0. 0. 0.   0.08 )
+        \begintext
+ 
+ 
+ 
+     Oberon
+ 
+        Old values:
+        
+           Values are unchanged in the 2009 IAU report. 
+
+        Current values:
+ 
+        \begindata
+  
+           BODY704_POLE_RA       = (  257.43    0.          0. )
+           BODY704_POLE_DEC      = (  -15.10    0.          0. )
+           BODY704_PM            = (    6.77  -26.7394932   0. )
+           BODY704_LONG_AXIS     = (    0.                     )
+ 
+ 
+           BODY704_NUT_PREC_RA   = ( 0. 0. 0. 0. 0. 
+                                     0. 0. 0. 0. 0. 
+                                     0. 0. 0. 0. 0.   0.16 )
+ 
+           BODY704_NUT_PREC_DEC  = ( 0. 0. 0. 0. 0. 
+                                     0. 0. 0. 0. 0. 
+                                     0. 0. 0. 0. 0.   0.16 )
+ 
+           BODY704_NUT_PREC_PM   = ( 0. 0. 0. 0. 0.  
+                                     0. 0. 0. 0. 0.  
+                                     0. 0. 0. 0. 0.   0.04 )
+        \begintext
+ 
+ 
+ 
+     Miranda
+ 
+        Old values:
+        
+           Values are unchanged in the 2009 IAU report. 
+
+        Current values:
+ 
+        \begindata
+ 
+           BODY705_POLE_RA      = (  257.43     0.         0. )
+           BODY705_POLE_DEC     = (  -15.08     0.         0. )
+           BODY705_PM           = (   30.70  -254.6906892  0. )
+           BODY705_LONG_AXIS    = (    0.                     )
+ 
+           BODY705_NUT_PREC_RA  = ( 0.     0.     0.    0.    0.  
+                                    0.     0.     0.    0.    0. 
+                                    4.41   0.     0.    0.    0. 
+                                    0.    -0.04   0.             )
+ 
+           BODY705_NUT_PREC_DEC = ( 0.     0.     0.    0.    0.  
+                                    0.     0.     0.    0.    0. 
+                                    4.25   0.     0.    0.    0. 
+                                    0.    -0.02   0.             )
+ 
+           BODY705_NUT_PREC_PM  = ( 0.     0.     0.    0.    0.  
+                                    0.     0.     0.    0.    0. 
+                                    1.15  -1.27   0.    0.    0.  
+                                    0.    -0.09   0.15           )
+        \begintext
+ 
+ 
+ 
+     Cordelia
+ 
+        Old values:
+        
+           Values are unchanged in the 2009 IAU report. 
+
+        Current values:
+ 
+        \begindata
+  
+           BODY706_POLE_RA      = (   257.31      0.         0.  )
+           BODY706_POLE_DEC     = (   -15.18      0.         0.  )
+           BODY706_PM           = (   127.69  -1074.5205730  0.  )
+           BODY706_LONG_AXIS    = (     0.                       )
+ 
+           BODY706_NUT_PREC_RA  = (   -0.15    0.     0.    0.    0.
+                                       0.      0.     0.    0.    0.
+                                       0.      0.     0.    0.    0.
+                                       0.      0.     0.             )
+
+           BODY706_NUT_PREC_DEC = (    0.14    0.     0.    0.    0.
+                                       0.      0.     0.    0.    0.
+                                       0.      0.     0.    0.    0.
+                                       0.      0.     0.             )  
+
+           BODY706_NUT_PREC_PM  = (   -0.04    0.     0.    0.    0.
+                                       0.      0.     0.    0.    0.
+                                       0.      0.     0.    0.    0.
+                                       0.      0.     0.             ) 
+ 
+        \begintext
+ 
+ 
+
+     Ophelia
+ 
+ 
+        Old values:
+        
+           Values are unchanged in the 2009 IAU report. 
+
+        Current values:
+ 
+        \begindata
+   
+           BODY707_POLE_RA      = (  257.31     0.         0. )
+           BODY707_POLE_DEC     = (  -15.18     0.         0. )
+           BODY707_PM           = (  130.35  -956.4068150  0. )
+           BODY707_LONG_AXIS    = (    0.                     )
+ 
+           BODY707_NUT_PREC_RA  = (    0.     -0.09   0.    0.    0.
+                                       0.      0.     0.    0.    0.
+                                       0.      0.     0.    0.    0.
+                                       0.      0.     0.             )
+
+           BODY707_NUT_PREC_DEC = (    0.      0.09   0.    0.    0.
+                                       0.      0.     0.    0.    0.
+                                       0.      0.     0.    0.    0.
+                                       0.      0.     0.             )
+
+           BODY707_NUT_PREC_PM  = (    0.     -0.03   0.    0.    0.
+                                       0.      0.     0.    0.    0.
+                                       0.      0.     0.    0.    0.
+                                       0.      0.     0.             )
+ 
+        \begintext
+ 
+ 
+ 
+     Bianca
+ 
+        Old values:
+        
+           Values are unchanged in the 2009 IAU report. 
+
+        Current values:
+ 
+        \begindata
+ 
+           BODY708_POLE_RA      = (  257.31     0.         0.  )
+           BODY708_POLE_DEC     = (  -15.18     0.         0.  )
+           BODY708_PM           = (  105.46  -828.3914760  0.  )
+           BODY708_LONG_AXIS    = (    0.                      )
+ 
+           BODY708_NUT_PREC_RA  = (    0.      0.    -0.16    0.    0.
+                                       0.      0.     0.      0.    0.
+                                       0.      0.     0.      0.    0.
+                                       0.      0.     0.               )
+
+           BODY708_NUT_PREC_DEC = (    0.      0.     0.16    0.    0.
+                                       0.      0.     0.      0.    0.
+                                       0.      0.     0.      0.    0.
+                                       0.      0.     0.               )
+
+           BODY708_NUT_PREC_PM  = (    0.      0.    -0.04    0.    0.
+                                       0.      0.     0.      0.    0.
+                                       0.      0.     0.      0.    0.
+                                       0.      0.     0.               )
+
+        \begintext
+ 
+ 
+ 
+     Cressida
+ 
+        Old values:
+        
+           Values are unchanged in the 2009 IAU report. 
+
+        Current values:
+ 
+        \begindata
+ 
+ 
+           BODY709_POLE_RA      = (  257.31      0.          0.  )
+           BODY709_POLE_DEC     = (  -15.18      0.          0.  )
+           BODY709_PM           = (   59.16   -776.5816320   0.  )
+           BODY709_LONG_AXIS    = (    0.                        )
+ 
+
+           BODY709_NUT_PREC_RA  = (    0.      0.     0.     -0.04   0.
+                                       0.      0.     0.      0.     0.
+                                       0.      0.     0.      0.     0.
+                                       0.      0.     0.                )
+
+
+           BODY709_NUT_PREC_DEC = (    0.      0.     0.      0.04   0.
+                                       0.      0.     0.      0.     0.
+                                       0.      0.     0.      0.     0.
+                                       0.      0.     0.                )
+
+
+           BODY709_NUT_PREC_PM  = (    0.      0.     0.     -0.01   0.
+                                       0.      0.     0.      0.     0.
+                                       0.      0.     0.      0.     0.
+                                       0.      0.     0.                )
+
+
+        \begintext
+ 
+ 
+ 
+     Desdemona
+ 
+        Old values:
+        
+           Values are unchanged in the 2009 IAU report. 
+
+        Current values:
+ 
+        \begindata 
+  
+           BODY710_POLE_RA      = ( 257.31      0.           0.  )
+           BODY710_POLE_DEC     = ( -15.18      0.           0.  )
+           BODY710_PM           = (  95.08   -760.0531690    0.  )
+           BODY710_LONG_AXIS    = (   0.                         )
+ 
+           BODY710_NUT_PREC_RA  = (   0.      0.     0.      0.    -0.17 
+                                      0.      0.     0.      0.     0.
+                                      0.      0.     0.      0.     0.
+                                      0.      0.     0.                  )
+
+           BODY710_NUT_PREC_DEC = (   0.      0.     0.      0.     0.16 
+                                      0.      0.     0.      0.     0.
+                                      0.      0.     0.      0.     0.
+                                      0.      0.     0.                  )
+
+           BODY710_NUT_PREC_PM  = (   0.      0.     0.      0.    -0.04  
+                                      0.      0.     0.      0.     0.
+                                      0.      0.     0.      0.     0.
+                                      0.      0.     0.                 )
+
+        \begintext
+ 
+ 
+ 
+     Juliet
+ 
+        Old values:
+        
+           Values are unchanged in the 2009 IAU report. 
+
+        Current values:
+ 
+        \begindata
+  
+           BODY711_POLE_RA      = (  257.31     0.           0.   )
+           BODY711_POLE_DEC     = (  -15.18     0.           0.   )
+           BODY711_PM           = (  302.56  -730.1253660    0.   )
+           BODY711_LONG_AXIS    = (    0.                         )
+ 
+           BODY711_NUT_PREC_RA  = (   0.      0.     0.      0.     0.  
+                                     -0.06    0.     0.      0.     0.
+                                      0.      0.     0.      0.     0.
+                                      0.      0.     0.                 )
+ 
+           BODY711_NUT_PREC_DEC = (   0.      0.     0.      0.     0. 
+                                      0.06    0.     0.      0.     0.
+                                      0.      0.     0.      0.     0.
+                                      0.      0.     0.                 )
+  
+           BODY711_NUT_PREC_PM  = (   0.      0.     0.      0.     0. 
+                                     -0.02    0.     0.      0.     0.
+                                      0.      0.     0.      0.     0.
+                                      0.      0.     0.                 )
+ 
+        \begintext
+ 
+ 
+ 
+     Portia
+ 
+        Old values:
+        
+           Values are unchanged in the 2009 IAU report. 
+
+        Current values:
+ 
+        \begindata
+    
+           BODY712_POLE_RA      = (  257.31      0.           0.   )
+           BODY712_POLE_DEC     = (  -15.18      0.           0.   )
+           BODY712_PM           = (   25.03   -701.4865870    0.   )
+           BODY712_LONG_AXIS    = (    0.                          )
+ 
+           BODY712_NUT_PREC_RA  = (   0.      0.     0.      0.     0. 
+                                      0.     -0.09   0.      0.     0.
+                                      0.      0.     0.      0.     0.
+                                      0.      0.     0.                )
+
+           BODY712_NUT_PREC_DEC = (   0.      0.     0.      0.     0. 
+                                      0.      0.09   0.      0.     0.
+                                      0.      0.     0.      0.     0.
+                                      0.      0.     0.               )
+
+           BODY712_NUT_PREC_PM  = (   0.      0.     0.      0.     0. 
+                                      0.     -0.02   0.      0.     0.
+                                      0.      0.     0.      0.     0.
+                                      0.      0.     0.               )
+
+        \begintext
+ 
+ 
+ 
+     Rosalind
+ 
+        Old values:
+        
+           Values are unchanged in the 2009 IAU report. 
+
+        Current values:
+ 
+        \begindata
+   
+           BODY713_POLE_RA      = ( 257.31      0.          0.  )
+           BODY713_POLE_DEC     = ( -15.18      0.          0.  )
+           BODY713_PM           = ( 314.90   -644.6311260   0.  )
+           BODY713_LONG_AXIS    = (   0.                        )
+ 
+           BODY713_NUT_PREC_RA  = (   0.      0.     0.      0.     0. 
+                                      0.      0.    -0.29    0.     0.
+                                      0.      0.     0.      0.     0.
+                                      0.      0.     0.               )
+
+           BODY713_NUT_PREC_DEC = (   0.      0.     0.      0.     0. 
+                                      0.      0.     0.28    0.     0.
+                                      0.      0.     0.      0.     0.
+                                      0.      0.     0.              )
+
+           BODY713_NUT_PREC_PM  = (   0.      0.     0.      0.     0. 
+                                      0.      0.    -0.08    0.     0.
+                                      0.      0.     0.      0.     0.
+                                      0.      0.     0.              )
+ 
+        \begintext
+ 
+ 
+ 
+     Belinda
+ 
+        Old values:
+        
+           Values are unchanged in the 2009 IAU report. 
+
+        Current values:
+ 
+        \begindata 
+ 
+           BODY714_POLE_RA      = (   257.31      0.         0. )
+           BODY714_POLE_DEC     = (   -15.18      0.         0. )
+           BODY714_PM           = (   297.46   -577.3628170  0. )
+           BODY714_LONG_AXIS    = (     0.                      )
+ 
+           BODY714_NUT_PREC_RA  = (   0.      0.     0.      0.     0. 
+                                      0.      0.     0.     -0.03   0.
+                                      0.      0.     0.      0.     0.
+                                      0.      0.     0.                )
+
+           BODY714_NUT_PREC_DEC = (   0.      0.     0.      0.     0. 
+                                      0.      0.     0.      0.03   0.
+                                      0.      0.     0.      0.     0.
+                                      0.      0.     0.                )
+
+           BODY714_NUT_PREC_PM  = (   0.      0.     0.      0.     0. 
+                                      0.      0.     0.     -0.01   0.
+                                      0.      0.     0.      0.     0.
+                                      0.      0.     0.                )
+        \begintext
+ 
+ 
+ 
+     Puck
+ 
+        Old values:
+        
+           Values are unchanged in the 2009 IAU report. 
+
+        Current values:
+ 
+        \begindata
+  
+           BODY715_POLE_RA      = (  257.31      0.         0.  )
+           BODY715_POLE_DEC     = (  -15.18      0.         0.  )
+           BODY715_PM           = (   91.24   -472.5450690  0.  )
+           BODY715_LONG_AXIS    = (    0.                       )
+ 
+           BODY715_NUT_PREC_RA  = (   0.      0.     0.      0.     0. 
+                                      0.      0.     0.      0.    -0.33 
+                                      0.      0.     0.      0.     0.
+                                      0.      0.     0.                  )
+
+           BODY715_NUT_PREC_DEC = (   0.      0.     0.      0.     0. 
+                                      0.      0.     0.      0.     0.31
+                                      0.      0.     0.      0.     0.
+                                      0.      0.     0.                  )
+
+           BODY715_NUT_PREC_PM  = (   0.      0.     0.      0.     0. 
+                                      0.      0.     0.      0.    -0.09
+                                      0.      0.     0.      0.     0.
+                                      0.      0.     0.                  )
+  
+        \begintext
+ 
+ 
+ 
+ 
+Satellites of Neptune
+ 
+ 
+     Triton
+ 
+        Old values:
+        
+           Values are unchanged in the 2009 IAU report. 
+ 
+        Current values:
+ 
+        \begindata
+
+           BODY801_POLE_RA       = ( 299.36     0.         0.  )
+           BODY801_POLE_DEC      = (  41.17     0.         0.  )
+           BODY801_PM            = ( 296.53   -61.2572637  0.  )
+           BODY801_LONG_AXIS     = (   0.                      )
+ 
+ 
+           BODY801_NUT_PREC_RA   = (  0.      0.      0.      0.  
+                                      0.      0.      0.    -32.35    
+                                      0.     -6.28   -2.08   -0.74       
+                                     -0.28   -0.11   -0.07   -0.02    
+                                     -0.01                         )
+ 
+ 
+           BODY801_NUT_PREC_DEC  = (  0.      0.      0.      0.  
+                                      0.      0.      0.     22.55    
+                                      0.      2.10    0.55    0.16   
+                                      0.05    0.02    0.01    0.
+                                      0.                           )
+ 
+ 
+           BODY801_NUT_PREC_PM   = (  0.      0.      0.      0.  
+                                      0.      0.      0.     22.25   
+                                      0.      6.73    2.05    0.74   
+                                      0.28    0.11    0.05    0.02
+                                      0.01                         )
+  
+        \begintext
+ 
+ 
+ 
+ 
+     Nereid
+ 
+        Old values:
+ 
+           Values are from the 1988 IAU report [10].  Note that this 
+           rotation model pre-dated the 1989 Voyager 2 Neptune
+           encounter.
+
+ 
+           body802_pole_ra       = (    273.48    0.        0.  )
+           body802_pole_dec      = (     67.22    0.        0.  )
+           body802_pm            = (    237.22    0.9996465 0.  )
+           body802_long_axis     = (      0.                    )
+ 
+ 
+           The report seems to have a typo:  in the nut_prec_ra expression,
+           where the report gives  -0.51 sin 3N3, we use -0.51 3N2.
+ 
+           body802_nut_prec_ra   = (  0.    -17.81
+                                      0.      0.     0.      0.
+                                      0.      0.     0.
+                                      2.56   -0.51   0.11   -0.03  )
+ 
+           body802_nut_prec_dec  = (  0.     -6.67
+                                      0.      0.     0.      0.
+                                      0.      0.     0.
+                                      0.47   -0.07   0.01          )
+ 
+           body802_nut_prec_pm   = (  0.     16.48
+                                      0.      0.     0.      0.
+                                      0.      0.     0.
+                                     -2.57    0.51 -0.11    0.02  )
+ 
+ 
+ 
+        Current values:
+ 
+           The 2009 report [1] states that values for Nereid are not
+           given because Nereid is not in synchronous rotation with Neptune
+           (notes following table 2).
+ 
+ 
+ 
+     Naiad
+ 
+        Old values:
+        
+           Values are unchanged in the 2009 IAU report. 
+
+        Current values:
+ 
+ 
+        \begindata
+  
+           BODY803_POLE_RA       = (  299.36      0.          0.  )
+           BODY803_POLE_DEC      = (   43.36      0.          0.  )
+           BODY803_PM            = (  254.06  +1222.8441209   0.  )
+           BODY803_LONG_AXIS     = (    0.                        )
+ 
+ 
+           BODY803_NUT_PREC_RA   = (    0.70     -6.49     0.      0.
+                                        0.        0.       0.      0.
+                                        0.25      0.       0.      0.
+                                        0.        0.       0.      0.
+                                        0.                            )
+ 
+           BODY803_NUT_PREC_DEC  = (   -0.51     -4.75     0.      0.
+                                        0.        0.       0.      0.
+                                        0.09      0.       0.      0.
+                                        0.        0.       0.      0.
+                                        0.                            )
+ 
+           BODY803_NUT_PREC_PM   = (   -0.48      4.40     0.      0.
+                                        0.        0.       0.      0.
+                                       -0.27      0.       0.      0.
+                                        0.        0.       0.      0.
+                                        0.                            )
+    
+        \begintext
+ 
+ 
+ 
+ 
+     Thalassa
+ 
+
+        Old values:
+        
+           Values are unchanged in the 2009 IAU report. 
+
+        Current values:
+ 
+        \begindata
+
+           BODY804_POLE_RA       = (  299.36      0.          0. )
+           BODY804_POLE_DEC      = (   43.45      0.          0. )
+           BODY804_PM            = (  102.06   1155.7555612   0. )  
+           BODY804_LONG_AXIS     = (    0.                       )
+ 
+ 
+           BODY804_NUT_PREC_RA   = (    0.70      0.      -0.28    0.
+                                        0.        0.       0.      0.
+                                        0.        0.       0.      0.
+                                        0.        0.       0.      0.
+                                        0.                             )
+   
+  
+           BODY804_NUT_PREC_DEC  = (   -0.51      0.      -0.21    0.
+                                        0.        0.       0.      0.
+                                        0.        0.       0.      0.
+                                        0.        0.       0.      0. 
+                                        0.                             )
+ 
+           BODY804_NUT_PREC_PM   = (   -0.48      0.       0.19    0.
+                                        0.        0.       0.      0.
+                                        0.        0.       0.      0.
+                                        0.        0.       0.      0. 
+                                        0.                             )
+                                                                 
+        \begintext
+ 
+ 
+ 
+     Despina
+ 
+        Old values:
+        
+           Values are unchanged in the 2009 IAU report. 
+
+        Current values:
+ 
+ 
+        \begindata
+  
+           BODY805_POLE_RA       = (  299.36      0.          0. )
+           BODY805_POLE_DEC      = (   43.45      0.          0. )
+           BODY805_PM            = (  306.51  +1075.7341562   0. )
+           BODY805_LONG_AXIS     = (    0.                       )
+ 
+ 
+           BODY805_NUT_PREC_RA   = (    0.70      0.       0.     -0.09
+                                        0.        0.       0.      0.
+                                        0.        0.       0.      0.
+                                        0.        0.       0.      0.
+                                        0.                              )
+ 
+           BODY805_NUT_PREC_DEC  = (   -0.51      0.       0.     -0.07
+                                        0.        0.       0.      0.
+                                        0.        0.       0.      0.
+                                        0.        0.       0.      0.
+                                        0.                              )
+ 
+           BODY805_NUT_PREC_PM   = (   -0.49      0.       0.      0.06
+                                        0.        0.       0.      0.
+                                        0.        0.       0.      0.
+                                        0.        0.       0.      0.
+                                        0.                              )
+        \begintext
+ 
+ 
+ 
+     Galatea
+ 
+ 
+        Old values:
+        
+           Values are unchanged in the 2009 IAU report. 
+
+        Current values:
+ 
+ 
+        \begindata
+  
+           BODY806_POLE_RA       = (   299.36      0.          0. )
+           BODY806_POLE_DEC      = (    43.43      0.          0. )
+           BODY806_PM            = (   258.09    839.6597686   0. )
+           BODY806_LONG_AXIS     = (     0.                       )
+ 
+ 
+           BODY806_NUT_PREC_RA   = (    0.70      0.       0.      0.
+                                       -0.07      0.       0.      0.
+                                        0.        0.       0.      0.
+                                        0.        0.       0.      0.
+                                        0.                             )
+ 
+           BODY806_NUT_PREC_DEC  = (   -0.51      0.       0.      0.
+                                       -0.05      0.       0.      0.
+                                        0.        0.       0.      0.
+                                        0.        0.       0.      0.
+                                        0.                             )
+ 
+           BODY806_NUT_PREC_PM   = (   -0.48      0.       0.      0.
+                                        0.05      0.       0.      0.
+                                        0.        0.       0.      0.
+                                        0.        0.       0.      0.
+                                        0.                             ) 
+        \begintext
+
+ 
+     Larissa
+ 
+ 
+        Old values:
+        
+           Values are unchanged in the 2009 IAU report. 
+
+        Current values:
+  
+        \begindata
+
+           BODY807_POLE_RA       = (   299.36     0.           0. )
+           BODY807_POLE_DEC      = (    43.41     0.           0. )
+           BODY807_PM            = (   179.41  +649.0534470    0. )
+           BODY807_LONG_AXIS     = (     0.                       )
+ 
+ 
+           BODY807_NUT_PREC_RA   = (    0.70      0.       0.      0.
+                                        0.       -0.27     0.      0.
+                                        0.        0.       0.      0.
+                                        0.        0.       0.      0.
+                                        0.                            )
+ 
+           BODY807_NUT_PREC_DEC  = (   -0.51      0.       0.      0.
+                                        0.       -0.20     0.      0.
+                                        0.        0.       0.      0.
+                                        0.        0.       0.      0.
+                                        0.                            )
+ 
+           BODY807_NUT_PREC_PM   = (   -0.48      0.       0.      0.
+                                        0.        0.19     0.      0.
+                                        0.        0.       0.      0.
+                                        0.        0.       0.      0.
+                                        0.                            )
+        \begintext
+ 
+ 
+ 
+     Proteus
+ 
+
+        Old values:
+        
+           Values are unchanged in the 2009 IAU report. 
+
+        Current values:
+ 
+        \begindata
+
+           BODY808_POLE_RA       = (  299.27      0.          0.  )
+           BODY808_POLE_DEC      = (   42.91      0.          0.  )
+           BODY808_PM            = (   93.38   +320.7654228   0.  )
+           BODY808_LONG_AXIS     = (    0.                        )
+ 
+ 
+           BODY808_NUT_PREC_RA   = (    0.70      0.       0.      0.
+                                        0.        0.      -0.05    0.
+                                        0.        0.       0.      0.
+                                        0.        0.       0.      0.
+                                        0.                             )
+ 
+           BODY808_NUT_PREC_DEC  = (   -0.51      0.       0.      0.
+                                        0.        0.      -0.04    0.
+                                        0.        0.       0.      0.
+                                        0.        0.       0.      0.
+                                        0.                             )
+ 
+           BODY808_NUT_PREC_PM   = (   -0.48      0.       0.      0.
+                                        0.        0.       0.04    0.
+                                        0.        0.       0.      0.
+                                        0.        0.       0.      0.
+                                        0.                             )
+   
+        \begintext
+  
+ 
+ 
+ 
+ 
+Satellites of Pluto
+ 
+     Charon
+ 
+        Old values:
+        
+           Values are from the 2006 IAU report. 
+ 
+           body901_pole_ra       = (   312.993    0.         0. )
+           body901_pole_dec      = (     6.163    0.         0. )
+           body901_pm            = (    57.305  -56.3625225  0. )
+           body901_long_axis     = (     0.                     )
+
+               
+        Current values:
+ 
+        Due to the new definition of planetocentric coordinates
+        for small bodies, and to the reclassification of Pluto
+        as a dwarf planet, Charon's north pole direction has been
+        inverted. 
+
+        The PM constant W0 is from [2]. 
+
+        \begindata
+ 
+           BODY901_POLE_RA       = (   132.993    0.         0. )
+           BODY901_POLE_DEC      = (    -6.163    0.         0. )
+           BODY901_PM            = (   122.695   56.3625225  0. )
+           BODY901_LONG_AXIS     = (     0.                     )
+
+        \begintext
+ 
+ 
+ 
+Orientation constants for Selected Comets and Asteroids
+--------------------------------------------------------
+
+
+
+Ceres
+
+        Current values:
+ 
+        \begindata
+
+           BODY2000001_POLE_RA       = (   291.       0.         0.  )
+           BODY2000001_POLE_DEC      = (    59.       0.         0.  )
+           BODY2000001_PM            = (   170.90   952.1532     0.  )
+           BODY2000001_LONG_AXIS     = (     0.                      )
+ 
+        \begintext
+
+
+
+Pallas
+
+        Current values:
+ 
+        \begindata
+
+           BODY2000002_POLE_RA       = (    33.       0.         0.  )
+           BODY2000002_POLE_DEC      = (    -3.       0.         0.  )
+           BODY2000002_PM            = (    38.    1105.8036     0.  )
+           BODY2000002_LONG_AXIS     = (     0.                      )
+ 
+        \begintext
+
+
+
+Vesta
+
+        Old values:
+        
+           Values are from the 2009 IAU report. 
+
+           body2000004_pole_ra       = (   301.      0.         0.  )
+           body2000004_pole_dec      = (    41.      0.         0.  )
+           body2000004_pm            = (   292.   1617.332776   0.  )
+           body2000004_long_axis     = (     0.                     )
+
+        Current values:
+ 
+        \begindata
+
+           BODY2000004_POLE_RA       = (   305.8     0.         0.  )
+           BODY2000004_POLE_DEC      = (    41.4     0.         0.  )
+           BODY2000004_PM            = (   292.   1617.332776   0.  )
+           BODY2000004_LONG_AXIS     = (     0.                     )
+ 
+        \begintext
+
+
+
+Lutetia
+
+        Current values:
+ 
+        \begindata
+
+           BODY2000021_POLE_RA       = (    52.       0.         0.  )
+           BODY2000021_POLE_DEC      = (    12.       0.         0.  )
+           BODY2000021_PM            = (    94.    1057.7515     0.  )
+           BODY2000021_LONG_AXIS     = (     0.                      )
+ 
+        \begintext
+
+
+
+Ida
+
+        Old values:
+        
+           BODY2431010_POLE_RA       = (  168.76      0.         0. )
+           BODY2431010_POLE_DEC      = (   -2.88      0.         0. )
+           BODY2431010_PM            = (  265.95  +1864.6280070  0. )
+           BODY2431010_LONG_AXIS     = (    0.                      )
+
+        Current values:
+ 
+        The PM constant W0 is from [2]. 
+
+        \begindata
+ 
+           BODY2431010_POLE_RA       = (  168.76      0.         0. )
+           BODY2431010_POLE_DEC      = (   -2.88      0.         0. )
+           BODY2431010_PM            = (  274.05  +1864.6280070  0. )
+           BODY2431010_LONG_AXIS     = (    0.                      )
+ 
+        \begintext
+
+
+
+Eros
+
+        Old values:
+        
+           Values are unchanged in the 2009 IAU report. 
+
+        Current values:
+ 
+        \begindata
+
+           BODY2000433_POLE_RA       = (   11.35       0.           0. )
+           BODY2000433_POLE_DEC      = (   17.22       0.           0. )
+           BODY2000433_PM            = (  326.07    1639.38864745   0. )
+           BODY2000433_LONG_AXIS     = (    0.                         )
+ 
+        \begintext
+
+
+
+Davida
+
+        Current values:
+ 
+        \begindata
+
+           BODY2000511_POLE_RA       = (  297.        0.           0. )
+           BODY2000511_POLE_DEC      = (    5.        0.           0. )
+           BODY2000511_PM            = (  268.1    1684.4193549    0. )
+           BODY2000511_LONG_AXIS     = (    0.                        )
+ 
+        \begintext
+
+
+
+Gaspra
+
+        Old values:
+        
+           Values are unchanged in the 2009 IAU report. 
+               
+        Current values:
+ 
+        \begindata 
+ 
+           BODY9511010_POLE_RA       = (   9.47     0.         0. )
+           BODY9511010_POLE_DEC      = (  26.70     0.         0. )
+           BODY9511010_PM            = (  83.67  1226.9114850  0. )
+           BODY9511010_LONG_AXIS     = (   0.                     )
+
+        \begintext
+
+
+
+Steins
+
+        Current values:
+ 
+        \begindata 
+ 
+           BODY2002867_POLE_RA       = (  90.        0.        0. )
+           BODY2002867_POLE_DEC      = ( -62.        0.        0. )
+           BODY2002867_PM            = (  93.94   1428.852332  0. )
+           BODY2002867_LONG_AXIS     = (   0.                     )
+
+        \begintext
+
+
+
+Itokawa
+
+        Old values:
+        
+           Values are unchanged in the 2009 IAU report. 
+
+        Current values:
+ 
+        \begindata
+
+           BODY2025143_POLE_RA       = (   90.53       0.           0. )
+           BODY2025143_POLE_DEC      = (  -66.30       0.           0. )
+           BODY2025143_PM            = (  000.0      712.143        0. )
+           BODY2025143_LONG_AXIS     = (    0.                         )
+ 
+        \begintext
+
+
+
+9P/Tempel 1
+
+
+        Old values:
+        
+           Values are unchanged in the 2009 IAU report. 
+
+        Current values:
+ 
+        \begindata
+
+           BODY1000093_POLE_RA       = (   294.       0.         0.  )
+           BODY1000093_POLE_DEC      = (    73.       0.         0.  )
+           BODY1000093_PM            = (   252.63   212.064      0.  )
+           BODY1000093_LONG_AXIS     = (     0.                      )
+ 
+        \begintext
+
+
+
+19P/Borrelly
+
+        Old values:
+        
+           Values are unchanged in the 2009 IAU report. 
+
+        Current values:
+ 
+        \begindata
+
+           BODY1000005_POLE_RA       = (   218.5      0.         0.  )
+           BODY1000005_POLE_DEC      = (   -12.5      0.         0.  )
+           BODY1000005_PM            = (   000.     390.0        0.  )
+           BODY1000005_LONG_AXIS     = (     0.                      )
+ 
+        \begintext
+
+
+
+
+
+
+ 
+Radii of Sun and Planets
+--------------------------------------------------------
+ 
+ 
+Sun
+ 
+        \begindata
+ 
+        BODY10_RADII      = (  696000.  696000.  696000.  )
+ 
+        \begintext
+ 
+ 
+Mercury
+ 
+     Old values:
+ 
+        Values are unchanged in the 2009 IAU report.
+ 
+     Current values:
+ 
+        \begindata
+ 
+        BODY199_RADII     = ( 2439.7   2439.7   2439.7 )
+ 
+        \begintext
+ 
+ 
+Venus
+ 
+     Old values:
+ 
+        Values are unchanged in the 2009 IAU report.
+ 
+     Current values:
+ 
+        \begindata
+ 
+        BODY299_RADII     = ( 6051.8   6051.8   6051.8 )
+ 
+        \begintext
+ 
+ 
+Earth
+ 
+     Old values:
+ 
+        Values are from the 2006 IAU report.
+ 
+        body399_radii     = ( 6378.14   6378.14   6356.75 )
+
+
+     Current values:
+ 
+
+        \begindata
+ 
+        BODY399_RADII     = ( 6378.1366   6378.1366   6356.7519 )
+ 
+        \begintext
+ 
+ 
+Mars
+ 
+ 
+     Old values:
+
+        Values are from the 2006 IAU report.
+
+        body499_radii       = (  3397.  3397.  3375.  )
+
+ 
+     Current values:
+
+        The 2009 IAU report gives separate values for the north and
+        south polar radii:
+
+           north:  3373.19
+           south:  3379.21 
+
+        The report provides the average of these values as well,
+        which we use as the polar radius for the triaxial model.
+ 
+        \begindata
+ 
+        BODY499_RADII       = ( 3396.19   3396.19   3376.20 )
+ 
+        \begintext
+ 
+ 
+ 
+Jupiter
+ 
+     Old values:
+ 
+        Values are unchanged in the 2009 IAU report.
+ 
+     Current values:
+ 
+        \begindata
+ 
+        BODY599_RADII     = ( 71492   71492   66854 )
+ 
+        \begintext
+ 
+ 
+ 
+Saturn
+ 
+     Old values:
+ 
+        Values are unchanged in the 2009 IAU report.
+ 
+     Current values:
+ 
+        \begindata
+ 
+        BODY699_RADII     = ( 60268   60268   54364 )
+ 
+        \begintext
+ 
+ 
+ 
+Uranus
+ 
+     Old values:
+ 
+        Values are unchanged in the 2009 IAU report.
+ 
+     Current values:
+ 
+        \begindata
+ 
+        BODY799_RADII     = ( 25559   25559   24973 )
+ 
+        \begintext
+ 
+ 
+ 
+Neptune
+ 
+     Old values:
+ 
+        Values are unchanged in the 2009 IAU report.
+  
+     Current values:
+ 
+        (Values are for the 1 bar pressure level.)
+ 
+        \begindata
+ 
+        BODY899_RADII     = ( 24764   24764  24341 )
+ 
+        \begintext
+ 
+ 
+
+Radii of the Dwarf Planet Pluto
+--------------------------------------------------------
+
+ 
+Pluto
+ 
+     Old values:
+ 
+        Values are unchanged in the 2009 IAU report.
+ 
+     Current values:
+ 
+        \begindata
+ 
+        BODY999_RADII     = ( 1195   1195   1195 )
+ 
+        \begintext
+ 
+
+
+
+Radii of Satellites
+--------------------------------------------------------
+ 
+ 
+Moon
+ 
+     Old values:
+ 
+        Values are unchanged in the 2009 IAU report. 
+ 
+     Current values:
+ 
+        \begindata
+ 
+        BODY301_RADII     = ( 1737.4   1737.4   1737.4 )
+ 
+        \begintext
+ 
+ 
+ 
+Satellites of Mars
+ 
+     Old values:
+ 
+        Values are from the 2006 IAU report. 
+ 
+        body401_radii     = ( 13.4    11.2    9.2 )
+        body402_radii     = (  7.5     6.1    5.2 )
+
+     Current values:
+ 
+        \begindata
+ 
+        BODY401_RADII     = ( 13.0    11.4    9.1 )
+        BODY402_RADII     = (  7.8     6.0    5.1 )
+ 
+        \begintext
+ 
+ 
+ 
+Satellites of Jupiter
+ 
+     Old values:
+ 
+        Values are unchanged in the 2009 IAU report,
+        except for those of Europa, Ganymede, Callisto, 
+        and Metis. For Metis, now all three radii are
+        provided.
+ 
+           body502_radii     = ( 1564.13  1561.23  1560.93 )
+           body503_radii     = ( 2632.4   2632.29  2632.35 )
+           body504_radii     = ( 2409.4   2409.2   2409.3  )
+
+           The value for the second radius for body 516 is not given in 
+           2003 IAU report.   The values given are:
+
+              body516_radii    = (  30   ---   20   )
+
+           For use within the SPICE system, we use only the mean radius.
+
+           body516_radii    = (  21.5   21.5  21.5  )
+
+
+
+
+     Current values:
+         
+        Note that for Ganymede and Callisto only mean radii
+        are provided.
+
+        \begindata
+ 
+        BODY501_RADII     = ( 1829.4   1819.4   1815.7  )
+        BODY502_RADII     = ( 1562.6  1560.3    1559.5  )
+        BODY503_RADII     = ( 2631.2  2631.2    2631.2  )
+        BODY504_RADII     = ( 2410.3  2410.3    2410.3  )
+        BODY505_RADII     = (  125       73       64    )
+ 
+        \begintext
+ 
+        Only mean radii are available in the 2003 IAU report for bodies
+        506-513.
+ 
+        \begindata
+ 
+        BODY506_RADII    = (    85       85       85   )
+        BODY507_RADII    = (    40       40       40   )
+        BODY508_RADII    = (    18       18       18   )
+        BODY509_RADII    = (    14       14       14   )
+        BODY510_RADII    = (    12       12       12   )
+        BODY511_RADII    = (    15       15       15   )
+        BODY512_RADII    = (    10       10       10   )
+        BODY513_RADII    = (     5        5        5   )
+        BODY514_RADII    = (    58       49       42   )
+        BODY515_RADII    = (    10        8        7   )
+        BODY516_RADII    = (    30       20       17   )
+ 
+        \begintext
+ 
+ 
+ 
+Satellites of Saturn
+ 
+ 
+     Old values:
+ 
+        Values are from the 2006 IAU report.
+    
+        body601_radii     = (  207.4     196.8     190.6  )
+        body602_radii     = (  256.6     251.4     248.3  )
+        body603_radii     = (  540.4     531.1     527.5  )
+        body604_radii     = (  563.8     561.0     560.3  )
+        body605_radii     = (  767.2     762.5     763.1  )
+        body606_radii     = ( 2575      2575      2575    )
+        body607_radii     = (  164       130       107    )
+        body608_radii     = (  747.4     747.4     712.4  )
+        body609_radii     = (  108.6     107.7     101.5  )
+        body610_radii     = (   97.0      95.0      77.0  )
+        body611_radii     = (   69.0      55.0      55.0  )
+ 
+ 
+        Only the first equatorial radius for Helene (body 612) is given in the
+        2006 IAU report:
+ 
+            body612_radii     = (       17.5        ---          ---     )
+ 
+        The mean radius is 16km; we use this radius for all three axes, as
+        we do for the satellites for which only the mean radius is available.
+  
+        body612_radii     = (  17.5      17.5      17.5  )
+        body613_radii     = (  15        12.5       7.5  )
+        body614_radii     = (  15.0       8.0       8.0  )
+        body615_radii     = (  18.5      17.2      13.5  )
+        body616_radii     = (  74.0      50.0      34.0  )
+        body617_radii     = (  55.0      44.0      31.0  )
+ 
+         For Pan, only a mean radius is given in the 2006 report.
+ 
+        body618_radii     = (   10       10     10   )
+ 
+  
+       
+     Current values:
+ 
+        \begindata
+ 
+        BODY601_RADII     = (  207.8     196.7     190.6   )
+        BODY602_RADII     = (  256.6     251.4     248.3   )
+        BODY603_RADII     = (  538.4     528.3     526.3   )
+        BODY604_RADII     = (  563.4     561.3     559.6   )
+        BODY605_RADII     = (  765.0     763.1     762.4   )
+        BODY606_RADII     = ( 2575.15    2574.78   2574.47 )
+        BODY607_RADII     = (  180.1      133.0    102.7   )
+        BODY608_RADII     = (  745.7     745.7     712.1   )
+        BODY609_RADII     = (  109.4     108.5     101.8   )
+        BODY610_RADII     = (  101.5      92.5      76.3   )
+        BODY611_RADII     = (   64.9      57.0      53.1   ) 
+        BODY612_RADII     = (   21.7      19.1      13.0   )
+        BODY613_RADII     = (   16.3      11.8      10.0   )
+        BODY614_RADII     = (   15.1      11.5       7.0   )
+        BODY615_RADII     = (   20.4      17.7       9.4   )
+        BODY616_RADII     = (   67.8      39.7      29.7   )
+        BODY617_RADII     = (   52.0      40.5      32.0   ) 
+        BODY618_RADII     = (   17.2      15.7      10.4   )
+
+        BODY632_RADII     = (    1.6       1.6       1.6   )
+        BODY633_RADII     = (    2.9       2.8       2.0   )
+        BODY634_RADII     = (    1.5       1.2       1.0   )
+        BODY635_RADII     = (    4.3       4.1       3.2   )
+        BODY649_RADII     = (    1         1         1     )
+ 
+        \begintext
+ 
+ 
+ 
+Satellites of Uranus
+ 
+     Old values:
+ 
+        Values are unchanged in the 2009 IAU report. 
+ 
+     Current values:
+ 
+        \begindata
+ 
+        BODY701_RADII     = (  581.1   577.9   577.7 )
+        BODY702_RADII     = (  584.7   584.7   584.7 )
+        BODY703_RADII     = (  788.9   788.9   788.9 )
+        BODY704_RADII     = (  761.4   761.4   761.4 )
+        BODY705_RADII     = (  240.4   234.2   232.9 )
+ 
+        \begintext
+ 
+        The 2000 report gives only mean radii for satellites 706--715.
+ 
+        \begindata
+ 
+        BODY706_RADII     = (   13      13      13 )
+        BODY707_RADII     = (   15      15      15 )
+        BODY708_RADII     = (   21      21      21 )
+        BODY709_RADII     = (   31      31      31 )
+        BODY710_RADII     = (   27      27      27 )
+        BODY711_RADII     = (   42      42      42 )
+        BODY712_RADII     = (   54      54      54 )
+        BODY713_RADII     = (   27      27      27 )
+        BODY714_RADII     = (   33      33      33 )
+        BODY715_RADII     = (   77      77      77 )
+ 
+        \begintext
+ 
+ 
+ 
+ 
+Satellites of Neptune
+ 
+ 
+     Old values:
+ 
+        Values are unchanged in the 2009 IAU report. 
+ 
+     Current values:
+ 
+        The 2009 report gives mean radii only for bodies 801-806.
+ 
+        \begindata
+ 
+        BODY801_RADII     = ( 1352.6  1352.6  1352.6 )
+        BODY802_RADII     = (  170     170     170   )
+        BODY803_RADII     = (   29      29     29    )
+        BODY804_RADII     = (   40      40     40    )
+        BODY805_RADII     = (   74      74     74    )
+        BODY806_RADII     = (   79      79     79    )
+ 
+        \begintext 
+ 
+        The second equatorial radius for Larissa is not given in the 2009
+        report.  The available values are:
+ 
+            BODY807_RADII     = (   104     ---     89   )
+ 
+        For use within the SPICE system, we use only the mean radius.
+
+        \begindata
+ 
+        BODY807_RADII     = (   96      96     96   )
+        BODY808_RADII     = (  218     208    201   )
+ 
+        \begintext
+ 
+ 
+ 
+ 
+Satellites of Pluto
+ 
+     
+     Old values:
+ 
+        Values are unchanged in the 2009 IAU report. 
+             
+     Current values:
+ 
+        \begindata
+ 
+        BODY901_RADII     = (  605     605    605   )
+ 
+        \begintext
+ 
+
+
+Radii for Selected Comets and Asteroids
+--------------------------------------------------------
+
+
+
+
+
+Ceres
+
+     Old values:
+ 
+        Values are unchanged in the 2009 IAU report. 
+
+     Current values:
+
+
+        \begindata
+ 
+        BODY2000001_RADII     = ( 487.3  487.3  454.7 )
+ 
+        \begintext
+
+
+
+Vesta
+
+
+     Old values:
+ 
+        Values are unchanged in the 2009 IAU report. 
+
+     Current values:
+
+
+        \begindata
+ 
+        BODY2000004_RADII     = ( 289.  280.  229.  )
+ 
+        \begintext
+
+
+
+Lutetia
+
+
+     Current values:
+
+
+        \begindata
+ 
+        BODY2000021_RADII     = (  62.0   50.5   46.5  )
+ 
+        \begintext
+
+
+           
+Ida
+
+     
+     Old values:
+ 
+        Values are unchanged in the 2009 IAU report. 
+
+     Current values:
+ 
+ 
+        \begindata
+ 
+        BODY2431010_RADII     = (   26.8   12.0    7.6 )
+ 
+        \begintext
+
+
+
+Mathilde
+
+
+     Old values:
+ 
+        Values are unchanged in the 2009 IAU report. 
+
+     Current values:
+
+
+        \begindata
+ 
+        BODY2000253_RADII     = (  33.   24.   23.  )
+ 
+        \begintext
+
+
+      
+Eros
+ 
+
+     Old values:
+ 
+        Values are unchanged in the 2009 IAU report. 
+
+     Current values:
+ 
+ 
+        \begindata
+ 
+        BODY2000433_RADII     = (  17.0   5.5   5.5  )
+ 
+        \begintext
+
+
+
+Davida
+ 
+
+     Current values:
+ 
+ 
+        \begindata
+ 
+        BODY2000511_RADII     = (  180.   147.   127.  )
+ 
+        \begintext
+
+
+
+Gaspra
+
+     
+     Old values:
+ 
+        Values are unchanged in the 2009 IAU report. 
+
+     Current values:
+ 
+ 
+        \begindata
+ 
+        BODY9511010_RADII     = (    9.1    5.2    4.4 )
+ 
+        \begintext
+
+
+ 
+Steins
+ 
+
+     Current values:
+ 
+ 
+        \begindata
+ 
+        BODY2002867_RADII     = (  3.24     2.73     2.04  )
+ 
+        \begintext
+
+
+
+Toutatis
+
+
+     Old values:
+ 
+        Values are unchanged in the 2009 IAU report. 
+
+     Current values:
+
+
+        \begindata
+ 
+        BODY2004179_RADII     = (  2.13  1.015  0.85  )
+ 
+        \begintext
+
+
+ 
+Itokawa
+
+
+     Old values:
+ 
+        Values are unchanged in the 2009 IAU report. 
+
+     Current values:
+
+
+        \begindata
+ 
+        BODY2025143_RADII     = (  0.535   0.294   0.209  )
+ 
+        \begintext
+
+
+Kleopatra
+
+
+     Old values:
+
+        Values are from the 2003 report.
+
+ 
+        body2000216_radii     = (   108.5      47    40.5  )
+ 
+
+     Current values:
+ 
+ 
+        No values are provided in the 2009 report.
+
+        
+   
+
+
+Halley
+
+
+     Old values:
+ 
+        Values are unchanged in the 2009 IAU report. 
+
+     Current values:
+
+        \begindata
+ 
+        BODY1000036_RADII     = (  8.0   4.0   4.0  )
+ 
+        \begintext
+
+
+
+9P/Tempel 1
+
+
+     Old values:
+ 
+        The effective radius is unchanged in the 2009 IAU report. 
+
+     Current values:
+
+
+        The value in the data assignment below is the 
+        "effective radius."
+            
+        According to [1]:
+
+           The maximum and minimum radii are not properly 
+           the values of the principal semi-axes, they
+           are half the maximum and minimum values of the
+           diameter. Due to the large deviations from a
+           simple ellipsoid, they may not correspond with
+           measurements along the principal axes, or be
+           orthogonal to each other.
+
+        \begindata
+ 
+        BODY1000093_RADII     = (  3.0   3.0   3.0  )
+ 
+        \begintext
+
+
+19P/Borrelly
+
+
+     Old values:
+
+        Values are unchanged in the 2009 report.
+
+     Current values:
+
+
+        The value in the data assignment below is the 
+        "effective radius."
+
+        The first principal axis length is 
+
+           3.5 km
+
+        The lengths of the other semi-axes are not provided
+        by [1].
+
+        \begindata
+ 
+        BODY1000005_RADII     = (  4.22   4.22   4.22  )
+
+        \begintext
+
+
+
+81P/Wild 2
+
+
+     Old values:
+
+        Values are unchanged in the 2009 report.
+
+     Current values:
+
+
+        \begindata
+ 
+        BODY1000107_RADII     = (  2.7   1.9   1.5 )
+ 
+        \begintext
+
+        
+
+===========================================================================
+End of file pck00010.tpc
+===========================================================================
+
+
+
