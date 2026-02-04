@@ -14,14 +14,22 @@ aap.maxdsc = -20
 -- Define help page
 dg_aap = {file='Html/Script/Stockvessels/DG/aap.chm'}
 
-function setvessel (_v)
-    if _v then
-        v = _v
-        class = _v:get_classname()
-        if (class ~= 'DeltaGlider') and (class ~= 'DG-S') then
-            term.out('Warning: Autopilot is designed for use with DeltaGlider.')
-        end
+function setvesselbg(name)
+	while vessel.get_interface(name) == nil do
+		proc.skip()
+	end
+	local _v = vessel.get_interface(name)
+    v = _v
+    local class = _v:get_classname()
+    if (class ~= 'DeltaGlider') and (class ~= 'DG-S') then
+        term.out('Warning: Autopilot is designed for use with DeltaGlider.')
     end
+end
+
+-- Called *during* the creation of the vessel, so before vessel.get_interface can be used
+-- We spawn a background task to initialize 'v' whenever possible
+function setvessel (name)
+	proc.bg(setvesselbg, name)
 end
 
 function altitude ()
@@ -250,12 +258,7 @@ function aap.hdg (hdg)
     end
 end
 
--- -----------------------------------------------------------
--- Initialisation code
-
-v = {}
-
-setvessel(V)
+v = V
 
 term.out('DG: Atmospheric autopilot loaded.')
 term.out('For help, type: help(dg_aap)')

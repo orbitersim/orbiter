@@ -4492,21 +4492,6 @@ OAPIFUNC int oapiDelInterpreter (INTERPRETERHANDLE hInterp);
 	*/
 OAPIFUNC bool oapiExecScriptCmd (INTERPRETERHANDLE hInterp, const char *cmd);
 
-	/**
-	* \brief Passes a command to an interpreter instance for execution.
-	* \param hInterp interpreter handle
-	* \param cmd Lua command to be executed
-	* \return \e false on error (interpreter library not found, or command error)
-	* \note This function returns immediately. The command is executed during the
-	*   next postStep cycle. If more asynchronous commands are issued before
-	*   execution starts, they are appended to the execution list. If the
-	*   interpreter receives a synchronous request (oapiExecScriptCmd) before the
-	*   asynchrounous commands are executed, the synchronous command is executed
-	*   immediately, while the asynchronous requests continue waiting.
-	* \sa oapiExecScriptCmd, oapiCreateInterpreter, oapiDelInterpreter
-	*/
-OAPIFUNC bool oapiAsyncScriptCmd (INTERPRETERHANDLE hInterp, const char *cmd);
-
 //typedef struct lua_State lua_State;
 OAPIFUNC lua_State *oapiGetLua (INTERPRETERHANDLE hInterp);
 //@}

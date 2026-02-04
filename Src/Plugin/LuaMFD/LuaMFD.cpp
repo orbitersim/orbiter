@@ -110,16 +110,14 @@ bool ScriptMFD::Input (const char *line)
 {
 	InterpreterList::Environment *env = vi->env[pg];
 	env->interp->AddLine (line, 0xFFFFFF);
-	if (env->cmd[0]) return false;
-	strncpy (env->cmd, line, 1024);
+	env->interp->RunChunk(line, strlen(line));
 	return true;
 }
 
 void ScriptMFD::QueryCommand ()
 {
 	InterpreterList::Environment *env = vi->env[pg];
-	if (!env->interp->IsBusy())
-		oapiOpenInputBox ((char*)"Input script command:", ScriptInput, 0, 40, (void*)this);
+	oapiOpenInputBox ((char*)"Input script command:", ScriptInput, 0, 40, (void*)this);
 }
 
 void ScriptMFD::CreateInterpreter ()
@@ -157,8 +155,6 @@ bool ScriptMFD::Update (oapi::Sketchpad *skp)
 	char cbuf[256];
 	sprintf (cbuf, "Term %d/%d", pg+1, npg);
 	Title (skp, cbuf);
-	if (env->interp->IsBusy())
-		skp->Text (W-cw*5, 1, "busy", 4);
 
 	oapi::Pen *pen = GetDefaultPen(0);
 	skp->SetPen(pen);

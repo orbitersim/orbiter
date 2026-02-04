@@ -89,8 +89,8 @@ AAP::AAP (AAPSubsystem *_subsys)
 	oapiExecScriptCmd (hAAP, "run('dg/aap')"); // load the autopilot code
 
 	char setVesselCmd[256];
-	sprintf_s(setVesselCmd,256,"setvessel(vessel.get_interface('%s'))",vessel->GetName());
-	oapiAsyncScriptCmd (hAAP, setVesselCmd); // set autopilot vessel
+	sprintf_s(setVesselCmd,256,"setvessel('%s')",vessel->GetName());
+	oapiExecScriptCmd (hAAP, setVesselCmd); // set autopilot vessel
 
 	active_block = -1;
 	for (i = 0; i < 3; i++) {
@@ -225,15 +225,15 @@ void AAP::SetValue (int block, double val)
 	switch (block) {
 		case 0: // altitude
 			sprintf (cbuf, "aap.alt(%e)", val);
-			oapiAsyncScriptCmd (hAAP, cbuf);
+			oapiExecScriptCmd (hAAP, cbuf);
 			break;
 		case 1: // airspeed
 			sprintf (cbuf, "aap.spd(%e)", val);
-			oapiAsyncScriptCmd (hAAP, cbuf);
+			oapiExecScriptCmd (hAAP, cbuf);
 			break;
 		case 2: // heading/course
 			sprintf (cbuf, "aap.hdg(%e)", val*DEG);
-			oapiAsyncScriptCmd (hAAP, cbuf);
+			oapiExecScriptCmd (hAAP, cbuf);
 			break;
 	}
 }
@@ -254,17 +254,17 @@ void AAP::SetActive (int block, bool activate)
 		case 0: // altitude
 			if (activate) sprintf (cbuf, "aap.alt(%e)", tgt[block]);
 			else          strcpy (cbuf, "aap.alt()");
-			oapiAsyncScriptCmd (hAAP, cbuf);
+			oapiExecScriptCmd (hAAP, cbuf);
 			break;
 		case 1: // airspeed
 			if (activate) sprintf (cbuf, "aap.spd(%e)", tgt[block]);
 			else          strcpy (cbuf, "aap.spd()");
-			oapiAsyncScriptCmd (hAAP, cbuf);
+			oapiExecScriptCmd (hAAP, cbuf);
 			break;
 		case 2: // heading
 			if (activate) sprintf (cbuf, "aap.hdg(%e)", tgt[block]*DEG);
 			else          strcpy (cbuf, "aap.hdg()");
-			oapiAsyncScriptCmd (hAAP, cbuf);
+			oapiExecScriptCmd (hAAP, cbuf);
 			break;
 	}
 }
