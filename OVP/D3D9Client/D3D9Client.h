@@ -518,14 +518,6 @@ public:
 	// @}
 
 	/**
-	 * \brief Create an annotation object for displaying on-screen text.
-	 * \return Pointer to new screen annotation object.
-	 * \default Dynamically allocates a 'ScreenAnnotation' instance and returns
-	 *   a pointer to it.
-	 */
-	ScreenAnnotation* clbkCreateAnnotation();
-
-	/**
 	 * \brief Render window message handler
 	 *
 	 * Derived classes should also call the base class method to allow
