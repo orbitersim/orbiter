@@ -59,6 +59,7 @@ set(common_src
 	htmlctrl.c
 	Select.cpp
 	OptionsPages.cpp
+	i18n.cpp
 # Body classes
 	Body.cpp
 	BodyIntegrator.cpp
@@ -189,3 +190,7 @@ add_custom_command(TARGET ${OrbiterTgt}	POST_BUILD
 string(TIMESTAMP DATE "%d %b %Y")
 string(TIMESTAMP VERSION "%y%m%d")
 configure_file(about.hpp.in about.hpp @ONLY)
+
+# /!\ ORBITER_INSTALL_ROOT_DIR is relative to CMAKE_INSTALL_PREFIX
+generate_pot(Orbiter)
+install_po_files()

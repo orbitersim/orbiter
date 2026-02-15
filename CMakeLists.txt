@@ -103,6 +103,9 @@ find_package(HTMLHelp)
 find_package(LATEX)
 find_package(MFC)
 
+# Pot file generation
+include(cmake/i18n.cmake)
+
 # We don't query Qt with find_package because we need the 64-bit version here
 set(Qt5_x64_DIR
 	"Qt5_x64_DIR_NOTFOUND"
