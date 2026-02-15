@@ -6,6 +6,7 @@ CMakeSettings.json
 out/**
 !/Sound/XRSound/XRSound/**/*.vcxproj.user
 **/*.bak
+**/*.mo
 
 # .NET-specific directories
 bin/

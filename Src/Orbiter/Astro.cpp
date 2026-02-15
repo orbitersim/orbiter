@@ -7,6 +7,7 @@
 #include <fstream>
 #include "Astro.h"
 #include "Vecmat.h"
+#include "i18n.h"
 
 // transforms a date and time (UT) into MJD format
 double date2mjd (struct tm *date)
@@ -78,8 +79,13 @@ char *DateStr (double mjd)
 	min   = (int)(h = 60.0 * (h - hour));
 	sec   = (int)(h = 60.0 * (h - min));
 	
-	sprintf (datestr, "%s %s %02d %02d:%02d:%02d %d", wdaystr[wday], monstr[mon], mday,
+#ifdef WIN32
+	_sprintf_p (datestr, 256, _c("Date Format", "%s %s %02d %02d:%02d:%02d %d"), _c("Date Day", wdaystr[wday]), _c("Date Month", monstr[mon]), mday,
 		hour, min, sec, year);
+#else
+	sprintf (datestr, _c("Date Format", "%s %s %02d %02d:%02d:%02d %d"), _c("Date Day", wdaystr[wday]), _c("Date Month", monstr[mon]), mday,
+		hour, min, sec, year);
+#endif
 	return datestr;
 }
 

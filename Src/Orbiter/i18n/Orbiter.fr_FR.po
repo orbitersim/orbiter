@@ -1,278 +1,285 @@
 # This file was auto-generated, DO NOT modify it directly
 msgid ""
 msgstr ""
+"Project-Id-Version: \n"
+"POT-Creation-Date: \n"
+"PO-Revision-Date: \n"
+"Last-Translator: \n"
+"Language-Team: \n"
+"Language: fr_FR\n"
+"MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
-"Plural-Forms: nplurals=2; plural=(n != 1);\n"
-"X-Generator: Lua xgettext.lua\n"
-
-#: C:/github/openorbiter/Src/Orbiter/Astro.cpp:83 C:/github/openorbiter/Src/Orbiter/Astro.cpp:86 C:/github/openorbiter/Src/Orbiter/i18n/Names.h:64
-#. parameters order: weekday, month, day, hour, min, sec, year
-msgctxt "Date Format"
-msgid "%s %s %02d %02d:%02d:%02d %d"
-msgstr ""
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n > 1);\n"
+"X-Generator: Poedit 3.8\n"
 
 #: C:/github/openorbiter/Src/Orbiter/i18n/Names.h:55
 msgctxt "Date Day"
 msgid "Sun"
-msgstr ""
+msgstr "Dim"
 
 #: C:/github/openorbiter/Src/Orbiter/i18n/Names.h:56
 msgctxt "Date Day"
 msgid "Mon"
-msgstr ""
+msgstr "Lun"
 
 #: C:/github/openorbiter/Src/Orbiter/i18n/Names.h:57
 msgctxt "Date Day"
 msgid "Tue"
-msgstr ""
+msgstr "Mar"
 
 #: C:/github/openorbiter/Src/Orbiter/i18n/Names.h:58
 msgctxt "Date Day"
 msgid "Wed"
-msgstr ""
+msgstr "Mer"
 
 #: C:/github/openorbiter/Src/Orbiter/i18n/Names.h:59
 msgctxt "Date Day"
 msgid "Thu"
-msgstr ""
+msgstr "Jeu"
 
 #: C:/github/openorbiter/Src/Orbiter/i18n/Names.h:60
 msgctxt "Date Day"
 msgid "Fri"
-msgstr ""
+msgstr "Ven"
 
 #: C:/github/openorbiter/Src/Orbiter/i18n/Names.h:61
 msgctxt "Date Day"
 msgid "Sat"
-msgstr ""
+msgstr "Sam"
+
+#. parameters order: weekday, month, day, hour, min, sec, year
+#: C:/github/openorbiter/Src/Orbiter/i18n/Names.h:64
+msgctxt "Date Format"
+msgid "%s %s %02d %02d:%02d:%02d %d"
+msgstr "%1$s %3$02d %2$s %7$d %4$02d:%5$02d:%6$02d"
 
 #: C:/github/openorbiter/Src/Orbiter/i18n/Names.h:42
 msgctxt "Date Month"
 msgid "Jan"
-msgstr ""
+msgstr "Jan"
 
 #: C:/github/openorbiter/Src/Orbiter/i18n/Names.h:43
 msgctxt "Date Month"
 msgid "Feb"
-msgstr ""
+msgstr "Fev"
 
 #: C:/github/openorbiter/Src/Orbiter/i18n/Names.h:44
 msgctxt "Date Month"
 msgid "Mar"
-msgstr ""
+msgstr "Mar"
 
 #: C:/github/openorbiter/Src/Orbiter/i18n/Names.h:45
 msgctxt "Date Month"
 msgid "Apr"
-msgstr ""
+msgstr "Avr"
 
 #: C:/github/openorbiter/Src/Orbiter/i18n/Names.h:46
 msgctxt "Date Month"
 msgid "May"
-msgstr ""
+msgstr "Mai"
 
 #: C:/github/openorbiter/Src/Orbiter/i18n/Names.h:47
 msgctxt "Date Month"
 msgid "Jun"
-msgstr ""
+msgstr "Jun"
 
 #: C:/github/openorbiter/Src/Orbiter/i18n/Names.h:48
 msgctxt "Date Month"
 msgid "Jul"
-msgstr ""
+msgstr "Jui"
 
 #: C:/github/openorbiter/Src/Orbiter/i18n/Names.h:49
 msgctxt "Date Month"
 msgid "Aug"
-msgstr ""
+msgstr "Aoû"
 
 #: C:/github/openorbiter/Src/Orbiter/i18n/Names.h:50
 msgctxt "Date Month"
 msgid "Sep"
-msgstr ""
+msgstr "Sep"
 
 #: C:/github/openorbiter/Src/Orbiter/i18n/Names.h:51
 msgctxt "Date Month"
 msgid "Oct"
-msgstr ""
+msgstr "Oct"
 
 #: C:/github/openorbiter/Src/Orbiter/i18n/Names.h:52
 msgctxt "Date Month"
 msgid "Nov"
-msgstr ""
+msgstr "Nov"
 
 #: C:/github/openorbiter/Src/Orbiter/i18n/Names.h:53
 msgctxt "Date Month"
 msgid "Dec"
-msgstr ""
+msgstr "Dec"
 
 #: C:/github/openorbiter/Src/Orbiter/i18n/Names.h:7
 msgctxt "Name"
 msgid "Sun"
-msgstr ""
+msgstr "Soleil"
 
 #: C:/github/openorbiter/Src/Orbiter/i18n/Names.h:8
 msgctxt "Name"
 msgid "Sol"
-msgstr ""
+msgstr "Sol"
 
 #: C:/github/openorbiter/Src/Orbiter/i18n/Names.h:9
 msgctxt "Name"
 msgid "Mercury"
-msgstr ""
+msgstr "Mercure"
 
 #: C:/github/openorbiter/Src/Orbiter/i18n/Names.h:10
 msgctxt "Name"
 msgid "Venus"
-msgstr ""
+msgstr "Vénus"
 
 #: C:/github/openorbiter/Src/Orbiter/i18n/Names.h:11
 msgctxt "Name"
 msgid "Earth"
-msgstr ""
+msgstr "Terre"
 
 #: C:/github/openorbiter/Src/Orbiter/i18n/Names.h:12
 msgctxt "Name"
 msgid "Moon"
-msgstr ""
+msgstr "Lune"
 
 #: C:/github/openorbiter/Src/Orbiter/i18n/Names.h:13
 msgctxt "Name"
 msgid "Mars"
-msgstr ""
+msgstr "Mars"
 
 #: C:/github/openorbiter/Src/Orbiter/i18n/Names.h:14
 msgctxt "Name"
 msgid "Phobos"
-msgstr ""
+msgstr "Phobos"
 
 #: C:/github/openorbiter/Src/Orbiter/i18n/Names.h:15
 msgctxt "Name"
 msgid "Deimos"
-msgstr ""
+msgstr "Déimos"
 
 #: C:/github/openorbiter/Src/Orbiter/i18n/Names.h:16
 msgctxt "Name"
 msgid "Vesta"
-msgstr ""
+msgstr "Vesta"
 
 #: C:/github/openorbiter/Src/Orbiter/i18n/Names.h:17
 msgctxt "Name"
 msgid "Jupiter"
-msgstr ""
+msgstr "Jupiter"
 
 #: C:/github/openorbiter/Src/Orbiter/i18n/Names.h:18
 msgctxt "Name"
 msgid "Saturn"
-msgstr ""
+msgstr "Satune"
 
 #: C:/github/openorbiter/Src/Orbiter/i18n/Names.h:19
 msgctxt "Name"
 msgid "Uranus"
-msgstr ""
+msgstr "Uranus"
 
 #: C:/github/openorbiter/Src/Orbiter/i18n/Names.h:20
 msgctxt "Name"
 msgid "Neptune"
-msgstr ""
+msgstr "Neptune"
 
 #: C:/github/openorbiter/Src/Orbiter/i18n/Names.h:21
 msgctxt "Name"
 msgid "Ariel"
-msgstr ""
+msgstr "Ariel"
 
 #: C:/github/openorbiter/Src/Orbiter/i18n/Names.h:22
 msgctxt "Name"
 msgid "Miranda"
-msgstr ""
+msgstr "Miranda"
 
 #: C:/github/openorbiter/Src/Orbiter/i18n/Names.h:23
 msgctxt "Name"
 msgid "Nereid"
-msgstr ""
+msgstr "Néréide"
 
 #: C:/github/openorbiter/Src/Orbiter/i18n/Names.h:24
 msgctxt "Name"
 msgid "Oberon"
-msgstr ""
+msgstr "Obéron"
 
 #: C:/github/openorbiter/Src/Orbiter/i18n/Names.h:25
 msgctxt "Name"
 msgid "Proteus"
-msgstr ""
+msgstr "Protée"
 
 #: C:/github/openorbiter/Src/Orbiter/i18n/Names.h:26
 msgctxt "Name"
 msgid "Titania"
-msgstr ""
+msgstr "Titania"
 
 #: C:/github/openorbiter/Src/Orbiter/i18n/Names.h:27
 msgctxt "Name"
 msgid "Triton"
-msgstr ""
+msgstr "Triton"
 
 #: C:/github/openorbiter/Src/Orbiter/i18n/Names.h:28
 msgctxt "Name"
 msgid "Umbriel"
-msgstr ""
+msgstr "Umbriel"
 
 #: C:/github/openorbiter/Src/Orbiter/i18n/Names.h:29
 msgctxt "Name"
 msgid "Callisto"
-msgstr ""
+msgstr "Callisto"
 
 #: C:/github/openorbiter/Src/Orbiter/i18n/Names.h:30
 msgctxt "Name"
 msgid "Europa"
-msgstr ""
+msgstr "Europe"
 
 #: C:/github/openorbiter/Src/Orbiter/i18n/Names.h:31
 msgctxt "Name"
 msgid "Ganymede"
-msgstr ""
+msgstr "Ganymède"
 
 #: C:/github/openorbiter/Src/Orbiter/i18n/Names.h:32
 msgctxt "Name"
 msgid "Io"
-msgstr ""
+msgstr "Io"
 
 #: C:/github/openorbiter/Src/Orbiter/i18n/Names.h:33
 msgctxt "Name"
 msgid "Dione"
-msgstr ""
+msgstr "Dioné"
 
 #: C:/github/openorbiter/Src/Orbiter/i18n/Names.h:34
 msgctxt "Name"
 msgid "Enceladus"
-msgstr ""
+msgstr "Encelade"
 
 #: C:/github/openorbiter/Src/Orbiter/i18n/Names.h:35
 msgctxt "Name"
 msgid "Hyperion"
-msgstr ""
+msgstr "Hypérion"
 
 #: C:/github/openorbiter/Src/Orbiter/i18n/Names.h:36
 msgctxt "Name"
 msgid "Iapetus"
-msgstr ""
+msgstr "Japet"
 
 #: C:/github/openorbiter/Src/Orbiter/i18n/Names.h:37
 msgctxt "Name"
 msgid "Mimas"
-msgstr ""
+msgstr "Mimas"
 
 #: C:/github/openorbiter/Src/Orbiter/i18n/Names.h:38
 msgctxt "Name"
 msgid "Rhea"
-msgstr ""
+msgstr "Rhéa"
 
 #: C:/github/openorbiter/Src/Orbiter/i18n/Names.h:39
 msgctxt "Name"
 msgid "Tethys"
-msgstr ""
+msgstr "Téthys"
 
 #: C:/github/openorbiter/Src/Orbiter/i18n/Names.h:40
 msgctxt "Name"
 msgid "Titan"
-msgstr ""
-
+msgstr "Titan"
