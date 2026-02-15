@@ -2899,6 +2899,56 @@ void D3D9Client::WriteLog(const char *msg) const
 
 // =======================================================================
 
+static std::wstring ToWide(const char* input)
+{
+    if (!input) return L"";
+
+    // Try UTF-8 first
+    int len = MultiByteToWideChar(
+        CP_UTF8,
+        MB_ERR_INVALID_CHARS,
+        input,
+        -1,
+        nullptr,
+        0
+    );
+
+    if (len > 0) {
+        std::wstring out(len - 1, L'\0');
+        MultiByteToWideChar(
+            CP_UTF8,
+            MB_ERR_INVALID_CHARS,
+            input,
+            -1,
+            out.data(),
+            len
+        );
+        return out;
+    }
+
+    // Fallback to Windows-1252
+    len = MultiByteToWideChar(
+        1252,
+        0,
+        input,
+        -1,
+        nullptr,
+        0
+    );
+
+    std::wstring out(len - 1, L'\0');
+    MultiByteToWideChar(
+        1252,
+        0,
+        input,
+        -1,
+        out.data(),
+        len
+    );
+
+    return out;
+}
+
 bool D3D9Client::OutputLoadStatus(const char *txt, int line)
 {
 
@@ -2925,11 +2975,12 @@ bool D3D9Client::OutputLoadStatus(const char *txt, int line)
 		SetTextColor(hDC, pSplashTextColor);
 		SetBkMode(hDC,TRANSPARENT);
 		SetTextAlign(hDC, TA_LEFT|TA_TOP);
-
-		TextOut(hDC, 2, 2, pLoadLabel, lstrlen(pLoadLabel));
+		std::wstring label = ToWide(pLoadLabel);
+		TextOutW(hDC, 2, 2, label.c_str(), label.length());
 
 		SelectObject(hDC, hLblFont2);
-		TextOut(hDC, 2, 36, pLoadItem, lstrlen(pLoadItem));
+		std::wstring item = ToWide(pLoadItem);
+		TextOutW(hDC, 2, 36, item.c_str(), item.length());
 
 		HPEN pen = CreatePen(PS_SOLID,1,pSplashTextColor);
 		HPEN po = (HPEN)SelectObject(hDC, pen);
