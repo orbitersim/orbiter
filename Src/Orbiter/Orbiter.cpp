@@ -46,6 +46,7 @@
 #include "imgui.h"
 #include "imgui_impl_win32.h"
 #include <filesystem>
+#include "i18n.h"
 
 #include "Tracy.hpp"
 
@@ -393,6 +394,8 @@ HRESULT Orbiter::Create (HINSTANCE hInstance)
 	hInst = hInstance;
 	pConfig->Load(MasterConfigFile);
 	strcpy (cfgpath, pConfig->CfgDirPrm.ConfigDir);   cfglen = strlen (cfgpath);
+
+	I18N::LoadLocale(pConfig->CfgUIPrm.locale.c_str());
 
 	if (FAILED (hr = pDI->Create (hInstance))) return hr;
 

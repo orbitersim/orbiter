@@ -241,6 +241,7 @@ struct CFG_UIPRM {              // user interface options
 	int    SelVesselTab;        // tab to open in vessel selection dialog
  	int    SelVesselRange;      // "nearby" range for vessel selection dialog
 	bool   bSelVesselFlat;      // flat assemblies for vessel selection dialog
+	std::string locale;
 };
 
 struct CFG_DEMOPRM {
