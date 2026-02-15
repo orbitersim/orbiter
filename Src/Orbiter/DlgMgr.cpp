@@ -4,6 +4,11 @@
 #define EXPORT_IMGUI_CONTEXT
 #define OAPI_IMPLEMENTATION
 #define IMGUI_DEFINE_MATH_OPERATORS
+
+#define IMGUI_ENABLE_FREETYPE
+#include "imgui.h"
+#include "imgui_freetype.h"
+
 #include <stdio.h>
 #include "OrbiterAPI.h"
 #include "DlgMgr.h"
@@ -542,6 +547,7 @@ void DialogManager::InitImGui()
 
 	defaultFont = io.Fonts->AddFontFromFileTTF(prm.ImGui_DefaultFontFile, prm.ImGui_FontSize);
 	io.Fonts->AddFontFromFileTTF("Fonts/fa-solid-900.ttf", prm.ImGui_FontSize, &icons_config);
+	io.Fonts->AddFontFromFileTTF("Fonts/NotoSansJP-Regular.ttf", prm.ImGui_FontSize*1.5, &icons_config);
 	consoleFont = io.Fonts->AddFontFromFileTTF(prm.ImGui_ConsoleFontFile, prm.ImGui_FontSize);
 	monoFont = io.Fonts->AddFontFromFileTTF(prm.ImGui_MonospacedFontFile, prm.ImGui_FontSize);
 	manuscriptFont = io.Fonts->AddFontFromFileTTF(prm.ImGui_ManuscriptFontFile, prm.ImGui_FontSize);
