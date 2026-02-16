@@ -11,6 +11,211 @@ msgctxt "Date Format"
 msgid "%s %s %02d %02d:%02d:%02d %d"
 msgstr ""
 
+#: C:/github/openorbiter/Src/Orbiter/DlgCamera.cpp:19
+msgctxt "Dialog Camera"
+msgid "Orbiter: Camera"
+msgstr ""
+
+#: C:/github/openorbiter/Src/Orbiter/DlgCamera.cpp:25
+msgctxt "Dialog Camera"
+msgid "Control"
+msgstr ""
+
+#: C:/github/openorbiter/Src/Orbiter/DlgCamera.cpp:26
+msgctxt "Dialog Camera"
+msgid "Target"
+msgstr ""
+
+#: C:/github/openorbiter/Src/Orbiter/DlgCamera.cpp:27
+msgctxt "Dialog Camera"
+msgid "Track"
+msgstr ""
+
+#: C:/github/openorbiter/Src/Orbiter/DlgCamera.cpp:28
+msgctxt "Dialog Camera"
+msgid "Ground"
+msgstr ""
+
+#: C:/github/openorbiter/Src/Orbiter/DlgCamera.cpp:29
+msgctxt "Dialog Camera"
+msgid "Preset"
+msgstr ""
+
+#: C:/github/openorbiter/Src/Orbiter/DlgCamera.cpp:59
+msgctxt "Dialog Camera"
+msgid "Camera mode"
+msgstr ""
+
+#: C:/github/openorbiter/Src/Orbiter/DlgCamera.cpp:61
+msgctxt "Dialog Camera"
+msgid "Internal"
+msgstr ""
+
+#: C:/github/openorbiter/Src/Orbiter/DlgCamera.cpp:71
+msgctxt "Dialog Camera"
+msgid "Target Object"
+msgstr ""
+
+#: C:/github/openorbiter/Src/Orbiter/DlgCamera.cpp:73
+msgctxt "Dialog Camera"
+msgid "Target from Object"
+msgstr ""
+
+#: C:/github/openorbiter/Src/Orbiter/DlgCamera.cpp:76
+msgctxt "Dialog Camera"
+msgid "Ground Observer (locked)"
+msgstr ""
+
+#: C:/github/openorbiter/Src/Orbiter/DlgCamera.cpp:78
+msgctxt "Dialog Camera"
+msgid "Ground Observer"
+msgstr ""
+
+#: C:/github/openorbiter/Src/Orbiter/DlgCamera.cpp:83
+msgctxt "Dialog Camera"
+msgid "Camera mode : %s"
+msgstr ""
+
+#: C:/github/openorbiter/Src/Orbiter/DlgCamera.cpp:127
+msgctxt "Dialog Camera"
+msgid "Forward"
+msgstr ""
+
+#: C:/github/openorbiter/Src/Orbiter/DlgCamera.cpp:133 C:/github/openorbiter/Src/Orbiter/DlgCamera.cpp:135
+msgctxt "Dialog Camera"
+msgid "Field of view"
+msgstr ""
+
+#: C:/github/openorbiter/Src/Orbiter/DlgCamera.cpp:169
+msgctxt "Dialog Camera"
+msgid "Available targets"
+msgstr ""
+
+#: C:/github/openorbiter/Src/Orbiter/DlgCamera.cpp:174 C:/github/openorbiter/Src/Orbiter/DlgCamera.cpp:266
+msgctxt "Dialog Camera"
+msgid "Spaceports"
+msgstr ""
+
+#: C:/github/openorbiter/Src/Orbiter/DlgCamera.cpp:196 C:/github/openorbiter/Src/Orbiter/DlgCamera.cpp:288
+msgctxt "Dialog Camera"
+msgid "Vessels"
+msgstr ""
+
+#: C:/github/openorbiter/Src/Orbiter/DlgCamera.cpp:212
+msgctxt "Dialog Camera"
+msgid "Selected target"
+msgstr ""
+
+#: C:/github/openorbiter/Src/Orbiter/DlgCamera.cpp:215 C:/github/openorbiter/Src/Orbiter/DlgCamera.cpp:362
+msgctxt "Dialog Camera"
+msgid "Apply"
+msgstr ""
+
+#: C:/github/openorbiter/Src/Orbiter/DlgCamera.cpp:220
+msgctxt "Dialog Camera"
+msgid "Focus Cockpit"
+msgstr ""
+
+#: C:/github/openorbiter/Src/Orbiter/DlgCamera.cpp:223
+msgctxt "Dialog Camera"
+msgid "Focus Extern"
+msgstr ""
+
+#: C:/github/openorbiter/Src/Orbiter/DlgCamera.cpp:232
+msgctxt "Dialog Camera"
+msgid "Moveable modes"
+msgstr ""
+
+#: C:/github/openorbiter/Src/Orbiter/DlgCamera.cpp:235 C:/github/openorbiter/Src/Orbiter/DlgCamera.cpp:65
+msgctxt "Dialog Camera"
+msgid "Target Relative"
+msgstr ""
+
+#: C:/github/openorbiter/Src/Orbiter/DlgCamera.cpp:238 C:/github/openorbiter/Src/Orbiter/DlgCamera.cpp:67
+msgctxt "Dialog Camera"
+msgid "Absolute Direction"
+msgstr ""
+
+#: C:/github/openorbiter/Src/Orbiter/DlgCamera.cpp:241 C:/github/openorbiter/Src/Orbiter/DlgCamera.cpp:69
+msgctxt "Dialog Camera"
+msgid "Global Frame"
+msgstr ""
+
+#: C:/github/openorbiter/Src/Orbiter/DlgCamera.cpp:248
+msgctxt "Dialog Camera"
+msgid "Fixed modes"
+msgstr ""
+
+#: C:/github/openorbiter/Src/Orbiter/DlgCamera.cpp:251
+msgctxt "Dialog Camera"
+msgid "Target From..."
+msgstr ""
+
+#: C:/github/openorbiter/Src/Orbiter/DlgCamera.cpp:257
+msgctxt "Dialog Camera"
+msgid "Target To..."
+msgstr ""
+
+#: C:/github/openorbiter/Src/Orbiter/DlgCamera.cpp:306
+msgctxt "Dialog Camera"
+msgid "Ground Location"
+msgstr ""
+
+#: C:/github/openorbiter/Src/Orbiter/DlgCamera.cpp:338
+msgctxt "Dialog Camera"
+msgid "Coordinates"
+msgstr ""
+
+#: C:/github/openorbiter/Src/Orbiter/DlgCamera.cpp:340
+msgctxt "Dialog Camera"
+msgid "Longitude"
+msgstr ""
+
+#: C:/github/openorbiter/Src/Orbiter/DlgCamera.cpp:341
+msgctxt "Dialog Camera"
+msgid "Latitude"
+msgstr ""
+
+#: C:/github/openorbiter/Src/Orbiter/DlgCamera.cpp:342
+msgctxt "Dialog Camera"
+msgid "Altitude"
+msgstr ""
+
+#: C:/github/openorbiter/Src/Orbiter/DlgCamera.cpp:344
+msgctxt "Dialog Camera"
+msgid "Follow Terrain"
+msgstr ""
+
+#: C:/github/openorbiter/Src/Orbiter/DlgCamera.cpp:346
+msgctxt "Dialog Camera"
+msgid "Current"
+msgstr ""
+
+#: C:/github/openorbiter/Src/Orbiter/DlgCamera.cpp:366
+msgctxt "Dialog Camera"
+msgid "Target lock"
+msgstr ""
+
+#: C:/github/openorbiter/Src/Orbiter/DlgCamera.cpp:435
+msgctxt "Dialog Camera"
+msgid "Add"
+msgstr ""
+
+#: C:/github/openorbiter/Src/Orbiter/DlgCamera.cpp:438
+msgctxt "Dialog Camera"
+msgid "Delete"
+msgstr ""
+
+#: C:/github/openorbiter/Src/Orbiter/DlgCamera.cpp:441
+msgctxt "Dialog Camera"
+msgid "Clear"
+msgstr ""
+
+#: C:/github/openorbiter/Src/Orbiter/DlgCamera.cpp:444
+msgctxt "Dialog Camera"
+msgid "Recall"
+msgstr ""
+
 #: C:/github/openorbiter/Src/Orbiter/MenuInfoBar.cpp:78
 msgctxt "MenuInfoBar"
 msgid "Cannot find menu item texture"
@@ -75,17 +280,17 @@ msgstr ""
 
 #: C:/github/openorbiter/Src/Orbiter/MenuInfoBar.cpp:789
 msgctxt "MenuInfoBar"
-msgid "(free)"
-msgstr ""
-
-#: C:/github/openorbiter/Src/Orbiter/MenuInfoBar.cpp:789
-msgctxt "MenuInfoBar"
 msgid "Cam ground %s"
 msgstr ""
 
 #: C:/github/openorbiter/Src/Orbiter/MenuInfoBar.cpp:789
 msgctxt "MenuInfoBar"
 msgid "(tgt-lock)"
+msgstr ""
+
+#: C:/github/openorbiter/Src/Orbiter/MenuInfoBar.cpp:789
+msgctxt "MenuInfoBar"
+msgid "(free)"
 msgstr ""
 
 #: C:/github/openorbiter/Src/Orbiter/MenuInfoBar.cpp:792
