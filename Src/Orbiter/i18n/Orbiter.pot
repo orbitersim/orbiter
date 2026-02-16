@@ -11,6 +11,168 @@ msgctxt "Date Format"
 msgid "%s %s %02d %02d:%02d:%02d %d"
 msgstr ""
 
+#: C:/github/openorbiter/Src/Orbiter/MenuInfoBar.cpp:78
+msgctxt "MenuInfoBar"
+msgid "Cannot find menu item texture"
+msgstr ""
+
+#: C:/github/openorbiter/Src/Orbiter/MenuInfoBar.cpp:507
+msgctxt "MenuInfoBar"
+msgid "Remove from menu"
+msgstr ""
+
+#: C:/github/openorbiter/Src/Orbiter/MenuInfoBar.cpp:568
+#. Frame per second
+msgctxt "MenuInfoBar"
+msgid "F/s"
+msgstr ""
+
+#: C:/github/openorbiter/Src/Orbiter/MenuInfoBar.cpp:582
+#. time per frame
+msgctxt "MenuInfoBar"
+msgid "ΔT/F"
+msgstr ""
+
+#: C:/github/openorbiter/Src/Orbiter/MenuInfoBar.cpp:727
+msgctxt "MenuInfoBar"
+msgid "Sim % 9.0fs"
+msgstr ""
+
+#: C:/github/openorbiter/Src/Orbiter/MenuInfoBar.cpp:729
+msgctxt "MenuInfoBar"
+msgid "Sim ..%07.0fs"
+msgstr ""
+
+#: C:/github/openorbiter/Src/Orbiter/MenuInfoBar.cpp:780
+msgctxt "MenuInfoBar"
+msgid "Tgt %s"
+msgstr ""
+
+#: C:/github/openorbiter/Src/Orbiter/MenuInfoBar.cpp:784
+msgctxt "MenuInfoBar"
+msgid "Cam track (rel-pos)"
+msgstr ""
+
+#: C:/github/openorbiter/Src/Orbiter/MenuInfoBar.cpp:785
+msgctxt "MenuInfoBar"
+msgid "Cam track (abs-dir)"
+msgstr ""
+
+#: C:/github/openorbiter/Src/Orbiter/MenuInfoBar.cpp:786
+msgctxt "MenuInfoBar"
+msgid "Cam track (global frame)"
+msgstr ""
+
+#: C:/github/openorbiter/Src/Orbiter/MenuInfoBar.cpp:787
+msgctxt "MenuInfoBar"
+msgid "Cam target to %s"
+msgstr ""
+
+#: C:/github/openorbiter/Src/Orbiter/MenuInfoBar.cpp:788
+msgctxt "MenuInfoBar"
+msgid "Cam target from %s"
+msgstr ""
+
+#: C:/github/openorbiter/Src/Orbiter/MenuInfoBar.cpp:789
+msgctxt "MenuInfoBar"
+msgid "(free)"
+msgstr ""
+
+#: C:/github/openorbiter/Src/Orbiter/MenuInfoBar.cpp:789
+msgctxt "MenuInfoBar"
+msgid "Cam ground %s"
+msgstr ""
+
+#: C:/github/openorbiter/Src/Orbiter/MenuInfoBar.cpp:789
+msgctxt "MenuInfoBar"
+msgid "(tgt-lock)"
+msgstr ""
+
+#: C:/github/openorbiter/Src/Orbiter/MenuInfoBar.cpp:792
+msgctxt "MenuInfoBar"
+msgid "Cam Cockpit"
+msgstr ""
+
+#: C:/github/openorbiter/Src/Orbiter/MenuInfoBar.cpp:794
+msgctxt "MenuInfoBar"
+msgid "FoV % 0.0f°"
+msgstr ""
+
+#: C:/github/openorbiter/Src/Orbiter/MenuInfoBar.cpp:797 C:/github/openorbiter/Src/Orbiter/MenuInfoBar.cpp:800
+msgctxt "MenuInfoBar"
+msgid "   Dst %s"
+msgstr ""
+
+#: C:/github/openorbiter/Src/Orbiter/Orbiter.cpp:381
+msgctxt "MenuInfoBar"
+msgid "Ship"
+msgstr ""
+
+#: C:/github/openorbiter/Src/Orbiter/Orbiter.cpp:382
+msgctxt "MenuInfoBar"
+msgid "Camera"
+msgstr ""
+
+#: C:/github/openorbiter/Src/Orbiter/Orbiter.cpp:383
+msgctxt "MenuInfoBar"
+msgid "Speed"
+msgstr ""
+
+#: C:/github/openorbiter/Src/Orbiter/Orbiter.cpp:384
+msgctxt "MenuInfoBar"
+msgid "Pause"
+msgstr ""
+
+#: C:/github/openorbiter/Src/Orbiter/Orbiter.cpp:385
+msgctxt "MenuInfoBar"
+msgid "Function"
+msgstr ""
+
+#: C:/github/openorbiter/Src/Orbiter/Orbiter.cpp:386
+msgctxt "MenuInfoBar"
+msgid "Info"
+msgstr ""
+
+#: C:/github/openorbiter/Src/Orbiter/Orbiter.cpp:387
+msgctxt "MenuInfoBar"
+msgid "Options"
+msgstr ""
+
+#: C:/github/openorbiter/Src/Orbiter/Orbiter.cpp:388
+msgctxt "MenuInfoBar"
+msgid "Map"
+msgstr ""
+
+#: C:/github/openorbiter/Src/Orbiter/Orbiter.cpp:389
+msgctxt "MenuInfoBar"
+msgid "Record"
+msgstr ""
+
+#: C:/github/openorbiter/Src/Orbiter/Orbiter.cpp:390
+msgctxt "MenuInfoBar"
+msgid "Help"
+msgstr ""
+
+#: C:/github/openorbiter/Src/Orbiter/Orbiter.cpp:395
+msgctxt "MenuInfoBar"
+msgid "Save"
+msgstr ""
+
+#: C:/github/openorbiter/Src/Orbiter/Orbiter.cpp:396
+msgctxt "MenuInfoBar"
+msgid "Exit"
+msgstr ""
+
+#: C:/github/openorbiter/Src/Orbiter/Orbiter.cpp:1489
+msgctxt "Notification"
+msgid "Scenario saved successfully"
+msgstr ""
+
+#: C:/github/openorbiter/Src/Orbiter/Orbiter.cpp:1491
+msgctxt "Notification"
+msgid "Failed to save scenario"
+msgstr ""
+
 #: C:/github/openorbiter/Src/Orbiter/i18n/Names.h:55
 msgctxt "Date Day"
 msgid "Sun"
