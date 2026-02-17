@@ -291,6 +291,51 @@ msgctxt "Dialog Capture"
 msgid "Reset"
 msgstr ""
 
+#: C:/github/openorbiter/Src/Orbiter/DlgFocus.cpp:25
+msgctxt "Dialog Focus"
+msgid "Orbiter: Select spacecraft"
+msgstr ""
+
+#: C:/github/openorbiter/Src/Orbiter/DlgFocus.cpp:31
+msgctxt "Dialog Focus"
+msgid "Class"
+msgstr ""
+
+#: C:/github/openorbiter/Src/Orbiter/DlgFocus.cpp:31
+msgctxt "Dialog Focus"
+msgid "Nearby"
+msgstr ""
+
+#: C:/github/openorbiter/Src/Orbiter/DlgFocus.cpp:31
+msgctxt "Dialog Focus"
+msgid "Location"
+msgstr ""
+
+#: C:/github/openorbiter/Src/Orbiter/DlgFocus.cpp:31
+msgctxt "Dialog Focus"
+msgid "All"
+msgstr ""
+
+#: C:/github/openorbiter/Src/Orbiter/DlgFocus.cpp:121 C:/github/openorbiter/Src/Orbiter/DlgFocus.cpp:177 C:/github/openorbiter/Src/Orbiter/DlgFocus.cpp:228 C:/github/openorbiter/Src/Orbiter/DlgFocus.cpp:74
+msgctxt "Dialog Focus"
+msgid "Selected target"
+msgstr ""
+
+#: C:/github/openorbiter/Src/Orbiter/DlgFocus.cpp:124 C:/github/openorbiter/Src/Orbiter/DlgFocus.cpp:180 C:/github/openorbiter/Src/Orbiter/DlgFocus.cpp:231 C:/github/openorbiter/Src/Orbiter/DlgFocus.cpp:77
+msgctxt "Dialog Focus"
+msgid "Select"
+msgstr ""
+
+#: C:/github/openorbiter/Src/Orbiter/DlgFocus.cpp:130 C:/github/openorbiter/Src/Orbiter/DlgFocus.cpp:186 C:/github/openorbiter/Src/Orbiter/DlgFocus.cpp:237 C:/github/openorbiter/Src/Orbiter/DlgFocus.cpp:83
+msgctxt "Dialog Focus"
+msgid "Previous"
+msgstr ""
+
+#: C:/github/openorbiter/Src/Orbiter/DlgFocus.cpp:155 C:/github/openorbiter/Src/Orbiter/DlgFocus.cpp:206 C:/github/openorbiter/Src/Orbiter/DlgFocus.cpp:54 C:/github/openorbiter/Src/Orbiter/DlgFocus.cpp:94
+msgctxt "Dialog Focus"
+msgid "Available targets"
+msgstr ""
+
 #: C:/github/openorbiter/Src/Orbiter/MenuInfoBar.cpp:78
 msgctxt "MenuInfoBar"
 msgid "Cannot find menu item texture"
@@ -355,17 +400,17 @@ msgstr ""
 
 #: C:/github/openorbiter/Src/Orbiter/MenuInfoBar.cpp:789
 msgctxt "MenuInfoBar"
+msgid "(free)"
+msgstr ""
+
+#: C:/github/openorbiter/Src/Orbiter/MenuInfoBar.cpp:789
+msgctxt "MenuInfoBar"
 msgid "(tgt-lock)"
 msgstr ""
 
 #: C:/github/openorbiter/Src/Orbiter/MenuInfoBar.cpp:789
 msgctxt "MenuInfoBar"
 msgid "Cam ground %s"
-msgstr ""
-
-#: C:/github/openorbiter/Src/Orbiter/MenuInfoBar.cpp:789
-msgctxt "MenuInfoBar"
-msgid "(free)"
 msgstr ""
 
 #: C:/github/openorbiter/Src/Orbiter/MenuInfoBar.cpp:792
