@@ -216,6 +216,81 @@ msgctxt "Dialog Camera"
 msgid "Recall"
 msgstr ""
 
+#: C:/github/openorbiter/Src/Orbiter/DlgCapture.cpp:22
+msgctxt "Dialog Capture"
+msgid "Orbiter: Capture frames"
+msgstr ""
+
+#: C:/github/openorbiter/Src/Orbiter/DlgCapture.cpp:29
+msgctxt "Dialog Capture"
+msgid "Save snapshots"
+msgstr ""
+
+#: C:/github/openorbiter/Src/Orbiter/DlgCapture.cpp:30
+msgctxt "Dialog Capture"
+msgid "To the clipboard"
+msgstr ""
+
+#: C:/github/openorbiter/Src/Orbiter/DlgCapture.cpp:31
+msgctxt "Dialog Capture"
+msgid "To file"
+msgstr ""
+
+#: C:/github/openorbiter/Src/Orbiter/DlgCapture.cpp:36
+msgctxt "Dialog Capture"
+msgid "Take snapshot"
+msgstr ""
+
+#: C:/github/openorbiter/Src/Orbiter/DlgCapture.cpp:48
+msgctxt "Dialog Capture"
+msgid "Save frame sequence"
+msgstr ""
+
+#: C:/github/openorbiter/Src/Orbiter/DlgCapture.cpp:49
+msgctxt "Dialog Capture"
+msgid "To directory"
+msgstr ""
+
+#: C:/github/openorbiter/Src/Orbiter/DlgCapture.cpp:50
+msgctxt "Dialog Capture"
+msgid "Counter start"
+msgstr ""
+
+#: C:/github/openorbiter/Src/Orbiter/DlgCapture.cpp:51
+msgctxt "Dialog Capture"
+msgid "Skip frames"
+msgstr ""
+
+#: C:/github/openorbiter/Src/Orbiter/DlgCapture.cpp:54
+msgctxt "Dialog Capture"
+msgid "Stop recording"
+msgstr ""
+
+#: C:/github/openorbiter/Src/Orbiter/DlgCapture.cpp:56
+msgctxt "Dialog Capture"
+msgid "Start recording"
+msgstr ""
+
+#: C:/github/openorbiter/Src/Orbiter/DlgCapture.cpp:60
+msgctxt "Dialog Capture"
+msgid "File settings"
+msgstr ""
+
+#: C:/github/openorbiter/Src/Orbiter/DlgCapture.cpp:62
+msgctxt "Dialog Capture"
+msgid "File format"
+msgstr ""
+
+#: C:/github/openorbiter/Src/Orbiter/DlgCapture.cpp:64
+msgctxt "Dialog Capture"
+msgid "Image quality"
+msgstr ""
+
+#: C:/github/openorbiter/Src/Orbiter/DlgCapture.cpp:67
+msgctxt "Dialog Capture"
+msgid "Reset"
+msgstr ""
+
 #: C:/github/openorbiter/Src/Orbiter/MenuInfoBar.cpp:78
 msgctxt "MenuInfoBar"
 msgid "Cannot find menu item texture"
@@ -280,12 +355,12 @@ msgstr ""
 
 #: C:/github/openorbiter/Src/Orbiter/MenuInfoBar.cpp:789
 msgctxt "MenuInfoBar"
-msgid "Cam ground %s"
+msgid "(tgt-lock)"
 msgstr ""
 
 #: C:/github/openorbiter/Src/Orbiter/MenuInfoBar.cpp:789
 msgctxt "MenuInfoBar"
-msgid "(tgt-lock)"
+msgid "Cam ground %s"
 msgstr ""
 
 #: C:/github/openorbiter/Src/Orbiter/MenuInfoBar.cpp:789

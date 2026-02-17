@@ -102,6 +102,12 @@ msgctxt "Dialog Camera"
 msgid "Available targets"
 msgstr "Cibles disponibles"
 
+#: C:/github/openorbiter/Src/Orbiter/DlgCamera.cpp:174
+#: C:/github/openorbiter/Src/Orbiter/DlgCamera.cpp:266
+msgctxt "Dialog Camera"
+msgid "Spaceports"
+msgstr "Spatioports"
+
 #: C:/github/openorbiter/Src/Orbiter/DlgCamera.cpp:196
 #: C:/github/openorbiter/Src/Orbiter/DlgCamera.cpp:288
 msgctxt "Dialog Camera"
@@ -167,11 +173,6 @@ msgctxt "Dialog Camera"
 msgid "Target To..."
 msgstr "Cibler vers..."
 
-#: C:/github/openorbiter/Src/Orbiter/DlgCamera.cpp:266
-msgctxt "Dialog Camera"
-msgid "Spaceports"
-msgstr "Spatioports"
-
 #: C:/github/openorbiter/Src/Orbiter/DlgCamera.cpp:306
 msgctxt "Dialog Camera"
 msgid "Ground Location"
@@ -231,6 +232,81 @@ msgstr "Reinitialiser"
 msgctxt "Dialog Camera"
 msgid "Recall"
 msgstr "Charger"
+
+#: C:/github/openorbiter/Src/Orbiter/DlgCapture.cpp:22
+msgctxt "Dialog Capture"
+msgid "Orbiter: Capture frames"
+msgstr "Orbiter: Capture d'image"
+
+#: C:/github/openorbiter/Src/Orbiter/DlgCapture.cpp:29
+msgctxt "Dialog Capture"
+msgid "Save snapshots"
+msgstr "Sauvegarde"
+
+#: C:/github/openorbiter/Src/Orbiter/DlgCapture.cpp:30
+msgctxt "Dialog Capture"
+msgid "To the clipboard"
+msgstr "Vers le presse-papier"
+
+#: C:/github/openorbiter/Src/Orbiter/DlgCapture.cpp:31
+msgctxt "Dialog Capture"
+msgid "To file"
+msgstr "Vers un fichier"
+
+#: C:/github/openorbiter/Src/Orbiter/DlgCapture.cpp:36
+msgctxt "Dialog Capture"
+msgid "Take snapshot"
+msgstr "Capturer"
+
+#: C:/github/openorbiter/Src/Orbiter/DlgCapture.cpp:48
+msgctxt "Dialog Capture"
+msgid "Save frame sequence"
+msgstr "Capturer une séquence"
+
+#: C:/github/openorbiter/Src/Orbiter/DlgCapture.cpp:49
+msgctxt "Dialog Capture"
+msgid "To directory"
+msgstr "Répertoire"
+
+#: C:/github/openorbiter/Src/Orbiter/DlgCapture.cpp:50
+msgctxt "Dialog Capture"
+msgid "Counter start"
+msgstr "Index de départ"
+
+#: C:/github/openorbiter/Src/Orbiter/DlgCapture.cpp:51
+msgctxt "Dialog Capture"
+msgid "Skip frames"
+msgstr "Images ignorées"
+
+#: C:/github/openorbiter/Src/Orbiter/DlgCapture.cpp:54
+msgctxt "Dialog Capture"
+msgid "Stop recording"
+msgstr "Arrêter la capture"
+
+#: C:/github/openorbiter/Src/Orbiter/DlgCapture.cpp:56
+msgctxt "Dialog Capture"
+msgid "Start recording"
+msgstr "Démarrer la capture"
+
+#: C:/github/openorbiter/Src/Orbiter/DlgCapture.cpp:60
+msgctxt "Dialog Capture"
+msgid "File settings"
+msgstr "Paramètres"
+
+#: C:/github/openorbiter/Src/Orbiter/DlgCapture.cpp:62
+msgctxt "Dialog Capture"
+msgid "File format"
+msgstr "Format de fichier"
+
+#: C:/github/openorbiter/Src/Orbiter/DlgCapture.cpp:64
+msgctxt "Dialog Capture"
+msgid "Image quality"
+msgstr "Qualité d'image"
+
+#: C:/github/openorbiter/Src/Orbiter/DlgCapture.cpp:67
+msgctxt "Dialog Capture"
+msgid "Reset"
+msgstr "Réinitialiser"
 
 #: C:/github/openorbiter/Src/Orbiter/MenuInfoBar.cpp:78
 msgctxt "MenuInfoBar"
@@ -296,6 +372,11 @@ msgstr "Caméra  depuis %s"
 
 #: C:/github/openorbiter/Src/Orbiter/MenuInfoBar.cpp:789
 msgctxt "MenuInfoBar"
+msgid "(tgt-lock)"
+msgstr "(suivi cible)"
+
+#: C:/github/openorbiter/Src/Orbiter/MenuInfoBar.cpp:789
+msgctxt "MenuInfoBar"
 msgid "Cam ground %s"
 msgstr "Caméra sol %s"
 
@@ -303,11 +384,6 @@ msgstr "Caméra sol %s"
 msgctxt "MenuInfoBar"
 msgid "(free)"
 msgstr "(libre)"
-
-#: C:/github/openorbiter/Src/Orbiter/MenuInfoBar.cpp:789
-msgctxt "MenuInfoBar"
-msgid "(tgt-lock)"
-msgstr "(suivi cible)"
 
 #: C:/github/openorbiter/Src/Orbiter/MenuInfoBar.cpp:792
 msgctxt "MenuInfoBar"
