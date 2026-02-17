@@ -298,12 +298,7 @@ msgstr ""
 
 #: C:/github/openorbiter/Src/Orbiter/DlgFocus.cpp:31
 msgctxt "Dialog Focus"
-msgid "Class"
-msgstr ""
-
-#: C:/github/openorbiter/Src/Orbiter/DlgFocus.cpp:31
-msgctxt "Dialog Focus"
-msgid "Nearby"
+msgid "All"
 msgstr ""
 
 #: C:/github/openorbiter/Src/Orbiter/DlgFocus.cpp:31
@@ -313,7 +308,12 @@ msgstr ""
 
 #: C:/github/openorbiter/Src/Orbiter/DlgFocus.cpp:31
 msgctxt "Dialog Focus"
-msgid "All"
+msgid "Class"
+msgstr ""
+
+#: C:/github/openorbiter/Src/Orbiter/DlgFocus.cpp:31
+msgctxt "Dialog Focus"
+msgid "Nearby"
 msgstr ""
 
 #: C:/github/openorbiter/Src/Orbiter/DlgFocus.cpp:121 C:/github/openorbiter/Src/Orbiter/DlgFocus.cpp:177 C:/github/openorbiter/Src/Orbiter/DlgFocus.cpp:228 C:/github/openorbiter/Src/Orbiter/DlgFocus.cpp:74
@@ -334,6 +334,16 @@ msgstr ""
 #: C:/github/openorbiter/Src/Orbiter/DlgFocus.cpp:155 C:/github/openorbiter/Src/Orbiter/DlgFocus.cpp:206 C:/github/openorbiter/Src/Orbiter/DlgFocus.cpp:54 C:/github/openorbiter/Src/Orbiter/DlgFocus.cpp:94
 msgctxt "Dialog Focus"
 msgid "Available targets"
+msgstr ""
+
+#: C:/github/openorbiter/Src/Orbiter/DlgFunction.cpp:18
+msgctxt "Dialog Function"
+msgid "Orbiter: Custom functions"
+msgstr ""
+
+#: C:/github/openorbiter/Src/Orbiter/DlgHelp.cpp:32
+msgctxt "Dialog Help"
+msgid "Failed to open help"
 msgstr ""
 
 #: C:/github/openorbiter/Src/Orbiter/MenuInfoBar.cpp:78
@@ -400,7 +410,7 @@ msgstr ""
 
 #: C:/github/openorbiter/Src/Orbiter/MenuInfoBar.cpp:789
 msgctxt "MenuInfoBar"
-msgid "(free)"
+msgid "Cam ground %s"
 msgstr ""
 
 #: C:/github/openorbiter/Src/Orbiter/MenuInfoBar.cpp:789
@@ -410,7 +420,7 @@ msgstr ""
 
 #: C:/github/openorbiter/Src/Orbiter/MenuInfoBar.cpp:789
 msgctxt "MenuInfoBar"
-msgid "Cam ground %s"
+msgid "(free)"
 msgstr ""
 
 #: C:/github/openorbiter/Src/Orbiter/MenuInfoBar.cpp:792

@@ -8,6 +8,8 @@
 #include <htmlhelp.h>
 #include <io.h>
 #include "imgui.h"
+#define TRANSLATION_CONTEXT "Dialog Help"
+#include "i18n.h"
 
 // This is just a placeholder to call the HtmlHelp API
 // We draw nothing ourselves
@@ -27,6 +29,6 @@ void DlgHelp::OpenHelp(const HELPCONTEXT *hc)
 	buf[255] = '\0';
 
 	if(!HtmlHelp (hWnd, buf, HH_DISPLAY_TOPIC, NULL)) {
-		oapiAddNotification(OAPINOTIF_ERROR, "Failed to open help", buf);
+		oapiAddNotification(OAPINOTIF_ERROR, _("Failed to open help"), buf);
 	}
 }
