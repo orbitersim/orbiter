@@ -448,12 +448,12 @@ msgstr ""
 
 #: C:/github/openorbiter/Src/Orbiter/DlgInfo.cpp:175
 msgctxt "Dialog Info"
-msgid "Main"
+msgid "Retro"
 msgstr ""
 
 #: C:/github/openorbiter/Src/Orbiter/DlgInfo.cpp:175
 msgctxt "Dialog Info"
-msgid "Retro"
+msgid "Main"
 msgstr ""
 
 #: C:/github/openorbiter/Src/Orbiter/DlgInfo.cpp:175
@@ -544,13 +544,13 @@ msgstr ""
 #: C:/github/openorbiter/Src/Orbiter/DlgInfo.cpp:300
 #. Bank xxx° right/left
 msgctxt "Dialog Info"
-msgid "left"
+msgid "right"
 msgstr ""
 
 #: C:/github/openorbiter/Src/Orbiter/DlgInfo.cpp:300
 #. Bank xxx° right/left
 msgctxt "Dialog Info"
-msgid "right"
+msgid "left"
 msgstr ""
 
 #: C:/github/openorbiter/Src/Orbiter/DlgInfo.cpp:308
@@ -1064,11 +1064,6 @@ msgctxt "Dialog MenuCfg"
 msgid "Orbiter: Configure menu bars"
 msgstr ""
 
-#: C:/github/openorbiter/Src/Orbiter/DlgMenuCfg.cpp:29 C:/github/openorbiter/Src/Orbiter/DlgMenuCfg.cpp:39 C:/github/openorbiter/Src/Orbiter/DlgMenuCfg.cpp:55
-msgctxt "Dialog MenuCfg"
-msgid "Show"
-msgstr ""
-
 #: C:/github/openorbiter/Src/Orbiter/DlgMenuCfg.cpp:29 C:/github/openorbiter/Src/Orbiter/DlgMenuCfg.cpp:41 C:/github/openorbiter/Src/Orbiter/DlgMenuCfg.cpp:57
 msgctxt "Dialog MenuCfg"
 msgid "Hide"
@@ -1077,6 +1072,11 @@ msgstr ""
 #: C:/github/openorbiter/Src/Orbiter/DlgMenuCfg.cpp:29 C:/github/openorbiter/Src/Orbiter/DlgMenuCfg.cpp:43 C:/github/openorbiter/Src/Orbiter/DlgMenuCfg.cpp:59
 msgctxt "Dialog MenuCfg"
 msgid "Auto-hide"
+msgstr ""
+
+#: C:/github/openorbiter/Src/Orbiter/DlgMenuCfg.cpp:29 C:/github/openorbiter/Src/Orbiter/DlgMenuCfg.cpp:39 C:/github/openorbiter/Src/Orbiter/DlgMenuCfg.cpp:55
+msgctxt "Dialog MenuCfg"
+msgid "Show"
 msgstr ""
 
 #: C:/github/openorbiter/Src/Orbiter/DlgMenuCfg.cpp:35
@@ -1136,17 +1136,17 @@ msgstr ""
 
 #: C:/github/openorbiter/Src/Orbiter/DlgMenuCfg.cpp:65
 msgctxt "Dialog MenuCfg"
-msgid "None"
-msgstr ""
-
-#: C:/github/openorbiter/Src/Orbiter/DlgMenuCfg.cpp:65
-msgctxt "Dialog MenuCfg"
 msgid "On the right"
 msgstr ""
 
 #: C:/github/openorbiter/Src/Orbiter/DlgMenuCfg.cpp:65
 msgctxt "Dialog MenuCfg"
 msgid "On the left"
+msgstr ""
+
+#: C:/github/openorbiter/Src/Orbiter/DlgMenuCfg.cpp:65
+msgctxt "Dialog MenuCfg"
+msgid "None"
 msgstr ""
 
 #: C:/github/openorbiter/Src/Orbiter/DlgMenuCfg.cpp:71
@@ -1282,13 +1282,13 @@ msgstr ""
 #: C:/github/openorbiter/Src/Orbiter/DlgOptions.cpp:167
 #. flight model
 msgctxt "Dialog Options"
-msgid "Realistic"
+msgid "Simple"
 msgstr ""
 
 #: C:/github/openorbiter/Src/Orbiter/DlgOptions.cpp:167
 #. flight model
 msgctxt "Dialog Options"
-msgid "Simple"
+msgid "Realistic"
 msgstr ""
 
 #: C:/github/openorbiter/Src/Orbiter/DlgOptions.cpp:168
@@ -1353,7 +1353,7 @@ msgstr ""
 
 #: C:/github/openorbiter/Src/Orbiter/DlgOptions.cpp:218
 msgctxt "Dialog Options"
-msgid "Slider 1"
+msgid "Z-axis"
 msgstr ""
 
 #: C:/github/openorbiter/Src/Orbiter/DlgOptions.cpp:218
@@ -1363,7 +1363,7 @@ msgstr ""
 
 #: C:/github/openorbiter/Src/Orbiter/DlgOptions.cpp:218
 msgctxt "Dialog Options"
-msgid "Z-axis"
+msgid "Slider 1"
 msgstr ""
 
 #: C:/github/openorbiter/Src/Orbiter/DlgOptions.cpp:234
@@ -1659,7 +1659,7 @@ msgstr ""
 
 #: C:/github/openorbiter/Src/Orbiter/DlgRecorder.cpp:28
 msgctxt "Dialog Recorder"
-msgid "Status: Normal"
+msgid "Status: Recording"
 msgstr ""
 
 #: C:/github/openorbiter/Src/Orbiter/DlgRecorder.cpp:28
@@ -1669,7 +1669,7 @@ msgstr ""
 
 #: C:/github/openorbiter/Src/Orbiter/DlgRecorder.cpp:28
 msgctxt "Dialog Recorder"
-msgid "Status: Recording"
+msgid "Status: Normal"
 msgstr ""
 
 #: C:/github/openorbiter/Src/Orbiter/DlgRecorder.cpp:40 C:/github/openorbiter/Src/Orbiter/DlgRecorder.cpp:91
@@ -1784,6 +1784,51 @@ msgctxt "Dialog Recorder"
 msgid "Editor"
 msgstr ""
 
+#: C:/github/openorbiter/Src/Orbiter/DlgTacc.cpp:44
+msgctxt "Dialog Time acceleration"
+msgid "Orbiter: Time acceleration"
+msgstr ""
+
+#: C:/github/openorbiter/Src/Orbiter/DlgTacc.cpp:51
+msgctxt "Dialog Time acceleration"
+msgid "0.1x"
+msgstr ""
+
+#: C:/github/openorbiter/Src/Orbiter/DlgTacc.cpp:55
+msgctxt "Dialog Time acceleration"
+msgid "1x"
+msgstr ""
+
+#: C:/github/openorbiter/Src/Orbiter/DlgTacc.cpp:59
+msgctxt "Dialog Time acceleration"
+msgid "10x"
+msgstr ""
+
+#: C:/github/openorbiter/Src/Orbiter/DlgTacc.cpp:63
+msgctxt "Dialog Time acceleration"
+msgid "100x"
+msgstr ""
+
+#: C:/github/openorbiter/Src/Orbiter/DlgTacc.cpp:67
+msgctxt "Dialog Time acceleration"
+msgid "1000x"
+msgstr ""
+
+#: C:/github/openorbiter/Src/Orbiter/DlgTacc.cpp:71
+msgctxt "Dialog Time acceleration"
+msgid "10000x"
+msgstr ""
+
+#: C:/github/openorbiter/Src/Orbiter/DlgTacc.cpp:142
+msgctxt "Dialog Time acceleration"
+msgid "Pause"
+msgstr ""
+
+#: C:/github/openorbiter/Src/Orbiter/DlgTacc.cpp:142
+msgctxt "Dialog Time acceleration"
+msgid "Resume"
+msgstr ""
+
 #: C:/github/openorbiter/Src/Orbiter/MenuInfoBar.cpp:78
 msgctxt "MenuInfoBar"
 msgid "Cannot find menu item texture"
@@ -1853,12 +1898,12 @@ msgstr ""
 
 #: C:/github/openorbiter/Src/Orbiter/MenuInfoBar.cpp:789
 msgctxt "MenuInfoBar"
-msgid "Cam ground %s"
+msgid "(free)"
 msgstr ""
 
 #: C:/github/openorbiter/Src/Orbiter/MenuInfoBar.cpp:789
 msgctxt "MenuInfoBar"
-msgid "(free)"
+msgid "Cam ground %s"
 msgstr ""
 
 #: C:/github/openorbiter/Src/Orbiter/MenuInfoBar.cpp:792

@@ -13,6 +13,9 @@
 #include "IconsFontAwesome6.h"
 #include <algorithm>
 
+#define TRANSLATION_CONTEXT "Dialog Time acceleration"
+#include "i18n.h"
+
 extern TimeData td;
 extern Orbiter *g_pOrbiter;
 
@@ -38,34 +41,34 @@ static float SnapToDecimal(float v, float min_v, float max_v)
     return std::clamp(result, min_v, max_v);
 }
 
-DlgTacc::DlgTacc() : ImGuiDialog(ICON_FA_CLOCK " Orbiter: Time acceleration",{357,135}) {
+DlgTacc::DlgTacc() : ImGuiDialog(ICON_FA_CLOCK, _("Orbiter: Time acceleration"),{357,135}) {
 	SetHelp("html/orbiter.chm", "/timeacc.htm");
 }
 
 void DlgTacc::OnDraw() {
     const ImVec2 button_sz(ImVec2(50, 20));
 
-    if(ImGui::Button("0.1x", button_sz)) {
+    if(ImGui::Button(_("0.1x"), button_sz)) {
         g_pOrbiter->SetWarpFactor (0.1);
     }
     ImGui::SameLine();
-    if(ImGui::Button("1x", button_sz)) {
+    if(ImGui::Button(_("1x"), button_sz)) {
         g_pOrbiter->SetWarpFactor (1.0);
     }
     ImGui::SameLine();
-    if(ImGui::Button("10x", button_sz)) {
+    if(ImGui::Button(_("10x"), button_sz)) {
         g_pOrbiter->SetWarpFactor (10.0);
     }
     ImGui::SameLine();
-    if(ImGui::Button("100x", button_sz)) {
+    if(ImGui::Button(_("100x"), button_sz)) {
         g_pOrbiter->SetWarpFactor (100.0);
     }
     ImGui::SameLine();
-    if(ImGui::Button("1000x", button_sz)) {
+    if(ImGui::Button(_("1000x"), button_sz)) {
         g_pOrbiter->SetWarpFactor (1000.0);
     }
     ImGui::SameLine();
-    if(ImGui::Button("10000x", button_sz)) {
+    if(ImGui::Button(_("10000x"), button_sz)) {
         g_pOrbiter->SetWarpFactor (10000.0);
     }
 
@@ -136,7 +139,7 @@ void DlgTacc::OnDraw() {
     ImGui::NewLine(); 
 
     ImGui::SetCursorPosX((ImGui::GetWindowSize().x - button_sz.x) * 0.5f);
-    if(ImGui::Button(g_pOrbiter->IsRunning()?"Pause":"Resume", button_sz))
+    if(ImGui::Button(g_pOrbiter->IsRunning()?_("Pause"):_("Resume"), button_sz))
         g_pOrbiter->TogglePause();
 
 }
