@@ -26,6 +26,7 @@ static inline const char *i18nfallback(const char *value, const char *defvalue) 
 
 // Helper for planet/moon/base names translation
 #define _name(msgid) i18nfallback(I18N::PGetText(I18NKey("Name",msgid)), msgid)
+#define _revname(name) I18N::GetOriginalName(name)
 
 #define _card(msgid) i18nfallback(I18N::PGetText(I18NKey("Cardinal direction",msgid)), msgid)
 

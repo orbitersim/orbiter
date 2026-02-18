@@ -150,8 +150,10 @@ local function parse_string_arguments(argstr)
                         if n == "n" then table.insert(buf, "\n")
                         elseif n == "t" then table.insert(buf, "\t")
                         elseif n == "r" then table.insert(buf, "\r")
-                        else table.insert(buf, n) end
-                        i = i + 2
+						elseif n ~= "" then
+							-- preserve unknown escapes literally
+							table.insert(buf, "\\" .. n)                        i = i + 2
+						end
                     elseif c == '"' then
                         i = i + 1
                         break

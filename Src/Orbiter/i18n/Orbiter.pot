@@ -298,6 +298,11 @@ msgstr ""
 
 #: C:/github/openorbiter/Src/Orbiter/DlgFocus.cpp:31
 msgctxt "Dialog Focus"
+msgid "Location"
+msgstr ""
+
+#: C:/github/openorbiter/Src/Orbiter/DlgFocus.cpp:31
+msgctxt "Dialog Focus"
 msgid "All"
 msgstr ""
 
@@ -309,11 +314,6 @@ msgstr ""
 #: C:/github/openorbiter/Src/Orbiter/DlgFocus.cpp:31
 msgctxt "Dialog Focus"
 msgid "Class"
-msgstr ""
-
-#: C:/github/openorbiter/Src/Orbiter/DlgFocus.cpp:31
-msgctxt "Dialog Focus"
-msgid "Location"
 msgstr ""
 
 #: C:/github/openorbiter/Src/Orbiter/DlgFocus.cpp:121 C:/github/openorbiter/Src/Orbiter/DlgFocus.cpp:177 C:/github/openorbiter/Src/Orbiter/DlgFocus.cpp:228 C:/github/openorbiter/Src/Orbiter/DlgFocus.cpp:74
@@ -348,12 +348,12 @@ msgstr ""
 
 #: C:/github/openorbiter/Src/Orbiter/DlgInfo.cpp:262 C:/github/openorbiter/Src/Orbiter/DlgInfo.cpp:818
 msgctxt "Cardinal direction"
-msgid "S"
+msgid "N"
 msgstr ""
 
 #: C:/github/openorbiter/Src/Orbiter/DlgInfo.cpp:262 C:/github/openorbiter/Src/Orbiter/DlgInfo.cpp:818
 msgctxt "Cardinal direction"
-msgid "N"
+msgid "S"
 msgstr ""
 
 #: C:/github/openorbiter/Src/Orbiter/DlgInfo.cpp:262 C:/github/openorbiter/Src/Orbiter/DlgInfo.cpp:818
@@ -448,12 +448,12 @@ msgstr ""
 
 #: C:/github/openorbiter/Src/Orbiter/DlgInfo.cpp:175
 msgctxt "Dialog Info"
-msgid "Retro"
+msgid "Hover"
 msgstr ""
 
 #: C:/github/openorbiter/Src/Orbiter/DlgInfo.cpp:175
 msgctxt "Dialog Info"
-msgid "Hover"
+msgid "Retro"
 msgstr ""
 
 #: C:/github/openorbiter/Src/Orbiter/DlgInfo.cpp:175
@@ -820,17 +820,17 @@ msgstr ""
 
 #: C:/github/openorbiter/Src/Orbiter/DlgInfo.cpp:786
 msgctxt "Dialog Info"
+msgid "from module"
+msgstr ""
+
+#: C:/github/openorbiter/Src/Orbiter/DlgInfo.cpp:786
+msgctxt "Dialog Info"
 msgid "Analytic (%s)"
 msgstr ""
 
 #: C:/github/openorbiter/Src/Orbiter/DlgInfo.cpp:786
 msgctxt "Dialog Info"
 msgid "2-body"
-msgstr ""
-
-#: C:/github/openorbiter/Src/Orbiter/DlgInfo.cpp:786
-msgctxt "Dialog Info"
-msgid "from module"
 msgstr ""
 
 #: C:/github/openorbiter/Src/Orbiter/DlgInfo.cpp:807
@@ -845,12 +845,12 @@ msgstr ""
 
 #: C:/github/openorbiter/Src/Orbiter/DlgInfo.cpp:832
 msgctxt "Dialog Info"
-msgid "reserved"
+msgid "free"
 msgstr ""
 
 #: C:/github/openorbiter/Src/Orbiter/DlgInfo.cpp:832
 msgctxt "Dialog Info"
-msgid "free"
+msgid "reserved"
 msgstr ""
 
 #: C:/github/openorbiter/Src/Orbiter/DlgInfo.cpp:845
@@ -896,6 +896,167 @@ msgstr ""
 #: C:/github/openorbiter/Src/Orbiter/DlgInfo.cpp:922
 msgctxt "Dialog Info"
 msgid "Object: %s"
+msgstr ""
+
+#: C:/github/openorbiter/Src/Orbiter/DlgMap.cpp:23
+msgctxt "Dialog Map"
+msgid "Orbiter: Map"
+msgstr ""
+
+#: C:/github/openorbiter/Src/Orbiter/DlgMap.cpp:24
+msgctxt "Dialog Map"
+msgid "Select..."
+msgstr ""
+
+#: C:/github/openorbiter/Src/Orbiter/DlgMap.cpp:38
+msgctxt "Dialog Map"
+msgid "Reset map"
+msgstr ""
+
+#: C:/github/openorbiter/Src/Orbiter/DlgMap.cpp:318
+msgctxt "Dialog Map"
+msgid "Options"
+msgstr ""
+
+#: C:/github/openorbiter/Src/Orbiter/DlgMap.cpp:322 C:/github/openorbiter/Src/Orbiter/DlgMap.cpp:422
+msgctxt "Dialog Map"
+msgid "Vessels"
+msgstr ""
+
+#: C:/github/openorbiter/Src/Orbiter/DlgMap.cpp:324
+msgctxt "Dialog Map"
+msgid "All"
+msgstr ""
+
+#: C:/github/openorbiter/Src/Orbiter/DlgMap.cpp:325
+msgctxt "Dialog Map"
+msgid "Focus Only"
+msgstr ""
+
+#: C:/github/openorbiter/Src/Orbiter/DlgMap.cpp:326
+msgctxt "Dialog Map"
+msgid "None"
+msgstr ""
+
+#: C:/github/openorbiter/Src/Orbiter/DlgMap.cpp:332
+msgctxt "Dialog Map"
+msgid "Orbit Display"
+msgstr ""
+
+#: C:/github/openorbiter/Src/Orbiter/DlgMap.cpp:336
+msgctxt "Dialog Map"
+msgid "Focus Vessel"
+msgstr ""
+
+#: C:/github/openorbiter/Src/Orbiter/DlgMap.cpp:338
+msgctxt "Dialog Map"
+msgid "Target"
+msgstr ""
+
+#: C:/github/openorbiter/Src/Orbiter/DlgMap.cpp:342
+msgctxt "Dialog Map"
+msgid "Orbit Plane"
+msgstr ""
+
+#: C:/github/openorbiter/Src/Orbiter/DlgMap.cpp:344
+msgctxt "Dialog Map"
+msgid "Ground Track"
+msgstr ""
+
+#: C:/github/openorbiter/Src/Orbiter/DlgMap.cpp:350
+msgctxt "Dialog Map"
+msgid "Horizon Line"
+msgstr ""
+
+#: C:/github/openorbiter/Src/Orbiter/DlgMap.cpp:355
+msgctxt "Dialog Map"
+msgid "Terminator"
+msgstr ""
+
+#: C:/github/openorbiter/Src/Orbiter/DlgMap.cpp:359
+msgctxt "Dialog Map"
+msgid "Line"
+msgstr ""
+
+#: C:/github/openorbiter/Src/Orbiter/DlgMap.cpp:361
+msgctxt "Dialog Map"
+msgid "Shaded"
+msgstr ""
+
+#: C:/github/openorbiter/Src/Orbiter/DlgMap.cpp:366
+msgctxt "Dialog Map"
+msgid "Surface Markers"
+msgstr ""
+
+#: C:/github/openorbiter/Src/Orbiter/DlgMap.cpp:371
+msgctxt "Dialog Map"
+msgid "Grid Line"
+msgstr ""
+
+#: C:/github/openorbiter/Src/Orbiter/DlgMap.cpp:373
+msgctxt "Dialog Map"
+msgid "Surface Bases"
+msgstr ""
+
+#: C:/github/openorbiter/Src/Orbiter/DlgMap.cpp:377
+msgctxt "Dialog Map"
+msgid "Coastlines"
+msgstr ""
+
+#: C:/github/openorbiter/Src/Orbiter/DlgMap.cpp:379
+msgctxt "Dialog Map"
+msgid "VOR Transmitters"
+msgstr ""
+
+#: C:/github/openorbiter/Src/Orbiter/DlgMap.cpp:383
+msgctxt "Dialog Map"
+msgid "Contour Lines"
+msgstr ""
+
+#: C:/github/openorbiter/Src/Orbiter/DlgMap.cpp:385 C:/github/openorbiter/Src/Orbiter/DlgMap.cpp:424
+msgctxt "Dialog Map"
+msgid "Landmarks"
+msgstr ""
+
+#: C:/github/openorbiter/Src/Orbiter/DlgMap.cpp:391
+msgctxt "Dialog Map"
+msgid "Other"
+msgstr ""
+
+#: C:/github/openorbiter/Src/Orbiter/DlgMap.cpp:392
+msgctxt "Dialog Map"
+msgid "Natural Satellites"
+msgstr ""
+
+#: C:/github/openorbiter/Src/Orbiter/DlgMap.cpp:418
+#. \xef\x82\xb0 is ICON_FA_FILTER
+msgctxt "Dialog Map"
+msgid "\\xef\\x82\\xb0 Search filter"
+msgstr ""
+
+#: C:/github/openorbiter/Src/Orbiter/DlgMap.cpp:421
+msgctxt "Dialog Map"
+msgid "Moons"
+msgstr ""
+
+#: C:/github/openorbiter/Src/Orbiter/DlgMap.cpp:423
+msgctxt "Dialog Map"
+msgid "VOR"
+msgstr ""
+
+#: C:/github/openorbiter/Src/Orbiter/DlgMap.cpp:425
+msgctxt "Dialog Map"
+msgid "Bases"
+msgstr ""
+
+#: C:/github/openorbiter/Src/Orbiter/DlgMap.cpp:439
+msgctxt "Dialog Map"
+msgid "Search object"
+msgstr ""
+
+#: C:/github/openorbiter/Src/Orbiter/DlgMap.cpp:451
+msgctxt "Dialog Map"
+msgid "Open info dialog for object"
 msgstr ""
 
 #: C:/github/openorbiter/Src/Orbiter/MenuInfoBar.cpp:78
@@ -962,7 +1123,7 @@ msgstr ""
 
 #: C:/github/openorbiter/Src/Orbiter/MenuInfoBar.cpp:789
 msgctxt "MenuInfoBar"
-msgid "(tgt-lock)"
+msgid "Cam ground %s"
 msgstr ""
 
 #: C:/github/openorbiter/Src/Orbiter/MenuInfoBar.cpp:789
@@ -972,7 +1133,7 @@ msgstr ""
 
 #: C:/github/openorbiter/Src/Orbiter/MenuInfoBar.cpp:789
 msgctxt "MenuInfoBar"
-msgid "Cam ground %s"
+msgid "(tgt-lock)"
 msgstr ""
 
 #: C:/github/openorbiter/Src/Orbiter/MenuInfoBar.cpp:792

@@ -13,12 +13,15 @@
 #include "IconsFontAwesome6.h"
 #include "DlgInfo.h"
 
+#define TRANSLATION_CONTEXT "Dialog Map"
+#include "i18n.h"
+
 extern TimeData td;
 
 extern PlanetarySystem *g_psys;
 
-DlgMap::DlgMap() : ImGuiDialog(ICON_FA_GLOBE " Orbiter: Map", {640, 400}) {
-    planet = "Select...";
+DlgMap::DlgMap() : ImGuiDialog(ICON_FA_GLOBE, _("Orbiter: Map"), {640, 400}) {
+    planet = _("Select...");
 	enableInfo = false;
 	searchbuf[0] = '\0';
 	selectionfilter = DISP_MOON | DISP_VESSEL | DISP_BASE;
@@ -32,7 +35,7 @@ void DlgMap::Display() {
 	
 	bool visible = ImGui::Begin(name.c_str(), &active);
 	HandleHelpButton();
-	if(ImGui::MenuButton(ICON_FA_ARROW_ROTATE_LEFT, "Reset map", ImGui::GetFontSize()*1.5f)) {
+	if(ImGui::MenuButton(ICON_FA_ARROW_ROTATE_LEFT, _("Reset map"), ImGui::GetFontSize()*1.5f)) {
 		Reset();
 	}
 	
@@ -66,7 +69,7 @@ void DlgMap::AddCbodyNode(const CelestialBody *cbody) {
         if(!strcmp(cbody->Name(), "Sun"))
             node_flags|=ImGuiTreeNodeFlags_DefaultOpen;
 
-        bool node_open = ImGui::TreeNodeEx(cbody->Name(), node_flags);
+        bool node_open = ImGui::TreeNodeEx(_name(cbody->Name()), node_flags);
         if (ImGui::IsItemClicked() && !ImGui::IsItemToggledOpen()) {
             planet = cbody->Name();
             SetBody(cbody->Name());
@@ -79,7 +82,7 @@ void DlgMap::AddCbodyNode(const CelestialBody *cbody) {
             ImGui::TreePop();
         }
     } else {
-        ImGui::TreeNodeEx(cbody->Name(), node_flags | ImGuiTreeNodeFlags_Leaf | ImGuiTreeNodeFlags_NoTreePushOnOpen);
+        ImGui::TreeNodeEx(_name(cbody->Name()), node_flags | ImGuiTreeNodeFlags_Leaf | ImGuiTreeNodeFlags_NoTreePushOnOpen);
         if (ImGui::IsItemClicked() && !ImGui::IsItemToggledOpen()) {
             planet = cbody->Name();
             SetBody(cbody->Name());
@@ -206,10 +209,10 @@ bool DlgMap::FindTarget(int mx, int my)
 		case DISP_VESSEL:
 		case DISP_BASE:
 		case DISP_MOON:
-			strcpy(searchbuf, ((Body*)obj.obj)->Name());
+			strcpy(searchbuf, _name(((Body*)obj.obj)->Name()));
 			break;
 		case DISP_NAVAID:
-			strcpy(searchbuf, ((Nav*)obj.obj)->GetId());
+			strcpy(searchbuf, _name(((Nav*)obj.obj)->GetId()));
 			break;
 		default:
 			strcpy (searchbuf, "");
@@ -304,7 +307,7 @@ void DlgMap::DrawMap() {
 
 void DlgMap::DrawMenu() {
 	ImGui::SetNextItemWidth(160.0f);
-	if(ImGui::BeginAnimatedCombo("##dlgmap_planet", planet.c_str(), ImGuiComboFlags_HeightLargest)) {
+	if(ImGui::BeginAnimatedCombo("##dlgmap_planet", _name(planet.c_str()), ImGuiComboFlags_HeightLargest)) {
         DrawTree();
 		ImGui::EndAnimatedCombo();
 	}
@@ -312,81 +315,81 @@ void DlgMap::DrawMenu() {
     ImGui::SameLine();
 
 	ImGui::SetNextItemWidth(160.0f);
-	if(ImGui::BeginAnimatedCombo("##dlgmap_options", "Options", ImGuiComboFlags_HeightLargest)) {
+	if(ImGui::BeginAnimatedCombo("##dlgmap_options", _("Options"), ImGuiComboFlags_HeightLargest)) {
         int df = vectormap->GetDisplayFlags();
 		int olddf = df;
 
-        ImGui::Text("Vessels");
+        ImGui::Text(_("Vessels"));
         int vesselmode = (df & DISP_VESSEL ? df & DISP_FOCUSONLY ? 1:0:2);
-        ImGui::RadioButton("All", &vesselmode, 0); ImGui::SameLine();
-        ImGui::RadioButton("Focus Only", &vesselmode, 1); ImGui::SameLine();
-        ImGui::RadioButton("None", &vesselmode, 2);
+        ImGui::RadioButton(_("All"), &vesselmode, 0); ImGui::SameLine();
+        ImGui::RadioButton(_("Focus Only"), &vesselmode, 1); ImGui::SameLine();
+        ImGui::RadioButton(_("None"), &vesselmode, 2);
         ImGui::Separator();
         int vmode = (vesselmode==1 ? DISP_VESSEL | DISP_FOCUSONLY : vesselmode==2 ? 0 : DISP_VESSEL);
         df &= ~(DISP_VESSEL | DISP_FOCUSONLY);
         df |= vmode;
 
-        ImGui::Text("Orbit Display");
+        ImGui::Text(_("Orbit Display"));
         if (ImGui::BeginTable("table orbit display", 2, ImGuiTableFlags_SizingStretchSame)) {
             ImGui::TableNextRow();
             ImGui::TableSetColumnIndex(0);
-            ImGui::CheckboxFlags("Focus Vessel", &df, DISP_ORBITFOCUS);
+            ImGui::CheckboxFlags(_("Focus Vessel"), &df, DISP_ORBITFOCUS);
             ImGui::TableSetColumnIndex(1);
-            ImGui::CheckboxFlags("Target", &df, DISP_ORBITSEL);
+            ImGui::CheckboxFlags(_("Target"), &df, DISP_ORBITSEL);
             ImGui::TableNextRow();
             ImGui::TableSetColumnIndex(0);
             int orbitmode=(df & DISP_ORBITPLANE) ? 0 : 1;
-            ImGui::RadioButton("Orbit Plane", &orbitmode, 0);
+            ImGui::RadioButton(_("Orbit Plane"), &orbitmode, 0);
             ImGui::TableSetColumnIndex(1);
-            ImGui::RadioButton("Ground Track", &orbitmode, 1);
+            ImGui::RadioButton(_("Ground Track"), &orbitmode, 1);
             df &= ~(DISP_GROUNDTRACK | DISP_ORBITPLANE);
             df |= (orbitmode == 0)? DISP_ORBITPLANE:DISP_GROUNDTRACK;
 
             ImGui::TableNextRow();
             ImGui::TableSetColumnIndex(0);
-            ImGui::CheckboxFlags("Horizon Line", &df, DISP_HORIZONLINE); 
+            ImGui::CheckboxFlags(_("Horizon Line"), &df, DISP_HORIZONLINE); 
             ImGui::EndTable();
         }
         ImGui::Separator();
 
-        ImGui::Text("Terminator");
+        ImGui::Text(_("Terminator"));
         if (ImGui::BeginTable("table1", 2, ImGuiTableFlags_SizingStretchSame)) {
             ImGui::TableNextRow();
             ImGui::TableSetColumnIndex(0);
-            ImGui::CheckboxFlags("Line", &df, DISP_TERMINATOR_LINE);
+            ImGui::CheckboxFlags(_("Line"), &df, DISP_TERMINATOR_LINE);
             ImGui::TableSetColumnIndex(1);
-            ImGui::CheckboxFlags("Shaded", &df, DISP_TERMINATOR_SHADE);
+            ImGui::CheckboxFlags(_("Shaded"), &df, DISP_TERMINATOR_SHADE);
             ImGui::EndTable();
         }
         ImGui::Separator();
 
-        ImGui::Text("Surface Markers");
+        ImGui::Text(_("Surface Markers"));
         if (ImGui::BeginTable("table2", 2, ImGuiTableFlags_SizingStretchSame)) {
 
             ImGui::TableNextRow();
             ImGui::TableSetColumnIndex(0);
-            ImGui::CheckboxFlags("Grid Line", &df, DISP_GRIDLINE);
+            ImGui::CheckboxFlags(_("Grid Line"), &df, DISP_GRIDLINE);
             ImGui::TableSetColumnIndex(1);
-            ImGui::CheckboxFlags("Surface Bases", &df, DISP_BASE);
+            ImGui::CheckboxFlags(_("Surface Bases"), &df, DISP_BASE);
 
             ImGui::TableNextRow();
             ImGui::TableSetColumnIndex(0);
-            ImGui::CheckboxFlags("Coastlines", &df, DISP_COASTLINE);
+            ImGui::CheckboxFlags(_("Coastlines"), &df, DISP_COASTLINE);
             ImGui::TableSetColumnIndex(1);
-            ImGui::CheckboxFlags("VOR Transmitters", &df, DISP_NAVAID);
+            ImGui::CheckboxFlags(_("VOR Transmitters"), &df, DISP_NAVAID);
 
             ImGui::TableNextRow();
             ImGui::TableSetColumnIndex(0);
-            ImGui::CheckboxFlags("Contour Lines", &df,DISP_CONTOURS); 
+            ImGui::CheckboxFlags(_("Contour Lines"), &df,DISP_CONTOURS); 
             ImGui::TableSetColumnIndex(1);
-            ImGui::CheckboxFlags("Landmarks", &df, DISP_CUSTOMMARKER);
+            ImGui::CheckboxFlags(_("Landmarks"), &df, DISP_CUSTOMMARKER);
 
             ImGui::EndTable();
         }
         ImGui::Separator();
 
-        ImGui::Text("Other");
-        ImGui::CheckboxFlags("Natural Satellites", &df, DISP_MOON);
+        ImGui::Text(_("Other"));
+        ImGui::CheckboxFlags(_("Natural Satellites"), &df, DISP_MOON);
 
         ImGui::EndAnimatedCombo();
 
@@ -411,14 +414,15 @@ void DlgMap::DrawMenu() {
 
     if (ImGui::BeginAnimatedPopup("dlgmap_search_filter"))
     {
-        ImGui::Text(ICON_FA_FILTER " Search filter");
+		// TRANSLATORS: \xef\x82\xb0 is ICON_FA_FILTER
+        ImGui::Text(_("\xef\x82\xb0 Search filter"));
         ImGui::Separator();
 		
-		ImGui::CheckboxFlags("Moons", &selectionfilter, DISP_MOON);
-		ImGui::CheckboxFlags("Vessels", &selectionfilter, DISP_VESSEL);
-		ImGui::CheckboxFlags("VOR", &selectionfilter, DISP_NAVAID);
-		ImGui::CheckboxFlags("Landmarks", &selectionfilter, DISP_CUSTOMMARKER);
-		ImGui::CheckboxFlags("Bases", &selectionfilter, DISP_BASE);
+		ImGui::CheckboxFlags(_("Moons"), &selectionfilter, DISP_MOON);
+		ImGui::CheckboxFlags(_("Vessels"), &selectionfilter, DISP_VESSEL);
+		ImGui::CheckboxFlags(_("VOR"), &selectionfilter, DISP_NAVAID);
+		ImGui::CheckboxFlags(_("Landmarks"), &selectionfilter, DISP_CUSTOMMARKER);
+		ImGui::CheckboxFlags(_("Bases"), &selectionfilter, DISP_BASE);
 
 	    ImGui::EndAnimatedPopup();
 	}
@@ -426,13 +430,13 @@ void DlgMap::DrawMenu() {
 	ImGui::SameLine();
 	ImGui::SetNextItemWidth(160);
 	if(ImGui::InputText("##search", searchbuf, sizeof(searchbuf), ImGuiInputTextFlags_EnterReturnsTrue)) {
-		SetSelection(searchbuf);
+		SetSelection(_revname(searchbuf));
 	}
 	ImGui::SameLine();
 	if(ImGui::Button(ICON_FA_MAGNIFYING_GLASS)) {
-		SetSelection(searchbuf);
+		SetSelection(_revname(searchbuf));
 	}
-	ImGui::SetItemTooltip("Search object");
+	ImGui::SetItemTooltip(_("Search object"));
 
 	ImGui::BeginDisabled(!enableInfo);
 	ImGui::SameLine();
@@ -444,7 +448,7 @@ void DlgMap::DrawMenu() {
 		}
 	}
 	if(enableInfo)
-		ImGui::SetItemTooltip("Open info dialog for object");
+		ImGui::SetItemTooltip(_("Open info dialog for object"));
 	ImGui::EndDisabled();	
 }
 
