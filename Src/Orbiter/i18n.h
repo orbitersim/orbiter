@@ -27,6 +27,8 @@ static inline const char *i18nfallback(const char *value, const char *defvalue) 
 // Helper for planet/moon/base names translation
 #define _name(msgid) i18nfallback(I18N::PGetText(I18NKey("Name",msgid)), msgid)
 
+#define _card(msgid) i18nfallback(I18N::PGetText(I18NKey("Cardinal direction",msgid)), msgid)
+
 // Helper for abbreviations
 // /!\ Must match the context used in xgettext.lua
 #define _abbr2(msgid) i18nfallback(I18N::PGetText(I18NKey("Abbreviation - 2 letters",msgid)), msgid)

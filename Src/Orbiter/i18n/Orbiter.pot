@@ -303,7 +303,7 @@ msgstr ""
 
 #: C:/github/openorbiter/Src/Orbiter/DlgFocus.cpp:31
 msgctxt "Dialog Focus"
-msgid "Location"
+msgid "Nearby"
 msgstr ""
 
 #: C:/github/openorbiter/Src/Orbiter/DlgFocus.cpp:31
@@ -313,7 +313,7 @@ msgstr ""
 
 #: C:/github/openorbiter/Src/Orbiter/DlgFocus.cpp:31
 msgctxt "Dialog Focus"
-msgid "Nearby"
+msgid "Location"
 msgstr ""
 
 #: C:/github/openorbiter/Src/Orbiter/DlgFocus.cpp:121 C:/github/openorbiter/Src/Orbiter/DlgFocus.cpp:177 C:/github/openorbiter/Src/Orbiter/DlgFocus.cpp:228 C:/github/openorbiter/Src/Orbiter/DlgFocus.cpp:74
@@ -344,6 +344,558 @@ msgstr ""
 #: C:/github/openorbiter/Src/Orbiter/DlgHelp.cpp:32
 msgctxt "Dialog Help"
 msgid "Failed to open help"
+msgstr ""
+
+#: C:/github/openorbiter/Src/Orbiter/DlgInfo.cpp:262 C:/github/openorbiter/Src/Orbiter/DlgInfo.cpp:818
+msgctxt "Cardinal direction"
+msgid "S"
+msgstr ""
+
+#: C:/github/openorbiter/Src/Orbiter/DlgInfo.cpp:262 C:/github/openorbiter/Src/Orbiter/DlgInfo.cpp:818
+msgctxt "Cardinal direction"
+msgid "N"
+msgstr ""
+
+#: C:/github/openorbiter/Src/Orbiter/DlgInfo.cpp:262 C:/github/openorbiter/Src/Orbiter/DlgInfo.cpp:818
+msgctxt "Cardinal direction"
+msgid "W"
+msgstr ""
+
+#: C:/github/openorbiter/Src/Orbiter/DlgInfo.cpp:262 C:/github/openorbiter/Src/Orbiter/DlgInfo.cpp:818
+msgctxt "Cardinal direction"
+msgid "E"
+msgstr ""
+
+#: C:/github/openorbiter/Src/Orbiter/DlgInfo.cpp:24
+msgctxt "Dialog Info"
+msgid "Orbiter: Object info"
+msgstr ""
+
+#: C:/github/openorbiter/Src/Orbiter/DlgInfo.cpp:55
+msgctxt "Dialog Info"
+msgid "Spaceports"
+msgstr ""
+
+#: C:/github/openorbiter/Src/Orbiter/DlgInfo.cpp:77
+msgctxt "Dialog Info"
+msgid "Vessels"
+msgstr ""
+
+#: C:/github/openorbiter/Src/Orbiter/DlgInfo.cpp:107
+msgctxt "Dialog Info"
+msgid "Select an object on the left panel"
+msgstr ""
+
+#: C:/github/openorbiter/Src/Orbiter/DlgInfo.cpp:112 C:/github/openorbiter/Src/Orbiter/DlgInfo.cpp:504 C:/github/openorbiter/Src/Orbiter/DlgInfo.cpp:796
+msgctxt "Dialog Info"
+msgid "Designation"
+msgstr ""
+
+#: C:/github/openorbiter/Src/Orbiter/DlgInfo.cpp:117 C:/github/openorbiter/Src/Orbiter/DlgInfo.cpp:509 C:/github/openorbiter/Src/Orbiter/DlgInfo.cpp:801
+msgctxt "Dialog Info"
+msgid "Name"
+msgstr ""
+
+#: C:/github/openorbiter/Src/Orbiter/DlgInfo.cpp:122
+msgctxt "Dialog Info"
+msgid "Class"
+msgstr ""
+
+#: C:/github/openorbiter/Src/Orbiter/DlgInfo.cpp:127
+msgctxt "Dialog Info"
+msgid "Transponder Frequency"
+msgstr ""
+
+#: C:/github/openorbiter/Src/Orbiter/DlgInfo.cpp:133 C:/github/openorbiter/Src/Orbiter/DlgInfo.cpp:187 C:/github/openorbiter/Src/Orbiter/DlgInfo.cpp:390 C:/github/openorbiter/Src/Orbiter/DlgInfo.cpp:399 C:/github/openorbiter/Src/Orbiter/DlgInfo.cpp:517 C:/github/openorbiter/Src/Orbiter/DlgInfo.cpp:524 C:/github/openorbiter/Src/Orbiter/DlgInfo.cpp:553 C:/github/openorbiter/Src/Orbiter/DlgInfo.cpp:567 C:/github/openorbiter/Src/Orbiter/DlgInfo.cpp:576
+msgctxt "Dialog Info"
+msgid "N/A"
+msgstr ""
+
+#: C:/github/openorbiter/Src/Orbiter/DlgInfo.cpp:138 C:/github/openorbiter/Src/Orbiter/DlgInfo.cpp:530
+msgctxt "Dialog Info"
+msgid "Physical Parameters"
+msgstr ""
+
+#: C:/github/openorbiter/Src/Orbiter/DlgInfo.cpp:144
+msgctxt "Dialog Info"
+msgid "Total mass"
+msgstr ""
+
+#: C:/github/openorbiter/Src/Orbiter/DlgInfo.cpp:149
+msgctxt "Dialog Info"
+msgid "Dry mass"
+msgstr ""
+
+#: C:/github/openorbiter/Src/Orbiter/DlgInfo.cpp:154
+msgctxt "Dialog Info"
+msgid "Propellant mass"
+msgstr ""
+
+#: C:/github/openorbiter/Src/Orbiter/DlgInfo.cpp:159
+msgctxt "Dialog Info"
+msgid "Mean radius"
+msgstr ""
+
+#: C:/github/openorbiter/Src/Orbiter/DlgInfo.cpp:164
+msgctxt "Dialog Info"
+msgid "P. moments of inertia"
+msgstr ""
+
+#: C:/github/openorbiter/Src/Orbiter/DlgInfo.cpp:172
+msgctxt "Dialog Info"
+msgid "Thrusters Group Ratings (vacuum)"
+msgstr ""
+
+#: C:/github/openorbiter/Src/Orbiter/DlgInfo.cpp:175
+msgctxt "Dialog Info"
+msgid "Retro"
+msgstr ""
+
+#: C:/github/openorbiter/Src/Orbiter/DlgInfo.cpp:175
+msgctxt "Dialog Info"
+msgid "Hover"
+msgstr ""
+
+#: C:/github/openorbiter/Src/Orbiter/DlgInfo.cpp:175
+msgctxt "Dialog Info"
+msgid "Main"
+msgstr ""
+
+#: C:/github/openorbiter/Src/Orbiter/DlgInfo.cpp:197 C:/github/openorbiter/Src/Orbiter/DlgInfo.cpp:646
+msgctxt "Dialog Info"
+msgid "Osculating Elements (Ecliptic Frame)"
+msgstr ""
+
+#: C:/github/openorbiter/Src/Orbiter/DlgInfo.cpp:203 C:/github/openorbiter/Src/Orbiter/DlgInfo.cpp:254
+msgctxt "Dialog Info"
+msgid "Reference"
+msgstr ""
+
+#: C:/github/openorbiter/Src/Orbiter/DlgInfo.cpp:209 C:/github/openorbiter/Src/Orbiter/DlgInfo.cpp:651
+msgctxt "Dialog Info"
+msgid "Semi-major Axis (a)"
+msgstr ""
+
+#: C:/github/openorbiter/Src/Orbiter/DlgInfo.cpp:215 C:/github/openorbiter/Src/Orbiter/DlgInfo.cpp:657
+msgctxt "Dialog Info"
+msgid "Eccentricity (e)"
+msgstr ""
+
+#: C:/github/openorbiter/Src/Orbiter/DlgInfo.cpp:221 C:/github/openorbiter/Src/Orbiter/DlgInfo.cpp:663
+msgctxt "Dialog Info"
+msgid "Inclination (i)"
+msgstr ""
+
+#: C:/github/openorbiter/Src/Orbiter/DlgInfo.cpp:227 C:/github/openorbiter/Src/Orbiter/DlgInfo.cpp:669
+msgctxt "Dialog Info"
+msgid "Longitude of Ascending Node"
+msgstr ""
+
+#: C:/github/openorbiter/Src/Orbiter/DlgInfo.cpp:233 C:/github/openorbiter/Src/Orbiter/DlgInfo.cpp:675
+msgctxt "Dialog Info"
+msgid "Longitude of Periapsis"
+msgstr ""
+
+#: C:/github/openorbiter/Src/Orbiter/DlgInfo.cpp:239
+msgctxt "Dialog Info"
+msgid "Mean longitude"
+msgstr ""
+
+#: C:/github/openorbiter/Src/Orbiter/DlgInfo.cpp:248
+msgctxt "Dialog Info"
+msgid "Surface-relative Parameters"
+msgstr ""
+
+#: C:/github/openorbiter/Src/Orbiter/DlgInfo.cpp:260 C:/github/openorbiter/Src/Orbiter/DlgInfo.cpp:816
+msgctxt "Dialog Info"
+msgid "Position"
+msgstr ""
+
+#: C:/github/openorbiter/Src/Orbiter/DlgInfo.cpp:266
+msgctxt "Dialog Info"
+msgid "Altitude"
+msgstr ""
+
+#: C:/github/openorbiter/Src/Orbiter/DlgInfo.cpp:272
+msgctxt "Dialog Info"
+msgid "Ground Speed"
+msgstr ""
+
+#: C:/github/openorbiter/Src/Orbiter/DlgInfo.cpp:279
+msgctxt "Dialog Info"
+msgid "Vertical Speed"
+msgstr ""
+
+#: C:/github/openorbiter/Src/Orbiter/DlgInfo.cpp:285
+msgctxt "Dialog Info"
+msgid "Heading"
+msgstr ""
+
+#: C:/github/openorbiter/Src/Orbiter/DlgInfo.cpp:291
+msgctxt "Dialog Info"
+msgid "Pitch"
+msgstr ""
+
+#: C:/github/openorbiter/Src/Orbiter/DlgInfo.cpp:297
+msgctxt "Dialog Info"
+msgid "Bank"
+msgstr ""
+
+#: C:/github/openorbiter/Src/Orbiter/DlgInfo.cpp:300
+#. Bank xxx° right/left
+msgctxt "Dialog Info"
+msgid "left"
+msgstr ""
+
+#: C:/github/openorbiter/Src/Orbiter/DlgInfo.cpp:300
+#. Bank xxx° right/left
+msgctxt "Dialog Info"
+msgid "right"
+msgstr ""
+
+#: C:/github/openorbiter/Src/Orbiter/DlgInfo.cpp:308
+msgctxt "Dialog Info"
+msgid "Atmospheric Parameters"
+msgstr ""
+
+#: C:/github/openorbiter/Src/Orbiter/DlgInfo.cpp:317
+msgctxt "Dialog Info"
+msgid "Temperature"
+msgstr ""
+
+#: C:/github/openorbiter/Src/Orbiter/DlgInfo.cpp:323
+msgctxt "Dialog Info"
+msgid "Density"
+msgstr ""
+
+#: C:/github/openorbiter/Src/Orbiter/DlgInfo.cpp:329
+msgctxt "Dialog Info"
+msgid "Pressure"
+msgstr ""
+
+#: C:/github/openorbiter/Src/Orbiter/DlgInfo.cpp:337
+msgctxt "Dialog Info"
+msgid "Aerodynamic Parameters"
+msgstr ""
+
+#: C:/github/openorbiter/Src/Orbiter/DlgInfo.cpp:349
+msgctxt "Dialog Info"
+msgid "Dynamic Pressure"
+msgstr ""
+
+#: C:/github/openorbiter/Src/Orbiter/DlgInfo.cpp:355
+msgctxt "Dialog Info"
+msgid "True Airspeed"
+msgstr ""
+
+#: C:/github/openorbiter/Src/Orbiter/DlgInfo.cpp:361
+msgctxt "Dialog Info"
+msgid "Mach Number"
+msgstr ""
+
+#: C:/github/openorbiter/Src/Orbiter/DlgInfo.cpp:367
+msgctxt "Dialog Info"
+msgid "Lift"
+msgstr ""
+
+#: C:/github/openorbiter/Src/Orbiter/DlgInfo.cpp:373
+msgctxt "Dialog Info"
+msgid "Drag"
+msgstr ""
+
+#: C:/github/openorbiter/Src/Orbiter/DlgInfo.cpp:379
+msgctxt "Dialog Info"
+msgid "Weight"
+msgstr ""
+
+#: C:/github/openorbiter/Src/Orbiter/DlgInfo.cpp:385
+msgctxt "Dialog Info"
+msgid "Lift/Drag Ratio"
+msgstr ""
+
+#: C:/github/openorbiter/Src/Orbiter/DlgInfo.cpp:394
+msgctxt "Dialog Info"
+msgid "Angle of Attack"
+msgstr ""
+
+#: C:/github/openorbiter/Src/Orbiter/DlgInfo.cpp:408
+msgctxt "Dialog Info"
+msgid "Docking Ports"
+msgstr ""
+
+#: C:/github/openorbiter/Src/Orbiter/DlgInfo.cpp:419
+msgctxt "Dialog Info"
+msgid "[Docked to %s]"
+msgstr ""
+
+#: C:/github/openorbiter/Src/Orbiter/DlgInfo.cpp:420
+msgctxt "Dialog Info"
+msgid "[free]"
+msgstr ""
+
+#: C:/github/openorbiter/Src/Orbiter/DlgInfo.cpp:424
+msgctxt "Dialog Info"
+msgid "Port %d"
+msgstr ""
+
+#: C:/github/openorbiter/Src/Orbiter/DlgInfo.cpp:435 C:/github/openorbiter/Src/Orbiter/DlgInfo.cpp:756
+msgctxt "Dialog Info"
+msgid "State Propagation"
+msgstr ""
+
+#: C:/github/openorbiter/Src/Orbiter/DlgInfo.cpp:442 C:/github/openorbiter/Src/Orbiter/DlgInfo.cpp:448 C:/github/openorbiter/Src/Orbiter/DlgInfo.cpp:454
+msgctxt "Dialog Info"
+msgid "Update mode"
+msgstr ""
+
+#: C:/github/openorbiter/Src/Orbiter/DlgInfo.cpp:444
+msgctxt "Dialog Info"
+msgid "IDLE (landed)"
+msgstr ""
+
+#: C:/github/openorbiter/Src/Orbiter/DlgInfo.cpp:450
+msgctxt "Dialog Info"
+msgid "PASSIVE (attached)"
+msgstr ""
+
+#: C:/github/openorbiter/Src/Orbiter/DlgInfo.cpp:456
+msgctxt "Dialog Info"
+msgid "ACTIVE (dynamic)"
+msgstr ""
+
+#: C:/github/openorbiter/Src/Orbiter/DlgInfo.cpp:460
+msgctxt "Dialog Info"
+msgid "State Propagator"
+msgstr ""
+
+#: C:/github/openorbiter/Src/Orbiter/DlgInfo.cpp:462
+msgctxt "Dialog Info"
+msgid "stabilised"
+msgstr ""
+
+#: C:/github/openorbiter/Src/Orbiter/DlgInfo.cpp:466
+msgctxt "Dialog Info"
+msgid "Subsamples"
+msgstr ""
+
+#: C:/github/openorbiter/Src/Orbiter/DlgInfo.cpp:479 C:/github/openorbiter/Src/Orbiter/DlgInfo.cpp:776
+msgctxt "Dialog Info"
+msgid "Gravity Sources"
+msgstr ""
+
+#: C:/github/openorbiter/Src/Orbiter/DlgInfo.cpp:515
+msgctxt "Dialog Info"
+msgid "Primary"
+msgstr ""
+
+#: C:/github/openorbiter/Src/Orbiter/DlgInfo.cpp:521
+msgctxt "Dialog Info"
+msgid "Solar System"
+msgstr ""
+
+#: C:/github/openorbiter/Src/Orbiter/DlgInfo.cpp:535
+msgctxt "Dialog Info"
+msgid "Mass"
+msgstr ""
+
+#: C:/github/openorbiter/Src/Orbiter/DlgInfo.cpp:541
+msgctxt "Dialog Info"
+msgid "Mean Radius"
+msgstr ""
+
+#: C:/github/openorbiter/Src/Orbiter/DlgInfo.cpp:556
+msgctxt "Dialog Info"
+msgid "Gravitational Moments"
+msgstr ""
+
+#: C:/github/openorbiter/Src/Orbiter/DlgInfo.cpp:562
+msgctxt "Dialog Info"
+msgid "Siderial day"
+msgstr ""
+
+#: C:/github/openorbiter/Src/Orbiter/DlgInfo.cpp:571
+msgctxt "Dialog Info"
+msgid "Orbit Period"
+msgstr ""
+
+#: C:/github/openorbiter/Src/Orbiter/DlgInfo.cpp:580
+msgctxt "Dialog Info"
+msgid "Obliquity of Ecliptic"
+msgstr ""
+
+#: C:/github/openorbiter/Src/Orbiter/DlgInfo.cpp:586 C:/github/openorbiter/Src/Orbiter/DlgInfo.cpp:599
+msgctxt "Dialog Info"
+msgid "Atmosphere"
+msgstr ""
+
+#: C:/github/openorbiter/Src/Orbiter/DlgInfo.cpp:589
+msgctxt "Dialog Info"
+msgid "Yes"
+msgstr ""
+
+#: C:/github/openorbiter/Src/Orbiter/DlgInfo.cpp:591
+msgctxt "Dialog Info"
+msgid "No"
+msgstr ""
+
+#: C:/github/openorbiter/Src/Orbiter/DlgInfo.cpp:604
+msgctxt "Dialog Info"
+msgid "Generic"
+msgstr ""
+
+#: C:/github/openorbiter/Src/Orbiter/DlgInfo.cpp:613
+msgctxt "Dialog Info"
+msgid "Atmosphere Model"
+msgstr ""
+
+#: C:/github/openorbiter/Src/Orbiter/DlgInfo.cpp:619
+msgctxt "Dialog Info"
+msgid "Surface Pressure"
+msgstr ""
+
+#: C:/github/openorbiter/Src/Orbiter/DlgInfo.cpp:625
+msgctxt "Dialog Info"
+msgid "Surface density"
+msgstr ""
+
+#: C:/github/openorbiter/Src/Orbiter/DlgInfo.cpp:631
+msgctxt "Dialog Info"
+msgid "Specific Gas Constant"
+msgstr ""
+
+#: C:/github/openorbiter/Src/Orbiter/DlgInfo.cpp:637
+msgctxt "Dialog Info"
+msgid "Specific Heat Ratio"
+msgstr ""
+
+#: C:/github/openorbiter/Src/Orbiter/DlgInfo.cpp:681
+msgctxt "Dialog Info"
+msgid "Mean Longitude"
+msgstr ""
+
+#: C:/github/openorbiter/Src/Orbiter/DlgInfo.cpp:689
+msgctxt "Dialog Info"
+msgid "Geocentric Celestial Position"
+msgstr ""
+
+#: C:/github/openorbiter/Src/Orbiter/DlgInfo.cpp:709
+msgctxt "Dialog Info"
+msgid "Right Ascension (RA)"
+msgstr ""
+
+#: C:/github/openorbiter/Src/Orbiter/DlgInfo.cpp:716
+msgctxt "Dialog Info"
+msgid "Declination (Dec)"
+msgstr ""
+
+#: C:/github/openorbiter/Src/Orbiter/DlgInfo.cpp:726
+msgctxt "Dialog Info"
+msgid "Ecliptic position from primary"
+msgstr ""
+
+#: C:/github/openorbiter/Src/Orbiter/DlgInfo.cpp:736
+msgctxt "Dialog Info"
+msgid "Longitude"
+msgstr ""
+
+#: C:/github/openorbiter/Src/Orbiter/DlgInfo.cpp:742
+msgctxt "Dialog Info"
+msgid "Latitude"
+msgstr ""
+
+#: C:/github/openorbiter/Src/Orbiter/DlgInfo.cpp:748
+msgctxt "Dialog Info"
+msgid "Radial Distance"
+msgstr ""
+
+#: C:/github/openorbiter/Src/Orbiter/DlgInfo.cpp:762 C:/github/openorbiter/Src/Orbiter/DlgInfo.cpp:784
+msgctxt "Dialog Info"
+msgid "Mode"
+msgstr ""
+
+#: C:/github/openorbiter/Src/Orbiter/DlgInfo.cpp:764
+msgctxt "Dialog Info"
+msgid "Numerical"
+msgstr ""
+
+#: C:/github/openorbiter/Src/Orbiter/DlgInfo.cpp:786
+msgctxt "Dialog Info"
+msgid "Analytic (%s)"
+msgstr ""
+
+#: C:/github/openorbiter/Src/Orbiter/DlgInfo.cpp:786
+msgctxt "Dialog Info"
+msgid "2-body"
+msgstr ""
+
+#: C:/github/openorbiter/Src/Orbiter/DlgInfo.cpp:786
+msgctxt "Dialog Info"
+msgid "from module"
+msgstr ""
+
+#: C:/github/openorbiter/Src/Orbiter/DlgInfo.cpp:807
+msgctxt "Dialog Info"
+msgid "Located on"
+msgstr ""
+
+#: C:/github/openorbiter/Src/Orbiter/DlgInfo.cpp:829
+msgctxt "Dialog Info"
+msgid "Landing Pads"
+msgstr ""
+
+#: C:/github/openorbiter/Src/Orbiter/DlgInfo.cpp:832
+msgctxt "Dialog Info"
+msgid "reserved"
+msgstr ""
+
+#: C:/github/openorbiter/Src/Orbiter/DlgInfo.cpp:832
+msgctxt "Dialog Info"
+msgid "free"
+msgstr ""
+
+#: C:/github/openorbiter/Src/Orbiter/DlgInfo.cpp:845
+msgctxt "Dialog Info"
+msgid "Pad %d"
+msgstr ""
+
+#: C:/github/openorbiter/Src/Orbiter/DlgInfo.cpp:857
+msgctxt "Dialog Info"
+msgid "Runways"
+msgstr ""
+
+#: C:/github/openorbiter/Src/Orbiter/DlgInfo.cpp:869
+msgctxt "Dialog Info"
+msgid "ILS %s/%s, length %0.0fm"
+msgstr ""
+
+#: C:/github/openorbiter/Src/Orbiter/DlgInfo.cpp:873
+msgctxt "Dialog Info"
+msgid "Runway %02d/%02d"
+msgstr ""
+
+#: C:/github/openorbiter/Src/Orbiter/DlgInfo.cpp:885
+msgctxt "Dialog Info"
+msgid "VOR Transmitters"
+msgstr ""
+
+#: C:/github/openorbiter/Src/Orbiter/DlgInfo.cpp:895
+msgctxt "Dialog Info"
+msgid "%06.2f, range %sm"
+msgstr ""
+
+#: C:/github/openorbiter/Src/Orbiter/DlgInfo.cpp:911
+msgctxt "Dialog Info"
+msgid "Focus Vessel"
+msgstr ""
+
+#: C:/github/openorbiter/Src/Orbiter/DlgInfo.cpp:914
+msgctxt "Dialog Info"
+msgid "Camera Target"
+msgstr ""
+
+#: C:/github/openorbiter/Src/Orbiter/DlgInfo.cpp:922
+msgctxt "Dialog Info"
+msgid "Object: %s"
 msgstr ""
 
 #: C:/github/openorbiter/Src/Orbiter/MenuInfoBar.cpp:78
@@ -410,17 +962,17 @@ msgstr ""
 
 #: C:/github/openorbiter/Src/Orbiter/MenuInfoBar.cpp:789
 msgctxt "MenuInfoBar"
-msgid "Cam ground %s"
-msgstr ""
-
-#: C:/github/openorbiter/Src/Orbiter/MenuInfoBar.cpp:789
-msgctxt "MenuInfoBar"
 msgid "(tgt-lock)"
 msgstr ""
 
 #: C:/github/openorbiter/Src/Orbiter/MenuInfoBar.cpp:789
 msgctxt "MenuInfoBar"
 msgid "(free)"
+msgstr ""
+
+#: C:/github/openorbiter/Src/Orbiter/MenuInfoBar.cpp:789
+msgctxt "MenuInfoBar"
+msgid "Cam ground %s"
 msgstr ""
 
 #: C:/github/openorbiter/Src/Orbiter/MenuInfoBar.cpp:792
