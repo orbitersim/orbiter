@@ -298,22 +298,22 @@ msgstr ""
 
 #: C:/github/openorbiter/Src/Orbiter/DlgFocus.cpp:31
 msgctxt "Dialog Focus"
-msgid "Location"
-msgstr ""
-
-#: C:/github/openorbiter/Src/Orbiter/DlgFocus.cpp:31
-msgctxt "Dialog Focus"
-msgid "All"
-msgstr ""
-
-#: C:/github/openorbiter/Src/Orbiter/DlgFocus.cpp:31
-msgctxt "Dialog Focus"
 msgid "Nearby"
 msgstr ""
 
 #: C:/github/openorbiter/Src/Orbiter/DlgFocus.cpp:31
 msgctxt "Dialog Focus"
 msgid "Class"
+msgstr ""
+
+#: C:/github/openorbiter/Src/Orbiter/DlgFocus.cpp:31
+msgctxt "Dialog Focus"
+msgid "Location"
+msgstr ""
+
+#: C:/github/openorbiter/Src/Orbiter/DlgFocus.cpp:31
+msgctxt "Dialog Focus"
+msgid "All"
 msgstr ""
 
 #: C:/github/openorbiter/Src/Orbiter/DlgFocus.cpp:121 C:/github/openorbiter/Src/Orbiter/DlgFocus.cpp:177 C:/github/openorbiter/Src/Orbiter/DlgFocus.cpp:228 C:/github/openorbiter/Src/Orbiter/DlgFocus.cpp:74
@@ -348,7 +348,7 @@ msgstr ""
 
 #: C:/github/openorbiter/Src/Orbiter/DlgInfo.cpp:262 C:/github/openorbiter/Src/Orbiter/DlgInfo.cpp:818
 msgctxt "Cardinal direction"
-msgid "N"
+msgid "W"
 msgstr ""
 
 #: C:/github/openorbiter/Src/Orbiter/DlgInfo.cpp:262 C:/github/openorbiter/Src/Orbiter/DlgInfo.cpp:818
@@ -358,12 +358,12 @@ msgstr ""
 
 #: C:/github/openorbiter/Src/Orbiter/DlgInfo.cpp:262 C:/github/openorbiter/Src/Orbiter/DlgInfo.cpp:818
 msgctxt "Cardinal direction"
-msgid "W"
+msgid "E"
 msgstr ""
 
 #: C:/github/openorbiter/Src/Orbiter/DlgInfo.cpp:262 C:/github/openorbiter/Src/Orbiter/DlgInfo.cpp:818
 msgctxt "Cardinal direction"
-msgid "E"
+msgid "N"
 msgstr ""
 
 #: C:/github/openorbiter/Src/Orbiter/DlgInfo.cpp:24
@@ -544,13 +544,13 @@ msgstr ""
 #: C:/github/openorbiter/Src/Orbiter/DlgInfo.cpp:300
 #. Bank xxx° right/left
 msgctxt "Dialog Info"
-msgid "left"
+msgid "right"
 msgstr ""
 
 #: C:/github/openorbiter/Src/Orbiter/DlgInfo.cpp:300
 #. Bank xxx° right/left
 msgctxt "Dialog Info"
-msgid "right"
+msgid "left"
 msgstr ""
 
 #: C:/github/openorbiter/Src/Orbiter/DlgInfo.cpp:308
@@ -820,7 +820,7 @@ msgstr ""
 
 #: C:/github/openorbiter/Src/Orbiter/DlgInfo.cpp:786
 msgctxt "Dialog Info"
-msgid "from module"
+msgid "2-body"
 msgstr ""
 
 #: C:/github/openorbiter/Src/Orbiter/DlgInfo.cpp:786
@@ -830,7 +830,7 @@ msgstr ""
 
 #: C:/github/openorbiter/Src/Orbiter/DlgInfo.cpp:786
 msgctxt "Dialog Info"
-msgid "2-body"
+msgid "from module"
 msgstr ""
 
 #: C:/github/openorbiter/Src/Orbiter/DlgInfo.cpp:807
@@ -845,12 +845,12 @@ msgstr ""
 
 #: C:/github/openorbiter/Src/Orbiter/DlgInfo.cpp:832
 msgctxt "Dialog Info"
-msgid "free"
+msgid "reserved"
 msgstr ""
 
 #: C:/github/openorbiter/Src/Orbiter/DlgInfo.cpp:832
 msgctxt "Dialog Info"
-msgid "reserved"
+msgid "free"
 msgstr ""
 
 #: C:/github/openorbiter/Src/Orbiter/DlgInfo.cpp:845
@@ -1059,6 +1059,101 @@ msgctxt "Dialog Map"
 msgid "Open info dialog for object"
 msgstr ""
 
+#: C:/github/openorbiter/Src/Orbiter/DlgMenuCfg.cpp:22
+msgctxt "Dialog MenuCfg"
+msgid "Orbiter: Configure menu bars"
+msgstr ""
+
+#: C:/github/openorbiter/Src/Orbiter/DlgMenuCfg.cpp:29 C:/github/openorbiter/Src/Orbiter/DlgMenuCfg.cpp:43 C:/github/openorbiter/Src/Orbiter/DlgMenuCfg.cpp:59
+msgctxt "Dialog MenuCfg"
+msgid "Auto-hide"
+msgstr ""
+
+#: C:/github/openorbiter/Src/Orbiter/DlgMenuCfg.cpp:29 C:/github/openorbiter/Src/Orbiter/DlgMenuCfg.cpp:39 C:/github/openorbiter/Src/Orbiter/DlgMenuCfg.cpp:55
+msgctxt "Dialog MenuCfg"
+msgid "Show"
+msgstr ""
+
+#: C:/github/openorbiter/Src/Orbiter/DlgMenuCfg.cpp:29 C:/github/openorbiter/Src/Orbiter/DlgMenuCfg.cpp:41 C:/github/openorbiter/Src/Orbiter/DlgMenuCfg.cpp:57
+msgctxt "Dialog MenuCfg"
+msgid "Hide"
+msgstr ""
+
+#: C:/github/openorbiter/Src/Orbiter/DlgMenuCfg.cpp:35
+msgctxt "Dialog MenuCfg"
+msgid "Appearance"
+msgstr ""
+
+#: C:/github/openorbiter/Src/Orbiter/DlgMenuCfg.cpp:37
+msgctxt "Dialog MenuCfg"
+msgid "Menu bar"
+msgstr ""
+
+#: C:/github/openorbiter/Src/Orbiter/DlgMenuCfg.cpp:45
+msgctxt "Dialog MenuCfg"
+msgid "Always show labels"
+msgstr ""
+
+#: C:/github/openorbiter/Src/Orbiter/DlgMenuCfg.cpp:46 C:/github/openorbiter/Src/Orbiter/DlgMenuCfg.cpp:61
+msgctxt "Dialog MenuCfg"
+msgid "Opacity"
+msgstr ""
+
+#: C:/github/openorbiter/Src/Orbiter/DlgMenuCfg.cpp:47
+msgctxt "Dialog MenuCfg"
+msgid "Animation speed"
+msgstr ""
+
+#: C:/github/openorbiter/Src/Orbiter/DlgMenuCfg.cpp:48
+msgctxt "Dialog MenuCfg"
+msgid "Button size"
+msgstr ""
+
+#: C:/github/openorbiter/Src/Orbiter/DlgMenuCfg.cpp:49
+msgctxt "Dialog MenuCfg"
+msgid "Hovered size"
+msgstr ""
+
+#: C:/github/openorbiter/Src/Orbiter/DlgMenuCfg.cpp:50
+msgctxt "Dialog MenuCfg"
+msgid "Spacing"
+msgstr ""
+
+#: C:/github/openorbiter/Src/Orbiter/DlgMenuCfg.cpp:53
+msgctxt "Dialog MenuCfg"
+msgid "Info bars"
+msgstr ""
+
+#: C:/github/openorbiter/Src/Orbiter/DlgMenuCfg.cpp:60
+msgctxt "Dialog MenuCfg"
+msgid "Always show warp factor"
+msgstr ""
+
+#: C:/github/openorbiter/Src/Orbiter/DlgMenuCfg.cpp:64
+msgctxt "Dialog MenuCfg"
+msgid "FPS info bar"
+msgstr ""
+
+#: C:/github/openorbiter/Src/Orbiter/DlgMenuCfg.cpp:65
+msgctxt "Dialog MenuCfg"
+msgid "None"
+msgstr ""
+
+#: C:/github/openorbiter/Src/Orbiter/DlgMenuCfg.cpp:65
+msgctxt "Dialog MenuCfg"
+msgid "On the left"
+msgstr ""
+
+#: C:/github/openorbiter/Src/Orbiter/DlgMenuCfg.cpp:65
+msgctxt "Dialog MenuCfg"
+msgid "On the right"
+msgstr ""
+
+#: C:/github/openorbiter/Src/Orbiter/DlgMenuCfg.cpp:71
+msgctxt "Dialog MenuCfg"
+msgid "Menu items"
+msgstr ""
+
 #: C:/github/openorbiter/Src/Orbiter/MenuInfoBar.cpp:78
 msgctxt "MenuInfoBar"
 msgid "Cannot find menu item texture"
@@ -1123,7 +1218,7 @@ msgstr ""
 
 #: C:/github/openorbiter/Src/Orbiter/MenuInfoBar.cpp:789
 msgctxt "MenuInfoBar"
-msgid "Cam ground %s"
+msgid "(tgt-lock)"
 msgstr ""
 
 #: C:/github/openorbiter/Src/Orbiter/MenuInfoBar.cpp:789
@@ -1133,7 +1228,7 @@ msgstr ""
 
 #: C:/github/openorbiter/Src/Orbiter/MenuInfoBar.cpp:789
 msgctxt "MenuInfoBar"
-msgid "(tgt-lock)"
+msgid "Cam ground %s"
 msgstr ""
 
 #: C:/github/openorbiter/Src/Orbiter/MenuInfoBar.cpp:792
