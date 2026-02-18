@@ -24,7 +24,7 @@ msgstr "%1$s %3$02d %2$s %7$d %4$02d:%5$02d:%6$02d"
 #: C:/github/openorbiter/Src/Orbiter/DlgCamera.cpp:19
 msgctxt "Dialog Camera"
 msgid "Orbiter: Camera"
-msgstr "Orbiter: Caméra"
+msgstr "Orbiter : Caméra"
 
 #: C:/github/openorbiter/Src/Orbiter/DlgCamera.cpp:25
 msgctxt "Dialog Camera"
@@ -84,7 +84,7 @@ msgstr "Au sol"
 #: C:/github/openorbiter/Src/Orbiter/DlgCamera.cpp:83
 msgctxt "Dialog Camera"
 msgid "Camera mode : %s"
-msgstr "Mode: %s"
+msgstr "Mode : %s"
 
 #: C:/github/openorbiter/Src/Orbiter/DlgCamera.cpp:127
 msgctxt "Dialog Camera"
@@ -236,7 +236,7 @@ msgstr "Charger"
 #: C:/github/openorbiter/Src/Orbiter/DlgCapture.cpp:22
 msgctxt "Dialog Capture"
 msgid "Orbiter: Capture frames"
-msgstr "Orbiter: Capture d'image"
+msgstr "Orbiter : Capture d'image"
 
 #: C:/github/openorbiter/Src/Orbiter/DlgCapture.cpp:29
 msgctxt "Dialog Capture"
@@ -311,7 +311,7 @@ msgstr "Réinitialiser"
 #: C:/github/openorbiter/Src/Orbiter/DlgFocus.cpp:25
 msgctxt "Dialog Focus"
 msgid "Orbiter: Select spacecraft"
-msgstr "Orbiter: Sélection vaisseau"
+msgstr "Orbiter : Sélection vaisseau"
 
 #: C:/github/openorbiter/Src/Orbiter/DlgFocus.cpp:31
 msgctxt "Dialog Focus"
@@ -320,8 +320,8 @@ msgstr "Par distance"
 
 #: C:/github/openorbiter/Src/Orbiter/DlgFocus.cpp:31
 msgctxt "Dialog Focus"
-msgid "Class"
-msgstr "Par classe"
+msgid "All"
+msgstr "Tous"
 
 #: C:/github/openorbiter/Src/Orbiter/DlgFocus.cpp:31
 msgctxt "Dialog Focus"
@@ -330,8 +330,8 @@ msgstr "Par emplacement"
 
 #: C:/github/openorbiter/Src/Orbiter/DlgFocus.cpp:31
 msgctxt "Dialog Focus"
-msgid "All"
-msgstr "Tous"
+msgid "Class"
+msgstr "Par classe"
 
 #: C:/github/openorbiter/Src/Orbiter/DlgFocus.cpp:121
 #: C:/github/openorbiter/Src/Orbiter/DlgFocus.cpp:177
@@ -368,12 +368,18 @@ msgstr "Vaisseaux disponibles"
 #: C:/github/openorbiter/Src/Orbiter/DlgFunction.cpp:18
 msgctxt "Dialog Function"
 msgid "Orbiter: Custom functions"
-msgstr "Orbiter: Extensions"
+msgstr "Orbiter : Extensions"
 
 #: C:/github/openorbiter/Src/Orbiter/DlgHelp.cpp:32
 msgctxt "Dialog Help"
 msgid "Failed to open help"
 msgstr "Impossible d'ouvrir le fichier d'aide"
+
+#: C:/github/openorbiter/Src/Orbiter/DlgInfo.cpp:262
+#: C:/github/openorbiter/Src/Orbiter/DlgInfo.cpp:818
+msgctxt "Cardinal direction"
+msgid "N"
+msgstr "N"
 
 #: C:/github/openorbiter/Src/Orbiter/DlgInfo.cpp:262
 #: C:/github/openorbiter/Src/Orbiter/DlgInfo.cpp:818
@@ -393,16 +399,10 @@ msgctxt "Cardinal direction"
 msgid "E"
 msgstr "E"
 
-#: C:/github/openorbiter/Src/Orbiter/DlgInfo.cpp:262
-#: C:/github/openorbiter/Src/Orbiter/DlgInfo.cpp:818
-msgctxt "Cardinal direction"
-msgid "N"
-msgstr "N"
-
 #: C:/github/openorbiter/Src/Orbiter/DlgInfo.cpp:24
 msgctxt "Dialog Info"
 msgid "Orbiter: Object info"
-msgstr "Orbiter: Informations"
+msgstr "Orbiter : Informations"
 
 #: C:/github/openorbiter/Src/Orbiter/DlgInfo.cpp:55
 msgctxt "Dialog Info"
@@ -494,8 +494,8 @@ msgstr "Performance propulseurs (dans le vide)"
 
 #: C:/github/openorbiter/Src/Orbiter/DlgInfo.cpp:175
 msgctxt "Dialog Info"
-msgid "Hover"
-msgstr "Vol stationnaire"
+msgid "Main"
+msgstr "Principal"
 
 #: C:/github/openorbiter/Src/Orbiter/DlgInfo.cpp:175
 msgctxt "Dialog Info"
@@ -504,8 +504,8 @@ msgstr "Rétrofusée"
 
 #: C:/github/openorbiter/Src/Orbiter/DlgInfo.cpp:175
 msgctxt "Dialog Info"
-msgid "Main"
-msgstr "Principal"
+msgid "Hover"
+msgstr "Vol stationnaire"
 
 #: C:/github/openorbiter/Src/Orbiter/DlgInfo.cpp:197
 #: C:/github/openorbiter/Src/Orbiter/DlgInfo.cpp:646
@@ -541,18 +541,18 @@ msgstr "Inclinaison (i)"
 #: C:/github/openorbiter/Src/Orbiter/DlgInfo.cpp:669
 msgctxt "Dialog Info"
 msgid "Longitude of Ascending Node"
-msgstr "Longitude du nœud ascendant"
+msgstr "Longitude du nœud ascendant (Ω)"
 
 #: C:/github/openorbiter/Src/Orbiter/DlgInfo.cpp:233
 #: C:/github/openorbiter/Src/Orbiter/DlgInfo.cpp:675
 msgctxt "Dialog Info"
 msgid "Longitude of Periapsis"
-msgstr "Longitude du périapse"
+msgstr "Longitude du périapse (ϖ)"
 
 #: C:/github/openorbiter/Src/Orbiter/DlgInfo.cpp:239
 msgctxt "Dialog Info"
 msgid "Mean longitude"
-msgstr "Longitude moyenne"
+msgstr "Longitude moyenne (L)"
 
 #: C:/github/openorbiter/Src/Orbiter/DlgInfo.cpp:248
 msgctxt "Dialog Info"
@@ -625,12 +625,12 @@ msgstr "Densité"
 #: C:/github/openorbiter/Src/Orbiter/DlgInfo.cpp:329
 msgctxt "Dialog Info"
 msgid "Pressure"
-msgstr "Préssion"
+msgstr "Pression"
 
 #: C:/github/openorbiter/Src/Orbiter/DlgInfo.cpp:337
 msgctxt "Dialog Info"
 msgid "Aerodynamic Parameters"
-msgstr "Paramètres aerodynamiques"
+msgstr "Paramètres aérodynamiques"
 
 #: C:/github/openorbiter/Src/Orbiter/DlgInfo.cpp:349
 msgctxt "Dialog Info"
@@ -733,7 +733,7 @@ msgstr "Stabilisé (Kepler)"
 #: C:/github/openorbiter/Src/Orbiter/DlgInfo.cpp:466
 msgctxt "Dialog Info"
 msgid "Subsamples"
-msgstr "Sous-échantillons"
+msgstr "Sous-étapes"
 
 #: C:/github/openorbiter/Src/Orbiter/DlgInfo.cpp:479
 #: C:/github/openorbiter/Src/Orbiter/DlgInfo.cpp:776
@@ -880,8 +880,8 @@ msgstr "Intégration"
 
 #: C:/github/openorbiter/Src/Orbiter/DlgInfo.cpp:786
 msgctxt "Dialog Info"
-msgid "2-body"
-msgstr "Kepler"
+msgid "from module"
+msgstr "module"
 
 #: C:/github/openorbiter/Src/Orbiter/DlgInfo.cpp:786
 msgctxt "Dialog Info"
@@ -890,8 +890,8 @@ msgstr "Analytique (%s)"
 
 #: C:/github/openorbiter/Src/Orbiter/DlgInfo.cpp:786
 msgctxt "Dialog Info"
-msgid "from module"
-msgstr "module"
+msgid "2-body"
+msgstr "Kepler"
 
 #: C:/github/openorbiter/Src/Orbiter/DlgInfo.cpp:807
 msgctxt "Dialog Info"
@@ -905,13 +905,13 @@ msgstr "Aires d'atterrissage"
 
 #: C:/github/openorbiter/Src/Orbiter/DlgInfo.cpp:832
 msgctxt "Dialog Info"
-msgid "reserved"
-msgstr "réservée"
+msgid "free"
+msgstr "libre"
 
 #: C:/github/openorbiter/Src/Orbiter/DlgInfo.cpp:832
 msgctxt "Dialog Info"
-msgid "free"
-msgstr "libre"
+msgid "reserved"
+msgstr "réservée"
 
 #: C:/github/openorbiter/Src/Orbiter/DlgInfo.cpp:845
 msgctxt "Dialog Info"
@@ -956,12 +956,12 @@ msgstr "Cible caméra"
 #: C:/github/openorbiter/Src/Orbiter/DlgInfo.cpp:922
 msgctxt "Dialog Info"
 msgid "Object: %s"
-msgstr "Objet: %s"
+msgstr "Objet : %s"
 
 #: C:/github/openorbiter/Src/Orbiter/DlgMap.cpp:23
 msgctxt "Dialog Map"
 msgid "Orbiter: Map"
-msgstr "Orbiter: Carte"
+msgstr "Orbiter : Carte"
 
 #: C:/github/openorbiter/Src/Orbiter/DlgMap.cpp:24
 msgctxt "Dialog Map"
@@ -1124,7 +1124,7 @@ msgstr "Ouvrir la fenêtre d'information"
 #: C:/github/openorbiter/Src/Orbiter/DlgMenuCfg.cpp:22
 msgctxt "Dialog MenuCfg"
 msgid "Orbiter: Configure menu bars"
-msgstr "Orbiter: Barre de menu"
+msgstr "Orbiter : Barre de menu"
 
 #: C:/github/openorbiter/Src/Orbiter/DlgMenuCfg.cpp:29
 #: C:/github/openorbiter/Src/Orbiter/DlgMenuCfg.cpp:43
@@ -1134,18 +1134,18 @@ msgid "Auto-hide"
 msgstr "Masquer automatiquement"
 
 #: C:/github/openorbiter/Src/Orbiter/DlgMenuCfg.cpp:29
-#: C:/github/openorbiter/Src/Orbiter/DlgMenuCfg.cpp:39
-#: C:/github/openorbiter/Src/Orbiter/DlgMenuCfg.cpp:55
-msgctxt "Dialog MenuCfg"
-msgid "Show"
-msgstr "Montrer"
-
-#: C:/github/openorbiter/Src/Orbiter/DlgMenuCfg.cpp:29
 #: C:/github/openorbiter/Src/Orbiter/DlgMenuCfg.cpp:41
 #: C:/github/openorbiter/Src/Orbiter/DlgMenuCfg.cpp:57
 msgctxt "Dialog MenuCfg"
 msgid "Hide"
 msgstr "Masquer"
+
+#: C:/github/openorbiter/Src/Orbiter/DlgMenuCfg.cpp:29
+#: C:/github/openorbiter/Src/Orbiter/DlgMenuCfg.cpp:39
+#: C:/github/openorbiter/Src/Orbiter/DlgMenuCfg.cpp:55
+msgctxt "Dialog MenuCfg"
+msgid "Show"
+msgstr "Montrer"
 
 #: C:/github/openorbiter/Src/Orbiter/DlgMenuCfg.cpp:35
 msgctxt "Dialog MenuCfg"
@@ -1223,6 +1223,517 @@ msgctxt "Dialog MenuCfg"
 msgid "Menu items"
 msgstr "Éléments de menu"
 
+#: C:/github/openorbiter/Src/Orbiter/DlgMgr.cpp:624
+msgctxt "Dialog manager"
+msgid "Help"
+msgstr "Aide"
+
+#: C:/github/openorbiter/Src/Orbiter/DlgMgr.cpp:843
+msgctxt "Dialog manager"
+msgid "Copy"
+msgstr "Copier"
+
+#: C:/github/openorbiter/Src/Orbiter/DlgMgr.cpp:891
+msgctxt "Dialog manager"
+msgid "Reset to %f"
+msgstr "Réinitialiser à %f"
+
+#: C:/github/openorbiter/Src/Orbiter/DlgMgr.cpp:894
+msgctxt "Dialog manager"
+msgid "Close"
+msgstr "Fermer"
+
+#: C:/github/openorbiter/Src/Orbiter/DlgMgr.cpp:1000
+msgctxt "Dialog manager"
+msgid "Unknown"
+msgstr "Inconnu"
+
+#: C:/github/openorbiter/Src/Orbiter/DlgOptions.cpp:23
+msgctxt "Dialog Options"
+msgid "Orbiter: Options"
+msgstr "Orbiter : Options"
+
+#: C:/github/openorbiter/Src/Orbiter/DlgOptions.cpp:27
+msgctxt "Dialog Options"
+msgid "Select..."
+msgstr "Sélectionner..."
+
+#: C:/github/openorbiter/Src/Orbiter/DlgOptions.cpp:85
+msgctxt "Dialog Options"
+msgid "Instruments & panels"
+msgstr "Instruments & panneau d'affichage"
+
+#: C:/github/openorbiter/Src/Orbiter/DlgOptions.cpp:87
+msgctxt "Dialog Options"
+msgid "User interface"
+msgstr "Interface utilisateur"
+
+#: C:/github/openorbiter/Src/Orbiter/DlgOptions.cpp:88
+msgctxt "Dialog Options"
+msgid "      Joystick"
+msgstr "      Joystick"
+
+#: C:/github/openorbiter/Src/Orbiter/DlgOptions.cpp:91
+msgctxt "Dialog Options"
+msgid "      Planetarium"
+msgstr "      Planétarium"
+
+#: C:/github/openorbiter/Src/Orbiter/DlgOptions.cpp:92
+msgctxt "Dialog Options"
+msgid "      Labels"
+msgstr "      Étiquettes"
+
+#: C:/github/openorbiter/Src/Orbiter/DlgOptions.cpp:93
+msgctxt "Dialog Options"
+msgid "      Body forces"
+msgstr "      Vecteurs de force"
+
+#: C:/github/openorbiter/Src/Orbiter/DlgOptions.cpp:94
+msgctxt "Dialog Options"
+msgid "      Object axes"
+msgstr "      Repères objets"
+
+#: C:/github/openorbiter/Src/Orbiter/DlgOptions.cpp:132
+msgctxt "Dialog Options"
+msgid "Multi-functional displays"
+msgstr "MFDs (affichages multifonctions)"
+
+#: C:/github/openorbiter/Src/Orbiter/DlgOptions.cpp:133
+msgctxt "Dialog Options"
+msgid "MFD refresh interval [s]"
+msgstr "Taux de rafraîchissement des MFDs [s]"
+
+#: C:/github/openorbiter/Src/Orbiter/DlgOptions.cpp:135
+msgctxt "Dialog Options"
+msgid "Glass cockpit MFD size"
+msgstr "Taille MFD en mode « glass cockpit »"
+
+#: C:/github/openorbiter/Src/Orbiter/DlgOptions.cpp:137
+msgctxt "Dialog Options"
+msgid "Transparent glass cockpit MFD"
+msgstr "MFD transparent en mode « glass cockpit »"
+
+#: C:/github/openorbiter/Src/Orbiter/DlgOptions.cpp:142
+msgctxt "Dialog Options"
+msgid "Virtual cockpit MFD texture size"
+msgstr "Taille des textures MFD"
+
+#: C:/github/openorbiter/Src/Orbiter/DlgOptions.cpp:151
+msgctxt "Dialog Options"
+msgid "Instrument panels"
+msgstr "Panneau 2D"
+
+#: C:/github/openorbiter/Src/Orbiter/DlgOptions.cpp:152
+msgctxt "Dialog Options"
+msgid "Panel scroll speed"
+msgstr "Vitesse de défilement du panneau 2D"
+
+#: C:/github/openorbiter/Src/Orbiter/DlgOptions.cpp:154
+msgctxt "Dialog Options"
+msgid "2D panel scale"
+msgstr "Échelle du panneau 2D"
+
+#: C:/github/openorbiter/Src/Orbiter/DlgOptions.cpp:161
+#: C:/github/openorbiter/Src/Orbiter/DlgOptions.cpp:86
+msgctxt "Dialog Options"
+msgid "Vessel settings"
+msgstr "Paramètres vaisseaux"
+
+#: C:/github/openorbiter/Src/Orbiter/DlgOptions.cpp:162
+msgctxt "Dialog Options"
+msgid "Limited fuel"
+msgstr "Carburant limité"
+
+#: C:/github/openorbiter/Src/Orbiter/DlgOptions.cpp:164
+msgctxt "Dialog Options"
+msgid "Auto-refuel on pad"
+msgstr "Ravitaillement automatique"
+
+#. flight model
+#: C:/github/openorbiter/Src/Orbiter/DlgOptions.cpp:167
+msgctxt "Dialog Options"
+msgid "Realistic"
+msgstr "Réaliste"
+
+#. flight model
+#: C:/github/openorbiter/Src/Orbiter/DlgOptions.cpp:167
+msgctxt "Dialog Options"
+msgid "Simple"
+msgstr "Simple"
+
+#: C:/github/openorbiter/Src/Orbiter/DlgOptions.cpp:168
+msgctxt "Dialog Options"
+msgid "Flight model"
+msgstr "Physique de vol"
+
+#: C:/github/openorbiter/Src/Orbiter/DlgOptions.cpp:170
+msgctxt "Dialog Options"
+msgid "No damage"
+msgstr "Pas de dégâts"
+
+#: C:/github/openorbiter/Src/Orbiter/DlgOptions.cpp:170
+msgctxt "Dialog Options"
+msgid "Allow damage"
+msgstr "Dégâts"
+
+#: C:/github/openorbiter/Src/Orbiter/DlgOptions.cpp:171
+msgctxt "Dialog Options"
+msgid "Damage model"
+msgstr "Dégâts"
+
+#: C:/github/openorbiter/Src/Orbiter/DlgOptions.cpp:175
+msgctxt "Dialog Options"
+msgid "Mouse focus behavior"
+msgstr "Comportement souris"
+
+#: C:/github/openorbiter/Src/Orbiter/DlgOptions.cpp:176
+msgctxt "Dialog Options"
+msgid "Focus requires click"
+msgstr "Focus sur clic"
+
+#: C:/github/openorbiter/Src/Orbiter/DlgOptions.cpp:177
+msgctxt "Dialog Options"
+msgid "Hybrid: Click required only for child windows"
+msgstr "Hybride : clic requis uniquement pour les sous-fenêtres"
+
+#: C:/github/openorbiter/Src/Orbiter/DlgOptions.cpp:178
+msgctxt "Dialog Options"
+msgid "Focus follows mouse"
+msgstr "Focus au survol"
+
+#: C:/github/openorbiter/Src/Orbiter/DlgOptions.cpp:182
+msgctxt "Dialog Options"
+msgid "Joystick device"
+msgstr "Périphérique joystick"
+
+#: C:/github/openorbiter/Src/Orbiter/DlgOptions.cpp:188
+#: C:/github/openorbiter/Src/Orbiter/DlgOptions.cpp:195
+msgctxt "Dialog Options"
+msgid "<Disabled>"
+msgstr "<Désactivé>"
+
+#: C:/github/openorbiter/Src/Orbiter/DlgOptions.cpp:215
+msgctxt "Dialog Options"
+msgid "Main engine control"
+msgstr "Moteur principal"
+
+#: C:/github/openorbiter/Src/Orbiter/DlgOptions.cpp:218
+msgctxt "Dialog Options"
+msgid "Slider 0"
+msgstr "Levier 0"
+
+#: C:/github/openorbiter/Src/Orbiter/DlgOptions.cpp:218
+msgctxt "Dialog Options"
+msgid "Slider 1"
+msgstr "Levier 1"
+
+#: C:/github/openorbiter/Src/Orbiter/DlgOptions.cpp:218
+msgctxt "Dialog Options"
+msgid "Z-axis"
+msgstr "Axe Z"
+
+#: C:/github/openorbiter/Src/Orbiter/DlgOptions.cpp:218
+msgctxt "Dialog Options"
+msgid "<Keyboard only>"
+msgstr "<Clavier uniquement>"
+
+#: C:/github/openorbiter/Src/Orbiter/DlgOptions.cpp:234
+msgctxt "Dialog Options"
+msgid "Ignore throttle setting on launch"
+msgstr "Ignorer la commande de gaz au lancement"
+
+#: C:/github/openorbiter/Src/Orbiter/DlgOptions.cpp:236
+msgctxt "Dialog Options"
+msgid "Calibration"
+msgstr "Calibration"
+
+#: C:/github/openorbiter/Src/Orbiter/DlgOptions.cpp:237
+msgctxt "Dialog Options"
+msgid "Saturation"
+msgstr "Saturation"
+
+#: C:/github/openorbiter/Src/Orbiter/DlgOptions.cpp:239
+msgctxt "Dialog Options"
+msgid "Deadzone"
+msgstr "Zone morte"
+
+#: C:/github/openorbiter/Src/Orbiter/DlgOptions.cpp:247
+#: C:/github/openorbiter/Src/Orbiter/DlgOptions.cpp:89
+msgctxt "Dialog Options"
+msgid "Celestial sphere"
+msgstr "Sphère céleste"
+
+#: C:/github/openorbiter/Src/Orbiter/DlgOptions.cpp:248
+msgctxt "Dialog Options"
+msgid "Background stars: show as pixels"
+msgstr "Étoiles en arrière-plan : pixels"
+
+#: C:/github/openorbiter/Src/Orbiter/DlgOptions.cpp:254
+msgctxt "Dialog Options"
+msgid "Max magnitude threshold"
+msgstr "Seuil de magnitude max"
+
+#: C:/github/openorbiter/Src/Orbiter/DlgOptions.cpp:259
+msgctxt "Dialog Options"
+msgid "Min magnitude threshold"
+msgstr "Seuil de magnitude min"
+
+#: C:/github/openorbiter/Src/Orbiter/DlgOptions.cpp:264
+msgctxt "Dialog Options"
+msgid "Min brightness"
+msgstr "Luminosité min"
+
+#: C:/github/openorbiter/Src/Orbiter/DlgOptions.cpp:272
+msgctxt "Dialog Options"
+msgid "Background stars: show as image"
+msgstr "Étoiles en arrière-plan : image"
+
+#: C:/github/openorbiter/Src/Orbiter/DlgOptions.cpp:289
+msgctxt "Dialog Options"
+msgid "Background map"
+msgstr "Carte de fond"
+
+#: C:/github/openorbiter/Src/Orbiter/DlgOptions.cpp:303
+msgctxt "Dialog Options"
+msgid "Brightness"
+msgstr "Luminosité"
+
+#: C:/github/openorbiter/Src/Orbiter/DlgOptions.cpp:312
+#: C:/github/openorbiter/Src/Orbiter/DlgOptions.cpp:90
+msgctxt "Dialog Options"
+msgid "Visual helpers"
+msgstr "Aides visuelles"
+
+#: C:/github/openorbiter/Src/Orbiter/DlgOptions.cpp:313
+msgctxt "Dialog Options"
+msgid "Options for displaying markers and gridlines on the celestial"
+msgstr "Options d'affichage d'étiquettes et de quadrillage sur la sphere céleste,"
+
+#: C:/github/openorbiter/Src/Orbiter/DlgOptions.cpp:314
+msgctxt "Dialog Options"
+msgid "sphere, labels for planetary surface features, as weel as coordinate"
+msgstr "points d'intérêt sur les corps célestes, ainsi que des indications"
+
+#: C:/github/openorbiter/Src/Orbiter/DlgOptions.cpp:315
+msgctxt "Dialog Options"
+msgid "axis and force vectors"
+msgstr "visuelles pour les vecteurs de force et repères locaux"
+
+#: C:/github/openorbiter/Src/Orbiter/DlgOptions.cpp:318
+#: C:/github/openorbiter/Src/Orbiter/DlgOptions.cpp:327
+msgctxt "Dialog Options"
+msgid "Planetarium mode (F9)"
+msgstr "Mode planétarium (F9)"
+
+#: C:/github/openorbiter/Src/Orbiter/DlgOptions.cpp:319
+msgctxt "Dialog Options"
+msgid "Surface/object labels (Alt-F9)"
+msgstr "Étiquettes (Alt-F9)"
+
+#: C:/github/openorbiter/Src/Orbiter/DlgOptions.cpp:320
+#: C:/github/openorbiter/Src/Orbiter/DlgOptions.cpp:468
+msgctxt "Dialog Options"
+msgid "Body force vectors"
+msgstr "Vecteurs de force"
+
+#: C:/github/openorbiter/Src/Orbiter/DlgOptions.cpp:321
+#: C:/github/openorbiter/Src/Orbiter/DlgOptions.cpp:506
+msgctxt "Dialog Options"
+msgid "Object frame axis"
+msgstr "Repères objet"
+
+#: C:/github/openorbiter/Src/Orbiter/DlgOptions.cpp:332
+msgctxt "Dialog Options"
+msgid "Grids and circles"
+msgstr "Grilles et cercles"
+
+#: C:/github/openorbiter/Src/Orbiter/DlgOptions.cpp:333
+msgctxt "Dialog Options"
+msgid "Celestial grid"
+msgstr "Grille céleste"
+
+#: C:/github/openorbiter/Src/Orbiter/DlgOptions.cpp:334
+msgctxt "Dialog Options"
+msgid "Ecliptic grid"
+msgstr "Grille écliptique"
+
+#: C:/github/openorbiter/Src/Orbiter/DlgOptions.cpp:335
+msgctxt "Dialog Options"
+msgid "Galactic grid"
+msgstr "Grille galactique"
+
+#: C:/github/openorbiter/Src/Orbiter/DlgOptions.cpp:336
+msgctxt "Dialog Options"
+msgid "Local horizon grid"
+msgstr "Horizon local"
+
+#: C:/github/openorbiter/Src/Orbiter/DlgOptions.cpp:337
+msgctxt "Dialog Options"
+msgid "Target Equator"
+msgstr "Équateur"
+
+#: C:/github/openorbiter/Src/Orbiter/DlgOptions.cpp:339
+msgctxt "Dialog Options"
+msgid "Constellations"
+msgstr "Constellations"
+
+#: C:/github/openorbiter/Src/Orbiter/DlgOptions.cpp:340
+msgctxt "Dialog Options"
+msgid "Labels"
+msgstr "Noms"
+
+#: C:/github/openorbiter/Src/Orbiter/DlgOptions.cpp:342
+msgctxt "Dialog Options"
+msgid "Long labels"
+msgstr "Noms longs"
+
+#: C:/github/openorbiter/Src/Orbiter/DlgOptions.cpp:344
+msgctxt "Dialog Options"
+msgid "Boundaries"
+msgstr "Secteurs"
+
+#: C:/github/openorbiter/Src/Orbiter/DlgOptions.cpp:345
+msgctxt "Dialog Options"
+msgid "Patterns"
+msgstr "Traits"
+
+#: C:/github/openorbiter/Src/Orbiter/DlgOptions.cpp:349
+msgctxt "Dialog Options"
+msgid "Celestical markers"
+msgstr "Marqueurs célestes"
+
+#: C:/github/openorbiter/Src/Orbiter/DlgOptions.cpp:351
+msgctxt "Dialog Options"
+msgid "Show markers"
+msgstr "Afficher"
+
+#: C:/github/openorbiter/Src/Orbiter/DlgOptions.cpp:407
+msgctxt "Dialog Options"
+msgid "Surface and object labels (Alt-F9)"
+msgstr "Étiquettes et points d'intérêt (Alt-F9)"
+
+#: C:/github/openorbiter/Src/Orbiter/DlgOptions.cpp:412
+msgctxt "Dialog Options"
+msgid "Object markers"
+msgstr "Étiquettes"
+
+#: C:/github/openorbiter/Src/Orbiter/DlgOptions.cpp:413
+#: C:/github/openorbiter/Src/Orbiter/DlgOptions.cpp:513
+msgctxt "Dialog Options"
+msgid "Vessels"
+msgstr "Vaisseaux"
+
+#: C:/github/openorbiter/Src/Orbiter/DlgOptions.cpp:414
+#: C:/github/openorbiter/Src/Orbiter/DlgOptions.cpp:514
+msgctxt "Dialog Options"
+msgid "Celestial bodies"
+msgstr "Corps célestes"
+
+#: C:/github/openorbiter/Src/Orbiter/DlgOptions.cpp:415
+#: C:/github/openorbiter/Src/Orbiter/DlgOptions.cpp:515
+msgctxt "Dialog Options"
+msgid "Surface bases"
+msgstr "Bases"
+
+#: C:/github/openorbiter/Src/Orbiter/DlgOptions.cpp:416
+msgctxt "Dialog Options"
+msgid "VOR transmitters"
+msgstr "Émetteurs VOR"
+
+#: C:/github/openorbiter/Src/Orbiter/DlgOptions.cpp:420
+msgctxt "Dialog Options"
+msgid "Surface features"
+msgstr "Points d'intérêt"
+
+#: C:/github/openorbiter/Src/Orbiter/DlgOptions.cpp:421
+msgctxt "Dialog Options"
+msgid "Features"
+msgstr "Afficher"
+
+#: C:/github/openorbiter/Src/Orbiter/DlgOptions.cpp:474
+msgctxt "Dialog Options"
+msgid "Linear forces"
+msgstr "Forces linéaires"
+
+#: C:/github/openorbiter/Src/Orbiter/DlgOptions.cpp:475
+msgctxt "Dialog Options"
+msgid "Weight"
+msgstr "Poids"
+
+#: C:/github/openorbiter/Src/Orbiter/DlgOptions.cpp:476
+msgctxt "Dialog Options"
+msgid "Thrust"
+msgstr "Poussée"
+
+#: C:/github/openorbiter/Src/Orbiter/DlgOptions.cpp:477
+msgctxt "Dialog Options"
+msgid "Lift"
+msgstr "Portance"
+
+#: C:/github/openorbiter/Src/Orbiter/DlgOptions.cpp:478
+msgctxt "Dialog Options"
+msgid "Drag"
+msgstr "Traînée"
+
+#: C:/github/openorbiter/Src/Orbiter/DlgOptions.cpp:479
+msgctxt "Dialog Options"
+msgid "Side"
+msgstr "Force latérale"
+
+#: C:/github/openorbiter/Src/Orbiter/DlgOptions.cpp:481
+msgctxt "Dialog Options"
+msgid "Total"
+msgstr "Total"
+
+#: C:/github/openorbiter/Src/Orbiter/DlgOptions.cpp:483
+msgctxt "Dialog Options"
+msgid "Angular moments"
+msgstr "Moments angulaires"
+
+#: C:/github/openorbiter/Src/Orbiter/DlgOptions.cpp:484
+msgctxt "Dialog Options"
+msgid "Torque"
+msgstr "Couple"
+
+#: C:/github/openorbiter/Src/Orbiter/DlgOptions.cpp:488
+#: C:/github/openorbiter/Src/Orbiter/DlgOptions.cpp:519
+msgctxt "Dialog Options"
+msgid "Display"
+msgstr "Affichage"
+
+#. Logarithmic
+#: C:/github/openorbiter/Src/Orbiter/DlgOptions.cpp:490
+msgctxt "Dialog Options"
+msgid "Log"
+msgstr "Logarithmique"
+
+#: C:/github/openorbiter/Src/Orbiter/DlgOptions.cpp:494
+msgctxt "Dialog Options"
+msgid "Linear"
+msgstr "Linéaire"
+
+#: C:/github/openorbiter/Src/Orbiter/DlgOptions.cpp:497
+#: C:/github/openorbiter/Src/Orbiter/DlgOptions.cpp:522
+msgctxt "Dialog Options"
+msgid "Scale"
+msgstr "Échelle"
+
+#: C:/github/openorbiter/Src/Orbiter/DlgOptions.cpp:498
+#: C:/github/openorbiter/Src/Orbiter/DlgOptions.cpp:523
+msgctxt "Dialog Options"
+msgid "Opacity"
+msgstr "Opacité"
+
+#: C:/github/openorbiter/Src/Orbiter/DlgOptions.cpp:512
+msgctxt "Dialog Options"
+msgid "Objects"
+msgstr "Objets"
+
+#: C:/github/openorbiter/Src/Orbiter/DlgOptions.cpp:520
+msgctxt "Dialog Options"
+msgid "Show negative axis"
+msgstr "Axes négatifs"
+
 #: C:/github/openorbiter/Src/Orbiter/MenuInfoBar.cpp:78
 msgctxt "MenuInfoBar"
 msgid "Cannot find menu item texture"
@@ -1258,7 +1769,7 @@ msgstr "Sim ..%07.0fs"
 #: C:/github/openorbiter/Src/Orbiter/MenuInfoBar.cpp:780
 msgctxt "MenuInfoBar"
 msgid "Tgt %s"
-msgstr "Cible: %s"
+msgstr "Cible : %s"
 
 #: C:/github/openorbiter/Src/Orbiter/MenuInfoBar.cpp:784
 msgctxt "MenuInfoBar"
@@ -1287,13 +1798,13 @@ msgstr "Caméra  depuis %s"
 
 #: C:/github/openorbiter/Src/Orbiter/MenuInfoBar.cpp:789
 msgctxt "MenuInfoBar"
-msgid "(tgt-lock)"
-msgstr "(suivi cible)"
+msgid "(free)"
+msgstr "(libre)"
 
 #: C:/github/openorbiter/Src/Orbiter/MenuInfoBar.cpp:789
 msgctxt "MenuInfoBar"
-msgid "(free)"
-msgstr "(libre)"
+msgid "(tgt-lock)"
+msgstr "(suivi cible)"
 
 #: C:/github/openorbiter/Src/Orbiter/MenuInfoBar.cpp:789
 msgctxt "MenuInfoBar"

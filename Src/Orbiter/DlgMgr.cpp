@@ -27,6 +27,9 @@
 #include <string>
 #include <unordered_map>
 
+#define TRANSLATION_CONTEXT "Dialog manager"
+#include "i18n.h"
+
 using namespace oapi;
 
 extern char DBG_MSG[256];
@@ -618,7 +621,7 @@ bool ImGuiDialog::HandleHelpButton() {
 		hc.toc = (char*)"html/orbiter.chm::/orbiter.hhc";
 		hc.index = (char*)"html/orbiter.chm::/orbiter.hhk";
 
-		if(ImGui::MenuButton(ICON_FA_CIRCLE_QUESTION, "Help")) {
+		if(ImGui::MenuButton(ICON_FA_CIRCLE_QUESTION, _("Help"))) {
 			g_pOrbiter->OpenHelp(&hc);
 		}
 		return true;
@@ -837,7 +840,7 @@ static void RenderNotifications()
 
 				if (ImGui::BeginPopupContextItem(popup_name))
 				{
-					if (ImGui::MenuItem("Copy")) {
+					if (ImGui::MenuItem(_("Copy"))) {
 						ImGui::SetClipboardText(notif.content.c_str());
 					}
 					ImGui::EndPopup();
@@ -885,10 +888,10 @@ namespace ImGui {
 		if (ImGui::BeginPopupContextItem(label))
 		{
 			char buf[64];
-			sprintf(buf, "Reset to %f", v_default);
+			sprintf(buf, _("Reset to %f"), v_default);
 			if (ImGui::MenuItem(buf))
 				*v = v_default;
-			ImGui::MenuItem("Close");
+			ImGui::MenuItem(_("Close"));
 			ImGui::EndPopup();
 		}
 		return ret;
@@ -994,7 +997,7 @@ namespace ImGui {
 
 	DLLEXPORT bool SliderEnum(const char *label, int *v, const char *values[], int nvalues)
 	{
-        const char* elem_name = (*v >= 0 && *v < nvalues) ? values[*v] : "Unknown";
+        const char* elem_name = (*v >= 0 && *v < nvalues) ? values[*v] : _("Unknown");
         return ImGui::SliderInt(label, v, 0, nvalues - 1, elem_name);
 	}
 
