@@ -315,8 +315,8 @@ msgstr "Orbiter : Sélection vaisseau"
 
 #: C:/github/openorbiter/Src/Orbiter/DlgFocus.cpp:31
 msgctxt "Dialog Focus"
-msgid "Nearby"
-msgstr "Par distance"
+msgid "Location"
+msgstr "Par emplacement"
 
 #: C:/github/openorbiter/Src/Orbiter/DlgFocus.cpp:31
 msgctxt "Dialog Focus"
@@ -325,8 +325,8 @@ msgstr "Tous"
 
 #: C:/github/openorbiter/Src/Orbiter/DlgFocus.cpp:31
 msgctxt "Dialog Focus"
-msgid "Location"
-msgstr "Par emplacement"
+msgid "Nearby"
+msgstr "Par distance"
 
 #: C:/github/openorbiter/Src/Orbiter/DlgFocus.cpp:31
 msgctxt "Dialog Focus"
@@ -378,26 +378,26 @@ msgstr "Impossible d'ouvrir le fichier d'aide"
 #: C:/github/openorbiter/Src/Orbiter/DlgInfo.cpp:262
 #: C:/github/openorbiter/Src/Orbiter/DlgInfo.cpp:818
 msgctxt "Cardinal direction"
-msgid "N"
-msgstr "N"
-
-#: C:/github/openorbiter/Src/Orbiter/DlgInfo.cpp:262
-#: C:/github/openorbiter/Src/Orbiter/DlgInfo.cpp:818
-msgctxt "Cardinal direction"
-msgid "W"
-msgstr "O"
-
-#: C:/github/openorbiter/Src/Orbiter/DlgInfo.cpp:262
-#: C:/github/openorbiter/Src/Orbiter/DlgInfo.cpp:818
-msgctxt "Cardinal direction"
 msgid "S"
 msgstr "S"
 
 #: C:/github/openorbiter/Src/Orbiter/DlgInfo.cpp:262
 #: C:/github/openorbiter/Src/Orbiter/DlgInfo.cpp:818
 msgctxt "Cardinal direction"
+msgid "N"
+msgstr "N"
+
+#: C:/github/openorbiter/Src/Orbiter/DlgInfo.cpp:262
+#: C:/github/openorbiter/Src/Orbiter/DlgInfo.cpp:818
+msgctxt "Cardinal direction"
 msgid "E"
 msgstr "E"
+
+#: C:/github/openorbiter/Src/Orbiter/DlgInfo.cpp:262
+#: C:/github/openorbiter/Src/Orbiter/DlgInfo.cpp:818
+msgctxt "Cardinal direction"
+msgid "W"
+msgstr "O"
 
 #: C:/github/openorbiter/Src/Orbiter/DlgInfo.cpp:24
 msgctxt "Dialog Info"
@@ -598,14 +598,14 @@ msgstr "Roulis"
 #. Bank xxx° right/left
 #: C:/github/openorbiter/Src/Orbiter/DlgInfo.cpp:300
 msgctxt "Dialog Info"
-msgid "right"
-msgstr "à droite"
+msgid "left"
+msgstr "à gauche"
 
 #. Bank xxx° right/left
 #: C:/github/openorbiter/Src/Orbiter/DlgInfo.cpp:300
 msgctxt "Dialog Info"
-msgid "left"
-msgstr "à gauche"
+msgid "right"
+msgstr "à droite"
 
 #: C:/github/openorbiter/Src/Orbiter/DlgInfo.cpp:308
 msgctxt "Dialog Info"
@@ -880,13 +880,13 @@ msgstr "Intégration"
 
 #: C:/github/openorbiter/Src/Orbiter/DlgInfo.cpp:786
 msgctxt "Dialog Info"
-msgid "from module"
-msgstr "module"
+msgid "Analytic (%s)"
+msgstr "Analytique (%s)"
 
 #: C:/github/openorbiter/Src/Orbiter/DlgInfo.cpp:786
 msgctxt "Dialog Info"
-msgid "Analytic (%s)"
-msgstr "Analytique (%s)"
+msgid "from module"
+msgstr "module"
 
 #: C:/github/openorbiter/Src/Orbiter/DlgInfo.cpp:786
 msgctxt "Dialog Info"
@@ -905,13 +905,13 @@ msgstr "Aires d'atterrissage"
 
 #: C:/github/openorbiter/Src/Orbiter/DlgInfo.cpp:832
 msgctxt "Dialog Info"
-msgid "free"
-msgstr "libre"
+msgid "reserved"
+msgstr "réservée"
 
 #: C:/github/openorbiter/Src/Orbiter/DlgInfo.cpp:832
 msgctxt "Dialog Info"
-msgid "reserved"
-msgstr "réservée"
+msgid "free"
+msgstr "libre"
 
 #: C:/github/openorbiter/Src/Orbiter/DlgInfo.cpp:845
 msgctxt "Dialog Info"
@@ -1127,11 +1127,11 @@ msgid "Orbiter: Configure menu bars"
 msgstr "Orbiter : Barre de menu"
 
 #: C:/github/openorbiter/Src/Orbiter/DlgMenuCfg.cpp:29
-#: C:/github/openorbiter/Src/Orbiter/DlgMenuCfg.cpp:43
-#: C:/github/openorbiter/Src/Orbiter/DlgMenuCfg.cpp:59
+#: C:/github/openorbiter/Src/Orbiter/DlgMenuCfg.cpp:39
+#: C:/github/openorbiter/Src/Orbiter/DlgMenuCfg.cpp:55
 msgctxt "Dialog MenuCfg"
-msgid "Auto-hide"
-msgstr "Masquer automatiquement"
+msgid "Show"
+msgstr "Montrer"
 
 #: C:/github/openorbiter/Src/Orbiter/DlgMenuCfg.cpp:29
 #: C:/github/openorbiter/Src/Orbiter/DlgMenuCfg.cpp:41
@@ -1141,11 +1141,11 @@ msgid "Hide"
 msgstr "Masquer"
 
 #: C:/github/openorbiter/Src/Orbiter/DlgMenuCfg.cpp:29
-#: C:/github/openorbiter/Src/Orbiter/DlgMenuCfg.cpp:39
-#: C:/github/openorbiter/Src/Orbiter/DlgMenuCfg.cpp:55
+#: C:/github/openorbiter/Src/Orbiter/DlgMenuCfg.cpp:43
+#: C:/github/openorbiter/Src/Orbiter/DlgMenuCfg.cpp:59
 msgctxt "Dialog MenuCfg"
-msgid "Show"
-msgstr "Montrer"
+msgid "Auto-hide"
+msgstr "Masquer automatiquement"
 
 #: C:/github/openorbiter/Src/Orbiter/DlgMenuCfg.cpp:35
 msgctxt "Dialog MenuCfg"
@@ -1210,13 +1210,13 @@ msgstr "Nulle part"
 
 #: C:/github/openorbiter/Src/Orbiter/DlgMenuCfg.cpp:65
 msgctxt "Dialog MenuCfg"
-msgid "On the left"
-msgstr "À gauche"
+msgid "On the right"
+msgstr "À droite"
 
 #: C:/github/openorbiter/Src/Orbiter/DlgMenuCfg.cpp:65
 msgctxt "Dialog MenuCfg"
-msgid "On the right"
-msgstr "À droite"
+msgid "On the left"
+msgstr "À gauche"
 
 #: C:/github/openorbiter/Src/Orbiter/DlgMenuCfg.cpp:71
 msgctxt "Dialog MenuCfg"
@@ -1419,8 +1419,8 @@ msgstr "Moteur principal"
 
 #: C:/github/openorbiter/Src/Orbiter/DlgOptions.cpp:218
 msgctxt "Dialog Options"
-msgid "Slider 0"
-msgstr "Levier 0"
+msgid "<Keyboard only>"
+msgstr "<Clavier uniquement>"
 
 #: C:/github/openorbiter/Src/Orbiter/DlgOptions.cpp:218
 msgctxt "Dialog Options"
@@ -1429,13 +1429,13 @@ msgstr "Levier 1"
 
 #: C:/github/openorbiter/Src/Orbiter/DlgOptions.cpp:218
 msgctxt "Dialog Options"
-msgid "Z-axis"
-msgstr "Axe Z"
+msgid "Slider 0"
+msgstr "Levier 0"
 
 #: C:/github/openorbiter/Src/Orbiter/DlgOptions.cpp:218
 msgctxt "Dialog Options"
-msgid "<Keyboard only>"
-msgstr "<Clavier uniquement>"
+msgid "Z-axis"
+msgstr "Axe Z"
 
 #: C:/github/openorbiter/Src/Orbiter/DlgOptions.cpp:234
 msgctxt "Dialog Options"
@@ -1734,6 +1734,139 @@ msgctxt "Dialog Options"
 msgid "Show negative axis"
 msgstr "Axes négatifs"
 
+#: C:/github/openorbiter/Src/Orbiter/DlgRecorder.cpp:21
+msgctxt "Dialog Recorder"
+msgid "Orbiter: Flight recorder/player"
+msgstr "Orbiter : Enregisteur/Lecteur de vol"
+
+#: C:/github/openorbiter/Src/Orbiter/DlgRecorder.cpp:28
+msgctxt "Dialog Recorder"
+msgid "Status: Normal"
+msgstr "État : Normal"
+
+#: C:/github/openorbiter/Src/Orbiter/DlgRecorder.cpp:28
+msgctxt "Dialog Recorder"
+msgid "Status: Playing"
+msgstr "Status: Lecture"
+
+#: C:/github/openorbiter/Src/Orbiter/DlgRecorder.cpp:28
+msgctxt "Dialog Recorder"
+msgid "Status: Recording"
+msgstr "Status: Enregistrement"
+
+#: C:/github/openorbiter/Src/Orbiter/DlgRecorder.cpp:40
+#: C:/github/openorbiter/Src/Orbiter/DlgRecorder.cpp:91
+msgctxt "Dialog Recorder"
+msgid "STOP"
+msgstr "ARRÊT"
+
+#: C:/github/openorbiter/Src/Orbiter/DlgRecorder.cpp:44
+msgctxt "Dialog Recorder"
+msgid "REC"
+msgstr "ENR"
+
+#: C:/github/openorbiter/Src/Orbiter/DlgRecorder.cpp:53
+msgctxt "Dialog Recorder"
+msgid "A flight record under this name already exists!"
+msgstr "Un enregistrement existe déjà avec ce nom!"
+
+#: C:/github/openorbiter/Src/Orbiter/DlgRecorder.cpp:54
+msgctxt "Dialog Recorder"
+msgid "Overwrite"
+msgstr "Écraser"
+
+#: C:/github/openorbiter/Src/Orbiter/DlgRecorder.cpp:59
+msgctxt "Dialog Recorder"
+msgid "Cancel"
+msgstr "Annuler"
+
+#: C:/github/openorbiter/Src/Orbiter/DlgRecorder.cpp:66
+msgctxt "Dialog Recorder"
+msgid "Scenario"
+msgstr "Scénario"
+
+#: C:/github/openorbiter/Src/Orbiter/DlgRecorder.cpp:67
+msgctxt "Dialog Recorder"
+msgid "Advanced"
+msgstr "Paramètres avancés"
+
+#: C:/github/openorbiter/Src/Orbiter/DlgRecorder.cpp:68
+msgctxt "Dialog Recorder"
+msgid "Record Time Acceleration"
+msgstr "Enregistrer la vitesse de simulation"
+
+#: C:/github/openorbiter/Src/Orbiter/DlgRecorder.cpp:69
+msgctxt "Dialog Recorder"
+msgid "Record Focus Events"
+msgstr "Enregistrer les changements de cible"
+
+#: C:/github/openorbiter/Src/Orbiter/DlgRecorder.cpp:71
+msgctxt "Dialog Recorder"
+msgid "Sampling in System Time Steps"
+msgstr "Échantillonnage en temps système"
+
+#: C:/github/openorbiter/Src/Orbiter/DlgRecorder.cpp:75
+msgctxt "Dialog Recorder"
+msgid "Attitude Data"
+msgstr "Repère d'attitude"
+
+#. keep the ###ef1 suffix (required by ImGui)
+#: C:/github/openorbiter/Src/Orbiter/DlgRecorder.cpp:77
+msgctxt "Dialog Recorder"
+msgid "Ecliptic Frame###ef1"
+msgstr "Écliptique###ef1"
+
+#: C:/github/openorbiter/Src/Orbiter/DlgRecorder.cpp:78
+msgctxt "Dialog Recorder"
+msgid "Local Horizon Frame"
+msgstr "Horizon local"
+
+#: C:/github/openorbiter/Src/Orbiter/DlgRecorder.cpp:81
+msgctxt "Dialog Recorder"
+msgid "Position / Velocity Data"
+msgstr "Repère de position / vitesse"
+
+#. keep the ###ef2 suffix (required by ImGui)
+#: C:/github/openorbiter/Src/Orbiter/DlgRecorder.cpp:83
+msgctxt "Dialog Recorder"
+msgid "Ecliptic Frame###ef2"
+msgstr "Écliptique###ef2"
+
+#: C:/github/openorbiter/Src/Orbiter/DlgRecorder.cpp:84
+msgctxt "Dialog Recorder"
+msgid "Equatorial Frame"
+msgstr "Équatorial"
+
+#: C:/github/openorbiter/Src/Orbiter/DlgRecorder.cpp:95
+msgctxt "Dialog Recorder"
+msgid "Replay Options"
+msgstr "Options de lecture"
+
+#: C:/github/openorbiter/Src/Orbiter/DlgRecorder.cpp:96
+msgctxt "Dialog Recorder"
+msgid "Show Inflight Notes"
+msgstr "Montrer les annotations"
+
+#: C:/github/openorbiter/Src/Orbiter/DlgRecorder.cpp:97
+msgctxt "Dialog Recorder"
+msgid "Play at Recording Speed"
+msgstr "Lire à la vitesse d'enregistrement"
+
+#: C:/github/openorbiter/Src/Orbiter/DlgRecorder.cpp:103
+msgctxt "Dialog Recorder"
+msgid "Use Recorded Camera Settings"
+msgstr "Utiliser les paramètrages caméra enregistrés"
+
+#: C:/github/openorbiter/Src/Orbiter/DlgRecorder.cpp:108
+msgctxt "Dialog Recorder"
+msgid "Use Recorded Focus Events"
+msgstr "Utiliser les paramètrages de ciblage enregistrés"
+
+#: C:/github/openorbiter/Src/Orbiter/DlgRecorder.cpp:115
+msgctxt "Dialog Recorder"
+msgid "Editor"
+msgstr "Éditeur"
+
 #: C:/github/openorbiter/Src/Orbiter/MenuInfoBar.cpp:78
 msgctxt "MenuInfoBar"
 msgid "Cannot find menu item texture"
@@ -1798,11 +1931,6 @@ msgstr "Caméra  depuis %s"
 
 #: C:/github/openorbiter/Src/Orbiter/MenuInfoBar.cpp:789
 msgctxt "MenuInfoBar"
-msgid "(free)"
-msgstr "(libre)"
-
-#: C:/github/openorbiter/Src/Orbiter/MenuInfoBar.cpp:789
-msgctxt "MenuInfoBar"
 msgid "(tgt-lock)"
 msgstr "(suivi cible)"
 
@@ -1810,6 +1938,11 @@ msgstr "(suivi cible)"
 msgctxt "MenuInfoBar"
 msgid "Cam ground %s"
 msgstr "Caméra sol %s"
+
+#: C:/github/openorbiter/Src/Orbiter/MenuInfoBar.cpp:789
+msgctxt "MenuInfoBar"
+msgid "(free)"
+msgstr "(libre)"
 
 #: C:/github/openorbiter/Src/Orbiter/MenuInfoBar.cpp:792
 msgctxt "MenuInfoBar"
