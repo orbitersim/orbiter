@@ -15,7 +15,7 @@
 #include "IconsFontAwesome6.h"
 
 #define TRANSLATION_CONTEXT "Dialog Info"
-#include "i18n.h"
+#include "I18NAPI.h"
 
 extern PlanetarySystem *g_psys;
 extern Vessel *g_focusobj;

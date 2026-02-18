@@ -9,7 +9,7 @@
 #include <io.h>
 #include "imgui.h"
 #define TRANSLATION_CONTEXT "Dialog Help"
-#include "i18n.h"
+#include "I18NAPI.h"
 
 // This is just a placeholder to call the HtmlHelp API
 // We draw nothing ourselves

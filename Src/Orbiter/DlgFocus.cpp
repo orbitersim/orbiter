@@ -15,7 +15,7 @@
 #include "IconsFontAwesome6.h"
 
 #define TRANSLATION_CONTEXT "Dialog Focus"
-#include "i18n.h"
+#include "I18NAPI.h"
 
 extern Camera *g_camera;
 extern PlanetarySystem *g_psys;

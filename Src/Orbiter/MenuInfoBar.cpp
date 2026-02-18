@@ -11,7 +11,7 @@
 #include "DlgMenuCfg.h"
 
 #define TRANSLATION_CONTEXT "MenuInfoBar"
-#include "i18n.h"
+#include "I18NAPI.h"
 
 // =======================================================================
 // Externs

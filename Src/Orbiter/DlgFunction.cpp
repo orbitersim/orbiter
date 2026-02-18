@@ -11,7 +11,7 @@
 #include "IconsFontAwesome6.h"
 
 #define TRANSLATION_CONTEXT "Dialog Function"
-#include "i18n.h"
+#include "I18NAPI.h"
 
 extern Orbiter *g_pOrbiter;
 

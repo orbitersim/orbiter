@@ -10,7 +10,7 @@
 #include "IconsFontAwesome6.h"
 
 #define TRANSLATION_CONTEXT "Dialog Capture"
-#include "i18n.h"
+#include "I18NAPI.h"
 
 extern Orbiter *g_pOrbiter;
 

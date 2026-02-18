@@ -28,7 +28,7 @@
 #include <unordered_map>
 
 #define TRANSLATION_CONTEXT "Dialog manager"
-#include "i18n.h"
+#include "I18NAPI.h"
 
 using namespace oapi;
 

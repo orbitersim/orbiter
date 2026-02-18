@@ -8,7 +8,7 @@
 #include "IconsFontAwesome6.h"
 
 #define TRANSLATION_CONTEXT "Dialog Camera"
-#include "i18n.h"
+#include "I18NAPI.h"
 
 extern PlanetarySystem *g_psys;
 extern Camera *g_camera;

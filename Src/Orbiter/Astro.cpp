@@ -7,7 +7,7 @@
 #include <fstream>
 #include "Astro.h"
 #include "Vecmat.h"
-#include "i18n.h"
+#include "I18NAPI.h"
 
 // transforms a date and time (UT) into MJD format
 double date2mjd (struct tm *date)

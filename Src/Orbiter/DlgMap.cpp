@@ -14,7 +14,7 @@
 #include "DlgInfo.h"
 
 #define TRANSLATION_CONTEXT "Dialog Map"
-#include "i18n.h"
+#include "I18NAPI.h"
 
 extern TimeData td;
 

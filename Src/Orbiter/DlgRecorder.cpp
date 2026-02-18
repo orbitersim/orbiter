@@ -13,7 +13,7 @@
 #include "IconsFontAwesome6.h"
 
 #define TRANSLATION_CONTEXT "Dialog Recorder"
-#include "i18n.h"
+#include "I18NAPI.h"
 
 extern Vessel *g_focusobj;
 extern Orbiter *g_pOrbiter;

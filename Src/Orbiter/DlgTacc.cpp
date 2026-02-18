@@ -14,7 +14,7 @@
 #include <algorithm>
 
 #define TRANSLATION_CONTEXT "Dialog Time acceleration"
-#include "i18n.h"
+#include "I18NAPI.h"
 
 extern TimeData td;
 extern Orbiter *g_pOrbiter;

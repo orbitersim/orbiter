@@ -18,7 +18,7 @@ extern PlanetarySystem* g_psys;
 #include "imgui_extras.h"
 
 #define TRANSLATION_CONTEXT "Dialog Options"
-#include "i18n.h"
+#include "I18NAPI.h"
 
 DlgOptions::DlgOptions(): ImGuiDialog(ICON_FA_LIST_CHECK, _("Orbiter: Options"), {692,383})
 {

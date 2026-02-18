@@ -1,5 +1,6 @@
-#pragma once
-#include "i18n.h"
+#define OAPI_IMPLEMENTATION
+
+#include "I18NAPI.h"
 #include <vector>
 #include <forward_list>
 #include <unordered_map>
@@ -377,7 +378,7 @@ void Init(bool notifymissing) {
 
 const std::vector<std::string> &GetLocales() { return g_locales; }
 
-const char *GetOriginalName(const char *name) {
+DLLEXPORT const char *GetOriginalName(const char *name) {
 	std::string folded = unicode_fold(name);
 	uint64_t key = I18NKey("Name", folded.c_str());
 	auto it = g_originalEntities.find(key);
@@ -453,14 +454,14 @@ void LoadPO(const char *filename) {
 
 // -------------------- GetText API --------------------
 
-const char *PGetText(uint64_t key) {
+DLLEXPORT const char *PGetText(uint64_t key) {
     auto it=g_translations.find(key);
     if(it!=g_translations.end()&&!it->second.plurals.empty()&&!it->second.plurals[0].empty()) return it->second.plurals[0].c_str();
     //if(g_notifyMissing) std::cerr << "Missing translation: " << msgid << "\n";
     return NULL;
 }
 
-const char *PNGetText(uint64_t key,const char *msgid_plural,unsigned int n) {
+DLLEXPORT const char *PNGetText(uint64_t key,const char *msgid_plural,unsigned int n) {
     auto it=g_translations.find(key);
     if(it!=g_translations.end()&&!it->second.plurals.empty()) {
         int idx=g_currentPluralRule.get_index(n);
@@ -471,7 +472,7 @@ const char *PNGetText(uint64_t key,const char *msgid_plural,unsigned int n) {
     return (n==1)?NULL:msgid_plural;
 }
 
-std::size_t u8bytes(const char *utf8, std::size_t max_codepoints) noexcept
+DLLEXPORT std::size_t u8bytes(const char *utf8, std::size_t max_codepoints) noexcept
 {
     std::size_t bytes = 0;
     std::size_t count = 0;
@@ -496,7 +497,7 @@ std::size_t u8bytes(const char *utf8, std::size_t max_codepoints) noexcept
     return bytes;
 }
 
-std::size_t u8len(const char *utf8) noexcept
+DLLEXPORT std::size_t u8len(const char *utf8) noexcept
 {
 	std::size_t bytes = 0;
     std::size_t count = 0;
@@ -521,7 +522,7 @@ std::size_t u8len(const char *utf8) noexcept
     return count;
 }
 
-std::size_t u8ncpy(char *u8dst, const char *u8src, std::size_t codepoints, std::size_t dest_size) noexcept
+DLLEXPORT std::size_t u8ncpy(char *u8dst, const char *u8src, std::size_t codepoints, std::size_t dest_size) noexcept
 {
 	if (dest_size == 0) return 0;
 
