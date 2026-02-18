@@ -44,6 +44,9 @@
 #include "imgui_impl_dx9.h"
 #include "imgui_impl_win32.h"
 
+#define TRANSLATION_CONTEXT "D3D9Client"
+#include "I18NAPI.h"
+
 #if defined(_MSC_VER) && (_MSC_VER <= 1700 ) // Microsoft Visual Studio Version 2012 and lower
 #define round(v) floor(v+0.5)
 #endif
@@ -254,6 +257,56 @@ DLLCLBK gcConst * gcGetCoreAPI()
 // ==============================================================
 // D3D9Client class implementation
 // ==============================================================
+
+static std::wstring ToWide(const char* input)
+{
+    if (!input) return L"";
+
+    // Try UTF-8 first
+    int len = MultiByteToWideChar(
+        CP_UTF8,
+        MB_ERR_INVALID_CHARS,
+        input,
+        -1,
+        nullptr,
+        0
+    );
+
+    if (len > 0) {
+        std::wstring out(len - 1, L'\0');
+        MultiByteToWideChar(
+            CP_UTF8,
+            MB_ERR_INVALID_CHARS,
+            input,
+            -1,
+            out.data(),
+            len
+        );
+        return out;
+    }
+
+    // Fallback to Windows-1252
+    len = MultiByteToWideChar(
+        1252,
+        0,
+        input,
+        -1,
+        nullptr,
+        0
+    );
+
+    std::wstring out(len - 1, L'\0');
+    MultiByteToWideChar(
+        1252,
+        0,
+        input,
+        -1,
+        out.data(),
+        len
+    );
+
+    return out;
+}
 
 D3D9Client::D3D9Client (HINSTANCE hInstance) :
 	GraphicsClient(hInstance),
@@ -503,7 +556,7 @@ HWND D3D9Client::clbkCreateRenderWindow()
 
 	ShowWindow(hRenderWnd, SW_SHOW);
 
-	OutputLoadStatus("Building Shader Programs...",0);
+	OutputLoadStatus(_("Building Shader Programs..."),0);
 
 	D3D9Effect::D3D9TechInit(this, pDevice, fld);
 
@@ -2899,56 +2952,6 @@ void D3D9Client::WriteLog(const char *msg) const
 
 // =======================================================================
 
-static std::wstring ToWide(const char* input)
-{
-    if (!input) return L"";
-
-    // Try UTF-8 first
-    int len = MultiByteToWideChar(
-        CP_UTF8,
-        MB_ERR_INVALID_CHARS,
-        input,
-        -1,
-        nullptr,
-        0
-    );
-
-    if (len > 0) {
-        std::wstring out(len - 1, L'\0');
-        MultiByteToWideChar(
-            CP_UTF8,
-            MB_ERR_INVALID_CHARS,
-            input,
-            -1,
-            out.data(),
-            len
-        );
-        return out;
-    }
-
-    // Fallback to Windows-1252
-    len = MultiByteToWideChar(
-        1252,
-        0,
-        input,
-        -1,
-        nullptr,
-        0
-    );
-
-    std::wstring out(len - 1, L'\0');
-    MultiByteToWideChar(
-        1252,
-        0,
-        input,
-        -1,
-        out.data(),
-        len
-    );
-
-    return out;
-}
-
 bool D3D9Client::OutputLoadStatus(const char *txt, int line)
 {
 
@@ -3121,7 +3124,6 @@ void D3D9Client::SplashScreen()
 #endif
 
 	char dataB[128]; sprintf_s(dataB,128,"Build %s %lu 20%lu [%u]", months[m], d, y, oapiGetOrbiterVersion());
-	char dataD[] = { "Warning: Config folder not present in /Modules/Server/. Please create symbolic link." };
 	//char dataE[] = { "Note: Cubic Interpolation is use... Consider using linear for better elevation matching" };
 	//char dataF[] = { "Note: Terrain flattening offline due to cubic interpolation" };
 
@@ -3132,14 +3134,19 @@ void D3D9Client::SplashScreen()
 	TextOut(hDC, xc, yc + 1*20, dataB, lstrlen(dataB));
 	TextOut(hDC, xc, yc + 2*20, dataA, lstrlen(dataA));
 
-	DWORD VPOS = viewH - 50;
+	DWORD VPOS = viewH - 150;
 	DWORD LSPACE = 20;
-
 	SetTextAlign(hDC, TA_CENTER);
+
+	std::wstring loading = ToWide(_("Loading..."));
+	TextOutW(hDC, viewW/2, VPOS, loading.c_str(), loading.length());
+	VPOS+=100;
+
 	DWORD cattrib = GetFileAttributes("Modules/Server/Config");
 
 	if ((cattrib&0x10)==0 || cattrib==INVALID_FILE_ATTRIBUTES) {
-		TextOut(hDC, viewW/2, VPOS, dataD, lstrlen(dataD));
+		std::wstring warning = ToWide(_("Warning: Config folder not present in /Modules/Server/. Please create symbolic link."));
+		TextOutW(hDC, viewW/2, VPOS, warning.c_str(), warning.length());
 		VPOS -= LSPACE;
 	}
 

@@ -13,6 +13,8 @@
 #include "D3D9Config.h"
 #include "D3D9Catalog.h"
 #include "Spherepatch.h"
+#define TRANSLATION_CONTEXT "D3D9Client"
+#include "I18NAPI.h"
 
 using namespace oapi;
 
@@ -58,7 +60,7 @@ CSphereManager::CSphereManager(D3D9Client *gc, const Scene *scene) : gc(gc), tex
 {
 	scn = scene;
 
-	gc->OutputLoadStatus("Loading Celestial Sphere...",0);
+	gc->OutputLoadStatus(_("Loading Celestial Sphere..."),0);
 	
 	patchidx  = TileManager::patchidx;
 	NLNG = TileManager::NLNG;

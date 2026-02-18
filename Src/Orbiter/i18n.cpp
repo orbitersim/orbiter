@@ -433,7 +433,7 @@ void LoadPO(const char *filename) {
 
         if (starts_with(line,"msgctxt")) raw_msgctxt=line.substr(9), currentTarget=nullptr;
         else if (starts_with(line,"msgid_plural")) raw_msgid_plural=extract_po_string(line), currentTarget=nullptr;
-        else if (starts_with(line,"msgid")) raw_msgid=extract_po_string(line), currentTarget=nullptr;
+        else if (starts_with(line,"msgid")) raw_msgid=extract_po_string(line), currentTarget=&raw_msgid;
         else if (starts_with(line,"msgstr ")) { currentTranslation.plurals.resize(1); currentTranslation.plurals[0]=UnescapePOString(extract_po_string(line)); currentTarget=&currentTranslation.plurals[0]; }
         else if (starts_with(line,"msgstr[")) {
             size_t idx_end=line.find(']',6);

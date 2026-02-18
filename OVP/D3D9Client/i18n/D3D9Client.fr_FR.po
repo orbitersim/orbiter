@@ -1,0 +1,43 @@
+# This file was auto-generated, DO NOT modify it directly
+msgid ""
+msgstr ""
+"Project-Id-Version: \n"
+"POT-Creation-Date: \n"
+"PO-Revision-Date: \n"
+"Last-Translator: \n"
+"Language-Team: \n"
+"Language: fr_FR\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n > 1);\n"
+"X-Generator: Poedit 3.8\n"
+
+#: C:/github/openorbiter/OVP/D3D9Client/CSphereMgr.cpp:63
+msgctxt "D3D9Client"
+msgid "Loading Celestial Sphere..."
+msgstr "Sphère céleste..."
+
+#: C:/github/openorbiter/OVP/D3D9Client/D3D9Client.cpp:559
+msgctxt "D3D9Client"
+msgid "Building Shader Programs..."
+msgstr "Compilation des shaders..."
+
+#: C:/github/openorbiter/OVP/D3D9Client/D3D9Client.cpp:3140
+msgctxt "D3D9Client"
+msgid "Loading..."
+msgstr "Chargement..."
+
+#: C:/github/openorbiter/OVP/D3D9Client/D3D9Client.cpp:3148
+msgctxt "D3D9Client"
+msgid ""
+"Warning: Config folder not present in /Modules/Server/. Please create "
+"symbolic link."
+msgstr ""
+"Attention : répertoire Config absent de Modules/Server/. Veuillez créer un "
+"lien symbolique."
+
+#: C:/github/openorbiter/OVP/D3D9Client/VPlanet.cpp:531
+msgctxt "D3D9Client"
+msgid "[WARNING] Surface textures are missing for %s"
+msgstr "Textures de surface manquantes : %s"
