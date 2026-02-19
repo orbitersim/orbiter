@@ -303,17 +303,17 @@ msgstr ""
 
 #: C:/github/openorbiter/Src/Orbiter/DlgFocus.cpp:31
 msgctxt "Dialog Focus"
+msgid "Class"
+msgstr ""
+
+#: C:/github/openorbiter/Src/Orbiter/DlgFocus.cpp:31
+msgctxt "Dialog Focus"
 msgid "All"
 msgstr ""
 
 #: C:/github/openorbiter/Src/Orbiter/DlgFocus.cpp:31
 msgctxt "Dialog Focus"
 msgid "Nearby"
-msgstr ""
-
-#: C:/github/openorbiter/Src/Orbiter/DlgFocus.cpp:31
-msgctxt "Dialog Focus"
-msgid "Class"
 msgstr ""
 
 #: C:/github/openorbiter/Src/Orbiter/DlgFocus.cpp:121 C:/github/openorbiter/Src/Orbiter/DlgFocus.cpp:177 C:/github/openorbiter/Src/Orbiter/DlgFocus.cpp:228 C:/github/openorbiter/Src/Orbiter/DlgFocus.cpp:74
@@ -348,6 +348,11 @@ msgstr ""
 
 #: C:/github/openorbiter/Src/Orbiter/DlgInfo.cpp:262 C:/github/openorbiter/Src/Orbiter/DlgInfo.cpp:818
 msgctxt "Cardinal direction"
+msgid "W"
+msgstr ""
+
+#: C:/github/openorbiter/Src/Orbiter/DlgInfo.cpp:262 C:/github/openorbiter/Src/Orbiter/DlgInfo.cpp:818
+msgctxt "Cardinal direction"
 msgid "S"
 msgstr ""
 
@@ -359,11 +364,6 @@ msgstr ""
 #: C:/github/openorbiter/Src/Orbiter/DlgInfo.cpp:262 C:/github/openorbiter/Src/Orbiter/DlgInfo.cpp:818
 msgctxt "Cardinal direction"
 msgid "E"
-msgstr ""
-
-#: C:/github/openorbiter/Src/Orbiter/DlgInfo.cpp:262 C:/github/openorbiter/Src/Orbiter/DlgInfo.cpp:818
-msgctxt "Cardinal direction"
-msgid "W"
 msgstr ""
 
 #: C:/github/openorbiter/Src/Orbiter/DlgInfo.cpp:24
@@ -448,7 +448,7 @@ msgstr ""
 
 #: C:/github/openorbiter/Src/Orbiter/DlgInfo.cpp:175
 msgctxt "Dialog Info"
-msgid "Retro"
+msgid "Hover"
 msgstr ""
 
 #: C:/github/openorbiter/Src/Orbiter/DlgInfo.cpp:175
@@ -458,7 +458,7 @@ msgstr ""
 
 #: C:/github/openorbiter/Src/Orbiter/DlgInfo.cpp:175
 msgctxt "Dialog Info"
-msgid "Hover"
+msgid "Retro"
 msgstr ""
 
 #: C:/github/openorbiter/Src/Orbiter/DlgInfo.cpp:197 C:/github/openorbiter/Src/Orbiter/DlgInfo.cpp:646
@@ -544,13 +544,13 @@ msgstr ""
 #: C:/github/openorbiter/Src/Orbiter/DlgInfo.cpp:300
 #. Bank xxx° right/left
 msgctxt "Dialog Info"
-msgid "right"
+msgid "left"
 msgstr ""
 
 #: C:/github/openorbiter/Src/Orbiter/DlgInfo.cpp:300
 #. Bank xxx° right/left
 msgctxt "Dialog Info"
-msgid "left"
+msgid "right"
 msgstr ""
 
 #: C:/github/openorbiter/Src/Orbiter/DlgInfo.cpp:308
@@ -820,12 +820,12 @@ msgstr ""
 
 #: C:/github/openorbiter/Src/Orbiter/DlgInfo.cpp:786
 msgctxt "Dialog Info"
-msgid "Analytic (%s)"
+msgid "from module"
 msgstr ""
 
 #: C:/github/openorbiter/Src/Orbiter/DlgInfo.cpp:786
 msgctxt "Dialog Info"
-msgid "from module"
+msgid "Analytic (%s)"
 msgstr ""
 
 #: C:/github/openorbiter/Src/Orbiter/DlgInfo.cpp:786
@@ -845,12 +845,12 @@ msgstr ""
 
 #: C:/github/openorbiter/Src/Orbiter/DlgInfo.cpp:832
 msgctxt "Dialog Info"
-msgid "reserved"
+msgid "free"
 msgstr ""
 
 #: C:/github/openorbiter/Src/Orbiter/DlgInfo.cpp:832
 msgctxt "Dialog Info"
-msgid "free"
+msgid "reserved"
 msgstr ""
 
 #: C:/github/openorbiter/Src/Orbiter/DlgInfo.cpp:845
@@ -1069,14 +1069,14 @@ msgctxt "Dialog MenuCfg"
 msgid "Hide"
 msgstr ""
 
-#: C:/github/openorbiter/Src/Orbiter/DlgMenuCfg.cpp:29 C:/github/openorbiter/Src/Orbiter/DlgMenuCfg.cpp:43 C:/github/openorbiter/Src/Orbiter/DlgMenuCfg.cpp:59
-msgctxt "Dialog MenuCfg"
-msgid "Auto-hide"
-msgstr ""
-
 #: C:/github/openorbiter/Src/Orbiter/DlgMenuCfg.cpp:29 C:/github/openorbiter/Src/Orbiter/DlgMenuCfg.cpp:39 C:/github/openorbiter/Src/Orbiter/DlgMenuCfg.cpp:55
 msgctxt "Dialog MenuCfg"
 msgid "Show"
+msgstr ""
+
+#: C:/github/openorbiter/Src/Orbiter/DlgMenuCfg.cpp:29 C:/github/openorbiter/Src/Orbiter/DlgMenuCfg.cpp:43 C:/github/openorbiter/Src/Orbiter/DlgMenuCfg.cpp:59
+msgctxt "Dialog MenuCfg"
+msgid "Auto-hide"
 msgstr ""
 
 #: C:/github/openorbiter/Src/Orbiter/DlgMenuCfg.cpp:35
@@ -1136,7 +1136,7 @@ msgstr ""
 
 #: C:/github/openorbiter/Src/Orbiter/DlgMenuCfg.cpp:65
 msgctxt "Dialog MenuCfg"
-msgid "On the right"
+msgid "None"
 msgstr ""
 
 #: C:/github/openorbiter/Src/Orbiter/DlgMenuCfg.cpp:65
@@ -1146,7 +1146,7 @@ msgstr ""
 
 #: C:/github/openorbiter/Src/Orbiter/DlgMenuCfg.cpp:65
 msgctxt "Dialog MenuCfg"
-msgid "None"
+msgid "On the right"
 msgstr ""
 
 #: C:/github/openorbiter/Src/Orbiter/DlgMenuCfg.cpp:71
@@ -1348,7 +1348,12 @@ msgstr ""
 
 #: C:/github/openorbiter/Src/Orbiter/DlgOptions.cpp:218
 msgctxt "Dialog Options"
-msgid "<Keyboard only>"
+msgid "Slider 0"
+msgstr ""
+
+#: C:/github/openorbiter/Src/Orbiter/DlgOptions.cpp:218
+msgctxt "Dialog Options"
+msgid "Slider 1"
 msgstr ""
 
 #: C:/github/openorbiter/Src/Orbiter/DlgOptions.cpp:218
@@ -1358,12 +1363,7 @@ msgstr ""
 
 #: C:/github/openorbiter/Src/Orbiter/DlgOptions.cpp:218
 msgctxt "Dialog Options"
-msgid "Slider 0"
-msgstr ""
-
-#: C:/github/openorbiter/Src/Orbiter/DlgOptions.cpp:218
-msgctxt "Dialog Options"
-msgid "Slider 1"
+msgid "<Keyboard only>"
 msgstr ""
 
 #: C:/github/openorbiter/Src/Orbiter/DlgOptions.cpp:234
@@ -1659,17 +1659,17 @@ msgstr ""
 
 #: C:/github/openorbiter/Src/Orbiter/DlgRecorder.cpp:28
 msgctxt "Dialog Recorder"
-msgid "Status: Recording"
-msgstr ""
-
-#: C:/github/openorbiter/Src/Orbiter/DlgRecorder.cpp:28
-msgctxt "Dialog Recorder"
 msgid "Status: Playing"
 msgstr ""
 
 #: C:/github/openorbiter/Src/Orbiter/DlgRecorder.cpp:28
 msgctxt "Dialog Recorder"
 msgid "Status: Normal"
+msgstr ""
+
+#: C:/github/openorbiter/Src/Orbiter/DlgRecorder.cpp:28
+msgctxt "Dialog Recorder"
+msgid "Status: Recording"
 msgstr ""
 
 #: C:/github/openorbiter/Src/Orbiter/DlgRecorder.cpp:40 C:/github/openorbiter/Src/Orbiter/DlgRecorder.cpp:91
@@ -1821,12 +1821,12 @@ msgstr ""
 
 #: C:/github/openorbiter/Src/Orbiter/DlgTacc.cpp:142
 msgctxt "Dialog Time acceleration"
-msgid "Pause"
+msgid "Resume"
 msgstr ""
 
 #: C:/github/openorbiter/Src/Orbiter/DlgTacc.cpp:142
 msgctxt "Dialog Time acceleration"
-msgid "Resume"
+msgid "Pause"
 msgstr ""
 
 #: C:/github/openorbiter/Src/Orbiter/MenuInfoBar.cpp:78
@@ -1893,12 +1893,12 @@ msgstr ""
 
 #: C:/github/openorbiter/Src/Orbiter/MenuInfoBar.cpp:789
 msgctxt "MenuInfoBar"
-msgid "(tgt-lock)"
+msgid "(free)"
 msgstr ""
 
 #: C:/github/openorbiter/Src/Orbiter/MenuInfoBar.cpp:789
 msgctxt "MenuInfoBar"
-msgid "(free)"
+msgid "(tgt-lock)"
 msgstr ""
 
 #: C:/github/openorbiter/Src/Orbiter/MenuInfoBar.cpp:789
@@ -1989,6 +1989,76 @@ msgstr ""
 #: C:/github/openorbiter/Src/Orbiter/Orbiter.cpp:1491
 msgctxt "Notification"
 msgid "Failed to save scenario"
+msgstr ""
+
+#: C:/github/openorbiter/Src/Orbiter/Rigidbody.cpp:534
+msgctxt "State propagator"
+msgid "Runge-Kutta, 2nd order (RK2)"
+msgstr ""
+
+#: C:/github/openorbiter/Src/Orbiter/Rigidbody.cpp:534
+msgctxt "State propagator"
+msgid "Runge-Kutta, 5th order (RK5)"
+msgstr ""
+
+#: C:/github/openorbiter/Src/Orbiter/Rigidbody.cpp:534
+msgctxt "State propagator"
+msgid "Runge-Kutta, 4th order (RK4)"
+msgstr ""
+
+#: C:/github/openorbiter/Src/Orbiter/Rigidbody.cpp:534
+msgctxt "State propagator"
+msgid "Runge-Kutta, 6th order (RK6)"
+msgstr ""
+
+#: C:/github/openorbiter/Src/Orbiter/Rigidbody.cpp:535
+msgctxt "State propagator"
+msgid "Runge-Kutta, 7th order (RK7)"
+msgstr ""
+
+#: C:/github/openorbiter/Src/Orbiter/Rigidbody.cpp:535
+msgctxt "State propagator"
+msgid "Runge-Kutta, 8th order (RK8)"
+msgstr ""
+
+#: C:/github/openorbiter/Src/Orbiter/Rigidbody.cpp:536
+msgctxt "State propagator"
+msgid "Symplectic, 6th order (SY6)"
+msgstr ""
+
+#: C:/github/openorbiter/Src/Orbiter/Rigidbody.cpp:536
+msgctxt "State propagator"
+msgid "Symplectic, 2nd order (SY2)"
+msgstr ""
+
+#: C:/github/openorbiter/Src/Orbiter/Rigidbody.cpp:536
+msgctxt "State propagator"
+msgid "Symplectic, 4th order (SY4)"
+msgstr ""
+
+#: C:/github/openorbiter/Src/Orbiter/Rigidbody.cpp:536
+msgctxt "State propagator"
+msgid "Symplectic, 8th order (SY8)"
+msgstr ""
+
+#: C:/github/openorbiter/Src/Orbiter/Rigidbody.cpp:538
+msgctxt "State propagator"
+msgid "unknown"
+msgstr ""
+
+#: C:/github/openorbiter/Src/Orbiter/Rigidbody.cpp:543 C:/github/openorbiter/Src/Orbiter/Rigidbody.cpp:552
+msgctxt "State propagator"
+msgid "none"
+msgstr ""
+
+#: C:/github/openorbiter/Src/Orbiter/Rigidbody.cpp:550
+msgctxt "State propagator"
+msgid "Euler"
+msgstr ""
+
+#: C:/github/openorbiter/Src/Orbiter/Rigidbody.cpp:551
+msgctxt "State propagator"
+msgid "decoupled"
 msgstr ""
 
 #: C:/github/openorbiter/Src/Orbiter/i18n/Names.h:55

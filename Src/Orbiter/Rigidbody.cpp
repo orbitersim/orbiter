@@ -21,6 +21,9 @@
 #include "Astro.h"
 #include "Log.h"
 
+#define TRANSLATION_CONTEXT "State propagator"
+#include "i18n.h"
+
 using namespace std;
 
 // =======================================================================
@@ -528,24 +531,24 @@ const char *RigidBody::PropagatorStr (DWORD idx, bool verbose) {
 		"SY2", "SY4", "SY6", "SY8"
 	};
 	static const char *LongPropModeStr[NPROP_METHOD] = {
-		"Runge-Kutta, 2nd order (RK2)", "Runge-Kutta, 4th order (RK4)", "Runge-Kutta, 5th order (RK5)", "Runge-Kutta, 6th order (RK6)",
-		"Runge-Kutta, 7th order (RK7)", "Runge-Kutta, 8th order (RK8)",
-		"Symplectic, 2nd order (SY2)", "Symplectic, 4th order (SY4)", "Symplectic, 6th order (SY6)", "Symplectic, 8th order (SY8)"
+		_("Runge-Kutta, 2nd order (RK2)"), _("Runge-Kutta, 4th order (RK4)"), _("Runge-Kutta, 5th order (RK5)"), _("Runge-Kutta, 6th order (RK6)"),
+		_("Runge-Kutta, 7th order (RK7)"), _("Runge-Kutta, 8th order (RK8)"),
+		_("Symplectic, 2nd order (SY2)"),  _("Symplectic, 4th order (SY4)"),  _("Symplectic, 6th order (SY6)"), _("Symplectic, 8th order (SY8)")
 	};
-	return (idx < NPROP_METHOD ? (verbose ? LongPropModeStr[idx] : ShortPropModeStr[idx]) : "unknown");
+	return (idx < NPROP_METHOD ? (verbose ? LongPropModeStr[idx] : ShortPropModeStr[idx]) : _("unknown"));
 }
 
 const char *RigidBody::CurPropagatorStr (bool verbose) const
 {
-	if (!bDynamicPosVel) return "none";
+	if (!bDynamicPosVel) return _("none");
 	else return PropagatorStr (PropMode[PropLevel].propidx, verbose);
 }
 
 const char *RigidBody::RotationModel () const
 {
 	static char cbuf[64];
-	if      (aidata.AngAcc == Call_EulerInv_full)   strcpy (cbuf, "Euler");
-	else if (aidata.AngAcc == Call_EulerInv_simple) strcpy (cbuf, "decoupled");
-	else                                         strcpy (cbuf, "none");
+	if      (aidata.AngAcc == Call_EulerInv_full)   strcpy (cbuf, _("Euler"));
+	else if (aidata.AngAcc == Call_EulerInv_simple) strcpy (cbuf, _("decoupled"));
+	else                                         strcpy (cbuf, _("none"));
 	return cbuf;
 }
