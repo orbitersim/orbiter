@@ -764,12 +764,12 @@ msgstr "Rayon moyen"
 #: C:/github/openorbiter/Src/Orbiter/DlgInfo.cpp:556
 msgctxt "Dialog Info"
 msgid "Gravitational Moments"
-msgstr "Moments gravitationnel"
+msgstr "Moments gravitationnels"
 
 #: C:/github/openorbiter/Src/Orbiter/DlgInfo.cpp:562
 msgctxt "Dialog Info"
 msgid "Siderial day"
-msgstr "Jour sidéral"
+msgstr "Durée du jour sidéral"
 
 #: C:/github/openorbiter/Src/Orbiter/DlgInfo.cpp:571
 msgctxt "Dialog Info"
