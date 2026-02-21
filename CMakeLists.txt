@@ -355,3 +355,5 @@ if (ORBITER_MAKE_TESTS)
       enable_testing()
       add_subdirectory(Tests)
 endif()
+
+generate_flights_pots(Flights)

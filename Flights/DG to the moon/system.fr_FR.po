@@ -1,0 +1,1239 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: Orbiter Flights\n"
+"POT-Creation-Date: \n"
+"PO-Revision-Date: \n"
+"Last-Translator: \n"
+"Language-Team: \n"
+"Language: fr_FR\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n > 1);\n"
+"X-Generator: Poedit 3.8\n"
+
+#: C:/github/openorbiter/Flights/DG to the moon/system.dat:5
+msgctxt "Flight"
+msgid ""
+"Fly me to the Moon! This flight recreates a complete lunar transfer with the "
+"Delta-glider from takeoff at the Kennedy Space Center to touchdown at "
+"Landing pad 1 of Brighton Beach Spaceport on the Moon."
+msgstr ""
+"Objectif Lune ! Ce vol reproduit un transfert lunaire complet depuis le "
+"décollage du Delta-Glider au Centre Spatial Kennedy jusqu’à l’atterrissage "
+"sur l'Aire 1 du Spatioport de Brighton Beach, sur la Lune."
+
+#: C:/github/openorbiter/Flights/DG to the moon/system.dat:7
+msgctxt "Flight"
+msgid ""
+"The entire flight is replayed for you and doesn't require manual control, "
+"but the various manouvers will be explained along the way, together with the "
+"operation of the essential flight instruments."
+msgstr ""
+"Ce vol est entièrement rejoué pour vous sans besoin de contrôle manuel, mais "
+"chaque manœuvre sera expliquée en temps réel, ainsi que le fonctionnement "
+"des instruments de vol clés."
+
+#: C:/github/openorbiter/Flights/DG to the moon/system.dat:9
+msgctxt "Flight"
+msgid ""
+"Total flight time will be 3 days, 9 hours and 42 minutes. If you haven't got "
+"that much time, you can accelerate the simulation speed during the cruising "
+"phases of the flight."
+msgstr ""
+"La durée totale du vol est de 3 jours, 9 heures et 42 minutes. Si vous "
+"n’avez pas ce temps, vous pouvez augmenter la vitesse de simulation pendant "
+"les phases de croisière."
+
+#: C:/github/openorbiter/Flights/DG to the moon/system.dat:11
+msgctxt "Flight"
+msgid ""
+"Or simply make sure that the \"Play at recording speed\" option is enabled "
+"in the recorder dialog (Ctrl-F5). At recording speed, this tutorial will "
+"take about one hour."
+msgstr ""
+"Sinon assurez-vous que l'option « Lire à la vitesse d'enregistrement » est "
+"activée dans la fenêtre du lecteur de vol (Ctrl-F5). À cette vitesse, la "
+"durée sera réduite à environ une heure."
+
+#: C:/github/openorbiter/Flights/DG to the moon/system.dat:14
+msgctxt "Flight"
+msgid ""
+"The MFD instruments will play an important role during all phases of the "
+"flight. The camera is therefore set to \"glass cockpit\" view with the two "
+"onscreen MFDs projected onto the head-up display. If you prefer the panel or "
+"virtual cockpit views, you can select them by pressing F8."
+msgstr ""
+"Les instruments multifonctions (MFD) joueront un rôle clé durant toutes les "
+"phases du vol. La caméra est configurée en vue « glass cockpit », projetant "
+"deux MFDs sur l’affichage tête haute (HUD). Pour utiliser la vue panneau "
+"ou cockpit virtuel, alternez via la touche F8."
+
+#: C:/github/openorbiter/Flights/DG to the moon/system.dat:15
+msgctxt "Flight"
+msgid ""
+"The glider is fully fuelled and ready for takeoff at KSC SLF Runway 33, "
+"waiting for its launch window."
+msgstr ""
+"Le Delta-Glider est ravitaillé et prêt au décollage sur la piste 33 du "
+"Centre Spatial Kennedy, en attente de sa fenêtre de lancement."
+
+#: C:/github/openorbiter/Flights/DG to the moon/system.dat:17
+msgctxt "Flight"
+msgid ""
+"We want to launch into the orbital plane of the Moon to minimise the need "
+"for expensive plane changes later on."
+msgstr ""
+"Notre objectif est de s'insérer dans le plan orbital lunaire pour réduire au "
+"minimum les corrections de trajectoire coûteuses par la suite."
+
+#: C:/github/openorbiter/Flights/DG to the moon/system.dat:18
+msgctxt "Flight"
+msgid ""
+"Look at the map on the right MFD display. The green cross over Florida "
+"labelled 'GL-01' represents your current position. The green curve "
+"represents the projection of your orbital plane onto the surface, the red "
+"curve that of the Moon."
+msgstr ""
+"Regardez la carte sur l'affichage de droite. La croix verte sur la Floride "
+"étiquetée « GL-01 » représente votre position actuelle. La courbe verte "
+"représente la projection de votre plan orbital sur la surface terrestre, la "
+"courbe rouge celle de la Lune."
+
+#: C:/github/openorbiter/Flights/DG to the moon/system.dat:19
+msgctxt "Flight"
+msgid ""
+"The Moon's plane of orbit slowly moves across the map display because the "
+"Earth is rotating under it. As soon as it approaches your current location, "
+"you will take off."
+msgstr ""
+"Le plan orbital de la Lune se déplace lentement sur la carte parce que la "
+"Terre tourne en dessous. Dès qu'il approchera de votre position actuelle, "
+"vous décollerez."
+
+#: C:/github/openorbiter/Flights/DG to the moon/system.dat:20
+msgctxt "Flight"
+msgid ""
+"Because the northern latitude of your location is slightly higher than the "
+"inclination of the Moon's orbit, the optimal launch time is the instant when "
+"the northernmost point of the Moon's orbit plane is just south of Florida "
+"(launching due east)."
+msgstr ""
+"Comme la latitude nord de votre position est légèrement supérieure à "
+"l'inclinaison de l'orbite de la Lune, le moment idéal pour décoller "
+"correspond à l'instant où le point le plus au nord du plan orbital lunaire "
+"se trouve juste au sud de la Floride (décollage vers l'est)."
+
+#: C:/github/openorbiter/Flights/DG to the moon/system.dat:21
+msgctxt "Flight"
+msgid ""
+"For launch sites closer to the equator, it is best to launch when the Moon's "
+"orbit plane crosses the site. Launch heading is then North-east or South-"
+"east, to match the orbital plane."
+msgstr ""
+"Pour les sites de lancement plus proches de l’équateur, le meilleur moment "
+"est lorsque le plan orbital lunaire traverse précisément la position du "
+"site. La direction de lancement sera alors nord-est ou sud-est, pour "
+"correspondre au plan orbital."
+
+#: C:/github/openorbiter/Flights/DG to the moon/system.dat:23
+msgctxt "Flight"
+msgid "Fast-forwarding to launch window..."
+msgstr "Accélération jusqu'à la fenêtre de lancement..."
+
+#: C:/github/openorbiter/Flights/DG to the moon/system.dat:26
+msgctxt "Flight"
+msgid ""
+"Earth is rotating east with respect to the Moon's orbital plane and the two "
+"orbit lines are moving towards alignment in the map display. The 'RInc' "
+"indicator in the left MFD display is counting down ..."
+msgstr ""
+"La Terre tourne vers l'est par rapport au plan orbital lunaire et les deux "
+"lignes d'orbite se rapprochent pour s'aligner sur la carte. L'indicateur "
+"« RInc » sur l'affichage de gauche se réduit..."
+
+#: C:/github/openorbiter/Flights/DG to the moon/system.dat:28
+msgctxt "Flight"
+msgid ""
+"The Moon's orbital plane has now reached its optimum alignment with your "
+"position, and the relative inclination is at minimum (the 'Rate' readout in "
+"the left MFD display shows zero). Now is the time to launch."
+msgstr ""
+"Le plan orbital de la Lune a maintenant atteint son alignement optimal avec "
+"votre position, et l'inclinaison relative est minimale (l'indicateur « R » "
+"sur l'affichage de gauche indique zéro). C'est maintenant le moment de "
+"décoller."
+
+#: C:/github/openorbiter/Flights/DG to the moon/system.dat:30
+msgctxt "Flight"
+msgid "Ready for takeoff - main engines powering up to maximum thrust."
+msgstr "Paré au décollage - moteurs principaux poussés à plein régime."
+
+#: C:/github/openorbiter/Flights/DG to the moon/system.dat:32
+msgctxt "Flight"
+msgid "Rotate."
+msgstr "Rotation."
+
+#: C:/github/openorbiter/Flights/DG to the moon/system.dat:33
+msgctxt "Flight"
+msgid "Gear up."
+msgstr "Rétractation du train."
+
+#: C:/github/openorbiter/Flights/DG to the moon/system.dat:35
+msgctxt "Flight"
+msgid ""
+"Turning east for ascent to orbit, matching the Moon's orbit inclination."
+msgstr ""
+"Cap à l'est pour l'ascension en orbite, en suivant l'inclinaison de l'orbite "
+"lunaire."
+
+#: C:/github/openorbiter/Flights/DG to the moon/system.dat:37
+msgctxt "Flight"
+msgid ""
+"The plane alignment MFD provides a rough guide for the correct ascent "
+"heading. Try to keep the relative inclination between your and the Moon's "
+"orbit at a minimum (indicated by the 'RInc' readout)."
+msgstr ""
+"L'affichage d'alignement des plans orbitaux fournit une indication "
+"approximative pour maintenir un cap d'ascension correct. Essayez de "
+"maintenir l'inclinaison relative au minimum (indiqué par la valeur de "
+"« RINC »)."
+
+#: C:/github/openorbiter/Flights/DG to the moon/system.dat:38
+msgctxt "Flight"
+msgid ""
+"Initial climb rate is 30° to leave the denser part of the atmosphere "
+"quickly. You can use the trim control to adjust the pitch angle."
+msgstr ""
+"L'angle de montée initial est de 30° pour quitter rapidement la partie la "
+"plus dense de l'atmosphère. Vous pouvez utiliser le compensateur de "
+"profondeur pour ajuster l'assiette du Delta-Glider."
+
+#: C:/github/openorbiter/Flights/DG to the moon/system.dat:39
+msgctxt "Flight"
+msgid ""
+"By a happy coincidence, you get a glimpse of your final destination - the "
+"Moon - directly ahead in the centre of the screen."
+msgstr ""
+"Par un heureux hazard, vous apercevez votre destination finale : la Lune, "
+"directement devant vous au centre de l'écran."
+
+#: C:/github/openorbiter/Flights/DG to the moon/system.dat:42
+msgctxt "Flight"
+msgid ""
+"During ascent, the pitch angle can be adjusted with trim or manual elevator "
+"controls. From the initial 30°, it should slowly turn towards the horizontal."
+msgstr ""
+"Pendant l'ascension, l'angle de tangage peut être ajusté avec le "
+"compensateur ou les commandes manuelles de profondeur. À partir des 30° "
+"initiaux, il doit progressivement se rapprocher de l'horizontale."
+
+#: C:/github/openorbiter/Flights/DG to the moon/system.dat:43
+msgctxt "Flight"
+msgid ""
+"We are aiming to reach orbital velocity and a horizontal flight path vector "
+"at an initial altitude of about 60km."
+msgstr ""
+"Nous visons une vitesse orbitale et une trajectoire horizontale à partir "
+"d'une altitude de 60 km environ."
+
+#: C:/github/openorbiter/Flights/DG to the moon/system.dat:44
+msgctxt "Flight"
+msgid ""
+"As you leave the denser parts of the atmosphere behind, the spaceplane no "
+"longer generates enough lift to maintain the initial pitch angle. The flight "
+"path marker (the circle with a cross) will start to move down, indicating "
+"that the ascent slope is decreasing."
+msgstr ""
+"En quittant les couches les plus denses de l'atmosphère, l'aéronef ne génère "
+"plus suffisamment de portance pour maintenir l'angle de tangage initial. Le "
+"repère de trajectoire (le cercle avec une croix) commencera à descendre, "
+"indiquant que la pente de montée diminue."
+
+#: C:/github/openorbiter/Flights/DG to the moon/system.dat:46
+msgctxt "Flight"
+msgid ""
+"Now is a good time to switch to Orbit MFD mode to see how the orbital ascent "
+"is progressing."
+msgstr ""
+"C'est maintenant le bon moment pour passer l'affichage en mode « Orbite » "
+"pour visualiser l'évolution de l'ascension orbitale."
+
+#: C:/github/openorbiter/Flights/DG to the moon/system.dat:47
+msgctxt "Flight"
+msgid ""
+"On the right MFD, click 'SEL', 'Orbit'. Then click 'PRJ' to select your "
+"current orbit as the projection plane, and 'DST' to switch to altitude "
+"readout mode."
+msgstr ""
+"Sur l'affichage de droite, cliquez sur « SEL », puis « Orbit ». Cliquez "
+"ensuite sur « PRJ » pour sélectionner votre orbite actuelle comme plan de "
+"projection, et sur « DST » pour passer en mode affichage de l'altitude."
+
+#: C:/github/openorbiter/Flights/DG to the moon/system.dat:48
+msgctxt "Flight"
+msgid ""
+"You have reached orbit when the green ellipse (representing your orbital "
+"trajectory) rises above the grey circle (representing the surface of the "
+"Earth), and the periapsis altitude readout (PeA, the lowest point of the "
+"orbit) is positive and sufficiently high above the denser part of the "
+"atmosphere."
+msgstr ""
+"Vous êtes en orbite lorsque l'ellipse verte (représentant votre trajectoire "
+"orbitale) se situe au dessus du cercle gris (représentant la surface de la "
+"Terre), et que l'indicateur de l'altitude du périapside (PeA, le point le "
+"plus bas de l'orbite) est positif et suffisamment élevé au dessus de la "
+"partie la plus dense de l'atmosphère."
+
+#: C:/github/openorbiter/Flights/DG to the moon/system.dat:50
+msgctxt "Flight"
+msgid "Fast-forwarding to orbit insertion ..."
+msgstr "Accélération jusqu'à l'insertion en orbite..."
+
+#: C:/github/openorbiter/Flights/DG to the moon/system.dat:53
+msgctxt "Flight"
+msgid ""
+"(By the way, the bright object left of centre on your screen is Saturn. You "
+"can display labels for celestial objects by pressing F9)."
+msgstr ""
+"(Au fait, l'objet lumineux à gauche du centre de l'ecran est Saturne. Vous "
+"pouvez afficher les étiquettes des objects célestes en appuyant sur F9.)"
+
+#: C:/github/openorbiter/Flights/DG to the moon/system.dat:56
+msgctxt "Flight"
+msgid "Main engine cut-off (MECO)."
+msgstr "Arrêt des moteurs principaux (MECO)"
+
+#: C:/github/openorbiter/Flights/DG to the moon/system.dat:57
+msgctxt "Flight"
+msgid ""
+"Because we have left the denser layers of the atmosphere behind us, attitude "
+"control is switched from the now ineffective aerodynamic control surfaces to "
+"the reaction control system."
+msgstr ""
+"Comme nous avons quitté les couches les plus denses de l'atmosphère, le "
+"controle d'attitude est désormais assuré par le système de contrôle par "
+"réaction, les surfaces aérodynamiques étant devenues inefficaces."
+
+#: C:/github/openorbiter/Flights/DG to the moon/system.dat:59
+msgctxt "Flight"
+msgid ""
+"The current orbit has a very low perigee altitude (PeA). To stabilise it, we "
+"will have to perform a circularisation burn at the next apogee passage."
+msgstr ""
+"L'orbite actuelle a une altitude de périgée très faible (PeA). Pour la "
+"stabiliser, nous devrons effectuer une manœuvre de circularisation lors du "
+"prochain passage à l'apogée."
+
+#: C:/github/openorbiter/Flights/DG to the moon/system.dat:61
+msgctxt "Flight"
+msgid ""
+"The first manoever will however be a plane alignment with the Moon's orbital "
+"plane. This will be performed at the next node passage."
+msgstr ""
+"La première manœuvre sera cependant un alignement de plan avec le plan "
+"orbital lunaire. Elle sera effectuée lors du passage au prochain nœud."
+
+#: C:/github/openorbiter/Flights/DG to the moon/system.dat:63
+msgctxt "Flight"
+msgid ""
+"You should now switch the HUD display from 'Surface' to 'Orbit' mode. Orbit "
+"mode is more useful for orbital and interplanetary operations. It displays a "
+"pitch ladder and direction tape relative to the orbital plane, while the "
+"Surface HUD indicators are relative to the local horizon."
+msgstr ""
+"Vous devriez maintenant passer le HUD du mode « Surface » au mode "
+"« Orbite ». Ce mode est plus utile pour les opérations orbitales et "
+"interplanétaires. Il affiche des informations par rapport au plan orbital, "
+"alors que le mode surface est relatif à l'horizon local."
+
+#: C:/github/openorbiter/Flights/DG to the moon/system.dat:64
+msgctxt "Flight"
+msgid ""
+"The easiest way to select the Orbit HUD is by clicking the 'HUD' button on "
+"the Orbit MFD. Using this method also copies the orbit reference body (Earth "
+"in this case) to the HUD."
+msgstr ""
+"Le moyen le plus simple pour sélectionner le mode « Orbite » est de cliquer "
+"sur le bouton « HUD » de l'affichage de droite. Cette méthode copie "
+"également le corps de référence orbital (la Terre dans notre cas) vers le "
+"HUD."
+
+#: C:/github/openorbiter/Flights/DG to the moon/system.dat:66
+msgctxt "Flight"
+msgid "Fast-forwarding to node passage ..."
+msgstr "Accélération jusqu'au prochain nœud..."
+
+#: C:/github/openorbiter/Flights/DG to the moon/system.dat:69
+msgctxt "Flight"
+msgid ""
+"You are now approaching the intersection (node) with the Moon's orbital "
+"plane ('DN' marker in the Align Plane MFD display)."
+msgstr ""
+"Vous approchez maintenant de l'intersection (nœud) avec le plan orbital de "
+"la Lune (repère « DN » sur l'affichage de gauche)."
+
+#: C:/github/openorbiter/Flights/DG to the moon/system.dat:70
+msgctxt "Flight"
+msgid ""
+"This is the point where the plane alignment maneuver takes place to match "
+"your orbital plane with that of the Moon."
+msgstr ""
+"C'est à cet endroit que s'effectue la manœuvre d'alignement de plan afin de "
+"faire coïncider votre plan avec celui de la Lune."
+
+#: C:/github/openorbiter/Flights/DG to the moon/system.dat:71
+msgctxt "Flight"
+msgid ""
+"This burn adds a velocity difference ('Delta-V') perpendicular to your "
+"orbital plane, so we need to rotate the spacecraft."
+msgstr ""
+"Cette manœuvre introduit un changement de vitesse (delta-v) perpendiculaire "
+"(ou « normal ») à votre plan orbital ; nous devons donc faire pivoter le "
+"vaisseau."
+
+#: C:/github/openorbiter/Flights/DG to the moon/system.dat:72
+msgctxt "Flight"
+msgid "Activating the 'Normal+' attitude program."
+msgstr "Activation du programme d'attitude « Normal+ »."
+
+#: C:/github/openorbiter/Flights/DG to the moon/system.dat:73
+msgctxt "Flight"
+msgid ""
+"Remember - for a plane alignment burn (with main engines), turn 'NML+' at "
+"descending note (DN), and 'NML-' at ascending node (AN)."
+msgstr ""
+"Rappel : pour une manœuvre d'alignement de plan, utilisez « NML+ » au nœud "
+"descendant (DN) et « NML- » au nœud ascendant (AN)."
+
+#: C:/github/openorbiter/Flights/DG to the moon/system.dat:74
+#: moon/system.dat:88
+msgctxt "Flight"
+msgid "Main engines engaged."
+msgstr "Mise à feu des moteurs principaux."
+
+#: C:/github/openorbiter/Flights/DG to the moon/system.dat:75
+msgctxt "Flight"
+msgid "Note how the RInc readout is counting down."
+msgstr "Notez que l'indicateur « RInc » diminue."
+
+#: C:/github/openorbiter/Flights/DG to the moon/system.dat:76
+#: moon/system.dat:123
+msgctxt "Flight"
+msgid "Main engine cut-off."
+msgstr "Arrêt des moteurs principaux."
+
+#: C:/github/openorbiter/Flights/DG to the moon/system.dat:77
+msgctxt "Flight"
+msgid ""
+"The relative inclination ('RInc') with the Moon's orbital plane is now down "
+"to 0.02°. That's good enough!"
+msgstr ""
+"L'inclinaison relative (« RInc ») par rapport au plan orbital lunaire est "
+"désormais descendue a 0,02°. Ça suffira !"
+
+#: C:/github/openorbiter/Flights/DG to the moon/system.dat:78
+msgctxt "Flight"
+msgid ""
+"In preparation for the next maneuver, we are turning into the flight path "
+"(by activating the 'Prograde' attitude mode)."
+msgstr ""
+"En préparation de la prochaine manœuvre, nous nous orientons dans la "
+"direction de vol (en activant le mode d'attitude « Prograde » )."
+
+#: C:/github/openorbiter/Flights/DG to the moon/system.dat:79
+msgctxt "Flight"
+msgid "Fast-forwarding to orbit circularisation burn ..."
+msgstr "Accélération jusqu'à la manœuvre de circularisation..."
+
+#: C:/github/openorbiter/Flights/DG to the moon/system.dat:83
+msgctxt "Flight"
+msgid "You are now approaching apogee - the highest point of the orbit."
+msgstr ""
+"Vous approchez maintenant de l'apogée - le point le plus haut de l'orbite."
+
+#: C:/github/openorbiter/Flights/DG to the moon/system.dat:84
+msgctxt "Flight"
+msgid ""
+"This is location for the orbit circularisation burn, required to raise the "
+"perigee (lowest point of the orbit) for a stable orbit configuration."
+msgstr ""
+"C'est l'emplacement de la manœuvre de circularisation, nécessaire pour "
+"augmenter le périgée (le point le plus bas) afin d'obtenir une configuration "
+"orbitale stable."
+
+#: C:/github/openorbiter/Flights/DG to the moon/system.dat:86
+msgctxt "Flight"
+msgid ""
+"This will be a short prograde burn, adding a velocity component in the "
+"direction of the flight path."
+msgstr ""
+"Il s'agira d'une courte poussée en mode prograde, ajoutant une composante de "
+"vitesse dans la direction de la trajectoire de vol."
+
+#: C:/github/openorbiter/Flights/DG to the moon/system.dat:87
+msgctxt "Flight"
+msgid "Re-aligning attitude with flight path vector."
+msgstr "Réalignement de l'attitude sur le vecteur trajectoire."
+
+#: C:/github/openorbiter/Flights/DG to the moon/system.dat:89
+msgctxt "Flight"
+msgid "Main engine cut-off (this was a low Delta-V burn)."
+msgstr "Arrêt des moteurs principaux (courte poussée)."
+
+#: C:/github/openorbiter/Flights/DG to the moon/system.dat:91
+msgctxt "Flight"
+msgid ""
+"The perigee altitude has now increased to about 250km, and the orbit "
+"eccentricty value of 0.0007 indicates a nearly circular orbit."
+msgstr ""
+"L'altitude du périgée a maintenant atteint environ 250km, et l'excenctricité "
+"orbitale de 0,0007 indique une orbite presque circulaire."
+
+#: C:/github/openorbiter/Flights/DG to the moon/system.dat:93
+msgctxt "Flight"
+msgid ""
+"You now have to prepare for the next maneuver - the insertion into the trans-"
+"lunar orbit (TLI), which will bring you all the way to the moon."
+msgstr ""
+"Vous devez maintenant vous préparer pour la prochaine manœuvre : l'insertion "
+"sur l'orbite trans-lunaire (TLI), qui vous conduira jusqu'à la Lune."
+
+#: C:/github/openorbiter/Flights/DG to the moon/system.dat:94
+msgctxt "Flight"
+msgid ""
+"Bring up the Transfer MFD mode on the left display: Press 'SEL' and "
+"'Transfer'."
+msgstr ""
+"Activer le mode transfert sur l'affichage de gauche : appuyez sur « SEL » "
+"puis sur « Transfer »."
+
+#: C:/github/openorbiter/Flights/DG to the moon/system.dat:95
+msgctxt "Flight"
+msgid ""
+"First, you need to select the target body. Press 'TGT', <Enter>, type "
+"'moon', <Enter>."
+msgstr ""
+"Tout d'abord vous devez sélectionner le corps cible. Appuyer sur « TGT », et "
+"sélectionnez « Moon »."
+
+#: C:/github/openorbiter/Flights/DG to the moon/system.dat:96
+msgctxt "Flight"
+msgid "To plan your transfer orbit, press 'HTO' (hypothetical transfer orbit)."
+msgstr ""
+"Pour planifier votre orbite de transfert, appuyez sur « HTO » (Orbite de "
+"Transfert Hypothétique)."
+
+#: C:/github/openorbiter/Flights/DG to the moon/system.dat:97
+msgctxt "Flight"
+msgid ""
+"Next, you need to add a Delta-V impulse at your orbit ejection point. Press, "
+"and hold down, 'DV+', until the 'Dv' readout shows 3.121k (meaning 3.121km/"
+"s). If you overshoot, press 'DV-' to reduce the ejection velocity."
+msgstr ""
+"Ensuite, vous devez ajouter une impulsion (delta-v) au point d'éjection de "
+"votre orbite. Appuyer et maintenez « DV+ » jusqu'à ce que l'indicateur "
+"« Dv » affiche 3.121 k (soit 3,121 km/s). Si vous dépassez, appuyez sur "
+"« DV- » pour réduire la vitesse d'éjection."
+
+#: C:/github/openorbiter/Flights/DG to the moon/system.dat:98
+msgctxt "Flight"
+msgid ""
+"Your planned transfer orbit should now be displayed as a dashed green "
+"ellipse. The leading intersection with the Moon's orbit (the yellow circle) "
+"is shown as a grey line."
+msgstr ""
+"Votre orbite de transfert planifiée devrait maintenant s'afficher sous forme "
+"d'une ellipse verte en pointillés. La première intersection avec l'orbite de "
+"la Lune (le cercle jaune) est indiquée par une ligne grise."
+
+#: C:/github/openorbiter/Flights/DG to the moon/system.dat:99
+msgctxt "Flight"
+msgid ""
+"The predicted position of the Moon at the time when you cross the Moon's "
+"orbit, is shown as a dashed yellow line."
+msgstr ""
+"La position prévue de la Lune au moment où vous croiserez sont orbite est "
+"indiquée par une ligne jaune en pointillés."
+
+#: C:/github/openorbiter/Flights/DG to the moon/system.dat:100
+msgctxt "Flight"
+msgid ""
+"You now have to try and match the grey and the dashed yellow lines, so that "
+"both you and the Moon reach the intersection point simultaneously."
+msgstr ""
+"Vous devez maintenant essayer d'aligner la ligne grise et la ligne jaune en "
+"pointillés, afin que vous et la Lune atteigniez le point d'intersection en "
+"même temps."
+
+#: C:/github/openorbiter/Flights/DG to the moon/system.dat:101
+msgctxt "Flight"
+msgid ""
+"This is done by adjusting the time of the ejection burn, using the 'EJ-' and "
+"'EJ+' buttons."
+msgstr ""
+"Cela se fait en ajustant le moment de la poussée d'éjection à l'aide des "
+"boutons « EJ- » et « EJ+ »."
+
+#: C:/github/openorbiter/Flights/DG to the moon/system.dat:102
+msgctxt "Flight"
+msgid ""
+"Press 'EJ-' and 'EJ+' until the lines match. The 'TLe' readout should read "
+"approximately 11°."
+msgstr ""
+"Appuyez sur « EJ- » et « EJ+ » jusqu'à ce que les lignes s'alignent. "
+"L'indicateur « TLe » devrait afficher environ 11°."
+
+#: C:/github/openorbiter/Flights/DG to the moon/system.dat:103
+msgctxt "Flight"
+msgid ""
+"The dashed green line now indicates the position of the orbit ejection burn. "
+"As soon as your current position (solid green line) matches it, the ejection "
+"burn will be performed."
+msgstr ""
+"La ligne verte en pointillés indique maintenant la position de la poussée "
+"d'éjection orbitale. Dès que votre position actuelle (ligne verte continue) "
+"la rejoint, la poussée d'éjection sera effectuée."
+
+#: C:/github/openorbiter/Flights/DG to the moon/system.dat:104
+msgctxt "Flight"
+msgid "Fast-forwarding to ejection burn ..."
+msgstr "Accélération jusqu'à la poussée d'éjection..."
+
+#: C:/github/openorbiter/Flights/DG to the moon/system.dat:106
+msgctxt "Flight"
+msgid "Sunrise over Australia ..."
+msgstr "Lever de soleil sur l'Australie..."
+
+#: C:/github/openorbiter/Flights/DG to the moon/system.dat:108
+msgctxt "Flight"
+msgid "Main engines engaged for orbit ejection burn."
+msgstr "Mise à feu des moteurs principaux pour poussée d'éjection."
+
+#: C:/github/openorbiter/Flights/DG to the moon/system.dat:109
+msgctxt "Flight"
+msgid ""
+"The Dv readout is counting down as the actual orbit velocity approaches that "
+"of the planned transfer orbit."
+msgstr ""
+"L'indicateur « Dv » décroit tandis que la vitesse orbitale approche celle de "
+"l'orbite planifiée."
+
+#: C:/github/openorbiter/Flights/DG to the moon/system.dat:110
+msgctxt "Flight"
+msgid ""
+"As soon as Dv reaches zero, translunar orbit insertion will be complete, and "
+"the engines will be cut."
+msgstr ""
+"Dès que « Dv » atteindra zero, l'insertion sur l'orbite trans-lunaire sera "
+"terminée et les moteurs coupés."
+
+#: C:/github/openorbiter/Flights/DG to the moon/system.dat:119
+msgctxt "Flight"
+msgid "This is a long burn, so I am fast-forwarding to the end ..."
+msgstr "La poussée est longue, accélération jusqu'à sa fin..."
+
+#: C:/github/openorbiter/Flights/DG to the moon/system.dat:122
+msgctxt "Flight"
+msgid ""
+"Towards the end of the burn the orbit (solid green ellipse) starts growing "
+"rapidly, so you may want to reduce thrust to avoid overshooting."
+msgstr ""
+"Vers la fin, l'orbite (ellipse verte) commence a croître rapidement, vous "
+"pouvez donc réduire la poussée pour éviter de dépasser la vitesse."
+
+#: C:/github/openorbiter/Flights/DG to the moon/system.dat:124
+msgctxt "Flight"
+msgid ""
+"Your orbit should now match the planned transfer orbit in the Transfer MFD "
+"display."
+msgstr ""
+"Votre orbite devrait maintenant correspondre à l'orbite prévue sur "
+"l'affichage de transfert."
+
+#: C:/github/openorbiter/Flights/DG to the moon/system.dat:125
+msgctxt "Flight"
+msgid ""
+"You can press 'HTO' again to turn off the hypothetical orbit. This will "
+"update the data readouts to refer to your actual orbit."
+msgstr ""
+"Vous pouvez appuyer à nouveau sur « HTO » pour désactiver l’orbite "
+"hypothétique. Cela mettra à jour les indicateurs afin qu’ils correspondent à "
+"votre orbite réelle."
+
+#: C:/github/openorbiter/Flights/DG to the moon/system.dat:126
+msgctxt "Flight"
+msgid ""
+"We are now en-route to the moon. This will be a long (and hopefully "
+"uneventful) coasting phase, so I am fast-forwarding to the mid-course "
+"correction maneuver."
+msgstr ""
+"Nous sommes maintenant en route vers la Lune. Il s’agira d’une longue phase "
+"de croisière (et espérons-le sans incident), je vais donc accélérer jusqu’à "
+"la manœuvre de correction de trajectoire à mi-course."
+
+#: C:/github/openorbiter/Flights/DG to the moon/system.dat:127
+msgctxt "Flight"
+msgid "Fast forwarding ..."
+msgstr "Accélération..."
+
+#: C:/github/openorbiter/Flights/DG to the moon/system.dat:133
+msgctxt "Flight"
+msgid "Dropping out of time warp for a mid-course correction."
+msgstr ""
+"Désactivation de l’accélération temporelle pour effectuer une correction de "
+"mi-parcours."
+
+#: C:/github/openorbiter/Flights/DG to the moon/system.dat:135
+msgctxt "Flight"
+msgid ""
+"We have now left the sphere of influence (SOI) of Earth's gravitational "
+"field (check the 'G' value at the bottom of the Orbit MFD indicating the "
+"fractional contribution of Earth to the present gravitational field)."
+msgstr ""
+"Nous avons maintenant quitté la sphère d’influence (SOI) du champ "
+"gravitationnel terrestre (notez la valeur « G » en bas de l’affichage, qui "
+"indique la contribution de la Terre au champ gravitationnel actuel)."
+
+#: C:/github/openorbiter/Flights/DG to the moon/system.dat:136
+msgctxt "Flight"
+msgid ""
+"Therefore you should now switch to the Moon as orbit reference for your "
+"instruments. On the Orbit MFD, click 'AR' (auto reference) to select the "
+"strongest gravitational source, which is now the Moon. Then click 'HUD' to "
+"copy the new reference to the HUD."
+msgstr ""
+"Vous devez donc maintenant sélectionner la Lune comme référence orbitale "
+"pour vos instruments. Sur l’affichage d'orbite, cliquez sur « AR » (auto "
+"reference) afin de choisir la source gravitationnelle la plus forte, qui est "
+"désormais la Lune. Ensuite, cliquez sur « HUD » pour copier cette nouvelle "
+"référence vers l’affichage tête haute."
+
+#: C:/github/openorbiter/Flights/DG to the moon/system.dat:138
+msgctxt "Flight"
+msgid ""
+"Because we want to land directly at Brighton Beach base, we need to rotate "
+"the plane of our lunar orbit so that it passes over the base. This plane "
+"change requires less Delta-V (and thus less fuel) while we are still far "
+"from the moon, so let's do it now."
+msgstr ""
+"Comme nous voulons atterrir directement à la base de Brighton Beach, nous "
+"devons faire pivoter le plan de notre orbite lunaire afin qu’il passe au-"
+"dessus de la base. Ce changement de plan nécessite moins de Delta-V (et donc "
+"moins de carburant) tant que nous sommes encore éloignés de la Lune ; "
+"faisons-le donc maintenant."
+
+#: C:/github/openorbiter/Flights/DG to the moon/system.dat:139
+msgctxt "Flight"
+msgid ""
+"Switch the left MFD to Map mode: Click 'SEL', 'Map', click 'REF', and select "
+"'Earth' > 'Moon'."
+msgstr ""
+"Passez l'affichage de gauche en mode Carte : cliquez sur « SEL », puis "
+"« Map », cliquez sur « REF », et sélectionnez « Earth » > « Moon »."
+
+#: C:/github/openorbiter/Flights/DG to the moon/system.dat:140
+msgctxt "Flight"
+msgid ""
+"The white square on the map is Brighton Beach. To mark it as a target, click "
+"'TGT', and select 'Spaceports'->'Brighton Beach'. This will show the base "
+"location, distance and bearing at the bottom of the display."
+msgstr ""
+"Le carré blanc sur la carte correspond à la base de Brighton Beach. Pour la "
+"définir comme cible, cliquez sur « TGT », puis sélectionnez « Spaceports » → "
+"« Brighton Beach ». Cela affichera la position de la base, ainsi que sa "
+"distance et son relèvement en bas de l’écran."
+
+#: C:/github/openorbiter/Flights/DG to the moon/system.dat:141
+msgctxt "Flight"
+msgid ""
+"The green line is the projection of the current orbital plane onto the "
+"moon's surface. We want to rotate the plane so that it crosses over the "
+"target base."
+msgstr ""
+"La ligne verte représente la projection du plan orbital actuel sur la "
+"surface de la Lune. Nous devons le faire pivoter afin qu’il passe au-dessus "
+"de la base cible."
+
+#: C:/github/openorbiter/Flights/DG to the moon/system.dat:142
+msgctxt "Flight"
+msgid ""
+"To line up the glider for the alignment burn, we activate the 'Normal+' "
+"navigation mode."
+msgstr ""
+"Pour aligner le Delta-Glider en vue de la manœuvre d’alignement, nous "
+"activons le mode de navigation « Normal+ »."
+
+#: C:/github/openorbiter/Flights/DG to the moon/system.dat:143
+msgctxt "Flight"
+msgid ""
+"(Why NML+? We are orbiting the Moon retrograde. The flight path vector "
+"points west. This also means that the NML+ direction points south. By adding "
+"Delta-V in this direction, we will bend the western part of the orbit south, "
+"the eastern part north.)"
+msgstr ""
+"(Pourquoi « NML+ » ? Nous orbitons la Lune en rétrograde. Le vecteur de "
+"trajectoire pointe vers l’ouest. Cela signifie également que la direction "
+"« NML+ » pointe vers le sud. En ajoutant du Delta-V dans cette direction, "
+"nous allons dévier la partie ouest de l’orbite vers le sud et la partie est "
+"vers le nord.)"
+
+#: C:/github/openorbiter/Flights/DG to the moon/system.dat:144
+msgctxt "Flight"
+msgid "Engaging 'Normal+' attitude mode to prepare for a plane-change burn."
+msgstr ""
+"Activation du mode d’attitude « Normal+ » pour préparer la manœuvre de "
+"changement de plan."
+
+#: C:/github/openorbiter/Flights/DG to the moon/system.dat:145
+msgctxt "Flight"
+msgid ""
+"As the main engines fire, the orbit bends out of the moon's equatorial "
+"plane, until it intersects the target base."
+msgstr ""
+"Lorsque les moteurs principaux s’enclenchent, l’orbite se dévie hors du plan "
+"équatorial de la Lune jusqu’à ce qu’elle croise la base cible."
+
+#: C:/github/openorbiter/Flights/DG to the moon/system.dat:146
+msgctxt "Flight"
+msgid ""
+"Done. Note that the the alignment will not remain perfect, because the Moon "
+"(and the base with it) slowly rotates below our orbit. But this can easily "
+"be fixed later with a correction burn."
+msgstr ""
+"C’est fait. Notez que l’alignement ne restera pas parfait, car la Lune (et "
+"la base avec elle) tourne lentement sous notre orbite. Mais cela peut être "
+"facilement corrigé plus tard par une manœuvre de correction."
+
+#: C:/github/openorbiter/Flights/DG to the moon/system.dat:148
+msgctxt "Flight"
+msgid ""
+"With the orbital plane aligned, the next step is to adjust the periapsis (or "
+"in this case, the perilune) distance, that is, the point of closest approach "
+"to the Moon."
+msgstr ""
+"Une fois le plan orbital aligné, l’étape suivante consiste à ajuster la "
+"distance du périapside (ou, dans ce cas, du périlune), c’est-à-dire le point "
+"de plus proche approche de la Lune."
+
+#: C:/github/openorbiter/Flights/DG to the moon/system.dat:149
+msgctxt "Flight"
+msgid ""
+"Currently, the orbit is intersecting the Moon's surface, so we need to raise "
+"the periapsis altitude (PeA) above zero."
+msgstr ""
+"Actuellement, l’orbite croise la surface de la Lune, nous devons donc "
+"augmenter l’altitude du périapside (PeA) au-dessus de zéro."
+
+#: C:/github/openorbiter/Flights/DG to the moon/system.dat:150
+msgctxt "Flight"
+msgid ""
+"This is an in-plane burn. Since we are not at periapsis, I am using a wild "
+"guess for a reasonable burn direction - 50° off the flight path."
+msgstr ""
+"Il s’agit d’une manœuvre dans le plan orbital. Comme nous ne sommes pas au "
+"périapside, j’utilise une estimation approximative pour déterminer une "
+"direction de poussée raisonnable : 50° par rapport au vecteur de trajectoire."
+
+#: C:/github/openorbiter/Flights/DG to the moon/system.dat:151
+msgctxt "Flight"
+msgid "Engaging main engines."
+msgstr "Mise à feu des moteurs principaux."
+
+#: C:/github/openorbiter/Flights/DG to the moon/system.dat:152
+msgctxt "Flight"
+msgid "Engines cut-off. Perilune altitude is now approximately 150km."
+msgstr ""
+"Arrêt des moteurs. L’altitude du périlune est désormais d’environ 150 km."
+
+#: C:/github/openorbiter/Flights/DG to the moon/system.dat:153
+msgctxt "Flight"
+msgid ""
+"Note that the orbit parameter readouts are not very reliable yet, because of "
+"strong field perturbations from the Sun and Earth. You will notice that the "
+"PeA readout is decreasing as we approach the Moon."
+msgstr ""
+"Notez que les relevés des paramètres orbitaux ne sont pas encore très "
+"fiables, en raison des fortes perturbations du champ gravitationnel causées "
+"par le Soleil et la Terre. Vous remarquerez que la valeur du PeA diminue à "
+"mesure que nous approchons de la Lune."
+
+#: C:/github/openorbiter/Flights/DG to the moon/system.dat:154
+msgctxt "Flight"
+msgid ""
+"This completes the midcourse correction. Turning prograde for a good view as "
+"we approach the Moon."
+msgstr ""
+"La correction de mi-parcours est terminée. Nous nous orientons en prograde "
+"pour une bonne vue à l’approche de la Lune."
+
+#: C:/github/openorbiter/Flights/DG to the moon/system.dat:155
+msgctxt "Flight"
+msgid "Fast forwarding to perilune ..."
+msgstr "Accélération jusqu’au périlune…"
+
+#: C:/github/openorbiter/Flights/DG to the moon/system.dat:159
+msgctxt "Flight"
+msgid ""
+"The next maneuver is the lunar orbit insertion. This will be a retrograde "
+"burn at perilune, to close the orbit and lower the apoapsis distance."
+msgstr ""
+"La manœuvre suivante est l’insertion en orbite lunaire. Il s’agira d’une "
+"poussée rétrograde au périlune, afin de fermer l’orbite et de diminuer la "
+"distance de l’apoapse."
+
+#: C:/github/openorbiter/Flights/DG to the moon/system.dat:160
+#: moon/system.dat:182
+msgctxt "Flight"
+msgid "Turning retrograde."
+msgstr "Orientation rétrograde."
+
+#: C:/github/openorbiter/Flights/DG to the moon/system.dat:161
+msgctxt "Flight"
+msgid "Engaging main engines for lunar orbit insertion."
+msgstr "Mise à feu des moteurs principaux pour l’insertion en orbite lunaire."
+
+#: C:/github/openorbiter/Flights/DG to the moon/system.dat:162
+msgctxt "Flight"
+msgid ""
+"Engine cut-off. The orbit is now approximately circular, with an altitude of "
+"120km."
+msgstr ""
+"Arrêt des moteurs. L’orbite est désormais approximativement circulaire, avec "
+"une altitude de 120 km."
+
+#: C:/github/openorbiter/Flights/DG to the moon/system.dat:163
+msgctxt "Flight"
+msgid ""
+"The base is on the opposite side of the Moon. I am turning prograde again "
+"while we prepare for the last part of the trip."
+msgstr ""
+"La base se trouve sur la face opposée de la Lune. Je me remets en "
+"orientation prograde pendant que nous nous préparons pour la dernière partie "
+"du trajet."
+
+#: C:/github/openorbiter/Flights/DG to the moon/system.dat:164
+msgctxt "Flight"
+msgid "Fast-forwarding to base approach ..."
+msgstr "Accélération jusqu’à la phase d'approche..."
+
+#: C:/github/openorbiter/Flights/DG to the moon/system.dat:166
+msgctxt "Flight"
+msgid "Passing the terminator into the lunar day."
+msgstr "Passage du terminateur et entrée dans le jour lunaire."
+
+#: C:/github/openorbiter/Flights/DG to the moon/system.dat:174
+msgctxt "Flight"
+msgid "Dropping out of warp for the final part of the journey."
+msgstr "Retour en vitesse normale pour la dernière partie du voyage."
+
+#: C:/github/openorbiter/Flights/DG to the moon/system.dat:175
+msgctxt "Flight"
+msgid ""
+"You are now about 1000km from your landing site. Time for a few preparations."
+msgstr ""
+"Vous êtes maintenant à environ 1000 km de votre site d'atterrissage. Il est "
+"temps de faire quelques préparatifs."
+
+#: C:/github/openorbiter/Flights/DG to the moon/system.dat:176
+msgctxt "Flight"
+msgid ""
+"Click 'ZM+' on the Map MFD to increase the magnification, keeping both your "
+"location and the base in view. Keep zooming as you approach the base, to "
+"monitor your approach path."
+msgstr ""
+"Cliquez sur « ZM+ » sur l'affichage carte pour augmenter la magnification, "
+"en gardant à la fois votre position et la base en vue. Continuez à zoomer à "
+"mesure que vous vous approchez de la base, pour surveiller votre trajectoire "
+"d'approche."
+
+#: C:/github/openorbiter/Flights/DG to the moon/system.dat:178
+msgctxt "Flight"
+msgid ""
+"Set the right MFD display to VTOL (vertical takeoff and landing) mode: Press "
+"'SEL', 'VOR/VTOL'."
+msgstr ""
+"Réglez l'affichage de droite en mode ADAV (atterrissage et décollage "
+"vertical) : appuyez sur « SEL », « VOR/VTOL »."
+
+#: C:/github/openorbiter/Flights/DG to the moon/system.dat:179
+msgctxt "Flight"
+msgid ""
+"The NAV receiver frequency should be pre-set to 116.3MHz (The frequency of "
+"the radio beacon at Brighton Beach). We are still too far away to receive a "
+"signal, but will soon get into range."
+msgstr ""
+"La fréquence du récepteur NAV doit être préréglée sur 116,3 MHz (la "
+"fréquence de balise radio de Brighton Beach). Nous sommes encore trop loin "
+"pour recevoir un signal, mais nous allons bientôt entrer dans la zone de "
+"couverture."
+
+#: C:/github/openorbiter/Flights/DG to the moon/system.dat:181
+msgctxt "Flight"
+msgid ""
+"To land at the base, you need to drop out of orbit soon. This will require a "
+"retrograde burn."
+msgstr ""
+"Pour atterrir à la base, vous devrez bientôt vous désorbiter. Cela "
+"nécessitera une poussée rétrograde."
+
+#: C:/github/openorbiter/Flights/DG to the moon/system.dat:185
+msgctxt "Flight"
+msgid "Press 'H' to set the HUD to surface mode."
+msgstr "Appuyez sur « H » pour régler le HUD en mode surface."
+
+#: C:/github/openorbiter/Flights/DG to the moon/system.dat:186
+msgctxt "Flight"
+msgid "Engaging 'Horizon level' mode to align attitude with the local horizon."
+msgstr ""
+"Activation du mode « Horizon Level » pour aligner l'attitude avec l'horizon "
+"local."
+
+#: C:/github/openorbiter/Flights/DG to the moon/system.dat:187
+msgctxt "Flight"
+msgid "Engaging main thrusters for orbit departure."
+msgstr "Mise à feu des moteurs principaux pour désorbitation."
+
+#: C:/github/openorbiter/Flights/DG to the moon/system.dat:188
+msgctxt "Flight"
+msgid ""
+"When timing the deorbit burn, be careful not to be late (to avoid "
+"overshooting). If you deorbit too early, you will waste fuel on hovering "
+"above the surface."
+msgstr ""
+"Lors de l’estimation de l’instant de la poussée de désorbitation, essayez de "
+"ne pas sous-estimer le moment (pour éviter de dépasser la zone). Si vous "
+"vous désorbitez trop tôt, vous gaspillerez du carburant en stationnaire au-"
+"dessus de la surface."
+
+#: C:/github/openorbiter/Flights/DG to the moon/system.dat:189
+msgctxt "Flight"
+msgid ""
+"To estimate the minimum safe distance from base for the deorbit burn with "
+"main engines, try a little mental arithmetic:"
+msgstr ""
+"Pour estimer une distance minimale de sécurité de la base pour la "
+"désorbitation, un peu de gymnastique mentale :"
+
+#: C:/github/openorbiter/Flights/DG to the moon/system.dat:190
+msgctxt "Flight"
+msgid ""
+"With the current fuel load, the main engines can produce an acceleration of "
+"about a = 20m/s². Orbital speed is about 1600m/s."
+msgstr ""
+"Avec la masse de carburant actuelle, les moteurs principaux peuvent produire "
+"une accélération d’environ a = 20 m/s². La vitesse orbitale est d’environ "
+"1600 m/s."
+
+#: C:/github/openorbiter/Flights/DG to the moon/system.dat:191
+msgctxt "Flight"
+msgid ""
+"This means that it will take t = v/a = 80s to kill the ground speed at full "
+"main thrust. In that time we will cover a distance of x = vt - ½at² = 64km. "
+"We must start the deceleration burn before getting closer than that to the "
+"base (or correspondingly earlier if you want to use the less powerful retros "
+"for braking)."
+msgstr ""
+"Cela signifie qu'il faudra t = v/a = 80 s pour annuler la vitesse "
+"horizontale avec la poussée principale à pleine puissance. Pendant ce temps, "
+"nous parcourrons une distance de x = vt - ½at² = 64 km. Nous devons "
+"commencer la poussée de décélération avant d'atteindre cette distance (ou "
+"plus tôt si vous souhaitez utiliser les rétromoteurs moins puissantes)."
+
+#: C:/github/openorbiter/Flights/DG to the moon/system.dat:193
+msgctxt "Flight"
+msgid ""
+"By now you are within range of the Brighton Beach NAV beacon. The circular "
+"display in the VTOL MFD represents a top-down view with your position in the "
+"centre, and forward direction at 12 o'clock."
+msgstr ""
+"À présent, vous êtes à portée de la balise NAV de Brighton Beach. "
+"L'affichage circulaire sur l'affichage ADAV représente une vue de dessus "
+"avec votre position au centre et la direction avant à 12 heures."
+
+#: C:/github/openorbiter/Flights/DG to the moon/system.dat:194
+msgctxt "Flight"
+msgid ""
+"The direction of the base is indicated by the green line (it's behind you). "
+"Your velocity vector is the yellow arrow."
+msgstr ""
+"La direction de la base est indiquée par la ligne verte (elle se trouve "
+"derrière vous). Votre vecteur vitesse est la flèche jaune."
+
+#: C:/github/openorbiter/Flights/DG to the moon/system.dat:195
+msgctxt "Flight"
+msgid ""
+"The flight path is not perfectly aligned, so we perform an adjustment burn."
+msgstr ""
+"La trajectoire n'est pas parfaitement alignée, nous effectuons donc une "
+"manœuvre de correction."
+
+#: C:/github/openorbiter/Flights/DG to the moon/system.dat:196
+msgctxt "Flight"
+msgid ""
+"We turn the craft so that applying main thrust will push the flight path "
+"vector towards the base direction."
+msgstr ""
+"Nous orientons le vaisseau de manière à ce que la poussée modifie la "
+"trajectoire en direction de la base."
+
+#: C:/github/openorbiter/Flights/DG to the moon/system.dat:197
+msgctxt "Flight"
+msgid "Engaging main engines for flight path correction."
+msgstr "Mise à feu pour correction de la trajectoire."
+
+#: C:/github/openorbiter/Flights/DG to the moon/system.dat:198
+msgctxt "Flight"
+msgid "Done, rotating back to retrograde."
+msgstr "C'est fait, réorientation en mode rétrograde."
+
+#: C:/github/openorbiter/Flights/DG to the moon/system.dat:200
+msgctxt "Flight"
+msgid ""
+"The horizontal situation is covered with the VTOL display, so you can switch "
+"the left MFD to Surface mode: Click 'SEL', 'Surface'."
+msgstr ""
+"Le context horizontal est géré par l'affichage de droite, vous pouvez "
+"activer le mode surface sur l'affichage de gauche. Cliquez « SEL » puis "
+"« Surface »."
+
+#: C:/github/openorbiter/Flights/DG to the moon/system.dat:201
+msgctxt "Flight"
+msgid ""
+"Distance to base 300km, altitude 100km. Performing another deceleration burn."
+msgstr ""
+"Distance de la base 300km, altitude 100km. Nouvelle poussée de décélération."
+
+#: C:/github/openorbiter/Flights/DG to the moon/system.dat:203
+msgctxt "Flight"
+msgid ""
+"Opening the retro engine covers to prepare for retro deceleration burns."
+msgstr "Ouverture des trappes de rétropropulsion."
+
+#: C:/github/openorbiter/Flights/DG to the moon/system.dat:210
+msgctxt "Flight"
+msgid "Distance to base 100km, altitude 56km. Another deceleration burn."
+msgstr ""
+"Distance de la base 100km, altitude 56km. Nouvelle poussée de décélération."
+
+#: C:/github/openorbiter/Flights/DG to the moon/system.dat:212
+msgctxt "Flight"
+msgid "Adding hover thrust to reduce sink rate."
+msgstr "Poussée de sustentation pour réduire la vitesse de descente."
+
+#: C:/github/openorbiter/Flights/DG to the moon/system.dat:214
+msgctxt "Flight"
+msgid "Finally we are turning towards the base for final approach."
+msgstr "Orientation vers la base pour l'approche finale."
+
+#: C:/github/openorbiter/Flights/DG to the moon/system.dat:218
+msgctxt "Flight"
+msgid ""
+"In the last phase of the base approach, you need to balance your horizontal "
+"and vertical velocity components. The flight path marker helps with this. "
+"Keep it above the base for correct approach slope."
+msgstr ""
+"Dans la dernière phase d'approche, vous devez jouer sur les composantes "
+"horizontales et verticales de votre vitesse. L'indicateur de direction de "
+"vol est votre allié. Gardez le au dessus de la base pour maintenir une "
+"approche correcte."
+
+#: C:/github/openorbiter/Flights/DG to the moon/system.dat:219
+msgctxt "Flight"
+msgid "If it drops too low, increase hover thrust."
+msgstr "S'il est trop bas, augmentez la poussée de sustentation."
+
+#: C:/github/openorbiter/Flights/DG to the moon/system.dat:226
+msgctxt "Flight"
+msgid ""
+"On the VTOL MFD, click 'NAV' to switch to Nav receiver 2. This is preset to "
+"the pad 1 transmitter frequency, your designated landing pad."
+msgstr ""
+"Sur l'affichage ADAV, cliquez sur « NAV » et basculez sur le récepteur 2. Il "
+"est préréglé sur l'émetteur de l'Aire numéro 1, votre aire de poser désignée."
+
+#: C:/github/openorbiter/Flights/DG to the moon/system.dat:230
+msgctxt "Flight"
+msgid "Distance 1.2km from base, altitude 10km."
+msgstr "Distance 1,2km; altitude 10km."
+
+#: C:/github/openorbiter/Flights/DG to the moon/system.dat:231
+msgctxt "Flight"
+msgid "Use the RCS in linear mode to fine-tune your position above the pad."
+msgstr ""
+"Utilisez le système de contrôle par réaction (RCS) en mode linéaire pour "
+"ajuster votre position au dessus de l'aire."
+
+#: C:/github/openorbiter/Flights/DG to the moon/system.dat:235
+msgctxt "Flight"
+msgid "Gear down."
+msgstr "Sortie du train."
+
+#: C:/github/openorbiter/Flights/DG to the moon/system.dat:238
+msgctxt "Flight"
+msgid "Altitude 1000m, horizontal displacement from pad 40m."
+msgstr "Altitude 1000m, distance horizontale 40m."
+
+#: C:/github/openorbiter/Flights/DG to the moon/system.dat:239
+msgctxt "Flight"
+msgid ""
+"Use the hover thrusters to adjust your vertical speed for a soft touch down."
+msgstr ""
+"Utilisez les propulseurs de sustentation pour ajuster votre vitesse "
+"verticale en vue d'un atterrissage en douceur."
+
+#: C:/github/openorbiter/Flights/DG to the moon/system.dat:241
+msgctxt "Flight"
+msgid "You are now exactly centered above the pad."
+msgstr "Vous êtes maintenant parfaitement centré sur l'aire."
+
+#: C:/github/openorbiter/Flights/DG to the moon/system.dat:243
+msgctxt "Flight"
+msgid "400m above the surface."
+msgstr "Altitude 400m."
+
+#: C:/github/openorbiter/Flights/DG to the moon/system.dat:245
+msgctxt "Flight"
+msgid "300m to go, vertical speed 6.5m/s."
+msgstr "PLus que 300m, vitesse verticale 6,5m/s."
+
+#: C:/github/openorbiter/Flights/DG to the moon/system.dat:247
+msgctxt "Flight"
+msgid ""
+"200m above pad, vertical speed 5.5m/s. Make sure you keep centered above the "
+"pad."
+msgstr ""
+"200m, vitesse verticale 5,5m/s. Assurez-vous de rester centré sur l'aire."
+
+#: C:/github/openorbiter/Flights/DG to the moon/system.dat:249
+msgctxt "Flight"
+msgid "100m, sinking at 2.5m/s."
+msgstr "100m, descente à 2,5m/s."
+
+#: C:/github/openorbiter/Flights/DG to the moon/system.dat:252
+msgctxt "Flight"
+msgid "50m, 2.0m/s."
+msgstr "50m, 2,0m/s."
+
+#: C:/github/openorbiter/Flights/DG to the moon/system.dat:255
+msgctxt "Flight"
+msgid "10m above pad, vertical speed 0.5m/s, preparing for soft contact."
+msgstr ""
+"10m au dessus de l'aire, vitesse verticale 0,5m/s, préparez-vous à "
+"l'atterrissage."
+
+#: C:/github/openorbiter/Flights/DG to the moon/system.dat:256
+msgctxt "Flight"
+msgid "Touchdown!"
+msgstr "Atterrissage !"
+
+#: C:/github/openorbiter/Flights/DG to the moon/system.dat:257
+msgctxt "Flight"
+msgid ""
+"This completes the mission. After refuelling, you can now take over the "
+"controls. Try getting back to Earth, or even continue the tour with a flight "
+"to Mars!"
+msgstr ""
+"La mission est maintenant terminée. Après ravitaillement, vous pouvez "
+"prendre le contrôle du vaisseau. Essayez de retourner sur Terre, voir même "
+"poursuivre l'aventure jusqu'à Mars !"

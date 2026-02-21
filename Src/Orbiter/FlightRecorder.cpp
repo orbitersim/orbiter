@@ -19,6 +19,7 @@
 #include <fstream>
 #include <string>
 #include <filesystem>
+#include "i18n.h"
 namespace fs = std::filesystem;
 
 using namespace std;
@@ -712,7 +713,7 @@ void Vessel::FRecorder_PlayEvent ()
 					} else if (!strcmp (s+4, "OFF")) {
 						sa->ClearText();
 					} else {
-						sa->SetText (s+5);
+						sa->SetText (const_cast<char *>(_c("Flight",s+5)));
 					}
 				}
 			} else if (modIntf.v->Version() >= 1) { // pass event to vessel
@@ -832,6 +833,9 @@ void Orbiter::FRecorder_OpenPlayback (const char *scname)
 	if (!FRsys_stream->good()) {
 		delete FRsys_stream;
 		FRsys_stream = 0;
+	} else {
+		sprintf (cbuf, "Flights\\%s\\", scname+i);
+		I18N::ImportDirectory(cbuf);
 	}
 }
 
@@ -912,7 +916,7 @@ void Orbiter::FRecorder_Play ()
 					} else if (!strcmp (s+4, "OFF")) {
 						sa->ClearText();
 					} else {
-						sa->SetText (s+5);
+						sa->SetText (const_cast<char *>(_c("Flight",s+5)));
 					}
 				}
 			} else if (!_strnicmp (s, "JUMPTOTIME", 10)) {

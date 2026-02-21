@@ -1,6 +1,6 @@
 #define OAPI_IMPLEMENTATION
 
-#include "I18NAPI.h"
+#include "i18n.h"
 #include <vector>
 #include <forward_list>
 #include <unordered_map>
@@ -239,6 +239,8 @@ static unsigned int ParseOctal(const std::string &s, size_t &i, int maxDigits = 
     return val;
 }
 
+static void LoadPO(const char *filename);
+
 static std::string UnescapePOString(const std::string &s) {
     std::string out;
     out.reserve(s.size());
@@ -348,7 +350,6 @@ std::string extract_po_string(const std::string& line)
     );
 }
 
-void LoadPO(const char *filename);
 
 void LoadLocale(const char *locale)
 {
@@ -368,6 +369,22 @@ void LoadLocale(const char *locale)
 		}
     }
 }
+
+void ImportDirectory(const char *dirname)
+{
+	std::string suffix = std::string(".") + g_currentLocale + ".po";
+	for (const auto& entry : std::filesystem::directory_iterator(dirname))
+    {
+        if (!entry.is_regular_file())
+            continue;
+
+        const std::string name = entry.path().filename().string();
+		if(ends_with(name, suffix)) {
+			LoadPO(entry.path().string().c_str());
+		}
+    }
+}
+
 // -------------------- API --------------------
 void Init(bool notifymissing) {
     g_notifyMissing = notifymissing;
@@ -401,7 +418,7 @@ static void AddKey(const std::string &msgctxt, const std::string &msgid, const T
 	g_translations[key] = translation;
 }
 
-void LoadPO(const char *filename) {
+static void LoadPO(const char *filename) {
     std::ifstream f(filename);
     if (!f.is_open()) { if (g_notifyMissing) std::cerr << "Locale file not found: " << filename << "\n"; return; }
 

@@ -138,7 +138,7 @@
 283309 NOTE Because we want to land directly at Brighton Beach base, we need to rotate the plane of our lunar orbit so that it passes over the base. This plane change requires less Delta-V (and thus less fuel) while we are still far from the moon, so let's do it now.
 283324 NOTE Switch the left MFD to Map mode: Click 'SEL', 'Map', click 'REF', and select 'Earth' > 'Moon'.
 283344 NOTE The white square on the map is Brighton Beach. To mark it as a target, click 'TGT', and select 'Spaceports'->'Brighton Beach'. This will show the base location, distance and bearing at the bottom of the display.
-283364 NOTE The green line is the projection of the current orbital plane onto the moon's surface. We want to rotate the plane so that it crosses over the target base. 
+283364 NOTE The green line is the projection of the current orbital plane onto the moon's surface. We want to rotate the plane so that it crosses over the target base.
 283379 NOTE To line up the glider for the alignment burn, we activate the 'Normal+' navigation mode.
 283394 NOTE (Why NML+? We are orbiting the Moon retrograde. The flight path vector points west. This also means that the NML+ direction points south. By adding Delta-V in this direction, we will bend the western part of the orbit south, the eastern part north.)
 283414 NOTE Engaging 'Normal+' attitude mode to prepare for a plane-change burn.

@@ -46,6 +46,51 @@ function(generate_pot TARGET_NAME)
     )
 endfunction()
 
+function(generate_flights_pots ROOT_DIR)
+    get_filename_component(ROOT_DIR_ABS "${ROOT_DIR}" ABSOLUTE)
+    message(STATUS "Searching system.dat files in ${ROOT_DIR_ABS}")
+
+    # Find all system.dat files recursively
+    file(GLOB_RECURSE SYSTEM_DAT_FILES
+        CONFIGURE_DEPENDS
+        "${ROOT_DIR_ABS}/system.dat"
+    )
+
+    if (NOT SYSTEM_DAT_FILES)
+        message(STATUS "No system.dat files found in ${ROOT_DIR_ABS}")
+        return()
+    endif()
+
+    set(ALL_POT_FILES)
+
+    foreach(DAT_FILE ${SYSTEM_DAT_FILES})
+		message(STATUS "Found ${DAT_FILE}")
+
+        get_filename_component(DAT_DIR ${DAT_FILE} DIRECTORY)
+        set(POT_FILE "${DAT_DIR}/system.pot")
+
+        add_custom_command(
+            OUTPUT ${POT_FILE}
+            COMMAND $<TARGET_FILE:lua::exe>
+                    ${CMAKE_SOURCE_DIR}/Utils/dat2pot.lua
+                    ${DAT_FILE} ${POT_FILE}
+            DEPENDS
+                ${DAT_FILE}
+                ${CMAKE_SOURCE_DIR}/Utils/dat2pot.lua
+            WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+            COMMENT "Generating ${POT_FILE}"
+            VERBATIM
+        )
+
+        list(APPEND ALL_POT_FILES ${POT_FILE})
+    endforeach()
+
+    add_custom_target(generate_system_pots ALL
+        DEPENDS ${ALL_POT_FILES}
+    )
+
+endfunction()
+
 # Installs .po files from a directory (default: ${CMAKE_CURRENT_SOURCE_DIR}/i18n)
 #
 # Usage:
