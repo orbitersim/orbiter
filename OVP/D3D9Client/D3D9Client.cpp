@@ -1259,23 +1259,23 @@ void D3D9Client::clbkRenderScene()
 
 	if (hVes && Config->LabelDisplayFlags)
 	{
-		char Label[7] = "";
-		if (Config->LabelDisplayFlags & D3D9Config::LABEL_DISPLAY_RECORD && hVes->Recording()) strcpy_s(Label, 7, "Record");
-		if (Config->LabelDisplayFlags & D3D9Config::LABEL_DISPLAY_REPLAY && hVes->Playback()) strcpy_s(Label, 7, "Replay");
+		std::wstring Label;
+		if (Config->LabelDisplayFlags & D3D9Config::LABEL_DISPLAY_RECORD && hVes->Recording()) Label = ToWide(_("Record"));
+		if (Config->LabelDisplayFlags & D3D9Config::LABEL_DISPLAY_REPLAY && hVes->Playback())  Label = ToWide(_("Replay"));
 
-		if (Label[0]!=0) {
+		if (!Label.empty()) {
 			pDevice->BeginScene();
 			RECT rect2 = _RECT(0, viewH - 60, viewW, viewH - 20);
-			pFramework->GetLargeFont()->DrawTextA(0, Label, 6, &rect2, DT_CENTER | DT_TOP, D3DCOLOR_XRGB(0, 0, 0));
+			pFramework->GetLargeFont()->DrawTextW(0, Label.c_str(), -1, &rect2, DT_CENTER | DT_TOP, D3DCOLOR_XRGB(0, 0, 0));
 			rect2.left-=4; rect2.top-=4;
-			pFramework->GetLargeFont()->DrawTextA(0, Label, 6, &rect2, DT_CENTER | DT_TOP, D3DCOLOR_XRGB(255, 255, 255));
+			pFramework->GetLargeFont()->DrawTextW(0, Label.c_str(), -1, &rect2, DT_CENTER | DT_TOP, D3DCOLOR_XRGB(255, 255, 255));
 			pDevice->EndScene();
 		}
 	}
 
 	if (bFreeze) {
 		RECT rect2 = _RECT(0, viewH - 60, viewW, viewH - 20);
-		pFramework->GetLargeFont()->DrawTextA(0, "Frozen", 6, &rect2, DT_CENTER | DT_TOP, D3DCOLOR_XRGB(0, 255, 255));
+		pFramework->GetLargeFont()->DrawTextW(0, ToWide(_("Frozen")).c_str(), -1, &rect2, DT_CENTER | DT_TOP, D3DCOLOR_XRGB(0, 255, 255));
 	}
 
 	D3D9SetTime(D3D9Stats.Timer.Scene, scene_time);
