@@ -531,6 +531,7 @@ void CameraEvent::ApplyChanges() {
 
 NoteEvent::NoteEvent (double _t0, const char *_note): PlaybackEvent (_t0)
 {
+	if(!_note) _note = "";
 	note = strdup(_note);
 	strncpy(m_tmp_note, note, sizeof(m_tmp_note));
 }

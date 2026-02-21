@@ -2106,12 +2106,12 @@ msgctxt "Playback editor"
 msgid "Current view: "
 msgstr ""
 
-#: C:/github/openorbiter/Src/Orbiter/PlaybackEd.cpp:718
+#: C:/github/openorbiter/Src/Orbiter/PlaybackEd.cpp:719
 msgctxt "Playback editor"
 msgid "Note Color"
 msgstr ""
 
-#: C:/github/openorbiter/Src/Orbiter/PlaybackEd.cpp:759
+#: C:/github/openorbiter/Src/Orbiter/PlaybackEd.cpp:760
 msgctxt "Playback editor"
 msgid "Note Size"
 msgstr ""
