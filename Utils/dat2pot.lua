@@ -75,8 +75,8 @@ end
 ------------------------------------------------------------
 local outfile = io.open(output_path, "w")
 if not outfile then
-    io.stderr:write("Cannot open output file: " .. output_path .. "\n")
-    os.exit(1)
+	io.stderr:write("Cannot open output file: " .. output_path .. "\n")
+	os.exit(1)
 end
 
 -- Header
@@ -89,17 +89,17 @@ outfile:write('"Content-Transfer-Encoding: 8bit\\n"\n\n')
 
 -- Entries in original order
 for _, msgid in ipairs(msg_order) do
-    local refs = messages[msgid]
-    outfile:write("#: " .. table.concat(refs, " ") .. "\n")
+	local refs = messages[msgid]
+	outfile:write("#: " .. table.concat(refs, " ") .. "\n")
 
-    if msgctxt ~= "" then
-        outfile:write('msgctxt "' .. po_escape(msgctxt) .. '"\n')
-    end
+	if msgctxt ~= "" then
+		outfile:write('msgctxt "' .. po_escape(msgctxt) .. '"\n')
+	end
 
-    outfile:write('msgid "' .. msgid .. '"\n')
-    outfile:write('msgstr ""\n\n')
+	outfile:write('msgid "' .. msgid .. '"\n')
+	outfile:write('msgstr ""\n\n')
 end
 
 outfile:close()
 
-print("Generated: " .. output_path)
+-- print("Generated: " .. output_path)

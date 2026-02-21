@@ -1,0 +1,45 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: Orbiter Flights\n"
+"POT-Creation-Date: \n"
+"PO-Revision-Date: \n"
+"Last-Translator: \n"
+"Language-Team: \n"
+"Language: fr_FR\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n > 1);\n"
+"X-Generator: Poedit 3.8\n"
+
+#: C:/github/openorbiter/Flights/Welcome to Orbiter 2024/system.dat:1
+msgctxt "Flight"
+msgid "WELCOME TO ORBITER 2024!"
+msgstr "BIENVENUE DANS ORBITER 2024!"
+
+#: C:/github/openorbiter/Flights/Welcome to Orbiter 2024/system.dat:8
+msgctxt "Flight"
+msgid ""
+"This version represents the first release of OpenOrbiter, brought to you by "
+"the Orbiter community."
+msgstr ""
+"Cette version représente la première publication d'OpenOrbiter, réalisée par "
+"la communauté Orbiter."
+
+#: C:/github/openorbiter/Flights/Welcome to Orbiter 2024/system.dat:10
+msgctxt "Flight"
+msgid "For a full list of new features, please check the release notes."
+msgstr ""
+"Pour une liste complète des nouvelles fonctionnalités, veuillez consulter "
+"les notes de version."
+
+#: C:/github/openorbiter/Flights/Welcome to Orbiter 2024/system.dat:12
+msgctxt "Flight"
+msgid ""
+"Special thanks to Dr. Martin Schweiger for developing and maintaining "
+"Orbiter for over 25 years, and for releasing the source code, making Orbiter "
+"an open source program."
+msgstr ""
+"Remerciements particuliers au Dr Martin Schweiger pour avoir développé et "
+"maintenu Orbiter pendant plus de 25 ans, et pour avoir publié le code "
+"source, faisant d’Orbiter un programme open source."
