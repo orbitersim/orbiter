@@ -9,6 +9,9 @@
 #include "Select.h"
 #include <iomanip>
 
+#define TRANSLATION_CONTEXT "MFD Align"
+#include "i18n.h"
+
 using namespace std;
 
 extern PlanetarySystem *g_psys;
@@ -490,13 +493,13 @@ bool Instrument_OPlaneAlign::KeyBuffered (DWORD key)
 		SelectAutoRef ();
 		return true;
 	case OAPI_KEY_E:  // custom elements
-		g_input->Open ("Ecliptic inclination and longitude of asc. node [deg.]:", 0, 30, Instrument_OPlaneAlign::CallbackElements, (void*)this);
+		g_input->Open (_("Ecliptic inclination and longitude of asc. node [deg.]:"), 0, 30, Instrument_OPlaneAlign::CallbackElements, (void*)this);
 		return true;
 	case OAPI_KEY_R:  // select reference
-		OpenSelect_CelBody ("Align MFD: Reference", ClbkEnter_Ref);
+		OpenSelect_CelBody (_("Align MFD: Reference"), ClbkEnter_Ref);
 		return true;
 	case OAPI_KEY_T:  // select target
-		OpenSelect_Tgt ("Align MFD: Target", ClbkEnter_Tgt, elref, 0);
+		OpenSelect_Tgt (_("Align MFD: Target"), ClbkEnter_Tgt, elref, 0);
 		return true;
 	case OAPI_KEY_M:  // mode selection
 		CycleModes();
@@ -536,13 +539,13 @@ int Instrument_OPlaneAlign::BtnMenu (const MFDBUTTONMENU **menu) const
 bool Instrument_OPlaneAlign::ClbkEnter_Ref (Select *menu, int item, char *str, void *data)
 {
 	Instrument_OPlaneAlign *mfd = (Instrument_OPlaneAlign*)data;
-	return mfd->SelectRef (str);
+	return mfd->SelectRef (const_cast<char *>(_revname(str)));
 }
 
 bool Instrument_OPlaneAlign::ClbkEnter_Tgt (Select *menu, int item, char *str, void *data)
 {
 	Instrument_OPlaneAlign* mfd = (Instrument_OPlaneAlign*)data;
-	return mfd->SelectTarget (str);
+	return mfd->SelectTarget (const_cast<char *>(_revname(str)));
 }
 
 bool Instrument_OPlaneAlign::CallbackElements (InputBox*, char *str, void *data)

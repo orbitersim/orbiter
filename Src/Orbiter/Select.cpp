@@ -59,7 +59,7 @@ void Select::DrawMenu(std::list<SelectEntry>& entries) {
                 ImGui::EndMenu();
 				
 				if(!(e.m_Flags & ITEM_NOHILIGHT)) {
-	                if (ImGui::IsItemActivated()|| (ImGui::IsItemHovered(ImGuiHoveredFlags_RectOnly) && ImGui::IsMouseReleased(0))) {
+	                if (ImGui::IsKeyPressed(ImGuiKey_Enter) || (ImGui::IsItemHovered(ImGuiHoveredFlags_RectOnly) && ImGui::IsMouseReleased(0))) {
                         cbEnter(this, i, const_cast<char*>(e.m_Text.c_str()), userdata);
                         active = false;
                         ImGui::CloseCurrentPopup();
@@ -69,10 +69,14 @@ void Select::DrawMenu(std::list<SelectEntry>& entries) {
             i++;
         }
         else {
+			if(e.m_Flags & ITEM_NOHILIGHT)
+				ImGui::BeginDisabled();
             if (ImGui::MenuItem(e.m_Text.c_str())) {
                 cbEnter(this, i, const_cast<char*>(e.m_Text.c_str()), userdata);
                 active = false;
             }
+			if(e.m_Flags & ITEM_NOHILIGHT)
+				ImGui::EndDisabled();
             i++;
         }
     }

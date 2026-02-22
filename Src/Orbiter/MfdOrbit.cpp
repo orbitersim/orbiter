@@ -8,6 +8,9 @@
 #include "Select.h"
 #include "Log.h"
 
+#define TRANSLATION_CONTEXT "MFD Orbit"
+#include "i18n.h"
+
 using namespace std;
 
 extern PlanetarySystem *g_psys;
@@ -121,10 +124,10 @@ bool Instrument_Orbit::KeyBuffered (DWORD key)
 		Refresh();
 		return true;
 	case OAPI_KEY_R:  // select reference
-		OpenSelect_CelBody ("Orbit MFD: Reference", ClbkEnter_Ref);
+		OpenSelect_CelBody (_("Orbit MFD: Reference"), ClbkEnter_Ref);
 		return true;
 	case OAPI_KEY_T:  // select target
-		OpenSelect_Tgt ("Orbit MFD: Target", ClbkEnter_Tgt, elref, 0);
+		OpenSelect_Tgt (_("Orbit MFD: Target"), ClbkEnter_Tgt, elref, 0);
 		return true;
 	}
 	return false;
@@ -165,13 +168,13 @@ int Instrument_Orbit::BtnMenu (const MFDBUTTONMENU **menu) const
 bool Instrument_Orbit::ClbkEnter_Tgt (Select *menu, int item, char *str, void *data)
 {
 	Instrument_Orbit *instr = (Instrument_Orbit*)data;
-	return instr->SelectTarget (str);
+	return instr->SelectTarget (const_cast<char *>(_revname(str)));
 }
 
 bool Instrument_Orbit::ClbkEnter_Ref (Select *menu, int item, char *str, void *data)
 {
 	Instrument_Orbit* instr = (Instrument_Orbit*)data;
-	return instr->SelectRef (str);
+	return instr->SelectRef (const_cast<char *>(_revname(str)));
 }
 
 void Instrument_Orbit::SetRef (const CelestialBody *ref)

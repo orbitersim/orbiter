@@ -9,6 +9,9 @@
 #include "Select.h"
 #include "Orbiter.h"
 
+#define TRANSLATION_CONTEXT "MFD Transfer"
+#include "i18n.h"
+
 using namespace std;
 
 extern TimeData td;
@@ -435,14 +438,14 @@ bool Instrument_Transfer::KeyBuffered (DWORD key)
 		Refresh();
 		return true;
 	case OAPI_KEY_R:  // select reference
-		OpenSelect_CelBody ("Transfer MFD: Reference", ClbkEnter_Ref);
+		OpenSelect_CelBody (_("Transfer MFD: Reference"), ClbkEnter_Ref);
 		return true;
 	case OAPI_KEY_S:  // select source
-		OpenSelect_Tgt ("Transfer MFD: Source", ClbkEnter_Src, elref, 0);
+		OpenSelect_Tgt (_("Transfer MFD: Source"), ClbkEnter_Src, elref, 0);
 		//g_input->Open ("Enter source orbit body:", 0, 20, Instrument_Transfer::ClbkName_Src, (void*)this);
 		return true;
 	case OAPI_KEY_T:  // select target
-		OpenSelect_Tgt ("Transfer MFD: Target", ClbkEnter_Tgt, elref, 0);
+		OpenSelect_Tgt (_("Transfer MFD: Target"), ClbkEnter_Tgt, elref, 0);
 		return true;
 	case OAPI_KEY_U:  // update numerical trajectory
 		if (enable_num) InitNumTrajectory (enable_hyp ? shpel2 : shpel);
@@ -453,7 +456,7 @@ bool Instrument_Transfer::KeyBuffered (DWORD key)
 		Refresh();
 		return true;
 	case OAPI_KEY_Z:  // change number of trajectory steps
-		g_input->Open ("Enter # time steps:", 0, 20, Instrument_Transfer::ClbkNstep, (void*)this);
+		g_input->Open (_("Enter # time steps:"), 0, 20, Instrument_Transfer::ClbkNstep, (void*)this);
 		return true;
 	}
 	return false;
@@ -552,19 +555,19 @@ int Instrument_Transfer::BtnMenu (const MFDBUTTONMENU **menu) const
 bool Instrument_Transfer::ClbkEnter_Tgt (Select *menu, int item, char *str, void *data)
 {
 	Instrument_Transfer *instr = (Instrument_Transfer*)data;
-	return instr->SelectTarget (str);
+	return instr->SelectTarget (const_cast<char *>(_revname(str)));
 }
 
 bool Instrument_Transfer::ClbkEnter_Ref (Select *menu, int item, char *str, void *data)
 {
 	Instrument_Transfer* instr = (Instrument_Transfer*)data;
-	return instr->SelectRef (str);
+	return instr->SelectRef (const_cast<char *>(_revname(str)));
 }
 
 bool Instrument_Transfer::ClbkEnter_Src (Select *menu, int item, char *str, void *data)
 {
 	Instrument_Transfer* instr = (Instrument_Transfer*)data;
-	return instr->SelectSrc (str);
+	return instr->SelectSrc (const_cast<char *>(_revname(str)));
 }
 
 bool Instrument_Transfer::ClbkNstep (InputBox*, char *str, void *data)

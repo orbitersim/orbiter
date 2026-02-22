@@ -66,8 +66,8 @@ msgid ""
 msgstr ""
 "Les instruments multifonctions (MFD) joueront un rôle clé durant toutes les "
 "phases du vol. La caméra est configurée en vue « glass cockpit », projetant "
-"deux MFDs sur l’affichage tête haute (HUD). Pour utiliser la vue panneau "
-"ou cockpit virtuel, alternez via la touche F8."
+"deux MFDs sur l’affichage tête haute (HUD). Pour utiliser la vue panneau ou "
+"cockpit virtuel, alternez via la touche F8."
 
 #: C:/github/openorbiter/Flights/DG to the moon/system.dat:15
 msgctxt "Flight"
@@ -430,7 +430,7 @@ msgid ""
 "to 0.02°. That's good enough!"
 msgstr ""
 "L'inclinaison relative (« RInc ») par rapport au plan orbital lunaire est "
-"désormais descendue a 0,02°. Ça suffira !"
+"désormais descendue à 0,02°. Ça suffira !"
 
 #: C:/github/openorbiter/Flights/DG to the moon/system.dat:78
 msgctxt "Flight"
@@ -533,8 +533,8 @@ msgid ""
 msgstr ""
 "Ensuite, vous devez ajouter une impulsion (delta-v) au point d'éjection de "
 "votre orbite. Appuyer et maintenez « DV+ » jusqu'à ce que l'indicateur "
-"« Dv » affiche 3.121 k (soit 3,121 km/s). Si vous dépassez, appuyez sur "
-"« DV- » pour réduire la vitesse d'éjection."
+"« Dv » affiche 3.121 k (soit 3,121 km/s). Si vous dépassez, appuyez sur « DV-"
+" » pour réduire la vitesse d'éjection."
 
 #: C:/github/openorbiter/Flights/DG to the moon/system.dat:98
 msgctxt "Flight"
@@ -631,7 +631,7 @@ msgstr ""
 #: C:/github/openorbiter/Flights/DG to the moon/system.dat:119
 msgctxt "Flight"
 msgid "This is a long burn, so I am fast-forwarding to the end ..."
-msgstr "La poussée est longue, accélération jusqu'à sa fin..."
+msgstr "La poussée est assez longue, accélération jusqu'à sa fin..."
 
 #: C:/github/openorbiter/Flights/DG to the moon/system.dat:122
 msgctxt "Flight"
@@ -639,7 +639,7 @@ msgid ""
 "Towards the end of the burn the orbit (solid green ellipse) starts growing "
 "rapidly, so you may want to reduce thrust to avoid overshooting."
 msgstr ""
-"Vers la fin, l'orbite (ellipse verte) commence a croître rapidement, vous "
+"Vers la fin, l'orbite (ellipse verte) commence à croître rapidement, vous "
 "pouvez donc réduire la poussée pour éviter de dépasser la vitesse."
 
 #: C:/github/openorbiter/Flights/DG to the moon/system.dat:124
@@ -814,7 +814,7 @@ msgid ""
 msgstr ""
 "Une fois le plan orbital aligné, l’étape suivante consiste à ajuster la "
 "distance du périapside (ou, dans ce cas, du périlune), c’est-à-dire le point "
-"de plus proche approche de la Lune."
+"de plus proche de la Lune."
 
 #: C:/github/openorbiter/Flights/DG to the moon/system.dat:149
 msgctxt "Flight"
@@ -865,7 +865,7 @@ msgid ""
 "we approach the Moon."
 msgstr ""
 "La correction de mi-parcours est terminée. Nous nous orientons en prograde "
-"pour une bonne vue à l’approche de la Lune."
+"pour avoir une bonne vue à l’approche de la Lune."
 
 #: C:/github/openorbiter/Flights/DG to the moon/system.dat:155
 msgctxt "Flight"
@@ -1003,8 +1003,8 @@ msgid ""
 msgstr ""
 "Lors de l’estimation de l’instant de la poussée de désorbitation, essayez de "
 "ne pas sous-estimer le moment (pour éviter de dépasser la zone). Si vous "
-"vous désorbitez trop tôt, vous gaspillerez du carburant en stationnaire au-"
-"dessus de la surface."
+"vous désorbitez trop tôt, vous gaspillerez du carburant en vol stationnaire "
+"au-dessus de la surface."
 
 #: C:/github/openorbiter/Flights/DG to the moon/system.dat:189
 msgctxt "Flight"
@@ -1038,7 +1038,7 @@ msgstr ""
 "horizontale avec la poussée principale à pleine puissance. Pendant ce temps, "
 "nous parcourrons une distance de x = vt - ½at² = 64 km. Nous devons "
 "commencer la poussée de décélération avant d'atteindre cette distance (ou "
-"plus tôt si vous souhaitez utiliser les rétromoteurs moins puissantes)."
+"plus tôt si vous souhaitez utiliser les rétromoteurs moins puissants)."
 
 #: C:/github/openorbiter/Flights/DG to the moon/system.dat:193
 msgctxt "Flight"

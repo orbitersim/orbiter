@@ -7,6 +7,8 @@
 #include "Celbody.h"
 #include "Planet.h"
 #include "Base.h"
+#define TRANSLATION_CONTEXT "MFD Map"
+#include "i18n.h"
 
 using namespace std;
 
@@ -120,10 +122,10 @@ bool Instrument_Map::KeyBuffered (DWORD key)
 	case 0: // default display
 		switch (key) {
 		case OAPI_KEY_R:  // select reference
-			OpenSelect_CelBody ("Map MFD: Reference", ClbkEnter_Map, 1);
+			OpenSelect_CelBody (_("Map MFD: Reference"), ClbkEnter_Map, 1);
 			return true;
 		case OAPI_KEY_T:  // select target
-			g_select->Open ("Map MFD: Target", ClbkSubmn_Target, ClbkEnter_Target, (void*)this);
+			g_select->Open (_("Map MFD: Target"), ClbkSubmn_Target, ClbkEnter_Target, (void*)this);
 			return true;
 		case OAPI_KEY_D:  // switch to display parameters page
 			disp_mode = 1;
@@ -722,7 +724,7 @@ void Instrument_Map::WriteParams (std::ostream &ofs) const
 bool Instrument_Map::ClbkEnter_Map (Select *menu, int item, char *str, void *data)
 {
 	Instrument_Map *map = (Instrument_Map*)data;
-	return map->SelectMap (str);
+	return map->SelectMap (const_cast<char *>(_revname(str)));
 }
 
 // =======================================================================
@@ -733,32 +735,32 @@ bool Instrument_Map::ClbkSubmn_Target (Select *menu, int item, char *str, void *
 	Instrument_Map *map = (Instrument_Map*)data;
 
 	if (!str) { // main menu
-		menu->Append ("By name ...");
+		menu->Append (_("By name ..."));
 		menu->AppendSeparator ();
-		menu->Append ("Spaceports", ITEM_SUBMENU | ITEM_NOHILIGHT);
-		menu->Append ("Spacecraft", ITEM_SUBMENU | ITEM_NOHILIGHT);
-		menu->Append ("Moons", ITEM_SUBMENU | ITEM_NOHILIGHT);
-		menu->Append ("[none]");
+		menu->Append (_("Spaceports"), ITEM_SUBMENU | ITEM_NOHILIGHT);
+		menu->Append (_("Spacecrafts"), ITEM_SUBMENU | ITEM_NOHILIGHT);
+		menu->Append (_("Moons"), ITEM_SUBMENU | ITEM_NOHILIGHT);
+		menu->Append (_("[none]"));
 		return true;
 	} else {    // submenu
 		switch (item) {
 		case 1: // spaceports
 			for (i = 0; i < map->refplanet->nBase(); i++)
-				menu->Append (map->refplanet->GetBase(i)->Name());
+				menu->Append (_name(map->refplanet->GetBase(i)->Name()));
 			return (i > 0);
 		case 2: // ships
 			for (i = 0, j = 0; i < g_psys->nVessel(); i++) {
 				Vessel *v = g_psys->GetVessel(i);
 				if (v == map->vessel || v->GetStatus() != FLIGHTSTATUS_FREEFLIGHT) continue;
 				if (v->ElRef() == map->refplanet)
-					menu->Append (v->Name()), j++;
+					menu->Append (_name(v->Name())), j++;
 			}
 			return (j > 0);
 		case 3: // moons
 			for (i = 0, j = 0; i < g_psys->nGrav(); i++) {
 				Body *body = g_psys->GetGravObj(i);
 				if (body->Type() == OBJTP_PLANET && body->ElRef() == map->refplanet)
-					menu->Append (body->Name()), j++;
+					menu->Append (_name(body->Name())), j++;
 			}
 			return (j > 0);
 		}
@@ -771,15 +773,15 @@ bool Instrument_Map::ClbkSubmn_Target (Select *menu, int item, char *str, void *
 bool Instrument_Map::ClbkEnter_Target (Select *menu, int item, char *str, void *data)
 {
 	Instrument_Map *map = (Instrument_Map*)data;
-	if (!_stricmp (str, "By name ...")) {
-		g_input->Open ("Enter target:", 0, 20, Instrument_Map::ClbkName_Target,
+	if (!_stricmp (str, _("By name ..."))) {
+		g_input->Open (_("Enter target:"), 0, 20, Instrument_Map::ClbkName_Target,
 			map);
 		return true;
-	} else if (!_stricmp (str, "[none]")) {
+	} else if (!_stricmp (str, _("[none]"))) {
 		map->UnselectTarget ();
 		return true;
 	} else
-		return map->SelectTarget (str);
+		return map->SelectTarget (const_cast<char *>(_revname(str)));
 }
 
 // =======================================================================
@@ -787,6 +789,6 @@ bool Instrument_Map::ClbkEnter_Target (Select *menu, int item, char *str, void *
 bool Instrument_Map::ClbkName_Target (InputBox*, char *str, void *data)
 {
 	Instrument_Map *map = (Instrument_Map*)data;
-	return map->SelectTarget (str);
+	return map->SelectTarget (const_cast<char *>(_revname(str)));
 }
 

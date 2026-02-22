@@ -15,6 +15,7 @@
 #include "Vessel.h"
 #include "SuperVessel.h"
 #include "Log.h"
+#include "i18n.h"
 
 using namespace std;
 
@@ -163,7 +164,7 @@ void PlanetarySystem::OptionChanged(DWORD cat, DWORD item)
 	for (size_t i = 0; i < vessels.size(); i++)
 		vessels[i]->OptionChanged(cat, item);
 }
-#include "i18n.h"
+
 bool PlanetarySystem::Read (char *fname, const Config* config, OutputLoadStatusCallback outputLoadStatus, void* callbackContext)
 {
 	int i;
@@ -215,7 +216,8 @@ bool PlanetarySystem::Read (char *fname, const Config* config, OutputLoadStatusC
 void PlanetarySystem::OutputLoadStatus (const char *bname, OutputLoadStatusCallback outputLoadStatus, void* callbackContext)
 {
 	char cbuf[256];
-	sprintf (cbuf, "%s: %s", m_Name.c_str(), bname);
+	// TRANSLATORS: Spashscreen (e.g. Sol: Earth)
+	sprintf (cbuf, _c("Splashscreen", "%s: %s"), _name(m_Name.c_str()), bname);
 	outputLoadStatus(cbuf, 0, callbackContext);
 }
 
