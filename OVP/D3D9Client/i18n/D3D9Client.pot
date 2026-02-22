@@ -30,12 +30,12 @@ msgctxt "D3D9Client"
 msgid "Frozen"
 msgstr ""
 
-#: C:/github/openorbiter/OVP/D3D9Client/D3D9Client.cpp:3141
+#: C:/github/openorbiter/OVP/D3D9Client/D3D9Client.cpp:3133
 msgctxt "D3D9Client"
 msgid "Loading..."
 msgstr ""
 
-#: C:/github/openorbiter/OVP/D3D9Client/D3D9Client.cpp:3148
+#: C:/github/openorbiter/OVP/D3D9Client/D3D9Client.cpp:3140
 msgctxt "D3D9Client"
 msgid "Warning: Config folder not present in /Modules/Server/. Please create symbolic link."
 msgstr ""
