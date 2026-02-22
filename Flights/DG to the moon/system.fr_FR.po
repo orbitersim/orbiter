@@ -953,7 +953,7 @@ msgid ""
 "Set the right MFD display to VTOL (vertical takeoff and landing) mode: Press "
 "'SEL', 'VOR/VTOL'."
 msgstr ""
-"Réglez l'affichage de droite en mode ADAV (atterrissage et décollage "
+"Réglez l'affichage de droite en mode VTOL (atterrissage et décollage "
 "vertical) : appuyez sur « SEL », « VOR/VTOL »."
 
 #: C:/github/openorbiter/Flights/DG to the moon/system.dat:179
@@ -1048,7 +1048,7 @@ msgid ""
 "centre, and forward direction at 12 o'clock."
 msgstr ""
 "À présent, vous êtes à portée de la balise NAV de Brighton Beach. "
-"L'affichage circulaire sur l'affichage ADAV représente une vue de dessus "
+"L'affichage circulaire sur l'affichage VTOL représente une vue de dessus "
 "avec votre position au centre et la direction avant à 12 heures."
 
 #: C:/github/openorbiter/Flights/DG to the moon/system.dat:194
@@ -1149,7 +1149,7 @@ msgid ""
 "On the VTOL MFD, click 'NAV' to switch to Nav receiver 2. This is preset to "
 "the pad 1 transmitter frequency, your designated landing pad."
 msgstr ""
-"Sur l'affichage ADAV, cliquez sur « NAV » et basculez sur le récepteur 2. Il "
+"Sur l'affichage VTOL, cliquez sur « NAV » et basculez sur le récepteur 2. Il "
 "est préréglé sur l'émetteur de l'Aire numéro 1, votre aire de poser désignée."
 
 #: C:/github/openorbiter/Flights/DG to the moon/system.dat:230

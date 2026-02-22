@@ -201,28 +201,28 @@ void Instrument::GlobalExit (oapi::GraphicsClient *gc)
 void Instrument::RegisterBuiltinModes ()
 {
 	static MFDMODESPECEX def_mode[BUILTIN_MFD_MODES] = {
-		{const_cast<char *>(_("Orbit")),        OAPI_KEY_O, 0, 0},
-		{const_cast<char *>(_("Surface")),      OAPI_KEY_S, 0, 0},
-		{const_cast<char *>(_("Map")),          OAPI_KEY_M, 0, 0},
-		{const_cast<char *>(_("HSI")),          OAPI_KEY_H, 0, 0},
-		{const_cast<char *>(_("VOR/VTOL")),     OAPI_KEY_L, 0, 0},
-		{const_cast<char *>(_("Docking")),      OAPI_KEY_D, 0, 0},
-		{const_cast<char *>(_("Align Planes")), OAPI_KEY_A, 0, 0},
-		{const_cast<char *>(_("Sync Orbit")),   OAPI_KEY_Y, 0, 0},
-		{const_cast<char *>(_("Transfer")),     OAPI_KEY_X, 0, 0},
-		{const_cast<char *>(_("COM/NAV")),      OAPI_KEY_C, 0, 0}
+		{const_cast<char *>("Orbit"),        OAPI_KEY_O, 0, 0},
+		{const_cast<char *>("Surface"),      OAPI_KEY_S, 0, 0},
+		{const_cast<char *>("Map"),          OAPI_KEY_M, 0, 0},
+		{const_cast<char *>("HSI"),          OAPI_KEY_H, 0, 0},
+		{const_cast<char *>("VOR/VTOL"),     OAPI_KEY_L, 0, 0},
+		{const_cast<char *>("Docking"),      OAPI_KEY_D, 0, 0},
+		{const_cast<char *>("Align Planes"), OAPI_KEY_A, 0, 0},
+		{const_cast<char *>("Sync Orbit"),   OAPI_KEY_Y, 0, 0},
+		{const_cast<char *>("Transfer"),     OAPI_KEY_X, 0, 0},
+		{const_cast<char *>("COM/NAV"),      OAPI_KEY_C, 0, 0}
 	};
 	static MFDMODESPEC def_oldmode[BUILTIN_MFD_MODES] = { // obsolete
-		{const_cast<char *>(_("Orbit")),        OAPI_KEY_O, 0},
-		{const_cast<char *>(_("Surface")),      OAPI_KEY_S, 0},
-		{const_cast<char *>(_("Map")),          OAPI_KEY_M, 0},
-		{const_cast<char *>(_("HSI")),          OAPI_KEY_H, 0},
-		{const_cast<char *>(_("VOR/VTOL")),     OAPI_KEY_L, 0},
-		{const_cast<char *>(_("Docking")),      OAPI_KEY_D, 0},
-		{const_cast<char *>(_("Align Planes")), OAPI_KEY_A, 0},
-		{const_cast<char *>(_("Sync Orbit")),   OAPI_KEY_Y, 0},
-		{const_cast<char *>(_("Transfer")),     OAPI_KEY_X, 0},
-		{const_cast<char *>(_("COM/NAV")),      OAPI_KEY_C, 0}
+		{const_cast<char *>("Orbit"),        OAPI_KEY_O, 0},
+		{const_cast<char *>("Surface"),      OAPI_KEY_S, 0},
+		{const_cast<char *>("Map"),          OAPI_KEY_M, 0},
+		{const_cast<char *>("HSI"),          OAPI_KEY_H, 0},
+		{const_cast<char *>("VOR/VTOL"),     OAPI_KEY_L, 0},
+		{const_cast<char *>("Docking"),      OAPI_KEY_D, 0},
+		{const_cast<char *>("Align Planes"), OAPI_KEY_A, 0},
+		{const_cast<char *>("Sync Orbit"),   OAPI_KEY_Y, 0},
+		{const_cast<char *>("Transfer"),     OAPI_KEY_X, 0},
+		{const_cast<char *>("COM/NAV"),      OAPI_KEY_C, 0}
 	};
 
 	static int def_id[BUILTIN_MFD_MODES] = {
@@ -902,10 +902,10 @@ void Instrument::DisplayModes (int page)
 	if (!skp) return;
 
 	if (nGlobalModes-nDisabledModes <= nbt) {
-		DisplayTitle (skp, _("MODE SELECT"));
+		DisplayTitle (skp, "MODE SELECT");
 	} else {
 		char cbuf[256];
-		sprintf (cbuf, _("MODE SELECT [Page %d]"), page+1);
+		sprintf (cbuf, "MODE SELECT [Page %d]", page+1);
 		DisplayTitle (skp, cbuf);
 	}
 
@@ -976,7 +976,7 @@ void Instrument::DrawMenu ()
 	oapi::Sketchpad *skp = BeginDraw ();
 	if (!skp) return;
 
-	DisplayTitle (skp, _("MFD MENU"));
+	DisplayTitle (skp, "MFD MENU");
 	nmnu = BtnMenu (&mnu);
 	for (side = 0; side < 2; side++) {
 		skp->SetTextAlign (side ? oapi::Sketchpad::RIGHT : oapi::Sketchpad::LEFT);

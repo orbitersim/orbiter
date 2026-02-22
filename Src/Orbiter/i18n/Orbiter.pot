@@ -303,7 +303,7 @@ msgstr ""
 
 #: C:/github/openorbiter/Src/Orbiter/DlgFocus.cpp:31
 msgctxt "Dialog Focus"
-msgid "Class"
+msgid "Location"
 msgstr ""
 
 #: C:/github/openorbiter/Src/Orbiter/DlgFocus.cpp:31
@@ -313,7 +313,7 @@ msgstr ""
 
 #: C:/github/openorbiter/Src/Orbiter/DlgFocus.cpp:31
 msgctxt "Dialog Focus"
-msgid "Location"
+msgid "Class"
 msgstr ""
 
 #: C:/github/openorbiter/Src/Orbiter/DlgFocus.cpp:121 C:/github/openorbiter/Src/Orbiter/DlgFocus.cpp:177 C:/github/openorbiter/Src/Orbiter/DlgFocus.cpp:228 C:/github/openorbiter/Src/Orbiter/DlgFocus.cpp:74
@@ -453,12 +453,12 @@ msgstr ""
 
 #: C:/github/openorbiter/Src/Orbiter/DlgInfo.cpp:175
 msgctxt "Dialog Info"
-msgid "Retro"
+msgid "Hover"
 msgstr ""
 
 #: C:/github/openorbiter/Src/Orbiter/DlgInfo.cpp:175
 msgctxt "Dialog Info"
-msgid "Hover"
+msgid "Retro"
 msgstr ""
 
 #: C:/github/openorbiter/Src/Orbiter/DlgInfo.cpp:197 C:/github/openorbiter/Src/Orbiter/DlgInfo.cpp:646
@@ -544,13 +544,13 @@ msgstr ""
 #: C:/github/openorbiter/Src/Orbiter/DlgInfo.cpp:300
 #. Bank xxx° right/left
 msgctxt "Dialog Info"
-msgid "right"
+msgid "left"
 msgstr ""
 
 #: C:/github/openorbiter/Src/Orbiter/DlgInfo.cpp:300
 #. Bank xxx° right/left
 msgctxt "Dialog Info"
-msgid "left"
+msgid "right"
 msgstr ""
 
 #: C:/github/openorbiter/Src/Orbiter/DlgInfo.cpp:308
@@ -820,17 +820,17 @@ msgstr ""
 
 #: C:/github/openorbiter/Src/Orbiter/DlgInfo.cpp:786
 msgctxt "Dialog Info"
-msgid "2-body"
-msgstr ""
-
-#: C:/github/openorbiter/Src/Orbiter/DlgInfo.cpp:786
-msgctxt "Dialog Info"
 msgid "from module"
 msgstr ""
 
 #: C:/github/openorbiter/Src/Orbiter/DlgInfo.cpp:786
 msgctxt "Dialog Info"
 msgid "Analytic (%s)"
+msgstr ""
+
+#: C:/github/openorbiter/Src/Orbiter/DlgInfo.cpp:786
+msgctxt "Dialog Info"
+msgid "2-body"
 msgstr ""
 
 #: C:/github/openorbiter/Src/Orbiter/DlgInfo.cpp:807
@@ -1064,11 +1064,6 @@ msgctxt "Dialog MenuCfg"
 msgid "Orbiter: Configure menu bars"
 msgstr ""
 
-#: C:/github/openorbiter/Src/Orbiter/DlgMenuCfg.cpp:29 C:/github/openorbiter/Src/Orbiter/DlgMenuCfg.cpp:41 C:/github/openorbiter/Src/Orbiter/DlgMenuCfg.cpp:57
-msgctxt "Dialog MenuCfg"
-msgid "Hide"
-msgstr ""
-
 #: C:/github/openorbiter/Src/Orbiter/DlgMenuCfg.cpp:29 C:/github/openorbiter/Src/Orbiter/DlgMenuCfg.cpp:43 C:/github/openorbiter/Src/Orbiter/DlgMenuCfg.cpp:59
 msgctxt "Dialog MenuCfg"
 msgid "Auto-hide"
@@ -1077,6 +1072,11 @@ msgstr ""
 #: C:/github/openorbiter/Src/Orbiter/DlgMenuCfg.cpp:29 C:/github/openorbiter/Src/Orbiter/DlgMenuCfg.cpp:39 C:/github/openorbiter/Src/Orbiter/DlgMenuCfg.cpp:55
 msgctxt "Dialog MenuCfg"
 msgid "Show"
+msgstr ""
+
+#: C:/github/openorbiter/Src/Orbiter/DlgMenuCfg.cpp:29 C:/github/openorbiter/Src/Orbiter/DlgMenuCfg.cpp:41 C:/github/openorbiter/Src/Orbiter/DlgMenuCfg.cpp:57
+msgctxt "Dialog MenuCfg"
+msgid "Hide"
 msgstr ""
 
 #: C:/github/openorbiter/Src/Orbiter/DlgMenuCfg.cpp:35
@@ -1136,12 +1136,12 @@ msgstr ""
 
 #: C:/github/openorbiter/Src/Orbiter/DlgMenuCfg.cpp:65
 msgctxt "Dialog MenuCfg"
-msgid "On the left"
+msgid "On the right"
 msgstr ""
 
 #: C:/github/openorbiter/Src/Orbiter/DlgMenuCfg.cpp:65
 msgctxt "Dialog MenuCfg"
-msgid "On the right"
+msgid "On the left"
 msgstr ""
 
 #: C:/github/openorbiter/Src/Orbiter/DlgMenuCfg.cpp:65
@@ -1282,13 +1282,13 @@ msgstr ""
 #: C:/github/openorbiter/Src/Orbiter/DlgOptions.cpp:167
 #. flight model
 msgctxt "Dialog Options"
-msgid "Simple"
+msgid "Realistic"
 msgstr ""
 
 #: C:/github/openorbiter/Src/Orbiter/DlgOptions.cpp:167
 #. flight model
 msgctxt "Dialog Options"
-msgid "Realistic"
+msgid "Simple"
 msgstr ""
 
 #: C:/github/openorbiter/Src/Orbiter/DlgOptions.cpp:168
@@ -1298,12 +1298,12 @@ msgstr ""
 
 #: C:/github/openorbiter/Src/Orbiter/DlgOptions.cpp:170
 msgctxt "Dialog Options"
-msgid "Allow damage"
+msgid "No damage"
 msgstr ""
 
 #: C:/github/openorbiter/Src/Orbiter/DlgOptions.cpp:170
 msgctxt "Dialog Options"
-msgid "No damage"
+msgid "Allow damage"
 msgstr ""
 
 #: C:/github/openorbiter/Src/Orbiter/DlgOptions.cpp:171
@@ -1348,11 +1348,6 @@ msgstr ""
 
 #: C:/github/openorbiter/Src/Orbiter/DlgOptions.cpp:218
 msgctxt "Dialog Options"
-msgid "<Keyboard only>"
-msgstr ""
-
-#: C:/github/openorbiter/Src/Orbiter/DlgOptions.cpp:218
-msgctxt "Dialog Options"
 msgid "Slider 1"
 msgstr ""
 
@@ -1364,6 +1359,11 @@ msgstr ""
 #: C:/github/openorbiter/Src/Orbiter/DlgOptions.cpp:218
 msgctxt "Dialog Options"
 msgid "Z-axis"
+msgstr ""
+
+#: C:/github/openorbiter/Src/Orbiter/DlgOptions.cpp:218
+msgctxt "Dialog Options"
+msgid "<Keyboard only>"
 msgstr ""
 
 #: C:/github/openorbiter/Src/Orbiter/DlgOptions.cpp:234
@@ -1664,12 +1664,12 @@ msgstr ""
 
 #: C:/github/openorbiter/Src/Orbiter/DlgRecorder.cpp:28
 msgctxt "Dialog Recorder"
-msgid "Status: Recording"
+msgid "Status: Normal"
 msgstr ""
 
 #: C:/github/openorbiter/Src/Orbiter/DlgRecorder.cpp:28
 msgctxt "Dialog Recorder"
-msgid "Status: Normal"
+msgid "Status: Recording"
 msgstr ""
 
 #: C:/github/openorbiter/Src/Orbiter/DlgRecorder.cpp:40 C:/github/openorbiter/Src/Orbiter/DlgRecorder.cpp:91
@@ -1821,12 +1821,12 @@ msgstr ""
 
 #: C:/github/openorbiter/Src/Orbiter/DlgTacc.cpp:142
 msgctxt "Dialog Time acceleration"
-msgid "Resume"
+msgid "Pause"
 msgstr ""
 
 #: C:/github/openorbiter/Src/Orbiter/DlgTacc.cpp:142
 msgctxt "Dialog Time acceleration"
-msgid "Pause"
+msgid "Resume"
 msgstr ""
 
 #: C:/github/openorbiter/Src/Orbiter/MenuInfoBar.cpp:78
@@ -1893,7 +1893,7 @@ msgstr ""
 
 #: C:/github/openorbiter/Src/Orbiter/MenuInfoBar.cpp:789
 msgctxt "MenuInfoBar"
-msgid "(free)"
+msgid "Cam ground %s"
 msgstr ""
 
 #: C:/github/openorbiter/Src/Orbiter/MenuInfoBar.cpp:789
@@ -1903,7 +1903,7 @@ msgstr ""
 
 #: C:/github/openorbiter/Src/Orbiter/MenuInfoBar.cpp:789
 msgctxt "MenuInfoBar"
-msgid "Cam ground %s"
+msgid "(free)"
 msgstr ""
 
 #: C:/github/openorbiter/Src/Orbiter/MenuInfoBar.cpp:792
@@ -1919,71 +1919,6 @@ msgstr ""
 #: C:/github/openorbiter/Src/Orbiter/MenuInfoBar.cpp:797 C:/github/openorbiter/Src/Orbiter/MenuInfoBar.cpp:800
 msgctxt "MenuInfoBar"
 msgid "   Dst %s"
-msgstr ""
-
-#: C:/github/openorbiter/Src/Orbiter/Mfd.cpp:204 C:/github/openorbiter/Src/Orbiter/Mfd.cpp:216
-msgctxt "MFD Generic"
-msgid "Orbit"
-msgstr ""
-
-#: C:/github/openorbiter/Src/Orbiter/Mfd.cpp:205 C:/github/openorbiter/Src/Orbiter/Mfd.cpp:217
-msgctxt "MFD Generic"
-msgid "Surface"
-msgstr ""
-
-#: C:/github/openorbiter/Src/Orbiter/Mfd.cpp:206 C:/github/openorbiter/Src/Orbiter/Mfd.cpp:218
-msgctxt "MFD Generic"
-msgid "Map"
-msgstr ""
-
-#: C:/github/openorbiter/Src/Orbiter/Mfd.cpp:207 C:/github/openorbiter/Src/Orbiter/Mfd.cpp:219
-msgctxt "MFD Generic"
-msgid "HSI"
-msgstr ""
-
-#: C:/github/openorbiter/Src/Orbiter/Mfd.cpp:208 C:/github/openorbiter/Src/Orbiter/Mfd.cpp:220
-msgctxt "MFD Generic"
-msgid "VOR/VTOL"
-msgstr ""
-
-#: C:/github/openorbiter/Src/Orbiter/Mfd.cpp:209 C:/github/openorbiter/Src/Orbiter/Mfd.cpp:221
-msgctxt "MFD Generic"
-msgid "Docking"
-msgstr ""
-
-#: C:/github/openorbiter/Src/Orbiter/Mfd.cpp:210 C:/github/openorbiter/Src/Orbiter/Mfd.cpp:222
-msgctxt "MFD Generic"
-msgid "Align Planes"
-msgstr ""
-
-#: C:/github/openorbiter/Src/Orbiter/Mfd.cpp:211 C:/github/openorbiter/Src/Orbiter/Mfd.cpp:223
-msgctxt "MFD Generic"
-msgid "Sync Orbit"
-msgstr ""
-
-#: C:/github/openorbiter/Src/Orbiter/Mfd.cpp:212 C:/github/openorbiter/Src/Orbiter/Mfd.cpp:224
-msgctxt "MFD Generic"
-msgid "Transfer"
-msgstr ""
-
-#: C:/github/openorbiter/Src/Orbiter/Mfd.cpp:213 C:/github/openorbiter/Src/Orbiter/Mfd.cpp:225
-msgctxt "MFD Generic"
-msgid "COM/NAV"
-msgstr ""
-
-#: C:/github/openorbiter/Src/Orbiter/Mfd.cpp:905
-msgctxt "MFD Generic"
-msgid "MODE SELECT"
-msgstr ""
-
-#: C:/github/openorbiter/Src/Orbiter/Mfd.cpp:908
-msgctxt "MFD Generic"
-msgid "MODE SELECT [Page %d]"
-msgstr ""
-
-#: C:/github/openorbiter/Src/Orbiter/Mfd.cpp:979
-msgctxt "MFD Generic"
-msgid "MFD MENU"
 msgstr ""
 
 #: C:/github/openorbiter/Src/Orbiter/Mfd.cpp:1066 C:/github/openorbiter/Src/Orbiter/Mfd.cpp:1121
@@ -2344,17 +2279,12 @@ msgstr ""
 
 #: C:/github/openorbiter/Src/Orbiter/Rigidbody.cpp:534
 msgctxt "State propagator"
-msgid "Runge-Kutta, 2nd order (RK2)"
+msgid "Runge-Kutta, 6th order (RK6)"
 msgstr ""
 
 #: C:/github/openorbiter/Src/Orbiter/Rigidbody.cpp:534
 msgctxt "State propagator"
-msgid "Runge-Kutta, 6th order (RK6)"
-msgstr ""
-
-#: C:/github/openorbiter/Src/Orbiter/Rigidbody.cpp:535
-msgctxt "State propagator"
-msgid "Runge-Kutta, 7th order (RK7)"
+msgid "Runge-Kutta, 2nd order (RK2)"
 msgstr ""
 
 #: C:/github/openorbiter/Src/Orbiter/Rigidbody.cpp:535
@@ -2362,14 +2292,9 @@ msgctxt "State propagator"
 msgid "Runge-Kutta, 8th order (RK8)"
 msgstr ""
 
-#: C:/github/openorbiter/Src/Orbiter/Rigidbody.cpp:536
+#: C:/github/openorbiter/Src/Orbiter/Rigidbody.cpp:535
 msgctxt "State propagator"
-msgid "Symplectic, 4th order (SY4)"
-msgstr ""
-
-#: C:/github/openorbiter/Src/Orbiter/Rigidbody.cpp:536
-msgctxt "State propagator"
-msgid "Symplectic, 6th order (SY6)"
+msgid "Runge-Kutta, 7th order (RK7)"
 msgstr ""
 
 #: C:/github/openorbiter/Src/Orbiter/Rigidbody.cpp:536
@@ -2380,6 +2305,16 @@ msgstr ""
 #: C:/github/openorbiter/Src/Orbiter/Rigidbody.cpp:536
 msgctxt "State propagator"
 msgid "Symplectic, 2nd order (SY2)"
+msgstr ""
+
+#: C:/github/openorbiter/Src/Orbiter/Rigidbody.cpp:536
+msgctxt "State propagator"
+msgid "Symplectic, 4th order (SY4)"
+msgstr ""
+
+#: C:/github/openorbiter/Src/Orbiter/Rigidbody.cpp:536
+msgctxt "State propagator"
+msgid "Symplectic, 6th order (SY6)"
 msgstr ""
 
 #: C:/github/openorbiter/Src/Orbiter/Rigidbody.cpp:538
