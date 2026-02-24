@@ -1,0 +1,82 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: Orbiter Flights\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+#: C:/github/openorbiter/Flights/Space Shuttle final approach/system.dat:4
+msgctxt "Flight"
+msgid "This is Space Shuttle Atlantis on final approach to Shuttle Landing Facility Runway 33 at the Kennedy Space Center."
+msgstr ""
+
+#: C:/github/openorbiter/Flights/Space Shuttle final approach/system.dat:8
+msgctxt "Flight"
+msgid "This flight has been pre-recorded, so just sit back and enjoy the ride."
+msgstr ""
+
+#: C:/github/openorbiter/Flights/Space Shuttle final approach/system.dat:10
+msgctxt "Flight"
+msgid "When you feel ready to take control, simply press Ctrl-C and take the stick."
+msgstr ""
+
+#: C:/github/openorbiter/Flights/Space Shuttle final approach/system.dat:12
+msgctxt "Flight"
+msgid "We approaching the HAC (horizontal alignment cylinder) from the south-west."
+msgstr ""
+
+#: C:/github/openorbiter/Flights/Space Shuttle final approach/system.dat:14
+msgctxt "Flight"
+msgid "The left HSI display has been slaved to the SLF-33 Instrument Landing System transmitter. Keep an eye on the deviation indicator, which shows your offset from the approach path."
+msgstr ""
+
+#: C:/github/openorbiter/Flights/Space Shuttle final approach/system.dat:16
+msgctxt "Flight"
+msgid "A left turn wraps the flight path around the HAC and aligns the Shuttle with the runway."
+msgstr ""
+
+#: C:/github/openorbiter/Flights/Space Shuttle final approach/system.dat:18
+msgctxt "Flight"
+msgid "The Vehicle Assembly Building (VAB) at the KSC is coming into view straight ahead."
+msgstr ""
+
+#: C:/github/openorbiter/Flights/Space Shuttle final approach/system.dat:20
+msgctxt "Flight"
+msgid "The Shuttle as a very steep glideslope of 20°."
+msgstr ""
+
+#: C:/github/openorbiter/Flights/Space Shuttle final approach/system.dat:21
+msgctxt "Flight"
+msgid "The PAPI approach path indicators (the row of red and white lights ahead of the runway) have been adjusted to the Shuttle's approach slope. Two white and two red lights show that you are on glideslope."
+msgstr ""
+
+#: C:/github/openorbiter/Flights/Space Shuttle final approach/system.dat:26
+msgctxt "Flight"
+msgid "The split rudder brake is being deployed."
+msgstr ""
+
+#: C:/github/openorbiter/Flights/Space Shuttle final approach/system.dat:28
+msgctxt "Flight"
+msgid "Ten seconds before touchdown the landing gear is lowered."
+msgstr ""
+
+#: C:/github/openorbiter/Flights/Space Shuttle final approach/system.dat:29
+msgctxt "Flight"
+msgid "The final flare lifts the Shuttle nose and reduces the glide angle."
+msgstr ""
+
+#: C:/github/openorbiter/Flights/Space Shuttle final approach/system.dat:31
+msgctxt "Flight"
+msgid "Main gear touchdown!"
+msgstr ""
+
+#: C:/github/openorbiter/Flights/Space Shuttle final approach/system.dat:33
+msgctxt "Flight"
+msgid "And the nose wheel drops to the runway."
+msgstr ""
+
+#: C:/github/openorbiter/Flights/Space Shuttle final approach/system.dat:39
+msgctxt "Flight"
+msgid "Space Shuttle Atlantis rolls to a full stop on the runway to complete a successful mission."
+msgstr ""
+
