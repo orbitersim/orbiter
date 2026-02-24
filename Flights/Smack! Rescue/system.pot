@@ -1,0 +1,162 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: Orbiter Flights\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+#: C:/github/openorbiter/Flights/Smack! Rescue/system.dat:4
+msgctxt "Flight"
+msgid "\"Smack! Rescue\" playback for chapter 2 of \"Go Play In Space\" - Press F1 to enter cockpit, then wait for docking to complete. Playback control (Cntrl-F5) should be set to \"Play at Recording Speed\" (9 minute playback)."
+msgstr ""
+
+#: C:/github/openorbiter/Flights/Smack! Rescue/system.dat:6
+msgctxt "Flight"
+msgid "Note: This patch-1 version now has camera preset controls built into the playback, so it will switch to different external and internal views automatically."
+msgstr ""
+
+#: C:/github/openorbiter/Flights/Smack! Rescue/system.dat:8
+msgctxt "Flight"
+msgid "The two Delta Gliders are docked but their orbit is bad - press DST on the right (Orbit) MFD and note that the PeA value (periapsis altitude, lowest orbit point) is negative."
+msgstr ""
+
+#: C:/github/openorbiter/Flights/Smack! Rescue/system.dat:9
+msgctxt "Flight"
+msgid "The first step is to stop the rotation with the Kill Rotation button (right side of panel) or the keypad 5 key"
+msgstr ""
+
+#: C:/github/openorbiter/Flights/Smack! Rescue/system.dat:13
+msgctxt "Flight"
+msgid "With rotation stopped, we can undock with the Control-D key (at Sim time 77s, upper right corner) which gives a small negative CVEL for separation"
+msgstr ""
+
+#: C:/github/openorbiter/Flights/Smack! Rescue/system.dat:16
+msgctxt "Flight"
+msgid "We switch RCS mode from rotation (ROT) to translation (LIN) with the rotary dial or the keypad / (slash) key (at Sim 87s)"
+msgstr ""
+
+#: C:/github/openorbiter/Flights/Smack! Rescue/system.dat:20
+msgctxt "Flight"
+msgid "We are using the keypad 9 (back) thrust to speed up separation - note the CVEL and DST values on the Docking (left) MFD.  We want DST about 30 m or so"
+msgstr ""
+
+#: C:/github/openorbiter/Flights/Smack! Rescue/system.dat:23
+msgctxt "Flight"
+msgid "We use keypad 6 (forward thrust) to cancel out the rearward velocity (negative CVEL)"
+msgstr ""
+
+#: C:/github/openorbiter/Flights/Smack! Rescue/system.dat:26
+msgctxt "Flight"
+msgid "Oops, stopped too soon, so use keypad 6 (forward) and 9 (reverse thrust) to get to DST 30 or so and to zero out CVEL"
+msgstr ""
+
+#: C:/github/openorbiter/Flights/Smack! Rescue/system.dat:28
+msgctxt "Flight"
+msgid "Using fine forward thrust (Control-num-6) to get CVEL to zero"
+msgstr ""
+
+#: C:/github/openorbiter/Flights/Smack! Rescue/system.dat:29
+msgctxt "Flight"
+msgid "At Sim 219s, we will briefly slow down time to allow us to control both spacecraft almost simultaneously.  The R key slows time, the T key accelerates time."
+msgstr ""
+
+#: C:/github/openorbiter/Flights/Smack! Rescue/system.dat:30
+msgctxt "Flight"
+msgid "With time at 1/10th normal, you can use the F3 key to switch between GL-01 and GL-02 to set PROGRADE for each spacecraft.  "
+msgstr ""
+
+#: C:/github/openorbiter/Flights/Smack! Rescue/system.dat:33
+msgctxt "Flight"
+msgid "Setting time to 0.1x (look for Wrp above right), pressing Prograde button (or [ key), then switching to GL-02 and pressing Prograde there. Note that the playback will not switch spacecraft automatically."
+msgstr ""
+
+#: C:/github/openorbiter/Flights/Smack! Rescue/system.dat:37
+msgctxt "Flight"
+msgid "Now back to normal time (you can use F1 to switch to external view to see the ships rotate in sync)"
+msgstr ""
+
+#: C:/github/openorbiter/Flights/Smack! Rescue/system.dat:38
+msgctxt "Flight"
+msgid " "
+msgstr ""
+
+#: C:/github/openorbiter/Flights/Smack! Rescue/system.dat:40
+msgctxt "Flight"
+msgid "Forgot to close nose cone (K key), not very critical above atmosphere, but it looks cooler in external views if closed.  I'll do this in both ships (watch external view)."
+msgstr ""
+
+#: C:/github/openorbiter/Flights/Smack! Rescue/system.dat:43
+msgctxt "Flight"
+msgid "If you have Orbiter Sound installed (which you should), you can stop the proximity beeping. On left MFD buttons, click SEL, Radio/MP3 panel, RAD, SEL, Docking."
+msgstr ""
+
+#: C:/github/openorbiter/Flights/Smack! Rescue/system.dat:46
+msgctxt "Flight"
+msgid "We need to be near apoapsis to fire main engines to raise periapsis (apoapsis is open circle on orbit diagram, ApT ~845 s, about 14 minutes to go), so accelerate time 10x..."
+msgstr ""
+
+#: C:/github/openorbiter/Flights/Smack! Rescue/system.dat:50
+msgctxt "Flight"
+msgid "Now briefly accelerate time to 100x (T key), looking for ApT about 60 seconds to slow back down to 10x..."
+msgstr ""
+
+#: C:/github/openorbiter/Flights/Smack! Rescue/system.dat:53
+msgctxt "Flight"
+msgid "Now back to 10x time (R key)..."
+msgstr ""
+
+#: C:/github/openorbiter/Flights/Smack! Rescue/system.dat:55
+msgctxt "Flight"
+msgid "Now back to 1x (real) time (R key again)..."
+msgstr ""
+
+#: C:/github/openorbiter/Flights/Smack! Rescue/system.dat:59
+msgctxt "Flight"
+msgid "What are the green boxes?  The Docking HUD has been left on and the green boxes are a projected path to the GL-02's docking port, which is facing away from us."
+msgstr ""
+
+#: C:/github/openorbiter/Flights/Smack! Rescue/system.dat:60
+msgctxt "Flight"
+msgid "Again slowing time to 0.1x to push GL-01 throttles to max, F3-switch to GL-02, fire its main engines, then switch back to GL-01 to watch eccentricity."
+msgstr ""
+
+#: C:/github/openorbiter/Flights/Smack! Rescue/system.dat:63
+msgctxt "Flight"
+msgid "Full thrust for both spacecraft, back to 1x time (Again note that F3 spacecraft switches are under user control in playback, they are not part of the recording)"
+msgstr ""
+
+#: C:/github/openorbiter/Flights/Smack! Rescue/system.dat:65
+msgctxt "Flight"
+msgid "Here comes GL-02 on the left if you're in the cockpit of GL-01..."
+msgstr ""
+
+#: C:/github/openorbiter/Flights/Smack! Rescue/system.dat:67
+msgctxt "Flight"
+msgid "Time has again been slowed to 0.1x for engine cutoff according to safe orbit parameters (Ecc < 0.02, PeA > 200 km)"
+msgstr ""
+
+#: C:/github/openorbiter/Flights/Smack! Rescue/system.dat:70
+msgctxt "Flight"
+msgid "Engines shut down, 1x time - but it looks like GL-02 engines burned a little long (I was slow on the throttles).  No problem, we just won't be orbiting quite so close."
+msgstr ""
+
+#: C:/github/openorbiter/Flights/Smack! Rescue/system.dat:72
+msgctxt "Flight"
+msgid "Orbits for both ships are now safely above the atmosphere (200 km in Orbiter).  Replay will end shortly, or press control-F5 and click the Stop button any time."
+msgstr ""
+
+#: C:/github/openorbiter/Flights/Smack! Rescue/system.dat:74
+msgctxt "Flight"
+msgid "Use F3 and click on some of the other ships in this scenario to see where they are, or even to fly them once replay ends."
+msgstr ""
+
+#: C:/github/openorbiter/Flights/Smack! Rescue/system.dat:75
+msgctxt "Flight"
+msgid "Or press Control-F1 and click on some of the planets or moons listed there to go visit them.  See chapter 2 of \"Go Play In Space\" for more ideas."
+msgstr ""
+
+#: C:/github/openorbiter/Flights/Smack! Rescue/system.dat:76
+msgctxt "Flight"
+msgid "Playback ends in 10 seconds and you will have control of the spacecraft.  Good orbiting."
+msgstr ""
+
