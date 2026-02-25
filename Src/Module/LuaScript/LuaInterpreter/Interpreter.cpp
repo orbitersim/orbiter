@@ -8,6 +8,7 @@
 #include "MFDAPI.h"
 #include "DrawAPI.h"
 #include "gcCoreAPI.h"
+#include "I18NAPI.h"
 #include <list>
 
 using std::min;
@@ -794,6 +795,14 @@ void Interpreter::LoadAPI ()
 		{NULL, NULL}
 	};
 	luaL_openlib (L, "proc", procLib, 0);
+
+	// Load i18n library
+	static const struct luaL_reg i18nLib[] = {
+		{"set_context", i18n_set_context},
+		{"gettext", i18n_gettext},
+		{NULL, NULL}
+	};
+	luaL_openlib (L, "i18n", i18nLib, 0);
 
 	// Load the oapi library
 	static const struct luaL_reg oapiLib[] = {
@@ -2579,6 +2588,25 @@ int Interpreter::procFrameskip (lua_State *L)
 	interp->frameskip (L);
 	return 0;
 }
+
+int Interpreter::i18n_set_context (lua_State *L)
+{
+	ASSERT_SYNTAX(lua_isstring(L,1), "Argument 1: expected string");
+
+	Interpreter *interp = GetInterpreter(L);
+	interp->i18n_context = lua_tostring (L, 1);
+	return 0;
+}
+
+int Interpreter::i18n_gettext (lua_State *L)
+{
+	ASSERT_SYNTAX(lua_isstring(L,1), "Argument 1: expected string");
+
+	Interpreter *interp = GetInterpreter(L);
+	lua_pushstring(L, _c(interp->i18n_context.c_str(), lua_tostring (L, 1)));
+	return 1;
+}
+
 
 // ============================================================================
 // oapi library functions

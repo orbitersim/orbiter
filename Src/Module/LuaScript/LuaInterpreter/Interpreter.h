@@ -383,6 +383,10 @@ protected:
 	// process library functions
 	static int procFrameskip (lua_State *L);
 
+	// i18n
+	static int i18n_set_context (lua_State *L);
+	static int i18n_gettext (lua_State *L);
+	
 	// -------------------------------------------
 	// oapi library functions
 	// -------------------------------------------
@@ -1163,7 +1167,7 @@ private:
 	void *postcontext;
 
 	static inline std::unordered_set<VESSEL *>knownVessels; // for lua_isvessel
-
+	std::string i18n_context;
 
 	static int lua_tointeger_safe (lua_State *L, int idx, int prmno, const char *funcname);
 	static double lua_tonumber_safe (lua_State *L, int idx, int prmno, const char *funcname);

@@ -441,31 +441,31 @@ static void LoadPO(const char *filename) {
     while (std::getline(f, line)) {
         if (line.empty() || line[0]=='#') { // end entry
             if (!raw_msgid.empty()) {
-				AddKey(UnescapePOString(raw_msgctxt), UnescapePOString(raw_msgid), currentTranslation);
+				AddKey(raw_msgctxt, raw_msgid, currentTranslation);
                 raw_msgctxt.clear(); raw_msgid.clear(); raw_msgid_plural.clear();
                 currentTranslation.plurals.clear(); currentTarget=nullptr;
             }
             continue;
         }
 
-        if (starts_with(line,"msgctxt")) raw_msgctxt=line.substr(9), currentTarget=nullptr;
+        if (starts_with(line,"msgctxt")) raw_msgctxt=extract_po_string(line), currentTarget=nullptr;
         else if (starts_with(line,"msgid_plural")) raw_msgid_plural=extract_po_string(line), currentTarget=nullptr;
         else if (starts_with(line,"msgid")) raw_msgid=extract_po_string(line), currentTarget=&raw_msgid;
-        else if (starts_with(line,"msgstr ")) { currentTranslation.plurals.resize(1); currentTranslation.plurals[0]=UnescapePOString(extract_po_string(line)); currentTarget=&currentTranslation.plurals[0]; }
+        else if (starts_with(line,"msgstr ")) { currentTranslation.plurals.resize(1); currentTranslation.plurals[0]=extract_po_string(line); currentTarget=&currentTranslation.plurals[0]; }
         else if (starts_with(line,"msgstr[")) {
             size_t idx_end=line.find(']',6);
             if (idx_end!=std::string::npos) {
                 int idx=std::stoi(line.substr(6,idx_end-6));
                 if ((size_t)idx>=currentTranslation.plurals.size()) currentTranslation.plurals.resize(idx+1);
-                currentTranslation.plurals[idx]=UnescapePOString(extract_po_string(line));
+                currentTranslation.plurals[idx]=extract_po_string(line);
                 currentTarget=&currentTranslation.plurals[idx];
             }
         }
-        else if (!line.empty() && line.front()=='"' && currentTarget) *currentTarget += UnescapePOString(line);
+        else if (!line.empty() && line.front()=='"' && currentTarget) *currentTarget += extract_po_string(line);
     }
 
     if (!raw_msgid.empty()) { // last entry
-		AddKey(UnescapePOString(raw_msgctxt), UnescapePOString(raw_msgid), currentTranslation);
+		AddKey(raw_msgctxt, raw_msgid, currentTranslation);
     }
 }
 

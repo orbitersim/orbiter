@@ -90,6 +90,10 @@ local function collect_call(lines, start_line, start_pos)
                 if ch == "/" and nextch == "/" then
                     break
 
+                -- Lua line comment ( -- ... )
+                elseif ch == "-" and nextch == "-" then
+                    break
+
                 -- Enter string
                 elseif ch == "'" or ch == '"' then
                     in_string = ch
@@ -114,6 +118,7 @@ local function collect_call(lines, start_line, start_pos)
 
     return nil
 end
+
 -----------------------------------------------------------------------
 -- Parse arguments and concatenate adjacent string literals
 -----------------------------------------------------------------------
@@ -131,44 +136,73 @@ local function parse_string_arguments(argstr)
     while i <= len do
         skip_ws()
 
-        if argstr:sub(i,i) ~= '"' then
-            while i <= len and argstr:sub(i,i) ~= ',' do
-                i = i + 1
-            end
+        local ch = argstr:sub(i,i)
+
+        -- Handle quoted strings ("..." or '...')
+        if ch == '"' or ch == "'" then
+            local quote = ch
             i = i + 1
-        else
-            local parts = {}
+            local buf = {}
 
-            while argstr:sub(i,i) == '"' do
-                i = i + 1
-                local buf = {}
+            while i <= len do
+                local c = argstr:sub(i,i)
 
-                while i <= len do
-                    local c = argstr:sub(i,i)
-                    if c == "\\" then
-                        local n = argstr:sub(i+1,i+1)
-                        if n == "n" then table.insert(buf, "\n")
-                        elseif n == "t" then table.insert(buf, "\t")
-                        elseif n == "r" then table.insert(buf, "\r")
-						elseif n ~= "" then
-							-- preserve unknown escapes literally
-							table.insert(buf, "\\" .. n)                        i = i + 2
-						end
-                    elseif c == '"' then
-                        i = i + 1
-                        break
-                    else
-                        table.insert(buf, c)
-                        i = i + 1
+                if c == "\\" then
+                    local n = argstr:sub(i+1,i+1)
+
+                    if n == "n" then
+                        table.insert(buf, "\n")
+                    elseif n == "t" then
+                        table.insert(buf, "\t")
+                    elseif n == "r" then
+                        table.insert(buf, "\r")
+                    elseif n == "\\" then
+                        table.insert(buf, "\\")
+                    elseif n == quote then
+                        table.insert(buf, quote)
+                    elseif n ~= "" then
+                        -- preserve unknown escapes
+                        table.insert(buf, "\\" .. n)
                     end
-                end
 
-                table.insert(parts, table.concat(buf))
-                skip_ws()
+                    i = i + 2
+
+                elseif c == quote then
+                    i = i + 1
+                    break
+                else
+                    table.insert(buf, c)
+                    i = i + 1
+                end
             end
 
-            table.insert(args, table.concat(parts))
+            table.insert(args, table.concat(buf))
 
+        -- Handle Lua long strings [[...]] or [=[...]=]
+        elseif ch == "[" then
+            local eqs = argstr:match("^%[(=*)%[", i)
+            if eqs then
+                local open = "[" .. eqs .. "["
+                local close = "]" .. eqs .. "]"
+                i = i + #open
+
+                local start_content = i
+                local end_pos = argstr:find(close, i, true)
+
+                if end_pos then
+                    local content = argstr:sub(start_content, end_pos - 1)
+                    table.insert(args, content)
+                    i = end_pos + #close
+                else
+                    -- malformed
+                    i = len + 1
+                end
+            else
+                i = i + 1
+            end
+
+        else
+            -- Skip non-string argument
             while i <= len and argstr:sub(i,i) ~= ',' do
                 i = i + 1
             end
@@ -203,19 +237,31 @@ local function scan_file(filename)
         { name="_n",  ctx=false, plural=true  },
         { name="_",   ctx=false, plural=false },
     }
-	local file_context = nil
+
+    local file_context = nil
     for lineno, line in ipairs(lines) do
         local c = line:match("^%s*//%s*TRANSLATORS:%s*(.+)")
         if c then 
-			pending_comment = c
-		end    
-		
-		local ctx = line:match('#define%s+TRANSLATION_CONTEXT%s+"([^"]+)"')
-		if ctx then
-			file_context = ctx
-		end
+            pending_comment = c
+        end    
 
-		local comment_consumed = false
+        local lua_c = line:match("^%s*%-%-%s*TRANSLATORS:%s*(.+)")
+        if lua_c then
+            pending_comment = lua_c
+        end
+    
+        local ctx = line:match('#define%s+TRANSLATION_CONTEXT%s+"([^"]+)"')
+        if ctx then
+            file_context = ctx
+        end
+
+		-- Look for context set in Lua: i18n.set_context("xxx")
+        local ctx = line:match('i18n.set_context%s*%(([^%)]+)%)')
+        if ctx then
+            file_context = ctx:match('^%s*"([^"]+)"%s*$')  -- Clean it up
+        end
+
+        local comment_consumed = false
         for _, p in ipairs(patterns) do
             local search = 1
             while true do
@@ -231,13 +277,11 @@ local function scan_file(filename)
                             local strs = parse_string_arguments(args)
                             local ref = filename .. ":" .. lineno
 
-							if p.name == "_card" and #strs >= 1 then
-								-- Warning: must match the context used in i18n.h
-								add_entry(strs[1], nil, "Cardinal direction", pending_comment, ref)
+                            if p.name == "_card" and #strs >= 1 then
+                                add_entry(strs[1], nil, "Cardinal direction", pending_comment, ref)
                                 comment_consumed = true
-							elseif p.abbr and #strs >= 1 then
-								-- Warning: must match the context used in i18n.h
-								add_entry(strs[1], nil, "Abbreviation - "..p.length.." letters", pending_comment, ref)
+                            elseif p.abbr and #strs >= 1 then
+                                add_entry(strs[1], nil, "Abbreviation - "..p.length.." letters", pending_comment, ref)
                                 comment_consumed = true
                             elseif p.ctx and p.plural and #strs >= 3 then
                                 add_entry(strs[2], strs[3], strs[1], pending_comment, ref)
@@ -248,8 +292,8 @@ local function scan_file(filename)
                             elseif not p.ctx and p.plural and #strs >= 2 then
                                 add_entry(strs[1], strs[2], file_context, pending_comment, ref)
                                 comment_consumed = true
-							elseif not p.ctx and #strs >= 1 then
-								add_entry(strs[1], nil, file_context, pending_comment, ref)
+                            elseif not p.ctx and #strs >= 1 then
+                                add_entry(strs[1], nil, file_context, pending_comment, ref)
                                 comment_consumed = true
                             end
                         end
@@ -259,9 +303,9 @@ local function scan_file(filename)
                 search = e + 1
             end
         end
-		if comment_consumed then
-			pending_comment = nil
-		end
+        if comment_consumed then
+            pending_comment = nil
+        end
     end
 end
 
@@ -304,7 +348,6 @@ end)
 -- Write .pot file
 -----------------------------------------------------------------------
 local f = io.open(output_file, "w")
-print("Writing .pot file to " .. output_file)
 
 f:write(table.concat({
     "# This file was auto-generated, DO NOT modify it directly",

@@ -21,6 +21,7 @@ function(generate_pot TARGET_NAME)
         "${SOURCE_DIR}/*.c"
         "${SOURCE_DIR}/*.hpp"
         "${SOURCE_DIR}/*.h"
+        "${SOURCE_DIR}/*.lua"
     )
 
     foreach(src ${SOURCES})
