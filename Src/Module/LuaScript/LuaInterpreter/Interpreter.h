@@ -386,6 +386,8 @@ protected:
 	// i18n
 	static int i18n_set_context (lua_State *L);
 	static int i18n_gettext (lua_State *L);
+	static int i18n_getname (lua_State *L);
+	static int i18n_getrevname (lua_State *L);
 	
 	// -------------------------------------------
 	// oapi library functions
