@@ -1,0 +1,163 @@
+# This file was auto-generated, DO NOT modify it directly
+msgid ""
+msgstr ""
+"Content-Type: text/plain; charset=UTF-8\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+"X-Generator: Lua xgettext.lua\n"
+
+#: C:/github/openorbiter/Script/solsys2016.lua:29
+msgid "Radius: 2,440km  Mass: 3.285×10^23kg  Mean orbital radius: 57.91×10^6km (0.387AU)  Orbital period: 7.601×10^6s (88.0 days)"
+msgstr ""
+
+#: C:/github/openorbiter/Script/solsys2016.lua:75
+msgid "Radius: 6,052km  Mass: 4.867×10^24kg  Mean orbital radius: 108.2×10^6km (0.723AU)  Orbital period: 1.941×10^7s (224.7 days)"
+msgstr ""
+
+#: C:/github/openorbiter/Script/solsys2016.lua:95
+msgid "Radius: 6,371km  Mass: 5.972×10^24kg  Mean orbital radius: 149.6×10^6km (1AU)  Orbital period: 3.156×10^7s (365.24 days)"
+msgstr ""
+
+#: C:/github/openorbiter/Script/solsys2016.lua:118
+msgid "Florida and Kennedy Space Center"
+msgstr ""
+
+#: C:/github/openorbiter/Script/solsys2016.lua:139
+msgid "South America: Andes"
+msgstr ""
+
+#: C:/github/openorbiter/Script/solsys2016.lua:159
+msgid "Natural satellite of Earth  Radius: 1,737km  Mass: 7.348×10^22kg  Mean orbital radius: 3.8×10^5km  Orbital period: 2.317×10^6s (27.32 days)"
+msgstr ""
+
+#: C:/github/openorbiter/Script/solsys2016.lua:178
+msgid "Mare Crisium to Mare Australe"
+msgstr ""
+
+#: C:/github/openorbiter/Script/solsys2016.lua:199
+msgid "Mare Moscoviense and Titov crater"
+msgstr ""
+
+#: C:/github/openorbiter/Script/solsys2016.lua:219
+msgid "Radius: 3,390km  Mass: 6.39×10^23kg  Mean orbital radius: 227.9×10^6km (1.52AU)  Orbital period: 5.94×10^7s (687.0 days)"
+msgstr ""
+
+#: C:/github/openorbiter/Script/solsys2016.lua:240
+msgid "Noctis Labyrinthus and Valles Marineris"
+msgstr ""
+
+#: C:/github/openorbiter/Script/solsys2016.lua:264
+msgid "Olympus Base and Olympus Mons"
+msgstr ""
+
+#: C:/github/openorbiter/Script/solsys2016.lua:288
+msgid "Natural satellite of Mars    Mean radius: 11.27km  Mass: 1.066×10^16kg  Mean orbital radius: 9,374km  Orbital period: 2.755×10^4s (0.32 days)"
+msgstr ""
+
+#: C:/github/openorbiter/Script/solsys2016.lua:306
+msgid "Natural satellite of Mars    Mean radius: 6.2km  Mass: 1.48×10^15kg  Mean orbital radius: 23,463km  Orbital period: 1.091×10^5s (1.263 days)"
+msgstr ""
+
+#: C:/github/openorbiter/Script/solsys2016.lua:329
+msgid "Asteriod belt object  Mean radius: 262.5km  Mass: 2.589×10^20kg  Mean orbital radius: 3.533×10^8km (2.3618AU)  Orbital period: 1.145×10^8s (3.63 years)"
+msgstr ""
+
+#: C:/github/openorbiter/Script/solsys2016.lua:350
+msgid "Radius: 69,911km  Mass: 1.898×10^27kg  Mean orbital radius: 778.5×10^6km (5.20AU)  Orbital period: 3.743×10^8s (11.86 years)"
+msgstr ""
+
+#: C:/github/openorbiter/Script/solsys2016.lua:376
+msgid "Natural satellite of Jupiter  Radius: 1,821.6km  Mass: 8.932×10^22kg  Mean orbital radius: 421,700km  Orbital period: 1.529×10^5s (1.769 days)"
+msgstr ""
+
+#: C:/github/openorbiter/Script/solsys2016.lua:398
+msgid "Natural satellite of Jupiter  Radius: 1,560.8km  Mass: 4.800×10^22kg  Mean orbital radius: 670,900km  Orbital period: 3.068×10^5s (3.551 days)"
+msgstr ""
+
+#: C:/github/openorbiter/Script/solsys2016.lua:422
+msgid "Natural satellite of Jupiter  Radius: 2,634.1km  Mass: 1.482×10^23kg  Mean orbital radius: 1.0703×10^6km  Orbital period: 6.182×10^5s (7.155 days)"
+msgstr ""
+
+#: C:/github/openorbiter/Script/solsys2016.lua:447
+msgid "Natural satellite of Jupiter  Radius: 2,410.3km  Mass: 1.076×10^23kg  Mean orbital radius: 1.883×10^6km  Orbital period: 1.442×10^6s (16.690 days)"
+msgstr ""
+
+#: C:/github/openorbiter/Script/solsys2016.lua:469
+msgid "Radius: 58,232km  Mass:  5.683×10^26kg  Mean orbital radius: 1.433×10^9km (9.58AU)  Orbital period: 9.2960×10^8s (29.46 years)"
+msgstr ""
+
+#: C:/github/openorbiter/Script/solsys2016.lua:490
+msgid "Natural satellite of Saturn  Radius: 198.2km  Mass:  3.7493×10^19kg  Mean orbital radius: 185,320km  Orbital period: 81389s (0.942 days)"
+msgstr ""
+
+#: C:/github/openorbiter/Script/solsys2016.lua:511
+msgid "Natural satellite of Saturn  Radius: 252.1km  Mass: 1.0802×10^20kg  Mean orbital radius: 237,912km  Orbital period: 1.184×10^5s (1.370 days)"
+msgstr ""
+
+#: C:/github/openorbiter/Script/solsys2016.lua:535
+msgid "Natural satellite of Saturn  Radius: 531.1km  Mass: 6.1745×10^20kg  Mean orbital radius: 294,572km  Orbital period: 1.631×10^5s (1.888 days)"
+msgstr ""
+
+#: C:/github/openorbiter/Script/solsys2016.lua:556
+msgid "Natural satellite of Saturn  Radius: 561.4km  Mass: 1.0955×10^21kg  Mean orbital radius: 377,336km  Orbital period: 2.365×10^5s (2.737 days)"
+msgstr ""
+
+#: C:/github/openorbiter/Script/solsys2016.lua:581
+msgid "Natural satellite of Saturn  Radius: 763.8km  Mass: 2.306518×10^21kg  Mean orbital radius: 527,067km  Orbital period: 3.904×10^5s (4.518 days)"
+msgstr ""
+
+#: C:/github/openorbiter/Script/solsys2016.lua:607
+msgid "Natural satellite of Saturn  Radius: 2575.5km  Mass: 1.3452×10^23kg  Mean orbital radius: 1.2217×10^6km  Orbital period: 1.378×10^6s (15.945 days)"
+msgstr ""
+
+#: C:/github/openorbiter/Script/solsys2016.lua:631
+msgid "Natural satellite of Saturn  Radius: 734.5km  Mass: 1.8056×10^21kg  Mean orbital radius: 3.5601×10^6km  Orbital period: 6.853×10^6s (79.322 days)"
+msgstr ""
+
+#: C:/github/openorbiter/Script/solsys2016.lua:652
+msgid "Radius: 25,362km  Mass: 8.681×10^25kg  Mean orbital radius: 2.877×10^9km (19.23AU)  Orbital period: 2.6515×10^9s (84.0205 years)"
+msgstr ""
+
+#: C:/github/openorbiter/Script/solsys2016.lua:672
+msgid "Natural satellite of Uranus  Radius: 235.8km  Mass: 6.59×10^19kg  Mean orbital radius: 129,840km  Orbital period: 1.2212×10^5s (1.413 days)"
+msgstr ""
+
+#: C:/github/openorbiter/Script/solsys2016.lua:692
+msgid "Natural satellite of Uranus  Radius: 578.9km  Mass: 1.353×10^21kg  Mean orbital radius: 190,900km  Orbital period: 2.17728×10^5s (2.520 days)"
+msgstr ""
+
+#: C:/github/openorbiter/Script/solsys2016.lua:712
+msgid "Natural satellite of Uranus  Radius: 584.7km  Mass: 1.172×10^21kg  Mean orbital radius: 265,967km  Orbital period: 3.5804×10^5s (4.144 days)"
+msgstr ""
+
+#: C:/github/openorbiter/Script/solsys2016.lua:736
+msgid "Natural satellite of Uranus  Radius: 788.4km  Mass: 3.527×10^21kg  Mean orbital radius: 436,282km  Orbital period: 7.522×10^5s (8.706 days)"
+msgstr ""
+
+#: C:/github/openorbiter/Script/solsys2016.lua:762
+msgid "Natural satellite of Uranus  Radius: 761.4km  Mass: 3.014×10^21kg  Mean orbital radius: 583,416km  Orbital period: 1.163×10^6s (13.463 days)"
+msgstr ""
+
+#: C:/github/openorbiter/Script/solsys2016.lua:788
+msgid "Radius: 24,622km  Mass: 1.024×10^26kg  Mean orbital radius: 4.498×10^9km (30.07AU)  Orbital period: 5.1997×10^9s (164.8 years)"
+msgstr ""
+
+#: C:/github/openorbiter/Script/solsys2016.lua:810
+msgid "Natural satellite of Neptune  Radius: 1353.4km  Mass: 2.14×10^22kg  Mean orbital radius: 354,757km  Orbital period: -5.0776×10^5s (-5.877 days) - retrograde"
+msgstr ""
+
+#: C:/github/openorbiter/Script/solsys2016.lua:830
+msgid "Natural satellite of Neptune  Radius: 210km  Mass: 4.4×10^19kg  Mean orbital radius: 117,647km  Orbital period: 9.6968×10^4s (1.12231477 days)"
+msgstr ""
+
+#: C:/github/openorbiter/Script/solsys2016.lua:854
+msgid "Natural satellite of Neptune  Radius: 170km  Mean orbital radius: 5.5141×10^6km  Orbital period: 3.1115×10^7s (360.1362 days)"
+msgstr ""
+
+#: C:/github/openorbiter/Script/solsys2016.lua:908
+msgid "Earthrise"
+msgstr ""
+
+#: C:/github/openorbiter/Script/solsys2016.lua:909
+msgid "This concludes the journey through Orbiter's solar system.    Let's finish with a view towards the home planet."
+msgstr ""
+

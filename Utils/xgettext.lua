@@ -224,6 +224,19 @@ local function scan_file(filename)
     for l in f:lines() do table.insert(lines, l) end
     f:close()
 
+
+-- Preprocess lines: handle Lua backslash-continuation in strings
+local i = 1
+while i <= #lines do
+    if lines[i] and lines[i]:sub(-1) == "\\" then
+        lines[i+1] = lines[i]:sub(1, -2) .. "\n" .. lines[i+1]
+        lines[i] = ""
+    end
+    i = i + 1
+end
+
+
+
     local pending_comment = nil
 
     -- Longest names first

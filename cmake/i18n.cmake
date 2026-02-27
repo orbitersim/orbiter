@@ -47,6 +47,47 @@ function(generate_pot TARGET_NAME)
     )
 endfunction()
 
+function(generate_pot_from_files OUTPUT_POT_FILE)
+    if(ARGC LESS 2)
+        message(FATAL_ERROR "generate_pot requires at least an output file and one input file")
+    endif()
+
+    # Remaining arguments are source files
+    set(SOURCES ${ARGV})
+    list(REMOVE_AT SOURCES 0) # remove OUTPUT_POT_FILE
+
+    # --- 1. File list ---
+    get_filename_component(FILENAME "${OUTPUT_POT_FILE}" NAME)
+    set(FILELIST "${CMAKE_BINARY_DIR}/i18n_${FILENAME}_sources.txt")
+    file(WRITE "${FILELIST}" "")
+    foreach(src ${SOURCES})
+        file(APPEND "${FILELIST}" "${src}\n")
+    endforeach()
+
+
+    # Ensure output directory exists
+    get_filename_component(OUTPUT_DIR "${OUTPUT_POT_FILE}" DIRECTORY)
+    file(MAKE_DIRECTORY "${OUTPUT_DIR}")
+
+    add_custom_command(
+        OUTPUT "${OUTPUT_POT_FILE}"
+        COMMAND $<TARGET_FILE:lua::exe>
+                "${CMAKE_SOURCE_DIR}/Utils/xgettext.lua"
+                "${OUTPUT_POT_FILE}"
+                ${FILELIST}
+        DEPENDS "${CMAKE_SOURCE_DIR}/Utils/xgettext.lua" ${SOURCES}
+        COMMENT "Extracting translations -> ${OUTPUT_POT_FILE}"
+        VERBATIM
+    )
+
+    # Create deterministic target name from output filename
+    get_filename_component(_pot_name "${OUTPUT_POT_FILE}" NAME_WE)
+
+    add_custom_target(i18n-${_pot_name} ALL
+        DEPENDS "${OUTPUT_POT_FILE}"
+    )
+endfunction()
+
 function(generate_flights_pots ROOT_DIR)
     get_filename_component(ROOT_DIR_ABS "${ROOT_DIR}" ABSOLUTE)
     message(STATUS "Searching system.dat files in ${ROOT_DIR_ABS}")
