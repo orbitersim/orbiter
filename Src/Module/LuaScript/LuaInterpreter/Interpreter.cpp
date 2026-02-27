@@ -7908,21 +7908,21 @@ NTVERTEX lua_tontvertex(lua_State *L, int idx)
 		luaL_error(L, "invalid argument for ntvertex creation");
 	}
 	NTVERTEX ret;
-	lua_rawgeti(L, 1, idx);
+	lua_rawgeti(L, idx, 1);
 	ret.x = luaL_checknumber(L, -1); lua_pop(L, 1);
-	lua_rawgeti(L, 2, idx);
+	lua_rawgeti(L, idx, 2);
 	ret.y = luaL_checknumber(L, -1); lua_pop(L, 1);
-	lua_rawgeti(L, 3, idx);
+	lua_rawgeti(L, idx, 3);
 	ret.z = luaL_checknumber(L, -1); lua_pop(L, 1);
-	lua_rawgeti(L, 4, idx);
+	lua_rawgeti(L, idx, 4);
 	ret.nx = luaL_checknumber(L, -1); lua_pop(L, 1);
-	lua_rawgeti(L, 5, idx);
+	lua_rawgeti(L, idx, 5);
 	ret.ny = luaL_checknumber(L, -1); lua_pop(L, 1);
-	lua_rawgeti(L, 6, idx);
+	lua_rawgeti(L, idx, 6);
 	ret.nz = luaL_checknumber(L, -1); lua_pop(L, 1);
-	lua_rawgeti(L, 7, idx);
+	lua_rawgeti(L, idx, 7);
 	ret.tu = luaL_checknumber(L, -1); lua_pop(L, 1);
-	lua_rawgeti(L, 8, idx);
+	lua_rawgeti(L, idx, 8);
 	ret.tv = luaL_checknumber(L, -1); lua_pop(L, 1);
 	return ret;
 }
