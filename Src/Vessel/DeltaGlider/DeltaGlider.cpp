@@ -309,6 +309,7 @@ DeltaGlider::DeltaGlider (OBJHANDLE hObj, int fmodel)
 	contrail_tex      = NULL;
 	hPanelMesh        = NULL;
 	panelcol          = 0;
+	legacy_mfd_buttons = false;
 	campos            = CAM_GENERIC;
 	th_main_level     = 0.0;
 	skinpath[0] = '\0';
@@ -1006,6 +1007,8 @@ void DeltaGlider::clbkSetClassCaps (FILEHANDLE cfg)
 	int i;
 	if (oapiReadItem_bool (cfg, (char*)"SCRAMJET", b) && b) // set up scramjet configuration
 		AddSubsystem (ssys_scram = new ScramSubsystem (this));
+
+	oapiReadItem_bool (cfg, (char*)"LEGACYBUTTONS", legacy_mfd_buttons);
 
 	ComponentVessel::SetEmptyMass (ssys_scram ? EMPTY_MASS_SC : EMPTY_MASS);
 	VECTOR3 r[2] = {{0,0,6}, {0,0,-4}};
@@ -1731,6 +1734,8 @@ DLLCLBK void InitModule (HINSTANCE hModule)
 	// allocate SketchPad resources
 	g_Param.pen[0] = oapiCreatePen (PS_SOLID, 1, RGB(224,224,224));
 	g_Param.pen[1] = oapiCreatePen (PS_SOLID, 3, RGB(164,164,164));
+	g_Param.font[0] = oapiCreateFont(13, false, "Sans");
+	g_Param.font[1] = oapiCreateFont(15, false, "Sans");
 	g_Param.surf = oapiLoadTexture ("DG\\blitsrc1.dds", true);
 }
 
@@ -1745,6 +1750,7 @@ DLLCLBK void ExitModule (HINSTANCE hModule)
 
 	// deallocate SketchPad resources
 	for (i = 0; i < 2; i++) oapiReleasePen(g_Param.pen[i]);
+	for (i = 0; i < 2; i++) oapiReleaseFont(g_Param.font[i]);
 	oapiReleaseTexture (g_Param.surf);
 }
 

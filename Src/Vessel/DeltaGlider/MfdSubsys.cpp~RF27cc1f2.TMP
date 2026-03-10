@@ -79,7 +79,6 @@ const int lbly[6] = {texh-467,texh-426,texh-385,texh-344,texh-303,texh-262};
 // ==============================================================
 // MFD subsystem
 // ==============================================================
-
 MfdSubsystem::MfdSubsystem (DeltaGlider *v, int mfdident)
 : DGSubsystem(v), mfdid(mfdident)
 {
@@ -185,7 +184,7 @@ void MfdButtonGrp::PushButtonVC (DEVMESHHANDLE hMesh, int meshgrp, int btn, bool
 // ==============================================================
 
 MfdButtonRow::MfdButtonRow (MfdSubsystem *_subsys)
-: MfdButtonGrp(_subsys, 2)
+: MfdButtonGrp(_subsys, 3)
 {
 }
 
@@ -330,9 +329,25 @@ bool MfdButtonCol::Redraw2D (SURFHANDLE surf)
 }
 
 // --------------------------------------------------------------
+#include "ImGui.h"
+static int xx=10,yy=10;
+class Dbg: public ImGuiDialog{
+public:
+	Dbg():ImGuiDialog("DBG") {}
+	void OnDraw() {
+		ImGui::SliderInt("x", &xx, 0, 512);
+		ImGui::SliderInt("y", &yy, 0, 512);
+	}
+};
 
 bool MfdButtonCol::RedrawVC (DEVMESHHANDLE hMesh, SURFHANDLE surf)
 {
+	static bool first = true;
+	if(first) {
+		static Dbg dbg;
+		oapiOpenDialog(&dbg);
+		first = false;
+	}
 	if (pending_action) { // process button push
 
 		static const int grpid[2][2] = {{GRP_LMFD_LBUTTONS_VC,GRP_LMFD_RBUTTONS_VC},
@@ -432,8 +447,8 @@ bool MfdButtonCol::RedrawVC (DEVMESHHANDLE hMesh, SURFHANDLE surf)
 					skp->Text(xcnt, y, label, 0);
 				} else break;
 			}
-			skp->Text(149, 177, "SEL", 0);
-			skp->Text(149+40, 177, "MNU", 0);
+			skp->Text(149,177,"SÉL", 0);
+			skp->Text(149+40,177,"MNU", 0);
 			oapiReleaseSketchpad(skp);
 		}
 		return true;

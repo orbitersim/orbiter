@@ -67,6 +67,7 @@ protected:
 class MfdButtonRow: public MfdButtonGrp {
 public:
 	MfdButtonRow (MfdSubsystem *_subsys);
+	bool Redraw2D (SURFHANDLE surf);
 	bool RedrawVC (DEVMESHHANDLE hMesh, SURFHANDLE surf);
 	bool ProcessMouse2D (int event, int mx, int my);
 	bool ProcessMouseVC (int event, VECTOR3 &p);
