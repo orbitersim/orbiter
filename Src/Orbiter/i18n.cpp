@@ -1,3 +1,5 @@
+// Copyright (c) Gondos
+// Licensed under the MIT License
 #define OAPI_IMPLEMENTATION
 
 #include "i18n.h"
@@ -389,7 +391,7 @@ void ImportDirectory(const char *dirname)
 void Init(bool notifymissing) {
     g_notifyMissing = notifymissing;
     g_locales.clear();
-    g_locales.push_back("en_US");
+    g_locales.push_back("en_UK");
     g_locales.push_back("fr_FR");
 }
 
