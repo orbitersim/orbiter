@@ -104,6 +104,7 @@ private:
 	double engmain;                      // current main engine display state
 	double enghovr;                      // current hover engine display state
 	char engstat_str[4][8];              // status strings for engine display block
+	bool unicode_support;                // Use alternate method for drawing unicode text
 };
 
 #endif // !__DEFPANEL_H

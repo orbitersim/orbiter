@@ -56,6 +56,9 @@ static inline const char *i18nfallback(const char *value, const char *defvalue) 
 
 
 namespace I18N {
+// return true if a locale is enabled.
+OAPIFUNC bool Enabled();
+
 // /!\ Returned pointer remains valid until the next call to LoadLocale()
 // Translate generic text in singular with context
 OAPIFUNC const char *PGetText(uint64_t key);

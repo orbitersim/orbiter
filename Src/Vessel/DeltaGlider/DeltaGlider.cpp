@@ -37,6 +37,7 @@
 #include <math.h>
 #include <time.h>
 #include "OrbiterSDK.h"
+#include "I18NAPI.h"
 #include <imgui.h>
 
 using std::min;
@@ -309,7 +310,7 @@ DeltaGlider::DeltaGlider (OBJHANDLE hObj, int fmodel)
 	contrail_tex      = NULL;
 	hPanelMesh        = NULL;
 	panelcol          = 0;
-	legacy_mfd_buttons = false;
+	legacy_mfd_buttons = !I18N::Enabled();
 	campos            = CAM_GENERIC;
 	th_main_level     = 0.0;
 	skinpath[0] = '\0';
@@ -1007,8 +1008,6 @@ void DeltaGlider::clbkSetClassCaps (FILEHANDLE cfg)
 	int i;
 	if (oapiReadItem_bool (cfg, (char*)"SCRAMJET", b) && b) // set up scramjet configuration
 		AddSubsystem (ssys_scram = new ScramSubsystem (this));
-
-	oapiReadItem_bool (cfg, (char*)"LEGACYBUTTONS", legacy_mfd_buttons);
 
 	ComponentVessel::SetEmptyMass (ssys_scram ? EMPTY_MASS_SC : EMPTY_MASS);
 	VECTOR3 r[2] = {{0,0,6}, {0,0,-4}};

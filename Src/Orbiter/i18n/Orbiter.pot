@@ -11,17 +11,17 @@ msgctxt "Date Format"
 msgid "%s %s %02d %02d:%02d:%02d %d"
 msgstr ""
 
-#: C:/github/openorbiter/Src/Orbiter/Defpanel.cpp:566
+#: C:/github/openorbiter/Src/Orbiter/Defpanel.cpp:564
 msgctxt "MFD Button"
 msgid "PWR"
 msgstr ""
 
-#: C:/github/openorbiter/Src/Orbiter/Defpanel.cpp:582
+#: C:/github/openorbiter/Src/Orbiter/Defpanel.cpp:580
 msgctxt "MFD Button"
 msgid "SEL"
 msgstr ""
 
-#: C:/github/openorbiter/Src/Orbiter/Defpanel.cpp:585
+#: C:/github/openorbiter/Src/Orbiter/Defpanel.cpp:583
 msgctxt "MFD Button"
 msgid "MNU"
 msgstr ""
@@ -2081,72 +2081,72 @@ msgctxt "MFD Transfer"
 msgid "Enter # time steps:"
 msgstr ""
 
-#: C:/github/openorbiter/Src/Orbiter/Orbiter.cpp:393
+#: C:/github/openorbiter/Src/Orbiter/Orbiter.cpp:394
 msgctxt "MenuInfoBar"
 msgid "Ship"
 msgstr ""
 
-#: C:/github/openorbiter/Src/Orbiter/Orbiter.cpp:394
+#: C:/github/openorbiter/Src/Orbiter/Orbiter.cpp:395
 msgctxt "MenuInfoBar"
 msgid "Camera"
 msgstr ""
 
-#: C:/github/openorbiter/Src/Orbiter/Orbiter.cpp:395
+#: C:/github/openorbiter/Src/Orbiter/Orbiter.cpp:396
 msgctxt "MenuInfoBar"
 msgid "Speed"
 msgstr ""
 
-#: C:/github/openorbiter/Src/Orbiter/Orbiter.cpp:396
+#: C:/github/openorbiter/Src/Orbiter/Orbiter.cpp:397
 msgctxt "MenuInfoBar"
 msgid "Pause"
 msgstr ""
 
-#: C:/github/openorbiter/Src/Orbiter/Orbiter.cpp:397
+#: C:/github/openorbiter/Src/Orbiter/Orbiter.cpp:398
 msgctxt "MenuInfoBar"
 msgid "Function"
 msgstr ""
 
-#: C:/github/openorbiter/Src/Orbiter/Orbiter.cpp:398
+#: C:/github/openorbiter/Src/Orbiter/Orbiter.cpp:399
 msgctxt "MenuInfoBar"
 msgid "Info"
 msgstr ""
 
-#: C:/github/openorbiter/Src/Orbiter/Orbiter.cpp:399
+#: C:/github/openorbiter/Src/Orbiter/Orbiter.cpp:400
 msgctxt "MenuInfoBar"
 msgid "Options"
 msgstr ""
 
-#: C:/github/openorbiter/Src/Orbiter/Orbiter.cpp:400
+#: C:/github/openorbiter/Src/Orbiter/Orbiter.cpp:401
 msgctxt "MenuInfoBar"
 msgid "Map"
 msgstr ""
 
-#: C:/github/openorbiter/Src/Orbiter/Orbiter.cpp:401
+#: C:/github/openorbiter/Src/Orbiter/Orbiter.cpp:402
 msgctxt "MenuInfoBar"
 msgid "Record"
 msgstr ""
 
-#: C:/github/openorbiter/Src/Orbiter/Orbiter.cpp:402
+#: C:/github/openorbiter/Src/Orbiter/Orbiter.cpp:403
 msgctxt "MenuInfoBar"
 msgid "Help"
 msgstr ""
 
-#: C:/github/openorbiter/Src/Orbiter/Orbiter.cpp:407
+#: C:/github/openorbiter/Src/Orbiter/Orbiter.cpp:408
 msgctxt "MenuInfoBar"
 msgid "Save"
 msgstr ""
 
-#: C:/github/openorbiter/Src/Orbiter/Orbiter.cpp:408
+#: C:/github/openorbiter/Src/Orbiter/Orbiter.cpp:409
 msgctxt "MenuInfoBar"
 msgid "Exit"
 msgstr ""
 
-#: C:/github/openorbiter/Src/Orbiter/Orbiter.cpp:1501
+#: C:/github/openorbiter/Src/Orbiter/Orbiter.cpp:1502
 msgctxt "Notification"
 msgid "Scenario saved successfully"
 msgstr ""
 
-#: C:/github/openorbiter/Src/Orbiter/Orbiter.cpp:1503
+#: C:/github/openorbiter/Src/Orbiter/Orbiter.cpp:1504
 msgctxt "Notification"
 msgid "Failed to save scenario"
 msgstr ""

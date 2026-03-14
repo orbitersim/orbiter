@@ -74,6 +74,8 @@ DefaultPanel::DefaultPanel (Pane *_pane, int cidx): pane(_pane)
 	compact_layout = g_pOrbiter->Cfg()->CfgLogicPrm.bGlasspitCompact;
 	colidx = cidx;
 
+	unicode_support = g_pOrbiter->Cfg()->NLSEnabled();
+
 	elevtrim = 100;
 
 	SetGeometry ();
@@ -550,41 +552,42 @@ void DefaultPanel::Render ()
 	gc->clbkRender2DPanel (&surf, (MESHHANDLE)&mesh, &transf, transpmfd);
 
 	// Alternative drawing with unicode support
-	oapi::Sketchpad *skp = gc->clbkGetSketchpad (0);
-	for (i = 0; i < 2; i++) {
-		GroupSpec *grp = mesh.GetGroup(4+i);
-		skp->SetFont(mfdFont);
-		if(pane->mfd[i].instr)
-			skp->SetTextColor(0x008888ff);
-		else
-			skp->SetTextColor(0x00444477);
+	if(unicode_support) {
+		oapi::Sketchpad *skp = gc->clbkGetSketchpad (0);
+		for (i = 0; i < 2; i++) {
+			GroupSpec *grp = mesh.GetGroup(4+i);
+			skp->SetFont(mfdFont);
+			if(pane->mfd[i].instr)
+				skp->SetTextColor(0x008888ff);
+			else
+				skp->SetTextColor(0x00444477);
 
-		skp->SetTextAlign(oapi::Sketchpad::CENTER);
-		int w = grp->Vtx[1].x - grp->Vtx[0].x;
-		skp->Text(grp->Vtx[0].x + w/2 + 1, grp->Vtx[0].y+btnyoffset, _c("MFD Button", "PWR"), 0);
-	}
-
-
-	for (int i = 0; i < 2; i++)
-		RenderMFDButtons(i, skp);
-
-	skp->SetFont(mfdFont);
-	skp->SetTextAlign(oapi::Sketchpad::CENTER);
-
-	for (int i = 0; i < 2; i++) {
-		// MNU/SEL group
-		if(pane->mfd[i].instr) {
-			skp->SetTextColor(colors[colidx]);
-			grp = mesh.GetGroup(1+2*i);
-			int w = grp->Vtx[201].x - grp->Vtx[200].x;
-			skp->Text(grp->Vtx[200].x + w/2 + 1, grp->Vtx[200].y+btnyoffset, _c("MFD Button", "SEL"), 0);
-
-			w = grp->Vtx[209].x - grp->Vtx[208].x;
-			skp->Text(grp->Vtx[208].x + w/2 + 1, grp->Vtx[208].y+btnyoffset, _c("MFD Button", "MNU"), 0);
+			skp->SetTextAlign(oapi::Sketchpad::CENTER);
+			int w = grp->Vtx[1].x - grp->Vtx[0].x;
+			skp->Text(grp->Vtx[0].x + w/2 + 1, grp->Vtx[0].y+btnyoffset, _c("MFD Button", "PWR"), 0);
 		}
-	}
-	oapiReleaseSketchpad(skp);
 
+
+		for (int i = 0; i < 2; i++)
+			RenderMFDButtons(i, skp);
+
+		skp->SetFont(mfdFont);
+		skp->SetTextAlign(oapi::Sketchpad::CENTER);
+
+		for (int i = 0; i < 2; i++) {
+			// MNU/SEL group
+			if(pane->mfd[i].instr) {
+				skp->SetTextColor(colors[colidx]);
+				grp = mesh.GetGroup(1+2*i);
+				int w = grp->Vtx[201].x - grp->Vtx[200].x;
+				skp->Text(grp->Vtx[200].x + w/2 + 1, grp->Vtx[200].y+btnyoffset, _c("MFD Button", "SEL"), 0);
+
+				w = grp->Vtx[209].x - grp->Vtx[208].x;
+				skp->Text(grp->Vtx[208].x + w/2 + 1, grp->Vtx[208].y+btnyoffset, _c("MFD Button", "MNU"), 0);
+			}
+		}
+		oapiReleaseSketchpad(skp);
+	}
 }
 
 bool DefaultPanel::ProcessMouse (UINT event, DWORD state, int x, int y)
@@ -788,7 +791,7 @@ void DefaultPanel::RenderMFDButtons (int id, oapi::Sketchpad *skp)
 
 void DefaultPanel::RepaintMFDButtons (int id)
 {
-	return;
+	if(unicode_support) return;
 	if (id >= 2) return;
 	if (!gc || !pane->mfd[id].instr) return;
 

@@ -216,7 +216,7 @@ CFG_UIPRM CfgUIPrm_default = {
 	0,          // SelVesselTab: tab to open in vessel selection dialog
 	4,          // SelVesselRange "nearby" range for vessel selection dialog (100km)
 	false,      // bSelVesselFlat (no flat assemblies) in vessel selection dialog),
-	"en_UK"     // Locale
+	""     // Locale
 };
 
 CFG_DEMOPRM CfgDemoPrm_default = {
@@ -1458,6 +1458,11 @@ void Config::PTexPath(char* cbuf, const char* name, const char* ext)
 	strncpy(cbuf, ptxpath, ptxlen);
 	if (ext) sprintf(cbuf + ptxlen, "%s.%s", name, ext);
 	else     strcpy(cbuf + ptxlen, name);
+}
+
+bool Config::NLSEnabled()
+{
+	return !CfgUIPrm.locale.empty();
 }
 
 bool Config::IsActiveModule(const std::string& name)

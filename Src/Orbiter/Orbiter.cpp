@@ -388,6 +388,7 @@ HRESULT Orbiter::Create (HINSTANCE hInstance)
 	pConfig->Load(MasterConfigFile);
 	strcpy (cfgpath, pConfig->CfgDirPrm.ConfigDir);   cfglen = strlen (cfgpath);
 
+	I18N::Init(false);
 	I18N::LoadLocale(pConfig->CfgUIPrm.locale.c_str());
 
 	RegisterMenuCmd(_c("MenuInfoBar", "Ship"),     "MenuInfoBar/ship.png",     [](void *) {g_pOrbiter->DlgMgr()->EnsureEntry<DlgFocus>();});

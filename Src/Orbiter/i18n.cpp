@@ -16,6 +16,7 @@
 #include <cstring>
 #include <regex>
 #include <filesystem>
+#include <set>
 
 namespace I18N {
 
@@ -359,6 +360,8 @@ void LoadLocale(const char *locale)
     g_translations.clear();
 	g_originalEntities.clear();
 
+	if(g_currentLocale.empty()) return;
+
 	std::string suffix = std::string(".") + locale + ".po";
 	for (const auto& entry : std::filesystem::directory_iterator("i18n"))
     {
@@ -374,6 +377,8 @@ void LoadLocale(const char *locale)
 
 void ImportDirectory(const char *dirname)
 {
+	if(g_currentLocale.empty()) return;
+
 	std::string suffix = std::string(".") + g_currentLocale + ".po";
 	for (const auto& entry : std::filesystem::directory_iterator(dirname))
     {
@@ -387,12 +392,53 @@ void ImportDirectory(const char *dirname)
     }
 }
 
+// Get the list of locales in the i18n directory,
+// matching *.locale.po files (e.g. Orbiter.fr_FR.po)
+// Use a set to remove duplicates
+static std::set<std::string> ExtractLocales()
+{
+    std::set<std::string> locales;
+
+	for (const auto& entry : std::filesystem::directory_iterator("i18n"))
+    {
+        if (!entry.is_regular_file())
+            continue;
+
+        const auto& path = entry.path();
+
+        if (path.extension() != ".po")
+            continue;
+
+        std::string name = path.filename().string();
+
+        // find ".po"
+        size_t po_pos = name.rfind(".po");
+        if (po_pos == std::string::npos)
+            continue;
+
+        // find the dot before locale
+        size_t dot_pos = name.rfind('.', po_pos - 1);
+        if (dot_pos == std::string::npos)
+            continue;
+
+        std::string locale = name.substr(dot_pos + 1, po_pos - dot_pos - 1);
+        locales.insert(locale);
+    }
+
+    return locales;
+}
 // -------------------- API --------------------
 void Init(bool notifymissing) {
     g_notifyMissing = notifymissing;
     g_locales.clear();
+
+	// en_UK is always available (hardcoded msgids)
     g_locales.push_back("en_UK");
-    g_locales.push_back("fr_FR");
+
+	auto locales = ExtractLocales();
+	for(const auto &locale: locales) {
+	    g_locales.push_back(locale);
+	}
 }
 
 const std::vector<std::string> &GetLocales() { return g_locales; }
@@ -472,6 +518,11 @@ static void LoadPO(const char *filename) {
 }
 
 // -------------------- GetText API --------------------
+
+DLLEXPORT bool Enabled()
+{
+	return !g_currentLocale.empty();
+}
 
 DLLEXPORT const char *PGetText(uint64_t key) {
     auto it=g_translations.find(key);
