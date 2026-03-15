@@ -60,5 +60,10 @@ _c("Date Day", "Thu")
 _c("Date Day", "Fri")
 _c("Date Day", "Sat")
 
-// TRANSLATORS: parameters order: weekday, month, day, hour, min, sec, year
+// TRANSLATORS: Parameters order: weekday, month, day, hour, min, sec, year. You can use POSIX style positional parameters here.
 _c("Date Format", "%s %s %02d %02d:%02d:%02d %d")
+
+_c("Cardinal direction", "N")
+_c("Cardinal direction", "S")
+_c("Cardinal direction", "E")
+_c("Cardinal direction", "W")

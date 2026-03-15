@@ -241,7 +241,6 @@ end
 
     -- Longest names first
     local patterns = {
-        { name="_card", ctx=true, plural=false },
         { name="_abbr2", abbr=true, length=2  },
         { name="_abbr3", abbr=true, length=3  },
         { name="_abbr4", abbr=true, length=4  },
@@ -290,10 +289,7 @@ end
                             local strs = parse_string_arguments(args)
                             local ref = filename .. ":" .. lineno
 
-                            if p.name == "_card" and #strs >= 1 then
-                                add_entry(strs[1], nil, "Cardinal direction", pending_comment, ref)
-                                comment_consumed = true
-                            elseif p.abbr and #strs >= 1 then
+                            if p.abbr and #strs >= 1 then
                                 add_entry(strs[1], nil, "Abbreviation - "..p.length.." letters", pending_comment, ref)
                                 comment_consumed = true
                             elseif p.ctx and p.plural and #strs >= 3 then
