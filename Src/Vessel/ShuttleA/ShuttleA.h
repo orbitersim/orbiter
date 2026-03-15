@@ -148,6 +148,7 @@ public:
 	static SURFHANDLE paneleltex;          // panel element texture handle
 	static SURFHANDLE aditex;              // texture for ADI ball
 	SURFHANDLE main_tex;
+	SURFHANDLE vcmfd_tex;
 
 	void ActivateDockingPort (DoorStatus action);
 	void RevertDockingPort ();
@@ -250,7 +251,7 @@ private:
 
 typedef struct {
 	HINSTANCE hDLL;
-	oapi::Font* pFont[1];
+	oapi::Font* pFont[2];
 	oapi::Pen* pPen[3];
 	oapi::Brush* pBrush[2];
 } GDIParams;

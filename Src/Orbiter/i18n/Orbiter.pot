@@ -11,17 +11,17 @@ msgctxt "Date Format"
 msgid "%s %s %02d %02d:%02d:%02d %d"
 msgstr ""
 
-#: C:/github/openorbiter/Src/Orbiter/Defpanel.cpp:564
+#: C:/github/openorbiter/Src/Orbiter/Defpanel.cpp:567
 msgctxt "MFD Button"
 msgid "PWR"
 msgstr ""
 
-#: C:/github/openorbiter/Src/Orbiter/Defpanel.cpp:580
+#: C:/github/openorbiter/Src/Orbiter/Defpanel.cpp:583
 msgctxt "MFD Button"
 msgid "SEL"
 msgstr ""
 
-#: C:/github/openorbiter/Src/Orbiter/Defpanel.cpp:583
+#: C:/github/openorbiter/Src/Orbiter/Defpanel.cpp:586
 msgctxt "MFD Button"
 msgid "MNU"
 msgstr ""

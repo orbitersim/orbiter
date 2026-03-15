@@ -42,10 +42,16 @@ static inline const char *i18nfallback(const char *value, const char *defvalue) 
 #define _n(msgid,msgid_plur,N) i18nfallback(I18N::PNGetText(I18NKey("",msgid),msgid_plur,N), msgid)
 #define _nc(msgctx,msgid,msgid_plur,N) i18nfallback(I18N::PNGetText(I18NKey(msgctx,msgid),msgid_plur,N), msgid)
 
+// Helper for plugins that want to use translations provided by the core
+// without having them end up in their own .pot file
+// Care must be taken that the context/msgid indeed exists in the Orbiter core
+#define _core(msgctx,msgid) i18nfallback(I18N::PGetText(I18NKey(msgctx,msgid)), msgid)
+
 // Helper for planet/moon/base names translation
 #define _name(msgid) i18nfallback(I18N::PGetText(I18NKey("Name",msgid)), msgid)
 #define _revname(name) I18N::GetOriginalName(name)
 
+// Helper for cardinal directions
 #define _card(msgid) i18nfallback(I18N::PGetText(I18NKey("Cardinal direction",msgid)), msgid)
 
 // Helper for abbreviations

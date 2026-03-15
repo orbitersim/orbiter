@@ -204,10 +204,10 @@ bool MfdButtonRow::Redraw2D (SURFHANDLE surf)
 	skp->SetTextAlign(oapi::Sketchpad::CENTER, oapi::Sketchpad::TOP);
 	skp->SetFont(g_Param.font[0]);
 	skp->SetTextColor(0x000000FF);
-	skp->Text( 50 + xofs + 14, 815, _c("MFD Button", "PWR"), 0);
+	skp->Text( 50 + xofs + 14, 815, _core("MFD Button", "PWR"), 0);
 	skp->SetTextColor(0x00FFFFFF);
-	skp->Text(263 + xofs + 14, 815, _c("MFD Button", "SEL"), 0);
-	skp->Text(294 + xofs + 14, 815, _c("MFD Button", "MNU"), 0);
+	skp->Text(263 + xofs + 14, 815, _core("MFD Button", "SEL"), 0);
+	skp->Text(294 + xofs + 14, 815, _core("MFD Button", "MNU"), 0);
 	oapiReleaseSketchpad(skp);
 
 	return false;
@@ -407,8 +407,6 @@ bool MfdButtonCol::RedrawVC (DEVMESHHANDLE hMesh, SURFHANDLE surf)
 				} else break;
 			}
 		} else {
-			const int CHY = 1012;
-
 			surf = subsys->VcTex();
 
 			const int xcnt0 = 148, dx = 40, wlbl = 32, hlbl = 12;
@@ -432,8 +430,8 @@ bool MfdButtonCol::RedrawVC (DEVMESHHANDLE hMesh, SURFHANDLE surf)
 					skp->Text(xcnt, y, label, 0);
 				} else break;
 			}
-			skp->Text(149, 177, _c("MFD Button", "SEL"), 0);
-			skp->Text(149+40, 177, _c("MFD Button", "MNU"), 0);
+			skp->Text(149, 177, _core("MFD Button", "SEL"), 0);
+			skp->Text(149+40, 177, _core("MFD Button", "MNU"), 0);
 			oapiReleaseSketchpad(skp);
 		}
 		return true;
