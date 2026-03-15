@@ -329,7 +329,7 @@ end
 -- Deterministic sort
 -----------------------------------------------------------------------
 local entries = {}
-for _, e in pairs(pot_entries) do
+for key, e in pairs(pot_entries) do
     local first_ref
     for r in pairs(e.refs) do
         if not first_ref or r < first_ref then
@@ -339,6 +339,7 @@ for _, e in pairs(pot_entries) do
     if first_ref then
         local file, line = first_ref:match("^(.*):(%d+)$")
         table.insert(entries, {
+            key = key,
             entry = e,
             file = file or "",
             line = tonumber(line) or 0,
@@ -350,7 +351,8 @@ end
 table.sort(entries, function(a, b)
     if a.file ~= b.file then return a.file < b.file end
     if a.ctx ~= b.ctx then return a.ctx < b.ctx end
-    return a.line < b.line
+    if a.line ~= b.line then return a.line < b.line end
+    return a.key < b.key
 end)
 
 -----------------------------------------------------------------------

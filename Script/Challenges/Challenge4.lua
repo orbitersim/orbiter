@@ -28,7 +28,7 @@ end
 function hscore2str (hscore,mark)
     local str
     if #hscore > 0 then
-        str = _('High score list:\n\n')..string.format('%s . . . %s', _('Fuel used'), _('Name'))..'\n----------------------------------'
+        str = _('High score list:\n\n')..string.format('%s . . . %s', _('Fuel used'), _('Name')).._('\n----------------------------------')
         for i=1,#hscore do
 			str = str..'\n'..string.format('%08.2f . . . %s', hscore[i][2], hscore[i][1])
             if mark==i then str = str..'   <====' end

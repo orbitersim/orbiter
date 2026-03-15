@@ -332,12 +332,12 @@ msgstr ""
 
 #: C:/github/openorbiter/Src/Vessel/ShuttleA/Script/adi.lua:566
 msgctxt "ShuttleA ADI tutorial"
-msgid "You seem to have serious attitude problems ..."
+msgid "That's it, test failed for obnoxious behaviour. If you want to retake it, you'll have to go through the tutorial again."
 msgstr ""
 
 #: C:/github/openorbiter/Src/Vessel/ShuttleA/Script/adi.lua:566
 msgctxt "ShuttleA ADI tutorial"
-msgid "That's it, test failed for obnoxious behaviour. If you want to retake it, you'll have to go through the tutorial again."
+msgid "You seem to have serious attitude problems ..."
 msgstr ""
 
 #: C:/github/openorbiter/Src/Vessel/ShuttleA/Script/adi.lua:577

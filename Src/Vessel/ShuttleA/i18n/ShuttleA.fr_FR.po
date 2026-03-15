@@ -711,17 +711,17 @@ msgstr ""
 
 #: C:/github/openorbiter/Src/Vessel/ShuttleA/Script/adi.lua:566
 msgctxt "ShuttleA ADI tutorial"
-msgid "You seem to have serious attitude problems ..."
-msgstr "Tu sembles avoir de sérieux problèmes d'attitude..."
-
-#: C:/github/openorbiter/Src/Vessel/ShuttleA/Script/adi.lua:566
-msgctxt "ShuttleA ADI tutorial"
 msgid ""
 "That's it, test failed for obnoxious behaviour. If you want to retake it, "
 "you'll have to go through the tutorial again."
 msgstr ""
 "C'est tout, test échoué pour comportement insupportable. Si tu veux le "
 "repasser, tu devras refaire le tutoriel."
+
+#: C:/github/openorbiter/Src/Vessel/ShuttleA/Script/adi.lua:566
+msgctxt "ShuttleA ADI tutorial"
+msgid "You seem to have serious attitude problems ..."
+msgstr "Tu sembles avoir de sérieux problèmes d'attitude..."
 
 #: C:/github/openorbiter/Src/Vessel/ShuttleA/Script/adi.lua:577
 msgctxt "ShuttleA ADI tutorial"

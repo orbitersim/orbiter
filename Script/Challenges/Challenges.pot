@@ -6,15 +6,15 @@ msgstr ""
 "X-Generator: Lua xgettext.lua\n"
 
 #: C:/github/openorbiter/Script/Challenges/Challenge1.lua:31 C:/github/openorbiter/Script/Challenges/Challenge2.lua:31 C:/github/openorbiter/Script/Challenges/Challenge3.lua:31 C:/github/openorbiter/Script/Challenges/Challenge4.lua:31
-msgid "High score list:\n\n"
-msgstr ""
-
-#: C:/github/openorbiter/Script/Challenges/Challenge1.lua:31 C:/github/openorbiter/Script/Challenges/Challenge2.lua:31 C:/github/openorbiter/Script/Challenges/Challenge3.lua:31
 msgid "\n----------------------------------"
 msgstr ""
 
 #: C:/github/openorbiter/Script/Challenges/Challenge1.lua:31 C:/github/openorbiter/Script/Challenges/Challenge2.lua:31 C:/github/openorbiter/Script/Challenges/Challenge3.lua:31 C:/github/openorbiter/Script/Challenges/Challenge4.lua:31
 msgid "Fuel used"
+msgstr ""
+
+#: C:/github/openorbiter/Script/Challenges/Challenge1.lua:31 C:/github/openorbiter/Script/Challenges/Challenge2.lua:31 C:/github/openorbiter/Script/Challenges/Challenge3.lua:31 C:/github/openorbiter/Script/Challenges/Challenge4.lua:31
+msgid "High score list:\n\n"
 msgstr ""
 
 #: C:/github/openorbiter/Script/Challenges/Challenge1.lua:31 C:/github/openorbiter/Script/Challenges/Challenge2.lua:31 C:/github/openorbiter/Script/Challenges/Challenge3.lua:31 C:/github/openorbiter/Script/Challenges/Challenge4.lua:31

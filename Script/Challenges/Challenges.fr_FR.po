@@ -16,13 +16,12 @@ msgstr ""
 #: C:/github/openorbiter/Script/Challenges/Challenge1.lua:31
 #: C:/github/openorbiter/Script/Challenges/Challenge2.lua:31
 #: C:/github/openorbiter/Script/Challenges/Challenge3.lua:31
-#: C:/github/openorbiter/Script/Challenges/Challenge4.lua:31
 msgid ""
-"High score list:\n"
 "\n"
+"----------------------------------"
 msgstr ""
-"Meilleurs scores :\n"
 "\n"
+"----------------------------------"
 
 #: C:/github/openorbiter/Script/Challenges/Challenge1.lua:31
 #: C:/github/openorbiter/Script/Challenges/Challenge2.lua:31
@@ -35,18 +34,19 @@ msgstr "Carburant utilisé"
 #: C:/github/openorbiter/Script/Challenges/Challenge2.lua:31
 #: C:/github/openorbiter/Script/Challenges/Challenge3.lua:31
 #: C:/github/openorbiter/Script/Challenges/Challenge4.lua:31
-msgid "Name"
-msgstr "Nom"
+msgid ""
+"High score list:\n"
+"\n"
+msgstr ""
+"Meilleurs scores :\n"
+"\n"
 
 #: C:/github/openorbiter/Script/Challenges/Challenge1.lua:31
 #: C:/github/openorbiter/Script/Challenges/Challenge2.lua:31
 #: C:/github/openorbiter/Script/Challenges/Challenge3.lua:31
-msgid ""
-"\n"
-"----------------------------------"
-msgstr ""
-"\n"
-"----------------------------------"
+#: C:/github/openorbiter/Script/Challenges/Challenge4.lua:31
+msgid "Name"
+msgstr "Nom"
 
 #: C:/github/openorbiter/Script/Challenges/Challenge1.lua:37
 #: C:/github/openorbiter/Script/Challenges/Challenge2.lua:37
@@ -198,10 +198,6 @@ msgstr "Mission échouée !"
 #: C:/github/openorbiter/Script/Challenges/Challenge4.lua:97
 msgid "Script terminated."
 msgstr "Fin de script."
-
-#: C:/github/openorbiter/Script/Challenges/Challenge4.lua:116
-msgid "check"
-msgstr ""
 
 #: C:/github/openorbiter/Script/Challenges/Challenge4.lua:123
 msgid ""
