@@ -112,3 +112,6 @@ install(DIRECTORY ${TEXTURE2_SOURCE_DIR}/
 install(DIRECTORY ${THUMBNAIL_SOURCE_DIR}/
 	DESTINATION ${ORBITER_INSTALL_ROOT_DIR}/Images/Vessels/Default
 )
+
+generate_pot(Atlantis)
+install_po_files()

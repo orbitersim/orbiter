@@ -17,6 +17,9 @@
 #include "imgui_extras.h"
 #include "implot.h"
 
+#define TRANSLATION_CONTEXT "Atlantis Autopilot"
+#include "I18NAPI.h"
+
 #define NDATA 256
 
 using std::min;
@@ -28,7 +31,7 @@ extern GDIParams g_Param;
 // class AscentAP: ascent autopilot
 // ==============================================================
 
-AscentAP::AscentAP (Atlantis *atlantis):ImGuiDialog("Atlantis Ascent Autopilot")
+AscentAP::AscentAP (Atlantis *atlantis):ImGuiDialog(_("Atlantis Ascent Autopilot"))
 {
 	vessel = atlantis;
 	n_pitch_profile = 0;
@@ -569,47 +572,47 @@ void AscentAP::OnDraw()
 {
 	double laz = launch_azimuth * DEG;
 	ImGui::SetNextItemWidth(100.0f);
-	if(ImGui::InputDoubleEx("Launch azimuth (°)", &laz, -180.0, 180.0, 0.5, 10.0,"%.1f"))
+	if(ImGui::InputDoubleEx(_("Launch azimuth (°)"), &laz, -180.0, 180.0, 0.5, 10.0,"%.1f"))
 		launch_azimuth = laz * RAD;
 
 	double alt = tgt_alt/1000.0;
 	ImGui::SameLine();
 	ImGui::SetNextItemWidth(100.0f);
-	if(ImGui::InputDoubleEx("Orbit Altitude (km)", &alt, 200.0, 2000.0, 1.0, 50.0, "%.1f")) {
+	if(ImGui::InputDoubleEx(_("Orbit Altitude (km)"), &alt, 200.0, 2000.0, 1.0, 50.0, "%.1f")) {
 		tgt_alt = alt * 1000.0;
 	}
 
 	ImGui::SameLine();
 	if (active) {
-		if(ImGui::Button("Disengage"))
+		if(ImGui::Button(_("Disengage")))
 			Disengage();
 	} else if (vessel->status == 0) {
-		if(ImGui::Button("Launch")) {
+		if(ImGui::Button(_("Launch"))) {
 			SetLaunchAzimuth(launch_azimuth);
 			Launch();
 		}
 	} else {
-		if(ImGui::Button("Engage")) {
+		if(ImGui::Button(_("Engage"))) {
 			Engage();
 		}
 	}
 
 	ImGui::Separator();
 
-	ImGui::Text("MET: %s", MetStr(met));
+	ImGui::Text(_("MET: %s"), MetStr(met));
 
-	if (ImPlot::BeginPlot("Ascent Profile", ImVec2(-1,0), ImPlotFlags_NoMenus)) {
+	if (ImPlot::BeginPlot(_("Ascent Profile"), ImVec2(-1,0), ImPlotFlags_NoMenus)) {
 		ImPlot::SetupAxis(ImAxis_X1, NULL, ImPlotAxisFlags_AutoFit | ImPlotAxisFlags_NoTickLabels);
 		ImPlot::SetupAxisLimitsConstraints(ImAxis_X1, 0, NDATA);
 
-		ImPlot::SetupAxis(ImAxis_Y1, "Thrust (%)", ImPlotAxisFlags_AutoFit);
-		ImPlot::SetupAxis(ImAxis_Y2, "Altitude (km)", ImPlotAxisFlags_AuxDefault | ImPlotAxisFlags_AutoFit);
+		ImPlot::SetupAxis(ImAxis_Y1, _("Thrust (%)"), ImPlotAxisFlags_AutoFit);
+		ImPlot::SetupAxis(ImAxis_Y2, _("Altitude (km)"), ImPlotAxisFlags_AuxDefault | ImPlotAxisFlags_AutoFit);
 
 		ImPlot::SetAxes(ImAxis_X1, ImAxis_Y1);
-		ImPlot::PlotLine("SRB", m_historySRB.data(), NDATA, 1.0, 0.0, ImPlotLineFlags_None, m_idx);
-		ImPlot::PlotLine("SSME", m_historySSME.data(), NDATA, 1.0, 0.0, ImPlotLineFlags_None, m_idx);
+		ImPlot::PlotLine(_("SRB"), m_historySRB.data(), NDATA, 1.0, 0.0, ImPlotLineFlags_None, m_idx);
+		ImPlot::PlotLine(_("SSME"), m_historySSME.data(), NDATA, 1.0, 0.0, ImPlotLineFlags_None, m_idx);
 		ImPlot::SetAxes(ImAxis_X1, ImAxis_Y2);
-		ImPlot::PlotLine("Altitude", m_historyAlt.data(), NDATA, 1.0, 0.0, ImPlotLineFlags_None, m_idx);
+		ImPlot::PlotLine(_("Altitude"), m_historyAlt.data(), NDATA, 1.0, 0.0, ImPlotLineFlags_None, m_idx);
 		ImPlot::EndPlot();
 	}
 }
@@ -647,7 +650,7 @@ bool AscentApMfd::Update (oapi::Sketchpad *skp)
 		skp->SetBackgroundMode (oapi::Sketchpad::BK_OPAQUE);
 		skp->SetBackgroundColor(0xffffff);
 		skp->SetTextColor(0x000000);
-		skp->Text ((27*cw)/2, 0, "ACT", 3);
+		skp->Text ((27*cw)/2, 0, "ACT", 0);
 		skp->SetBackgroundMode (oapi::Sketchpad::BK_TRANSPARENT);
 	}
 	skp->SetTextColor(0x00ff00);
@@ -668,13 +671,13 @@ void AscentApMfd::UpdatePg_Prm (oapi::Sketchpad *skp)
 
 	if (!ap->GetVessel()->status) {
 		sprintf (cbuf, "Launch azimuth: %0.1fº", ap->GetLaunchAzimuth()*DEG);
-		skp->Text (cw/2, (ch*3)/2, cbuf, strlen(cbuf));
+		skp->Text (cw/2, (ch*3)/2, cbuf, 0);
 		sprintf (cbuf, "Orbit inc:      %0.1fº", ap->GetTargetInclination()*DEG);
-		skp->Text (cw/2, (ch*5)/2, cbuf, strlen(cbuf));
+		skp->Text (cw/2, (ch*5)/2, cbuf, 0);
 		sprintf (cbuf, "Orbit altitude: %0.1fkm", ap->GetOrbitAltitude()*1e-3);
-		skp->Text (cw/2, (ch*7)/2, cbuf, strlen(cbuf));
+		skp->Text (cw/2, (ch*7)/2, cbuf, 0);
 		sprintf (cbuf, "OMS2 scheduled: %s", ap->GetOMS2Schedule() ? "yes" : "no");
-		skp->Text (cw/2, (ch*9)/2, cbuf, strlen(cbuf));
+		skp->Text (cw/2, (ch*9)/2, cbuf, 0);
 	} else {
 		OBJHANDLE hRef = ap->GetVessel()->GetGravityRef();
 		double R = oapiGetSize(hRef);
