@@ -31,7 +31,7 @@ extern GDIParams g_Param;
 // class AscentAP: ascent autopilot
 // ==============================================================
 
-AscentAP::AscentAP (Atlantis *atlantis):ImGuiDialog(_("Atlantis Ascent Autopilot"))
+AscentAP::AscentAP (Atlantis *atlantis):ImGuiDialog(_("Atlantis Ascent Autopilot"), {633,431})
 {
 	vessel = atlantis;
 	n_pitch_profile = 0;

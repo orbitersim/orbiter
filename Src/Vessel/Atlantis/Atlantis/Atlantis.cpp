@@ -58,7 +58,7 @@ HELPCONTEXT g_hc = {
 
 extern void GetSRB_State (double met, double &thrust_level, double &prop_level);
 
-AtlantisDialog::AtlantisDialog(Atlantis *atlantis):ImGuiDialog(_("Atlantis Control"))
+AtlantisDialog::AtlantisDialog(Atlantis *atlantis):ImGuiDialog(_("Atlantis Control"), {240,115})
 {
 	m_atlantis = atlantis;
 }
@@ -76,7 +76,7 @@ void AtlantisDialog::OnDraw()
 	}
 }
 
-RMSDialog::RMSDialog(Atlantis *atlantis):ImGuiDialog(_("Atlantis RMS Control"))
+RMSDialog::RMSDialog(Atlantis *atlantis):ImGuiDialog(_("Atlantis RMS Control"), {236,435})
 {
 	m_atlantis = atlantis;
 }
