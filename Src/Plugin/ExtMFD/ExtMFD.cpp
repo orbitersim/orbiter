@@ -15,6 +15,8 @@
 #define ORBITER_MODULE
 #include "MFDWindow.h"
 #include "orbitersdk.h"
+#define TRANSLATION_CONTEXT "External MFD"
+#include "I18NAPI.h"
 
 // ==============================================================
 // Global variables
@@ -42,11 +44,11 @@ DLLCLBK void InitModule (HINSTANCE hDLL)
 	// To allow the user to open our new dialog box, we create
 	// an entry in the "Custom Functions" list which is accessed
 	// in Orbiter via Ctrl-F4.
-	g_dwCmd = oapiRegisterCustomCmd ((char*)"External MFD",
-		(char*)"Opens a multifunctional display in an external window",
+	g_dwCmd = oapiRegisterCustomCmd ((char*)_("External MFD"),
+		(char*)_("Opens a multifunctional display in an external window"),
 		OpenDlgClbk, NULL);
 
-	g_dwMenuCmd = oapiRegisterCustomMenuCmd ("MFD", "MenuInfoBar/ExtMFD.png", OpenDlgClbk, NULL);
+	g_dwMenuCmd = oapiRegisterCustomMenuCmd (_("MFD"), "MenuInfoBar/ExtMFD.png", OpenDlgClbk, NULL);
 }
 
 // ==============================================================

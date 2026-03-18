@@ -19,7 +19,8 @@
 #include "imgui.h"
 #include "imgui_extras.h"
 #include "IconsFontAwesome6.h"
-
+#define TRANSLATION_CONTEXT "External MFD"
+#include "I18NAPI.h"
 // ==============================================================
 // class MFDWindow
 
@@ -83,17 +84,17 @@ void DlgExtMFD::Display() {
 	bool visible = ImGui::Begin(cbuf, &active);
 	bool stick = m_mfd->GetStickToVessel();
 
-	if(ImGui::MenuButton(ICON_FA_CIRCLE_QUESTION, "Help")) {
+	if(ImGui::MenuButton(ICON_FA_CIRCLE_QUESTION, _("Help"))) {
 		m_mfd->OpenModeHelp();
 	}
 
-	if(ImGui::MenuButton(stick ? ICON_FA_THUMBTACK : ICON_FA_THUMBTACK_SLASH, stick ? "Unpin this MFD from the vessel":"Pin this MFD to the current vessel", ImGui::GetFontSize()*1.7f))
+	if(ImGui::MenuButton(stick ? ICON_FA_THUMBTACK : ICON_FA_THUMBTACK_SLASH, stick ? _("Unpin this MFD from the vessel"):_("Pin this MFD to the current vessel"), ImGui::GetFontSize()*1.7f))
 	{
 		m_mfd->ToggleStickToVessel();
 	}
 	
 	bool locked = m_mfd->GetAspectRatioState();
-	if(ImGui::MenuButton(locked ? ICON_FA_LOCK : ICON_FA_LOCK_OPEN, locked ? "Unlock aspect ratio" : "Lock aspect ratio", ImGui::GetFontSize()*3.4f)) {
+	if(ImGui::MenuButton(locked ? ICON_FA_LOCK : ICON_FA_LOCK_OPEN, locked ? _("Unlock aspect ratio") : _("Lock aspect ratio"), ImGui::GetFontSize()*3.4f)) {
 		m_mfd->ToggleLockAspectRatio();
 	}
 
@@ -188,17 +189,17 @@ void DlgExtMFD::OnDraw() {
 	ImGui::SetCursorPosX(60);
 
 	ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(0.9, 0, 0, 1));
-	if (ImGui::Button("PWR", button_sz)) {
+	if (ImGui::Button(_("PWR"), button_sz)) {
 		m_mfd->ProcessButton(12, PANEL_MOUSE_LBDOWN);
 
 	}
 	ImGui::PopStyleColor();
 	ImGui::SameLine();
-	if (ImGui::Button("SEL", button_sz)) {
+	if (ImGui::Button(_("SEL"), button_sz)) {
 		m_mfd->ProcessButton(13, PANEL_MOUSE_LBDOWN);
 	}
 	ImGui::SameLine();
-	if (ImGui::Button("MNU", button_sz)) {
+	if (ImGui::Button(_("MNU"), button_sz)) {
 		m_mfd->ProcessButton(14, PANEL_MOUSE_LBDOWN);
 	}
 	ImGui::EndChild();
