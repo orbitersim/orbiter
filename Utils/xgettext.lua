@@ -140,9 +140,9 @@ local function parse_string_arguments(argstr)
 
         -- Handle quoted strings ("..." or '...')
         if ch == '"' or ch == "'" then
+            local buf = {}
             local quote = ch
             i = i + 1
-            local buf = {}
 
             while i <= len do
                 local c = argstr:sub(i,i)
@@ -169,13 +169,21 @@ local function parse_string_arguments(argstr)
 
                 elseif c == quote then
                     i = i + 1
-                    break
+                    -- look for the next non blank/newline character
+                    -- we need this to handle _("one" "two") cases
+                    -- with possibly a newline between the strings
+                    while i <= len and argstr:sub(i,i):match("%s") or argstr:sub(i,i) == "\n" do
+                        i = i + 1
+                    end
+                    if(argstr:sub(i,i) == "," or argstr:sub(i,i) == ")") then
+                        break
+                    end
+
                 else
                     table.insert(buf, c)
                     i = i + 1
                 end
             end
-
             table.insert(args, table.concat(buf))
 
         -- Handle Lua long strings [[...]] or [=[...]=]
@@ -200,7 +208,6 @@ local function parse_string_arguments(argstr)
             else
                 i = i + 1
             end
-
         else
             -- Skip non-string argument
             while i <= len and argstr:sub(i,i) ~= ',' do
@@ -209,7 +216,6 @@ local function parse_string_arguments(argstr)
             i = i + 1
         end
     end
-
     return args
 end
 
@@ -224,18 +230,15 @@ local function scan_file(filename)
     for l in f:lines() do table.insert(lines, l) end
     f:close()
 
-
--- Preprocess lines: handle Lua backslash-continuation in strings
-local i = 1
-while i <= #lines do
-    if lines[i] and lines[i]:sub(-1) == "\\" then
-        lines[i+1] = lines[i]:sub(1, -2) .. "\n" .. lines[i+1]
-        lines[i] = ""
+    -- Preprocess lines: handle Lua backslash-continuation in strings
+    local i = 1
+    while i <= #lines do
+        if lines[i] and lines[i]:sub(-1) == "\\" then
+            lines[i+1] = lines[i]:sub(1, -2) .. "\n" .. lines[i+1]
+            lines[i] = ""
+        end
+        i = i + 1
     end
-    i = i + 1
-end
-
-
 
     local pending_comment = nil
 
@@ -279,7 +282,6 @@ end
             while true do
                 local s, e = line:find(p.name .. "%s*%(", search)
                 if not s then break end
-
                 local prev = s > 1 and line:sub(s-1, s-1) or nil
                 if not is_ident_char(prev) then
                     local call_text = collect_call(lines, lineno, e)
@@ -400,4 +402,3 @@ for _, item in ipairs(entries) do
 end
 
 f:close()
-print("Wrote .pot file to " .. output_file)
