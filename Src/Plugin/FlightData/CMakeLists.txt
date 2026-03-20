@@ -35,3 +35,5 @@ install(TARGETS FlightData
 install(FILES FlightData.png
 	DESTINATION ${ORBITER_INSTALL_TEXTURES_DIR}/MenuInfoBar
 )
+generate_pot(FlightData)
+install_po_files()
