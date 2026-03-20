@@ -73,7 +73,7 @@ end
 ------------------------------------------------------------
 -- Write POT
 ------------------------------------------------------------
-local outfile = io.open(output_path, "w")
+local outfile = io.open(output_path, "wb")
 if not outfile then
 	io.stderr:write("Cannot open output file: " .. output_path .. "\n")
 	os.exit(1)

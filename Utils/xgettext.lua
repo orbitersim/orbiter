@@ -360,7 +360,7 @@ end)
 -----------------------------------------------------------------------
 -- Write .pot file
 -----------------------------------------------------------------------
-local f = io.open(output_file, "w")
+local f = io.open(output_file, "wb")
 
 f:write(table.concat({
     "# This file was auto-generated, DO NOT modify it directly",
