@@ -260,14 +260,17 @@ static std::string UnescapePOString(const std::string &s) {
                 case 'n': { out += '\n'; ++i; break; }
                 case 'r': { out += '\r'; ++i; break; }
                 case 't': { out += '\t'; ++i; break; }
-                case '\\': { out += '\\'; ++i; break; }
+                case '\\': {
+					if(i<end - 1 && s[i+1] == 'x') {
+						i+=2;
+						unsigned int val = ParseHex(s, i, 2);
+						out += static_cast<char>(val);
+						break;
+					} else {
+						out += '\\'; ++i; break; 
+					}
+				}
                 case '"': { out += '"'; ++i; break; }
-                case 'x': {
-                    ++i;
-                    unsigned int val = ParseHex(s, i, 2);
-                    out += static_cast<char>(val);
-                    break;
-                }
                 case 'u': {
                     ++i;
                     unsigned int val = ParseHex(s, i, 4);
