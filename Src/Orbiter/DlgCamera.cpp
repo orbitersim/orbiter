@@ -58,23 +58,31 @@ void DlgCamera::DrawControl() {
     ImGui::BeginChild("ChildL", ImVec2(250, 0), window_flags);
         ImGui::SeparatorText(_("Camera mode"));
 
+		// TRANSLATORS: Camera mode
 		const char *cameraMode = _("Internal");
 		if (extcam) {
 			switch (extmode) {
 			case CAMERA_TARGETRELATIVE:
+				// TRANSLATORS: Camera mode
 				cameraMode = _("Target Relative"); break;
 			case CAMERA_ABSDIRECTION:
+				// TRANSLATORS: Camera mode
 				cameraMode = _("Absolute Direction"); break;
 			case CAMERA_GLOBALFRAME:
+				// TRANSLATORS: Camera mode
 				cameraMode = _("Global Frame"); break;
 			case CAMERA_TARGETTOOBJECT:
+				// TRANSLATORS: Camera mode
 				cameraMode = _("Target Object"); break;
 			case CAMERA_TARGETFROMOBJECT:
+				// TRANSLATORS: Camera mode
 				cameraMode = _("Target from Object"); break;
 			case CAMERA_GROUNDOBSERVER:
 				if (ground_lock) {
+					// TRANSLATORS: Camera mode
 					cameraMode = _("Ground Observer (locked)"); break;
 				} else {
+					// TRANSLATORS: Camera mode
 					cameraMode = _("Ground Observer"); break;
 				}
 				break;
@@ -124,6 +132,7 @@ void DlgCamera::DrawControl() {
 		pos.x = 35;
 		pos.y = 155;
 		ImGui::SetCursorPos(pos); 
+		// TRANSLATORS: Reset cockpit to forward direction
 		if(ImGui::Button(_("Forward"))) {
 			g_camera->ResetCockpitDir();
 		}
@@ -229,6 +238,7 @@ void DlgCamera::DrawTrack() {
     ImGuiWindowFlags window_flags = ImGuiChildFlags_ResizeX;
     ImGui::BeginChild("ChildL", ImVec2(250, 0), window_flags);
     {
+		// TRANSLATORS: Camera moveable modes
         ImGui::SeparatorText(_("Moveable modes"));
         ImVec2 button_sz(ImVec2(ImGui::GetContentRegionAvail().x, 20));
 
@@ -245,6 +255,7 @@ void DlgCamera::DrawTrack() {
     ImGui::EndChild();
     ImGui::SameLine();
     ImGui::BeginChild("ChildR");
+		// TRANSLATORS: Camera fixed modes
         ImGui::SeparatorText(_("Fixed modes"));
         ImVec2 button_sz(ImVec2(ImGui::GetContentRegionAvail().x, 20));
 
@@ -341,8 +352,10 @@ void DlgCamera::DrawGround() {
         ImGui::InputText(_("Latitude"),  latitude,  64, ImGuiInputTextFlags_CharsDecimal);
         ImGui::InputText(_("Altitude"),  altitude,  64, ImGuiInputTextFlags_CharsDecimal);
 
-        ImGui::InputText(_("Follow Terrain"),  followterrain,  64, ImGuiInputTextFlags_CharsDecimal);
+		// TRANSLATORS: Camera follows terrain at a set altitude above ground
+        ImGui::InputText(_("Follow Terrain"), followterrain,  64, ImGuiInputTextFlags_CharsDecimal);
         
+		// TRANSLATORS: Current position
         if(ImGui::Button(_("Current"), button_sz)) {
             const Planet *planet = g_psys->GetPlanet (m_SitePlanet.c_str());
             if(!planet) {
@@ -432,15 +445,19 @@ void DlgCamera::DrawPreset() {
     ImGui::SameLine();
     ImGui::BeginChild("ChildR");
         ImVec2 button_sz(ImVec2(ImGui::GetContentRegionAvail().x, 20));
+		// TRANSLATORS: Add preset
         if(ImGui::Button(_("Add"), button_sz)) {
             g_camera->AddPreset();
         }
+		// TRANSLATORS: Delete preset
         if(ImGui::Button(_("Delete"), button_sz)) {
             g_camera->DelPreset(m_SelectedPreset);
         }
+		// TRANSLATORS: Clear preset
         if(ImGui::Button(_("Clear"), button_sz)) {
             g_camera->ClearPresets();
         }
+		// TRANSLATORS: Recall preset
         if(ImGui::Button(_("Recall"), button_sz)) {
             g_camera->RecallPreset (m_SelectedPreset);
         }

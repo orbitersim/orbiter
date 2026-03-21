@@ -62,6 +62,7 @@ void DlgMenuCfg::OnDraw()
 			ImGui::PopID();
 
 			ImGui::SeparatorText(_("FPS info bar"));
+			// TRANSLATORS: FPS info bar position
 			const char *fpsmode[]={_("None"), _("On the left"), _("On the right")};
 			ImGui::Combo("##FPSMode", &prm.FPS, fpsmode, IM_ARRAYSIZE(fpsmode));
 

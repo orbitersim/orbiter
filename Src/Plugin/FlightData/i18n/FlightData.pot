@@ -198,29 +198,30 @@ msgctxt "FlightData"
 msgid "Sampling period"
 msgstr ""
 
-#: C:/github/openorbiter/Src/Plugin/FlightData/FlightData.cpp:318
+#: C:/github/openorbiter/Src/Plugin/FlightData/FlightData.cpp:319
+#. Unicode escape sequence for icon
 msgctxt "FlightData"
 msgid "\\xef\\x84\\xad Reset"
 msgstr ""
 
-#: C:/github/openorbiter/Src/Plugin/FlightData/FlightData.cpp:325
+#: C:/github/openorbiter/Src/Plugin/FlightData/FlightData.cpp:326
 #. Combox box for filtering graphs
 msgctxt "FlightData"
 msgid "Graphs"
 msgstr ""
 
-#: C:/github/openorbiter/Src/Plugin/FlightData/FlightData.cpp:336
+#: C:/github/openorbiter/Src/Plugin/FlightData/FlightData.cpp:337
 msgctxt "FlightData"
 msgid "Save to file"
 msgstr ""
 
-#: C:/github/openorbiter/Src/Plugin/FlightData/FlightData.cpp:343
+#: C:/github/openorbiter/Src/Plugin/FlightData/FlightData.cpp:344
 #. Unicode escape sequence for icon
 msgctxt "FlightData"
 msgid "\\xef\\x81\\x8b Start"
 msgstr ""
 
-#: C:/github/openorbiter/Src/Plugin/FlightData/FlightData.cpp:343
+#: C:/github/openorbiter/Src/Plugin/FlightData/FlightData.cpp:344
 #. Unicode escape sequence for icon
 msgctxt "FlightData"
 msgid "\\xef\\x81\\x8d Stop"

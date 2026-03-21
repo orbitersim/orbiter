@@ -441,24 +441,28 @@ void DlgInfo::DrawInfoVessel(Vessel *vessel) {
                     ImGui::TableSetColumnIndex(0);
                     ImGui::TextUnformatted(_("Update mode"));
                     ImGui::TableSetColumnIndex(1);
+					// TRANSLATORS: State propagation mode
                     ImGui::TextUnformatted(_("IDLE (landed)"));
             } else if (vessel->isAttached()) {
                 ImGui::TableNextRow();
                     ImGui::TableSetColumnIndex(0);
                     ImGui::TextUnformatted(_("Update mode"));
                     ImGui::TableSetColumnIndex(1);
+					// TRANSLATORS: State propagation mode
                     ImGui::TextUnformatted(_("PASSIVE (attached)"));
             } else {
                 ImGui::TableNextRow();
                     ImGui::TableSetColumnIndex(0);
                     ImGui::TextUnformatted(_("Update mode"));
                     ImGui::TableSetColumnIndex(1);
+					// TRANSLATORS: State propagation mode
                     ImGui::TextUnformatted(_("ACTIVE (dynamic)"));
 
                 ImGui::TableNextRow();
                     ImGui::TableSetColumnIndex(0);
                     ImGui::TextUnformatted(_("State Propagator"));
                     ImGui::TableSetColumnIndex(1);
+					// TRANSLATORS: State propagator
                     ImGui::TextUnformatted(vessel->isOrbitStabilised() ? _("stabilised") : vessel->CurPropagatorStr());
 
                 ImGui::TableNextRow();
@@ -512,6 +516,7 @@ void DlgInfo::DrawInfoCelestialBody(CelestialBody *cbody) {
 
             ImGui::TableNextRow();
                 ImGui::TableSetColumnIndex(0);
+				// TRANSLATORS: Central body
                 ImGui::TextUnformatted(_("Primary"));
                 ImGui::TableSetColumnIndex(1);
                 ImGui::TextUnformatted(cbody->ElRef() ? _name(cbody->ElRef()->Name()) : _("N/A"));
@@ -586,8 +591,10 @@ void DlgInfo::DrawInfoCelestialBody(CelestialBody *cbody) {
                 ImGui::TextUnformatted(_("Atmosphere"));
                 ImGui::TableSetColumnIndex(1);
                 if(planet && planet->AtmParams()) {
+					// TRANSLATORS: has an atmosphere (yes/no)
                     ImGui::TextUnformatted(_("Yes"));
                 } else {
+					// TRANSLATORS: has an atmosphere (yes/no)
                     ImGui::TextUnformatted(_("No"));
                 }
 
@@ -601,6 +608,7 @@ void DlgInfo::DrawInfoCelestialBody(CelestialBody *cbody) {
         {
             char cbuf[128];
             const ATMCONST *ap = planet->AtmParams();
+			// TRANSLATORS: atmospheric model
             strcpy (cbuf, _("Generic"));
             if (cb && cb->Version() >= 2) {
                 CELBODY2 *cb2 = (CELBODY2*)cb;
@@ -759,6 +767,7 @@ void DlgInfo::DrawInfoCelestialBody(CelestialBody *cbody) {
             if (cbody->canDynamicPosVel()) {
                 ImGui::TableNextRow();
                     ImGui::TableSetColumnIndex(0);
+					// TRANSLATORS: State propagation mode
                     ImGui::TextUnformatted(_("Mode"));
                     ImGui::TableSetColumnIndex(1);
                     ImGui::TextUnformatted(_("Numerical"));
@@ -781,6 +790,7 @@ void DlgInfo::DrawInfoCelestialBody(CelestialBody *cbody) {
             } else {
                 ImGui::TableNextRow();
                     ImGui::TableSetColumnIndex(0);
+					// TRANSLATORS: State propagation mode
                     ImGui::TextUnformatted(_("Mode"));
                     ImGui::TableSetColumnIndex(1);
                     ImGui::Text(_("Analytic (%s)"), cb ? _("from module") : _("2-body"));
@@ -829,6 +839,7 @@ void DlgInfo::DrawInfoBase(Base *base) {
         if(ImGui::BeginAnimatedCollapsingHeader(_("Landing Pads"), ImGuiTreeNodeFlags_DefaultOpen)) {
             if (ImGui::BeginTable("table Landing Pads", 2, flags))
             {
+				// TRANSLATORS: Landing pad availability
                 const char *c, *statusstr[3] = {_("free"), "", _("reserved")};
                 for(int i=0;i<base->nPad();i++) {
                     char cbuf[256];

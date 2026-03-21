@@ -740,6 +740,7 @@ bool Instrument_Map::ClbkSubmn_Target (Select *menu, int item, char *str, void *
 		menu->Append (_("Spaceports"), ITEM_SUBMENU | ITEM_NOHILIGHT);
 		menu->Append (_("Spacecrafts"), ITEM_SUBMENU | ITEM_NOHILIGHT);
 		menu->Append (_("Moons"), ITEM_SUBMENU | ITEM_NOHILIGHT);
+		// TRANSLATORS: Unselect target
 		menu->Append (_("[none]"));
 		return true;
 	} else {    // submenu

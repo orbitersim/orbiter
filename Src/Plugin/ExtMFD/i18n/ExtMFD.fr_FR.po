@@ -51,7 +51,7 @@ msgstr "Verrouiller le rapport d’aspect"
 #: C:/github/openorbiter/Src/Plugin/ExtMFD/MFDWindow.cpp:97
 msgctxt "External MFD"
 msgid "Unlock aspect ratio"
-msgstr "Deverrouiller le rapport d’aspect"
+msgstr "Déverrouiller le rapport d’aspect"
 
 #: C:/github/openorbiter/Src/Plugin/ExtMFD/MFDWindow.cpp:192
 msgctxt "External MFD"

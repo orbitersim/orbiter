@@ -315,6 +315,7 @@ namespace oapi {
 
 			// reset
 			ImGui::SameLine();
+			// TRANSLATORS: Unicode escape sequence for icon
 			if(ImGui::Button(_("\xef\x84\xad Reset"))) {
 				ResetData();
 			}

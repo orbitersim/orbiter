@@ -132,8 +132,10 @@ void DlgOptions::DrawInstrument()
 	ImGui::SeparatorText(_("Multi-functional displays"));
 	if(ImGui::InputDoubleEx(_("MFD refresh interval [s]"), &logic.InstrUpdDT, 0.01, 2.0, 0.1, 0.5, "%.1f"))
 		g_pOrbiter->OnOptionChanged(OPTCAT_INSTRUMENT, OPTITEM_INSTRUMENT_MFDUPDATEINTERVAL);
+	// TRANSLATORS: Glass cockpit == generic cockpit
 	if(ImGui::InputIntEx(_("Glass cockpit MFD size"), &logic.MFDSize, 1, 10))
 		g_pOrbiter->OnOptionChanged(OPTCAT_INSTRUMENT, OPTITEM_INSTRUMENT_MFDGENERICSIZE);
+	// TRANSLATORS: Glass cockpit == generic cockpit
 	if(ImGui::Checkbox(_("Transparent glass cockpit MFD"), &logic.bMfdTransparent))
 		g_pOrbiter->OnOptionChanged(OPTCAT_INSTRUMENT, OPTITEM_INSTRUMENT_MFDGENERICTRANSP);
 
@@ -185,6 +187,7 @@ void DlgOptions::DrawJoystick()
 	g_pOrbiter->GetDInput()->GetJoysticks(&joylist, &ndev);
 	DWORD &jidx = g_pOrbiter->Cfg()->CfgJoystickPrm.Joy_idx;
 
+	// TRANSLATORS: joystick selection
 	const char *preview = _("<Disabled>");
 	if(jidx > 0 && jidx <= ndev) {
 		preview = joylist[jidx - 1].tszProductName;
@@ -233,9 +236,12 @@ void DlgOptions::DrawJoystick()
 		}
 		ImGui::Checkbox(_("Ignore throttle setting on launch"), &g_pOrbiter->Cfg()->CfgJoystickPrm.bThrottleIgnore);
 
+		// TRANSLATORS: joystick configuration
 		ImGui::SeparatorText(_("Calibration"));
+		// TRANSLATORS: joystick configuration
 		if(ImGui::SliderInt(_("Saturation"), &g_pOrbiter->Cfg()->CfgJoystickPrm.ThrottleSaturation, 0, 10000))
 			g_pOrbiter->OnOptionChanged(OPTCAT_JOYSTICK, OPTITEM_JOYSTICK_PARAM);
+		// TRANSLATORS: joystick configuration
 		if(ImGui::SliderInt(_("Deadzone"), &g_pOrbiter->Cfg()->CfgJoystickPrm.Deadzone, 0, 10000))
 			g_pOrbiter->OnOptionChanged(OPTCAT_JOYSTICK, OPTITEM_JOYSTICK_PARAM);
 
@@ -418,6 +424,7 @@ void DlgOptions::DrawLabels()
 		ImGui::SameLine();
 		ImGui::BeginChild("##right");
 			ImGui::SeparatorText(_("Surface features"));
+			// TRANSLATORS: Enable surface features checkbox
 			changed |= ImGui::CheckboxFlags(_("Features"), &prm.flagMarkers, MKR_LMARK);
 			ImGui::BeginDisabled(!(prm.flagMarkers & MKR_LMARK));
 				if(ImGui::BeginAnimatedCombo("##featuretarget", featuretarget.c_str(), ImGuiComboFlags_HeightLarge)) {

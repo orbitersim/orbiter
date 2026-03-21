@@ -28,7 +28,14 @@ DlgFocus::DlgFocus() : ImGuiDialog(ICON_FA_ROCKET, _("Orbiter: Select spacecraft
 
 void DlgFocus::OnDraw() {
     const char *tabs[] = {
-        _("All"), _("Nearby"), _("Location"), _("Class")
+		// TRANSLATORS: Tab for all vessels
+        _("All"),
+		// TRANSLATORS: Tab for nearby vessels
+		_("Nearby"),
+		// TRANSLATORS: Tab for vessels sorted by location
+		_("Location"),
+		// TRANSLATORS: Tab for vessels sorted by class
+		_("Class")
     };
 
     void (DlgFocus::* func[])() = {
@@ -74,12 +81,15 @@ void DlgFocus::DrawAll() {
     ImGui::SeparatorText(_("Selected target"));
     ImGui::TextUnformatted(m_SelectedShip.c_str());
     ImVec2 button_sz(ImVec2(ImGui::GetContentRegionAvail().x, 20));
+	// TRANSLATORS: Set focus on vessel
     if(ImGui::Button(_("Select"), button_sz)) {
         Vessel *vessel = g_psys->GetVessel (m_SelectedShip.c_str(), true);
         if (vessel) {
             g_pOrbiter->SetFocusObject (vessel);
         }
     }
+
+	// TRANSLATORS: Set focus on previous vessel
     if(ImGui::Button(_("Previous"), button_sz)) {
         if (g_pfocusobj) {
             g_pOrbiter->SetFocusObject (g_pfocusobj);

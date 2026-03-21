@@ -1012,6 +1012,7 @@ namespace ImGui {
 
 	DLLEXPORT bool SliderEnum(const char *label, int *v, const char *values[], int nvalues)
 	{
+		// TRANSLATORS: fallback for unknown enum in slider
         const char* elem_name = (*v >= 0 && *v < nvalues) ? values[*v] : _("Unknown");
         return ImGui::SliderInt(label, v, 0, nvalues - 1, elem_name);
 	}

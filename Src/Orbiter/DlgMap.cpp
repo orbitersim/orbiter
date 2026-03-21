@@ -321,8 +321,10 @@ void DlgMap::DrawMenu() {
 
         ImGui::Text(_("Vessels"));
         int vesselmode = (df & DISP_VESSEL ? df & DISP_FOCUSONLY ? 1:0:2);
+		// TRANSLATORS: Vessel selection
         ImGui::RadioButton(_("All"), &vesselmode, 0); ImGui::SameLine();
         ImGui::RadioButton(_("Focus Only"), &vesselmode, 1); ImGui::SameLine();
+		// TRANSLATORS: Vessel selection
         ImGui::RadioButton(_("None"), &vesselmode, 2);
         ImGui::Separator();
         int vmode = (vesselmode==1 ? DISP_VESSEL | DISP_FOCUSONLY : vesselmode==2 ? 0 : DISP_VESSEL);
@@ -356,8 +358,10 @@ void DlgMap::DrawMenu() {
         if (ImGui::BeginTable("table1", 2, ImGuiTableFlags_SizingStretchSame)) {
             ImGui::TableNextRow();
             ImGui::TableSetColumnIndex(0);
+			// TRANSLATORS: Terminator line
             ImGui::CheckboxFlags(_("Line"), &df, DISP_TERMINATOR_LINE);
             ImGui::TableSetColumnIndex(1);
+			// TRANSLATORS: Shaded terminator (night/day)
             ImGui::CheckboxFlags(_("Shaded"), &df, DISP_TERMINATOR_SHADE);
             ImGui::EndTable();
         }
@@ -388,6 +392,7 @@ void DlgMap::DrawMenu() {
         }
         ImGui::Separator();
 
+		// TRANSLATORS: Other option
         ImGui::Text(_("Other"));
         ImGui::CheckboxFlags(_("Natural Satellites"), &df, DISP_MOON);
 

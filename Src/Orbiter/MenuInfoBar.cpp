@@ -786,6 +786,7 @@ public:
 					case CAMERA_GLOBALFRAME:      ImGui::TextColored(white, _("Cam track (global frame)")); break;
 					case CAMERA_TARGETTOOBJECT:   ImGui::TextColored(white, _("Cam target to %s"), _name(g_camera->GetDirRef()->Name())); break;
 					case CAMERA_TARGETFROMOBJECT: ImGui::TextColored(white, _("Cam target from %s"), _name(g_camera->GetDirRef()->Name())); break;
+					// TRANSLATORS: Ground observer target mode
 					case CAMERA_GROUNDOBSERVER:   ImGui::TextColored(white, _("Cam ground %s"), g_camera->GroundObserver_TargetLock() ? _("(tgt-lock)") : _("(free)")); break;
 				}
 			} else {

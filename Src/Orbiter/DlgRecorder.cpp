@@ -25,6 +25,7 @@ DlgRecorder::DlgRecorder() : ImGuiDialog(ICON_FA_FILM, _("Orbiter: Flight record
 
 void DlgRecorder::OnDraw() {
     int status = g_pOrbiter->RecorderStatus();
+	// TRANSLATORS: Recording state
     static const char *statestr[3] = {_("Status: Normal"), _("Status: Recording"), _("Status: Playing")};
     ImGui::TextUnformatted(statestr[status]);
 
@@ -64,6 +65,7 @@ void DlgRecorder::DrawNormalRecording(bool recording) {
 
     ImGui::Separator();
     ImGui::InputText(_("Scenario"), m_ScenarioFile, sizeof(m_ScenarioFile));
+	// TRANSLATORS: Advanced options
     if(ImGui::BeginAnimatedCollapsingHeader(_("Advanced"))) {
         ImGui::Checkbox(_("Record Time Acceleration"), &g_pOrbiter->Cfg()->CfgRecPlayPrm.bRecordWarp);
         ImGui::Checkbox(_("Record Focus Events"), &g_pOrbiter->Cfg()->CfgRecPlayPrm.bRecordFocus);
