@@ -81,7 +81,7 @@ msgstr "Console Lua"
 #: C:/github/openorbiter/Src/Plugin/LuaConsole/LuaConsole.cpp:219
 msgctxt "LuaConsole"
 msgid "Open a Lua script interpreter window."
-msgstr "Ouvre une console Lua."
+msgstr "Ouvrir une console Lua."
 
 #. Name in menu bar
 #: C:/github/openorbiter/Src/Plugin/LuaConsole/LuaConsole.cpp:223

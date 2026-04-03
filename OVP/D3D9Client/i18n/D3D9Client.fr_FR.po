@@ -16,7 +16,7 @@ msgstr ""
 #: C:/github/openorbiter/OVP/D3D9Client/CSphereMgr.cpp:63
 msgctxt "D3D9Client"
 msgid "Loading Celestial Sphere..."
-msgstr "Sphère céleste..."
+msgstr "Voûte céleste..."
 
 #: C:/github/openorbiter/OVP/D3D9Client/D3D9Client.cpp:559
 msgctxt "D3D9Client"

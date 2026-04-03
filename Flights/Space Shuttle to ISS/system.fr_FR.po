@@ -15,7 +15,7 @@ msgstr ""
 #: C:/github/openorbiter/Flights/Space Shuttle to ISS/system.dat:4
 msgctxt "Flight"
 msgid "Please unpause the simulation (Ctrl-P) to play the tutorial."
-msgstr "Veuillez reprendre la simulation (Ctrl-P) pour lancer le tutoriel."
+msgstr "Veuillez démarrer la simulation (Ctrl-P) pour lancer le tutoriel."
 
 #: C:/github/openorbiter/Flights/Space Shuttle to ISS/system.dat:6
 msgctxt "Flight"
@@ -34,7 +34,7 @@ msgid ""
 "counting."
 msgstr ""
 "Atlantis est prête sur le pas de tir LC39B du Kennedy Space Center. T‑80 "
-"secondes et le compte à rebours continue."
+"secondes..."
 
 #: C:/github/openorbiter/Flights/Space Shuttle to ISS/system.dat:9
 msgctxt "Flight"
@@ -52,9 +52,8 @@ msgid ""
 "The left MFD has been set to the Shuttle ascent autopilot interface mode "
 "(AscentAP), where you can set the launch parameters."
 msgstr ""
-"Le MFD gauche a été réglé sur le mode interface du pilote automatique de "
-"montée de la navette (AscentAP), où vous pouvez définir les paramètres de "
-"lancement."
+"Le MFD gauche a été réglé sur l'interface du pilote automatique de montée de "
+"la navette (AscentAP), où vous pouvez définir les paramètres de lancement."
 
 #: C:/github/openorbiter/Flights/Space Shuttle to ISS/system.dat:14
 msgctxt "Flight"
@@ -113,13 +112,13 @@ msgid ""
 "Pressing the L button will initiate the launch sequence. (In this tutorial, "
 "this will be done automatically.)"
 msgstr ""
-"Appuyer sur le bouton L lancera la séquence de décollage. (Dans ce tutoriel, "
-"cela sera fait automatiquement.)"
+"Appuyez sur le bouton L pour lancer la séquence de décollage. (Dans ce "
+"tutoriel, cela sera fait automatiquement.)"
 
 #: C:/github/openorbiter/Flights/Space Shuttle to ISS/system.dat:24
 msgctxt "Flight"
 msgid "Space Shuttle main engine ignition!"
-msgstr "Mise à feu des moteurs principaux de la navette spatiale !"
+msgstr "Allumage des moteurs principaux de la navette spatiale !"
 
 #: C:/github/openorbiter/Flights/Space Shuttle to ISS/system.dat:25
 msgctxt "Flight"
@@ -128,7 +127,7 @@ msgid ""
 "Liftoff of Space Shuttle Atlantis on its mission to the International Space "
 "Station."
 msgstr ""
-"Mise à feu des moteurs principaux de la navette spatiale !    Mise à feu des "
+"Allumage des moteurs principaux de la navette spatiale !    Allumage des "
 "propulseurs d'appoint à poudre !    Décollage de la navette spatiale "
 "Atlantis pour sa mission vers la Station spatiale internationale."
 
@@ -157,9 +156,9 @@ msgid ""
 "Cape Canaveral, Florida, is just about to pass underneath the ISS's orbital "
 "plane (symbolised by the yellow line)."
 msgstr ""
-"Sur l’affichage de la carte, on peut voir que le site de lancement de la "
-"navette à Cape Canaveral, Floride, est sur le point de passer sous le plan "
-"orbital de l’ISS (symbolisé par la ligne jaune)."
+"Sur le MFD Map, on peut voir que le site de lancement de la navette à Cape "
+"Canaveral, Floride, est sur le point de passer sous le plan orbital de l’ISS "
+"(ligne jaune)."
 
 #: C:/github/openorbiter/Flights/Space Shuttle to ISS/system.dat:34
 msgctxt "Flight"
@@ -169,7 +168,7 @@ msgid ""
 "later on."
 msgstr ""
 "Ce moment marque la fenêtre de lancement — il permet à la navette de "
-"décoller dans le même plan orbital sans avoir à effectuer par la suite des "
+"décoller dans le même plan orbital sans nécessiter par la suite des "
 "corrections de plan coûteuses en carburant."
 
 #: C:/github/openorbiter/Flights/Space Shuttle to ISS/system.dat:35
@@ -181,11 +180,11 @@ msgid ""
 "orbital velocity, meaning that the ISS will continue to gain on the shuttle "
 "position."
 msgstr ""
-"En fait, si vous regardez attentivement, le plan orbital de l’ISS se situe "
-"encore légèrement à l’est de la position de lancement. Cela s’explique par "
-"le fait que, pendant la montée, la composante est de la vitesse tangentielle "
-"de la navette est encore inférieure à sa vitesse orbitale finale, ce qui "
-"signifie que l’ISS continuera de gagner sur la position de la navette."
+"En fait, si vous regardez bien, le plan orbital de l’ISS est encore "
+"légèrement à l’Est de la position de lancement. Cela s’explique par le fait "
+"que, pendant la montée, la composante tangentielle Est de la vitesse de la "
+"navette est encore inférieure à sa vitesse orbitale finale, ce qui signifie "
+"que l’ISS prend de l'avance sur la navette."
 
 #: C:/github/openorbiter/Flights/Space Shuttle to ISS/system.dat:36
 msgctxt "Flight"
@@ -195,9 +194,8 @@ msgid ""
 "slowly rotating to match the ISS's plane."
 msgstr ""
 "Remarquez comment, à mesure que la navette effectue son basculement et "
-"commence à accumuler une composante de vitesse horizontale, son plan orbital "
-"(indiqué par la ligne verte) tourne lentement pour se caler sur celui de "
-"l’ISS."
+"accumule une composante de vitesse horizontale, son plan orbital (ligne "
+"verte) tourne lentement pour se caler sur celui de l’ISS."
 
 #: C:/github/openorbiter/Flights/Space Shuttle to ISS/system.dat:40
 msgctxt "Flight"
@@ -229,9 +227,9 @@ msgid ""
 "and PG- buttons pages through the available display pages (only the first "
 "two are currently active)."
 msgstr ""
-"Il est temps de mentionner une autre fonction de l'affichage AscentAP : en "
-"cliquant sur les boutons PG+ et PG-, vous parcourez les pages d’affichage "
-"disponibles (seules les deux premières sont actuellement actives)."
+"Il est temps de mentionner une autre fonction du MFD AscentAP : en appuyant "
+"sur PG+ et PG-, vous parcourez les pages d’affichage disponibles (seules les "
+"deux premières sont actuellement actives)."
 
 #: C:/github/openorbiter/Flights/Space Shuttle to ISS/system.dat:47
 msgctxt "Flight"
@@ -254,8 +252,7 @@ msgid ""
 "into the Atlantic off the Florida coast."
 msgstr ""
 "Séparation des propulseurs d’appoint (SRB) à MET = 126 s !  Les propulseurs "
-"solides épuisés retombent dans l’Atlantique au large de la côte de la "
-"Floride."
+"solides vides retombent dans l’Atlantique au large de la côte de la Floride."
 
 #: C:/github/openorbiter/Flights/Space Shuttle to ISS/system.dat:55
 msgctxt "Flight"
@@ -263,8 +260,8 @@ msgid ""
 "The ascent is now powered with the Shuttle's main engines, fed from the "
 "external tank."
 msgstr ""
-"La montée est maintenant propulsée par les moteurs principaux de la navette, "
-"alimentés par le réservoir externe."
+"La montée est maintenant assurée par les moteurs principaux seuls de la "
+"navette, alimentés par le réservoir externe."
 
 #: C:/github/openorbiter/Flights/Space Shuttle to ISS/system.dat:58
 msgctxt "Flight"
@@ -278,7 +275,7 @@ msgstr ""
 #: C:/github/openorbiter/Flights/Space Shuttle to ISS/system.dat:62
 msgctxt "Flight"
 msgid "Main engine cutoff."
-msgstr "Arrêt des moteurs principaux."
+msgstr "Extinction des moteurs principaux."
 
 #: C:/github/openorbiter/Flights/Space Shuttle to ISS/system.dat:63
 msgctxt "Flight"
@@ -307,8 +304,8 @@ msgid ""
 "will now coast to apogee, where the second OMS burn will take place."
 msgstr ""
 "Arrêt de l’OMS. L’altitude d’apogée est maintenant de  350 km comme prévu. "
-"L’orbiteur va maintenant dériver jusqu’à l’apogée, où aura lieu la deuxième "
-"injection OMS."
+"L’orbiteur va maintenant rejoindre l’apogée où aura lieu la deuxième "
+"manœuvre, OMS-2."
 
 #: C:/github/openorbiter/Flights/Space Shuttle to ISS/system.dat:70
 msgctxt "Flight"
@@ -318,7 +315,7 @@ msgstr "Les portes de la soute sont ouvertes pour exposer les radiateurs."
 #: C:/github/openorbiter/Flights/Space Shuttle to ISS/system.dat:72
 msgctxt "Flight"
 msgid "Fast-forwarding to apogee ..."
-msgstr "Accélération jusqu’à l’apogée…"
+msgstr "Avance rapide jusqu’à l’apogée…"
 
 #: C:/github/openorbiter/Flights/Space Shuttle to ISS/system.dat:75
 msgctxt "Flight"
@@ -327,7 +324,7 @@ msgid ""
 "and circularise the orbit."
 msgstr ""
 "À l’approche de l’apogée, les moteurs OMS s’allument pour l’injection OMS‑2, "
-"afin d’élever le périgée et de circulariser l’orbite."
+"afin d’élever le périgée et circulariser l’orbite."
 
 #: C:/github/openorbiter/Flights/Space Shuttle to ISS/system.dat:77
 msgctxt "Flight"
@@ -335,7 +332,7 @@ msgid ""
 "This is the end of the OMS-2 burn. The orbiter is now in an approximately "
 "circular orbit at altitude 350km, coplanar with that of the ISS."
 msgstr ""
-"Fin de l’injection OMS‑2. L’orbiteur est maintenant en orbite "
+"Fin de la manœuvre OMS‑2. L’orbiteur est maintenant en orbite "
 "approximativement circulaire à une altitude de 350 km, coplanaire avec celle "
 "de l’ISS."
 
@@ -345,9 +342,9 @@ msgid ""
 "This also concludes the control of the ascent autopilot, which has now "
 "deactivated itself. The following maneuvers are planned and executed by hand."
 msgstr ""
-"Cela marque également la fin du contrôle par le pilote automatique de "
-"montée, qui s’est maintenant désactivé. Les manœuvres suivantes seront "
-"planifiées et exécutées manuellement."
+"Cela marque également la fin du pilote automatique de montée qui s’est "
+"maintenant désactivé. Les manœuvres suivantes seront planifiées et exécutées "
+"manuellement."
 
 #: C:/github/openorbiter/Flights/Space Shuttle to ISS/system.dat:82
 msgctxt "Flight"
@@ -363,8 +360,8 @@ msgid ""
 "First, switch the head-up display (HUD) to Orbit mode, by pressing \"H\" "
 "twice."
 msgstr ""
-"Tout d’abord, basculez l'affichage tête haute (HUD) en mode Orbite en "
-"appuyant deux fois sur la touche « H »."
+"Tout d’abord, basculez l'affichage tête haute (HUD) en \"Orbit\" en appuyant "
+"deux fois sur la touche « H »."
 
 #: C:/github/openorbiter/Flights/Space Shuttle to ISS/system.dat:84
 msgctxt "Flight"
@@ -375,7 +372,7 @@ msgid ""
 msgstr ""
 "En mode orbital, le HUD affiche une échelle de tangage par rapport au plan "
 "orbital, ainsi qu’une ruban de lacet indiquant l’angle par rapport au "
-"vecteur vitesse orbitale (la direction prograde)."
+"vecteur vitesse (la direction prograde)."
 
 #: C:/github/openorbiter/Flights/Space Shuttle to ISS/system.dat:85
 msgctxt "Flight"
@@ -392,9 +389,9 @@ msgid ""
 "orbital plane, executed at the intersection (node) of current and target "
 "planes."
 msgstr ""
-"Cela nécessitera un changement de vitesse (Delta-V) normal (perpendiculaire) "
-"au plan orbital, à effectuer au nœud où le plan actuel et le plan cible se "
-"croisent."
+"Cela nécessitera un changement de vitesse (Delta-V) \"normal\" "
+"(perpendiculaire) au plan orbital, à effectuer au croisement du plan actuel "
+"et le plan cible (nœud)."
 
 #: C:/github/openorbiter/Flights/Space Shuttle to ISS/system.dat:89
 msgctxt "Flight"
@@ -402,8 +399,8 @@ msgid ""
 "This type of plane change is assisted by the \"Align planes\" MFD mode.    "
 "On the left MFD, Click <SEL>, <Align planes>."
 msgstr ""
-"Ce type de correction de plan est assisté par le mode MFD « Align planes ». "
-"Sur l'affichage gauche, cliquez sur <SEL>, puis <Align planes>."
+"Ce type de correction de plan est assisté par le MFD \"Align planes\". Sur "
+"le MFD gauche, appuyez sur <SEL>, puis <Align planes>."
 
 #: C:/github/openorbiter/Flights/Space Shuttle to ISS/system.dat:90
 msgctxt "Flight"
@@ -421,9 +418,9 @@ msgid ""
 "descending (DN) and ascending node (AN) defining the line of nodes (the "
 "yellow line) with the target plane."
 msgstr ""
-"L’affichage montre la position orbitale actuelle (P) par rapport au nœud "
-"descendant (DN) et au nœud ascendant (AN) définissant la ligne des nœuds (la "
-"ligne jaune) avec le plan cible."
+"Le MFD montre la position orbitale actuelle (P) par rapport au nœud "
+"descendant (DN) et au nœud ascendant (AN) définissant la ligne des nœuds "
+"(ligne jaune) par rapport au plan cible."
 
 #: C:/github/openorbiter/Flights/Space Shuttle to ISS/system.dat:92
 msgctxt "Flight"
@@ -464,8 +461,8 @@ msgid ""
 "The \"Attitude RCS\" MFD mode can assist here.    On the right MFD, click "
 "<SEL>, <Attitude RCS>."
 msgstr ""
-"Le mode MFD « Attitude RCS » peut aider ici. Sur l'affichage de droite, "
-"cliquez sur <SEL>, puis <Attitude RCS>."
+"Le MFD « Attitude RCS » peut aider ici. Sur le MFD droit, appuyez sur <SEL>, "
+"puis <Attitude RCS>."
 
 #: C:/github/openorbiter/Flights/Space Shuttle to ISS/system.dat:97
 msgctxt "Flight"
@@ -473,8 +470,8 @@ msgid ""
 "Click <SET>, followed by <BAS>, to switch the base attitude mode to "
 "\"Normal\"."
 msgstr ""
-"Cliquez sur <SET>, puis sur <BAS>, pour passer le mode d’attitude de "
-"référence en « Normal »."
+"Appuyez sur <SET>, puis sur <BAS>, pour passer la base de référence sur "
+"« Normal »."
 
 #: C:/github/openorbiter/Flights/Space Shuttle to ISS/system.dat:98
 msgctxt "Flight"
@@ -482,8 +479,8 @@ msgid ""
 "Click <+R> to add a pitch rotation to the base mode. Now click <+V> "
 "repeatedly until the rotation angle is set at +15 degrees."
 msgstr ""
-"Cliquez sur <+R> pour ajouter une rotation de tangage au mode de référence. "
-"Cliquez ensuite plusieurs fois sur <+V> jusqu’à ce que l’angle de rotation "
+"Appuyez sur <+R> pour ajouter une rotation de tangage à la base de "
+"référence. Puis plusieurs fois sur <+V> jusqu’à ce que l’angle de rotation "
 "soit réglé à +15 degrés."
 
 #: C:/github/openorbiter/Flights/Space Shuttle to ISS/system.dat:99
@@ -492,14 +489,13 @@ msgid ""
 "Clicking <GO> will activate the commanded attitude mode. (In this tutorial, "
 "this is done automatically)."
 msgstr ""
-"Cliquer sur <GO> activera le mode d’attitude commandé. (Dans ce tutoriel, "
-"cela se fait automatiquement)."
+"Appuyez sur <GO> pour activer (dans ce tutoriel, cela se fait "
+"automatiquement)."
 
 #: C:/github/openorbiter/Flights/Space Shuttle to ISS/system.dat:102
 msgctxt "Flight"
 msgid "Rotating the shuttle normal to the orbital plane (+15 deg)."
-msgstr ""
-"Rotation de la navette pour être normale au plan orbital  (+15 degrés)."
+msgstr "Rotation de la navette pour être normale au plan orbital  +15 degrés."
 
 #: C:/github/openorbiter/Flights/Space Shuttle to ISS/system.dat:103
 msgctxt "Flight"
@@ -518,7 +514,7 @@ msgstr ""
 #: ISS/system.dat:140
 msgctxt "Flight"
 msgid "OMS cutoff."
-msgstr "Extinction de l’OMS."
+msgstr "Coupure de l’OMS."
 
 #: C:/github/openorbiter/Flights/Space Shuttle to ISS/system.dat:110
 msgctxt "Flight"
@@ -558,7 +554,7 @@ msgid ""
 "trajectory."
 msgstr ""
 "Comme l’orbite actuelle est approximativement circulaire, le périgée n’est "
-"pas encore bien défini. La prochaine combustion peut donc être effectuée "
+"pas encore bien défini. La prochaine manœuvre peut donc être effectuée "
 "n’importe où le long de la trajectoire orbitale."
 
 #: C:/github/openorbiter/Flights/Space Shuttle to ISS/system.dat:115
@@ -569,20 +565,19 @@ msgid ""
 "place in daylight."
 msgstr ""
 "Cependant, nous allons retarder la poussée jusqu’à ce que nous sortions de "
-"l’ombre de la Terre. Cela garantira que la manœuvre de rendez-vous et "
-"d’amarrage pourra se dérouler en plein jour."
+"l’ombre de la Terre. Cela garantira que les manœuvres de rendez-vous et "
+"d’amarrage se dérouleront en plein jour."
 
 #: C:/github/openorbiter/Flights/Space Shuttle to ISS/system.dat:117
 msgctxt "Flight"
 msgid "Fast forwarding ..."
-msgstr "Accélération..."
+msgstr "Avance rapide..."
 
 #: C:/github/openorbiter/Flights/Space Shuttle to ISS/system.dat:121
 msgctxt "Flight"
 msgid "To time the prograde burn, switch the left MFD to Sync Orbit mode."
 msgstr ""
-"Pour planifier la poussée prograde, basculez l'affichage de gauche en mode "
-"Sync Orbit."
+"Pour planifier la poussée prograde, basculez le MFD gauche en Sync Orbit."
 
 #: C:/github/openorbiter/Flights/Space Shuttle to ISS/system.dat:122
 msgctxt "Flight"
@@ -590,8 +585,8 @@ msgid ""
 "To time the prograde burn, switch the left MFD to Sync Orbit mode.    Press "
 "<SEL>, <Sync Orbit>."
 msgstr ""
-"Pour planifier la poussée prograde, basculez l'affichage de gauche en mode "
-"Sync Orbit. Cliquez sur <SEL>, puis sur <Sync Orbit>."
+"Pour planifier la poussée prograde, basculez le MFD gauche en Sync Orbit. "
+"Appuyez sur <SEL>, puis sur <Sync Orbit>."
 
 #: C:/github/openorbiter/Flights/Space Shuttle to ISS/system.dat:123
 msgctxt "Flight"
@@ -617,7 +612,7 @@ msgid ""
 "the arrival time list to 15 orbits."
 msgstr ""
 "Enfin, appuyez sur <LEN>, tapez “15”, puis appuyez sur <Entrée>. Cela "
-"définit la longueur de la liste des temps d’arrivée à 15 orbites."
+"définit la limite de calcul des points d'arrivée à 15 orbites."
 
 #: C:/github/openorbiter/Flights/Space Shuttle to ISS/system.dat:128
 msgctxt "Flight"
@@ -626,12 +621,12 @@ msgid ""
 "AttitudeRCS MFD mode."
 msgstr ""
 "Orientation prograde +15° pour la prochaine poussée, à nouveau avec l’aide "
-"du mode Attitude RCS."
+"du MFD Attitude RCS."
 
 #: C:/github/openorbiter/Flights/Space Shuttle to ISS/system.dat:129
 msgctxt "Flight"
 msgid "OMS ignition for prograde burn."
-msgstr "Mise à feu de l’OMS pour la poussée prograde."
+msgstr "Allumage de l’OMS pour la poussée prograde."
 
 #: C:/github/openorbiter/Flights/Space Shuttle to ISS/system.dat:132
 msgctxt "Flight"
@@ -640,10 +635,9 @@ msgid ""
 "to rendezvous point of your spacecraft (Sh-ToR) and the target craft (Tg-"
 "ToR) for a sequence of orbits, where \"0\" refers to the current orbit."
 msgstr ""
-"La liste des temps d’arrivée sur le côté droit de l'affichage Sync Orbit "
-"affiche le temps jusqu’au point de rendez-vous de votre vaisseau (Sh‑ToR) et "
-"du vaisseau cible (Tg‑ToR) pour une série d’orbites, où “0” correspond à "
-"l’orbite actuelle."
+"La liste sur le côté droit du MFD Sync Orbit affiche le temps jusqu’au point "
+"de rendez-vous de votre vaisseau (Sh‑ToR) et du vaisseau cible (Tg‑ToR) pour "
+"une série d’orbites, où “0” correspond à l’orbite actuelle."
 
 #: C:/github/openorbiter/Flights/Space Shuttle to ISS/system.dat:133
 msgctxt "Flight"
@@ -725,5 +719,4 @@ msgstr ""
 #: C:/github/openorbiter/Flights/Space Shuttle to ISS/system.dat:147
 msgctxt "Flight"
 msgid "Switch the left MFD to Orbit mode:    Press <SEL>, <Orbit>."
-msgstr ""
-"Passez l'affichage de gauche en mode orbite :    Appuyer sur <SEL>, <Orbit>."
+msgstr "Passez le MFD gauche en Orbit :    Appuyer sur <SEL>, <Orbit>."

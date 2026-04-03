@@ -54,7 +54,7 @@ msgstr "Cible"
 #: C:/github/openorbiter/Src/Orbiter/DlgCamera.cpp:27
 msgctxt "Dialog Camera"
 msgid "Track"
-msgstr "Suivi"
+msgstr "Poursuite"
 
 #: C:/github/openorbiter/Src/Orbiter/DlgCamera.cpp:28
 msgctxt "Dialog Camera"
@@ -81,13 +81,13 @@ msgstr "Interne"
 #: C:/github/openorbiter/Src/Orbiter/DlgCamera.cpp:76
 msgctxt "Dialog Camera"
 msgid "Target Object"
-msgstr "Cibler l'objet"
+msgstr "Vers l'objet"
 
 #. Camera mode
 #: C:/github/openorbiter/Src/Orbiter/DlgCamera.cpp:79
 msgctxt "Dialog Camera"
 msgid "Target from Object"
-msgstr "Cibler depuis l'objet"
+msgstr "Depuis l'objet"
 
 #. Camera mode
 #: C:/github/openorbiter/Src/Orbiter/DlgCamera.cpp:83
@@ -110,7 +110,7 @@ msgstr "Mode : %s"
 #: C:/github/openorbiter/Src/Orbiter/DlgCamera.cpp:136
 msgctxt "Dialog Camera"
 msgid "Forward"
-msgstr "Devant"
+msgstr "Vers l'avant"
 
 #: C:/github/openorbiter/Src/Orbiter/DlgCamera.cpp:142
 #: C:/github/openorbiter/Src/Orbiter/DlgCamera.cpp:144
@@ -121,7 +121,7 @@ msgstr "Angle de vue"
 #: C:/github/openorbiter/Src/Orbiter/DlgCamera.cpp:178
 msgctxt "Dialog Camera"
 msgid "Available targets"
-msgstr "Cibles disponibles"
+msgstr "Cibles possibles"
 
 #: C:/github/openorbiter/Src/Orbiter/DlgCamera.cpp:183
 #: C:/github/openorbiter/Src/Orbiter/DlgCamera.cpp:277
@@ -181,7 +181,7 @@ msgstr "Direction absolue"
 #: C:/github/openorbiter/Src/Orbiter/DlgCamera.cpp:73
 msgctxt "Dialog Camera"
 msgid "Global Frame"
-msgstr "Repère global"
+msgstr "Repère absolu"
 
 #. Camera fixed modes
 #: C:/github/openorbiter/Src/Orbiter/DlgCamera.cpp:259
@@ -228,7 +228,7 @@ msgstr "Altitude"
 #: C:/github/openorbiter/Src/Orbiter/DlgCamera.cpp:356
 msgctxt "Dialog Camera"
 msgid "Follow Terrain"
-msgstr "Altitude terrain"
+msgstr "Altitude constante"
 
 #. Current position
 #: C:/github/openorbiter/Src/Orbiter/DlgCamera.cpp:359
@@ -278,12 +278,12 @@ msgstr "Sauvegarde"
 #: C:/github/openorbiter/Src/Orbiter/DlgCapture.cpp:30
 msgctxt "Dialog Capture"
 msgid "To the clipboard"
-msgstr "Vers le presse-papier"
+msgstr "Vers presse-papier"
 
 #: C:/github/openorbiter/Src/Orbiter/DlgCapture.cpp:31
 msgctxt "Dialog Capture"
 msgid "To file"
-msgstr "Vers un fichier"
+msgstr "Vers fichier"
 
 #: C:/github/openorbiter/Src/Orbiter/DlgCapture.cpp:36
 msgctxt "Dialog Capture"
@@ -298,7 +298,7 @@ msgstr "Capturer une séquence"
 #: C:/github/openorbiter/Src/Orbiter/DlgCapture.cpp:49
 msgctxt "Dialog Capture"
 msgid "To directory"
-msgstr "Répertoire"
+msgstr "Vers répertoire"
 
 #: C:/github/openorbiter/Src/Orbiter/DlgCapture.cpp:50
 msgctxt "Dialog Capture"
@@ -355,19 +355,19 @@ msgstr "Tous"
 #: C:/github/openorbiter/Src/Orbiter/DlgFocus.cpp:34
 msgctxt "Dialog Focus"
 msgid "Nearby"
-msgstr "Par distance"
+msgstr "A proximité"
 
 #. Tab for vessels sorted by location
 #: C:/github/openorbiter/Src/Orbiter/DlgFocus.cpp:36
 msgctxt "Dialog Focus"
 msgid "Location"
-msgstr "Par emplacement"
+msgstr "Emplacements"
 
 #. Tab for vessels sorted by class
 #: C:/github/openorbiter/Src/Orbiter/DlgFocus.cpp:38
 msgctxt "Dialog Focus"
 msgid "Class"
-msgstr "Par classe"
+msgstr "Classes"
 
 #: C:/github/openorbiter/Src/Orbiter/DlgFocus.cpp:104
 #: C:/github/openorbiter/Src/Orbiter/DlgFocus.cpp:165
@@ -411,7 +411,7 @@ msgstr "Orbiter : Extensions"
 #: C:/github/openorbiter/Src/Orbiter/DlgHelp.cpp:32
 msgctxt "Dialog Help"
 msgid "Failed to open help"
-msgstr "Impossible d'ouvrir le fichier d'aide"
+msgstr "Impossible d'ouvrir l'aide"
 
 #: C:/github/openorbiter/Src/Orbiter/DlgInfo.cpp:24
 msgctxt "Dialog Info"
@@ -468,7 +468,7 @@ msgstr "Fréquence transpondeur"
 #: C:/github/openorbiter/Src/Orbiter/DlgInfo.cpp:581
 msgctxt "Dialog Info"
 msgid "N/A"
-msgstr "Non disponible"
+msgstr "Non applicable"
 
 #: C:/github/openorbiter/Src/Orbiter/DlgInfo.cpp:138
 #: C:/github/openorbiter/Src/Orbiter/DlgInfo.cpp:535
@@ -519,7 +519,7 @@ msgstr "Principal"
 #: C:/github/openorbiter/Src/Orbiter/DlgInfo.cpp:175
 msgctxt "Dialog Info"
 msgid "Retro"
-msgstr "Rétrofusée"
+msgstr "Rétropropulseurs"
 
 #: C:/github/openorbiter/Src/Orbiter/DlgInfo.cpp:197
 #: C:/github/openorbiter/Src/Orbiter/DlgInfo.cpp:654
@@ -763,7 +763,7 @@ msgstr "Sources gravitationnelles"
 #: C:/github/openorbiter/Src/Orbiter/DlgInfo.cpp:520
 msgctxt "Dialog Info"
 msgid "Primary"
-msgstr "Corps central"
+msgstr "Corps principal"
 
 #: C:/github/openorbiter/Src/Orbiter/DlgInfo.cpp:526
 msgctxt "Dialog Info"
@@ -862,7 +862,7 @@ msgstr "Coordonnées célestes géocentriques"
 #: C:/github/openorbiter/Src/Orbiter/DlgInfo.cpp:717
 msgctxt "Dialog Info"
 msgid "Right Ascension (RA)"
-msgstr "Ascension droite"
+msgstr "Ascension Droite"
 
 #: C:/github/openorbiter/Src/Orbiter/DlgInfo.cpp:724
 msgctxt "Dialog Info"
@@ -872,7 +872,7 @@ msgstr "Déclinaison"
 #: C:/github/openorbiter/Src/Orbiter/DlgInfo.cpp:734
 msgctxt "Dialog Info"
 msgid "Ecliptic position from primary"
-msgstr "Position écliptique par rapport au corps central"
+msgstr "Position dans l'écliptique centré sur corps principal"
 
 #: C:/github/openorbiter/Src/Orbiter/DlgInfo.cpp:744
 msgctxt "Dialog Info"
@@ -1226,7 +1226,7 @@ msgstr "Barres d'information"
 #: C:/github/openorbiter/Src/Orbiter/DlgMenuCfg.cpp:60
 msgctxt "Dialog MenuCfg"
 msgid "Always show warp factor"
-msgstr "Toujours montrer le facteur d'accélération"
+msgstr "Toujours montrer le facteur d'avance rapide"
 
 #: C:/github/openorbiter/Src/Orbiter/DlgMenuCfg.cpp:64
 msgctxt "Dialog MenuCfg"
@@ -1237,7 +1237,7 @@ msgstr "Images par seconde"
 #: C:/github/openorbiter/Src/Orbiter/DlgMenuCfg.cpp:66
 msgctxt "Dialog MenuCfg"
 msgid "None"
-msgstr "Nulle part"
+msgstr "Non affichées"
 
 #. FPS info bar position
 #: C:/github/openorbiter/Src/Orbiter/DlgMenuCfg.cpp:66
@@ -1295,7 +1295,7 @@ msgstr "Sélectionner..."
 #: C:/github/openorbiter/Src/Orbiter/DlgOptions.cpp:85
 msgctxt "Dialog Options"
 msgid "Instruments & panels"
-msgstr "Instruments & panneau d'affichage"
+msgstr "Instruments & panneaux"
 
 #: C:/github/openorbiter/Src/Orbiter/DlgOptions.cpp:87
 msgctxt "Dialog Options"
@@ -1320,7 +1320,7 @@ msgstr "      Étiquettes"
 #: C:/github/openorbiter/Src/Orbiter/DlgOptions.cpp:93
 msgctxt "Dialog Options"
 msgid "      Body forces"
-msgstr "      Vecteurs de force"
+msgstr "      Vecteurs des forces"
 
 #: C:/github/openorbiter/Src/Orbiter/DlgOptions.cpp:94
 msgctxt "Dialog Options"
@@ -1357,7 +1357,7 @@ msgstr "Taille des textures MFD"
 #: C:/github/openorbiter/Src/Orbiter/DlgOptions.cpp:153
 msgctxt "Dialog Options"
 msgid "Instrument panels"
-msgstr "Panneau 2D"
+msgstr "Panneaux 2D"
 
 #: C:/github/openorbiter/Src/Orbiter/DlgOptions.cpp:154
 msgctxt "Dialog Options"
@@ -1483,7 +1483,7 @@ msgstr "Ignorer la commande de gaz au lancement"
 #: C:/github/openorbiter/Src/Orbiter/DlgOptions.cpp:240
 msgctxt "Dialog Options"
 msgid "Calibration"
-msgstr "Calibration"
+msgstr "Etalonnage"
 
 #. joystick configuration
 #: C:/github/openorbiter/Src/Orbiter/DlgOptions.cpp:242
@@ -1501,22 +1501,22 @@ msgstr "Zone morte"
 #: C:/github/openorbiter/Src/Orbiter/DlgOptions.cpp:89
 msgctxt "Dialog Options"
 msgid "Celestial sphere"
-msgstr "Sphère céleste"
+msgstr "Voûte céleste"
 
 #: C:/github/openorbiter/Src/Orbiter/DlgOptions.cpp:254
 msgctxt "Dialog Options"
 msgid "Background stars: show as pixels"
-msgstr "Étoiles en arrière-plan : pixels"
+msgstr "Étoiles d'arrière-plan : pixels"
 
 #: C:/github/openorbiter/Src/Orbiter/DlgOptions.cpp:260
 msgctxt "Dialog Options"
 msgid "Max magnitude threshold"
-msgstr "Seuil de magnitude max"
+msgstr "Magnitude max"
 
 #: C:/github/openorbiter/Src/Orbiter/DlgOptions.cpp:265
 msgctxt "Dialog Options"
 msgid "Min magnitude threshold"
-msgstr "Seuil de magnitude min"
+msgstr "Magnitude min"
 
 #: C:/github/openorbiter/Src/Orbiter/DlgOptions.cpp:270
 msgctxt "Dialog Options"
@@ -1526,7 +1526,7 @@ msgstr "Luminosité min"
 #: C:/github/openorbiter/Src/Orbiter/DlgOptions.cpp:278
 msgctxt "Dialog Options"
 msgid "Background stars: show as image"
-msgstr "Étoiles en arrière-plan : image"
+msgstr "Étoiles d'arrière-plan : image"
 
 #: C:/github/openorbiter/Src/Orbiter/DlgOptions.cpp:295
 msgctxt "Dialog Options"
@@ -1547,17 +1547,17 @@ msgstr "Aides visuelles"
 #: C:/github/openorbiter/Src/Orbiter/DlgOptions.cpp:319
 msgctxt "Dialog Options"
 msgid "Options for displaying markers and gridlines on the celestial"
-msgstr "Options d'affichage d'étiquettes et de quadrillage sur la sphere céleste,"
+msgstr "Options d'affichage étiquettes et grilles sur la voûte"
 
 #: C:/github/openorbiter/Src/Orbiter/DlgOptions.cpp:320
 msgctxt "Dialog Options"
 msgid "sphere, labels for planetary surface features, as weel as coordinate"
-msgstr "points d'intérêt sur les corps célestes, ainsi que des indications"
+msgstr "céleste, points d'intérêt sur surfaces planétaires, ainsi que axes"
 
 #: C:/github/openorbiter/Src/Orbiter/DlgOptions.cpp:321
 msgctxt "Dialog Options"
 msgid "axis and force vectors"
-msgstr "visuelles pour les vecteurs de force et repères locaux"
+msgstr "des repères et vecteurs des force"
 
 #: C:/github/openorbiter/Src/Orbiter/DlgOptions.cpp:324
 #: C:/github/openorbiter/Src/Orbiter/DlgOptions.cpp:333
@@ -1580,7 +1580,7 @@ msgstr "Vecteurs de force"
 #: C:/github/openorbiter/Src/Orbiter/DlgOptions.cpp:513
 msgctxt "Dialog Options"
 msgid "Object frame axis"
-msgstr "Repères objet"
+msgstr "Repère objet"
 
 #: C:/github/openorbiter/Src/Orbiter/DlgOptions.cpp:338
 msgctxt "Dialog Options"
@@ -1590,7 +1590,7 @@ msgstr "Grilles et cercles"
 #: C:/github/openorbiter/Src/Orbiter/DlgOptions.cpp:339
 msgctxt "Dialog Options"
 msgid "Celestial grid"
-msgstr "Grille céleste"
+msgstr "Grille équatoriale"
 
 #: C:/github/openorbiter/Src/Orbiter/DlgOptions.cpp:340
 msgctxt "Dialog Options"
@@ -1605,7 +1605,7 @@ msgstr "Grille galactique"
 #: C:/github/openorbiter/Src/Orbiter/DlgOptions.cpp:342
 msgctxt "Dialog Options"
 msgid "Local horizon grid"
-msgstr "Horizon local"
+msgstr "Grille de l'horizon local"
 
 #: C:/github/openorbiter/Src/Orbiter/DlgOptions.cpp:343
 msgctxt "Dialog Options"
@@ -1625,7 +1625,7 @@ msgstr "Noms"
 #: C:/github/openorbiter/Src/Orbiter/DlgOptions.cpp:348
 msgctxt "Dialog Options"
 msgid "Long labels"
-msgstr "Noms longs"
+msgstr "Noms complets"
 
 #: C:/github/openorbiter/Src/Orbiter/DlgOptions.cpp:350
 msgctxt "Dialog Options"
@@ -1635,7 +1635,7 @@ msgstr "Secteurs"
 #: C:/github/openorbiter/Src/Orbiter/DlgOptions.cpp:351
 msgctxt "Dialog Options"
 msgid "Patterns"
-msgstr "Traits"
+msgstr "Lignes"
 
 #: C:/github/openorbiter/Src/Orbiter/DlgOptions.cpp:355
 msgctxt "Dialog Options"
@@ -1838,17 +1838,17 @@ msgstr "Paramètres avancés"
 #: C:/github/openorbiter/Src/Orbiter/DlgRecorder.cpp:70
 msgctxt "Dialog Recorder"
 msgid "Record Time Acceleration"
-msgstr "Enregistrer la vitesse de simulation"
+msgstr "Enregistrer la vitesse d'avancement"
 
 #: C:/github/openorbiter/Src/Orbiter/DlgRecorder.cpp:71
 msgctxt "Dialog Recorder"
 msgid "Record Focus Events"
-msgstr "Enregistrer les changements de cible"
+msgstr "Enregistrer les changements de vues"
 
 #: C:/github/openorbiter/Src/Orbiter/DlgRecorder.cpp:73
 msgctxt "Dialog Recorder"
 msgid "Sampling in System Time Steps"
-msgstr "Échantillonnage en temps système"
+msgstr "Échantillonner en temps système"
 
 #: C:/github/openorbiter/Src/Orbiter/DlgRecorder.cpp:77
 msgctxt "Dialog Recorder"
@@ -1869,7 +1869,7 @@ msgstr "Horizon local"
 #: C:/github/openorbiter/Src/Orbiter/DlgRecorder.cpp:83
 msgctxt "Dialog Recorder"
 msgid "Position / Velocity Data"
-msgstr "Repère de position / vitesse"
+msgstr "Positions / vitesses"
 
 #. keep the ###ef2 suffix (required by ImGui)
 #: C:/github/openorbiter/Src/Orbiter/DlgRecorder.cpp:85
@@ -1880,7 +1880,7 @@ msgstr "Écliptique###ef2"
 #: C:/github/openorbiter/Src/Orbiter/DlgRecorder.cpp:86
 msgctxt "Dialog Recorder"
 msgid "Equatorial Frame"
-msgstr "Équatorial"
+msgstr "Repère Équatorial"
 
 #: C:/github/openorbiter/Src/Orbiter/DlgRecorder.cpp:97
 msgctxt "Dialog Recorder"
@@ -1900,12 +1900,12 @@ msgstr "Lire à la vitesse d'enregistrement"
 #: C:/github/openorbiter/Src/Orbiter/DlgRecorder.cpp:105
 msgctxt "Dialog Recorder"
 msgid "Use Recorded Camera Settings"
-msgstr "Utiliser les paramètrages caméra enregistrés"
+msgstr "Utiliser les paramètres caméra enregistrés"
 
 #: C:/github/openorbiter/Src/Orbiter/DlgRecorder.cpp:110
 msgctxt "Dialog Recorder"
 msgid "Use Recorded Focus Events"
-msgstr "Utiliser les paramètrages de ciblage enregistrés"
+msgstr "Utiliser les vues enregistrées"
 
 #: C:/github/openorbiter/Src/Orbiter/DlgRecorder.cpp:117
 msgctxt "Dialog Recorder"
@@ -1915,7 +1915,7 @@ msgstr "Éditeur"
 #: C:/github/openorbiter/Src/Orbiter/DlgTacc.cpp:44
 msgctxt "Dialog Time acceleration"
 msgid "Orbiter: Time acceleration"
-msgstr "Orbiter : Vitesse de simulation"
+msgstr "Orbiter : Avance rapide/lente"
 
 #: C:/github/openorbiter/Src/Orbiter/DlgTacc.cpp:51
 msgctxt "Dialog Time acceleration"
@@ -1997,17 +1997,17 @@ msgstr "Cible : %s"
 #: C:/github/openorbiter/Src/Orbiter/MenuInfoBar.cpp:784
 msgctxt "MenuInfoBar"
 msgid "Cam track (rel-pos)"
-msgstr "Caméra de suivi (pos. relative)"
+msgstr "Poursuite Caméra (pos. relative)"
 
 #: C:/github/openorbiter/Src/Orbiter/MenuInfoBar.cpp:785
 msgctxt "MenuInfoBar"
 msgid "Cam track (abs-dir)"
-msgstr "Caméra de suivi (dir. absolue)"
+msgstr "Poursuite Caméra (dir. absolue)"
 
 #: C:/github/openorbiter/Src/Orbiter/MenuInfoBar.cpp:786
 msgctxt "MenuInfoBar"
 msgid "Cam track (global frame)"
-msgstr "Caméra de suivi (repère global)"
+msgstr "Poursuite Caméra (repère global)"
 
 #: C:/github/openorbiter/Src/Orbiter/MenuInfoBar.cpp:787
 msgctxt "MenuInfoBar"
@@ -2029,7 +2029,7 @@ msgstr "(libre)"
 #: C:/github/openorbiter/Src/Orbiter/MenuInfoBar.cpp:790
 msgctxt "MenuInfoBar"
 msgid "(tgt-lock)"
-msgstr "(suivi cible)"
+msgstr "(poursuite)"
 
 #. Ground observer target mode
 #: C:/github/openorbiter/Src/Orbiter/MenuInfoBar.cpp:790
@@ -2092,22 +2092,22 @@ msgstr "Autres corps célestes"
 #: C:/github/openorbiter/Src/Orbiter/MfdAlign.cpp:496
 msgctxt "MFD Align"
 msgid "Ecliptic inclination and longitude of asc. node [deg.]:"
-msgstr "Inclinaison et longitude du nœud ascendant (repère écliptique) [deg] :"
+msgstr "Inclinaison et longitude du nœud ascendant dans l'Écliptique [deg] :"
 
 #: C:/github/openorbiter/Src/Orbiter/MfdAlign.cpp:499
 msgctxt "MFD Align"
 msgid "Align MFD: Reference"
-msgstr "Corps central de référence"
+msgstr "Alignement : Corps central"
 
 #: C:/github/openorbiter/Src/Orbiter/MfdAlign.cpp:502
 msgctxt "MFD Align"
 msgid "Align MFD: Target"
-msgstr "Cible pour alignement"
+msgstr "Alignement : Cible"
 
 #: C:/github/openorbiter/Src/Orbiter/MfdDocking.cpp:624
 msgctxt "MFD Docking"
 msgid "Docking MFD: Target"
-msgstr "Cible d'amarrage"
+msgstr "Amarrage : Cible"
 
 #: C:/github/openorbiter/Src/Orbiter/MfdDocking.cpp:684
 #: C:/github/openorbiter/Src/Orbiter/MfdDocking.cpp:708
@@ -2123,17 +2123,17 @@ msgstr "%s, port %d"
 #: C:/github/openorbiter/Src/Orbiter/MfdDocking.cpp:709
 msgctxt "MFD Docking"
 msgid "Docking MFD: Enter target (e.g. 'ISS' or 'ISS 1')"
-msgstr "Entrez la cible d'amarrage (e.g. 'ISS' ou 'ISS 1')"
+msgstr "Amarrage : Entrez la cible (e.g. 'ISS' ou 'ISS 1')"
 
 #: C:/github/openorbiter/Src/Orbiter/MfdMap.cpp:125
 msgctxt "MFD Map"
 msgid "Map MFD: Reference"
-msgstr "Corps central de référence"
+msgstr "Carte : Référence"
 
 #: C:/github/openorbiter/Src/Orbiter/MfdMap.cpp:128
 msgctxt "MFD Map"
 msgid "Map MFD: Target"
-msgstr "Cible"
+msgstr "Carte : Cible"
 
 #: C:/github/openorbiter/Src/Orbiter/MfdMap.cpp:738
 #: C:/github/openorbiter/Src/Orbiter/MfdMap.cpp:777
@@ -2171,37 +2171,37 @@ msgstr "Cible :"
 #: C:/github/openorbiter/Src/Orbiter/MfdOrbit.cpp:127
 msgctxt "MFD Orbit"
 msgid "Orbit MFD: Reference"
-msgstr "Corps de référence"
+msgstr "Orbite : Référence"
 
 #: C:/github/openorbiter/Src/Orbiter/MfdOrbit.cpp:130
 msgctxt "MFD Orbit"
 msgid "Orbit MFD: Target"
-msgstr "Cible"
+msgstr "Orbite : Cible"
 
 #: C:/github/openorbiter/Src/Orbiter/MfdSync.cpp:283
 msgctxt "MFD Sync"
 msgid "Transit list length:"
-msgstr "Nombre de conjonctions :"
+msgstr "Sync : Nombre de cycles"
 
 #: C:/github/openorbiter/Src/Orbiter/MfdSync.cpp:286
 msgctxt "MFD Sync"
 msgid "Sync MFD: Target"
-msgstr "Cible"
+msgstr "Sync : Cible"
 
 #: C:/github/openorbiter/Src/Orbiter/MfdTransfer.cpp:441
 msgctxt "MFD Transfer"
 msgid "Transfer MFD: Reference"
-msgstr "Corps central de référence"
+msgstr "Transfert : Référence"
 
 #: C:/github/openorbiter/Src/Orbiter/MfdTransfer.cpp:444
 msgctxt "MFD Transfer"
 msgid "Transfer MFD: Source"
-msgstr "Source"
+msgstr "Transfert : Origine"
 
 #: C:/github/openorbiter/Src/Orbiter/MfdTransfer.cpp:448
 msgctxt "MFD Transfer"
 msgid "Transfer MFD: Target"
-msgstr "Cible"
+msgstr "Transfert : Cible"
 
 #: C:/github/openorbiter/Src/Orbiter/MfdTransfer.cpp:459
 msgctxt "MFD Transfer"
@@ -2276,7 +2276,7 @@ msgstr "Scenario sauvegardé"
 #: C:/github/openorbiter/Src/Orbiter/Orbiter.cpp:1504
 msgctxt "Notification"
 msgid "Failed to save scenario"
-msgstr "Échec de sauvegarde"
+msgstr "Échec de la sauvegarde"
 
 #: C:/github/openorbiter/Src/Orbiter/PlaybackEd.cpp:23
 msgctxt "Playback editor"
@@ -2363,7 +2363,7 @@ msgstr "Contenu"
 #: C:/github/openorbiter/Src/Orbiter/PlaybackEd.cpp:419
 msgctxt "Playback editor"
 msgid "%0.2fx (delay %0.1f)"
-msgstr "%0.2fx (delai %0.1f)"
+msgstr "%0.2fx (durée %0.1f)"
 
 #: C:/github/openorbiter/Src/Orbiter/PlaybackEd.cpp:405
 #: C:/github/openorbiter/Src/Orbiter/PlaybackEd.cpp:421
@@ -2374,12 +2374,12 @@ msgstr "%0.2fx"
 #: C:/github/openorbiter/Src/Orbiter/PlaybackEd.cpp:428
 msgctxt "Playback editor"
 msgid "Time Acceleration"
-msgstr "Accélération temporelle"
+msgstr "Avance rapide/lente"
 
 #: C:/github/openorbiter/Src/Orbiter/PlaybackEd.cpp:429
 msgctxt "Playback editor"
 msgid "Delay [s]"
-msgstr "Delai [s]"
+msgstr "Durée [s]"
 
 #: C:/github/openorbiter/Src/Orbiter/PlaybackEd.cpp:495
 msgctxt "Playback editor"

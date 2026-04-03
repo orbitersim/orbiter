@@ -51,7 +51,7 @@ msgid ""
 "transmitter. Keep an eye on the deviation indicator, which shows your offset "
 "from the approach path."
 msgstr ""
-"L’affichage HSI de gauche a été couplé à l’émetteur ILS de la piste SLF-33. "
+"Le MFD HSI à gauche a été couplé à l’émetteur ILS de la piste SLF-33. "
 "Surveillez l’indicateur de déviation, qui montre votre écart par rapport à "
 "la trajectoire d’approche."
 
@@ -69,7 +69,8 @@ msgctxt "Flight"
 msgid ""
 "The Vehicle Assembly Building (VAB) at the KSC is coming into view straight "
 "ahead."
-msgstr "Le Vehicle Assembly Building (VAB) du KSC apparaît droit devant."
+msgstr ""
+"Le VAB (bâtiment d'assemblage des fusées) du KSC apparaît droit devant."
 
 #: C:/github/openorbiter/Flights/Space Shuttle final approach/system.dat:20
 msgctxt "Flight"
@@ -85,7 +86,7 @@ msgid ""
 msgstr ""
 "Les indicateurs de trajectoire PAPI (la rangée de feux rouges et blancs "
 "devant la piste) ont été réglés sur la pente d’approche de la navette. Deux "
-"feux blancs et deux rouges indiquent que vous êtes sur la trajectoire de "
+"blancs et deux rouges indiquent que vous êtes sur la bonne trajectoire de "
 "descente."
 
 #: C:/github/openorbiter/Flights/Space Shuttle final approach/system.dat:26
@@ -96,7 +97,7 @@ msgstr "Déploiement de l'aérofrein."
 #: C:/github/openorbiter/Flights/Space Shuttle final approach/system.dat:28
 msgctxt "Flight"
 msgid "Ten seconds before touchdown the landing gear is lowered."
-msgstr "Dix secondes avant l’atterrissage, le train est sorti."
+msgstr "Dix secondes avant l’atterrissage, sortie des trains."
 
 #: C:/github/openorbiter/Flights/Space Shuttle final approach/system.dat:29
 msgctxt "Flight"

@@ -23,7 +23,7 @@ msgid ""
 "This version represents the first release of OpenOrbiter, brought to you by "
 "the Orbiter community."
 msgstr ""
-"Cette version représente la première publication d'OpenOrbiter, réalisée par "
+"Cette version présente la première publication d'OpenOrbiter, réalisée par "
 "la communauté Orbiter."
 
 #: C:/github/openorbiter/Flights/Welcome to Orbiter 2024/system.dat:10

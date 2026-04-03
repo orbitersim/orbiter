@@ -29,7 +29,7 @@ msgstr "Téléopération"
 #: C:/github/openorbiter/Src/Plugin/Rcontrol/Rcontrol.cpp:96
 msgctxt "RControl"
 msgid "Operate the engines of any spacecraft from a dialog box."
-msgstr "Contrôle les propulseurs de n'importe quel vaisseau depuis une boîte de dialogue."
+msgstr "Contrôler les propulseurs de n'importe quel vaisseau depuis une boîte de dialogue."
 
 #. Name in menu bar
 #: C:/github/openorbiter/Src/Plugin/Rcontrol/Rcontrol.cpp:100
@@ -92,7 +92,7 @@ msgstr "Commande d'attitude"
 #: C:/github/openorbiter/Src/Plugin/Rcontrol/Rcontrol.cpp:246
 msgctxt "RControl"
 msgid "Killrot"
-msgstr "Stabilisation"
+msgstr "Arrêt rotation"
 
 #: C:/github/openorbiter/Src/Plugin/Rcontrol/Rcontrol.cpp:250
 msgctxt "RControl"
@@ -107,7 +107,7 @@ msgstr "Normal"
 #: C:/github/openorbiter/Src/Plugin/Rcontrol/Rcontrol.cpp:258
 msgctxt "RControl"
 msgid "HLevel"
-msgstr "Niveau horizontal"
+msgstr "Horizontal"
 
 #: C:/github/openorbiter/Src/Plugin/Rcontrol/Rcontrol.cpp:262
 msgctxt "RControl"

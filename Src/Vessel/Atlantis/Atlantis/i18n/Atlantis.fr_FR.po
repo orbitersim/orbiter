@@ -16,7 +16,7 @@ msgstr ""
 #: C:/github/openorbiter/Src/Vessel/Atlantis/Atlantis/AscentAP.cpp:34
 msgctxt "Atlantis Autopilot"
 msgid "Atlantis Ascent Autopilot"
-msgstr "Pilote automatique d'ascension orbitale"
+msgstr "Autopilote d'ascension Atlantis"
 
 #: C:/github/openorbiter/Src/Vessel/Atlantis/Atlantis/AscentAP.cpp:575
 msgctxt "Atlantis Autopilot"
@@ -86,12 +86,12 @@ msgstr "Contrôle d'Atlantis"
 #: C:/github/openorbiter/Src/Vessel/Atlantis/Atlantis/Atlantis.cpp:68
 msgctxt "Atlantis Dialogs"
 msgid "Ascent Autopilot"
-msgstr "Pilote automatique"
+msgstr "Autopilote de montée"
 
 #: C:/github/openorbiter/Src/Vessel/Atlantis/Atlantis/Atlantis.cpp:71
 msgctxt "Atlantis Dialogs"
 msgid "Payload Door Operation"
-msgstr "Commande des portes de la soute"
+msgstr "Commande des portes de soute"
 
 #: C:/github/openorbiter/Src/Vessel/Atlantis/Atlantis/Atlantis.cpp:74
 msgctxt "Atlantis Dialogs"
@@ -101,12 +101,12 @@ msgstr "Opérations du RMS"
 #: C:/github/openorbiter/Src/Vessel/Atlantis/Atlantis/Atlantis.cpp:79
 msgctxt "Atlantis Dialogs"
 msgid "Atlantis RMS Control"
-msgstr "Opérations du RMS"
+msgstr "Contrôle RMS"
 
 #: C:/github/openorbiter/Src/Vessel/Atlantis/Atlantis/Atlantis.cpp:89
 msgctxt "Atlantis Dialogs"
 msgid "Show Grapple Points"
-msgstr "Afficher les points de préhension"
+msgstr "Afficher les points d'attache"
 
 #: C:/github/openorbiter/Src/Vessel/Atlantis/Atlantis/Atlantis.cpp:93
 msgctxt "Atlantis Dialogs"
@@ -161,7 +161,7 @@ msgstr "Désarrimage"
 #: C:/github/openorbiter/Src/Vessel/Atlantis/Atlantis/PlBayOp.cpp:19
 msgctxt "Atlantis Payload Bay Panel"
 msgid "Payload Operations"
-msgstr "Portes de la soute"
+msgstr "Opérations de soute"
 
 #: C:/github/openorbiter/Src/Vessel/Atlantis/Atlantis/PlBayOp.cpp:170
 msgctxt "Atlantis Payload Bay Panel"

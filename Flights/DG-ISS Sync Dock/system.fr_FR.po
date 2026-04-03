@@ -19,9 +19,9 @@ msgid ""
 "Edition, chapter 5 \"Dancing in the Dark.\"  Note that the docking HUD is "
 "displayed, that the Sync Orbit MFD is on the left..."
 msgstr ""
-"Rendez-vous et amarrage pour « Go Play In Space », 2ème édition, chapitre 5 "
-"« Dancing in the Dark ».  Notez que le HUD est en mode d'amarrage, que "
-"l'affichage de synchro orbitale est à gauche..."
+"Rendez-vous et amarrage à l'ISS, « Go Play In Space », 2ème édition, "
+"chapitre 5 « Dancing in the Dark ».  Notez que le HUD est en mode Amarrage, "
+"le MFD gauche est sur Sync..."
 
 #: C:/github/openorbiter/Flights/DG-ISS Sync Dock/system.dat:6
 msgctxt "Flight"
@@ -30,9 +30,9 @@ msgid ""
 "to get the ISS to our ship's periapsis so we can note the altitude "
 "there...              time accelerating........"
 msgstr ""
-"…et l'affichage des paramètres orbitaux est à droite.  On va d'abord "
-"accélérer le temps pour voir l'altitude de l'ISS quand elle est alignée avec "
-"notre périgée...              Avance rapide........"
+"…et le MFD droit est sur Orbit (paramètres orbitaux).  Tout d'abord une "
+"accélération temporelle pour voir l'altitude de l'ISS quand elle est alignée "
+"avec notre périgée...              Avance rapide..."
 
 #: C:/github/openorbiter/Flights/DG-ISS Sync Dock/system.dat:9
 msgctxt "Flight"
@@ -42,19 +42,19 @@ msgid ""
 "slightly bigger, longer period orbit so the ISS can catch up with us."
 msgstr ""
 "Notez que nos plans orbitaux sont déjà alignés (Inc), mais notre position "
-"(ligne verte) est en avance de celle de l'ISS. Il faut donc manœuvrer vers "
-"une orbite un peu plus grande (et lente) pour que l'ISS puisse nous "
+"(ligne verte) est en avance sur celle de l'ISS. Il faut donc manœuvrer vers "
+"une orbite un peu plus grande (plus lente) pour que l'ISS puisse nous "
 "rattraper."
 
 #: C:/github/openorbiter/Flights/DG-ISS Sync Dock/system.dat:13
 msgctxt "Flight"
 msgid "1000x warp factor, the Earth is really zipping by..."
-msgstr "Accélération x1000, la Terre défile..."
+msgstr "Accélération temporelle x1000, la Terre défile..."
 
 #: C:/github/openorbiter/Flights/DG-ISS Sync Dock/system.dat:15
 msgctxt "Flight"
 msgid "Slowing time to 100x"
-msgstr "Ralentissement à 100x"
+msgstr "Ralentissement à x100"
 
 #: C:/github/openorbiter/Flights/DG-ISS Sync Dock/system.dat:18
 msgctxt "Flight"
@@ -65,19 +65,19 @@ msgid ""
 msgstr ""
 "Le HUD montre un rectangle autour de la cible (ISS) quand elle est dans le "
 "champ visuel, ou une flèche la pointant quand elle est hors champ.  Un "
-"cercle avec le signe +indique la vitesse relative par rapport à l'ISS, ou "
-"une flèche V[ISS] si hors champ."
+"cercle avec le signe + représente le vecteur vitesse relative par rapport à "
+"l'ISS, ou une flèche V[ISS] si hors champ."
 
 #: C:/github/openorbiter/Flights/DG-ISS Sync Dock/system.dat:21
 msgctxt "Flight"
 msgid ""
 "Note that when the ISS target box goes off-screen, the ISS arrow appears."
-msgstr "Noté que quand le rectangle sort de l'écran, la flèche apparaît."
+msgstr "Notez que quand le rectangle sort de l'écran, la flèche apparaît."
 
 #: C:/github/openorbiter/Flights/DG-ISS Sync Dock/system.dat:23
 msgctxt "Flight"
 msgid "Back to 1x (real time)."
-msgstr "Retour à la vitesse normale (1x)."
+msgstr "Retour à l'avance normale (x1)."
 
 #: C:/github/openorbiter/Flights/DG-ISS Sync Dock/system.dat:26
 msgctxt "Flight"
@@ -85,7 +85,7 @@ msgid ""
 "Note that as the ISS (yellow line) reaches our periapsis (green dot), its "
 "(yellow) Alt value in Orbit MFD is 360.3 km.  "
 msgstr ""
-"Notez que quand l'ISS (ligne jaune) es tau niveau de notre périapse (rond "
+"Notez que quand l'ISS (ligne jaune) est au niveau de notre périapse (rond "
 "vert), son altitude (marqueur Alt en jaune) est de 360,3km.  "
 
 #: C:/github/openorbiter/Flights/DG-ISS Sync Dock/system.dat:29
@@ -94,14 +94,14 @@ msgid ""
 "The next thing to do is accelerate to apoapsis where a small prograde burn "
 "can raise our PeA to match the ISS...     time accelerating... "
 msgstr ""
-"La prochaine chose à faire est d'accélérer jusqu'à l'apogée où une brève "
-"poussée prograde va relever notre périgée (PeA) pour correspondre à celle de "
-"l'ISS...     Avance rapide… "
+"La prochaine chose à faire est de rejoindre l'apogée en avance rapide, où "
+"une brève poussée prograde va relever notre périgée (PeA) pour correspondre "
+"à celle de l'ISS...     Avance rapide… "
 
 #: C:/github/openorbiter/Flights/DG-ISS Sync Dock/system.dat:33
 msgctxt "Flight"
 msgid "...now back to 1x."
-msgstr "…retour en 1x."
+msgstr "…retour en x1."
 
 #: C:/github/openorbiter/Flights/DG-ISS Sync Dock/system.dat:36
 msgctxt "Flight"
@@ -109,9 +109,9 @@ msgid ""
 "Turning prograde for the burn, noting the DTMin on Sync MFD is about 44 s "
 "and raising the PeA to 360.3k will decrease this, but not to zero."
 msgstr ""
-"Orientation prograde pour la poussée, DTMin sur l'affichage de synchro "
-"orbitale vaut environ 44s, et l'augmentation du PeA à 360,3km va le réduire, "
-"mais pas l'annuler."
+"Orientation prograde pour la poussée, DTMin sur le MFD Sync vaut env. 44s, "
+"et DTMin diminuera - mais pas jusqu'à zéro - quand PeA augmentera vers "
+"360,3km."
 
 #: C:/github/openorbiter/Flights/DG-ISS Sync Dock/system.dat:38
 msgctxt "Flight"
@@ -119,7 +119,7 @@ msgid ""
 "Firing short bursts of main engine (numpad + key) to raise PeA to 360.3k to "
 "match ISS height at this point."
 msgstr ""
-"Poussées brèves (touche + du pavé numérique) pour relever le PeA à 360,3km, "
+"Poussées brèves (touche + du pavé numérique) pour monter le PeA à 360,3km, "
 "afin d'égaler l'altitude de l'ISS à cet endroit."
 
 #: C:/github/openorbiter/Flights/DG-ISS Sync Dock/system.dat:40
@@ -128,9 +128,9 @@ msgid ""
 "Still in Prograde mode, switching to translation [LIN] mode to tweak PeA "
 "with forward (num-6) and backward (num-9) thrusts."
 msgstr ""
-"Toujours en mode prograde, bascule en mode translation (LIN) pour ajuster le "
-"PeA avec de brèves impulsions avant/arrière (touches 6 et 9 du pavé "
-"numérique)."
+"Toujours en mode Prograde, changement de RCS de Rotation à Linéaire (LIN) "
+"pour ajuster le PeA avec de brèves impulsions avant/arrière (touches 6 et 9 "
+"du pavé numérique)."
 
 #: C:/github/openorbiter/Flights/DG-ISS Sync Dock/system.dat:42
 msgctxt "Flight"
@@ -139,7 +139,7 @@ msgid ""
 "ready to warp time 10-100x again..."
 msgstr ""
 "Bien, notre PeA est maintenant de 360,3km, égal à l'altitude de l'ISS à "
-"notre périgée.  Préparez vous à une avance rapide..."
+"notre périgée.  Attention pour l'avance rapide..."
 
 #: C:/github/openorbiter/Flights/DG-ISS Sync Dock/system.dat:46
 msgctxt "Flight"
@@ -148,9 +148,9 @@ msgid ""
 "prograde and raise our apoapsis to increase our orbital period (T) slightly, "
 "allowing the ISS to catch up with us."
 msgstr ""
-"Accélération à 100x pour rapidement atteindre le périgée où nous pourrons "
-"faire une poussée prograde pour relever notre apogée et augmenter légèrement "
-"notre période orbitale, permettant à l'ISS de nous rattraper."
+"Accélération temporelle x100, pour rapidement atteindre le périgée où nous "
+"pourrons faire une poussée prograde et donc relever notre apogée et allonger "
+"légèrement la période orbitale, permettant à l'ISS de nous rattraper."
 
 #: C:/github/openorbiter/Flights/DG-ISS Sync Dock/system.dat:48
 msgctxt "Flight"
@@ -159,10 +159,10 @@ msgid ""
 "orbit where closest approach occurs.  The two columns are times to the "
 "reference point for ship and target."
 msgstr ""
-"Lever de soleil sur l'Europe de l'est.  L'affichage de synchro orbitale "
-"montre une ligne en jaune pour l'orbite où la distance minimale sera "
-"atteinte.  Les deux colonnes correspondent aux temps par rapport au point de "
-"référence pour le vaisseau et la cible."
+"Lever de soleil sur l'Europe de l'est.  Le MFD Sync montre une ligne en "
+"jaune où la distance minimale sera atteinte.  Les deux colonnes sont les "
+"durées pour atteindre le point de référence par notre vaisseau et la cible "
+"(ISS)."
 
 #: C:/github/openorbiter/Flights/DG-ISS Sync Dock/system.dat:51
 msgctxt "Flight"
@@ -181,7 +181,7 @@ msgid ""
 "Back at 1x time, thrusters still LIN, linear thruster num-6/9 bursts (fwd-"
 "back) will adjust DTMin to nearly zero."
 msgstr ""
-"Retour à vitesse normale, toujours en mode translation, quelques impulsions "
+"Retour à l'avance normale (x1), toujours en RCS LIN, quelques impulsions "
 "avant/arrière (touches 6/9 du pavé) vont ajuster DTMin vers zéro."
 
 #: C:/github/openorbiter/Flights/DG-ISS Sync Dock/system.dat:56
@@ -191,9 +191,9 @@ msgid ""
 "of orbits to reach the orbit where DTMin=0 and the ISS will hopefully be "
 "close by (but not too close, a few km)."
 msgstr ""
-"Passage de l'autopilote à Kill Rotation (annulation de rotation), et avance "
-"rapide pour 2 orbites afin d'atteindre celle dont le DTmin vaut 0. L'ISS "
-"sera proche (mais pas trop, quelques kilomètres)."
+"Passage en RCS Kill Rotation (annuler la rotation) et avance rapide pendant "
+"quelques orbites afin d'atteindre celle où le DTmin vaut 0. L'ISS sera "
+"proche (mais pas trop, quelques kilomètres)."
 
 #: C:/github/openorbiter/Flights/DG-ISS Sync Dock/system.dat:59
 msgctxt "Flight"
@@ -201,7 +201,7 @@ msgid ""
 "Note that DG period (T) is now 5.540k s, vs. 5.501k for ISS, 39 s longer for "
 "us, so ISS can catch up.  "
 msgstr ""
-"Notez que la période du DG (T) est maintenant de 5540s, contre 5501s pour "
+"Notez que la période orbitale (T) est maintenant de 5540s, contre 5501s pour "
 "l'ISS, 39s plus longue pour nous, afin que l'ISS puisse nous rattraper.  "
 
 #: C:/github/openorbiter/Flights/DG-ISS Sync Dock/system.dat:61
@@ -217,8 +217,8 @@ msgid ""
 "Yellow line is orbit 1 (Ob 1), so really two orbits to go (we intercept on "
 "orbit zero)."
 msgstr ""
-"La ligne en jaune est l'orbite numéro 1, nous avons donc encore 2 orbites "
-"devant nous (interception à l'orbite 0)."
+"La ligne en jaune est l'orbite numéro 1, nous avons donc encore les orbites "
+"Ob 1 et Ob 0 devant nous (interception à l'orbite 0)."
 
 #: C:/github/openorbiter/Flights/DG-ISS Sync Dock/system.dat:64
 msgctxt "Flight"
@@ -265,7 +265,7 @@ msgid ""
 "Coming out of warp shortly since the ISS is getting close - at around 3.5 "
 "km, we will enter ROT mode and rotate the ship to point at the V[ISS] ball. "
 msgstr ""
-"Sortie du mode accéléré car l'ISS se rapproche - environ  3,5km, activation "
+"Sortie d'avance rapide car l'ISS se rapproche - environ  3,5km, activation "
 "du mode rotation (ROT) et réorientation pour pointer vers le réticule "
 "V[ISS]. "
 
@@ -277,8 +277,8 @@ msgid ""
 "our relative velocity to ISS."
 msgstr ""
 "Rotation à droite pour pointer vers -V[ISS] qui est maintenant derrière "
-"nous.  Nous voulons aligner le marqueur de direction avec le réticule de "
-"vitesse afin de réduire la vitesse relative avec l'ISS."
+"nous.  Nous voulons aligner le marqueur de direction avec le vecteur vitesse "
+"afin de réduire la vitesse relative avec l'ISS."
 
 #: C:/github/openorbiter/Flights/DG-ISS Sync Dock/system.dat:83
 msgctxt "Flight"
@@ -286,9 +286,9 @@ msgid ""
 "Nearly pointing at V[ISS] symbol, so kill rotation (num-5).  ISS range still "
 "closing at 18.69 m/s, waiting until Dist is under 2 km to zero out V[ISS]."
 msgstr ""
-"Presque aligné, annulation de rotation (touche 5 du pavé).  L'ISS s'approche "
-"toujours à  18,69m/s, nous attendons que Dist vaille moins de 2km pour "
-"annuler -V[ISS]."
+"Presque alignés, annulation de rotation (touche 5 du pavé).  L'ISS "
+"s'approche toujours à  18,69m/s, nous attendons que Dist soit à moins de 2km "
+"pour annuler -V[ISS]."
 
 #: C:/github/openorbiter/Flights/DG-ISS Sync Dock/system.dat:84
 msgctxt "Flight"
@@ -316,7 +316,7 @@ msgid ""
 "This is a very long burst of forward LIN thruster that is not slowing us "
 "down all that much.  A bit disappointing, and the ISS is getting quite close."
 msgstr ""
-"C'est une très longue impulsion des moteurs vernier, qui ne fait pas grand "
+"C'est une très longue impulsion des petits moteurs, qui ne fait pas grand "
 "effet.  C'est assez décevant, et l'ISS s'approche rapidement."
 
 #: C:/github/openorbiter/Flights/DG-ISS Sync Dock/system.dat:94
@@ -326,7 +326,7 @@ msgid ""
 "clearly not enough, so we will need a few bursts of main engines to avoid "
 "colliding with ISS!"
 msgstr ""
-"La misère ! J'ai attendu trop longtemps pour freiner.  Ces propulseurs sont "
+"Misère ! J'ai attendu trop longtemps pour freiner.  Ces propulseurs sont "
 "clairement insuffisants, il va falloir quelques poussées des moteurs "
 "principaux pour éviter la collision !"
 
@@ -337,7 +337,7 @@ msgid ""
 "take out residual velocity. "
 msgstr ""
 "Nous avons ralenti, mais nous poursuivons toujours le symbole -V[ISS], tout "
-"en utilisant les propulseurs pour réduire la vitesse résiduelle. "
+"en utilisant les propulseurs pour éliminer la vitesse résiduelle. "
 
 #: C:/github/openorbiter/Flights/DG-ISS Sync Dock/system.dat:99
 msgctxt "Flight"
@@ -358,8 +358,7 @@ msgid ""
 "then [RAD], then [PWR]. "
 msgstr ""
 "L'ISS est droit devant, à 800m et (heureusement) immobile ! Cliquez [PWR] "
-"sur l'affichage de synchro à gauche devenu inutile, pour améliorer la "
-"visibilité. "
+"sur le MFD Sync gauche devenu inutile, pour améliorer la visibilité. "
 
 #: C:/github/openorbiter/Flights/DG-ISS Sync Dock/system.dat:104
 msgctxt "Flight"
@@ -368,10 +367,9 @@ msgid ""
 "times to reach NAV4 for docking port D-01.  Then click the [HUD] button.  "
 "I'm rotating right away to aim for those boxes..."
 msgstr ""
-"Sur l'affichage de droite, cliquez RAPIDEMENT [SEL] puis [Docking] et enfin "
-"[NAV] 3 fois pour basculer sur NAV4, afin de d'amarrer au port D-01.  "
-"Cliquez ensuite sur [HUD]. Je pivote tout de suite vers le couloir "
-"d'amarrage..."
+"Sur le MFD droit, appuyez VITE sur [SEL] puis [Docking] et enfin [NAV] 3 "
+"fois pour basculer sur NAV4, afin d'amarrer au port D-01. Puis appuyez sur "
+"[HUD]. Pivotons tout de suite vers le couloir d'amarrage..."
 
 #: C:/github/openorbiter/Flights/DG-ISS Sync Dock/system.dat:106
 msgctxt "Flight"
@@ -379,8 +377,8 @@ msgid ""
 "[LIN] mode, thrusting forward to start closing on the outer docking boxes, "
 "NOT on the ISS itself (yet)."
 msgstr ""
-"Mode linéaire, impulsion avant pour commencer à s'approcher des cadres "
-"externes, PAS (encore) de l'ISS."
+"RCS LIN, impulsion avant pour s'approcher des cadres externes, PAS encore de "
+"l'ISS."
 
 #: C:/github/openorbiter/Flights/DG-ISS Sync Dock/system.dat:107
 msgctxt "Flight"
@@ -388,8 +386,8 @@ msgid ""
 "Compare the Dock MFD to the outside view - ISS to left and down, + (target) "
 "symbol on MFD to left and down."
 msgstr ""
-"Comparez l'affichage à la vue extérieure - L'ISS est en bas à gauche, le "
-"réticule (+) sur l'affichage en bas à gauche."
+"Comparez le MFD à la vue extérieure - L'ISS est en bas à gauche, le réticule "
+"(+) sur le MFD est en bas à gauche."
 
 #: C:/github/openorbiter/Flights/DG-ISS Sync Dock/system.dat:109
 msgctxt "Flight"
@@ -397,20 +395,20 @@ msgid ""
 "The range is closing slowly but I don't want to get fast near the ISS, so I "
 "use a little 10x time warpage."
 msgstr ""
-"L'approche est lente mais je ne veux pas manœuvrer trop vite près de l'ISS, "
-"j'utilise un peu d'accélération 10x."
+"L'approche est lente mais il ne faut pas manœuvrer trop vite près de l'ISS, "
+"utilisons l'avance rapide x10."
 
 #: C:/github/openorbiter/Flights/DG-ISS Sync Dock/system.dat:112
 #: Dock/system.dat:120
 msgctxt "Flight"
 msgid "Back to 1x time."
-msgstr "Retour à la normale."
+msgstr "Retour en avance normale x1."
 
 #: C:/github/openorbiter/Flights/DG-ISS Sync Dock/system.dat:115
 msgctxt "Flight"
 msgid ""
 "Still impatient, still closing slowly, use a little more 10x time warpology."
-msgstr "L'approche est assez lente, encore un peu de 10x."
+msgstr "L'approche est assez lente, encore un peu de x10."
 
 #: C:/github/openorbiter/Flights/DG-ISS Sync Dock/system.dat:118
 msgctxt "Flight"
@@ -419,9 +417,9 @@ msgid ""
 "increases. We head for the outer boxes to allow time to get lined up with "
 "the port."
 msgstr ""
-"Dès que nous passons l'ISS sur la gauche, CVEL (vitesse d'approche) passe au "
+"Dès que nous passons l'ISS sur la gauche, CVEL (vitesse d'approche) passe en "
 "négatif et la distance augmente. Nous visons les cadres extérieurs afin "
-"d'avoir du temps pour s'aligner avec le port."
+"d'avoir du temps pour nous aligner."
 
 #: C:/github/openorbiter/Flights/DG-ISS Sync Dock/system.dat:121
 msgctxt "Flight"
@@ -429,8 +427,8 @@ msgid ""
 "The goal here?  To try to center ourselves inside one of the outer HUD "
 "docking boxes, and both aligned with and level with the docking port.  "
 msgstr ""
-"L'objectif ? Se placer au milieu d'un de ces cadres, aligné et à la hauteur "
-"du port d'amarrage.  "
+"L'objectif ? Se placer au milieu d'un de ces cadres dans le HUD, pour nous "
+"aligner à la bonne hauteur avec le port d'amarrage. "
 
 #: C:/github/openorbiter/Flights/DG-ISS Sync Dock/system.dat:123
 msgctxt "Flight"
@@ -439,8 +437,8 @@ msgid ""
 "\"cross\" (-V[ISS] symbol) back in the boxes since this is our direction "
 "relative to ISS."
 msgstr ""
-"Rotation à gauche pour retrouver le cadre de l'ISS en vue.  Je veux aussi "
-"replacer le réticule (V[ISS]) vers le couloir car c'est notre déplacement "
+"Rotation à gauche pour retrouver le cadre de l'ISS en vue. Il faut aussi "
+"replacer le réticule V[ISS] vers le couloir car c'est notre déplacement "
 "relatif à l'ISS."
 
 #: C:/github/openorbiter/Flights/DG-ISS Sync Dock/system.dat:124
@@ -449,7 +447,7 @@ msgid ""
 "Now closing on boxes, rotating for rough line-up with them, want double line "
 "at top for correct orientation to docking port."
 msgstr ""
-"J'approche du couloir, rotation pour alignement grossier, je veux juste la "
+"Approche du couloir, rotation pour alignement grossier, il faut juste la "
 "ligne double vers le haut pour avoir une orientation correcte avec le port."
 
 #: C:/github/openorbiter/Flights/DG-ISS Sync Dock/system.dat:125
@@ -458,9 +456,9 @@ msgid ""
 "Dock MFD shows no visible X (angular alignment indicator), so angle "
 "alignment is poor, rotate to line up better. ISS is \"below\" on the MFD."
 msgstr ""
-"L'affichage d'amarrage n'affiche aucun X (indicateur d'alignement "
-"angulaire), ça veut dire que l'alignement est mauvais, rotation pour "
-"améliorer ça. L'ISS est dessous sur l'affichage."
+"Le MFD Docking n'affiche aucun X (indicateur d'alignement angulaire), ça "
+"veut dire que l'alignement est mauvais. Rotation pour améliorer ça. L'ISS "
+"est \"en bas\" sur le MFD."
 
 #: C:/github/openorbiter/Flights/DG-ISS Sync Dock/system.dat:126
 msgctxt "Flight"
@@ -477,8 +475,8 @@ msgid ""
 "Rotations get the X roughly centered and changed to white, temporarily "
 "stable, then start to adjust linear position."
 msgstr ""
-"Le repère X est sommairement centré et coloré en blanc, stable pour "
-"l'instant, c'est le moment d'ajuster la position linéaire."
+"Le repère X est à peu près centré et coloré en blanc, stable pour l'instant, "
+"c'est le moment d'ajuster la position linéaire."
 
 #: C:/github/openorbiter/Flights/DG-ISS Sync Dock/system.dat:128
 msgctxt "Flight"
@@ -486,8 +484,7 @@ msgid ""
 "LIN mode, thrusting TOWARD the MFD cross (left, right, up, down) to try to "
 "get it lined up."
 msgstr ""
-"Mode translation, impulsion VERS le repère sur l'affichage, pour tenter de "
-"s'aligner."
+"RCS LIN, impulsion vers le repère sur le MFD pour tenter de nous aligner."
 
 #: C:/github/openorbiter/Flights/DG-ISS Sync Dock/system.dat:129
 msgctxt "Flight"
@@ -495,9 +492,8 @@ msgid ""
 "CVEL close to zero to allow time for alignment.  We are centered better in "
 "the docking boxes, but MFD cross is still off center."
 msgstr ""
-"CVEL réduit pour laisse du temps pour l'alignement.  Nous sommes mieux "
-"centrés dans les cadres mais sur l'affichage, le réticule est toujours "
-"décalé."
+"CVEL réduit pour laisser du temps  Nous sommes mieux centrés dans les cadres "
+"mais le réticule du MFD est toujours décalé."
 
 #: C:/github/openorbiter/Flights/DG-ISS Sync Dock/system.dat:130
 msgctxt "Flight"
@@ -505,8 +501,8 @@ msgid ""
 "ROT mode, roll to put the solid white arrow at top of MFD target for "
 "rotational alignment."
 msgstr ""
-"Mode rotation, on roule afin de placer la flèche blanche en haut de "
-"l'affichage pour l'alignement en roulis."
+"RCS ROT, on roule afin de placer la flèche blanche en haut de l'affichage "
+"pour l'alignement en roulis."
 
 #: C:/github/openorbiter/Flights/DG-ISS Sync Dock/system.dat:131
 msgctxt "Flight"
@@ -530,7 +526,7 @@ msgctxt "Flight"
 msgid ""
 "Distance under 160 m, CVEL 0.21, still chasing lineup with linear thrusters."
 msgstr ""
-"Moins de 160m, CVEL 0,21, toujours quelques translations pour s'aligner."
+"Moins de 160m, CVEL 0.21, encore quelques translations pour nous aligner."
 
 #: C:/github/openorbiter/Flights/DG-ISS Sync Dock/system.dat:134
 msgctxt "Flight"
@@ -538,23 +534,23 @@ msgid ""
 "Working LIN thrusters to control transverse drift and to put HUD plus-symbol "
 "(-V[ISS]) just above docking port."
 msgstr ""
-"On joue sur les verniers pour ajuster la dérive transverse et placer le "
-"V[ISS] du HUD juste au dessus du port."
+"On joue sur les petits moteurs pour ajuster la dérive transverse et placer "
+"le V[ISS] du HUD juste au dessus du port."
 
 #: C:/github/openorbiter/Flights/DG-ISS Sync Dock/system.dat:135
 msgctxt "Flight"
 msgid "Lineup looks good, DST 135 m, CVEL 0.26"
-msgstr "Alignement bon, distance 135m, CVEL 0,26"
+msgstr "Alignement bon, distance 135m, CVEL 0.26"
 
 #: C:/github/openorbiter/Flights/DG-ISS Sync Dock/system.dat:136
 msgctxt "Flight"
 msgid "Lineup good, 105 m, CVEL 0.29"
-msgstr "Alignement bon, 106m, CVEL 0,29"
+msgstr "Alignement bon, 106m, CVEL 0.29"
 
 #: C:/github/openorbiter/Flights/DG-ISS Sync Dock/system.dat:137
 msgctxt "Flight"
 msgid "Fixing up a little drift, range 90 m, closing at 0.29 m/s"
-msgstr "Petite correction de dérive, distance 90m, approche à  0,29m/s"
+msgstr "Petite correction de dérive, distance 90m, approche à  0.29m/s"
 
 #: C:/github/openorbiter/Flights/DG-ISS Sync Dock/system.dat:138
 msgctxt "Flight"
@@ -562,32 +558,32 @@ msgid ""
 "Good lineup, 60 m, HUD -V cross just above dock port (acounts for offset "
 "between DG eye and docking port)."
 msgstr ""
-"Alignement correct, 60m, réticule sur le HUD juste au dessus du port (pour "
+"Alignement correct, 60m, réticule du HUD juste au dessus du port (pour "
 "prendre en compte le décalage entre le port et le point de vue)."
 
 #: C:/github/openorbiter/Flights/DG-ISS Sync Dock/system.dat:139
 msgctxt "Flight"
 msgid "Lineup OK, 50 m, CVEL 0.29"
-msgstr "Alignement OK, 50m,  CVEL 0,29"
+msgstr "Alignement OK, 50m,  CVEL 0.29"
 
 #: C:/github/openorbiter/Flights/DG-ISS Sync Dock/system.dat:140
 msgctxt "Flight"
 msgid "Good lineup, 20 m, CVEL .28"
-msgstr "Alignement correct, 20m, CVEL 0,28"
+msgstr "Alignement correct, 20m, CVEL 0.28"
 
 #: C:/github/openorbiter/Flights/DG-ISS Sync Dock/system.dat:141
 msgctxt "Flight"
 msgid "Slight drift, 10 m, .28 CVEL"
-msgstr "Légère dérive, 10m, 0,28"
+msgstr "Légère dérive, 10m, 0.28"
 
 #: C:/github/openorbiter/Flights/DG-ISS Sync Dock/system.dat:142
 msgctxt "Flight"
 msgid ""
 "At 2.5 m, reverse thruster (num-9) to reduce CVEL, CVEL 0.14, dropping..."
 msgstr ""
-"2,5m, rétro-impulsion (num-9) pour réduire la vitesse. CVEL 0,14, en chute..."
+"2.5m, rétro-impulsion (num-9) pour réduire la vitesse. CVEL 0.14, en chute..."
 
 #: C:/github/openorbiter/Flights/DG-ISS Sync Dock/system.dat:143
 msgctxt "Flight"
 msgid "Range 1 m, CVEL 0.11, about to dock."
-msgstr "Distance 1m, CVEL 0,11m/s, amarrage imminent."
+msgstr "Distance 1m, CVEL 0.11m/s, amarrage imminent."

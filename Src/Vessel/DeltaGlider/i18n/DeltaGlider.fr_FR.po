@@ -81,7 +81,7 @@ msgstr "Rouge"
 #: C:/github/openorbiter/Src/Vessel/DeltaGlider/DeltaGlider.cpp:154
 msgctxt "DG dialog - Airbrake"
 msgid "Half-extended"
-msgstr "Mi-déployé"
+msgstr "Mi-course"
 
 #: C:/github/openorbiter/Src/Vessel/DeltaGlider/DeltaGlider.cpp:196
 msgctxt "DG dialog - Airbrake"
@@ -172,12 +172,12 @@ msgstr "Échelle de secours"
 #: C:/github/openorbiter/Src/Vessel/DeltaGlider/DeltaGlider.cpp:252
 msgctxt "DG dialog - Escape Ladder"
 msgid "Stow"
-msgstr "Rétracter"
+msgstr "Replier"
 
 #: C:/github/openorbiter/Src/Vessel/DeltaGlider/DeltaGlider.cpp:254
 msgctxt "DG dialog - Escape Ladder"
 msgid "Stowed"
-msgstr "Rétractée"
+msgstr "Repliée"
 
 #: C:/github/openorbiter/Src/Vessel/DeltaGlider/DeltaGlider.cpp:255
 msgctxt "DG dialog - Escape Ladder"
@@ -307,7 +307,7 @@ msgstr "Déployer"
 #: C:/github/openorbiter/Src/Vessel/DeltaGlider/DeltaGlider.cpp:185
 msgctxt "DG dialog - Retro Doors"
 msgid "Retro Doors"
-msgstr "Trappes de rétropropulsion"
+msgstr "Trappes rétropropulsion"
 
 #: C:/github/openorbiter/Src/Vessel/DeltaGlider/DeltaGlider.cpp:186
 msgctxt "DG dialog - Retro Doors"
@@ -342,7 +342,7 @@ msgstr "Ouvrir"
 #: C:/github/openorbiter/Src/Vessel/DeltaGlider/DeltaGlider.cpp:207
 msgctxt "DG dialog - Top Hatch"
 msgid "Top Hatch"
-msgstr "Trappe supérieure"
+msgstr "Trappe de toit"
 
 #: C:/github/openorbiter/Src/Vessel/DeltaGlider/DeltaGlider.cpp:208
 msgctxt "DG dialog - Top Hatch"

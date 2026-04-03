@@ -28,7 +28,7 @@ msgstr ""
 #: C:/github/openorbiter/Script/Challenges/Challenge3.lua:31
 #: C:/github/openorbiter/Script/Challenges/Challenge4.lua:31
 msgid "Fuel used"
-msgstr "Carburant utilisé"
+msgstr "Carburant consommé"
 
 #: C:/github/openorbiter/Script/Challenges/Challenge1.lua:31
 #: C:/github/openorbiter/Script/Challenges/Challenge2.lua:31
@@ -64,8 +64,10 @@ msgid ""
 "Use as little fuel as possible.\n"
 msgstr ""
 "Défi :\n"
-"Placez le Delta-glider into orbit et amarrez-vous à la Station Spatiale "
-"Internationale. Utilisez le moins de carburant possible.\n"
+"\n"
+"Placez le Delta-Glider en orbite et amarrez-vous\n"
+"à la Station Spatiale Internationale.\n"
+"Utilisez le moins de carburant possible.\n"
 
 #: C:/github/openorbiter/Script/Challenges/Challenge1.lua:59
 msgid "Could not find GL-01. Aborting"
@@ -94,13 +96,13 @@ msgid ""
 "Used so far: %.2f kg\n"
 msgstr ""
 "Carburant initial : %.2f kg\n"
-"Utilisé : %.2f kg\n"
+"Consommé : %.2f kg\n"
 
 #: C:/github/openorbiter/Script/Challenges/Challenge1.lua:99
 #: C:/github/openorbiter/Script/Challenges/Challenge2.lua:98
 #: C:/github/openorbiter/Script/Challenges/Challenge3.lua:100
 msgid "Fuel used: %.2f kg"
-msgstr "Carburant utilisé : %.2f kg"
+msgstr "Carburant consommé : %.2f kg"
 
 #: C:/github/openorbiter/Script/Challenges/Challenge1.lua:110
 #: C:/github/openorbiter/Script/Challenges/Challenge2.lua:109
@@ -145,7 +147,7 @@ msgid ""
 msgstr ""
 "Défi :\n"
 "\n"
-"Procédez jusqu'à l'orbite lunaire et amarrez-vous\n"
+"Allez jusqu'à l'orbite lunaire et amarrez-vous\n"
 "à la roue orbitale Luna-Ob1. Utilisez le moins de carburant possible.\n"
 
 #: C:/github/openorbiter/Script/Challenges/Challenge2.lua:58
@@ -166,10 +168,10 @@ msgid ""
 msgstr ""
 "Défi :\n"
 "\n"
-"Procédez jusqu'à l'orbite lunaire et amarrez-vous\n"
+"Allez jusqu'à l'orbite lunaire et amarrez-vous\n"
 "à la roue orbitale Luna-Ob1. Utilisez le moins de carburant possible.\n"
 "\n"
-"Cette fois les plans orbitaux sont à considérer.\n"
+"Cette fois, surveillez les plans orbitaux.\n"
 
 #: C:/github/openorbiter/Script/Challenges/Challenge4.lua:50
 msgid ""
@@ -184,10 +186,10 @@ msgstr ""
 "Défi :\n"
 "\n"
 "Ça a l'air simple : désorbitez le Delta-Glider et\n"
-"atterrissez au Kennedy Space Center, piste 33\n"
+"atterrissez au Kennedy Space Center, piste SLF 33\n"
 "- sans ravitaillement.\n"
 "\n"
-"Indice : l'approche directe n'est pas la bonne stratégie.\n"
+"Conseil : l'approche directe n'est pas la bonne stratégie.\n"
 
 #: C:/github/openorbiter/Script/Challenges/Challenge4.lua:110
 #: C:/github/openorbiter/Script/Challenges/Challenge4.lua:96

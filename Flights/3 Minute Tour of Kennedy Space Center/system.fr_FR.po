@@ -17,7 +17,7 @@ msgstr ""
 msgctxt "Flight"
 msgid "Welcome to a quick aerial tour of Kennedy Space Center in Orbiter 2016!"
 msgstr ""
-"Bienvenue dans une courte visite aérienne du Centre spatial Kennedy dans "
+"Bienvenue pour une visite aérienne rapide du Centre spatial Kennedy dans "
 "Orbiter !"
 
 #: C:/github/openorbiter/Flights/3 Minute Tour of Kennedy Space
@@ -27,9 +27,9 @@ msgid ""
 "Welcome to a quick aerial tour of Kennedy Space Center in Orbiter 2016!    "
 "This is a recorded flight, so just sit back and enjoy the view."
 msgstr ""
-"Bienvenue dans une courte visite aérienne du Centre spatial Kennedy dans "
-"Orbiter !    C'est un enregistrement, alors installez-vous confortablement "
-"et profitez de la vue."
+"Bienvenue pour une visite aérienne rapide du Centre spatial Kennedy dans "
+"Orbiter !    Ceci est un enregistrement, alors installez-vous "
+"confortablement et profitez de la vue."
 
 #: C:/github/openorbiter/Flights/3 Minute Tour of Kennedy Space
 #: Center/system.dat:5
@@ -38,8 +38,8 @@ msgid ""
 "Accelerating down runway 33 of the Shuttle Landing Facility (SLF) in a DG "
 "type spaceplane."
 msgstr ""
-"Accélération sur la piste 33 de la Shuttle Landing Facility (SLF) à bord "
-"d’un avion spatial de type DG."
+"Accélération en piste 33 de la Shuttle Landing Facility (SLF) à bord d’un "
+"avion spatial de type DG."
 
 #: C:/github/openorbiter/Flights/3 Minute Tour of Kennedy Space
 #: Center/system.dat:8
@@ -80,9 +80,8 @@ msgid ""
 "While the KSC terrain is flat, Orbiter's new surface elevation support has "
 "been put to use for modelling vegetation."
 msgstr ""
-"Bien que le terrain du KSC soit plat, la nouvelle prise en charge de "
-"l’élévation du relief dans Orbiter a été utilisée pour modéliser la "
-"végétation."
+"Même si le terrain du KSC est plat, Orbiter prend en charge le relief pour "
+"modéliser la végétation."
 
 #: C:/github/openorbiter/Flights/3 Minute Tour of Kennedy Space
 #: Center/system.dat:16
@@ -98,7 +97,7 @@ msgid ""
 "editions."
 msgstr ""
 "Orbiter 2016 modélise également les surfaces d’eau de manière plus réaliste "
-"que les éditions précédentes."
+"que précédemment."
 
 #: C:/github/openorbiter/Flights/3 Minute Tour of Kennedy Space
 #: Center/system.dat:20
@@ -107,9 +106,9 @@ msgid ""
 "Pad A of Launch Complex 39 (LC-39A) is ahead, used for launches of the "
 "Apollo program, and later the Space Shuttle."
 msgstr ""
-"Le pas de tir A du Complexe Lancement 39A (LC-39A) se trouve droit devant, "
-"utilisé pour les lancements du programme Apollo, puis plus tard pour la "
-"Navette Spatiale."
+"Le pas de tir A du Complexe de Lancement 39A (LC-39A) est droit devant, il a "
+"servi aux lancements du programme Apollo, puis plus tard pour la Navette "
+"Spatiale."
 
 #: C:/github/openorbiter/Flights/3 Minute Tour of Kennedy Space
 #: Center/system.dat:22
@@ -137,13 +136,13 @@ msgstr "Il est temps de retourner à la base. Préparation à l’atterrissage."
 #: Center/system.dat:27
 msgctxt "Flight"
 msgid "Throttle to idle ..."
-msgstr "Réduction des gaz au ralenti…"
+msgstr "Réduction des gaz…"
 
 #: C:/github/openorbiter/Flights/3 Minute Tour of Kennedy Space
 #: Center/system.dat:28
 msgctxt "Flight"
 msgid "Throttle to idle ...    Gear down ..."
-msgstr "Réduction des gaz au ralenti…    Sortie du train d'atterrissage..."
+msgstr "Réduction des gaz…    Sortie du train d'atterrissage..."
 
 #: C:/github/openorbiter/Flights/3 Minute Tour of Kennedy Space
 #: Center/system.dat:30
@@ -182,9 +181,9 @@ msgid ""
 "There you go - not exactly a regulation landing, but it is pretty hard to "
 "miss the SLF runway (it's one of the longest in the world)."
 msgstr ""
-"Voilà – ce n’est pas exactement un atterrissage réglementaire, mais il est "
-"difficile de rater la piste du Shuttle Landing Facility (c’est l’une des "
-"plus longues au monde)."
+"Voilà – ce n’est pas très réglementaire comme atterrissage, mais difficile "
+"de rater la piste du Shuttle Landing Facility (c’est l’une des plus longues "
+"au monde)."
 
 #: C:/github/openorbiter/Flights/3 Minute Tour of Kennedy Space
 #: Center/system.dat:38

@@ -18,7 +18,7 @@ msgstr ""
 #: C:/github/openorbiter/Src/Plugin/FlightData/FlightData.cpp:208
 msgctxt "FlightData"
 msgid "Flight Data Monitor"
-msgstr "Moniteur de données de vol"
+msgstr "Moniteur de données vol"
 
 #. Graph name and axis
 #: C:/github/openorbiter/Src/Plugin/FlightData/FlightData.cpp:170
@@ -60,7 +60,7 @@ msgstr "Vitesse"
 #: C:/github/openorbiter/Src/Plugin/FlightData/FlightData.cpp:176
 msgctxt "FlightData"
 msgid "Airspeed"
-msgstr "Vitesse indiquée"
+msgstr "Vitesse air"
 
 #: C:/github/openorbiter/Src/Plugin/FlightData/FlightData.cpp:177
 msgctxt "FlightData"
@@ -165,7 +165,7 @@ msgstr "Angle (°)"
 #: C:/github/openorbiter/Src/Plugin/FlightData/FlightData.cpp:202
 msgctxt "FlightData"
 msgid "AoA"
-msgstr "AoA"
+msgstr "Incidence"
 
 #: C:/github/openorbiter/Src/Plugin/FlightData/FlightData.cpp:203
 msgctxt "FlightData"
@@ -176,7 +176,7 @@ msgstr "Glissade"
 #: C:/github/openorbiter/Src/Plugin/FlightData/FlightData.cpp:206
 msgctxt "FlightData"
 msgid "Open a window to track flight parameters of a spacecraft."
-msgstr "Ouvre une fenêtre pour suivre les paramètres de vol d'un vaisseau."
+msgstr "Ouvrir une fenêtre de suivi des paramètres vol d'un vaisseau."
 
 #. Name in menu bar
 #: C:/github/openorbiter/Src/Plugin/FlightData/FlightData.cpp:210
@@ -192,19 +192,19 @@ msgstr "Impossible d'ouvrir le fichier en écriture : "
 #: C:/github/openorbiter/Src/Plugin/FlightData/FlightData.cpp:234
 msgctxt "FlightData"
 msgid "Flight data recording error"
-msgstr "Erreur d'enregistrement des données de vol"
+msgstr "Erreur d'enregistrement des données vol"
 
 #. Notification
 #: C:/github/openorbiter/Src/Plugin/FlightData/FlightData.cpp:267
 msgctxt "FlightData"
 msgid "Flight data recording enabled"
-msgstr "Enregistrement des données de vol activé"
+msgstr "Enregistrement des données vol activé"
 
 #. Notification
 #: C:/github/openorbiter/Src/Plugin/FlightData/FlightData.cpp:276
 msgctxt "FlightData"
 msgid "Flight data recording disabled"
-msgstr "Enregistrement des données de vol désactivé"
+msgstr "Enregistrement des données vol désactivé"
 
 #: C:/github/openorbiter/Src/Plugin/FlightData/FlightData.cpp:314
 msgctxt "FlightData"

@@ -23,7 +23,7 @@ msgstr "Métriques de performance"
 #: C:/github/openorbiter/Src/Plugin/Framerate/Framerate.cpp:90
 msgctxt "Framerate"
 msgid "Simulation frame rate / time step monitor"
-msgstr "Suivi des pas de simulation / images par secondes"
+msgstr "Suivi des pas de temps / images par secondes"
 
 #. Custom command name
 #: C:/github/openorbiter/Src/Plugin/Framerate/Framerate.cpp:92

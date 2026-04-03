@@ -23,7 +23,7 @@ msgstr "Notes"
 #: C:/github/openorbiter/Src/Plugin/Notes/Notes.cpp:210
 msgctxt "Notes"
 msgid "Opens an onscreen note"
-msgstr "Créer une note à l'écran"
+msgstr "Créer une note incrustée"
 
 #. Name in menu bar
 #: C:/github/openorbiter/Src/Plugin/Notes/Notes.cpp:214
