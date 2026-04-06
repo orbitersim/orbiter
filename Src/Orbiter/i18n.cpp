@@ -31,8 +31,8 @@ struct PluralRule {
 };
 
 // -------------------- Global state --------------------
-static std::string g_currentLocale;
-static std::vector<std::string> g_locales;
+static std::pair<std::string,std::string> g_currentLocale;
+static std::vector<std::pair<std::string,std::string>> g_locales; // pair<locale, autonym>
 static bool g_notifyMissing = true;
 static PluralRule g_currentPluralRule = {2, [](unsigned int n){ return n != 1 ? 1 : 0; }};
 
@@ -359,11 +359,21 @@ std::string extract_po_string(const std::string& line)
 
 void LoadLocale(const char *locale)
 {
-    g_currentLocale = locale;
+    auto it = std::find_if(g_locales.begin(), g_locales.end(),
+        [locale](const std::pair<std::string, std::string>& p) {
+            return p.first == locale;
+        });
+
+	if (it == g_locales.end()) {
+		g_currentLocale.first.clear();
+		g_currentLocale.second.clear();
+		return;
+	}
+    g_currentLocale = *it;
     g_translations.clear();
 	g_originalEntities.clear();
 
-	if(g_currentLocale.empty()) return;
+	if(g_currentLocale.first.empty()) return;
 
 	std::string suffix = std::string(".") + locale + ".po";
 	for (const auto& entry : std::filesystem::directory_iterator("i18n"))
@@ -378,11 +388,24 @@ void LoadLocale(const char *locale)
     }
 }
 
+const char *GetLocaleName(const char *name)
+{
+    auto it = std::find_if(g_locales.begin(), g_locales.end(),
+        [name](const std::pair<std::string, std::string>& p) {
+            return p.first == name;
+        });
+	if(it != g_locales.end()) {
+		return it->second.c_str();
+	} else {
+		return name;
+	}
+}
+
 void ImportDirectory(const char *dirname)
 {
-	if(g_currentLocale.empty()) return;
+	if(g_currentLocale.first.empty()) return;
 
-	std::string suffix = std::string(".") + g_currentLocale + ".po";
+	std::string suffix = std::string(".") + g_currentLocale.first + ".po";
 	for (const auto& entry : std::filesystem::directory_iterator(dirname))
     {
         if (!entry.is_regular_file())
@@ -398,11 +421,12 @@ void ImportDirectory(const char *dirname)
 // Get the list of locales in the i18n directory,
 // matching *.locale.po files (e.g. Orbiter.fr_FR.po)
 // Use a set to remove duplicates
-static std::set<std::string> ExtractLocales()
+//#include <tuple>
+static std::set<std::pair<std::string, std::string>> ExtractLocales()
 {
-    std::set<std::string> locales;
+    std::set<std::pair<std::string, std::string>> locales;
 
-	for (const auto& entry : std::filesystem::directory_iterator("i18n"))
+    for (const auto& entry : std::filesystem::directory_iterator("i18n"))
     {
         if (!entry.is_regular_file())
             continue;
@@ -414,18 +438,37 @@ static std::set<std::string> ExtractLocales()
 
         std::string name = path.filename().string();
 
-        // find ".po"
         size_t po_pos = name.rfind(".po");
-        if (po_pos == std::string::npos)
-            continue;
-
-        // find the dot before locale
         size_t dot_pos = name.rfind('.', po_pos - 1);
-        if (dot_pos == std::string::npos)
+        if (po_pos == std::string::npos || dot_pos == std::string::npos)
             continue;
 
         std::string locale = name.substr(dot_pos + 1, po_pos - dot_pos - 1);
-        locales.insert(locale);
+
+        std::ifstream f(path);
+        if (!f.is_open())
+            continue;
+
+        std::string line;
+        std::string msgctxt, msgid, msgstr;
+
+        while (std::getline(f, line))
+        {
+            if (starts_with(line, "msgctxt"))
+                msgctxt = extract_po_string(line);
+            else if (starts_with(line, "msgid"))
+                msgid = extract_po_string(line);
+            else if (starts_with(line, "msgstr"))
+            {
+                msgstr = extract_po_string(line);
+
+                if (msgctxt == "locale" && msgid == "LANGUAGE_NAME")
+                {
+                    locales.emplace(locale, msgstr);
+                    break;
+                }
+            }
+        }
     }
 
     return locales;
@@ -436,15 +479,15 @@ void Init(bool notifymissing) {
     g_locales.clear();
 
 	// en_UK is always available (hardcoded msgids)
-    g_locales.push_back("en_UK");
+    g_locales.emplace_back("en_UK", "English (United Kingdom)");
 
 	auto locales = ExtractLocales();
 	for(const auto &locale: locales) {
-	    g_locales.push_back(locale);
+	    g_locales.emplace_back(locale);
 	}
 }
 
-const std::vector<std::string> &GetLocales() { return g_locales; }
+const std::vector<std::pair<std::string,std::string>> &GetLocales() { return g_locales; }
 
 DLLEXPORT const char *GetOriginalName(const char *name) {
 	std::string folded = unicode_fold(name);
@@ -524,7 +567,7 @@ static void LoadPO(const char *filename) {
 
 DLLEXPORT bool Enabled()
 {
-	return !g_currentLocale.empty();
+	return !g_currentLocale.first.empty();
 }
 
 DLLEXPORT const char *PGetText(uint64_t key) {

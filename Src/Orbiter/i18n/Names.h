@@ -60,10 +60,13 @@ _c("Date Day", "Thu")
 _c("Date Day", "Fri")
 _c("Date Day", "Sat")
 
-// TRANSLATORS: Parameters order: weekday, month, day, hour, min, sec, year. You can use POSIX style positional parameters here.
+// TRANSLATORS: Parameters order: weekday, month, day, hour, min, sec, year. You can use POSIX style positional parameters here if you need reordering.
 _c("Date Format", "%s %s %02d %02d:%02d:%02d %d")
 
 _c("Cardinal direction", "N")
 _c("Cardinal direction", "S")
 _c("Cardinal direction", "E")
 _c("Cardinal direction", "W")
+
+// TRANSLATORS: Autonym of your locale (i.e. in your language) (e.g. English (United Kingdom), 日本語 (日本))
+_c("locale", "LANGUAGE_NAME")

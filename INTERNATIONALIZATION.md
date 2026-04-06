@@ -37,6 +37,10 @@ Some tools may "compile" your .po files to .mo files. Orbiter does not use them.
 
 Note : Orbiter only support UTF-8 encoded .po files
 
+### Locale name
+Orbiter will look for a specific message "LANGUAGE_NAME" associated to a specific context "locale" in order to show your
+locale name in the language selection dialog. This message is located in the Orbiter.pot file and must be defined.
+
 ## Content creators
 
 ### Code instrumentation

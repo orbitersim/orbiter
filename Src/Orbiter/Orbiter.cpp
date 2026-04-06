@@ -739,7 +739,7 @@ HWND Orbiter::CreateRenderWindow (Config *pCfg, const char *scenario)
 
 		// Create keyboard device
 		if (!pDI->CreateKbdDevice ()) {
-			CloseSession ();
+			CloseSession (false);
 			return 0;
 		}
 
@@ -899,7 +899,7 @@ void Orbiter::PreCloseSession()
 // Name: CloseSession()
 // Desc: Destroy render window and associated devices
 //-----------------------------------------------------------------------------
-void Orbiter::CloseSession ()
+void Orbiter::CloseSession (bool restart)
 {
 	DWORD i;
 
@@ -912,6 +912,13 @@ void Orbiter::CloseSession ()
 	if (hScnInterp) {
 		script->DelInterpreter (hScnInterp);
 		hScnInterp = NULL;
+	}
+
+	if(restart) {
+		const char *name = "orbiter.exe";
+		char scn[MAX_PATH];
+		snprintf(scn, 256, "\"%s\"", CurrentScenario);
+		_execl (name, name, "-l", "-S", scn, NULL);   // respawn the process
 	}
 
 	if (ConsoleManager::IsConsoleExclusive())
@@ -1809,7 +1816,7 @@ void Orbiter::EndTimeStep (bool running)
 	// check for termination of demo mode
 	if (SessionLimitReached())
 		if (hRenderWnd) PostMessage(hRenderWnd, WM_CLOSE, 0, 0);
-		else CloseSession();
+		else CloseSession(false);
 }
 
 bool Orbiter::SessionLimitReached() const
@@ -2641,7 +2648,7 @@ LRESULT Orbiter::MsgProc (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 		return 0;
 
 	case WM_DESTROY:
-		CloseSession ();
+		CloseSession (false);
         break;
 	}
     return DefWindowProc (hWnd, uMsg, wParam, lParam);

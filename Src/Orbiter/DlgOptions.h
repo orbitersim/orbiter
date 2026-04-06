@@ -32,6 +32,7 @@ public:
 	void DrawVessel();
 	void DrawUI();
 	 void DrawJoystick();
+	 void DrawLanguage();
 	void DrawCelSphere();
 	void DrawVisHelper();
 	 void DrawPlanetarium();

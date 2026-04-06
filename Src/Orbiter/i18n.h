@@ -14,7 +14,11 @@ namespace I18N {
 void Init(bool notifymissing);
 
 // Get a list of available locales
-const std::vector<std::string> &GetLocales();
+const std::vector<std::pair<std::string,std::string>> &GetLocales();
+
+// Get name of the current locale, returns the provided name if not found
+// GetLocaleName("en_UK") -> "English (United Kingdom)"
+const char *GetLocaleName(const char *name);
 
 // Load a locale
 void LoadLocale(const char *);

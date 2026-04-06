@@ -18,7 +18,7 @@ extern PlanetarySystem* g_psys;
 #include "imgui_extras.h"
 
 #define TRANSLATION_CONTEXT "Dialog Options"
-#include "I18NAPI.h"
+#include "i18n.h"
 
 DlgOptions::DlgOptions(): ImGuiDialog(ICON_FA_LIST_CHECK, _("Orbiter: Options"), {692,383})
 {
@@ -86,6 +86,7 @@ void DlgOptions::OnDraw()
 		{_("Vessel settings"),      "/tab_param.htm",      &DlgOptions::DrawVessel},
 		{_("User interface"),       "/tab_param.htm",      &DlgOptions::DrawUI},
 		{_("      Joystick"),       "/tab_joystick.htm",   &DlgOptions::DrawJoystick},
+		{_("      Language"),       "/tab_joystick.htm",   &DlgOptions::DrawLanguage},
 		{_("Celestial sphere"),     "/opt_celsphere.htm",  &DlgOptions::DrawCelSphere},
 		{_("Visual helpers"),       "/vishelper.htm",      &DlgOptions::DrawVisHelper},
 		{_("      Planetarium"),    "/vh_planetarium.htm", &DlgOptions::DrawPlanetarium},
@@ -246,6 +247,61 @@ void DlgOptions::DrawJoystick()
 			g_pOrbiter->OnOptionChanged(OPTCAT_JOYSTICK, OPTITEM_JOYSTICK_PARAM);
 
 	ImGui::EndDisabled();
+}
+void DlgOptions::DrawLanguage()
+{
+    const auto &locales = I18N::GetLocales();
+    const auto &cfglocale = g_pOrbiter->Cfg()->CfgUIPrm.locale;
+    const char *localename = I18N::GetLocaleName(cfglocale.c_str());
+
+    // static = persists between frames
+    static std::string pendingLocale;
+
+    if (ImGui::BeginAnimatedCombo("##Language", localename)) {
+        for (const auto &locale : locales) {
+            if (ImGui::RadioButton(locale.second.c_str(), cfglocale == locale.first)) {
+				if(cfglocale != locale.first)
+	                pendingLocale = locale.first;
+            }
+        }
+        ImGui::EndAnimatedCombo();
+    }
+	if(!pendingLocale.empty()) {
+        ImGui::OpenPopup(_("Confirm Language Change"));
+	}
+
+	bool unused_open = true;
+    if (ImGui::BeginPopupModal(_("Confirm Language Change"), &unused_open)) {
+        ImGui::Text(_("Change language to '%s'?"), I18N::GetLocaleName(pendingLocale.c_str()));
+		ImGui::Text(_("The modification will be effective after a restart"));
+        ImGui::Separator();
+
+        if (ImGui::Button(_("Apply and restart"))) {
+            g_pOrbiter->Cfg()->CfgUIPrm.locale = pendingLocale;
+            pendingLocale.clear();
+            g_pOrbiter->SaveConfig();
+            g_pOrbiter->CloseSession(true);
+            ImGui::CloseCurrentPopup();
+        }
+
+        ImGui::SameLine();
+
+		if (ImGui::Button(_("Apply on next restart"))) {
+            g_pOrbiter->Cfg()->CfgUIPrm.locale = pendingLocale;
+            pendingLocale.clear();
+            g_pOrbiter->SaveConfig();
+            ImGui::CloseCurrentPopup();
+        }
+
+        ImGui::SameLine();
+
+        if (ImGui::Button(_("Cancel"))) {
+            pendingLocale.clear();
+            ImGui::CloseCurrentPopup();
+        }
+
+        ImGui::EndPopup();
+    }
 }
 void DlgOptions::DrawCelSphere()
 {
