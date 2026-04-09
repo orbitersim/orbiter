@@ -5,22 +5,22 @@ msgstr ""
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 "Content-Transfer-Encoding: 8bit\n"
 
-#: C:/github/openorbiter/Flights/Welcome to Orbiter 2024/system.dat:1
+#: Flights/Welcome to Orbiter 2024/system.dat:1
 msgctxt "Flight"
 msgid "WELCOME TO ORBITER 2024!"
 msgstr ""
 
-#: C:/github/openorbiter/Flights/Welcome to Orbiter 2024/system.dat:8
+#: Flights/Welcome to Orbiter 2024/system.dat:8
 msgctxt "Flight"
 msgid "This version represents the first release of OpenOrbiter, brought to you by the Orbiter community."
 msgstr ""
 
-#: C:/github/openorbiter/Flights/Welcome to Orbiter 2024/system.dat:10
+#: Flights/Welcome to Orbiter 2024/system.dat:10
 msgctxt "Flight"
 msgid "For a full list of new features, please check the release notes."
 msgstr ""
 
-#: C:/github/openorbiter/Flights/Welcome to Orbiter 2024/system.dat:12
+#: Flights/Welcome to Orbiter 2024/system.dat:12
 msgctxt "Flight"
 msgid "Special thanks to Dr. Martin Schweiger for developing and maintaining Orbiter for over 25 years, and for releasing the source code, making Orbiter an open source program."
 msgstr ""

@@ -5,117 +5,117 @@ msgstr ""
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 "Content-Transfer-Encoding: 8bit\n"
 
-#: C:/github/openorbiter/Flights/3 Minute Tour of Kennedy Space Center/system.dat:2
+#: Flights/3 Minute Tour of Kennedy Space Center/system.dat:2
 msgctxt "Flight"
 msgid "Welcome to a quick aerial tour of Kennedy Space Center in Orbiter 2016!"
 msgstr ""
 
-#: C:/github/openorbiter/Flights/3 Minute Tour of Kennedy Space Center/system.dat:3
+#: Flights/3 Minute Tour of Kennedy Space Center/system.dat:3
 msgctxt "Flight"
 msgid "Welcome to a quick aerial tour of Kennedy Space Center in Orbiter 2016!    This is a recorded flight, so just sit back and enjoy the view."
 msgstr ""
 
-#: C:/github/openorbiter/Flights/3 Minute Tour of Kennedy Space Center/system.dat:5
+#: Flights/3 Minute Tour of Kennedy Space Center/system.dat:5
 msgctxt "Flight"
 msgid "Accelerating down runway 33 of the Shuttle Landing Facility (SLF) in a DG type spaceplane."
 msgstr ""
 
-#: C:/github/openorbiter/Flights/3 Minute Tour of Kennedy Space Center/system.dat:8
+#: Flights/3 Minute Tour of Kennedy Space Center/system.dat:8
 msgctxt "Flight"
 msgid "Rotation and takeoff."
 msgstr ""
 
-#: C:/github/openorbiter/Flights/3 Minute Tour of Kennedy Space Center/system.dat:10
+#: Flights/3 Minute Tour of Kennedy Space Center/system.dat:10
 msgctxt "Flight"
 msgid "Gear up."
 msgstr ""
 
-#: C:/github/openorbiter/Flights/3 Minute Tour of Kennedy Space Center/system.dat:12
+#: Flights/3 Minute Tour of Kennedy Space Center/system.dat:12
 msgctxt "Flight"
 msgid "Orbiter now supports higher texture resolutions for improved realism."
 msgstr ""
 
-#: C:/github/openorbiter/Flights/3 Minute Tour of Kennedy Space Center/system.dat:13
+#: Flights/3 Minute Tour of Kennedy Space Center/system.dat:13
 msgctxt "Flight"
 msgid "Orbiter now supports higher texture resolutions for improved realism.    The area around KSC has been textured from aerial photographs with a resolution of about 1 meter per pixel."
 msgstr ""
 
-#: C:/github/openorbiter/Flights/3 Minute Tour of Kennedy Space Center/system.dat:15
+#: Flights/3 Minute Tour of Kennedy Space Center/system.dat:15
 msgctxt "Flight"
 msgid "While the KSC terrain is flat, Orbiter's new surface elevation support has been put to use for modelling vegetation."
 msgstr ""
 
-#: C:/github/openorbiter/Flights/3 Minute Tour of Kennedy Space Center/system.dat:16
+#: Flights/3 Minute Tour of Kennedy Space Center/system.dat:16
 msgctxt "Flight"
 msgid "Buzzing the Vehicle Assembly Building (VAB)."
 msgstr ""
 
-#: C:/github/openorbiter/Flights/3 Minute Tour of Kennedy Space Center/system.dat:18
+#: Flights/3 Minute Tour of Kennedy Space Center/system.dat:18
 msgctxt "Flight"
 msgid "Orbiter 2016 also models water surfaces more realistically than previous editions."
 msgstr ""
 
-#: C:/github/openorbiter/Flights/3 Minute Tour of Kennedy Space Center/system.dat:20
+#: Flights/3 Minute Tour of Kennedy Space Center/system.dat:20
 msgctxt "Flight"
 msgid "Pad A of Launch Complex 39 (LC-39A) is ahead, used for launches of the Apollo program, and later the Space Shuttle."
 msgstr ""
 
-#: C:/github/openorbiter/Flights/3 Minute Tour of Kennedy Space Center/system.dat:22
+#: Flights/3 Minute Tour of Kennedy Space Center/system.dat:22
 msgctxt "Flight"
 msgid "And there is LC-39B."
 msgstr ""
 
-#: C:/github/openorbiter/Flights/3 Minute Tour of Kennedy Space Center/system.dat:23
+#: Flights/3 Minute Tour of Kennedy Space Center/system.dat:23
 msgctxt "Flight"
 msgid "And there is LC-39B.    Looks like a Shuttle is preparing for launch at this very moment."
 msgstr ""
 
-#: C:/github/openorbiter/Flights/3 Minute Tour of Kennedy Space Center/system.dat:26
+#: Flights/3 Minute Tour of Kennedy Space Center/system.dat:26
 msgctxt "Flight"
 msgid "It's time to return to base. Preparing for landing."
 msgstr ""
 
-#: C:/github/openorbiter/Flights/3 Minute Tour of Kennedy Space Center/system.dat:27
+#: Flights/3 Minute Tour of Kennedy Space Center/system.dat:27
 msgctxt "Flight"
 msgid "Throttle to idle ..."
 msgstr ""
 
-#: C:/github/openorbiter/Flights/3 Minute Tour of Kennedy Space Center/system.dat:28
+#: Flights/3 Minute Tour of Kennedy Space Center/system.dat:28
 msgctxt "Flight"
 msgid "Throttle to idle ...    Gear down ..."
 msgstr ""
 
-#: C:/github/openorbiter/Flights/3 Minute Tour of Kennedy Space Center/system.dat:30
+#: Flights/3 Minute Tour of Kennedy Space Center/system.dat:30
 msgctxt "Flight"
 msgid "Coming in pretty high and fast."
 msgstr ""
 
-#: C:/github/openorbiter/Flights/3 Minute Tour of Kennedy Space Center/system.dat:31
+#: Flights/3 Minute Tour of Kennedy Space Center/system.dat:31
 msgctxt "Flight"
 msgid "No need to panic ..."
 msgstr ""
 
-#: C:/github/openorbiter/Flights/3 Minute Tour of Kennedy Space Center/system.dat:32
+#: Flights/3 Minute Tour of Kennedy Space Center/system.dat:32
 msgctxt "Flight"
 msgid "No need to panic just yet ..."
 msgstr ""
 
-#: C:/github/openorbiter/Flights/3 Minute Tour of Kennedy Space Center/system.dat:35
+#: Flights/3 Minute Tour of Kennedy Space Center/system.dat:35
 msgctxt "Flight"
 msgid "Smooth and easy"
 msgstr ""
 
-#: C:/github/openorbiter/Flights/3 Minute Tour of Kennedy Space Center/system.dat:36
+#: Flights/3 Minute Tour of Kennedy Space Center/system.dat:36
 msgctxt "Flight"
 msgid "Touchdown!"
 msgstr ""
 
-#: C:/github/openorbiter/Flights/3 Minute Tour of Kennedy Space Center/system.dat:37
+#: Flights/3 Minute Tour of Kennedy Space Center/system.dat:37
 msgctxt "Flight"
 msgid "There you go - not exactly a regulation landing, but it is pretty hard to miss the SLF runway (it's one of the longest in the world)."
 msgstr ""
 
-#: C:/github/openorbiter/Flights/3 Minute Tour of Kennedy Space Center/system.dat:38
+#: Flights/3 Minute Tour of Kennedy Space Center/system.dat:38
 msgctxt "Flight"
 msgid "Thanks for watching - now it's over to you, commander."
 msgstr ""

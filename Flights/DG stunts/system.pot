@@ -5,112 +5,112 @@ msgstr ""
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 "Content-Transfer-Encoding: 8bit\n"
 
-#: C:/github/openorbiter/Flights/DG stunts/system.dat:4
+#: Flights/DG stunts/system.dat:4
 msgctxt "Flight"
 msgid "This tutorial demonstrates the use of Orbiter's flight recording and playback facility."
 msgstr ""
 
-#: C:/github/openorbiter/Flights/DG stunts/system.dat:6
+#: Flights/DG stunts/system.dat:6
 msgctxt "Flight"
 msgid "(And to make it a bit more entertaining, we have a Delta-glider lined up to pull a few stunts around the Kennedy Space Center.)"
 msgstr ""
 
-#: C:/github/openorbiter/Flights/DG stunts/system.dat:8
+#: Flights/DG stunts/system.dat:8
 msgctxt "Flight"
 msgid "All the scenarios in the 'Tutorials' and 'Playback' folders are pre-recorded flights. Try them out at your leisure."
 msgstr ""
 
-#: C:/github/openorbiter/Flights/DG stunts/system.dat:10
+#: Flights/DG stunts/system.dat:10
 msgctxt "Flight"
 msgid "You can't take control of the spacecraft during a playback, but you can switch the camera views and operate the MFD instruments in the cockpit."
 msgstr ""
 
-#: C:/github/openorbiter/Flights/DG stunts/system.dat:12
+#: Flights/DG stunts/system.dat:12
 msgctxt "Flight"
 msgid "You can set playback options by opening the Recording/Playback dialog box with Ctrl-F5."
 msgstr ""
 
-#: C:/github/openorbiter/Flights/DG stunts/system.dat:13
+#: Flights/DG stunts/system.dat:13
 msgctxt "Flight"
 msgid "It is useful to enable the 'Play at recording speed' option, especially for long missions, to make use of recorded time acceleration."
 msgstr ""
 
-#: C:/github/openorbiter/Flights/DG stunts/system.dat:14
+#: Flights/DG stunts/system.dat:14
 msgctxt "Flight"
 msgid "The 'Use recorded camera settings' option automatically switches the views during playback. Disable this if you want to control the camera yourself."
 msgstr ""
 
-#: C:/github/openorbiter/Flights/DG stunts/system.dat:17
+#: Flights/DG stunts/system.dat:17
 msgctxt "Flight"
 msgid "You can exit playback mode any time by clicking the 'STOP' button on the flight recorder dialog, or by pressing the F5 key."
 msgstr ""
 
-#: C:/github/openorbiter/Flights/DG stunts/system.dat:19
+#: Flights/DG stunts/system.dat:19
 msgctxt "Flight"
 msgid "The simulation then switches to active mode, and you are back in control."
 msgstr ""
 
-#: C:/github/openorbiter/Flights/DG stunts/system.dat:20
+#: Flights/DG stunts/system.dat:20
 msgctxt "Flight"
 msgid "A good strategy is to watch a tutorial first, and next time fly it yourself and try to repeat the mission."
 msgstr ""
 
-#: C:/github/openorbiter/Flights/DG stunts/system.dat:22
+#: Flights/DG stunts/system.dat:22
 msgctxt "Flight"
 msgid "At the end of a playback, the simulation always switches back to active mode."
 msgstr ""
 
-#: C:/github/openorbiter/Flights/DG stunts/system.dat:24
+#: Flights/DG stunts/system.dat:24
 msgctxt "Flight"
 msgid "You can also record your own flights. During a simulation session, press F5, or click 'Rec' on the Flight recorder dialog (Ctrl-F5) to start recording."
 msgstr ""
 
-#: C:/github/openorbiter/Flights/DG stunts/system.dat:26
+#: Flights/DG stunts/system.dat:26
 msgctxt "Flight"
 msgid "The recording ends when you press F5 again, press the 'STOP' button in the dialog box, or end the simulation."
 msgstr ""
 
-#: C:/github/openorbiter/Flights/DG stunts/system.dat:28
+#: Flights/DG stunts/system.dat:28
 msgctxt "Flight"
 msgid "The recorded flight will appear in the 'Playback' scenario folder."
 msgstr ""
 
-#: C:/github/openorbiter/Flights/DG stunts/system.dat:30
+#: Flights/DG stunts/system.dat:30
 msgctxt "Flight"
 msgid "Once you have recorded your mission, you can edit it by adding onscreen annotations, switch camera views, or change time acceleration settings."
 msgstr ""
 
-#: C:/github/openorbiter/Flights/DG stunts/system.dat:32
+#: Flights/DG stunts/system.dat:32
 msgctxt "Flight"
 msgid "To edit a recorded flight, open the flight recorder dialog (Ctrl-F5) during playback, and press the 'Playback editor' button."
 msgstr ""
 
-#: C:/github/openorbiter/Flights/DG stunts/system.dat:34
+#: Flights/DG stunts/system.dat:34
 msgctxt "Flight"
 msgid "This will open the editor window containing a list of recorded events (which may be empty at the start)."
 msgstr ""
 
-#: C:/github/openorbiter/Flights/DG stunts/system.dat:35
+#: Flights/DG stunts/system.dat:35
 msgctxt "Flight"
 msgid "If you want to insert an event at some point during the playback, pause the simulation (Ctrl-P), click an event type from the list in the editor window."
 msgstr ""
 
-#: C:/github/openorbiter/Flights/DG stunts/system.dat:36
+#: Flights/DG stunts/system.dat:36
 msgctxt "Flight"
 msgid "Next, edit any event parameters to your preferences."
 msgstr ""
 
-#: C:/github/openorbiter/Flights/DG stunts/system.dat:39
+#: Flights/DG stunts/system.dat:39
 msgctxt "Flight"
 msgid "Finally, press 'Commit' to enter the event into the playback stream and un-pause the playback. The new event will be applied immediately."
 msgstr ""
 
-#: C:/github/openorbiter/Flights/DG stunts/system.dat:42
+#: Flights/DG stunts/system.dat:42
 msgctxt "Flight"
 msgid "The DG is rolling out on the SLF runway 33, so it's time to end this little tutorial."
 msgstr ""
 
-#: C:/github/openorbiter/Flights/DG stunts/system.dat:45
+#: Flights/DG stunts/system.dat:45
 msgctxt "Flight"
 msgid "You can take it for a spin yourself now (and maybe try the recorder). Make sure you don't overwrite any playbacks you want to keep!"
 msgstr ""

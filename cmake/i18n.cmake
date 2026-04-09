@@ -115,8 +115,8 @@ function(generate_flights_pots ROOT_DIR)
         add_custom_command(
             OUTPUT ${POT_FILE}
             COMMAND $<TARGET_FILE:lua::exe>
-                    "--strip-prefix=${CMAKE_SOURCE_DIR}"
                     ${CMAKE_SOURCE_DIR}/Utils/dat2pot.lua
+                    "--strip-prefix=${CMAKE_SOURCE_DIR}"
                     ${DAT_FILE} ${POT_FILE}
             DEPENDS
                 ${DAT_FILE}

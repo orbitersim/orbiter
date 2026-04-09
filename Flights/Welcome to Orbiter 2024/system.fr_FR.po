@@ -12,12 +12,12 @@ msgstr ""
 "Plural-Forms: nplurals=2; plural=(n > 1);\n"
 "X-Generator: Poedit 3.8\n"
 
-#: C:/github/openorbiter/Flights/Welcome to Orbiter 2024/system.dat:1
+#: Flights/Welcome to Orbiter 2024/system.dat:1
 msgctxt "Flight"
 msgid "WELCOME TO ORBITER 2024!"
 msgstr "BIENVENUE DANS ORBITER 2024!"
 
-#: C:/github/openorbiter/Flights/Welcome to Orbiter 2024/system.dat:8
+#: Flights/Welcome to Orbiter 2024/system.dat:8
 msgctxt "Flight"
 msgid ""
 "This version represents the first release of OpenOrbiter, brought to you by "
@@ -26,14 +26,14 @@ msgstr ""
 "Cette version présente la première publication d'OpenOrbiter, réalisée par "
 "la communauté Orbiter."
 
-#: C:/github/openorbiter/Flights/Welcome to Orbiter 2024/system.dat:10
+#: Flights/Welcome to Orbiter 2024/system.dat:10
 msgctxt "Flight"
 msgid "For a full list of new features, please check the release notes."
 msgstr ""
 "Pour une liste complète des nouvelles fonctionnalités, veuillez consulter "
 "les notes de version."
 
-#: C:/github/openorbiter/Flights/Welcome to Orbiter 2024/system.dat:12
+#: Flights/Welcome to Orbiter 2024/system.dat:12
 msgctxt "Flight"
 msgid ""
 "Special thanks to Dr. Martin Schweiger for developing and maintaining "

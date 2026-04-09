@@ -12,7 +12,7 @@ msgstr ""
 "Plural-Forms: nplurals=2; plural=(n > 1);\n"
 "X-Generator: Poedit 3.8\n"
 
-#: C:/github/openorbiter/Flights/DG stunts/system.dat:4
+#: Flights/DG stunts/system.dat:4
 msgctxt "Flight"
 msgid ""
 "This tutorial demonstrates the use of Orbiter's flight recording and "
@@ -21,7 +21,7 @@ msgstr ""
 "Ce tutoriel présente l'utilisation de l'enregistreur de vol et des "
 "fonctionnalités de rejeu d'Orbiter."
 
-#: C:/github/openorbiter/Flights/DG stunts/system.dat:6
+#: Flights/DG stunts/system.dat:6
 msgctxt "Flight"
 msgid ""
 "(And to make it a bit more entertaining, we have a Delta-glider lined up to "
@@ -30,7 +30,7 @@ msgstr ""
 "(Et pour rendre les choses amusantes, nous avons un Delta-Glider prêt à "
 "faire quelques acrobaties au dessus du centre spatial Kennedy.)"
 
-#: C:/github/openorbiter/Flights/DG stunts/system.dat:8
+#: Flights/DG stunts/system.dat:8
 msgctxt "Flight"
 msgid ""
 "All the scenarios in the 'Tutorials' and 'Playback' folders are pre-recorded "
@@ -39,7 +39,7 @@ msgstr ""
 "Tous les scénarios dans les répertoires « Tutorials » et « Playback » sont "
 "des vols préenregistrés. Essayez-les selon vos envies."
 
-#: C:/github/openorbiter/Flights/DG stunts/system.dat:10
+#: Flights/DG stunts/system.dat:10
 msgctxt "Flight"
 msgid ""
 "You can't take control of the spacecraft during a playback, but you can "
@@ -48,7 +48,7 @@ msgstr ""
 "Vous ne pouvez pas contrôler le vaisseau pendant le rejeu, mais vous pouvez "
 "modifier la vue caméra et les vues multifonctions (MFD) dans le cockpit."
 
-#: C:/github/openorbiter/Flights/DG stunts/system.dat:12
+#: Flights/DG stunts/system.dat:12
 msgctxt "Flight"
 msgid ""
 "You can set playback options by opening the Recording/Playback dialog box "
@@ -57,17 +57,17 @@ msgstr ""
 "Vous pouvez configurer les options de rejeu en ouvrant la fenêtre "
 "« Enregistreur/Lecteur de vol » avec Ctrl-F5."
 
-#: C:/github/openorbiter/Flights/DG stunts/system.dat:13
+#: Flights/DG stunts/system.dat:13
 msgctxt "Flight"
 msgid ""
 "It is useful to enable the 'Play at recording speed' option, especially for "
 "long missions, to make use of recorded time acceleration."
 msgstr ""
-"Il est utile d'activer l'option « Lire à la vitesse "
-"d'enregistrement », surtout pour les missions longues, afin de profiter des "
-"accélérations temporelles enregistrées."
+"Il est utile d'activer l'option « Lire à la vitesse d'enregistrement », "
+"surtout pour les missions longues, afin de profiter des accélérations "
+"temporelles enregistrées."
 
-#: C:/github/openorbiter/Flights/DG stunts/system.dat:14
+#: Flights/DG stunts/system.dat:14
 msgctxt "Flight"
 msgid ""
 "The 'Use recorded camera settings' option automatically switches the views "
@@ -77,7 +77,7 @@ msgstr ""
 "automatiquement la vue caméra pendant le rejeu. Désactivez-la si vous voulez "
 "contrôler la caméra vous-même."
 
-#: C:/github/openorbiter/Flights/DG stunts/system.dat:17
+#: Flights/DG stunts/system.dat:17
 msgctxt "Flight"
 msgid ""
 "You can exit playback mode any time by clicking the 'STOP' button on the "
@@ -86,13 +86,13 @@ msgstr ""
 "Vous pouvez quitter le mode rejeu à n'importe quel moment an cliquant sur "
 "« ARRÊT » ou avec la touche F5."
 
-#: C:/github/openorbiter/Flights/DG stunts/system.dat:19
+#: Flights/DG stunts/system.dat:19
 msgctxt "Flight"
 msgid ""
 "The simulation then switches to active mode, and you are back in control."
 msgstr "La simulation bascule en mode actif, et vous reprenez le contrôle."
 
-#: C:/github/openorbiter/Flights/DG stunts/system.dat:20
+#: Flights/DG stunts/system.dat:20
 msgctxt "Flight"
 msgid ""
 "A good strategy is to watch a tutorial first, and next time fly it yourself "
@@ -101,13 +101,13 @@ msgstr ""
 "Une bonne stratégie est de commencer par regarder un tutoriel, puis "
 "d'essayer de rejouer la mission par vous-même."
 
-#: C:/github/openorbiter/Flights/DG stunts/system.dat:22
+#: Flights/DG stunts/system.dat:22
 msgctxt "Flight"
 msgid ""
 "At the end of a playback, the simulation always switches back to active mode."
 msgstr "À la fin du rejeu, la simulation bascule toujours en mode actif."
 
-#: C:/github/openorbiter/Flights/DG stunts/system.dat:24
+#: Flights/DG stunts/system.dat:24
 msgctxt "Flight"
 msgid ""
 "You can also record your own flights. During a simulation session, press F5, "
@@ -116,7 +116,7 @@ msgstr ""
 "Vous pouvez enregistrer vos propres vols. Pendant la session, appuyer sur "
 "F5, ou cliquez sur « ENR » pour démarrer l'enregistrement."
 
-#: C:/github/openorbiter/Flights/DG stunts/system.dat:26
+#: Flights/DG stunts/system.dat:26
 msgctxt "Flight"
 msgid ""
 "The recording ends when you press F5 again, press the 'STOP' button in the "
@@ -125,12 +125,12 @@ msgstr ""
 "L'enregistrement s'arrête quand vous appuyez à nouveau sur F5, ou cliquez "
 "sur « ARRÊT », ou quittez la simulation."
 
-#: C:/github/openorbiter/Flights/DG stunts/system.dat:28
+#: Flights/DG stunts/system.dat:28
 msgctxt "Flight"
 msgid "The recorded flight will appear in the 'Playback' scenario folder."
 msgstr "Les vols enregistrés apparaîtront dans le répertoire « Playback »."
 
-#: C:/github/openorbiter/Flights/DG stunts/system.dat:30
+#: Flights/DG stunts/system.dat:30
 msgctxt "Flight"
 msgid ""
 "Once you have recorded your mission, you can edit it by adding onscreen "
@@ -139,7 +139,7 @@ msgstr ""
 "Une fois votre mission enregistrée, vous pouvez l'éditer pour ajouter des "
 "annotations, modifier les angles de vue ou l'accélération temporelle."
 
-#: C:/github/openorbiter/Flights/DG stunts/system.dat:32
+#: Flights/DG stunts/system.dat:32
 msgctxt "Flight"
 msgid ""
 "To edit a recorded flight, open the flight recorder dialog (Ctrl-F5) during "
@@ -148,7 +148,7 @@ msgstr ""
 "Pour modifier un enregistrement, ouvrez la fenêtre de lecture (Ctrl-F5) "
 "pendant le rejeu, et cliquez le bouton « Éditeur »."
 
-#: C:/github/openorbiter/Flights/DG stunts/system.dat:34
+#: Flights/DG stunts/system.dat:34
 msgctxt "Flight"
 msgid ""
 "This will open the editor window containing a list of recorded events (which "
@@ -157,7 +157,7 @@ msgstr ""
 "Ceci ouvre la fenêtre d'édition, contenant une liste d'évènements "
 "enregistrés (potentiellement vide au début)."
 
-#: C:/github/openorbiter/Flights/DG stunts/system.dat:35
+#: Flights/DG stunts/system.dat:35
 msgctxt "Flight"
 msgid ""
 "If you want to insert an event at some point during the playback, pause the "
@@ -167,12 +167,12 @@ msgstr ""
 "pause (Ctrl-P), cliquez sur un évènement dans la section « Nouvel "
 "évènement »."
 
-#: C:/github/openorbiter/Flights/DG stunts/system.dat:36
+#: Flights/DG stunts/system.dat:36
 msgctxt "Flight"
 msgid "Next, edit any event parameters to your preferences."
 msgstr "Ensuite modifiez l'évènement selon votre besoin."
 
-#: C:/github/openorbiter/Flights/DG stunts/system.dat:39
+#: Flights/DG stunts/system.dat:39
 msgctxt "Flight"
 msgid ""
 "Finally, press 'Commit' to enter the event into the playback stream and un-"
@@ -181,7 +181,7 @@ msgstr ""
 "Enfin, cliquez « Valider les modifications » pour ajouter l'évènement dans "
 "le flux de rejeu et reprenez la simulation. Il sera appliqué immédiatement."
 
-#: C:/github/openorbiter/Flights/DG stunts/system.dat:42
+#: Flights/DG stunts/system.dat:42
 msgctxt "Flight"
 msgid ""
 "The DG is rolling out on the SLF runway 33, so it's time to end this little "
@@ -189,7 +189,7 @@ msgid ""
 msgstr ""
 "Le DG s'est posé en piste 33, il est temps de terminer ce petit tutoriel."
 
-#: C:/github/openorbiter/Flights/DG stunts/system.dat:45
+#: Flights/DG stunts/system.dat:45
 msgctxt "Flight"
 msgid ""
 "You can take it for a spin yourself now (and maybe try the recorder). Make "
