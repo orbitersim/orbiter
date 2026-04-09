@@ -13,363 +13,363 @@ msgstr ""
 "Plural-Forms: nplurals=2; plural=(n > 1);\n"
 "X-Generator: Poedit 3.8\n"
 
-#: C:/github/openorbiter/Src/Vessel/DeltaGlider/DeltaGlider.cpp:169
+#: Src/Vessel/DeltaGlider/DeltaGlider.cpp:169
 msgctxt "DG dialog"
 msgid "DG Controls"
 msgstr "Contrôles DeltaGlider"
 
-#: C:/github/openorbiter/Src/Vessel/DeltaGlider/DeltaGlider.cpp:273
+#: Src/Vessel/DeltaGlider/DeltaGlider.cpp:273
 msgctxt "DG dialog"
 msgid "Lights"
 msgstr "Lumières"
 
-#: C:/github/openorbiter/Src/Vessel/DeltaGlider/DeltaGlider.cpp:275
+#: Src/Vessel/DeltaGlider/DeltaGlider.cpp:275
 msgctxt "DG dialog"
 msgid "Instruments"
 msgstr "Instruments"
 
-#: C:/github/openorbiter/Src/Vessel/DeltaGlider/DeltaGlider.cpp:280
+#: Src/Vessel/DeltaGlider/DeltaGlider.cpp:280
 msgctxt "DG dialog"
 msgid "Strobe"
 msgstr "Feu stroboscopique"
 
-#: C:/github/openorbiter/Src/Vessel/DeltaGlider/DeltaGlider.cpp:285
+#: Src/Vessel/DeltaGlider/DeltaGlider.cpp:285
 msgctxt "DG dialog"
 msgid "Navigation"
 msgstr "Navigation"
 
-#: C:/github/openorbiter/Src/Vessel/DeltaGlider/DeltaGlider.cpp:290
+#: Src/Vessel/DeltaGlider/DeltaGlider.cpp:290
 msgctxt "DG dialog"
 msgid "Landing / Docking"
 msgstr "Atterrissage / Amarrage"
 
-#: C:/github/openorbiter/Src/Vessel/DeltaGlider/DeltaGlider.cpp:292
+#: Src/Vessel/DeltaGlider/DeltaGlider.cpp:292
 msgctxt "DG dialog"
 msgid "Off###ldlightoff"
 msgstr "Aucune###floodlightoff"
 
-#: C:/github/openorbiter/Src/Vessel/DeltaGlider/DeltaGlider.cpp:293
+#: Src/Vessel/DeltaGlider/DeltaGlider.cpp:293
 msgctxt "DG dialog"
 msgid "Docking"
 msgstr "Amarrage"
 
-#: C:/github/openorbiter/Src/Vessel/DeltaGlider/DeltaGlider.cpp:294
+#: Src/Vessel/DeltaGlider/DeltaGlider.cpp:294
 msgctxt "DG dialog"
 msgid "Landing"
 msgstr "Atterrissage"
 
-#: C:/github/openorbiter/Src/Vessel/DeltaGlider/DeltaGlider.cpp:299
+#: Src/Vessel/DeltaGlider/DeltaGlider.cpp:299
 msgctxt "DG dialog"
 msgid "Flood Light"
 msgstr "Lumière d'ambience cockpit"
 
-#: C:/github/openorbiter/Src/Vessel/DeltaGlider/DeltaGlider.cpp:301
+#: Src/Vessel/DeltaGlider/DeltaGlider.cpp:301
 msgctxt "DG dialog"
 msgid "Off###floodlightoff"
 msgstr "Aucune###floodlightoff"
 
-#: C:/github/openorbiter/Src/Vessel/DeltaGlider/DeltaGlider.cpp:302
+#: Src/Vessel/DeltaGlider/DeltaGlider.cpp:302
 msgctxt "DG dialog"
 msgid "White"
 msgstr "Blanche"
 
-#: C:/github/openorbiter/Src/Vessel/DeltaGlider/DeltaGlider.cpp:303
+#: Src/Vessel/DeltaGlider/DeltaGlider.cpp:303
 msgctxt "DG dialog"
 msgid "Red"
 msgstr "Rouge"
 
-#: C:/github/openorbiter/Src/Vessel/DeltaGlider/DeltaGlider.cpp:154
+#: Src/Vessel/DeltaGlider/DeltaGlider.cpp:154
 msgctxt "DG dialog - Airbrake"
 msgid "Half-extended"
 msgstr "Mi-course"
 
-#: C:/github/openorbiter/Src/Vessel/DeltaGlider/DeltaGlider.cpp:196
+#: Src/Vessel/DeltaGlider/DeltaGlider.cpp:196
 msgctxt "DG dialog - Airbrake"
 msgid "Airbrake"
 msgstr "Aérofrein"
 
-#: C:/github/openorbiter/Src/Vessel/DeltaGlider/DeltaGlider.cpp:197
+#: Src/Vessel/DeltaGlider/DeltaGlider.cpp:197
 msgctxt "DG dialog - Airbrake"
 msgid "Retract"
 msgstr "Rétracter"
 
-#: C:/github/openorbiter/Src/Vessel/DeltaGlider/DeltaGlider.cpp:199
+#: Src/Vessel/DeltaGlider/DeltaGlider.cpp:199
 msgctxt "DG dialog - Airbrake"
 msgid "Retracted"
 msgstr "Rétracté"
 
-#: C:/github/openorbiter/Src/Vessel/DeltaGlider/DeltaGlider.cpp:200
+#: Src/Vessel/DeltaGlider/DeltaGlider.cpp:200
 msgctxt "DG dialog - Airbrake"
 msgid "Retracting"
 msgstr "Rétractation..."
 
-#: C:/github/openorbiter/Src/Vessel/DeltaGlider/DeltaGlider.cpp:201
+#: Src/Vessel/DeltaGlider/DeltaGlider.cpp:201
 msgctxt "DG dialog - Airbrake"
 msgid "Extending"
 msgstr "Déploiement..."
 
-#: C:/github/openorbiter/Src/Vessel/DeltaGlider/DeltaGlider.cpp:202
+#: Src/Vessel/DeltaGlider/DeltaGlider.cpp:202
 msgctxt "DG dialog - Airbrake"
 msgid "Extended"
 msgstr "Déployé"
 
-#: C:/github/openorbiter/Src/Vessel/DeltaGlider/DeltaGlider.cpp:203
+#: Src/Vessel/DeltaGlider/DeltaGlider.cpp:203
 msgctxt "DG dialog - Airbrake"
 msgid "Extend"
 msgstr "Déployer"
 
-#: C:/github/openorbiter/Src/Vessel/DeltaGlider/DeltaGlider.cpp:218
+#: Src/Vessel/DeltaGlider/DeltaGlider.cpp:218
 msgctxt "DG dialog - Airlock"
 msgid "Inner Airlock"
 msgstr "Sas interne"
 
-#: C:/github/openorbiter/Src/Vessel/DeltaGlider/DeltaGlider.cpp:219
-#: C:/github/openorbiter/Src/Vessel/DeltaGlider/DeltaGlider.cpp:230
+#: Src/Vessel/DeltaGlider/DeltaGlider.cpp:219
+#: Src/Vessel/DeltaGlider/DeltaGlider.cpp:230
 msgctxt "DG dialog - Airlock"
 msgid "Close"
 msgstr "Fermer"
 
-#: C:/github/openorbiter/Src/Vessel/DeltaGlider/DeltaGlider.cpp:221
-#: C:/github/openorbiter/Src/Vessel/DeltaGlider/DeltaGlider.cpp:232
+#: Src/Vessel/DeltaGlider/DeltaGlider.cpp:221
+#: Src/Vessel/DeltaGlider/DeltaGlider.cpp:232
 msgctxt "DG dialog - Airlock"
 msgid "Closed"
 msgstr "Fermé"
 
-#: C:/github/openorbiter/Src/Vessel/DeltaGlider/DeltaGlider.cpp:222
-#: C:/github/openorbiter/Src/Vessel/DeltaGlider/DeltaGlider.cpp:233
+#: Src/Vessel/DeltaGlider/DeltaGlider.cpp:222
+#: Src/Vessel/DeltaGlider/DeltaGlider.cpp:233
 msgctxt "DG dialog - Airlock"
 msgid "Closing"
 msgstr "Fermeture..."
 
-#: C:/github/openorbiter/Src/Vessel/DeltaGlider/DeltaGlider.cpp:223
-#: C:/github/openorbiter/Src/Vessel/DeltaGlider/DeltaGlider.cpp:234
+#: Src/Vessel/DeltaGlider/DeltaGlider.cpp:223
+#: Src/Vessel/DeltaGlider/DeltaGlider.cpp:234
 msgctxt "DG dialog - Airlock"
 msgid "Opening"
 msgstr "Ouverture..."
 
-#: C:/github/openorbiter/Src/Vessel/DeltaGlider/DeltaGlider.cpp:224
-#: C:/github/openorbiter/Src/Vessel/DeltaGlider/DeltaGlider.cpp:235
+#: Src/Vessel/DeltaGlider/DeltaGlider.cpp:224
+#: Src/Vessel/DeltaGlider/DeltaGlider.cpp:235
 msgctxt "DG dialog - Airlock"
 msgid "Opened"
 msgstr "Ouvert"
 
-#: C:/github/openorbiter/Src/Vessel/DeltaGlider/DeltaGlider.cpp:225
-#: C:/github/openorbiter/Src/Vessel/DeltaGlider/DeltaGlider.cpp:236
+#: Src/Vessel/DeltaGlider/DeltaGlider.cpp:225
+#: Src/Vessel/DeltaGlider/DeltaGlider.cpp:236
 msgctxt "DG dialog - Airlock"
 msgid "Open"
 msgstr "Ouvrir"
 
-#: C:/github/openorbiter/Src/Vessel/DeltaGlider/DeltaGlider.cpp:229
+#: Src/Vessel/DeltaGlider/DeltaGlider.cpp:229
 msgctxt "DG dialog - Airlock"
 msgid "Outer Airlock"
 msgstr "Sas externe"
 
-#: C:/github/openorbiter/Src/Vessel/DeltaGlider/DeltaGlider.cpp:251
+#: Src/Vessel/DeltaGlider/DeltaGlider.cpp:251
 msgctxt "DG dialog - Escape Ladder"
 msgid "Escape Ladder"
 msgstr "Échelle de secours"
 
-#: C:/github/openorbiter/Src/Vessel/DeltaGlider/DeltaGlider.cpp:252
+#: Src/Vessel/DeltaGlider/DeltaGlider.cpp:252
 msgctxt "DG dialog - Escape Ladder"
 msgid "Stow"
 msgstr "Replier"
 
-#: C:/github/openorbiter/Src/Vessel/DeltaGlider/DeltaGlider.cpp:254
+#: Src/Vessel/DeltaGlider/DeltaGlider.cpp:254
 msgctxt "DG dialog - Escape Ladder"
 msgid "Stowed"
 msgstr "Repliée"
 
-#: C:/github/openorbiter/Src/Vessel/DeltaGlider/DeltaGlider.cpp:255
+#: Src/Vessel/DeltaGlider/DeltaGlider.cpp:255
 msgctxt "DG dialog - Escape Ladder"
 msgid "Stowing"
 msgstr "Rétractation..."
 
-#: C:/github/openorbiter/Src/Vessel/DeltaGlider/DeltaGlider.cpp:256
+#: Src/Vessel/DeltaGlider/DeltaGlider.cpp:256
 msgctxt "DG dialog - Escape Ladder"
 msgid "Extending"
 msgstr "Déploiement..."
 
-#: C:/github/openorbiter/Src/Vessel/DeltaGlider/DeltaGlider.cpp:257
+#: Src/Vessel/DeltaGlider/DeltaGlider.cpp:257
 msgctxt "DG dialog - Escape Ladder"
 msgid "Extended"
 msgstr "Déployée"
 
-#: C:/github/openorbiter/Src/Vessel/DeltaGlider/DeltaGlider.cpp:258
+#: Src/Vessel/DeltaGlider/DeltaGlider.cpp:258
 msgctxt "DG dialog - Escape Ladder"
 msgid "Extend"
 msgstr "Déployer"
 
-#: C:/github/openorbiter/Src/Vessel/DeltaGlider/DeltaGlider.cpp:174
+#: Src/Vessel/DeltaGlider/DeltaGlider.cpp:174
 msgctxt "DG dialog - Landing Gear"
 msgid "Landing Gear"
 msgstr "Train d'atterrissage"
 
-#: C:/github/openorbiter/Src/Vessel/DeltaGlider/DeltaGlider.cpp:175
+#: Src/Vessel/DeltaGlider/DeltaGlider.cpp:175
 msgctxt "DG dialog - Landing Gear"
 msgid "Up"
 msgstr "Rentrer"
 
-#: C:/github/openorbiter/Src/Vessel/DeltaGlider/DeltaGlider.cpp:177
+#: Src/Vessel/DeltaGlider/DeltaGlider.cpp:177
 msgctxt "DG dialog - Landing Gear"
 msgid "Raised"
 msgstr "Rentré"
 
-#: C:/github/openorbiter/Src/Vessel/DeltaGlider/DeltaGlider.cpp:178
+#: Src/Vessel/DeltaGlider/DeltaGlider.cpp:178
 msgctxt "DG dialog - Landing Gear"
 msgid "Raising"
 msgstr "Rentrée..."
 
-#: C:/github/openorbiter/Src/Vessel/DeltaGlider/DeltaGlider.cpp:179
+#: Src/Vessel/DeltaGlider/DeltaGlider.cpp:179
 msgctxt "DG dialog - Landing Gear"
 msgid "Lowering"
 msgstr "Sortie..."
 
-#: C:/github/openorbiter/Src/Vessel/DeltaGlider/DeltaGlider.cpp:180
+#: Src/Vessel/DeltaGlider/DeltaGlider.cpp:180
 msgctxt "DG dialog - Landing Gear"
 msgid "Lowered"
 msgstr "Sorti"
 
-#: C:/github/openorbiter/Src/Vessel/DeltaGlider/DeltaGlider.cpp:181
+#: Src/Vessel/DeltaGlider/DeltaGlider.cpp:181
 msgctxt "DG dialog - Landing Gear"
 msgid "Down"
 msgstr "Sortir"
 
-#: C:/github/openorbiter/Src/Vessel/DeltaGlider/DeltaGlider.cpp:240
+#: Src/Vessel/DeltaGlider/DeltaGlider.cpp:240
 msgctxt "DG dialog - Nose Cone"
 msgid "Nose Cone"
 msgstr "Pointe avant"
 
-#: C:/github/openorbiter/Src/Vessel/DeltaGlider/DeltaGlider.cpp:241
+#: Src/Vessel/DeltaGlider/DeltaGlider.cpp:241
 msgctxt "DG dialog - Nose Cone"
 msgid "Close"
 msgstr "Fermer"
 
-#: C:/github/openorbiter/Src/Vessel/DeltaGlider/DeltaGlider.cpp:243
+#: Src/Vessel/DeltaGlider/DeltaGlider.cpp:243
 msgctxt "DG dialog - Nose Cone"
 msgid "Closed"
 msgstr "Fermée"
 
-#: C:/github/openorbiter/Src/Vessel/DeltaGlider/DeltaGlider.cpp:244
+#: Src/Vessel/DeltaGlider/DeltaGlider.cpp:244
 msgctxt "DG dialog - Nose Cone"
 msgid "Closing"
 msgstr "Fermeture..."
 
-#: C:/github/openorbiter/Src/Vessel/DeltaGlider/DeltaGlider.cpp:245
+#: Src/Vessel/DeltaGlider/DeltaGlider.cpp:245
 msgctxt "DG dialog - Nose Cone"
 msgid "Opening"
 msgstr "Ouverture..."
 
-#: C:/github/openorbiter/Src/Vessel/DeltaGlider/DeltaGlider.cpp:246
+#: Src/Vessel/DeltaGlider/DeltaGlider.cpp:246
 msgctxt "DG dialog - Nose Cone"
 msgid "Opened"
 msgstr "Ouverte"
 
-#: C:/github/openorbiter/Src/Vessel/DeltaGlider/DeltaGlider.cpp:247
+#: Src/Vessel/DeltaGlider/DeltaGlider.cpp:247
 msgctxt "DG dialog - Nose Cone"
 msgid "Open"
 msgstr "Ouvrir"
 
-#: C:/github/openorbiter/Src/Vessel/DeltaGlider/DeltaGlider.cpp:262
+#: Src/Vessel/DeltaGlider/DeltaGlider.cpp:262
 msgctxt "DG dialog - Radiator"
 msgid "Radiator"
 msgstr "Radiateur"
 
-#: C:/github/openorbiter/Src/Vessel/DeltaGlider/DeltaGlider.cpp:263
+#: Src/Vessel/DeltaGlider/DeltaGlider.cpp:263
 msgctxt "DG dialog - Radiator"
 msgid "Stow"
 msgstr "Rétracter"
 
-#: C:/github/openorbiter/Src/Vessel/DeltaGlider/DeltaGlider.cpp:265
+#: Src/Vessel/DeltaGlider/DeltaGlider.cpp:265
 msgctxt "DG dialog - Radiator"
 msgid "Stowed"
 msgstr "Rétracté"
 
-#: C:/github/openorbiter/Src/Vessel/DeltaGlider/DeltaGlider.cpp:266
+#: Src/Vessel/DeltaGlider/DeltaGlider.cpp:266
 msgctxt "DG dialog - Radiator"
 msgid "Stowing"
 msgstr "Rétractation..."
 
-#: C:/github/openorbiter/Src/Vessel/DeltaGlider/DeltaGlider.cpp:267
+#: Src/Vessel/DeltaGlider/DeltaGlider.cpp:267
 msgctxt "DG dialog - Radiator"
 msgid "Extending"
 msgstr "Déploiement..."
 
-#: C:/github/openorbiter/Src/Vessel/DeltaGlider/DeltaGlider.cpp:268
+#: Src/Vessel/DeltaGlider/DeltaGlider.cpp:268
 msgctxt "DG dialog - Radiator"
 msgid "Extended"
 msgstr "Déployé"
 
-#: C:/github/openorbiter/Src/Vessel/DeltaGlider/DeltaGlider.cpp:269
+#: Src/Vessel/DeltaGlider/DeltaGlider.cpp:269
 msgctxt "DG dialog - Radiator"
 msgid "Extend"
 msgstr "Déployer"
 
-#: C:/github/openorbiter/Src/Vessel/DeltaGlider/DeltaGlider.cpp:185
+#: Src/Vessel/DeltaGlider/DeltaGlider.cpp:185
 msgctxt "DG dialog - Retro Doors"
 msgid "Retro Doors"
 msgstr "Trappes rétropropulsion"
 
-#: C:/github/openorbiter/Src/Vessel/DeltaGlider/DeltaGlider.cpp:186
+#: Src/Vessel/DeltaGlider/DeltaGlider.cpp:186
 msgctxt "DG dialog - Retro Doors"
 msgid "Close"
 msgstr "Fermer"
 
-#: C:/github/openorbiter/Src/Vessel/DeltaGlider/DeltaGlider.cpp:188
+#: Src/Vessel/DeltaGlider/DeltaGlider.cpp:188
 msgctxt "DG dialog - Retro Doors"
 msgid "Closed"
 msgstr "Fermées"
 
-#: C:/github/openorbiter/Src/Vessel/DeltaGlider/DeltaGlider.cpp:189
+#: Src/Vessel/DeltaGlider/DeltaGlider.cpp:189
 msgctxt "DG dialog - Retro Doors"
 msgid "Closing"
 msgstr "Fermeture..."
 
-#: C:/github/openorbiter/Src/Vessel/DeltaGlider/DeltaGlider.cpp:190
+#: Src/Vessel/DeltaGlider/DeltaGlider.cpp:190
 msgctxt "DG dialog - Retro Doors"
 msgid "Opening"
 msgstr "Ouverture..."
 
-#: C:/github/openorbiter/Src/Vessel/DeltaGlider/DeltaGlider.cpp:191
+#: Src/Vessel/DeltaGlider/DeltaGlider.cpp:191
 msgctxt "DG dialog - Retro Doors"
 msgid "Opened"
 msgstr "Ouvertes"
 
-#: C:/github/openorbiter/Src/Vessel/DeltaGlider/DeltaGlider.cpp:192
+#: Src/Vessel/DeltaGlider/DeltaGlider.cpp:192
 msgctxt "DG dialog - Retro Doors"
 msgid "Open"
 msgstr "Ouvrir"
 
-#: C:/github/openorbiter/Src/Vessel/DeltaGlider/DeltaGlider.cpp:207
+#: Src/Vessel/DeltaGlider/DeltaGlider.cpp:207
 msgctxt "DG dialog - Top Hatch"
 msgid "Top Hatch"
 msgstr "Trappe de toit"
 
-#: C:/github/openorbiter/Src/Vessel/DeltaGlider/DeltaGlider.cpp:208
+#: Src/Vessel/DeltaGlider/DeltaGlider.cpp:208
 msgctxt "DG dialog - Top Hatch"
 msgid "Close"
 msgstr "Fermer"
 
-#: C:/github/openorbiter/Src/Vessel/DeltaGlider/DeltaGlider.cpp:210
+#: Src/Vessel/DeltaGlider/DeltaGlider.cpp:210
 msgctxt "DG dialog - Top Hatch"
 msgid "Closed"
 msgstr "Fermée"
 
-#: C:/github/openorbiter/Src/Vessel/DeltaGlider/DeltaGlider.cpp:211
+#: Src/Vessel/DeltaGlider/DeltaGlider.cpp:211
 msgctxt "DG dialog - Top Hatch"
 msgid "Closing"
 msgstr "Fermeture..."
 
-#: C:/github/openorbiter/Src/Vessel/DeltaGlider/DeltaGlider.cpp:212
+#: Src/Vessel/DeltaGlider/DeltaGlider.cpp:212
 msgctxt "DG dialog - Top Hatch"
 msgid "Opening"
 msgstr "Ouverture..."
 
-#: C:/github/openorbiter/Src/Vessel/DeltaGlider/DeltaGlider.cpp:213
+#: Src/Vessel/DeltaGlider/DeltaGlider.cpp:213
 msgctxt "DG dialog - Top Hatch"
 msgid "Opened"
 msgstr "Ouverte"
 
-#: C:/github/openorbiter/Src/Vessel/DeltaGlider/DeltaGlider.cpp:214
+#: Src/Vessel/DeltaGlider/DeltaGlider.cpp:214
 msgctxt "DG dialog - Top Hatch"
 msgid "Open"
 msgstr "Ouvrir"

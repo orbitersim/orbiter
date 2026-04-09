@@ -13,7 +13,7 @@ msgstr ""
 "Plural-Forms: nplurals=2; plural=(n > 1);\n"
 "X-Generator: Poedit 3.8\n"
 
-#: C:/github/openorbiter/Src/Vessel/ShuttleA/Script/adi.lua:18
+#: Src/Vessel/ShuttleA/Script/adi.lua:18
 msgctxt "ShuttleA ADI tutorial"
 msgid ""
 "This training unit introduces the Attitude Director Indicator instrument for "
@@ -24,7 +24,7 @@ msgstr ""
 "pour la navette spatiale Shuttle-A. La session dure env.15 minutes. Vous "
 "pouvez avancer vers certaines sections avec les touches 'T' et 'R'."
 
-#: C:/github/openorbiter/Src/Vessel/ShuttleA/Script/adi.lua:25
+#: Src/Vessel/ShuttleA/Script/adi.lua:25
 msgctxt "ShuttleA ADI tutorial"
 msgid ""
 "The new 2-D panel of the Shuttle-A transport vessel has been equipped with a "
@@ -34,7 +34,7 @@ msgstr ""
 "nouvel instrument polyvalent : l'Attitude Director Indicator (ou ADI en "
 "abrégé)."
 
-#: C:/github/openorbiter/Src/Vessel/ShuttleA/Script/adi.lua:29
+#: Src/Vessel/ShuttleA/Script/adi.lua:29
 msgctxt "ShuttleA ADI tutorial"
 msgid ""
 "The ADI consists of a ball that represents the orientation of an attitude "
@@ -43,7 +43,7 @@ msgstr ""
 "L'ADI se compose d'une boule qui représente l'orientation d'un repère de "
 "référence dans le repère actuel du vaisseau."
 
-#: C:/github/openorbiter/Src/Vessel/ShuttleA/Script/adi.lua:35
+#: Src/Vessel/ShuttleA/Script/adi.lua:35
 msgctxt "ShuttleA ADI tutorial"
 msgid ""
 "\n"
@@ -53,14 +53,14 @@ msgstr ""
 "Lorsque le vaisseau effectue une rotation, la boule reste alignée avec le "
 "repère de référence."
 
-#: C:/github/openorbiter/Src/Vessel/ShuttleA/Script/adi.lua:52
+#: Src/Vessel/ShuttleA/Script/adi.lua:52
 msgctxt "ShuttleA ADI tutorial"
 msgid "The markings on the ball represent a grid of pitch and yaw lines ..."
 msgstr ""
 "Les repères sur la boule représentent un réseau de lignes de tangage (pitch) "
 "et de lacet (yaw)..."
 
-#: C:/github/openorbiter/Src/Vessel/ShuttleA/Script/adi.lua:56
+#: Src/Vessel/ShuttleA/Script/adi.lua:56
 msgctxt "ShuttleA ADI tutorial"
 msgid ""
 "\n"
@@ -73,7 +73,7 @@ msgstr ""
 "... l'angle de tangage (pitch) et de lacet (yaw) du vaisseau dans le repère "
 "de référence sont lus depuis le marqueur central."
 
-#: C:/github/openorbiter/Src/Vessel/ShuttleA/Script/adi.lua:63
+#: Src/Vessel/ShuttleA/Script/adi.lua:63
 msgctxt "ShuttleA ADI tutorial"
 msgid ""
 "The ring around the ball contains a scale for the roll angle, and the "
@@ -82,7 +82,7 @@ msgstr ""
 "L'anneau autour de la boule contient une échelle pour l'angle de roulis, la "
 "valeur est indiquée par un marquage rouge."
 
-#: C:/github/openorbiter/Src/Vessel/ShuttleA/Script/adi.lua:74
+#: Src/Vessel/ShuttleA/Script/adi.lua:74
 msgctxt "ShuttleA ADI tutorial"
 msgid ""
 "The spacecraft's current roll, pitch and yaw angles with respect to the "
@@ -92,7 +92,7 @@ msgstr ""
 "Les angles de roulis, de tangage et de lacet du vaisseau dans le repère de "
 "référence sont affichés sur la ligne 'DEV' de l'écran ATT.REF. sous la boule."
 
-#: C:/github/openorbiter/Src/Vessel/ShuttleA/Script/adi.lua:80
+#: Src/Vessel/ShuttleA/Script/adi.lua:80
 msgctxt "ShuttleA ADI tutorial"
 msgid ""
 "You have a choice of attitude reference frames to select from. The most "
@@ -102,7 +102,7 @@ msgstr ""
 "Vous avez le choix entre plusieurs repères de référence. Le repère le plus "
 "adapté dépend de la manœuvre ou de la phase de vol que vous exécutez."
 
-#: C:/github/openorbiter/Src/Vessel/ShuttleA/Script/adi.lua:86
+#: Src/Vessel/ShuttleA/Script/adi.lua:86
 msgctxt "ShuttleA ADI tutorial"
 msgid ""
 "The controls for selecting the reference frame, as well as a number of other "
@@ -113,7 +113,7 @@ msgstr ""
 "fonctions liées au repère et au fonctionnement de l'ADI, se trouvent dans "
 "les panneaux en bas de l'ADI."
 
-#: C:/github/openorbiter/Src/Vessel/ShuttleA/Script/adi.lua:92
+#: Src/Vessel/ShuttleA/Script/adi.lua:92
 msgctxt "ShuttleA ADI tutorial"
 msgid ""
 "\n"
@@ -124,7 +124,7 @@ msgstr ""
 "\n"
 "Le repère d'attitude peut être sélectionné avec le rotacteur 'FRAME'."
 
-#: C:/github/openorbiter/Src/Vessel/ShuttleA/Script/adi.lua:98
+#: Src/Vessel/ShuttleA/Script/adi.lua:98
 msgctxt "ShuttleA ADI tutorial"
 msgid ""
 "'ECL' stands for ecliptic frame: The plane of the ecliptic is represented by "
@@ -136,7 +136,7 @@ msgstr ""
 "(pitch=0). L'équinoxe vernal est donnée par la direction (pitch=0, yaw=0). "
 "Le pôle nord de l'écliptique est donné par la direction (pitch=+90)."
 
-#: C:/github/openorbiter/Src/Vessel/ShuttleA/Script/adi.lua:105
+#: Src/Vessel/ShuttleA/Script/adi.lua:105
 msgctxt "ShuttleA ADI tutorial"
 msgid ""
 "'EQU' stands for equatorial frame: The equatorial plane of the body we are "
@@ -151,7 +151,7 @@ msgstr ""
 "La direction positive (nord) de la rotation du corps de référence est "
 "représentée par la direction (pitch=+90)."
 
-#: C:/github/openorbiter/Src/Vessel/ShuttleA/Script/adi.lua:112
+#: Src/Vessel/ShuttleA/Script/adi.lua:112
 msgctxt "ShuttleA ADI tutorial"
 msgid ""
 "'OV/OM' stands for orbital velocity / orbital moment vector. Unlike the "
@@ -173,7 +173,7 @@ msgstr ""
 "plan (pitch=0) représente le plan de l'horizon local. Le repère OV/OM est "
 "équivalent au mode HUD 'Orbit', mais avec un décalage de roulis de 90 degrés."
 
-#: C:/github/openorbiter/Src/Vessel/ShuttleA/Script/adi.lua:119
+#: Src/Vessel/ShuttleA/Script/adi.lua:119
 msgctxt "ShuttleA ADI tutorial"
 msgid ""
 "'LH/LN' stands for local horizon / local north. Like OV/OM, this is a "
@@ -190,7 +190,7 @@ msgstr ""
 "référence, et (pitch=+90) pointe zénith, loin de celui-ci. Ce repère est "
 "équivalent au mode HUD 'Surface'."
 
-#: C:/github/openorbiter/Src/Vessel/ShuttleA/Script/adi.lua:126
+#: Src/Vessel/ShuttleA/Script/adi.lua:126
 msgctxt "ShuttleA ADI tutorial"
 msgid ""
 "'NAV 1' and 'NAV 2' are special modes. They feed data from the Nav-1 and "
@@ -205,7 +205,7 @@ msgstr ""
 "radio est réglée sur un transmetteur IDS (système d'amarrage), alors la "
 "boule ADI est alignée avec la direction d'approche de l'amarre."
 
-#: C:/github/openorbiter/Src/Vessel/ShuttleA/Script/adi.lua:133
+#: Src/Vessel/ShuttleA/Script/adi.lua:133
 msgctxt "ShuttleA ADI tutorial"
 msgid ""
 "All of the predefined frames can be modified by adding offsets to the roll, "
@@ -216,7 +216,7 @@ msgstr ""
 "aux angles de roulis, de tangage et de lacet. Cela fera pivoter le repère "
 "par rapport au repère du mode de base."
 
-#: C:/github/openorbiter/Src/Vessel/ShuttleA/Script/adi.lua:140
+#: Src/Vessel/ShuttleA/Script/adi.lua:140
 msgctxt "ShuttleA ADI tutorial"
 msgid ""
 "\n"
@@ -228,7 +228,7 @@ msgstr ""
 "Le groupe de boutons 'OFFSET' est utilisé pour définir les angles de "
 "décalage."
 
-#: C:/github/openorbiter/Src/Vessel/ShuttleA/Script/adi.lua:146
+#: Src/Vessel/ShuttleA/Script/adi.lua:146
 msgctxt "ShuttleA ADI tutorial"
 msgid ""
 "Make sure that the 'FRM/TGT' selector switch is set to 'FRM'. This will add "
@@ -239,7 +239,7 @@ msgstr ""
 "les décalages au repère de référence, plutôt qu'au repère cible (qui sera "
 "abordé plus tard)."
 
-#: C:/github/openorbiter/Src/Vessel/ShuttleA/Script/adi.lua:152
+#: Src/Vessel/ShuttleA/Script/adi.lua:152
 msgctxt "ShuttleA ADI tutorial"
 msgid ""
 "Use the 'R', 'P' and 'Y' toggles to add or subtract offsets in the roll, "
@@ -248,7 +248,7 @@ msgstr ""
 "Utilisez les leviers 'R', 'P' et 'Y' (haut/bas) pour choisir des décalages "
 "dans les angles de roulis/Roll, de tangage/Pitch et de lacet/Yaw."
 
-#: C:/github/openorbiter/Src/Vessel/ShuttleA/Script/adi.lua:176
+#: Src/Vessel/ShuttleA/Script/adi.lua:176
 msgctxt "ShuttleA ADI tutorial"
 msgid ""
 "The current offset angles (in degrees) are shown in the 'OFS' line of the "
@@ -257,12 +257,12 @@ msgstr ""
 "Les angles de décalage actuels (en degrés) sont affichés sur la ligne 'OFS' "
 "de l'écran numérique ATT.REF."
 
-#: C:/github/openorbiter/Src/Vessel/ShuttleA/Script/adi.lua:182
+#: Src/Vessel/ShuttleA/Script/adi.lua:182
 msgctxt "ShuttleA ADI tutorial"
 msgid "To remove the frame offsets, press the 'RESET' button."
 msgstr "Pour supprimer les décalages du repère, appuyez sur le bouton 'RESET'."
 
-#: C:/github/openorbiter/Src/Vessel/ShuttleA/Script/adi.lua:192
+#: Src/Vessel/ShuttleA/Script/adi.lua:192
 msgctxt "ShuttleA ADI tutorial"
 msgid ""
 "The ADI ball also contains two 'error needles' (the horizontal and vertical "
@@ -272,12 +272,12 @@ msgstr ""
 "horizontale et verticale) qui servent à désigner une direction dans le "
 "repère de référence."
 
-#: C:/github/openorbiter/Src/Vessel/ShuttleA/Script/adi.lua:200
+#: Src/Vessel/ShuttleA/Script/adi.lua:200
 msgctxt "ShuttleA ADI tutorial"
 msgid "The target mode can be selected with the 'TARGET' dial."
 msgstr "Le mode cible peut être sélectionné avec le rotacteur 'TARGET'."
 
-#: C:/github/openorbiter/Src/Vessel/ShuttleA/Script/adi.lua:206
+#: Src/Vessel/ShuttleA/Script/adi.lua:206
 msgctxt "ShuttleA ADI tutorial"
 msgid ""
 "'NONE' simply disables the target mode and centers the error needles on the "
@@ -286,7 +286,7 @@ msgstr ""
 "'NONE' désactive simplement le mode cible et centre les aiguilles d'erreur "
 "sur la boule."
 
-#: C:/github/openorbiter/Src/Vessel/ShuttleA/Script/adi.lua:212
+#: Src/Vessel/ShuttleA/Script/adi.lua:212
 msgctxt "ShuttleA ADI tutorial"
 msgid ""
 "\n"
@@ -297,7 +297,7 @@ msgstr ""
 "\n"
 "L'indicateur 'TGT' dans le coin haut-gauche de la boule ADI affiche 'OFF'."
 
-#: C:/github/openorbiter/Src/Vessel/ShuttleA/Script/adi.lua:218
+#: Src/Vessel/ShuttleA/Script/adi.lua:218
 msgctxt "ShuttleA ADI tutorial"
 msgid ""
 "'FIXED' marks a fixed pitch/yaw point in the reference frame. By default, "
@@ -306,7 +306,7 @@ msgstr ""
 "'FIXED' marque un point fixe de tangage/lacet dans le repère de référence. "
 "Par défaut, il s'agit de la direction (pitch=0, yaw=0)..."
 
-#: C:/github/openorbiter/Src/Vessel/ShuttleA/Script/adi.lua:225
+#: Src/Vessel/ShuttleA/Script/adi.lua:225
 msgctxt "ShuttleA ADI tutorial"
 msgid ""
 "\n"
@@ -318,7 +318,7 @@ msgstr ""
 "... mais vous pouvez sélectionner n'importe quels tangage/lacet en ajoutant "
 "des décalages (boutons OFFSET)."
 
-#: C:/github/openorbiter/Src/Vessel/ShuttleA/Script/adi.lua:231
+#: Src/Vessel/ShuttleA/Script/adi.lua:231
 msgctxt "ShuttleA ADI tutorial"
 msgid ""
 "Make sure that the 'FRM/TGT' selector switch is set to 'TGT'. This will add "
@@ -327,7 +327,7 @@ msgstr ""
 "Assurez-vous que le sélecteur 'FRM/TGT' est réglé sur 'TGT'. Cela ajoutera "
 "les décalages à la direction cible, plutôt qu'au repère de référence."
 
-#: C:/github/openorbiter/Src/Vessel/ShuttleA/Script/adi.lua:241
+#: Src/Vessel/ShuttleA/Script/adi.lua:241
 msgctxt "ShuttleA ADI tutorial"
 msgid ""
 "Then use the 'P' and 'Y' toggles to add or subtract offsets to the target "
@@ -338,7 +338,7 @@ msgstr ""
 "soustraire des décalages pour la direction cible. Notez que l'interrupteur "
 "'R' (roulis) est inactif en mode cible."
 
-#: C:/github/openorbiter/Src/Vessel/ShuttleA/Script/adi.lua:260
+#: Src/Vessel/ShuttleA/Script/adi.lua:260
 msgctxt "ShuttleA ADI tutorial"
 msgid ""
 "The current target offset angles (in degrees) are shown in the 'OFS' line of "
@@ -347,7 +347,7 @@ msgstr ""
 "Les angles de décalage actuels de la cible (en degrés) sont affichés sur la "
 "ligne 'OFS' de l'écran numérique ATT.REF."
 
-#: C:/github/openorbiter/Src/Vessel/ShuttleA/Script/adi.lua:266
+#: Src/Vessel/ShuttleA/Script/adi.lua:266
 msgctxt "ShuttleA ADI tutorial"
 msgid ""
 "As with the reference frame, target offsets can be removed by pressing the "
@@ -356,7 +356,7 @@ msgstr ""
 "Comme pour le repère de référence, les décalages de la cible peuvent être "
 "supprimés en appuyant sur le bouton 'RESET'."
 
-#: C:/github/openorbiter/Src/Vessel/ShuttleA/Script/adi.lua:276
+#: Src/Vessel/ShuttleA/Script/adi.lua:276
 msgctxt "ShuttleA ADI tutorial"
 msgid ""
 "Note that the error needles indicate not only the direction towards the "
@@ -368,7 +368,7 @@ msgstr ""
 "la cible, mais aussi la direction opposée à la cible. Pour les distinguer, "
 "l'indicateur 'TGT' en haut à gauche de l'ADI affiche 'TO' ou 'FROM'."
 
-#: C:/github/openorbiter/Src/Vessel/ShuttleA/Script/adi.lua:291
+#: Src/Vessel/ShuttleA/Script/adi.lua:291
 msgctxt "ShuttleA ADI tutorial"
 msgid ""
 "In addition to the fixed target direction, the ADI can also dynamically "
@@ -381,7 +381,7 @@ msgstr ""
 "sélecteur 'FRAME' sur NAV 1 ou NAV 2 et assurez-vous que le récepteur "
 "correspondant est accordé sur un transmetteur à portée."
 
-#: C:/github/openorbiter/Src/Vessel/ShuttleA/Script/adi.lua:297
+#: Src/Vessel/ShuttleA/Script/adi.lua:297
 msgctxt "ShuttleA ADI tutorial"
 msgid ""
 "\n"
@@ -394,12 +394,12 @@ msgstr ""
 "Dans ce cas, NAV 1 a été réglé sur la fréquence IDS (système d'amarrage) de "
 "la station spatiale internationale (ISS) à proximité."
 
-#: C:/github/openorbiter/Src/Vessel/ShuttleA/Script/adi.lua:303
+#: Src/Vessel/ShuttleA/Script/adi.lua:303
 msgctxt "ShuttleA ADI tutorial"
 msgid "Next, set the 'TARGET' dial to 'N. BRG' (NAV bearing)."
 msgstr "Ensuite, réglez le rotacteur 'TARGET' sur 'N. BRG' (azimut NAV)."
 
-#: C:/github/openorbiter/Src/Vessel/ShuttleA/Script/adi.lua:311
+#: Src/Vessel/ShuttleA/Script/adi.lua:311
 msgctxt "ShuttleA ADI tutorial"
 msgid ""
 "When the ADI is slaved to a receiver tuned to an IDS signal, and the target "
@@ -414,7 +414,7 @@ msgstr ""
 "aiguilles d'erreur jouent le rôle de l'indicateur de décalage latéral (croix "
 "+)."
 
-#: C:/github/openorbiter/Src/Vessel/ShuttleA/Script/adi.lua:323
+#: Src/Vessel/ShuttleA/Script/adi.lua:323
 msgctxt "ShuttleA ADI tutorial"
 msgid ""
 "When you have the ball aligned at (R=0,P=0,Y=0), and the error needles are "
@@ -425,7 +425,7 @@ msgstr ""
 "sont centrées, vous êtes sur la bonne trajectoire d'approche et la bonne "
 "orientation pour vous amarrer."
 
-#: C:/github/openorbiter/Src/Vessel/ShuttleA/Script/adi.lua:327
+#: Src/Vessel/ShuttleA/Script/adi.lua:327
 msgctxt "ShuttleA ADI tutorial"
 msgid ""
 "\n"
@@ -438,7 +438,7 @@ msgstr ""
 "(Vous pouvez essayer cela plus tard. Finissons d'abord la description des "
 "fonctions de l'ADI.)"
 
-#: C:/github/openorbiter/Src/Vessel/ShuttleA/Script/adi.lua:332
+#: Src/Vessel/ShuttleA/Script/adi.lua:332
 msgctxt "ShuttleA ADI tutorial"
 msgid ""
 "The remaining target mode is 'N. Vel'. Like, N. Brg, this is mode relies on "
@@ -449,7 +449,7 @@ msgstr ""
 "données d'un récepteur Nav, donc le rotacteur FRAME doit être réglé sur NAV "
 "1 ou NAV 2 et le récepteur associé doit être accordé sur un transmetteur."
 
-#: C:/github/openorbiter/Src/Vessel/ShuttleA/Script/adi.lua:340
+#: Src/Vessel/ShuttleA/Script/adi.lua:340
 msgctxt "ShuttleA ADI tutorial"
 msgid ""
 "\n"
@@ -464,7 +464,7 @@ msgstr ""
 "relative du transmetteur par rapport à vous, exprimée dans le repère de "
 "référence."
 
-#: C:/github/openorbiter/Src/Vessel/ShuttleA/Script/adi.lua:345
+#: Src/Vessel/ShuttleA/Script/adi.lua:345
 msgctxt "ShuttleA ADI tutorial"
 msgid ""
 "This mode is useful for judging your approach towards a dock, landing pad, "
@@ -473,7 +473,7 @@ msgstr ""
 "Ce mode est utile pour évaluer votre approche vers un port d'amarrage, une "
 "aire d'atterrissage, un transmetteur VOR, etc."
 
-#: C:/github/openorbiter/Src/Vessel/ShuttleA/Script/adi.lua:350
+#: Src/Vessel/ShuttleA/Script/adi.lua:350
 msgctxt "ShuttleA ADI tutorial"
 msgid ""
 "For example, if you are tuned to an IDS or XPDR transmitter, then the N. Vel "
@@ -483,7 +483,7 @@ msgstr ""
 "direction N.VEL est équivalente aux repères de vitesse du mode HUD de "
 "docking."
 
-#: C:/github/openorbiter/Src/Vessel/ShuttleA/Script/adi.lua:357
+#: Src/Vessel/ShuttleA/Script/adi.lua:357
 msgctxt "ShuttleA ADI tutorial"
 msgid ""
 "The final component of the ADI are the rate indicators. These are the scales "
@@ -492,12 +492,12 @@ msgstr ""
 "Le dernier composant de l'ADI est l'indicateur de taux. Ce sont les échelles "
 "en blanc situées sur les côtés haut, bas et droit."
 
-#: C:/github/openorbiter/Src/Vessel/ShuttleA/Script/adi.lua:366
+#: Src/Vessel/ShuttleA/Script/adi.lua:366
 msgctxt "ShuttleA ADI tutorial"
 msgid "The top scale indicates the current roll rate..."
 msgstr "L'échelle du haut indique le taux de roulis..."
 
-#: C:/github/openorbiter/Src/Vessel/ShuttleA/Script/adi.lua:375
+#: Src/Vessel/ShuttleA/Script/adi.lua:375
 msgctxt "ShuttleA ADI tutorial"
 msgid ""
 "\n"
@@ -508,7 +508,7 @@ msgstr ""
 "\n"
 "...l'échelle à droite indique le taux de tangage..."
 
-#: C:/github/openorbiter/Src/Vessel/ShuttleA/Script/adi.lua:385
+#: Src/Vessel/ShuttleA/Script/adi.lua:385
 msgctxt "ShuttleA ADI tutorial"
 msgid ""
 "\n"
@@ -519,7 +519,7 @@ msgstr ""
 "\n"
 "...et l'échelle du bas indique le taux de lacet."
 
-#: C:/github/openorbiter/Src/Vessel/ShuttleA/Script/adi.lua:395
+#: Src/Vessel/ShuttleA/Script/adi.lua:395
 msgctxt "ShuttleA ADI tutorial"
 msgid ""
 "\n"
@@ -532,7 +532,7 @@ msgstr ""
 "Chaque marque de l'échelle représente un taux de 2°/s avec une plage de +/- "
 "10 degrés pour chaque axe."
 
-#: C:/github/openorbiter/Src/Vessel/ShuttleA/Script/adi.lua:400
+#: Src/Vessel/ShuttleA/Script/adi.lua:400
 msgctxt "ShuttleA ADI tutorial"
 msgid ""
 "The rates can be displayed in two different frames: Either in the local "
@@ -543,7 +543,7 @@ msgstr ""
 "repère local du vaisseau, où les taux sont directement liés aux propulseurs "
 "RCS de l'axe correspondant..."
 
-#: C:/github/openorbiter/Src/Vessel/ShuttleA/Script/adi.lua:410
+#: Src/Vessel/ShuttleA/Script/adi.lua:410
 msgctxt "ShuttleA ADI tutorial"
 msgid ""
 "\n"
@@ -560,7 +560,7 @@ msgstr ""
 "\n"
 "Le choix est sélectionné avec le levier 'TGT/RTE' en bas à droite de l'ADI."
 
-#: C:/github/openorbiter/Src/Vessel/ShuttleA/Script/adi.lua:417
+#: Src/Vessel/ShuttleA/Script/adi.lua:417
 msgctxt "ShuttleA ADI tutorial"
 msgid ""
 "You may come across the ADI ball in two different layouts. So far we have "
@@ -572,7 +572,7 @@ msgstr ""
 "référence, avec des pôles à pitch = +/-90 degrés. La plage des angles de "
 "lacet (yaw) va de 0 à 360 degrés."
 
-#: C:/github/openorbiter/Src/Vessel/ShuttleA/Script/adi.lua:421
+#: Src/Vessel/ShuttleA/Script/adi.lua:421
 msgctxt "ShuttleA ADI tutorial"
 msgid ""
 "An alternative layout uses the yaw = 0 plane as plane of reference, with "
@@ -582,7 +582,7 @@ msgstr ""
 "plan de référence, des pôles à yaw = +/-90 et une plage de tangage (pitch) "
 "de 0 à 360 degrés."
 
-#: C:/github/openorbiter/Src/Vessel/ShuttleA/Script/adi.lua:429
+#: Src/Vessel/ShuttleA/Script/adi.lua:429
 msgctxt "ShuttleA ADI tutorial"
 msgid ""
 "\n"
@@ -595,7 +595,7 @@ msgstr ""
 "C'est la disposition utilisée par l'instrument ADI dans les vaisseaux Apollo "
 "et les navettes spatiales avant l'introduction des HUDs."
 
-#: C:/github/openorbiter/Src/Vessel/ShuttleA/Script/adi.lua:433
+#: Src/Vessel/ShuttleA/Script/adi.lua:433
 msgctxt "ShuttleA ADI tutorial"
 msgid ""
 "Note that the two layouts only differ in the markings printed on the ball, "
@@ -604,7 +604,7 @@ msgstr ""
 "Notez que les deux dispositions diffèrent uniquement par les repères "
 "imprimés sur la boule et non par le comportement de celle-ci."
 
-#: C:/github/openorbiter/Src/Vessel/ShuttleA/Script/adi.lua:437
+#: Src/Vessel/ShuttleA/Script/adi.lua:437
 msgctxt "ShuttleA ADI tutorial"
 msgid ""
 "\n"
@@ -617,7 +617,7 @@ msgstr ""
 "Il est important de se rappeler que les définitions des angles d'Euler "
 "(roulis, tangage, lacet) dans les deux représentations sont différentes."
 
-#: C:/github/openorbiter/Src/Vessel/ShuttleA/Script/adi.lua:441
+#: Src/Vessel/ShuttleA/Script/adi.lua:441
 msgctxt "ShuttleA ADI tutorial"
 msgid ""
 "\n"
@@ -630,7 +630,7 @@ msgstr ""
 "Par conséquent, la même orientation du vaisseau entraînera deux ensembles "
 "différents d'angles d'Euler en fonction de la présentation ADI choisie."
 
-#: C:/github/openorbiter/Src/Vessel/ShuttleA/Script/adi.lua:445
+#: Src/Vessel/ShuttleA/Script/adi.lua:445
 msgctxt "ShuttleA ADI tutorial"
 msgid ""
 "The layout can be selected by adding an ADI_LAYOUT 0/1 entry in the Shuttle-"
@@ -641,7 +641,7 @@ msgstr ""
 "0/1 dans la définition du scénario du Shuttle-A ou avec la fonction "
 "V:set_adilayout dans un MFD Lua."
 
-#: C:/github/openorbiter/Src/Vessel/ShuttleA/Script/adi.lua:449
+#: Src/Vessel/ShuttleA/Script/adi.lua:449
 msgctxt "ShuttleA ADI tutorial"
 msgid ""
 "This concludes the introduction of the ADI. Got everything? If not, have a "
@@ -651,7 +651,7 @@ msgstr ""
 "pas le cas, consultez le fichier Doc\\ShuttleA.pdf, section 'Repère de "
 "référence et ADI'."
 
-#: C:/github/openorbiter/Src/Vessel/ShuttleA/Script/adi.lua:452
+#: Src/Vessel/ShuttleA/Script/adi.lua:452
 msgctxt "ShuttleA ADI tutorial"
 msgid ""
 "\n"
@@ -663,20 +663,20 @@ msgstr ""
 "\n"
 "Sinon, faisons un petit test pour voir si vous maîtrisez l'ADI..."
 
-#: C:/github/openorbiter/Src/Vessel/ShuttleA/Script/adi.lua:457
+#: Src/Vessel/ShuttleA/Script/adi.lua:457
 msgctxt "ShuttleA ADI tutorial"
 msgid ""
 "I am going to turn off the MFDs and HUD. You should rely on the ADI only."
 msgstr ""
 "Je vais éteindre les MFD et le HUD. Vous devrez vous fier uniquement à l'ADI."
 
-#: C:/github/openorbiter/Src/Vessel/ShuttleA/Script/adi.lua:544
+#: Src/Vessel/ShuttleA/Script/adi.lua:544
 msgctxt "ShuttleA ADI tutorial"
 msgid "Wrong dock! You must dock at port 1 to pass this test."
 msgstr "Mauvais port ! Vous devez vous amarrer au port 1 pour réussir ce test."
 
-#: C:/github/openorbiter/Src/Vessel/ShuttleA/Script/adi.lua:558
-#: C:/github/openorbiter/Src/Vessel/ShuttleA/Script/adi.lua:579
+#: Src/Vessel/ShuttleA/Script/adi.lua:558
+#: Src/Vessel/ShuttleA/Script/adi.lua:579
 msgctxt "ShuttleA ADI tutorial"
 msgid ""
 "Here is the first task: Turn your vessel to a prograde direction and hold."
@@ -684,17 +684,17 @@ msgstr ""
 "Voici la première tâche : Orientez votre vaisseau dans la direction prograde "
 "et maintenez cette position."
 
-#: C:/github/openorbiter/Src/Vessel/ShuttleA/Script/adi.lua:566
+#: Src/Vessel/ShuttleA/Script/adi.lua:566
 msgctxt "ShuttleA ADI tutorial"
 msgid "Do you want to make me angry?"
 msgstr "Vous voulez me mettre en colère ?"
 
-#: C:/github/openorbiter/Src/Vessel/ShuttleA/Script/adi.lua:566
+#: Src/Vessel/ShuttleA/Script/adi.lua:566
 msgctxt "ShuttleA ADI tutorial"
 msgid "I can fail you for this, you know."
 msgstr "Je peux vous faire échouer pour ça, vous savez."
 
-#: C:/github/openorbiter/Src/Vessel/ShuttleA/Script/adi.lua:566
+#: Src/Vessel/ShuttleA/Script/adi.lua:566
 msgctxt "ShuttleA ADI tutorial"
 msgid ""
 "That would be cheating. Please don't push this button again during this task."
@@ -702,7 +702,7 @@ msgstr ""
 "Ce serait de la triche. S'il vous plaît, ne ré-utilisez pas ce bouton "
 "pendant cette tâche."
 
-#: C:/github/openorbiter/Src/Vessel/ShuttleA/Script/adi.lua:566
+#: Src/Vessel/ShuttleA/Script/adi.lua:566
 msgctxt "ShuttleA ADI tutorial"
 msgid ""
 "That's it, test failed for obnoxious behaviour. If you want to retake it, "
@@ -711,22 +711,22 @@ msgstr ""
 "C'est tout, test échoué pour comportement insupportable. Si vous voulez le "
 "repasser, vous devrez refaire le tutoriel."
 
-#: C:/github/openorbiter/Src/Vessel/ShuttleA/Script/adi.lua:566
+#: Src/Vessel/ShuttleA/Script/adi.lua:566
 msgctxt "ShuttleA ADI tutorial"
 msgid "You seem to have serious attitude problems ..."
 msgstr "Vous semblez avoir de sérieux problèmes d'attitude..."
 
-#: C:/github/openorbiter/Src/Vessel/ShuttleA/Script/adi.lua:577
+#: Src/Vessel/ShuttleA/Script/adi.lua:577
 msgctxt "ShuttleA ADI tutorial"
 msgid "Script terminated."
 msgstr "Script terminé."
 
-#: C:/github/openorbiter/Src/Vessel/ShuttleA/Script/adi.lua:584
+#: Src/Vessel/ShuttleA/Script/adi.lua:584
 msgctxt "ShuttleA ADI tutorial"
 msgid "Task 1 passed!"
 msgstr "Tâche 1 réussie!"
 
-#: C:/github/openorbiter/Src/Vessel/ShuttleA/Script/adi.lua:588
+#: Src/Vessel/ShuttleA/Script/adi.lua:588
 msgctxt "ShuttleA ADI tutorial"
 msgid ""
 "The next task: Turn your vessel towards the vernal equinox and hold. (The "
@@ -737,12 +737,12 @@ msgstr ""
 "cette position. (L'équinoxe vernal est le nœud ascendant de l'écliptique par "
 "rapport au plan équatorial de la Terre)"
 
-#: C:/github/openorbiter/Src/Vessel/ShuttleA/Script/adi.lua:594
+#: Src/Vessel/ShuttleA/Script/adi.lua:594
 msgctxt "ShuttleA ADI tutorial"
 msgid "Task 2 passed!"
 msgstr "Tâche 2 réussie!"
 
-#: C:/github/openorbiter/Src/Vessel/ShuttleA/Script/adi.lua:598
+#: Src/Vessel/ShuttleA/Script/adi.lua:598
 msgctxt "ShuttleA ADI tutorial"
 msgid ""
 "The next task: Turn your vessel towards the celestial south pole and hold. "
@@ -752,12 +752,12 @@ msgstr ""
 "maintenez cette position. (Le pôle céleste sud est l'opposé de la direction "
 "de l'axe de rotation de la Terre)"
 
-#: C:/github/openorbiter/Src/Vessel/ShuttleA/Script/adi.lua:604
+#: Src/Vessel/ShuttleA/Script/adi.lua:604
 msgctxt "ShuttleA ADI tutorial"
 msgid "Task 3 passed!"
 msgstr "Tâche 3 réussie!"
 
-#: C:/github/openorbiter/Src/Vessel/ShuttleA/Script/adi.lua:608
+#: Src/Vessel/ShuttleA/Script/adi.lua:608
 msgctxt "ShuttleA ADI tutorial"
 msgid ""
 "Now, turn your vessel towards Sirius. Sirius has the following celestial "
@@ -775,12 +775,12 @@ msgstr ""
 "Astuce : considérez la direction dans laquelle les coordonnées d'ascension "
 "droite augmentent."
 
-#: C:/github/openorbiter/Src/Vessel/ShuttleA/Script/adi.lua:614
+#: Src/Vessel/ShuttleA/Script/adi.lua:614
 msgctxt "ShuttleA ADI tutorial"
 msgid "Task 4 passed!"
 msgstr "Tâche 4 réussie!"
 
-#: C:/github/openorbiter/Src/Vessel/ShuttleA/Script/adi.lua:618
+#: Src/Vessel/ShuttleA/Script/adi.lua:618
 msgctxt "ShuttleA ADI tutorial"
 msgid ""
 "All good so far. Here is the last test: Dock with the ISS, docking port 1. "
@@ -790,7 +790,7 @@ msgstr ""
 "spatiale internationale (ISS), port 1. (NAV-1 a déjà été réglé sur son "
 "transmetteur IDS)"
 
-#: C:/github/openorbiter/Src/Vessel/ShuttleA/Script/adi.lua:624
+#: Src/Vessel/ShuttleA/Script/adi.lua:624
 msgctxt "ShuttleA ADI tutorial"
 msgid ""
 "Hard dock! You pass all tests and are now a certified ADI operator. "

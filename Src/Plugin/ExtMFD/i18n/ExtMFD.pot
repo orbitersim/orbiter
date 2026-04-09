@@ -5,57 +5,57 @@ msgstr ""
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 "X-Generator: Lua xgettext.lua\n"
 
-#: C:/github/openorbiter/Src/Plugin/ExtMFD/ExtMFD.cpp:47
+#: Src/Plugin/ExtMFD/ExtMFD.cpp:47
 msgctxt "External MFD"
 msgid "External MFD"
 msgstr ""
 
-#: C:/github/openorbiter/Src/Plugin/ExtMFD/ExtMFD.cpp:48
+#: Src/Plugin/ExtMFD/ExtMFD.cpp:48
 msgctxt "External MFD"
 msgid "Opens a multifunctional display in an external window"
 msgstr ""
 
-#: C:/github/openorbiter/Src/Plugin/ExtMFD/ExtMFD.cpp:51
+#: Src/Plugin/ExtMFD/ExtMFD.cpp:51
 msgctxt "External MFD"
 msgid "MFD"
 msgstr ""
 
-#: C:/github/openorbiter/Src/Plugin/ExtMFD/MFDWindow.cpp:87
+#: Src/Plugin/ExtMFD/MFDWindow.cpp:87
 msgctxt "External MFD"
 msgid "Help"
 msgstr ""
 
-#: C:/github/openorbiter/Src/Plugin/ExtMFD/MFDWindow.cpp:91
+#: Src/Plugin/ExtMFD/MFDWindow.cpp:91
 msgctxt "External MFD"
 msgid "Pin this MFD to the current vessel"
 msgstr ""
 
-#: C:/github/openorbiter/Src/Plugin/ExtMFD/MFDWindow.cpp:91
+#: Src/Plugin/ExtMFD/MFDWindow.cpp:91
 msgctxt "External MFD"
 msgid "Unpin this MFD from the vessel"
 msgstr ""
 
-#: C:/github/openorbiter/Src/Plugin/ExtMFD/MFDWindow.cpp:97
+#: Src/Plugin/ExtMFD/MFDWindow.cpp:97
 msgctxt "External MFD"
 msgid "Lock aspect ratio"
 msgstr ""
 
-#: C:/github/openorbiter/Src/Plugin/ExtMFD/MFDWindow.cpp:97
+#: Src/Plugin/ExtMFD/MFDWindow.cpp:97
 msgctxt "External MFD"
 msgid "Unlock aspect ratio"
 msgstr ""
 
-#: C:/github/openorbiter/Src/Plugin/ExtMFD/MFDWindow.cpp:192
+#: Src/Plugin/ExtMFD/MFDWindow.cpp:192
 msgctxt "External MFD"
 msgid "PWR"
 msgstr ""
 
-#: C:/github/openorbiter/Src/Plugin/ExtMFD/MFDWindow.cpp:198
+#: Src/Plugin/ExtMFD/MFDWindow.cpp:198
 msgctxt "External MFD"
 msgid "SEL"
 msgstr ""
 
-#: C:/github/openorbiter/Src/Plugin/ExtMFD/MFDWindow.cpp:202
+#: Src/Plugin/ExtMFD/MFDWindow.cpp:202
 msgctxt "External MFD"
 msgid "MNU"
 msgstr ""

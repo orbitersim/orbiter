@@ -5,103 +5,103 @@ msgstr ""
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 "X-Generator: Lua xgettext.lua\n"
 
-#: C:/github/openorbiter/Script/Challenges/Challenge1.lua:31 C:/github/openorbiter/Script/Challenges/Challenge2.lua:31 C:/github/openorbiter/Script/Challenges/Challenge3.lua:31 C:/github/openorbiter/Script/Challenges/Challenge4.lua:31
+#: Script/Challenges/Challenge1.lua:31 Script/Challenges/Challenge2.lua:31 Script/Challenges/Challenge3.lua:31 Script/Challenges/Challenge4.lua:31
 msgid "\n----------------------------------"
 msgstr ""
 
-#: C:/github/openorbiter/Script/Challenges/Challenge1.lua:31 C:/github/openorbiter/Script/Challenges/Challenge2.lua:31 C:/github/openorbiter/Script/Challenges/Challenge3.lua:31 C:/github/openorbiter/Script/Challenges/Challenge4.lua:31
+#: Script/Challenges/Challenge1.lua:31 Script/Challenges/Challenge2.lua:31 Script/Challenges/Challenge3.lua:31 Script/Challenges/Challenge4.lua:31
 msgid "Fuel used"
 msgstr ""
 
-#: C:/github/openorbiter/Script/Challenges/Challenge1.lua:31 C:/github/openorbiter/Script/Challenges/Challenge2.lua:31 C:/github/openorbiter/Script/Challenges/Challenge3.lua:31 C:/github/openorbiter/Script/Challenges/Challenge4.lua:31
+#: Script/Challenges/Challenge1.lua:31 Script/Challenges/Challenge2.lua:31 Script/Challenges/Challenge3.lua:31 Script/Challenges/Challenge4.lua:31
 msgid "High score list:\n\n"
 msgstr ""
 
-#: C:/github/openorbiter/Script/Challenges/Challenge1.lua:31 C:/github/openorbiter/Script/Challenges/Challenge2.lua:31 C:/github/openorbiter/Script/Challenges/Challenge3.lua:31 C:/github/openorbiter/Script/Challenges/Challenge4.lua:31
+#: Script/Challenges/Challenge1.lua:31 Script/Challenges/Challenge2.lua:31 Script/Challenges/Challenge3.lua:31 Script/Challenges/Challenge4.lua:31
 msgid "Name"
 msgstr ""
 
-#: C:/github/openorbiter/Script/Challenges/Challenge1.lua:37 C:/github/openorbiter/Script/Challenges/Challenge2.lua:37 C:/github/openorbiter/Script/Challenges/Challenge3.lua:37 C:/github/openorbiter/Script/Challenges/Challenge4.lua:37
+#: Script/Challenges/Challenge1.lua:37 Script/Challenges/Challenge2.lua:37 Script/Challenges/Challenge3.lua:37 Script/Challenges/Challenge4.lua:37
 msgid "No high scores yet!"
 msgstr ""
 
-#: C:/github/openorbiter/Script/Challenges/Challenge1.lua:49
+#: Script/Challenges/Challenge1.lua:49
 msgid "Flight challenge:\n\nLaunch the Delta-glider into orbit and dock\nwith the International Space Station.\nUse as little fuel as possible.\n"
 msgstr ""
 
-#: C:/github/openorbiter/Script/Challenges/Challenge1.lua:59
+#: Script/Challenges/Challenge1.lua:59
 msgid "Could not find GL-01. Aborting"
 msgstr ""
 
-#: C:/github/openorbiter/Script/Challenges/Challenge1.lua:62 C:/github/openorbiter/Script/Challenges/Challenge2.lua:61 C:/github/openorbiter/Script/Challenges/Challenge3.lua:63 C:/github/openorbiter/Script/Challenges/Challenge4.lua:63
+#: Script/Challenges/Challenge1.lua:62 Script/Challenges/Challenge2.lua:61 Script/Challenges/Challenge3.lua:63 Script/Challenges/Challenge4.lua:63
 msgid "Wrong vessel class. Aborting"
 msgstr ""
 
-#: C:/github/openorbiter/Script/Challenges/Challenge1.lua:72 C:/github/openorbiter/Script/Challenges/Challenge2.lua:71 C:/github/openorbiter/Script/Challenges/Challenge3.lua:73 C:/github/openorbiter/Script/Challenges/Challenge4.lua:73
+#: Script/Challenges/Challenge1.lua:72 Script/Challenges/Challenge2.lua:71 Script/Challenges/Challenge3.lua:73 Script/Challenges/Challenge4.lua:73
 msgid "Initial propellant mass: %.2f kg\n"
 msgstr ""
 
-#: C:/github/openorbiter/Script/Challenges/Challenge1.lua:74 C:/github/openorbiter/Script/Challenges/Challenge2.lua:73 C:/github/openorbiter/Script/Challenges/Challenge3.lua:75 C:/github/openorbiter/Script/Challenges/Challenge4.lua:75
+#: Script/Challenges/Challenge1.lua:74 Script/Challenges/Challenge2.lua:73 Script/Challenges/Challenge3.lua:75 Script/Challenges/Challenge4.lua:75
 msgid "Initial propellant mass: %.2f kg\nUsed so far: %.2f kg\n"
 msgstr ""
 
-#: C:/github/openorbiter/Script/Challenges/Challenge1.lua:99 C:/github/openorbiter/Script/Challenges/Challenge2.lua:98 C:/github/openorbiter/Script/Challenges/Challenge3.lua:100
+#: Script/Challenges/Challenge1.lua:99 Script/Challenges/Challenge2.lua:98 Script/Challenges/Challenge3.lua:100
 msgid "Fuel used: %.2f kg"
 msgstr ""
 
-#: C:/github/openorbiter/Script/Challenges/Challenge1.lua:110 C:/github/openorbiter/Script/Challenges/Challenge2.lua:109 C:/github/openorbiter/Script/Challenges/Challenge3.lua:111 C:/github/openorbiter/Script/Challenges/Challenge4.lua:156
+#: Script/Challenges/Challenge1.lua:110 Script/Challenges/Challenge2.lua:109 Script/Challenges/Challenge3.lua:111 Script/Challenges/Challenge4.lua:156
 msgid "Challenge completed successfully!\n"
 msgstr ""
 
-#: C:/github/openorbiter/Script/Challenges/Challenge1.lua:111 C:/github/openorbiter/Script/Challenges/Challenge2.lua:110 C:/github/openorbiter/Script/Challenges/Challenge3.lua:112 C:/github/openorbiter/Script/Challenges/Challenge4.lua:157
+#: Script/Challenges/Challenge1.lua:111 Script/Challenges/Challenge2.lua:110 Script/Challenges/Challenge3.lua:112 Script/Challenges/Challenge4.lua:157
 msgid "Total fuel expenditure: %.2f kg"
 msgstr ""
 
-#: C:/github/openorbiter/Script/Challenges/Challenge1.lua:118 C:/github/openorbiter/Script/Challenges/Challenge2.lua:117 C:/github/openorbiter/Script/Challenges/Challenge3.lua:119 C:/github/openorbiter/Script/Challenges/Challenge4.lua:164
+#: Script/Challenges/Challenge1.lua:118 Script/Challenges/Challenge2.lua:117 Script/Challenges/Challenge3.lua:119 Script/Challenges/Challenge4.lua:164
 msgid "\n\nYou made it into the high score!"
 msgstr ""
 
-#: C:/github/openorbiter/Script/Challenges/Challenge1.lua:120 C:/github/openorbiter/Script/Challenges/Challenge2.lua:119 C:/github/openorbiter/Script/Challenges/Challenge3.lua:121 C:/github/openorbiter/Script/Challenges/Challenge4.lua:166
+#: Script/Challenges/Challenge1.lua:120 Script/Challenges/Challenge2.lua:119 Script/Challenges/Challenge3.lua:121 Script/Challenges/Challenge4.lua:166
 msgid "High score: Enter your name:"
 msgstr ""
 
-#: C:/github/openorbiter/Script/Challenges/Challenge2.lua:48
+#: Script/Challenges/Challenge2.lua:48
 msgid "Flight challenge:\n\nTransfer to the moon and dock with orbiting\nwheel, Luna-Ob1. Minimize fuel use.\n"
 msgstr ""
 
-#: C:/github/openorbiter/Script/Challenges/Challenge2.lua:58 C:/github/openorbiter/Script/Challenges/Challenge3.lua:60 C:/github/openorbiter/Script/Challenges/Challenge4.lua:60
+#: Script/Challenges/Challenge2.lua:58 Script/Challenges/Challenge3.lua:60 Script/Challenges/Challenge4.lua:60
 msgid "Could not find GL-1. Aborting"
 msgstr ""
 
-#: C:/github/openorbiter/Script/Challenges/Challenge3.lua:50
+#: Script/Challenges/Challenge3.lua:50
 msgid "Flight challenge:\n\nAdvanced lunar transfer: Transfer to the moon\nand dock with orbiting wheel, Luna-Ob1. Minimize\nfuel use.\n\nThis time you need to consider plane alignments.\n"
 msgstr ""
 
-#: C:/github/openorbiter/Script/Challenges/Challenge4.lua:50
+#: Script/Challenges/Challenge4.lua:50
 msgid "Flight challenge:\n\nThis sounds simple enough: Deorbit the glider and\nland at Kennedy Space Center, SLF Runway 33\n- without refuelling.\n\nTip: a direct approach is not the best strategy here.\n"
 msgstr ""
 
-#: C:/github/openorbiter/Script/Challenges/Challenge4.lua:110 C:/github/openorbiter/Script/Challenges/Challenge4.lua:96
+#: Script/Challenges/Challenge4.lua:110 Script/Challenges/Challenge4.lua:96
 msgid "Mission failed!"
 msgstr ""
 
-#: C:/github/openorbiter/Script/Challenges/Challenge4.lua:111 C:/github/openorbiter/Script/Challenges/Challenge4.lua:97
+#: Script/Challenges/Challenge4.lua:111 Script/Challenges/Challenge4.lua:97
 msgid "Script terminated."
 msgstr ""
 
-#: C:/github/openorbiter/Script/Challenges/Challenge4.lua:123
+#: Script/Challenges/Challenge4.lua:123
 msgid "Mission failure: hard surface impact!\n(%.2f m/s)"
 msgstr ""
 
-#: C:/github/openorbiter/Script/Challenges/Challenge4.lua:132
+#: Script/Challenges/Challenge4.lua:132
 msgid "Fuel remaining:\n%.2f kg (Main) + %.2f (RCS)"
 msgstr ""
 
-#: C:/github/openorbiter/Script/Challenges/Challenge4.lua:139
+#: Script/Challenges/Challenge4.lua:139
 msgid "\n\nDistance to target: %g km\n"
 msgstr ""
 
-#: C:/github/openorbiter/Script/Challenges/Challenge4.lua:144
+#: Script/Challenges/Challenge4.lua:144
 msgid "\n\nGround contact!"
 msgstr ""
 

@@ -5,177 +5,177 @@ msgstr ""
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 "X-Generator: Lua xgettext.lua\n"
 
-#: C:/github/openorbiter/Src/Vessel/Atlantis/Atlantis/AscentAP.cpp:34
+#: Src/Vessel/Atlantis/Atlantis/AscentAP.cpp:34
 msgctxt "Atlantis Autopilot"
 msgid "Atlantis Ascent Autopilot"
 msgstr ""
 
-#: C:/github/openorbiter/Src/Vessel/Atlantis/Atlantis/AscentAP.cpp:575
+#: Src/Vessel/Atlantis/Atlantis/AscentAP.cpp:575
 msgctxt "Atlantis Autopilot"
 msgid "Launch azimuth (°)"
 msgstr ""
 
-#: C:/github/openorbiter/Src/Vessel/Atlantis/Atlantis/AscentAP.cpp:581
+#: Src/Vessel/Atlantis/Atlantis/AscentAP.cpp:581
 msgctxt "Atlantis Autopilot"
 msgid "Orbit Altitude (km)"
 msgstr ""
 
-#: C:/github/openorbiter/Src/Vessel/Atlantis/Atlantis/AscentAP.cpp:587
+#: Src/Vessel/Atlantis/Atlantis/AscentAP.cpp:587
 msgctxt "Atlantis Autopilot"
 msgid "Disengage"
 msgstr ""
 
-#: C:/github/openorbiter/Src/Vessel/Atlantis/Atlantis/AscentAP.cpp:590
+#: Src/Vessel/Atlantis/Atlantis/AscentAP.cpp:590
 msgctxt "Atlantis Autopilot"
 msgid "Launch"
 msgstr ""
 
-#: C:/github/openorbiter/Src/Vessel/Atlantis/Atlantis/AscentAP.cpp:595
+#: Src/Vessel/Atlantis/Atlantis/AscentAP.cpp:595
 msgctxt "Atlantis Autopilot"
 msgid "Engage"
 msgstr ""
 
-#: C:/github/openorbiter/Src/Vessel/Atlantis/Atlantis/AscentAP.cpp:602
+#: Src/Vessel/Atlantis/Atlantis/AscentAP.cpp:602
 msgctxt "Atlantis Autopilot"
 msgid "MET: %s"
 msgstr ""
 
-#: C:/github/openorbiter/Src/Vessel/Atlantis/Atlantis/AscentAP.cpp:604
+#: Src/Vessel/Atlantis/Atlantis/AscentAP.cpp:604
 msgctxt "Atlantis Autopilot"
 msgid "Ascent Profile"
 msgstr ""
 
-#: C:/github/openorbiter/Src/Vessel/Atlantis/Atlantis/AscentAP.cpp:608
+#: Src/Vessel/Atlantis/Atlantis/AscentAP.cpp:608
 msgctxt "Atlantis Autopilot"
 msgid "Thrust (%)"
 msgstr ""
 
-#: C:/github/openorbiter/Src/Vessel/Atlantis/Atlantis/AscentAP.cpp:609
+#: Src/Vessel/Atlantis/Atlantis/AscentAP.cpp:609
 msgctxt "Atlantis Autopilot"
 msgid "Altitude (km)"
 msgstr ""
 
-#: C:/github/openorbiter/Src/Vessel/Atlantis/Atlantis/AscentAP.cpp:612
+#: Src/Vessel/Atlantis/Atlantis/AscentAP.cpp:612
 msgctxt "Atlantis Autopilot"
 msgid "SRB"
 msgstr ""
 
-#: C:/github/openorbiter/Src/Vessel/Atlantis/Atlantis/AscentAP.cpp:613
+#: Src/Vessel/Atlantis/Atlantis/AscentAP.cpp:613
 msgctxt "Atlantis Autopilot"
 msgid "SSME"
 msgstr ""
 
-#: C:/github/openorbiter/Src/Vessel/Atlantis/Atlantis/AscentAP.cpp:615
+#: Src/Vessel/Atlantis/Atlantis/AscentAP.cpp:615
 msgctxt "Atlantis Autopilot"
 msgid "Altitude"
 msgstr ""
 
-#: C:/github/openorbiter/Src/Vessel/Atlantis/Atlantis/Atlantis.cpp:61
+#: Src/Vessel/Atlantis/Atlantis/Atlantis.cpp:61
 msgctxt "Atlantis Dialogs"
 msgid "Atlantis Control"
 msgstr ""
 
-#: C:/github/openorbiter/Src/Vessel/Atlantis/Atlantis/Atlantis.cpp:68
+#: Src/Vessel/Atlantis/Atlantis/Atlantis.cpp:68
 msgctxt "Atlantis Dialogs"
 msgid "Ascent Autopilot"
 msgstr ""
 
-#: C:/github/openorbiter/Src/Vessel/Atlantis/Atlantis/Atlantis.cpp:71
+#: Src/Vessel/Atlantis/Atlantis/Atlantis.cpp:71
 msgctxt "Atlantis Dialogs"
 msgid "Payload Door Operation"
 msgstr ""
 
-#: C:/github/openorbiter/Src/Vessel/Atlantis/Atlantis/Atlantis.cpp:74
+#: Src/Vessel/Atlantis/Atlantis/Atlantis.cpp:74
 msgctxt "Atlantis Dialogs"
 msgid "RMS Operation"
 msgstr ""
 
-#: C:/github/openorbiter/Src/Vessel/Atlantis/Atlantis/Atlantis.cpp:79
+#: Src/Vessel/Atlantis/Atlantis/Atlantis.cpp:79
 msgctxt "Atlantis Dialogs"
 msgid "Atlantis RMS Control"
 msgstr ""
 
-#: C:/github/openorbiter/Src/Vessel/Atlantis/Atlantis/Atlantis.cpp:89
+#: Src/Vessel/Atlantis/Atlantis/Atlantis.cpp:89
 msgctxt "Atlantis Dialogs"
 msgid "Show Grapple Points"
 msgstr ""
 
-#: C:/github/openorbiter/Src/Vessel/Atlantis/Atlantis/Atlantis.cpp:93
+#: Src/Vessel/Atlantis/Atlantis/Atlantis.cpp:93
 msgctxt "Atlantis Dialogs"
 msgid "Wrist"
 msgstr ""
 
-#: C:/github/openorbiter/Src/Vessel/Atlantis/Atlantis/Atlantis.cpp:134
+#: Src/Vessel/Atlantis/Atlantis/Atlantis.cpp:134
 msgctxt "Atlantis Dialogs"
 msgid "Elbow"
 msgstr ""
 
-#: C:/github/openorbiter/Src/Vessel/Atlantis/Atlantis/Atlantis.cpp:152
+#: Src/Vessel/Atlantis/Atlantis/Atlantis.cpp:152
 msgctxt "Atlantis Dialogs"
 msgid "Shoulder"
 msgstr ""
 
-#: C:/github/openorbiter/Src/Vessel/Atlantis/Atlantis/Atlantis.cpp:180
+#: Src/Vessel/Atlantis/Atlantis/Atlantis.cpp:180
 msgctxt "Atlantis Dialogs"
 msgid "RMS"
 msgstr ""
 
-#: C:/github/openorbiter/Src/Vessel/Atlantis/Atlantis/Atlantis.cpp:182
+#: Src/Vessel/Atlantis/Atlantis/Atlantis.cpp:182
 msgctxt "Atlantis Dialogs"
 msgid "Stow"
 msgstr ""
 
-#: C:/github/openorbiter/Src/Vessel/Atlantis/Atlantis/Atlantis.cpp:190
+#: Src/Vessel/Atlantis/Atlantis/Atlantis.cpp:190
 msgctxt "Atlantis Dialogs"
 msgid "Grapple"
 msgstr ""
 
-#: C:/github/openorbiter/Src/Vessel/Atlantis/Atlantis/Atlantis.cpp:190
+#: Src/Vessel/Atlantis/Atlantis/Atlantis.cpp:190
 msgctxt "Atlantis Dialogs"
 msgid "Release"
 msgstr ""
 
-#: C:/github/openorbiter/Src/Vessel/Atlantis/Atlantis/Atlantis.cpp:195
+#: Src/Vessel/Atlantis/Atlantis/Atlantis.cpp:195
 msgctxt "Atlantis Dialogs"
 msgid "Payload"
 msgstr ""
 
-#: C:/github/openorbiter/Src/Vessel/Atlantis/Atlantis/Atlantis.cpp:197
+#: Src/Vessel/Atlantis/Atlantis/Atlantis.cpp:197
 msgctxt "Atlantis Dialogs"
 msgid "Arrest"
 msgstr ""
 
-#: C:/github/openorbiter/Src/Vessel/Atlantis/Atlantis/Atlantis.cpp:197
+#: Src/Vessel/Atlantis/Atlantis/Atlantis.cpp:197
 msgctxt "Atlantis Dialogs"
 msgid "Purge"
 msgstr ""
 
-#: C:/github/openorbiter/Src/Vessel/Atlantis/Atlantis/PlBayOp.cpp:19
+#: Src/Vessel/Atlantis/Atlantis/PlBayOp.cpp:19
 msgctxt "Atlantis Payload Bay Panel"
 msgid "Payload Operations"
 msgstr ""
 
-#: C:/github/openorbiter/Src/Vessel/Atlantis/Atlantis/PlBayOp.cpp:170
+#: Src/Vessel/Atlantis/Atlantis/PlBayOp.cpp:170
 msgctxt "Atlantis Payload Bay Panel"
 msgid "Scale"
 msgstr ""
 
-#: C:/github/openorbiter/Src/Vessel/Atlantis/Atlantis/PlBayOp.cpp:171
+#: Src/Vessel/Atlantis/Atlantis/PlBayOp.cpp:171
 msgctxt "Atlantis Payload Bay Panel"
 msgid "x0.5"
 msgstr ""
 
-#: C:/github/openorbiter/Src/Vessel/Atlantis/Atlantis/PlBayOp.cpp:176
+#: Src/Vessel/Atlantis/Atlantis/PlBayOp.cpp:176
 msgctxt "Atlantis Payload Bay Panel"
 msgid "x1"
 msgstr ""
 
-#: C:/github/openorbiter/Src/Vessel/Atlantis/Atlantis/PlBayOp.cpp:182
+#: Src/Vessel/Atlantis/Atlantis/PlBayOp.cpp:182
 msgctxt "Atlantis Payload Bay Panel"
 msgid "Help"
 msgstr ""
 
-#: C:/github/openorbiter/Src/Vessel/Atlantis/Atlantis/PlBayOp.cpp:186
+#: Src/Vessel/Atlantis/Atlantis/PlBayOp.cpp:186
 msgctxt "Atlantis Payload Bay Panel"
 msgid "Close"
 msgstr ""

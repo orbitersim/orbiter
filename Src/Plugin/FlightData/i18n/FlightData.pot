@@ -5,223 +5,223 @@ msgstr ""
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 "X-Generator: Lua xgettext.lua\n"
 
-#: C:/github/openorbiter/Src/Plugin/FlightData/FlightData.cpp:139 C:/github/openorbiter/Src/Plugin/FlightData/FlightData.cpp:208
+#: Src/Plugin/FlightData/FlightData.cpp:139 Src/Plugin/FlightData/FlightData.cpp:208
 #. Dialog title
 msgctxt "FlightData"
 msgid "Flight Data Monitor"
 msgstr ""
 
-#: C:/github/openorbiter/Src/Plugin/FlightData/FlightData.cpp:170
+#: Src/Plugin/FlightData/FlightData.cpp:170
 #. Graph name and axis
 msgctxt "FlightData"
 msgid "Altitude (km)"
 msgstr ""
 
-#: C:/github/openorbiter/Src/Plugin/FlightData/FlightData.cpp:170 C:/github/openorbiter/Src/Plugin/FlightData/FlightData.cpp:171
+#: Src/Plugin/FlightData/FlightData.cpp:170 Src/Plugin/FlightData/FlightData.cpp:171
 #. Graph name and axis
 msgctxt "FlightData"
 msgid "Altitude"
 msgstr ""
 
-#: C:/github/openorbiter/Src/Plugin/FlightData/FlightData.cpp:170 C:/github/openorbiter/Src/Plugin/FlightData/FlightData.cpp:175
+#: Src/Plugin/FlightData/FlightData.cpp:170 Src/Plugin/FlightData/FlightData.cpp:175
 #. Graph name and axis
 msgctxt "FlightData"
 msgid "Speed (km/s)"
 msgstr ""
 
-#: C:/github/openorbiter/Src/Plugin/FlightData/FlightData.cpp:172
+#: Src/Plugin/FlightData/FlightData.cpp:172
 msgctxt "FlightData"
 msgid "Vertical speed"
 msgstr ""
 
-#: C:/github/openorbiter/Src/Plugin/FlightData/FlightData.cpp:175
+#: Src/Plugin/FlightData/FlightData.cpp:175
 #. Graph name and axis
 msgctxt "FlightData"
 msgid "Mach number"
 msgstr ""
 
-#: C:/github/openorbiter/Src/Plugin/FlightData/FlightData.cpp:175
+#: Src/Plugin/FlightData/FlightData.cpp:175
 #. Graph name and axis
 msgctxt "FlightData"
 msgid "Speed"
 msgstr ""
 
-#: C:/github/openorbiter/Src/Plugin/FlightData/FlightData.cpp:176
+#: Src/Plugin/FlightData/FlightData.cpp:176
 msgctxt "FlightData"
 msgid "Airspeed"
 msgstr ""
 
-#: C:/github/openorbiter/Src/Plugin/FlightData/FlightData.cpp:177
+#: Src/Plugin/FlightData/FlightData.cpp:177
 msgctxt "FlightData"
 msgid "Mach"
 msgstr ""
 
-#: C:/github/openorbiter/Src/Plugin/FlightData/FlightData.cpp:180
+#: Src/Plugin/FlightData/FlightData.cpp:180
 #. Graph name and axis
 msgctxt "FlightData"
 msgid "Atmosphere"
 msgstr ""
 
-#: C:/github/openorbiter/Src/Plugin/FlightData/FlightData.cpp:180
+#: Src/Plugin/FlightData/FlightData.cpp:180
 #. Graph name and axis
 msgctxt "FlightData"
 msgid "Pressure (kPa)"
 msgstr ""
 
-#: C:/github/openorbiter/Src/Plugin/FlightData/FlightData.cpp:180
+#: Src/Plugin/FlightData/FlightData.cpp:180
 #. Graph name and axis
 msgctxt "FlightData"
 msgid "Temperature (K)"
 msgstr ""
 
-#: C:/github/openorbiter/Src/Plugin/FlightData/FlightData.cpp:181
+#: Src/Plugin/FlightData/FlightData.cpp:181
 msgctxt "FlightData"
 msgid "Temperature"
 msgstr ""
 
-#: C:/github/openorbiter/Src/Plugin/FlightData/FlightData.cpp:183
+#: Src/Plugin/FlightData/FlightData.cpp:183
 #. Static pressure
 msgctxt "FlightData"
 msgid "Static"
 msgstr ""
 
-#: C:/github/openorbiter/Src/Plugin/FlightData/FlightData.cpp:185
+#: Src/Plugin/FlightData/FlightData.cpp:185
 #. Dynamic pressure
 msgctxt "FlightData"
 msgid "Dynamic"
 msgstr ""
 
-#: C:/github/openorbiter/Src/Plugin/FlightData/FlightData.cpp:188
+#: Src/Plugin/FlightData/FlightData.cpp:188
 #. Graph name and axis
 msgctxt "FlightData"
 msgid "Force (kN)"
 msgstr ""
 
-#: C:/github/openorbiter/Src/Plugin/FlightData/FlightData.cpp:188 C:/github/openorbiter/Src/Plugin/FlightData/FlightData.cpp:192
+#: Src/Plugin/FlightData/FlightData.cpp:188 Src/Plugin/FlightData/FlightData.cpp:192
 #. Graph name and axis
 msgctxt "FlightData"
 msgid "L/D"
 msgstr ""
 
-#: C:/github/openorbiter/Src/Plugin/FlightData/FlightData.cpp:188
+#: Src/Plugin/FlightData/FlightData.cpp:188
 #. Graph name and axis
 msgctxt "FlightData"
 msgid "Lift & Drag"
 msgstr ""
 
-#: C:/github/openorbiter/Src/Plugin/FlightData/FlightData.cpp:189
+#: Src/Plugin/FlightData/FlightData.cpp:189
 msgctxt "FlightData"
 msgid "Lift"
 msgstr ""
 
-#: C:/github/openorbiter/Src/Plugin/FlightData/FlightData.cpp:190
+#: Src/Plugin/FlightData/FlightData.cpp:190
 msgctxt "FlightData"
 msgid "Drag"
 msgstr ""
 
-#: C:/github/openorbiter/Src/Plugin/FlightData/FlightData.cpp:195
+#: Src/Plugin/FlightData/FlightData.cpp:195
 #. Graph name and axis
 msgctxt "FlightData"
 msgid "Mass (Ton)"
 msgstr ""
 
-#: C:/github/openorbiter/Src/Plugin/FlightData/FlightData.cpp:195
+#: Src/Plugin/FlightData/FlightData.cpp:195
 #. Graph name and axis
 msgctxt "FlightData"
 msgid "Mass"
 msgstr ""
 
-#: C:/github/openorbiter/Src/Plugin/FlightData/FlightData.cpp:197
+#: Src/Plugin/FlightData/FlightData.cpp:197
 #. Total mass
 msgctxt "FlightData"
 msgid "Total"
 msgstr ""
 
-#: C:/github/openorbiter/Src/Plugin/FlightData/FlightData.cpp:198
+#: Src/Plugin/FlightData/FlightData.cpp:198
 msgctxt "FlightData"
 msgid "Propellant"
 msgstr ""
 
-#: C:/github/openorbiter/Src/Plugin/FlightData/FlightData.cpp:201
+#: Src/Plugin/FlightData/FlightData.cpp:201
 #. Graph name and axis
 msgctxt "FlightData"
 msgid "Angle (°)"
 msgstr ""
 
-#: C:/github/openorbiter/Src/Plugin/FlightData/FlightData.cpp:201 C:/github/openorbiter/Src/Plugin/FlightData/FlightData.cpp:202
+#: Src/Plugin/FlightData/FlightData.cpp:201 Src/Plugin/FlightData/FlightData.cpp:202
 #. Graph name and axis
 msgctxt "FlightData"
 msgid "AoA"
 msgstr ""
 
-#: C:/github/openorbiter/Src/Plugin/FlightData/FlightData.cpp:203
+#: Src/Plugin/FlightData/FlightData.cpp:203
 msgctxt "FlightData"
 msgid "Slip"
 msgstr ""
 
-#: C:/github/openorbiter/Src/Plugin/FlightData/FlightData.cpp:206
+#: Src/Plugin/FlightData/FlightData.cpp:206
 #. Custom command description
 msgctxt "FlightData"
 msgid "Open a window to track flight parameters of a spacecraft."
 msgstr ""
 
-#: C:/github/openorbiter/Src/Plugin/FlightData/FlightData.cpp:210
+#: Src/Plugin/FlightData/FlightData.cpp:210
 #. Name in menu bar
 msgctxt "FlightData"
 msgid "Flight Data"
 msgstr ""
 
-#: C:/github/openorbiter/Src/Plugin/FlightData/FlightData.cpp:233
+#: Src/Plugin/FlightData/FlightData.cpp:233
 msgctxt "FlightData"
 msgid "Cannot open file for writing: "
 msgstr ""
 
-#: C:/github/openorbiter/Src/Plugin/FlightData/FlightData.cpp:234
+#: Src/Plugin/FlightData/FlightData.cpp:234
 msgctxt "FlightData"
 msgid "Flight data recording error"
 msgstr ""
 
-#: C:/github/openorbiter/Src/Plugin/FlightData/FlightData.cpp:267
+#: Src/Plugin/FlightData/FlightData.cpp:267
 #. Notification
 msgctxt "FlightData"
 msgid "Flight data recording enabled"
 msgstr ""
 
-#: C:/github/openorbiter/Src/Plugin/FlightData/FlightData.cpp:276
+#: Src/Plugin/FlightData/FlightData.cpp:276
 #. Notification
 msgctxt "FlightData"
 msgid "Flight data recording disabled"
 msgstr ""
 
-#: C:/github/openorbiter/Src/Plugin/FlightData/FlightData.cpp:314
+#: Src/Plugin/FlightData/FlightData.cpp:314
 msgctxt "FlightData"
 msgid "Sampling period"
 msgstr ""
 
-#: C:/github/openorbiter/Src/Plugin/FlightData/FlightData.cpp:319
+#: Src/Plugin/FlightData/FlightData.cpp:319
 #. Unicode escape sequence for icon
 msgctxt "FlightData"
 msgid "\\xef\\x84\\xad Reset"
 msgstr ""
 
-#: C:/github/openorbiter/Src/Plugin/FlightData/FlightData.cpp:326
+#: Src/Plugin/FlightData/FlightData.cpp:326
 #. Combox box for filtering graphs
 msgctxt "FlightData"
 msgid "Graphs"
 msgstr ""
 
-#: C:/github/openorbiter/Src/Plugin/FlightData/FlightData.cpp:337
+#: Src/Plugin/FlightData/FlightData.cpp:337
 msgctxt "FlightData"
 msgid "Save to file"
 msgstr ""
 
-#: C:/github/openorbiter/Src/Plugin/FlightData/FlightData.cpp:344
+#: Src/Plugin/FlightData/FlightData.cpp:344
 #. Unicode escape sequence for icon
 msgctxt "FlightData"
 msgid "\\xef\\x81\\x8b Start"
 msgstr ""
 
-#: C:/github/openorbiter/Src/Plugin/FlightData/FlightData.cpp:344
+#: Src/Plugin/FlightData/FlightData.cpp:344
 #. Unicode escape sequence for icon
 msgctxt "FlightData"
 msgid "\\xef\\x81\\x8d Stop"

@@ -5,40 +5,40 @@ msgstr ""
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 "X-Generator: Lua xgettext.lua\n"
 
-#: C:/github/openorbiter/Src/Plugin/Framerate/Framerate.cpp:86
+#: Src/Plugin/Framerate/Framerate.cpp:86
 #. Dialog title
 msgctxt "Framerate"
 msgid "Orbiter Performance Meter"
 msgstr ""
 
-#: C:/github/openorbiter/Src/Plugin/Framerate/Framerate.cpp:90
+#: Src/Plugin/Framerate/Framerate.cpp:90
 #. Custom command description
 msgctxt "Framerate"
 msgid "Simulation frame rate / time step monitor"
 msgstr ""
 
-#: C:/github/openorbiter/Src/Plugin/Framerate/Framerate.cpp:92
+#: Src/Plugin/Framerate/Framerate.cpp:92
 #. Custom command name
 msgctxt "Framerate"
 msgid "Performance Meter"
 msgstr ""
 
-#: C:/github/openorbiter/Src/Plugin/Framerate/Framerate.cpp:122
+#: Src/Plugin/Framerate/Framerate.cpp:122
 msgctxt "Framerate"
 msgid "F/s"
 msgstr ""
 
-#: C:/github/openorbiter/Src/Plugin/Framerate/Framerate.cpp:124
+#: Src/Plugin/Framerate/Framerate.cpp:124
 msgctxt "Framerate"
 msgid "dt/s"
 msgstr ""
 
-#: C:/github/openorbiter/Src/Plugin/Framerate/Framerate.cpp:128
+#: Src/Plugin/Framerate/Framerate.cpp:128
 msgctxt "Framerate"
 msgid "FPS"
 msgstr ""
 
-#: C:/github/openorbiter/Src/Plugin/Framerate/Framerate.cpp:130
+#: Src/Plugin/Framerate/Framerate.cpp:130
 msgctxt "Framerate"
 msgid "dt"
 msgstr ""

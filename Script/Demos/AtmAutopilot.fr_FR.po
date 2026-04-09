@@ -13,7 +13,7 @@ msgstr ""
 "Plural-Forms: nplurals=2; plural=(n > 1);\n"
 "X-Generator: Poedit 3.8\n"
 
-#: C:/github/openorbiter/Script/Demos/AtmAutopilot.lua:7
+#: Script/Demos/AtmAutopilot.lua:7
 msgid ""
 "This tutorial gives a brief hands-on demonstration of the Delta-glider's "
 "atmospheric autopilot."
@@ -21,7 +21,7 @@ msgstr ""
 "Ce tutoriel propose une brève démonstration pratique du pilote automatique "
 "atmosphérique du Delta-glider."
 
-#: C:/github/openorbiter/Script/Demos/AtmAutopilot.lua:14
+#: Script/Demos/AtmAutopilot.lua:14
 msgid ""
 "\n"
 "\n"
@@ -36,7 +36,7 @@ msgstr ""
 "Vous devriez voir le terminal dans le MFD gauche. Si ce n'est pas le cas, "
 "quittez la simulation et activez le module LuaMFD."
 
-#: C:/github/openorbiter/Script/Demos/AtmAutopilot.lua:22
+#: Script/Demos/AtmAutopilot.lua:22
 msgid ""
 "First, we set the target airspeed. Press the MFD button labelled 'INP' and "
 "type the following text into the input box:\n"
@@ -58,7 +58,7 @@ msgstr ""
 "\n"
 "Appuyez sur Entrée pour valider la commande."
 
-#: C:/github/openorbiter/Script/Demos/AtmAutopilot.lua:26
+#: Script/Demos/AtmAutopilot.lua:26
 msgid ""
 "Good. The glider now fires its main engines and starts to roll. At a ground "
 "speed of 100m/s, pull the stick to rotate."
@@ -66,7 +66,7 @@ msgstr ""
 "Bien. Le vaisseau allume ses moteurs principaux plein gaz et commence son "
 "roulage. À 100 m/s de vitesse, tirez sur le manche pour la rotation."
 
-#: C:/github/openorbiter/Script/Demos/AtmAutopilot.lua:32
+#: Script/Demos/AtmAutopilot.lua:32
 msgid ""
 "Excellent. Now raise the gear. Either simply press the \"G\" key, or enter "
 "the following into the MFD:\n"
@@ -83,7 +83,7 @@ msgstr ""
 "(Notez le « V » majuscule. Les commandes saisies dans le terminal sont "
 "sensibles à la casse.)"
 
-#: C:/github/openorbiter/Script/Demos/AtmAutopilot.lua:39
+#: Script/Demos/AtmAutopilot.lua:39
 msgid ""
 "Now, let's set target altitude. Enter the following text in the MFD:\n"
 "\n"
@@ -103,14 +103,14 @@ msgstr ""
 "Assurez-vous de ne pas percuter le sol pendant que vous programmez le pilote "
 "automatique !"
 
-#: C:/github/openorbiter/Script/Demos/AtmAutopilot.lua:44
+#: Script/Demos/AtmAutopilot.lua:44
 msgid ""
 "As we approach the target altitude, the autopilot levels out the climb angle."
 msgstr ""
 "À mesure que nous approchons de l’altitude cible, le pilote automatique "
 "réduit l’angle de montée pour stabiliser le vol en palier."
 
-#: C:/github/openorbiter/Script/Demos/AtmAutopilot.lua:49
+#: Script/Demos/AtmAutopilot.lua:49
 msgid ""
 "You can reset the target speed simply by entering a new value. Enter the "
 "following in the MFD:\n"
@@ -122,7 +122,7 @@ msgstr ""
 "\n"
 "aap.spd(600)"
 
-#: C:/github/openorbiter/Script/Demos/AtmAutopilot.lua:54
+#: Script/Demos/AtmAutopilot.lua:54
 msgid ""
 "Reaching the new target speed. The same mechanism works for resetting the "
 "target altitude. Enter this in the MFD:\n"
@@ -134,7 +134,7 @@ msgstr ""
 "\n"
 "aap.alt(20e3)"
 
-#: C:/github/openorbiter/Script/Demos/AtmAutopilot.lua:59
+#: Script/Demos/AtmAutopilot.lua:59
 msgid ""
 "The autopilot only controls the main engines. However, if you engage the "
 "glider's scram engines manually, the main engines will be throttled down "
@@ -151,7 +151,7 @@ msgstr ""
 "Essayez en réglant les scramjets avec [Alt][+] et [Alt][-] (la touche Alt et "
 "les touches + et - du pavé numérique)."
 
-#: C:/github/openorbiter/Script/Demos/AtmAutopilot.lua:64
+#: Script/Demos/AtmAutopilot.lua:64
 msgid ""
 "You can manually override the autopilot settings.\n"
 "Pull the stick to climb to 25km."
@@ -159,7 +159,7 @@ msgstr ""
 "Vous pouvez contourner manuellement les réglages du pilote automatique.\n"
 "Tirez le manche pour monter jusqu’à 25 km."
 
-#: C:/github/openorbiter/Script/Demos/AtmAutopilot.lua:69
+#: Script/Demos/AtmAutopilot.lua:69
 msgid ""
 "\n"
 "Now release the stick to allow the autopilot to return to its target "
@@ -169,7 +169,7 @@ msgstr ""
 "Relâchez maintenant le manche pour permettre au pilote automatique de "
 "revenir à l’altitude cible."
 
-#: C:/github/openorbiter/Script/Demos/AtmAutopilot.lua:75
+#: Script/Demos/AtmAutopilot.lua:75
 msgid ""
 "Certain combinations of speed and altitude cannot be sustained by the "
 "glider. Try resetting the target speed back to 250 m/s.\n"
@@ -180,13 +180,13 @@ msgstr ""
 "s.\n"
 "(Désactivez les scramjets s'ils sont encore engagés)"
 
-#: C:/github/openorbiter/Script/Demos/AtmAutopilot.lua:79
+#: Script/Demos/AtmAutopilot.lua:79
 msgid "The autopilot pitches up in an attempt to maintain the target altitude."
 msgstr ""
 "Le pilote automatique cabre l’appareil dans une tentative de maintenir "
 "l’altitude cible."
 
-#: C:/github/openorbiter/Script/Demos/AtmAutopilot.lua:84
+#: Script/Demos/AtmAutopilot.lua:84
 msgid ""
 "Eventually, even with fully extended elevator, the glider can't maintain an "
 "altitude of 20km at a speed of 250m/s.\n"
@@ -199,7 +199,7 @@ msgstr ""
 "Il descend jusqu’à ce que l’air plus dense fournisse une portance suffisante "
 "pour équilibrer la force gravitationnelle."
 
-#: C:/github/openorbiter/Script/Demos/AtmAutopilot.lua:88
+#: Script/Demos/AtmAutopilot.lua:88
 msgid ""
 "This concludes the tutorial. If you want, stay in the air and experiment "
 "with the autopilot settings."
@@ -207,7 +207,7 @@ msgstr ""
 "Ceci conclut le tutoriel. Si vous le souhaitez, restez en vol et testez les "
 "réglages de l’autopilote."
 
-#: C:/github/openorbiter/Script/Demos/AtmAutopilot.lua:94
+#: Script/Demos/AtmAutopilot.lua:94
 msgid ""
 "If you want to find out more details about the atmospheric autopilot, type:\n"
 "\n"

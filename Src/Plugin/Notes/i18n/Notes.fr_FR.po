@@ -14,19 +14,19 @@ msgstr ""
 "X-Generator: Poedit 3.8\n"
 
 #. Custom command name
-#: C:/github/openorbiter/Src/Plugin/Notes/Notes.cpp:208
+#: Src/Plugin/Notes/Notes.cpp:208
 msgctxt "Notes"
 msgid "Notes"
 msgstr "Notes"
 
 #. Custom command description
-#: C:/github/openorbiter/Src/Plugin/Notes/Notes.cpp:210
+#: Src/Plugin/Notes/Notes.cpp:210
 msgctxt "Notes"
 msgid "Opens an onscreen note"
 msgstr "Créer une note incrustée"
 
 #. Name in menu bar
-#: C:/github/openorbiter/Src/Plugin/Notes/Notes.cpp:214
+#: Src/Plugin/Notes/Notes.cpp:214
 msgctxt "Notes"
 msgid "Note"
 msgstr "Note"

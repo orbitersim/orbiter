@@ -14,39 +14,39 @@ msgstr ""
 "X-Generator: Poedit 3.8\n"
 
 #. Dialog title
-#: C:/github/openorbiter/Src/Plugin/Framerate/Framerate.cpp:86
+#: Src/Plugin/Framerate/Framerate.cpp:86
 msgctxt "Framerate"
 msgid "Orbiter Performance Meter"
 msgstr "Métriques de performance"
 
 #. Custom command description
-#: C:/github/openorbiter/Src/Plugin/Framerate/Framerate.cpp:90
+#: Src/Plugin/Framerate/Framerate.cpp:90
 msgctxt "Framerate"
 msgid "Simulation frame rate / time step monitor"
 msgstr "Suivi des pas de temps / images par secondes"
 
 #. Custom command name
-#: C:/github/openorbiter/Src/Plugin/Framerate/Framerate.cpp:92
+#: Src/Plugin/Framerate/Framerate.cpp:92
 msgctxt "Framerate"
 msgid "Performance Meter"
 msgstr "Performances"
 
-#: C:/github/openorbiter/Src/Plugin/Framerate/Framerate.cpp:122
+#: Src/Plugin/Framerate/Framerate.cpp:122
 msgctxt "Framerate"
 msgid "F/s"
 msgstr "I/s"
 
-#: C:/github/openorbiter/Src/Plugin/Framerate/Framerate.cpp:124
+#: Src/Plugin/Framerate/Framerate.cpp:124
 msgctxt "Framerate"
 msgid "dt/s"
 msgstr "Δt/s"
 
-#: C:/github/openorbiter/Src/Plugin/Framerate/Framerate.cpp:128
+#: Src/Plugin/Framerate/Framerate.cpp:128
 msgctxt "Framerate"
 msgid "FPS"
 msgstr "I/s"
 
-#: C:/github/openorbiter/Src/Plugin/Framerate/Framerate.cpp:130
+#: Src/Plugin/Framerate/Framerate.cpp:130
 msgctxt "Framerate"
 msgid "dt"
 msgstr "Δt"

@@ -1,13 +1,53 @@
 -- xgettext.lua
 -- Usage:
---   lua xgettext.lua output.pot filelist.txt
+--   lua xgettext.lua [--strip-prefix=PATH] output.pot filelist.txt
 
-local output_file = arg[1]
-local list_file   = arg[2]
+local strip_prefix = nil
+local positional = {}
+
+for i = 1, #arg do
+    local a = arg[i]
+
+    if not strip_prefix then
+        local p = a:match("^%-%-strip%-prefix=(.+)")
+        if p then
+            p = p:gsub("\\", "/")
+            if p:sub(-1) ~= "/" then
+                p = p .. "/"
+            end
+            strip_prefix = p
+        else
+            table.insert(positional, a)
+        end
+    else
+        table.insert(positional, a)
+    end
+end
+
+local output_file = positional[1]
+local list_file   = positional[2]
 
 if not output_file or not list_file then
-    print("Usage: lua xgettext.lua output.pot filelist.txt")
+    print("Usage: lua xgettext.lua [--strip-prefix=PATH] output.pot filelist.txt")
     os.exit(1)
+end
+
+local function normalize_path(path)
+    path = path:gsub("\\", "/")
+    path = path:gsub("/+", "/")
+    path = path:gsub("^%./", "")
+    return path
+end
+
+local function make_relative(path)
+    path = normalize_path(path)
+
+    if strip_prefix and path:sub(1, #strip_prefix) == strip_prefix then
+        local rel = path:sub(#strip_prefix + 1)
+        return rel ~= "" and rel or "."
+    end
+
+    return path
 end
 
 -----------------------------------------------------------------------
@@ -289,7 +329,8 @@ local function scan_file(filename)
                         local args = call_text:match("%((.*)%)")
                         if args then
                             local strs = parse_string_arguments(args)
-                            local ref = filename .. ":" .. lineno
+                            local rel = make_relative(filename)
+                            local ref = rel .. ":" .. lineno
 
                             if p.abbr and #strs >= 1 then
                                 add_entry(strs[1], nil, "Abbreviation - "..p.length.." letters", pending_comment, ref)

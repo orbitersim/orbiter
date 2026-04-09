@@ -34,7 +34,7 @@ function(generate_pot TARGET_NAME)
     # --- 3. Add custom command ---
     add_custom_command(
         OUTPUT "${POT_FILE}"
-        COMMAND $<TARGET_FILE:lua::exe> "${CMAKE_SOURCE_DIR}/Utils/xgettext.lua" "${POT_FILE}" "${FILELIST}"
+        COMMAND $<TARGET_FILE:lua::exe> "${CMAKE_SOURCE_DIR}/Utils/xgettext.lua" "--strip-prefix=${CMAKE_SOURCE_DIR}" "${POT_FILE}" "${FILELIST}"
         DEPENDS "${CMAKE_SOURCE_DIR}/Utils/xgettext.lua" ${SOURCES} "${FILELIST}"
         WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}"
         COMMENT "Extracting translations for ${TARGET_NAME}"
@@ -73,6 +73,7 @@ function(generate_pot_from_files OUTPUT_POT_FILE)
         OUTPUT "${OUTPUT_POT_FILE}"
         COMMAND $<TARGET_FILE:lua::exe>
                 "${CMAKE_SOURCE_DIR}/Utils/xgettext.lua"
+                "--strip-prefix=${CMAKE_SOURCE_DIR}"
                 "${OUTPUT_POT_FILE}"
                 ${FILELIST}
         DEPENDS "${CMAKE_SOURCE_DIR}/Utils/xgettext.lua" ${SOURCES}
@@ -114,6 +115,7 @@ function(generate_flights_pots ROOT_DIR)
         add_custom_command(
             OUTPUT ${POT_FILE}
             COMMAND $<TARGET_FILE:lua::exe>
+                    "--strip-prefix=${CMAKE_SOURCE_DIR}"
                     ${CMAKE_SOURCE_DIR}/Utils/dat2pot.lua
                     ${DAT_FILE} ${POT_FILE}
             DEPENDS

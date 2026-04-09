@@ -5,42 +5,42 @@ msgstr ""
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 "X-Generator: Lua xgettext.lua\n"
 
-#: C:/github/openorbiter/OVP/D3D9Client/CSphereMgr.cpp:63
+#: OVP/D3D9Client/CSphereMgr.cpp:63
 msgctxt "D3D9Client"
 msgid "Loading Celestial Sphere..."
 msgstr ""
 
-#: C:/github/openorbiter/OVP/D3D9Client/D3D9Client.cpp:559
+#: OVP/D3D9Client/D3D9Client.cpp:559
 msgctxt "D3D9Client"
 msgid "Building Shader Programs..."
 msgstr ""
 
-#: C:/github/openorbiter/OVP/D3D9Client/D3D9Client.cpp:1263
+#: OVP/D3D9Client/D3D9Client.cpp:1263
 msgctxt "D3D9Client"
 msgid "Record"
 msgstr ""
 
-#: C:/github/openorbiter/OVP/D3D9Client/D3D9Client.cpp:1264
+#: OVP/D3D9Client/D3D9Client.cpp:1264
 msgctxt "D3D9Client"
 msgid "Replay"
 msgstr ""
 
-#: C:/github/openorbiter/OVP/D3D9Client/D3D9Client.cpp:1278
+#: OVP/D3D9Client/D3D9Client.cpp:1278
 msgctxt "D3D9Client"
 msgid "Frozen"
 msgstr ""
 
-#: C:/github/openorbiter/OVP/D3D9Client/D3D9Client.cpp:3133
+#: OVP/D3D9Client/D3D9Client.cpp:3133
 msgctxt "D3D9Client"
 msgid "Loading..."
 msgstr ""
 
-#: C:/github/openorbiter/OVP/D3D9Client/D3D9Client.cpp:3140
+#: OVP/D3D9Client/D3D9Client.cpp:3140
 msgctxt "D3D9Client"
 msgid "Warning: Config folder not present in /Modules/Server/. Please create symbolic link."
 msgstr ""
 
-#: C:/github/openorbiter/OVP/D3D9Client/VPlanet.cpp:531
+#: OVP/D3D9Client/VPlanet.cpp:531
 msgctxt "D3D9Client"
 msgid "[WARNING] Surface textures are missing for %s"
 msgstr ""

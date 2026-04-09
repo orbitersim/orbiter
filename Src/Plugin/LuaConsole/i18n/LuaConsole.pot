@@ -5,71 +5,71 @@ msgstr ""
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 "X-Generator: Lua xgettext.lua\n"
 
-#: C:/github/openorbiter/Src/Plugin/LuaConsole/LuaConsole.cpp:41
+#: Src/Plugin/LuaConsole/LuaConsole.cpp:41
 msgctxt "LuaConsole"
 msgid "Lua Console"
 msgstr ""
 
-#: C:/github/openorbiter/Src/Plugin/LuaConsole/LuaConsole.cpp:105
+#: Src/Plugin/LuaConsole/LuaConsole.cpp:105
 msgctxt "LuaConsole"
 msgid "Clear console"
 msgstr ""
 
-#: C:/github/openorbiter/Src/Plugin/LuaConsole/LuaConsole.cpp:157
+#: Src/Plugin/LuaConsole/LuaConsole.cpp:157
 msgctxt "LuaConsole"
 msgid "Execution"
 msgstr ""
 
-#: C:/github/openorbiter/Src/Plugin/LuaConsole/LuaConsole.cpp:162
+#: Src/Plugin/LuaConsole/LuaConsole.cpp:162
 #. Tooltip
 msgctxt "LuaConsole"
 msgid "Execute the command buffer"
 msgstr ""
 
-#: C:/github/openorbiter/Src/Plugin/LuaConsole/LuaConsole.cpp:164
+#: Src/Plugin/LuaConsole/LuaConsole.cpp:164
 msgctxt "LuaConsole"
 msgid "Single line"
 msgstr ""
 
-#: C:/github/openorbiter/Src/Plugin/LuaConsole/LuaConsole.cpp:167
+#: Src/Plugin/LuaConsole/LuaConsole.cpp:167
 #. Tooltip. The escaped sequence is the ICON_FA_PLAY icon
 msgctxt "LuaConsole"
 msgid "When checked, the command buffer is sent when pressing Enter\nOtherwise, you can enter multiple lines at once and execute\nthem with Ctrl-Enter or the \\xef\\x81\\x8b button"
 msgstr ""
 
-#: C:/github/openorbiter/Src/Plugin/LuaConsole/LuaConsole.cpp:171
+#: Src/Plugin/LuaConsole/LuaConsole.cpp:171
 msgctxt "LuaConsole"
 msgid "History"
 msgstr ""
 
-#: C:/github/openorbiter/Src/Plugin/LuaConsole/LuaConsole.cpp:175
+#: Src/Plugin/LuaConsole/LuaConsole.cpp:175
 msgctxt "LuaConsole"
 msgid "Previous command"
 msgstr ""
 
-#: C:/github/openorbiter/Src/Plugin/LuaConsole/LuaConsole.cpp:181
+#: Src/Plugin/LuaConsole/LuaConsole.cpp:181
 msgctxt "LuaConsole"
 msgid "Next command"
 msgstr ""
 
-#: C:/github/openorbiter/Src/Plugin/LuaConsole/LuaConsole.cpp:187
+#: Src/Plugin/LuaConsole/LuaConsole.cpp:187
 msgctxt "LuaConsole"
 msgid "Clear history"
 msgstr ""
 
-#: C:/github/openorbiter/Src/Plugin/LuaConsole/LuaConsole.cpp:217
+#: Src/Plugin/LuaConsole/LuaConsole.cpp:217
 #. Custom command name
 msgctxt "LuaConsole"
 msgid "Lua console window"
 msgstr ""
 
-#: C:/github/openorbiter/Src/Plugin/LuaConsole/LuaConsole.cpp:219
+#: Src/Plugin/LuaConsole/LuaConsole.cpp:219
 #. Custom command description
 msgctxt "LuaConsole"
 msgid "Open a Lua script interpreter window."
 msgstr ""
 
-#: C:/github/openorbiter/Src/Plugin/LuaConsole/LuaConsole.cpp:223
+#: Src/Plugin/LuaConsole/LuaConsole.cpp:223
 #. Name in menu bar
 msgctxt "LuaConsole"
 msgid "Lua"

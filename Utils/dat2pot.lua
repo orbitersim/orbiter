@@ -1,13 +1,53 @@
 -- dat2pot.lua
 -- Usage:
---   lua dat2pot.lua input/system.dat output/system.pot
+--   lua dat2pot.lua [--strip-prefix=PATH] input/system.dat output/system.pot
 
-local input_path = arg[1]
-local output_path = arg[2]
+local strip_prefix = nil
+local positional = {}
+
+for i = 1, #arg do
+    local a = arg[i]
+
+    if not strip_prefix then
+        local p = a:match("^%-%-strip%-prefix=(.+)")
+        if p then
+            p = p:gsub("\\", "/")
+            if p:sub(-1) ~= "/" then
+                p = p .. "/"
+            end
+            strip_prefix = p
+        else
+            table.insert(positional, a)
+        end
+    else
+        table.insert(positional, a)
+    end
+end
+
+local input_path  = positional[1]
+local output_path = positional[2]
 
 if not input_path or not output_path then
-    io.stderr:write("Usage: lua dat2pot.lua <input_dat> <output_pot>\n")
+    io.stderr:write("Usage: lua dat2pot.lua [--strip-prefix=PATH] <input_dat> <output_pot>\n")
     os.exit(1)
+end
+
+local function normalize_path(path)
+    path = path:gsub("\\", "/")
+    path = path:gsub("/+", "/")
+    path = path:gsub("^%./", "")
+    return path
+end
+
+local function make_relative(path)
+    path = normalize_path(path)
+
+    if strip_prefix and path:sub(1, #strip_prefix) == strip_prefix then
+        local rel = path:sub(#strip_prefix + 1)
+        return rel ~= "" and rel or "."
+    end
+
+    return path
 end
 
 ------------------------------------------------------------
@@ -59,7 +99,8 @@ for line in infile:lines() do
             table.insert(msg_order, msgid)  -- preserve order
         end
 
-        table.insert(messages[msgid], input_path .. ":" .. line_number)
+        local rel = make_relative(input_path)
+        table.insert(messages[msgid], rel .. ":" .. line_number)
     end
 end
 

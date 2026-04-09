@@ -14,107 +14,109 @@ msgstr ""
 "X-Generator: Poedit 3.8\n"
 
 #. Dialog title
-#: C:/github/openorbiter/Src/Plugin/Rcontrol/Rcontrol.cpp:90
+#: Src/Plugin/Rcontrol/Rcontrol.cpp:90
 msgctxt "RControl"
 msgid "Orbiter Remote Vessel Control"
 msgstr "Téléopération vaisseau"
 
 #. Custom command name
-#: C:/github/openorbiter/Src/Plugin/Rcontrol/Rcontrol.cpp:94
+#: Src/Plugin/Rcontrol/Rcontrol.cpp:94
 msgctxt "RControl"
 msgid "Remote Vessel Control"
 msgstr "Téléopération"
 
 #. Custom command description
-#: C:/github/openorbiter/Src/Plugin/Rcontrol/Rcontrol.cpp:96
+#: Src/Plugin/Rcontrol/Rcontrol.cpp:96
 msgctxt "RControl"
 msgid "Operate the engines of any spacecraft from a dialog box."
-msgstr "Contrôler les propulseurs de n'importe quel vaisseau depuis une boîte de dialogue."
+msgstr ""
+"Contrôler les propulseurs de n'importe quel vaisseau depuis une boîte de "
+"dialogue."
 
 #. Name in menu bar
-#: C:/github/openorbiter/Src/Plugin/Rcontrol/Rcontrol.cpp:100
+#: Src/Plugin/Rcontrol/Rcontrol.cpp:100
 msgctxt "RControl"
 msgid "Rcontrol"
 msgstr "TéléOp"
 
-#: C:/github/openorbiter/Src/Plugin/Rcontrol/Rcontrol.cpp:136
+#: Src/Plugin/Rcontrol/Rcontrol.cpp:136
 msgctxt "RControl"
 msgid "Vessel"
 msgstr "Vaisseau"
 
-#: C:/github/openorbiter/Src/Plugin/Rcontrol/Rcontrol.cpp:155
+#: Src/Plugin/Rcontrol/Rcontrol.cpp:155
 msgctxt "RControl"
 msgid "Set focus"
 msgstr "Cibler"
 
-#: C:/github/openorbiter/Src/Plugin/Rcontrol/Rcontrol.cpp:158
+#: Src/Plugin/Rcontrol/Rcontrol.cpp:158
 msgctxt "RControl"
 msgid "Engines"
 msgstr "Propulseurs"
 
 #. The escaped sequence is the ICON_FA_ANGLES_LEFT icon
-#: C:/github/openorbiter/Src/Plugin/Rcontrol/Rcontrol.cpp:162
+#: Src/Plugin/Rcontrol/Rcontrol.cpp:162
 msgctxt "RControl"
 msgid "\\xef\\x84\\x80 Retro"
 msgstr "\\xef\\x84\\x80 Rétro"
 
 #. The escaped sequence is the ICON_FA_ANGLES_RIGHT icon
-#: C:/github/openorbiter/Src/Plugin/Rcontrol/Rcontrol.cpp:169
+#: Src/Plugin/Rcontrol/Rcontrol.cpp:169
 msgctxt "RControl"
 msgid "Main \\xef\\x84\\x81"
 msgstr "Principal \\xef\\x84\\x81"
 
-#: C:/github/openorbiter/Src/Plugin/Rcontrol/Rcontrol.cpp:175
+#: Src/Plugin/Rcontrol/Rcontrol.cpp:175
 msgctxt "RControl"
 msgid "Hover"
 msgstr "Sustentation"
 
-#: C:/github/openorbiter/Src/Plugin/Rcontrol/Rcontrol.cpp:180
+#: Src/Plugin/Rcontrol/Rcontrol.cpp:180
 msgctxt "RControl"
 msgid "RCS level"
 msgstr "Poussée RCS"
 
-#: C:/github/openorbiter/Src/Plugin/Rcontrol/Rcontrol.cpp:187
+#: Src/Plugin/Rcontrol/Rcontrol.cpp:187
 msgctxt "RControl"
 msgid "RCS Rotation"
 msgstr "Rotation RCS"
 
-#: C:/github/openorbiter/Src/Plugin/Rcontrol/Rcontrol.cpp:218
+#: Src/Plugin/Rcontrol/Rcontrol.cpp:218
 msgctxt "RControl"
 msgid "RCS Translation"
 msgstr "Translation RCS"
 
-#: C:/github/openorbiter/Src/Plugin/Rcontrol/Rcontrol.cpp:243
+#: Src/Plugin/Rcontrol/Rcontrol.cpp:243
 msgctxt "RControl"
 msgid "Nav mode"
 msgstr "Commande d'attitude"
 
-#: C:/github/openorbiter/Src/Plugin/Rcontrol/Rcontrol.cpp:246
+#: Src/Plugin/Rcontrol/Rcontrol.cpp:246
 msgctxt "RControl"
 msgid "Killrot"
 msgstr "Arrêt rotation"
 
-#: C:/github/openorbiter/Src/Plugin/Rcontrol/Rcontrol.cpp:250
+#: Src/Plugin/Rcontrol/Rcontrol.cpp:250
 msgctxt "RControl"
 msgid "Prograde"
 msgstr "Prograde"
 
-#: C:/github/openorbiter/Src/Plugin/Rcontrol/Rcontrol.cpp:254
+#: Src/Plugin/Rcontrol/Rcontrol.cpp:254
 msgctxt "RControl"
 msgid "Normal"
 msgstr "Normal"
 
-#: C:/github/openorbiter/Src/Plugin/Rcontrol/Rcontrol.cpp:258
+#: Src/Plugin/Rcontrol/Rcontrol.cpp:258
 msgctxt "RControl"
 msgid "HLevel"
 msgstr "Horizontal"
 
-#: C:/github/openorbiter/Src/Plugin/Rcontrol/Rcontrol.cpp:262
+#: Src/Plugin/Rcontrol/Rcontrol.cpp:262
 msgctxt "RControl"
 msgid "Retrograde"
 msgstr "Rétrograde"
 
-#: C:/github/openorbiter/Src/Plugin/Rcontrol/Rcontrol.cpp:266
+#: Src/Plugin/Rcontrol/Rcontrol.cpp:266
 msgctxt "RControl"
 msgid "Anti Normal"
 msgstr "Anti Normal"
