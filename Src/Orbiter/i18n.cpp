@@ -65,42 +65,44 @@ static void SelectPluralRuleFromHeader(const std::string &header) {
             return;
         }
     }
-    throw std::runtime_error("Unsupported plural form in PO file: " + header);
+	// For now, no plurals are used so don't bother asserting and just fallback to singular
+    //throw std::runtime_error("Unsupported plural form in PO file: " + header);
+	g_currentPluralRule = {1, [](unsigned int n){ return 0;}};
 }
-    inline uint32_t next_codepoint(const char*& p, const char* end)
+inline uint32_t next_codepoint(const char*& p, const char* end)
+{
+    unsigned char c = static_cast<unsigned char>(*p++);
+
+    if (c < 0x80)
+        return c;
+
+    if ((c >> 5) == 0x6 && p < end)
     {
-        unsigned char c = static_cast<unsigned char>(*p++);
-
-        if (c < 0x80)
-            return c;
-
-        if ((c >> 5) == 0x6 && p < end)
-        {
-            uint32_t cp = (c & 0x1F) << 6;
-            cp |= (static_cast<unsigned char>(*p++) & 0x3F);
-            return cp;
-        }
-
-        if ((c >> 4) == 0xE && p + 1 < end)
-        {
-            uint32_t cp = (c & 0x0F) << 12;
-            cp |= (static_cast<unsigned char>(*p++) & 0x3F) << 6;
-            cp |= (static_cast<unsigned char>(*p++) & 0x3F);
-            return cp;
-        }
-
-        if ((c >> 3) == 0x1E && p + 2 < end)
-        {
-            uint32_t cp = (c & 0x07) << 18;
-            cp |= (static_cast<unsigned char>(*p++) & 0x3F) << 12;
-            cp |= (static_cast<unsigned char>(*p++) & 0x3F) << 6;
-            cp |= (static_cast<unsigned char>(*p++) & 0x3F);
-            return cp;
-        }
-
-        return 0xFFFD; // replacement char on malformed input
+        uint32_t cp = (c & 0x1F) << 6;
+        cp |= (static_cast<unsigned char>(*p++) & 0x3F);
+        return cp;
     }
-	//-----------------------------------------------------------------------------
+
+    if ((c >> 4) == 0xE && p + 1 < end)
+    {
+        uint32_t cp = (c & 0x0F) << 12;
+        cp |= (static_cast<unsigned char>(*p++) & 0x3F) << 6;
+        cp |= (static_cast<unsigned char>(*p++) & 0x3F);
+        return cp;
+    }
+
+    if ((c >> 3) == 0x1E && p + 2 < end)
+    {
+        uint32_t cp = (c & 0x07) << 18;
+        cp |= (static_cast<unsigned char>(*p++) & 0x3F) << 12;
+        cp |= (static_cast<unsigned char>(*p++) & 0x3F) << 6;
+        cp |= (static_cast<unsigned char>(*p++) & 0x3F);
+        return cp;
+    }
+
+    return 0xFFFD; // replacement char on malformed input
+}
+//-----------------------------------------------------------------------------
 // Map accented Latin-1 / Extended-A to base letters
 constexpr uint32_t remove_diacritic(uint32_t cp)
 {
