@@ -155,3 +155,6 @@ add_subdirectory(DGConfigurator)
 if(ORBITER_MAKE_DOC)
 	add_subdirectory(Help)
 endif()
+
+generate_pot(DeltaGlider)
+install_po_files()

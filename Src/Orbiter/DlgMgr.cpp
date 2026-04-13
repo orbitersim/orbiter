@@ -4,6 +4,11 @@
 #define EXPORT_IMGUI_CONTEXT
 #define OAPI_IMPLEMENTATION
 #define IMGUI_DEFINE_MATH_OPERATORS
+
+#define IMGUI_ENABLE_FREETYPE
+#include "imgui.h"
+#include "imgui_freetype.h"
+
 #include <stdio.h>
 #include "OrbiterAPI.h"
 #include "DlgMgr.h"
@@ -21,6 +26,9 @@
 #include <vector>
 #include <string>
 #include <unordered_map>
+
+#define TRANSLATION_CONTEXT "Dialog manager"
+#include "I18NAPI.h"
 
 using namespace oapi;
 
@@ -542,6 +550,7 @@ void DialogManager::InitImGui()
 
 	defaultFont = io.Fonts->AddFontFromFileTTF(prm.ImGui_DefaultFontFile, prm.ImGui_FontSize);
 	io.Fonts->AddFontFromFileTTF("Fonts/fa-solid-900.ttf", prm.ImGui_FontSize, &icons_config);
+	io.Fonts->AddFontFromFileTTF("Fonts/NotoSansJP-Regular.ttf", prm.ImGui_FontSize*1.0, &icons_config);
 	consoleFont = io.Fonts->AddFontFromFileTTF(prm.ImGui_ConsoleFontFile, prm.ImGui_FontSize);
 	monoFont = io.Fonts->AddFontFromFileTTF(prm.ImGui_MonospacedFontFile, prm.ImGui_FontSize);
 	manuscriptFont = io.Fonts->AddFontFromFileTTF(prm.ImGui_ManuscriptFontFile, prm.ImGui_FontSize);
@@ -567,6 +576,11 @@ void DialogManager::ImGuiNewFrame()
 	gc->clbkImGuiNewFrame();
 	ImGui_ImplWin32_NewFrame();
 	ImGui::NewFrame();
+
+	for(auto &annotation: annotations) {
+		annotation->Render();
+	}
+
 
 	RenderNotifications();
 
@@ -599,6 +613,17 @@ void DialogManager::SetMainColor(COLORREF col)
     ApplyGlowTheme(color);
 }
 
+void DialogManager::RegisterAnnotation(oapi::ScreenAnnotation *an)
+{
+	annotations.push_back(an);
+}
+
+void DialogManager::UnregisterAnnotation(oapi::ScreenAnnotation *an)
+{
+	annotations.remove(an);
+}
+
+
 ImGuiDialog::~ImGuiDialog(){
 	// Make sure this dialog is no longer referenced in the DialogManager
 	oapiCloseDialog(this);
@@ -612,7 +637,7 @@ bool ImGuiDialog::HandleHelpButton() {
 		hc.toc = (char*)"html/orbiter.chm::/orbiter.hhc";
 		hc.index = (char*)"html/orbiter.chm::/orbiter.hhk";
 
-		if(ImGui::MenuButton(ICON_FA_CIRCLE_QUESTION, "Help")) {
+		if(ImGui::MenuButton(ICON_FA_CIRCLE_QUESTION, _("Help"))) {
 			g_pOrbiter->OpenHelp(&hc);
 		}
 		return true;
@@ -831,7 +856,7 @@ static void RenderNotifications()
 
 				if (ImGui::BeginPopupContextItem(popup_name))
 				{
-					if (ImGui::MenuItem("Copy")) {
+					if (ImGui::MenuItem(_("Copy"))) {
 						ImGui::SetClipboardText(notif.content.c_str());
 					}
 					ImGui::EndPopup();
@@ -879,10 +904,10 @@ namespace ImGui {
 		if (ImGui::BeginPopupContextItem(label))
 		{
 			char buf[64];
-			sprintf(buf, "Reset to %f", v_default);
+			sprintf(buf, _("Reset to %f"), v_default);
 			if (ImGui::MenuItem(buf))
 				*v = v_default;
-			ImGui::MenuItem("Close");
+			ImGui::MenuItem(_("Close"));
 			ImGui::EndPopup();
 		}
 		return ret;
@@ -917,7 +942,6 @@ namespace ImGui {
 		}
 		return ret;
 	}
-
 
 	DLLEXPORT void PushFont(ImGuiFont f, float scale)
 	{
@@ -988,7 +1012,8 @@ namespace ImGui {
 
 	DLLEXPORT bool SliderEnum(const char *label, int *v, const char *values[], int nvalues)
 	{
-        const char* elem_name = (*v >= 0 && *v < nvalues) ? values[*v] : "Unknown";
+		// TRANSLATORS: fallback for unknown enum in slider
+        const char* elem_name = (*v >= 0 && *v < nvalues) ? values[*v] : _("Unknown");
         return ImGui::SliderInt(label, v, 0, nvalues - 1, elem_name);
 	}
 

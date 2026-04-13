@@ -1,0 +1,69 @@
+# This file was auto-generated, DO NOT modify it directly
+msgid ""
+msgstr ""
+"Project-Id-Version: \n"
+"POT-Creation-Date: \n"
+"PO-Revision-Date: \n"
+"Last-Translator: \n"
+"Language-Team: \n"
+"Language: fr_FR\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n > 1);\n"
+"X-Generator: Poedit 3.8\n"
+
+#: Src/Plugin/ExtMFD/ExtMFD.cpp:47
+msgctxt "External MFD"
+msgid "External MFD"
+msgstr "MFD Externe"
+
+#: Src/Plugin/ExtMFD/ExtMFD.cpp:48
+msgctxt "External MFD"
+msgid "Opens a multifunctional display in an external window"
+msgstr "Ouvre un MFD dans une fenêtre"
+
+#: Src/Plugin/ExtMFD/ExtMFD.cpp:51
+msgctxt "External MFD"
+msgid "MFD"
+msgstr "MFD"
+
+#: Src/Plugin/ExtMFD/MFDWindow.cpp:87
+msgctxt "External MFD"
+msgid "Help"
+msgstr "Aide"
+
+#: Src/Plugin/ExtMFD/MFDWindow.cpp:91
+msgctxt "External MFD"
+msgid "Pin this MFD to the current vessel"
+msgstr "Épingler ce MFD au vaisseau actuel"
+
+#: Src/Plugin/ExtMFD/MFDWindow.cpp:91
+msgctxt "External MFD"
+msgid "Unpin this MFD from the vessel"
+msgstr "Détacher ce MFD du vaisseau"
+
+#: Src/Plugin/ExtMFD/MFDWindow.cpp:97
+msgctxt "External MFD"
+msgid "Lock aspect ratio"
+msgstr "Verrouiller le rapport d’aspect"
+
+#: Src/Plugin/ExtMFD/MFDWindow.cpp:97
+msgctxt "External MFD"
+msgid "Unlock aspect ratio"
+msgstr "Déverrouiller le rapport d’aspect"
+
+#: Src/Plugin/ExtMFD/MFDWindow.cpp:192
+msgctxt "External MFD"
+msgid "PWR"
+msgstr "M/A"
+
+#: Src/Plugin/ExtMFD/MFDWindow.cpp:198
+msgctxt "External MFD"
+msgid "SEL"
+msgstr "SÉL"
+
+#: Src/Plugin/ExtMFD/MFDWindow.cpp:202
+msgctxt "External MFD"
+msgid "MNU"
+msgstr "MNU"

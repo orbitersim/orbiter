@@ -1,0 +1,2728 @@
+# This file was auto-generated, DO NOT modify it directly
+msgid ""
+msgstr ""
+"Content-Type: text/plain; charset=UTF-8\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+"X-Generator: Lua xgettext.lua\n"
+
+#: Src/Orbiter/Astro.cpp:83 Src/Orbiter/Astro.cpp:86 Src/Orbiter/i18n/Names.h:64
+#. Parameters order: weekday, month, day, hour, min, sec, year. You can use POSIX style positional parameters here if you need reordering.
+msgctxt "Date Format"
+msgid "%s %s %02d %02d:%02d:%02d %d"
+msgstr ""
+
+#: Src/Orbiter/Defpanel.cpp:567
+msgctxt "MFD Button"
+msgid "PWR"
+msgstr ""
+
+#: Src/Orbiter/Defpanel.cpp:583
+msgctxt "MFD Button"
+msgid "SEL"
+msgstr ""
+
+#: Src/Orbiter/Defpanel.cpp:586
+msgctxt "MFD Button"
+msgid "MNU"
+msgstr ""
+
+#: Src/Orbiter/DlgCamera.cpp:19
+msgctxt "Dialog Camera"
+msgid "Orbiter: Camera"
+msgstr ""
+
+#: Src/Orbiter/DlgCamera.cpp:25
+msgctxt "Dialog Camera"
+msgid "Control"
+msgstr ""
+
+#: Src/Orbiter/DlgCamera.cpp:26
+msgctxt "Dialog Camera"
+msgid "Target"
+msgstr ""
+
+#: Src/Orbiter/DlgCamera.cpp:27
+msgctxt "Dialog Camera"
+msgid "Track"
+msgstr ""
+
+#: Src/Orbiter/DlgCamera.cpp:28
+msgctxt "Dialog Camera"
+msgid "Ground"
+msgstr ""
+
+#: Src/Orbiter/DlgCamera.cpp:29
+msgctxt "Dialog Camera"
+msgid "Preset"
+msgstr ""
+
+#: Src/Orbiter/DlgCamera.cpp:59
+msgctxt "Dialog Camera"
+msgid "Camera mode"
+msgstr ""
+
+#: Src/Orbiter/DlgCamera.cpp:62
+#. Camera mode
+msgctxt "Dialog Camera"
+msgid "Internal"
+msgstr ""
+
+#: Src/Orbiter/DlgCamera.cpp:76
+#. Camera mode
+msgctxt "Dialog Camera"
+msgid "Target Object"
+msgstr ""
+
+#: Src/Orbiter/DlgCamera.cpp:79
+#. Camera mode
+msgctxt "Dialog Camera"
+msgid "Target from Object"
+msgstr ""
+
+#: Src/Orbiter/DlgCamera.cpp:83
+#. Camera mode
+msgctxt "Dialog Camera"
+msgid "Ground Observer (locked)"
+msgstr ""
+
+#: Src/Orbiter/DlgCamera.cpp:86
+#. Camera mode
+msgctxt "Dialog Camera"
+msgid "Ground Observer"
+msgstr ""
+
+#: Src/Orbiter/DlgCamera.cpp:91
+msgctxt "Dialog Camera"
+msgid "Camera mode : %s"
+msgstr ""
+
+#: Src/Orbiter/DlgCamera.cpp:136
+#. Reset cockpit to forward direction
+msgctxt "Dialog Camera"
+msgid "Forward"
+msgstr ""
+
+#: Src/Orbiter/DlgCamera.cpp:142 Src/Orbiter/DlgCamera.cpp:144
+msgctxt "Dialog Camera"
+msgid "Field of view"
+msgstr ""
+
+#: Src/Orbiter/DlgCamera.cpp:178
+msgctxt "Dialog Camera"
+msgid "Available targets"
+msgstr ""
+
+#: Src/Orbiter/DlgCamera.cpp:183 Src/Orbiter/DlgCamera.cpp:277
+msgctxt "Dialog Camera"
+msgid "Spaceports"
+msgstr ""
+
+#: Src/Orbiter/DlgCamera.cpp:205 Src/Orbiter/DlgCamera.cpp:299
+msgctxt "Dialog Camera"
+msgid "Vessels"
+msgstr ""
+
+#: Src/Orbiter/DlgCamera.cpp:221
+msgctxt "Dialog Camera"
+msgid "Selected target"
+msgstr ""
+
+#: Src/Orbiter/DlgCamera.cpp:224 Src/Orbiter/DlgCamera.cpp:375
+msgctxt "Dialog Camera"
+msgid "Apply"
+msgstr ""
+
+#: Src/Orbiter/DlgCamera.cpp:229
+msgctxt "Dialog Camera"
+msgid "Focus Cockpit"
+msgstr ""
+
+#: Src/Orbiter/DlgCamera.cpp:232
+msgctxt "Dialog Camera"
+msgid "Focus Extern"
+msgstr ""
+
+#: Src/Orbiter/DlgCamera.cpp:242
+#. Camera moveable modes
+msgctxt "Dialog Camera"
+msgid "Moveable modes"
+msgstr ""
+
+#: Src/Orbiter/DlgCamera.cpp:245 Src/Orbiter/DlgCamera.cpp:67
+#. Camera mode
+msgctxt "Dialog Camera"
+msgid "Target Relative"
+msgstr ""
+
+#: Src/Orbiter/DlgCamera.cpp:248 Src/Orbiter/DlgCamera.cpp:70
+#. Camera mode
+msgctxt "Dialog Camera"
+msgid "Absolute Direction"
+msgstr ""
+
+#: Src/Orbiter/DlgCamera.cpp:251 Src/Orbiter/DlgCamera.cpp:73
+#. Camera mode
+msgctxt "Dialog Camera"
+msgid "Global Frame"
+msgstr ""
+
+#: Src/Orbiter/DlgCamera.cpp:259
+#. Camera fixed modes
+msgctxt "Dialog Camera"
+msgid "Fixed modes"
+msgstr ""
+
+#: Src/Orbiter/DlgCamera.cpp:262
+msgctxt "Dialog Camera"
+msgid "Target From..."
+msgstr ""
+
+#: Src/Orbiter/DlgCamera.cpp:268
+msgctxt "Dialog Camera"
+msgid "Target To..."
+msgstr ""
+
+#: Src/Orbiter/DlgCamera.cpp:317
+msgctxt "Dialog Camera"
+msgid "Ground Location"
+msgstr ""
+
+#: Src/Orbiter/DlgCamera.cpp:349
+msgctxt "Dialog Camera"
+msgid "Coordinates"
+msgstr ""
+
+#: Src/Orbiter/DlgCamera.cpp:351
+msgctxt "Dialog Camera"
+msgid "Longitude"
+msgstr ""
+
+#: Src/Orbiter/DlgCamera.cpp:352
+msgctxt "Dialog Camera"
+msgid "Latitude"
+msgstr ""
+
+#: Src/Orbiter/DlgCamera.cpp:353
+msgctxt "Dialog Camera"
+msgid "Altitude"
+msgstr ""
+
+#: Src/Orbiter/DlgCamera.cpp:356
+#. Camera follows terrain at a set altitude above ground
+msgctxt "Dialog Camera"
+msgid "Follow Terrain"
+msgstr ""
+
+#: Src/Orbiter/DlgCamera.cpp:359
+#. Current position
+msgctxt "Dialog Camera"
+msgid "Current"
+msgstr ""
+
+#: Src/Orbiter/DlgCamera.cpp:379
+msgctxt "Dialog Camera"
+msgid "Target lock"
+msgstr ""
+
+#: Src/Orbiter/DlgCamera.cpp:449
+#. Add preset
+msgctxt "Dialog Camera"
+msgid "Add"
+msgstr ""
+
+#: Src/Orbiter/DlgCamera.cpp:453
+#. Delete preset
+msgctxt "Dialog Camera"
+msgid "Delete"
+msgstr ""
+
+#: Src/Orbiter/DlgCamera.cpp:457
+#. Clear preset
+msgctxt "Dialog Camera"
+msgid "Clear"
+msgstr ""
+
+#: Src/Orbiter/DlgCamera.cpp:461
+#. Recall preset
+msgctxt "Dialog Camera"
+msgid "Recall"
+msgstr ""
+
+#: Src/Orbiter/DlgCapture.cpp:22
+msgctxt "Dialog Capture"
+msgid "Orbiter: Capture frames"
+msgstr ""
+
+#: Src/Orbiter/DlgCapture.cpp:29
+msgctxt "Dialog Capture"
+msgid "Save snapshots"
+msgstr ""
+
+#: Src/Orbiter/DlgCapture.cpp:30
+msgctxt "Dialog Capture"
+msgid "To the clipboard"
+msgstr ""
+
+#: Src/Orbiter/DlgCapture.cpp:31
+msgctxt "Dialog Capture"
+msgid "To file"
+msgstr ""
+
+#: Src/Orbiter/DlgCapture.cpp:36
+msgctxt "Dialog Capture"
+msgid "Take snapshot"
+msgstr ""
+
+#: Src/Orbiter/DlgCapture.cpp:48
+msgctxt "Dialog Capture"
+msgid "Save frame sequence"
+msgstr ""
+
+#: Src/Orbiter/DlgCapture.cpp:49
+msgctxt "Dialog Capture"
+msgid "To directory"
+msgstr ""
+
+#: Src/Orbiter/DlgCapture.cpp:50
+msgctxt "Dialog Capture"
+msgid "Counter start"
+msgstr ""
+
+#: Src/Orbiter/DlgCapture.cpp:51
+msgctxt "Dialog Capture"
+msgid "Skip frames"
+msgstr ""
+
+#: Src/Orbiter/DlgCapture.cpp:54
+msgctxt "Dialog Capture"
+msgid "Stop recording"
+msgstr ""
+
+#: Src/Orbiter/DlgCapture.cpp:56
+msgctxt "Dialog Capture"
+msgid "Start recording"
+msgstr ""
+
+#: Src/Orbiter/DlgCapture.cpp:60
+msgctxt "Dialog Capture"
+msgid "File settings"
+msgstr ""
+
+#: Src/Orbiter/DlgCapture.cpp:62
+msgctxt "Dialog Capture"
+msgid "File format"
+msgstr ""
+
+#: Src/Orbiter/DlgCapture.cpp:64
+msgctxt "Dialog Capture"
+msgid "Image quality"
+msgstr ""
+
+#: Src/Orbiter/DlgCapture.cpp:67
+msgctxt "Dialog Capture"
+msgid "Reset"
+msgstr ""
+
+#: Src/Orbiter/DlgFocus.cpp:25
+msgctxt "Dialog Focus"
+msgid "Orbiter: Select spacecraft"
+msgstr ""
+
+#: Src/Orbiter/DlgFocus.cpp:32
+#. Tab for all vessels
+msgctxt "Dialog Focus"
+msgid "All"
+msgstr ""
+
+#: Src/Orbiter/DlgFocus.cpp:34
+#. Tab for nearby vessels
+msgctxt "Dialog Focus"
+msgid "Nearby"
+msgstr ""
+
+#: Src/Orbiter/DlgFocus.cpp:36
+#. Tab for vessels sorted by location
+msgctxt "Dialog Focus"
+msgid "Location"
+msgstr ""
+
+#: Src/Orbiter/DlgFocus.cpp:38
+#. Tab for vessels sorted by class
+msgctxt "Dialog Focus"
+msgid "Class"
+msgstr ""
+
+#: Src/Orbiter/DlgFocus.cpp:104 Src/Orbiter/DlgFocus.cpp:165 Src/Orbiter/DlgFocus.cpp:216 Src/Orbiter/DlgFocus.cpp:61
+msgctxt "Dialog Focus"
+msgid "Available targets"
+msgstr ""
+
+#: Src/Orbiter/DlgFocus.cpp:131 Src/Orbiter/DlgFocus.cpp:187 Src/Orbiter/DlgFocus.cpp:238 Src/Orbiter/DlgFocus.cpp:81
+msgctxt "Dialog Focus"
+msgid "Selected target"
+msgstr ""
+
+#: Src/Orbiter/DlgFocus.cpp:134 Src/Orbiter/DlgFocus.cpp:190 Src/Orbiter/DlgFocus.cpp:241 Src/Orbiter/DlgFocus.cpp:85
+#. Set focus on vessel
+msgctxt "Dialog Focus"
+msgid "Select"
+msgstr ""
+
+#: Src/Orbiter/DlgFocus.cpp:140 Src/Orbiter/DlgFocus.cpp:196 Src/Orbiter/DlgFocus.cpp:247 Src/Orbiter/DlgFocus.cpp:93
+#. Set focus on previous vessel
+msgctxt "Dialog Focus"
+msgid "Previous"
+msgstr ""
+
+#: Src/Orbiter/DlgFunction.cpp:18
+msgctxt "Dialog Function"
+msgid "Orbiter: Custom functions"
+msgstr ""
+
+#: Src/Orbiter/DlgHelp.cpp:32
+msgctxt "Dialog Help"
+msgid "Failed to open help"
+msgstr ""
+
+#: Src/Orbiter/DlgInfo.cpp:24
+msgctxt "Dialog Info"
+msgid "Orbiter: Object info"
+msgstr ""
+
+#: Src/Orbiter/DlgInfo.cpp:55
+msgctxt "Dialog Info"
+msgid "Spaceports"
+msgstr ""
+
+#: Src/Orbiter/DlgInfo.cpp:77
+msgctxt "Dialog Info"
+msgid "Vessels"
+msgstr ""
+
+#: Src/Orbiter/DlgInfo.cpp:107
+msgctxt "Dialog Info"
+msgid "Select an object on the left panel"
+msgstr ""
+
+#: Src/Orbiter/DlgInfo.cpp:112 Src/Orbiter/DlgInfo.cpp:508 Src/Orbiter/DlgInfo.cpp:806
+msgctxt "Dialog Info"
+msgid "Designation"
+msgstr ""
+
+#: Src/Orbiter/DlgInfo.cpp:117 Src/Orbiter/DlgInfo.cpp:513 Src/Orbiter/DlgInfo.cpp:811
+msgctxt "Dialog Info"
+msgid "Name"
+msgstr ""
+
+#: Src/Orbiter/DlgInfo.cpp:122
+msgctxt "Dialog Info"
+msgid "Class"
+msgstr ""
+
+#: Src/Orbiter/DlgInfo.cpp:127
+msgctxt "Dialog Info"
+msgid "Transponder Frequency"
+msgstr ""
+
+#: Src/Orbiter/DlgInfo.cpp:133 Src/Orbiter/DlgInfo.cpp:187 Src/Orbiter/DlgInfo.cpp:390 Src/Orbiter/DlgInfo.cpp:399 Src/Orbiter/DlgInfo.cpp:522 Src/Orbiter/DlgInfo.cpp:529 Src/Orbiter/DlgInfo.cpp:558 Src/Orbiter/DlgInfo.cpp:572 Src/Orbiter/DlgInfo.cpp:581
+msgctxt "Dialog Info"
+msgid "N/A"
+msgstr ""
+
+#: Src/Orbiter/DlgInfo.cpp:138 Src/Orbiter/DlgInfo.cpp:535
+msgctxt "Dialog Info"
+msgid "Physical Parameters"
+msgstr ""
+
+#: Src/Orbiter/DlgInfo.cpp:144
+msgctxt "Dialog Info"
+msgid "Total mass"
+msgstr ""
+
+#: Src/Orbiter/DlgInfo.cpp:149
+msgctxt "Dialog Info"
+msgid "Dry mass"
+msgstr ""
+
+#: Src/Orbiter/DlgInfo.cpp:154
+msgctxt "Dialog Info"
+msgid "Propellant mass"
+msgstr ""
+
+#: Src/Orbiter/DlgInfo.cpp:159
+msgctxt "Dialog Info"
+msgid "Mean radius"
+msgstr ""
+
+#: Src/Orbiter/DlgInfo.cpp:164
+msgctxt "Dialog Info"
+msgid "P. moments of inertia"
+msgstr ""
+
+#: Src/Orbiter/DlgInfo.cpp:172
+msgctxt "Dialog Info"
+msgid "Thrusters Group Ratings (vacuum)"
+msgstr ""
+
+#: Src/Orbiter/DlgInfo.cpp:175
+msgctxt "Dialog Info"
+msgid "Hover"
+msgstr ""
+
+#: Src/Orbiter/DlgInfo.cpp:175
+msgctxt "Dialog Info"
+msgid "Main"
+msgstr ""
+
+#: Src/Orbiter/DlgInfo.cpp:175
+msgctxt "Dialog Info"
+msgid "Retro"
+msgstr ""
+
+#: Src/Orbiter/DlgInfo.cpp:197 Src/Orbiter/DlgInfo.cpp:654
+msgctxt "Dialog Info"
+msgid "Osculating Elements (Ecliptic Frame)"
+msgstr ""
+
+#: Src/Orbiter/DlgInfo.cpp:203 Src/Orbiter/DlgInfo.cpp:254
+msgctxt "Dialog Info"
+msgid "Reference"
+msgstr ""
+
+#: Src/Orbiter/DlgInfo.cpp:209 Src/Orbiter/DlgInfo.cpp:659
+msgctxt "Dialog Info"
+msgid "Semi-major Axis (a)"
+msgstr ""
+
+#: Src/Orbiter/DlgInfo.cpp:215 Src/Orbiter/DlgInfo.cpp:665
+msgctxt "Dialog Info"
+msgid "Eccentricity (e)"
+msgstr ""
+
+#: Src/Orbiter/DlgInfo.cpp:221 Src/Orbiter/DlgInfo.cpp:671
+msgctxt "Dialog Info"
+msgid "Inclination (i)"
+msgstr ""
+
+#: Src/Orbiter/DlgInfo.cpp:227 Src/Orbiter/DlgInfo.cpp:677
+msgctxt "Dialog Info"
+msgid "Longitude of Ascending Node"
+msgstr ""
+
+#: Src/Orbiter/DlgInfo.cpp:233 Src/Orbiter/DlgInfo.cpp:683
+msgctxt "Dialog Info"
+msgid "Longitude of Periapsis"
+msgstr ""
+
+#: Src/Orbiter/DlgInfo.cpp:239
+msgctxt "Dialog Info"
+msgid "Mean longitude"
+msgstr ""
+
+#: Src/Orbiter/DlgInfo.cpp:248
+msgctxt "Dialog Info"
+msgid "Surface-relative Parameters"
+msgstr ""
+
+#: Src/Orbiter/DlgInfo.cpp:260 Src/Orbiter/DlgInfo.cpp:826
+msgctxt "Dialog Info"
+msgid "Position"
+msgstr ""
+
+#: Src/Orbiter/DlgInfo.cpp:266
+msgctxt "Dialog Info"
+msgid "Altitude"
+msgstr ""
+
+#: Src/Orbiter/DlgInfo.cpp:272
+msgctxt "Dialog Info"
+msgid "Ground Speed"
+msgstr ""
+
+#: Src/Orbiter/DlgInfo.cpp:279
+msgctxt "Dialog Info"
+msgid "Vertical Speed"
+msgstr ""
+
+#: Src/Orbiter/DlgInfo.cpp:285
+msgctxt "Dialog Info"
+msgid "Heading"
+msgstr ""
+
+#: Src/Orbiter/DlgInfo.cpp:291
+msgctxt "Dialog Info"
+msgid "Pitch"
+msgstr ""
+
+#: Src/Orbiter/DlgInfo.cpp:297
+msgctxt "Dialog Info"
+msgid "Bank"
+msgstr ""
+
+#: Src/Orbiter/DlgInfo.cpp:300
+#. Bank xxx° right/left
+msgctxt "Dialog Info"
+msgid "left"
+msgstr ""
+
+#: Src/Orbiter/DlgInfo.cpp:300
+#. Bank xxx° right/left
+msgctxt "Dialog Info"
+msgid "right"
+msgstr ""
+
+#: Src/Orbiter/DlgInfo.cpp:308
+msgctxt "Dialog Info"
+msgid "Atmospheric Parameters"
+msgstr ""
+
+#: Src/Orbiter/DlgInfo.cpp:317
+msgctxt "Dialog Info"
+msgid "Temperature"
+msgstr ""
+
+#: Src/Orbiter/DlgInfo.cpp:323
+msgctxt "Dialog Info"
+msgid "Density"
+msgstr ""
+
+#: Src/Orbiter/DlgInfo.cpp:329
+msgctxt "Dialog Info"
+msgid "Pressure"
+msgstr ""
+
+#: Src/Orbiter/DlgInfo.cpp:337
+msgctxt "Dialog Info"
+msgid "Aerodynamic Parameters"
+msgstr ""
+
+#: Src/Orbiter/DlgInfo.cpp:349
+msgctxt "Dialog Info"
+msgid "Dynamic Pressure"
+msgstr ""
+
+#: Src/Orbiter/DlgInfo.cpp:355
+msgctxt "Dialog Info"
+msgid "True Airspeed"
+msgstr ""
+
+#: Src/Orbiter/DlgInfo.cpp:361
+msgctxt "Dialog Info"
+msgid "Mach Number"
+msgstr ""
+
+#: Src/Orbiter/DlgInfo.cpp:367
+msgctxt "Dialog Info"
+msgid "Lift"
+msgstr ""
+
+#: Src/Orbiter/DlgInfo.cpp:373
+msgctxt "Dialog Info"
+msgid "Drag"
+msgstr ""
+
+#: Src/Orbiter/DlgInfo.cpp:379
+msgctxt "Dialog Info"
+msgid "Weight"
+msgstr ""
+
+#: Src/Orbiter/DlgInfo.cpp:385
+msgctxt "Dialog Info"
+msgid "Lift/Drag Ratio"
+msgstr ""
+
+#: Src/Orbiter/DlgInfo.cpp:394
+msgctxt "Dialog Info"
+msgid "Angle of Attack"
+msgstr ""
+
+#: Src/Orbiter/DlgInfo.cpp:408
+msgctxt "Dialog Info"
+msgid "Docking Ports"
+msgstr ""
+
+#: Src/Orbiter/DlgInfo.cpp:419
+msgctxt "Dialog Info"
+msgid "[Docked to %s]"
+msgstr ""
+
+#: Src/Orbiter/DlgInfo.cpp:420
+msgctxt "Dialog Info"
+msgid "[free]"
+msgstr ""
+
+#: Src/Orbiter/DlgInfo.cpp:424
+msgctxt "Dialog Info"
+msgid "Port %d"
+msgstr ""
+
+#: Src/Orbiter/DlgInfo.cpp:435 Src/Orbiter/DlgInfo.cpp:764
+msgctxt "Dialog Info"
+msgid "State Propagation"
+msgstr ""
+
+#: Src/Orbiter/DlgInfo.cpp:442 Src/Orbiter/DlgInfo.cpp:449 Src/Orbiter/DlgInfo.cpp:456
+msgctxt "Dialog Info"
+msgid "Update mode"
+msgstr ""
+
+#: Src/Orbiter/DlgInfo.cpp:445
+#. State propagation mode
+msgctxt "Dialog Info"
+msgid "IDLE (landed)"
+msgstr ""
+
+#: Src/Orbiter/DlgInfo.cpp:452
+#. State propagation mode
+msgctxt "Dialog Info"
+msgid "PASSIVE (attached)"
+msgstr ""
+
+#: Src/Orbiter/DlgInfo.cpp:459
+#. State propagation mode
+msgctxt "Dialog Info"
+msgid "ACTIVE (dynamic)"
+msgstr ""
+
+#: Src/Orbiter/DlgInfo.cpp:463
+msgctxt "Dialog Info"
+msgid "State Propagator"
+msgstr ""
+
+#: Src/Orbiter/DlgInfo.cpp:466
+#. State propagator
+msgctxt "Dialog Info"
+msgid "stabilised"
+msgstr ""
+
+#: Src/Orbiter/DlgInfo.cpp:470
+msgctxt "Dialog Info"
+msgid "Subsamples"
+msgstr ""
+
+#: Src/Orbiter/DlgInfo.cpp:483 Src/Orbiter/DlgInfo.cpp:785
+msgctxt "Dialog Info"
+msgid "Gravity Sources"
+msgstr ""
+
+#: Src/Orbiter/DlgInfo.cpp:520
+#. Central body
+msgctxt "Dialog Info"
+msgid "Primary"
+msgstr ""
+
+#: Src/Orbiter/DlgInfo.cpp:526
+msgctxt "Dialog Info"
+msgid "Solar System"
+msgstr ""
+
+#: Src/Orbiter/DlgInfo.cpp:540
+msgctxt "Dialog Info"
+msgid "Mass"
+msgstr ""
+
+#: Src/Orbiter/DlgInfo.cpp:546
+msgctxt "Dialog Info"
+msgid "Mean Radius"
+msgstr ""
+
+#: Src/Orbiter/DlgInfo.cpp:561
+msgctxt "Dialog Info"
+msgid "Gravitational Moments"
+msgstr ""
+
+#: Src/Orbiter/DlgInfo.cpp:567
+msgctxt "Dialog Info"
+msgid "Siderial day"
+msgstr ""
+
+#: Src/Orbiter/DlgInfo.cpp:576
+msgctxt "Dialog Info"
+msgid "Orbit Period"
+msgstr ""
+
+#: Src/Orbiter/DlgInfo.cpp:585
+msgctxt "Dialog Info"
+msgid "Obliquity of Ecliptic"
+msgstr ""
+
+#: Src/Orbiter/DlgInfo.cpp:591 Src/Orbiter/DlgInfo.cpp:606
+msgctxt "Dialog Info"
+msgid "Atmosphere"
+msgstr ""
+
+#: Src/Orbiter/DlgInfo.cpp:595
+#. has an atmosphere (yes/no)
+msgctxt "Dialog Info"
+msgid "Yes"
+msgstr ""
+
+#: Src/Orbiter/DlgInfo.cpp:598
+#. has an atmosphere (yes/no)
+msgctxt "Dialog Info"
+msgid "No"
+msgstr ""
+
+#: Src/Orbiter/DlgInfo.cpp:612
+#. atmospheric model
+msgctxt "Dialog Info"
+msgid "Generic"
+msgstr ""
+
+#: Src/Orbiter/DlgInfo.cpp:621
+msgctxt "Dialog Info"
+msgid "Atmosphere Model"
+msgstr ""
+
+#: Src/Orbiter/DlgInfo.cpp:627
+msgctxt "Dialog Info"
+msgid "Surface Pressure"
+msgstr ""
+
+#: Src/Orbiter/DlgInfo.cpp:633
+msgctxt "Dialog Info"
+msgid "Surface density"
+msgstr ""
+
+#: Src/Orbiter/DlgInfo.cpp:639
+msgctxt "Dialog Info"
+msgid "Specific Gas Constant"
+msgstr ""
+
+#: Src/Orbiter/DlgInfo.cpp:645
+msgctxt "Dialog Info"
+msgid "Specific Heat Ratio"
+msgstr ""
+
+#: Src/Orbiter/DlgInfo.cpp:689
+msgctxt "Dialog Info"
+msgid "Mean Longitude"
+msgstr ""
+
+#: Src/Orbiter/DlgInfo.cpp:697
+msgctxt "Dialog Info"
+msgid "Geocentric Celestial Position"
+msgstr ""
+
+#: Src/Orbiter/DlgInfo.cpp:717
+msgctxt "Dialog Info"
+msgid "Right Ascension (RA)"
+msgstr ""
+
+#: Src/Orbiter/DlgInfo.cpp:724
+msgctxt "Dialog Info"
+msgid "Declination (Dec)"
+msgstr ""
+
+#: Src/Orbiter/DlgInfo.cpp:734
+msgctxt "Dialog Info"
+msgid "Ecliptic position from primary"
+msgstr ""
+
+#: Src/Orbiter/DlgInfo.cpp:744
+msgctxt "Dialog Info"
+msgid "Longitude"
+msgstr ""
+
+#: Src/Orbiter/DlgInfo.cpp:750
+msgctxt "Dialog Info"
+msgid "Latitude"
+msgstr ""
+
+#: Src/Orbiter/DlgInfo.cpp:756
+msgctxt "Dialog Info"
+msgid "Radial Distance"
+msgstr ""
+
+#: Src/Orbiter/DlgInfo.cpp:771 Src/Orbiter/DlgInfo.cpp:794
+#. State propagation mode
+msgctxt "Dialog Info"
+msgid "Mode"
+msgstr ""
+
+#: Src/Orbiter/DlgInfo.cpp:773
+msgctxt "Dialog Info"
+msgid "Numerical"
+msgstr ""
+
+#: Src/Orbiter/DlgInfo.cpp:796
+msgctxt "Dialog Info"
+msgid "2-body"
+msgstr ""
+
+#: Src/Orbiter/DlgInfo.cpp:796
+msgctxt "Dialog Info"
+msgid "Analytic (%s)"
+msgstr ""
+
+#: Src/Orbiter/DlgInfo.cpp:796
+msgctxt "Dialog Info"
+msgid "from module"
+msgstr ""
+
+#: Src/Orbiter/DlgInfo.cpp:817
+msgctxt "Dialog Info"
+msgid "Located on"
+msgstr ""
+
+#: Src/Orbiter/DlgInfo.cpp:839
+msgctxt "Dialog Info"
+msgid "Landing Pads"
+msgstr ""
+
+#: Src/Orbiter/DlgInfo.cpp:843
+#. Landing pad availability
+msgctxt "Dialog Info"
+msgid "free"
+msgstr ""
+
+#: Src/Orbiter/DlgInfo.cpp:843
+#. Landing pad availability
+msgctxt "Dialog Info"
+msgid "reserved"
+msgstr ""
+
+#: Src/Orbiter/DlgInfo.cpp:856
+msgctxt "Dialog Info"
+msgid "Pad %d"
+msgstr ""
+
+#: Src/Orbiter/DlgInfo.cpp:868
+msgctxt "Dialog Info"
+msgid "Runways"
+msgstr ""
+
+#: Src/Orbiter/DlgInfo.cpp:880
+msgctxt "Dialog Info"
+msgid "ILS %s/%s, length %0.0fm"
+msgstr ""
+
+#: Src/Orbiter/DlgInfo.cpp:884
+msgctxt "Dialog Info"
+msgid "Runway %02d/%02d"
+msgstr ""
+
+#: Src/Orbiter/DlgInfo.cpp:896
+msgctxt "Dialog Info"
+msgid "VOR Transmitters"
+msgstr ""
+
+#: Src/Orbiter/DlgInfo.cpp:906
+msgctxt "Dialog Info"
+msgid "%06.2f, range %sm"
+msgstr ""
+
+#: Src/Orbiter/DlgInfo.cpp:922
+msgctxt "Dialog Info"
+msgid "Focus Vessel"
+msgstr ""
+
+#: Src/Orbiter/DlgInfo.cpp:925
+msgctxt "Dialog Info"
+msgid "Camera Target"
+msgstr ""
+
+#: Src/Orbiter/DlgInfo.cpp:933
+msgctxt "Dialog Info"
+msgid "Object: %s"
+msgstr ""
+
+#: Src/Orbiter/DlgMap.cpp:23
+msgctxt "Dialog Map"
+msgid "Orbiter: Map"
+msgstr ""
+
+#: Src/Orbiter/DlgMap.cpp:24
+msgctxt "Dialog Map"
+msgid "Select..."
+msgstr ""
+
+#: Src/Orbiter/DlgMap.cpp:38
+msgctxt "Dialog Map"
+msgid "Reset map"
+msgstr ""
+
+#: Src/Orbiter/DlgMap.cpp:318
+msgctxt "Dialog Map"
+msgid "Options"
+msgstr ""
+
+#: Src/Orbiter/DlgMap.cpp:322 Src/Orbiter/DlgMap.cpp:427
+msgctxt "Dialog Map"
+msgid "Vessels"
+msgstr ""
+
+#: Src/Orbiter/DlgMap.cpp:325
+#. Vessel selection
+msgctxt "Dialog Map"
+msgid "All"
+msgstr ""
+
+#: Src/Orbiter/DlgMap.cpp:326
+msgctxt "Dialog Map"
+msgid "Focus Only"
+msgstr ""
+
+#: Src/Orbiter/DlgMap.cpp:328
+#. Vessel selection
+msgctxt "Dialog Map"
+msgid "None"
+msgstr ""
+
+#: Src/Orbiter/DlgMap.cpp:334
+msgctxt "Dialog Map"
+msgid "Orbit Display"
+msgstr ""
+
+#: Src/Orbiter/DlgMap.cpp:338
+msgctxt "Dialog Map"
+msgid "Focus Vessel"
+msgstr ""
+
+#: Src/Orbiter/DlgMap.cpp:340
+msgctxt "Dialog Map"
+msgid "Target"
+msgstr ""
+
+#: Src/Orbiter/DlgMap.cpp:344
+msgctxt "Dialog Map"
+msgid "Orbit Plane"
+msgstr ""
+
+#: Src/Orbiter/DlgMap.cpp:346
+msgctxt "Dialog Map"
+msgid "Ground Track"
+msgstr ""
+
+#: Src/Orbiter/DlgMap.cpp:352
+msgctxt "Dialog Map"
+msgid "Horizon Line"
+msgstr ""
+
+#: Src/Orbiter/DlgMap.cpp:357
+msgctxt "Dialog Map"
+msgid "Terminator"
+msgstr ""
+
+#: Src/Orbiter/DlgMap.cpp:362
+#. Terminator line
+msgctxt "Dialog Map"
+msgid "Line"
+msgstr ""
+
+#: Src/Orbiter/DlgMap.cpp:365
+#. Shaded terminator (night/day)
+msgctxt "Dialog Map"
+msgid "Shaded"
+msgstr ""
+
+#: Src/Orbiter/DlgMap.cpp:370
+msgctxt "Dialog Map"
+msgid "Surface Markers"
+msgstr ""
+
+#: Src/Orbiter/DlgMap.cpp:375
+msgctxt "Dialog Map"
+msgid "Grid Line"
+msgstr ""
+
+#: Src/Orbiter/DlgMap.cpp:377
+msgctxt "Dialog Map"
+msgid "Surface Bases"
+msgstr ""
+
+#: Src/Orbiter/DlgMap.cpp:381
+msgctxt "Dialog Map"
+msgid "Coastlines"
+msgstr ""
+
+#: Src/Orbiter/DlgMap.cpp:383
+msgctxt "Dialog Map"
+msgid "VOR Transmitters"
+msgstr ""
+
+#: Src/Orbiter/DlgMap.cpp:387
+msgctxt "Dialog Map"
+msgid "Contour Lines"
+msgstr ""
+
+#: Src/Orbiter/DlgMap.cpp:389 Src/Orbiter/DlgMap.cpp:429
+msgctxt "Dialog Map"
+msgid "Landmarks"
+msgstr ""
+
+#: Src/Orbiter/DlgMap.cpp:396
+#. Other option
+msgctxt "Dialog Map"
+msgid "Other"
+msgstr ""
+
+#: Src/Orbiter/DlgMap.cpp:397
+msgctxt "Dialog Map"
+msgid "Natural Satellites"
+msgstr ""
+
+#: Src/Orbiter/DlgMap.cpp:423
+#. \xef\x82\xb0 is ICON_FA_FILTER
+msgctxt "Dialog Map"
+msgid "\\xef\\x82\\xb0 Search filter"
+msgstr ""
+
+#: Src/Orbiter/DlgMap.cpp:426
+msgctxt "Dialog Map"
+msgid "Moons"
+msgstr ""
+
+#: Src/Orbiter/DlgMap.cpp:428
+msgctxt "Dialog Map"
+msgid "VOR"
+msgstr ""
+
+#: Src/Orbiter/DlgMap.cpp:430
+msgctxt "Dialog Map"
+msgid "Bases"
+msgstr ""
+
+#: Src/Orbiter/DlgMap.cpp:444
+msgctxt "Dialog Map"
+msgid "Search object"
+msgstr ""
+
+#: Src/Orbiter/DlgMap.cpp:456
+msgctxt "Dialog Map"
+msgid "Open info dialog for object"
+msgstr ""
+
+#: Src/Orbiter/DlgMenuCfg.cpp:22
+msgctxt "Dialog MenuCfg"
+msgid "Orbiter: Configure menu bars"
+msgstr ""
+
+#: Src/Orbiter/DlgMenuCfg.cpp:29 Src/Orbiter/DlgMenuCfg.cpp:43 Src/Orbiter/DlgMenuCfg.cpp:59
+msgctxt "Dialog MenuCfg"
+msgid "Auto-hide"
+msgstr ""
+
+#: Src/Orbiter/DlgMenuCfg.cpp:29 Src/Orbiter/DlgMenuCfg.cpp:41 Src/Orbiter/DlgMenuCfg.cpp:57
+msgctxt "Dialog MenuCfg"
+msgid "Hide"
+msgstr ""
+
+#: Src/Orbiter/DlgMenuCfg.cpp:29 Src/Orbiter/DlgMenuCfg.cpp:39 Src/Orbiter/DlgMenuCfg.cpp:55
+msgctxt "Dialog MenuCfg"
+msgid "Show"
+msgstr ""
+
+#: Src/Orbiter/DlgMenuCfg.cpp:35
+msgctxt "Dialog MenuCfg"
+msgid "Appearance"
+msgstr ""
+
+#: Src/Orbiter/DlgMenuCfg.cpp:37
+msgctxt "Dialog MenuCfg"
+msgid "Menu bar"
+msgstr ""
+
+#: Src/Orbiter/DlgMenuCfg.cpp:45
+msgctxt "Dialog MenuCfg"
+msgid "Always show labels"
+msgstr ""
+
+#: Src/Orbiter/DlgMenuCfg.cpp:46 Src/Orbiter/DlgMenuCfg.cpp:61
+msgctxt "Dialog MenuCfg"
+msgid "Opacity"
+msgstr ""
+
+#: Src/Orbiter/DlgMenuCfg.cpp:47
+msgctxt "Dialog MenuCfg"
+msgid "Animation speed"
+msgstr ""
+
+#: Src/Orbiter/DlgMenuCfg.cpp:48
+msgctxt "Dialog MenuCfg"
+msgid "Button size"
+msgstr ""
+
+#: Src/Orbiter/DlgMenuCfg.cpp:49
+msgctxt "Dialog MenuCfg"
+msgid "Hovered size"
+msgstr ""
+
+#: Src/Orbiter/DlgMenuCfg.cpp:50
+msgctxt "Dialog MenuCfg"
+msgid "Spacing"
+msgstr ""
+
+#: Src/Orbiter/DlgMenuCfg.cpp:53
+msgctxt "Dialog MenuCfg"
+msgid "Info bars"
+msgstr ""
+
+#: Src/Orbiter/DlgMenuCfg.cpp:60
+msgctxt "Dialog MenuCfg"
+msgid "Always show warp factor"
+msgstr ""
+
+#: Src/Orbiter/DlgMenuCfg.cpp:64
+msgctxt "Dialog MenuCfg"
+msgid "FPS info bar"
+msgstr ""
+
+#: Src/Orbiter/DlgMenuCfg.cpp:66
+#. FPS info bar position
+msgctxt "Dialog MenuCfg"
+msgid "None"
+msgstr ""
+
+#: Src/Orbiter/DlgMenuCfg.cpp:66
+#. FPS info bar position
+msgctxt "Dialog MenuCfg"
+msgid "On the left"
+msgstr ""
+
+#: Src/Orbiter/DlgMenuCfg.cpp:66
+#. FPS info bar position
+msgctxt "Dialog MenuCfg"
+msgid "On the right"
+msgstr ""
+
+#: Src/Orbiter/DlgMenuCfg.cpp:72
+msgctxt "Dialog MenuCfg"
+msgid "Menu items"
+msgstr ""
+
+#: Src/Orbiter/DlgMgr.cpp:640
+msgctxt "Dialog manager"
+msgid "Help"
+msgstr ""
+
+#: Src/Orbiter/DlgMgr.cpp:859
+msgctxt "Dialog manager"
+msgid "Copy"
+msgstr ""
+
+#: Src/Orbiter/DlgMgr.cpp:907
+msgctxt "Dialog manager"
+msgid "Reset to %f"
+msgstr ""
+
+#: Src/Orbiter/DlgMgr.cpp:910
+msgctxt "Dialog manager"
+msgid "Close"
+msgstr ""
+
+#: Src/Orbiter/DlgMgr.cpp:1016
+#. fallback for unknown enum in slider
+msgctxt "Dialog manager"
+msgid "Unknown"
+msgstr ""
+
+#: Src/Orbiter/DlgOptions.cpp:23
+msgctxt "Dialog Options"
+msgid "Orbiter: Options"
+msgstr ""
+
+#: Src/Orbiter/DlgOptions.cpp:27
+msgctxt "Dialog Options"
+msgid "Select..."
+msgstr ""
+
+#: Src/Orbiter/DlgOptions.cpp:85
+msgctxt "Dialog Options"
+msgid "Instruments & panels"
+msgstr ""
+
+#: Src/Orbiter/DlgOptions.cpp:87
+msgctxt "Dialog Options"
+msgid "User interface"
+msgstr ""
+
+#: Src/Orbiter/DlgOptions.cpp:88
+msgctxt "Dialog Options"
+msgid "      Joystick"
+msgstr ""
+
+#: Src/Orbiter/DlgOptions.cpp:89
+msgctxt "Dialog Options"
+msgid "      Language"
+msgstr ""
+
+#: Src/Orbiter/DlgOptions.cpp:92
+msgctxt "Dialog Options"
+msgid "      Planetarium"
+msgstr ""
+
+#: Src/Orbiter/DlgOptions.cpp:93
+msgctxt "Dialog Options"
+msgid "      Labels"
+msgstr ""
+
+#: Src/Orbiter/DlgOptions.cpp:94
+msgctxt "Dialog Options"
+msgid "      Body forces"
+msgstr ""
+
+#: Src/Orbiter/DlgOptions.cpp:95
+msgctxt "Dialog Options"
+msgid "      Object axes"
+msgstr ""
+
+#: Src/Orbiter/DlgOptions.cpp:133
+msgctxt "Dialog Options"
+msgid "Multi-functional displays"
+msgstr ""
+
+#: Src/Orbiter/DlgOptions.cpp:134
+msgctxt "Dialog Options"
+msgid "MFD refresh interval [s]"
+msgstr ""
+
+#: Src/Orbiter/DlgOptions.cpp:137
+#. Glass cockpit == generic cockpit
+msgctxt "Dialog Options"
+msgid "Glass cockpit MFD size"
+msgstr ""
+
+#: Src/Orbiter/DlgOptions.cpp:140
+#. Glass cockpit == generic cockpit
+msgctxt "Dialog Options"
+msgid "Transparent glass cockpit MFD"
+msgstr ""
+
+#: Src/Orbiter/DlgOptions.cpp:145
+msgctxt "Dialog Options"
+msgid "Virtual cockpit MFD texture size"
+msgstr ""
+
+#: Src/Orbiter/DlgOptions.cpp:154
+msgctxt "Dialog Options"
+msgid "Instrument panels"
+msgstr ""
+
+#: Src/Orbiter/DlgOptions.cpp:155
+msgctxt "Dialog Options"
+msgid "Panel scroll speed"
+msgstr ""
+
+#: Src/Orbiter/DlgOptions.cpp:157
+msgctxt "Dialog Options"
+msgid "2D panel scale"
+msgstr ""
+
+#: Src/Orbiter/DlgOptions.cpp:164 Src/Orbiter/DlgOptions.cpp:86
+msgctxt "Dialog Options"
+msgid "Vessel settings"
+msgstr ""
+
+#: Src/Orbiter/DlgOptions.cpp:165
+msgctxt "Dialog Options"
+msgid "Limited fuel"
+msgstr ""
+
+#: Src/Orbiter/DlgOptions.cpp:167
+msgctxt "Dialog Options"
+msgid "Auto-refuel on pad"
+msgstr ""
+
+#: Src/Orbiter/DlgOptions.cpp:170
+#. flight model
+msgctxt "Dialog Options"
+msgid "Realistic"
+msgstr ""
+
+#: Src/Orbiter/DlgOptions.cpp:170
+#. flight model
+msgctxt "Dialog Options"
+msgid "Simple"
+msgstr ""
+
+#: Src/Orbiter/DlgOptions.cpp:171
+msgctxt "Dialog Options"
+msgid "Flight model"
+msgstr ""
+
+#: Src/Orbiter/DlgOptions.cpp:173
+msgctxt "Dialog Options"
+msgid "Allow damage"
+msgstr ""
+
+#: Src/Orbiter/DlgOptions.cpp:173
+msgctxt "Dialog Options"
+msgid "No damage"
+msgstr ""
+
+#: Src/Orbiter/DlgOptions.cpp:174
+msgctxt "Dialog Options"
+msgid "Damage model"
+msgstr ""
+
+#: Src/Orbiter/DlgOptions.cpp:178
+msgctxt "Dialog Options"
+msgid "Mouse focus behavior"
+msgstr ""
+
+#: Src/Orbiter/DlgOptions.cpp:179
+msgctxt "Dialog Options"
+msgid "Focus requires click"
+msgstr ""
+
+#: Src/Orbiter/DlgOptions.cpp:180
+msgctxt "Dialog Options"
+msgid "Hybrid: Click required only for child windows"
+msgstr ""
+
+#: Src/Orbiter/DlgOptions.cpp:181
+msgctxt "Dialog Options"
+msgid "Focus follows mouse"
+msgstr ""
+
+#: Src/Orbiter/DlgOptions.cpp:185
+msgctxt "Dialog Options"
+msgid "Joystick device"
+msgstr ""
+
+#: Src/Orbiter/DlgOptions.cpp:192 Src/Orbiter/DlgOptions.cpp:199
+#. joystick selection
+msgctxt "Dialog Options"
+msgid "<Disabled>"
+msgstr ""
+
+#: Src/Orbiter/DlgOptions.cpp:219
+msgctxt "Dialog Options"
+msgid "Main engine control"
+msgstr ""
+
+#: Src/Orbiter/DlgOptions.cpp:222
+msgctxt "Dialog Options"
+msgid "<Keyboard only>"
+msgstr ""
+
+#: Src/Orbiter/DlgOptions.cpp:222
+msgctxt "Dialog Options"
+msgid "Slider 0"
+msgstr ""
+
+#: Src/Orbiter/DlgOptions.cpp:222
+msgctxt "Dialog Options"
+msgid "Slider 1"
+msgstr ""
+
+#: Src/Orbiter/DlgOptions.cpp:222
+msgctxt "Dialog Options"
+msgid "Z-axis"
+msgstr ""
+
+#: Src/Orbiter/DlgOptions.cpp:238
+msgctxt "Dialog Options"
+msgid "Ignore throttle setting on launch"
+msgstr ""
+
+#: Src/Orbiter/DlgOptions.cpp:241
+#. joystick configuration
+msgctxt "Dialog Options"
+msgid "Calibration"
+msgstr ""
+
+#: Src/Orbiter/DlgOptions.cpp:243
+#. joystick configuration
+msgctxt "Dialog Options"
+msgid "Saturation"
+msgstr ""
+
+#: Src/Orbiter/DlgOptions.cpp:246
+#. joystick configuration
+msgctxt "Dialog Options"
+msgid "Deadzone"
+msgstr ""
+
+#: Src/Orbiter/DlgOptions.cpp:270 Src/Orbiter/DlgOptions.cpp:274
+msgctxt "Dialog Options"
+msgid "Confirm Language Change"
+msgstr ""
+
+#: Src/Orbiter/DlgOptions.cpp:275
+msgctxt "Dialog Options"
+msgid "Change language to '%s'?"
+msgstr ""
+
+#: Src/Orbiter/DlgOptions.cpp:276
+msgctxt "Dialog Options"
+msgid "The modification will be effective after a restart"
+msgstr ""
+
+#: Src/Orbiter/DlgOptions.cpp:279
+msgctxt "Dialog Options"
+msgid "Apply and restart"
+msgstr ""
+
+#: Src/Orbiter/DlgOptions.cpp:289
+msgctxt "Dialog Options"
+msgid "Apply on next restart"
+msgstr ""
+
+#: Src/Orbiter/DlgOptions.cpp:298
+msgctxt "Dialog Options"
+msgid "Cancel"
+msgstr ""
+
+#: Src/Orbiter/DlgOptions.cpp:309 Src/Orbiter/DlgOptions.cpp:90
+msgctxt "Dialog Options"
+msgid "Celestial sphere"
+msgstr ""
+
+#: Src/Orbiter/DlgOptions.cpp:310
+msgctxt "Dialog Options"
+msgid "Background stars: show as pixels"
+msgstr ""
+
+#: Src/Orbiter/DlgOptions.cpp:316
+msgctxt "Dialog Options"
+msgid "Max magnitude threshold"
+msgstr ""
+
+#: Src/Orbiter/DlgOptions.cpp:321
+msgctxt "Dialog Options"
+msgid "Min magnitude threshold"
+msgstr ""
+
+#: Src/Orbiter/DlgOptions.cpp:326
+msgctxt "Dialog Options"
+msgid "Min brightness"
+msgstr ""
+
+#: Src/Orbiter/DlgOptions.cpp:334
+msgctxt "Dialog Options"
+msgid "Background stars: show as image"
+msgstr ""
+
+#: Src/Orbiter/DlgOptions.cpp:351
+msgctxt "Dialog Options"
+msgid "Background map"
+msgstr ""
+
+#: Src/Orbiter/DlgOptions.cpp:365
+msgctxt "Dialog Options"
+msgid "Brightness"
+msgstr ""
+
+#: Src/Orbiter/DlgOptions.cpp:374 Src/Orbiter/DlgOptions.cpp:91
+msgctxt "Dialog Options"
+msgid "Visual helpers"
+msgstr ""
+
+#: Src/Orbiter/DlgOptions.cpp:375
+msgctxt "Dialog Options"
+msgid "Options for displaying markers and gridlines on the celestial"
+msgstr ""
+
+#: Src/Orbiter/DlgOptions.cpp:376
+msgctxt "Dialog Options"
+msgid "sphere, labels for planetary surface features, as weel as coordinate"
+msgstr ""
+
+#: Src/Orbiter/DlgOptions.cpp:377
+msgctxt "Dialog Options"
+msgid "axis and force vectors"
+msgstr ""
+
+#: Src/Orbiter/DlgOptions.cpp:380 Src/Orbiter/DlgOptions.cpp:389
+msgctxt "Dialog Options"
+msgid "Planetarium mode (F9)"
+msgstr ""
+
+#: Src/Orbiter/DlgOptions.cpp:381
+msgctxt "Dialog Options"
+msgid "Surface/object labels (Alt-F9)"
+msgstr ""
+
+#: Src/Orbiter/DlgOptions.cpp:382 Src/Orbiter/DlgOptions.cpp:531
+msgctxt "Dialog Options"
+msgid "Body force vectors"
+msgstr ""
+
+#: Src/Orbiter/DlgOptions.cpp:383 Src/Orbiter/DlgOptions.cpp:569
+msgctxt "Dialog Options"
+msgid "Object frame axis"
+msgstr ""
+
+#: Src/Orbiter/DlgOptions.cpp:394
+msgctxt "Dialog Options"
+msgid "Grids and circles"
+msgstr ""
+
+#: Src/Orbiter/DlgOptions.cpp:395
+msgctxt "Dialog Options"
+msgid "Celestial grid"
+msgstr ""
+
+#: Src/Orbiter/DlgOptions.cpp:396
+msgctxt "Dialog Options"
+msgid "Ecliptic grid"
+msgstr ""
+
+#: Src/Orbiter/DlgOptions.cpp:397
+msgctxt "Dialog Options"
+msgid "Galactic grid"
+msgstr ""
+
+#: Src/Orbiter/DlgOptions.cpp:398
+msgctxt "Dialog Options"
+msgid "Local horizon grid"
+msgstr ""
+
+#: Src/Orbiter/DlgOptions.cpp:399
+msgctxt "Dialog Options"
+msgid "Target Equator"
+msgstr ""
+
+#: Src/Orbiter/DlgOptions.cpp:401
+msgctxt "Dialog Options"
+msgid "Constellations"
+msgstr ""
+
+#: Src/Orbiter/DlgOptions.cpp:402
+msgctxt "Dialog Options"
+msgid "Labels"
+msgstr ""
+
+#: Src/Orbiter/DlgOptions.cpp:404
+msgctxt "Dialog Options"
+msgid "Long labels"
+msgstr ""
+
+#: Src/Orbiter/DlgOptions.cpp:406
+msgctxt "Dialog Options"
+msgid "Boundaries"
+msgstr ""
+
+#: Src/Orbiter/DlgOptions.cpp:407
+msgctxt "Dialog Options"
+msgid "Patterns"
+msgstr ""
+
+#: Src/Orbiter/DlgOptions.cpp:411
+msgctxt "Dialog Options"
+msgid "Celestical markers"
+msgstr ""
+
+#: Src/Orbiter/DlgOptions.cpp:413
+msgctxt "Dialog Options"
+msgid "Show markers"
+msgstr ""
+
+#: Src/Orbiter/DlgOptions.cpp:469
+msgctxt "Dialog Options"
+msgid "Surface and object labels (Alt-F9)"
+msgstr ""
+
+#: Src/Orbiter/DlgOptions.cpp:474
+msgctxt "Dialog Options"
+msgid "Object markers"
+msgstr ""
+
+#: Src/Orbiter/DlgOptions.cpp:475 Src/Orbiter/DlgOptions.cpp:576
+msgctxt "Dialog Options"
+msgid "Vessels"
+msgstr ""
+
+#: Src/Orbiter/DlgOptions.cpp:476 Src/Orbiter/DlgOptions.cpp:577
+msgctxt "Dialog Options"
+msgid "Celestial bodies"
+msgstr ""
+
+#: Src/Orbiter/DlgOptions.cpp:477 Src/Orbiter/DlgOptions.cpp:578
+msgctxt "Dialog Options"
+msgid "Surface bases"
+msgstr ""
+
+#: Src/Orbiter/DlgOptions.cpp:478
+msgctxt "Dialog Options"
+msgid "VOR transmitters"
+msgstr ""
+
+#: Src/Orbiter/DlgOptions.cpp:482
+msgctxt "Dialog Options"
+msgid "Surface features"
+msgstr ""
+
+#: Src/Orbiter/DlgOptions.cpp:484
+#. Enable surface features checkbox
+msgctxt "Dialog Options"
+msgid "Features"
+msgstr ""
+
+#: Src/Orbiter/DlgOptions.cpp:537
+msgctxt "Dialog Options"
+msgid "Linear forces"
+msgstr ""
+
+#: Src/Orbiter/DlgOptions.cpp:538
+msgctxt "Dialog Options"
+msgid "Weight"
+msgstr ""
+
+#: Src/Orbiter/DlgOptions.cpp:539
+msgctxt "Dialog Options"
+msgid "Thrust"
+msgstr ""
+
+#: Src/Orbiter/DlgOptions.cpp:540
+msgctxt "Dialog Options"
+msgid "Lift"
+msgstr ""
+
+#: Src/Orbiter/DlgOptions.cpp:541
+msgctxt "Dialog Options"
+msgid "Drag"
+msgstr ""
+
+#: Src/Orbiter/DlgOptions.cpp:542
+msgctxt "Dialog Options"
+msgid "Side"
+msgstr ""
+
+#: Src/Orbiter/DlgOptions.cpp:544
+msgctxt "Dialog Options"
+msgid "Total"
+msgstr ""
+
+#: Src/Orbiter/DlgOptions.cpp:546
+msgctxt "Dialog Options"
+msgid "Angular moments"
+msgstr ""
+
+#: Src/Orbiter/DlgOptions.cpp:547
+msgctxt "Dialog Options"
+msgid "Torque"
+msgstr ""
+
+#: Src/Orbiter/DlgOptions.cpp:551 Src/Orbiter/DlgOptions.cpp:582
+msgctxt "Dialog Options"
+msgid "Display"
+msgstr ""
+
+#: Src/Orbiter/DlgOptions.cpp:553
+#. Logarithmic
+msgctxt "Dialog Options"
+msgid "Log"
+msgstr ""
+
+#: Src/Orbiter/DlgOptions.cpp:557
+msgctxt "Dialog Options"
+msgid "Linear"
+msgstr ""
+
+#: Src/Orbiter/DlgOptions.cpp:560 Src/Orbiter/DlgOptions.cpp:585
+msgctxt "Dialog Options"
+msgid "Scale"
+msgstr ""
+
+#: Src/Orbiter/DlgOptions.cpp:561 Src/Orbiter/DlgOptions.cpp:586
+msgctxt "Dialog Options"
+msgid "Opacity"
+msgstr ""
+
+#: Src/Orbiter/DlgOptions.cpp:575
+msgctxt "Dialog Options"
+msgid "Objects"
+msgstr ""
+
+#: Src/Orbiter/DlgOptions.cpp:583
+msgctxt "Dialog Options"
+msgid "Show negative axis"
+msgstr ""
+
+#: Src/Orbiter/DlgRecorder.cpp:21
+msgctxt "Dialog Recorder"
+msgid "Orbiter: Flight recorder/player"
+msgstr ""
+
+#: Src/Orbiter/DlgRecorder.cpp:29
+#. Recording state
+msgctxt "Dialog Recorder"
+msgid "Status: Normal"
+msgstr ""
+
+#: Src/Orbiter/DlgRecorder.cpp:29
+#. Recording state
+msgctxt "Dialog Recorder"
+msgid "Status: Playing"
+msgstr ""
+
+#: Src/Orbiter/DlgRecorder.cpp:29
+#. Recording state
+msgctxt "Dialog Recorder"
+msgid "Status: Recording"
+msgstr ""
+
+#: Src/Orbiter/DlgRecorder.cpp:41 Src/Orbiter/DlgRecorder.cpp:93
+msgctxt "Dialog Recorder"
+msgid "STOP"
+msgstr ""
+
+#: Src/Orbiter/DlgRecorder.cpp:45
+msgctxt "Dialog Recorder"
+msgid "REC"
+msgstr ""
+
+#: Src/Orbiter/DlgRecorder.cpp:54
+msgctxt "Dialog Recorder"
+msgid "A flight record under this name already exists!"
+msgstr ""
+
+#: Src/Orbiter/DlgRecorder.cpp:55
+msgctxt "Dialog Recorder"
+msgid "Overwrite"
+msgstr ""
+
+#: Src/Orbiter/DlgRecorder.cpp:60
+msgctxt "Dialog Recorder"
+msgid "Cancel"
+msgstr ""
+
+#: Src/Orbiter/DlgRecorder.cpp:67
+msgctxt "Dialog Recorder"
+msgid "Scenario"
+msgstr ""
+
+#: Src/Orbiter/DlgRecorder.cpp:69
+#. Advanced options
+msgctxt "Dialog Recorder"
+msgid "Advanced"
+msgstr ""
+
+#: Src/Orbiter/DlgRecorder.cpp:70
+msgctxt "Dialog Recorder"
+msgid "Record Time Acceleration"
+msgstr ""
+
+#: Src/Orbiter/DlgRecorder.cpp:71
+msgctxt "Dialog Recorder"
+msgid "Record Focus Events"
+msgstr ""
+
+#: Src/Orbiter/DlgRecorder.cpp:73
+msgctxt "Dialog Recorder"
+msgid "Sampling in System Time Steps"
+msgstr ""
+
+#: Src/Orbiter/DlgRecorder.cpp:77
+msgctxt "Dialog Recorder"
+msgid "Attitude Data"
+msgstr ""
+
+#: Src/Orbiter/DlgRecorder.cpp:79
+#. keep the ###ef1 suffix (required by ImGui)
+msgctxt "Dialog Recorder"
+msgid "Ecliptic Frame###ef1"
+msgstr ""
+
+#: Src/Orbiter/DlgRecorder.cpp:80
+msgctxt "Dialog Recorder"
+msgid "Local Horizon Frame"
+msgstr ""
+
+#: Src/Orbiter/DlgRecorder.cpp:83
+msgctxt "Dialog Recorder"
+msgid "Position / Velocity Data"
+msgstr ""
+
+#: Src/Orbiter/DlgRecorder.cpp:85
+#. keep the ###ef2 suffix (required by ImGui)
+msgctxt "Dialog Recorder"
+msgid "Ecliptic Frame###ef2"
+msgstr ""
+
+#: Src/Orbiter/DlgRecorder.cpp:86
+msgctxt "Dialog Recorder"
+msgid "Equatorial Frame"
+msgstr ""
+
+#: Src/Orbiter/DlgRecorder.cpp:97
+msgctxt "Dialog Recorder"
+msgid "Replay Options"
+msgstr ""
+
+#: Src/Orbiter/DlgRecorder.cpp:98
+msgctxt "Dialog Recorder"
+msgid "Show Inflight Notes"
+msgstr ""
+
+#: Src/Orbiter/DlgRecorder.cpp:99
+msgctxt "Dialog Recorder"
+msgid "Play at Recording Speed"
+msgstr ""
+
+#: Src/Orbiter/DlgRecorder.cpp:105
+msgctxt "Dialog Recorder"
+msgid "Use Recorded Camera Settings"
+msgstr ""
+
+#: Src/Orbiter/DlgRecorder.cpp:110
+msgctxt "Dialog Recorder"
+msgid "Use Recorded Focus Events"
+msgstr ""
+
+#: Src/Orbiter/DlgRecorder.cpp:117
+msgctxt "Dialog Recorder"
+msgid "Editor"
+msgstr ""
+
+#: Src/Orbiter/DlgTacc.cpp:44
+msgctxt "Dialog Time acceleration"
+msgid "Orbiter: Time acceleration"
+msgstr ""
+
+#: Src/Orbiter/DlgTacc.cpp:51
+msgctxt "Dialog Time acceleration"
+msgid "0.1x"
+msgstr ""
+
+#: Src/Orbiter/DlgTacc.cpp:55
+msgctxt "Dialog Time acceleration"
+msgid "1x"
+msgstr ""
+
+#: Src/Orbiter/DlgTacc.cpp:59
+msgctxt "Dialog Time acceleration"
+msgid "10x"
+msgstr ""
+
+#: Src/Orbiter/DlgTacc.cpp:63
+msgctxt "Dialog Time acceleration"
+msgid "100x"
+msgstr ""
+
+#: Src/Orbiter/DlgTacc.cpp:67
+msgctxt "Dialog Time acceleration"
+msgid "1000x"
+msgstr ""
+
+#: Src/Orbiter/DlgTacc.cpp:71
+msgctxt "Dialog Time acceleration"
+msgid "10000x"
+msgstr ""
+
+#: Src/Orbiter/DlgTacc.cpp:142
+msgctxt "Dialog Time acceleration"
+msgid "Pause"
+msgstr ""
+
+#: Src/Orbiter/DlgTacc.cpp:142
+msgctxt "Dialog Time acceleration"
+msgid "Resume"
+msgstr ""
+
+#: Src/Orbiter/MenuInfoBar.cpp:78
+msgctxt "MenuInfoBar"
+msgid "Cannot find menu item texture"
+msgstr ""
+
+#: Src/Orbiter/MenuInfoBar.cpp:507
+msgctxt "MenuInfoBar"
+msgid "Remove from menu"
+msgstr ""
+
+#: Src/Orbiter/MenuInfoBar.cpp:568
+#. Frame per second
+msgctxt "MenuInfoBar"
+msgid "F/s"
+msgstr ""
+
+#: Src/Orbiter/MenuInfoBar.cpp:582
+#. time per frame
+msgctxt "MenuInfoBar"
+msgid "ΔT/F"
+msgstr ""
+
+#: Src/Orbiter/MenuInfoBar.cpp:727
+msgctxt "MenuInfoBar"
+msgid "Sim % 9.0fs"
+msgstr ""
+
+#: Src/Orbiter/MenuInfoBar.cpp:729
+msgctxt "MenuInfoBar"
+msgid "Sim ..%07.0fs"
+msgstr ""
+
+#: Src/Orbiter/MenuInfoBar.cpp:780
+msgctxt "MenuInfoBar"
+msgid "Tgt %s"
+msgstr ""
+
+#: Src/Orbiter/MenuInfoBar.cpp:784
+msgctxt "MenuInfoBar"
+msgid "Cam track (rel-pos)"
+msgstr ""
+
+#: Src/Orbiter/MenuInfoBar.cpp:785
+msgctxt "MenuInfoBar"
+msgid "Cam track (abs-dir)"
+msgstr ""
+
+#: Src/Orbiter/MenuInfoBar.cpp:786
+msgctxt "MenuInfoBar"
+msgid "Cam track (global frame)"
+msgstr ""
+
+#: Src/Orbiter/MenuInfoBar.cpp:787
+msgctxt "MenuInfoBar"
+msgid "Cam target to %s"
+msgstr ""
+
+#: Src/Orbiter/MenuInfoBar.cpp:788
+msgctxt "MenuInfoBar"
+msgid "Cam target from %s"
+msgstr ""
+
+#: Src/Orbiter/MenuInfoBar.cpp:790
+#. Ground observer target mode
+msgctxt "MenuInfoBar"
+msgid "(free)"
+msgstr ""
+
+#: Src/Orbiter/MenuInfoBar.cpp:790
+#. Ground observer target mode
+msgctxt "MenuInfoBar"
+msgid "(tgt-lock)"
+msgstr ""
+
+#: Src/Orbiter/MenuInfoBar.cpp:790
+#. Ground observer target mode
+msgctxt "MenuInfoBar"
+msgid "Cam ground %s"
+msgstr ""
+
+#: Src/Orbiter/MenuInfoBar.cpp:793
+msgctxt "MenuInfoBar"
+msgid "Cam Cockpit"
+msgstr ""
+
+#: Src/Orbiter/MenuInfoBar.cpp:795
+msgctxt "MenuInfoBar"
+msgid "FoV % 0.0f°"
+msgstr ""
+
+#: Src/Orbiter/MenuInfoBar.cpp:798 Src/Orbiter/MenuInfoBar.cpp:801
+msgctxt "MenuInfoBar"
+msgid "   Dst %s"
+msgstr ""
+
+#: Src/Orbiter/Mfd.cpp:1066 Src/Orbiter/Mfd.cpp:1121
+msgctxt "MFD Generic"
+msgid "By name ..."
+msgstr ""
+
+#: Src/Orbiter/Mfd.cpp:1069 Src/Orbiter/Mfd.cpp:1073
+msgctxt "MFD Generic"
+msgid "Spacecrafts"
+msgstr ""
+
+#: Src/Orbiter/Mfd.cpp:1070 Src/Orbiter/Mfd.cpp:1096
+msgctxt "MFD Generic"
+msgid "Celestial bodies"
+msgstr ""
+
+#: Src/Orbiter/Mfd.cpp:1081 Src/Orbiter/Mfd.cpp:1103
+msgctxt "MFD Generic"
+msgid "None orbiting"
+msgstr ""
+
+#: Src/Orbiter/Mfd.cpp:1085 Src/Orbiter/Mfd.cpp:1088
+msgctxt "MFD Generic"
+msgid "More spacecrafts"
+msgstr ""
+
+#: Src/Orbiter/Mfd.cpp:1107 Src/Orbiter/Mfd.cpp:1110
+msgctxt "MFD Generic"
+msgid "More celestial bodies"
+msgstr ""
+
+#: Src/Orbiter/MfdAlign.cpp:496
+msgctxt "MFD Align"
+msgid "Ecliptic inclination and longitude of asc. node [deg.]:"
+msgstr ""
+
+#: Src/Orbiter/MfdAlign.cpp:499
+msgctxt "MFD Align"
+msgid "Align MFD: Reference"
+msgstr ""
+
+#: Src/Orbiter/MfdAlign.cpp:502
+msgctxt "MFD Align"
+msgid "Align MFD: Target"
+msgstr ""
+
+#: Src/Orbiter/MfdDocking.cpp:624
+msgctxt "MFD Docking"
+msgid "Docking MFD: Target"
+msgstr ""
+
+#: Src/Orbiter/MfdDocking.cpp:684 Src/Orbiter/MfdDocking.cpp:708
+msgctxt "MFD Docking"
+msgid "By name ..."
+msgstr ""
+
+#: Src/Orbiter/MfdDocking.cpp:696
+msgctxt "MFD Docking"
+msgid "%s, dock %d"
+msgstr ""
+
+#: Src/Orbiter/MfdDocking.cpp:709
+msgctxt "MFD Docking"
+msgid "Docking MFD: Enter target (e.g. 'ISS' or 'ISS 1')"
+msgstr ""
+
+#: Src/Orbiter/MfdMap.cpp:125
+msgctxt "MFD Map"
+msgid "Map MFD: Reference"
+msgstr ""
+
+#: Src/Orbiter/MfdMap.cpp:128
+msgctxt "MFD Map"
+msgid "Map MFD: Target"
+msgstr ""
+
+#: Src/Orbiter/MfdMap.cpp:738 Src/Orbiter/MfdMap.cpp:777
+msgctxt "MFD Map"
+msgid "By name ..."
+msgstr ""
+
+#: Src/Orbiter/MfdMap.cpp:740
+msgctxt "MFD Map"
+msgid "Spaceports"
+msgstr ""
+
+#: Src/Orbiter/MfdMap.cpp:741
+msgctxt "MFD Map"
+msgid "Spacecrafts"
+msgstr ""
+
+#: Src/Orbiter/MfdMap.cpp:742
+msgctxt "MFD Map"
+msgid "Moons"
+msgstr ""
+
+#: Src/Orbiter/MfdMap.cpp:744 Src/Orbiter/MfdMap.cpp:781
+#. Unselect target
+msgctxt "MFD Map"
+msgid "[none]"
+msgstr ""
+
+#: Src/Orbiter/MfdMap.cpp:778
+msgctxt "MFD Map"
+msgid "Enter target:"
+msgstr ""
+
+#: Src/Orbiter/MfdOrbit.cpp:127
+msgctxt "MFD Orbit"
+msgid "Orbit MFD: Reference"
+msgstr ""
+
+#: Src/Orbiter/MfdOrbit.cpp:130
+msgctxt "MFD Orbit"
+msgid "Orbit MFD: Target"
+msgstr ""
+
+#: Src/Orbiter/MfdSync.cpp:283
+msgctxt "MFD Sync"
+msgid "Transit list length:"
+msgstr ""
+
+#: Src/Orbiter/MfdSync.cpp:286
+msgctxt "MFD Sync"
+msgid "Sync MFD: Target"
+msgstr ""
+
+#: Src/Orbiter/MfdTransfer.cpp:441
+msgctxt "MFD Transfer"
+msgid "Transfer MFD: Reference"
+msgstr ""
+
+#: Src/Orbiter/MfdTransfer.cpp:444
+msgctxt "MFD Transfer"
+msgid "Transfer MFD: Source"
+msgstr ""
+
+#: Src/Orbiter/MfdTransfer.cpp:448
+msgctxt "MFD Transfer"
+msgid "Transfer MFD: Target"
+msgstr ""
+
+#: Src/Orbiter/MfdTransfer.cpp:459
+msgctxt "MFD Transfer"
+msgid "Enter # time steps:"
+msgstr ""
+
+#: Src/Orbiter/Orbiter.cpp:394
+msgctxt "MenuInfoBar"
+msgid "Ship"
+msgstr ""
+
+#: Src/Orbiter/Orbiter.cpp:395
+msgctxt "MenuInfoBar"
+msgid "Camera"
+msgstr ""
+
+#: Src/Orbiter/Orbiter.cpp:396
+msgctxt "MenuInfoBar"
+msgid "Speed"
+msgstr ""
+
+#: Src/Orbiter/Orbiter.cpp:397
+msgctxt "MenuInfoBar"
+msgid "Pause"
+msgstr ""
+
+#: Src/Orbiter/Orbiter.cpp:398
+msgctxt "MenuInfoBar"
+msgid "Function"
+msgstr ""
+
+#: Src/Orbiter/Orbiter.cpp:399
+msgctxt "MenuInfoBar"
+msgid "Info"
+msgstr ""
+
+#: Src/Orbiter/Orbiter.cpp:400
+msgctxt "MenuInfoBar"
+msgid "Options"
+msgstr ""
+
+#: Src/Orbiter/Orbiter.cpp:401
+msgctxt "MenuInfoBar"
+msgid "Map"
+msgstr ""
+
+#: Src/Orbiter/Orbiter.cpp:402
+msgctxt "MenuInfoBar"
+msgid "Record"
+msgstr ""
+
+#: Src/Orbiter/Orbiter.cpp:403
+msgctxt "MenuInfoBar"
+msgid "Help"
+msgstr ""
+
+#: Src/Orbiter/Orbiter.cpp:408
+msgctxt "MenuInfoBar"
+msgid "Save"
+msgstr ""
+
+#: Src/Orbiter/Orbiter.cpp:409
+msgctxt "MenuInfoBar"
+msgid "Exit"
+msgstr ""
+
+#: Src/Orbiter/Orbiter.cpp:1509
+msgctxt "Notification"
+msgid "Scenario saved successfully"
+msgstr ""
+
+#: Src/Orbiter/Orbiter.cpp:1511
+msgctxt "Notification"
+msgid "Failed to save scenario"
+msgstr ""
+
+#: Src/Orbiter/PlaybackEd.cpp:23
+msgctxt "Playback editor"
+msgid "Playback Editor"
+msgstr ""
+
+#: Src/Orbiter/PlaybackEd.cpp:37
+msgctxt "Playback editor"
+msgid "Playback Editor - Simulation time : %f"
+msgstr ""
+
+#: Src/Orbiter/PlaybackEd.cpp:46
+msgctxt "Playback editor"
+msgid "Timestamp"
+msgstr ""
+
+#: Src/Orbiter/PlaybackEd.cpp:47
+msgctxt "Playback editor"
+msgid "Event"
+msgstr ""
+
+#: Src/Orbiter/PlaybackEd.cpp:48
+msgctxt "Playback editor"
+msgid "Details"
+msgstr ""
+
+#: Src/Orbiter/PlaybackEd.cpp:62 Src/Orbiter/PlaybackEd.cpp:79
+msgctxt "Playback editor"
+msgid "NOW"
+msgstr ""
+
+#: Src/Orbiter/PlaybackEd.cpp:104
+msgctxt "Playback editor"
+msgid "Insert event"
+msgstr ""
+
+#: Src/Orbiter/PlaybackEd.cpp:106
+msgctxt "Playback editor"
+msgid "New note"
+msgstr ""
+
+#: Src/Orbiter/PlaybackEd.cpp:132
+msgctxt "Playback editor"
+msgid "<Other>"
+msgstr ""
+
+#: Src/Orbiter/PlaybackEd.cpp:135
+msgctxt "Playback editor"
+msgid "Delete"
+msgstr ""
+
+#: Src/Orbiter/PlaybackEd.cpp:145
+msgctxt "Playback editor"
+msgid "Apply"
+msgstr ""
+
+#: Src/Orbiter/PlaybackEd.cpp:153
+msgctxt "Playback editor"
+msgid "Commit changes"
+msgstr ""
+
+#: Src/Orbiter/PlaybackEd.cpp:157
+msgctxt "Playback editor"
+msgid "Discard uncommited changes"
+msgstr ""
+
+#: Src/Orbiter/PlaybackEd.cpp:308
+msgctxt "Playback editor"
+msgid "Event Time"
+msgstr ""
+
+#: Src/Orbiter/PlaybackEd.cpp:378
+msgctxt "Playback editor"
+msgid "Tag"
+msgstr ""
+
+#: Src/Orbiter/PlaybackEd.cpp:381
+msgctxt "Playback editor"
+msgid "Content"
+msgstr ""
+
+#: Src/Orbiter/PlaybackEd.cpp:403 Src/Orbiter/PlaybackEd.cpp:419
+msgctxt "Playback editor"
+msgid "%0.2fx (delay %0.1f)"
+msgstr ""
+
+#: Src/Orbiter/PlaybackEd.cpp:405 Src/Orbiter/PlaybackEd.cpp:421
+msgctxt "Playback editor"
+msgid "%0.2fx"
+msgstr ""
+
+#: Src/Orbiter/PlaybackEd.cpp:428
+msgctxt "Playback editor"
+msgid "Time Acceleration"
+msgstr ""
+
+#: Src/Orbiter/PlaybackEd.cpp:429
+msgctxt "Playback editor"
+msgid "Delay [s]"
+msgstr ""
+
+#: Src/Orbiter/PlaybackEd.cpp:495
+msgctxt "Playback editor"
+msgid "Camera configuration: "
+msgstr ""
+
+#: Src/Orbiter/PlaybackEd.cpp:503
+msgctxt "Playback editor"
+msgid "Presets:"
+msgstr ""
+
+#: Src/Orbiter/PlaybackEd.cpp:515
+msgctxt "Playback editor"
+msgid "Current view: "
+msgstr ""
+
+#: Src/Orbiter/PlaybackEd.cpp:719
+msgctxt "Playback editor"
+msgid "Note Color"
+msgstr ""
+
+#: Src/Orbiter/PlaybackEd.cpp:760
+msgctxt "Playback editor"
+msgid "Note Size"
+msgstr ""
+
+#: Src/Orbiter/Psys.cpp:220
+#. Spashscreen (e.g. Sol: Earth)
+msgctxt "Splashscreen"
+msgid "%s: %s"
+msgstr ""
+
+#: Src/Orbiter/Rigidbody.cpp:534
+msgctxt "State propagator"
+msgid "Runge-Kutta, 2nd order (RK2)"
+msgstr ""
+
+#: Src/Orbiter/Rigidbody.cpp:534
+msgctxt "State propagator"
+msgid "Runge-Kutta, 4th order (RK4)"
+msgstr ""
+
+#: Src/Orbiter/Rigidbody.cpp:534
+msgctxt "State propagator"
+msgid "Runge-Kutta, 5th order (RK5)"
+msgstr ""
+
+#: Src/Orbiter/Rigidbody.cpp:534
+msgctxt "State propagator"
+msgid "Runge-Kutta, 6th order (RK6)"
+msgstr ""
+
+#: Src/Orbiter/Rigidbody.cpp:535
+msgctxt "State propagator"
+msgid "Runge-Kutta, 7th order (RK7)"
+msgstr ""
+
+#: Src/Orbiter/Rigidbody.cpp:535
+msgctxt "State propagator"
+msgid "Runge-Kutta, 8th order (RK8)"
+msgstr ""
+
+#: Src/Orbiter/Rigidbody.cpp:536
+msgctxt "State propagator"
+msgid "Symplectic, 2nd order (SY2)"
+msgstr ""
+
+#: Src/Orbiter/Rigidbody.cpp:536
+msgctxt "State propagator"
+msgid "Symplectic, 4th order (SY4)"
+msgstr ""
+
+#: Src/Orbiter/Rigidbody.cpp:536
+msgctxt "State propagator"
+msgid "Symplectic, 6th order (SY6)"
+msgstr ""
+
+#: Src/Orbiter/Rigidbody.cpp:536
+msgctxt "State propagator"
+msgid "Symplectic, 8th order (SY8)"
+msgstr ""
+
+#: Src/Orbiter/Rigidbody.cpp:538
+msgctxt "State propagator"
+msgid "unknown"
+msgstr ""
+
+#: Src/Orbiter/Rigidbody.cpp:543 Src/Orbiter/Rigidbody.cpp:552
+msgctxt "State propagator"
+msgid "none"
+msgstr ""
+
+#: Src/Orbiter/Rigidbody.cpp:550
+msgctxt "State propagator"
+msgid "Euler"
+msgstr ""
+
+#: Src/Orbiter/Rigidbody.cpp:551
+msgctxt "State propagator"
+msgid "decoupled"
+msgstr ""
+
+#: Src/Orbiter/Select.cpp:174
+msgctxt "InputBox"
+msgid "OK"
+msgstr ""
+
+#: Src/Orbiter/Select.cpp:180
+msgctxt "InputBox"
+msgid "Cancel"
+msgstr ""
+
+#: Src/Orbiter/i18n/Names.h:66
+msgctxt "Cardinal direction"
+msgid "N"
+msgstr ""
+
+#: Src/Orbiter/i18n/Names.h:67
+msgctxt "Cardinal direction"
+msgid "S"
+msgstr ""
+
+#: Src/Orbiter/i18n/Names.h:68
+msgctxt "Cardinal direction"
+msgid "E"
+msgstr ""
+
+#: Src/Orbiter/i18n/Names.h:69
+msgctxt "Cardinal direction"
+msgid "W"
+msgstr ""
+
+#: Src/Orbiter/i18n/Names.h:55
+msgctxt "Date Day"
+msgid "Sun"
+msgstr ""
+
+#: Src/Orbiter/i18n/Names.h:56
+msgctxt "Date Day"
+msgid "Mon"
+msgstr ""
+
+#: Src/Orbiter/i18n/Names.h:57
+msgctxt "Date Day"
+msgid "Tue"
+msgstr ""
+
+#: Src/Orbiter/i18n/Names.h:58
+msgctxt "Date Day"
+msgid "Wed"
+msgstr ""
+
+#: Src/Orbiter/i18n/Names.h:59
+msgctxt "Date Day"
+msgid "Thu"
+msgstr ""
+
+#: Src/Orbiter/i18n/Names.h:60
+msgctxt "Date Day"
+msgid "Fri"
+msgstr ""
+
+#: Src/Orbiter/i18n/Names.h:61
+msgctxt "Date Day"
+msgid "Sat"
+msgstr ""
+
+#: Src/Orbiter/i18n/Names.h:42
+msgctxt "Date Month"
+msgid "Jan"
+msgstr ""
+
+#: Src/Orbiter/i18n/Names.h:43
+msgctxt "Date Month"
+msgid "Feb"
+msgstr ""
+
+#: Src/Orbiter/i18n/Names.h:44
+msgctxt "Date Month"
+msgid "Mar"
+msgstr ""
+
+#: Src/Orbiter/i18n/Names.h:45
+msgctxt "Date Month"
+msgid "Apr"
+msgstr ""
+
+#: Src/Orbiter/i18n/Names.h:46
+msgctxt "Date Month"
+msgid "May"
+msgstr ""
+
+#: Src/Orbiter/i18n/Names.h:47
+msgctxt "Date Month"
+msgid "Jun"
+msgstr ""
+
+#: Src/Orbiter/i18n/Names.h:48
+msgctxt "Date Month"
+msgid "Jul"
+msgstr ""
+
+#: Src/Orbiter/i18n/Names.h:49
+msgctxt "Date Month"
+msgid "Aug"
+msgstr ""
+
+#: Src/Orbiter/i18n/Names.h:50
+msgctxt "Date Month"
+msgid "Sep"
+msgstr ""
+
+#: Src/Orbiter/i18n/Names.h:51
+msgctxt "Date Month"
+msgid "Oct"
+msgstr ""
+
+#: Src/Orbiter/i18n/Names.h:52
+msgctxt "Date Month"
+msgid "Nov"
+msgstr ""
+
+#: Src/Orbiter/i18n/Names.h:53
+msgctxt "Date Month"
+msgid "Dec"
+msgstr ""
+
+#: Src/Orbiter/i18n/Names.h:7
+msgctxt "Name"
+msgid "Sun"
+msgstr ""
+
+#: Src/Orbiter/i18n/Names.h:8
+msgctxt "Name"
+msgid "Sol"
+msgstr ""
+
+#: Src/Orbiter/i18n/Names.h:9
+msgctxt "Name"
+msgid "Mercury"
+msgstr ""
+
+#: Src/Orbiter/i18n/Names.h:10
+msgctxt "Name"
+msgid "Venus"
+msgstr ""
+
+#: Src/Orbiter/i18n/Names.h:11
+msgctxt "Name"
+msgid "Earth"
+msgstr ""
+
+#: Src/Orbiter/i18n/Names.h:12
+msgctxt "Name"
+msgid "Moon"
+msgstr ""
+
+#: Src/Orbiter/i18n/Names.h:13
+msgctxt "Name"
+msgid "Mars"
+msgstr ""
+
+#: Src/Orbiter/i18n/Names.h:14
+msgctxt "Name"
+msgid "Phobos"
+msgstr ""
+
+#: Src/Orbiter/i18n/Names.h:15
+msgctxt "Name"
+msgid "Deimos"
+msgstr ""
+
+#: Src/Orbiter/i18n/Names.h:16
+msgctxt "Name"
+msgid "Vesta"
+msgstr ""
+
+#: Src/Orbiter/i18n/Names.h:17
+msgctxt "Name"
+msgid "Jupiter"
+msgstr ""
+
+#: Src/Orbiter/i18n/Names.h:18
+msgctxt "Name"
+msgid "Saturn"
+msgstr ""
+
+#: Src/Orbiter/i18n/Names.h:19
+msgctxt "Name"
+msgid "Uranus"
+msgstr ""
+
+#: Src/Orbiter/i18n/Names.h:20
+msgctxt "Name"
+msgid "Neptune"
+msgstr ""
+
+#: Src/Orbiter/i18n/Names.h:21
+msgctxt "Name"
+msgid "Ariel"
+msgstr ""
+
+#: Src/Orbiter/i18n/Names.h:22
+msgctxt "Name"
+msgid "Miranda"
+msgstr ""
+
+#: Src/Orbiter/i18n/Names.h:23
+msgctxt "Name"
+msgid "Nereid"
+msgstr ""
+
+#: Src/Orbiter/i18n/Names.h:24
+msgctxt "Name"
+msgid "Oberon"
+msgstr ""
+
+#: Src/Orbiter/i18n/Names.h:25
+msgctxt "Name"
+msgid "Proteus"
+msgstr ""
+
+#: Src/Orbiter/i18n/Names.h:26
+msgctxt "Name"
+msgid "Titania"
+msgstr ""
+
+#: Src/Orbiter/i18n/Names.h:27
+msgctxt "Name"
+msgid "Triton"
+msgstr ""
+
+#: Src/Orbiter/i18n/Names.h:28
+msgctxt "Name"
+msgid "Umbriel"
+msgstr ""
+
+#: Src/Orbiter/i18n/Names.h:29
+msgctxt "Name"
+msgid "Callisto"
+msgstr ""
+
+#: Src/Orbiter/i18n/Names.h:30
+msgctxt "Name"
+msgid "Europa"
+msgstr ""
+
+#: Src/Orbiter/i18n/Names.h:31
+msgctxt "Name"
+msgid "Ganymede"
+msgstr ""
+
+#: Src/Orbiter/i18n/Names.h:32
+msgctxt "Name"
+msgid "Io"
+msgstr ""
+
+#: Src/Orbiter/i18n/Names.h:33
+msgctxt "Name"
+msgid "Dione"
+msgstr ""
+
+#: Src/Orbiter/i18n/Names.h:34
+msgctxt "Name"
+msgid "Enceladus"
+msgstr ""
+
+#: Src/Orbiter/i18n/Names.h:35
+msgctxt "Name"
+msgid "Hyperion"
+msgstr ""
+
+#: Src/Orbiter/i18n/Names.h:36
+msgctxt "Name"
+msgid "Iapetus"
+msgstr ""
+
+#: Src/Orbiter/i18n/Names.h:37
+msgctxt "Name"
+msgid "Mimas"
+msgstr ""
+
+#: Src/Orbiter/i18n/Names.h:38
+msgctxt "Name"
+msgid "Rhea"
+msgstr ""
+
+#: Src/Orbiter/i18n/Names.h:39
+msgctxt "Name"
+msgid "Tethys"
+msgstr ""
+
+#: Src/Orbiter/i18n/Names.h:40
+msgctxt "Name"
+msgid "Titan"
+msgstr ""
+
+#: Src/Orbiter/i18n/Names.h:72
+#. Autonym of your locale (i.e. in your language) (e.g. English (United Kingdom), 日本語 (日本))
+msgctxt "locale"
+msgid "LANGUAGE_NAME"
+msgstr ""
+

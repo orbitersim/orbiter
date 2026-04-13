@@ -243,6 +243,7 @@ public:
 
 	bool psngr[4];              // passengers?
 	bool bDamageEnabled;        // damage/failure testing?
+	bool legacy_mfd_buttons;    // Use the old method of drawing MFD buttons
 
 	// parameters for failure modelling
 	double lwingstatus, rwingstatus;
@@ -339,6 +340,7 @@ typedef struct {
 	HINSTANCE hDLL;
 	DWORD col[4];
 	oapi::Pen *pen[2];
+	oapi::Font *font[2]; // 0 = Font for 2D MFD buttons, 1 = 3D cockpit
 	SURFHANDLE surf;
 } GDIParams;
 

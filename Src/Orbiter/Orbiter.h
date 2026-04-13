@@ -58,7 +58,7 @@ public:
 	int GetVersion () const;
 	HWND CreateRenderWindow (Config *pCfg, const char *scenario);
 	void PreCloseSession();
-	void CloseSession ();
+	void CloseSession (bool restart);
 	void GetRenderParameters ();
 	bool InitializeWorld (char *name);
 	void ScreenToClient (POINT *pt) const;

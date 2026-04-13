@@ -10,6 +10,9 @@
 #include "Dialogs.h"
 #include "DlgMenuCfg.h"
 
+#define TRANSLATION_CONTEXT "MenuInfoBar"
+#include "I18NAPI.h"
+
 // =======================================================================
 // Externs
 
@@ -72,7 +75,7 @@ public:
 		bool enabled;
 		MenuItem(const char *label_, const char *path, int id_, CustomFunc func_, void *context_):label(label_),func(func_),context(context_),id(id_) {
 			texture = oapiLoadTexture(path);
-			if(!texture) oapiAddNotification(OAPINOTIF_ERROR, "Cannot find menu item texture", path);
+			if(!texture) oapiAddNotification(OAPINOTIF_ERROR, _("Cannot find menu item texture"), path);
 			texId = ImGui::GetImTextureID(texture);
 			lastItemSize = g_pOrbiter->Cfg()->CfgUIPrm.MenuButtonSize;
 			dragging = false;
@@ -501,7 +504,7 @@ public:
 				// If it's outside the menu and it's not the only button remaining,
 				// add a red background and show a removal message
 				window->DrawList->AddRectFilled(dragPos, dragPos + imageSize, 0xbfbfbfff);
-				const char *label = "Remove from menu";
+				const char *label = _("Remove from menu");
 				ImVec2 textSize = ImGui::CalcTextSize(label, NULL, true);
 				window->DrawList->AddText(dragPos + ImVec2(prm.MenuButtonHoverSize / 2.0f - textSize.x / 2.0f, prm.MenuButtonHoverSize), 0xffffffff, label);
 			} else {
@@ -561,7 +564,8 @@ public:
 
 		ImGui::BeginChild("ChildL", ImVec2(ImGui::GetContentRegionAvail().x - HISTORY_SIZE - 8.0, 0), ImGuiChildFlags_AutoResizeY);
 
-		ImGui::TextColored(white, "%s", "F/s");
+		// TRANSLATORS: Frame per second
+		ImGui::TextColored(white, "%s", _("F/s"));
 		char buf[64];
 		snprintf(buf, 64, "%.0f", td.FPS());
 		buf[63] = '\n';
@@ -574,7 +578,8 @@ public:
 		);
 		ImGui::TextColored(white, "%s", buf);
 
-		ImGui::TextColored(white, "%s", "ΔT/F");
+		// TRANSLATORS: time per frame
+		ImGui::TextColored(white, "%s", _("ΔT/F"));
 		float simdt = dtavg.add(td.SimDT);
 		snprintf(buf, 64, "%0.*fs", simdt < 1e-1 ? 3 : simdt < 1 ? 2 : simdt < 10 ? 1 : 0, simdt);
 		buf[63] = '\n';
@@ -719,9 +724,9 @@ public:
 				DrawSymbol(3);
 			}
 			if(td.SimT1 < 1e7) {
-				ImGui::TextColored(white, "Sim % 9.0fs", td.SimT1);
+				ImGui::TextColored(white, _("Sim % 9.0fs"), td.SimT1);
 			} else {
-				ImGui::TextColored(white, "Sim ..%07.0fs", fmod (td.SimT1, 1e7));
+				ImGui::TextColored(white, _("Sim ..%07.0fs"), fmod (td.SimT1, 1e7));
 			}
 
 			if(!g_pOrbiter->IsRunning()) {
@@ -772,27 +777,28 @@ public:
 			ImGui::PushFont(ImGuiFont::MONO);
 
 			Body *tgt = g_camera->Target();
-			ImGui::TextColored(white, "Tgt %s", tgt->Name());
+			ImGui::TextColored(white, _("Tgt %s"), _name(tgt->Name()));
 
 			if (g_camera->IsExternal()) {
 				switch (g_camera->GetExtMode()) {
-					case CAMERA_TARGETRELATIVE:   ImGui::TextColored(white, "Cam track (rel-pos)"); break;
-					case CAMERA_ABSDIRECTION:     ImGui::TextColored(white, "Cam track (abs-dir)"); break;
-					case CAMERA_GLOBALFRAME:      ImGui::TextColored(white, "Cam track (global frame)"); break;
-					case CAMERA_TARGETTOOBJECT:   ImGui::TextColored(white, "Cam target to %s", g_camera->GetDirRef()->Name()); break;
-					case CAMERA_TARGETFROMOBJECT: ImGui::TextColored(white, "Cam target from %s", g_camera->GetDirRef()->Name()); break;
-					case CAMERA_GROUNDOBSERVER:   ImGui::TextColored(white, "Cam ground %s", g_camera->GroundObserver_TargetLock() ? "(tgt-lock)" : "(free)"); break;
+					case CAMERA_TARGETRELATIVE:   ImGui::TextColored(white, _("Cam track (rel-pos)")); break;
+					case CAMERA_ABSDIRECTION:     ImGui::TextColored(white, _("Cam track (abs-dir)")); break;
+					case CAMERA_GLOBALFRAME:      ImGui::TextColored(white, _("Cam track (global frame)")); break;
+					case CAMERA_TARGETTOOBJECT:   ImGui::TextColored(white, _("Cam target to %s"), _name(g_camera->GetDirRef()->Name())); break;
+					case CAMERA_TARGETFROMOBJECT: ImGui::TextColored(white, _("Cam target from %s"), _name(g_camera->GetDirRef()->Name())); break;
+					// TRANSLATORS: Ground observer target mode
+					case CAMERA_GROUNDOBSERVER:   ImGui::TextColored(white, _("Cam ground %s"), g_camera->GroundObserver_TargetLock() ? _("(tgt-lock)") : _("(free)")); break;
 				}
 			} else {
-				ImGui::TextColored(white, "Cam Cockpit");
+				ImGui::TextColored(white, _("Cam Cockpit"));
 			}
-			ImGui::TextColored(white, "FoV % 0.0f°", 2.0*Deg(g_camera->Aperture()));
+			ImGui::TextColored(white, _("FoV % 0.0f°"), 2.0*Deg(g_camera->Aperture()));
 			if (g_camera->IsExternal()) {
 				ImGui::SameLine();
-				ImGui::TextColored(white, "   Dst %s", DistStr (g_camera->Distance())+1);
+				ImGui::TextColored(white, _("   Dst %s"), DistStr (g_camera->Distance())+1);
 			} else {
 				ImGui::SameLine();
-				ImGui::TextColored(ImVec4(0,0,0,0), "   Dst %s", DistStr (g_camera->Distance())+1);
+				ImGui::TextColored(ImVec4(0,0,0,0), _("   Dst %s"), DistStr (g_camera->Distance())+1);
 			}
 
 			if(prm.FPS == 1)

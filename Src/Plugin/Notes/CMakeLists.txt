@@ -35,3 +35,5 @@ install(TARGETS Notes
 install(FILES Notes.png
 	DESTINATION ${ORBITER_INSTALL_TEXTURES_DIR}/MenuInfoBar
 )
+generate_pot(Notes)
+install_po_files()

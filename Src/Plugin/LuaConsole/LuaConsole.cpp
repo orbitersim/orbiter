@@ -11,6 +11,8 @@
 #include "IconsFontAwesome6.h"
 #include <sstream>
 #include <process.h>
+#define TRANSLATION_CONTEXT "LuaConsole"
+#include "I18NAPI.h"
 
 using std::min;
 using std::max;
@@ -35,7 +37,8 @@ class LuaConsoleDlg: public ImGuiDialog {
 	ImGuiInputTextFlags flags;
 	char *cConsoleCmd;
 public:
-	LuaConsoleDlg(char *cmdbuf):ImGuiDialog(ICON_FA_TERMINAL " Lua Console"){
+	// TRANSLATOIRS: Dialog title
+	LuaConsoleDlg(char *cmdbuf):ImGuiDialog(ICON_FA_TERMINAL, _("Lua Console")){
 		cConsoleCmd = cmdbuf;
 		cmd[0] = '\0';
 		flags = ImGuiInputTextFlags_EnterReturnsTrue | ImGuiInputTextFlags_CtrlEnterForNewLine;
@@ -99,7 +102,7 @@ public:
 	void Display() {
 		ImGui::SetNextWindowSize(ImVec2(800,600));
 		bool visible = ImGui::Begin(name.c_str(), &active);
-		if(ImGui::MenuButton(ICON_FA_TRASH, "Clear console")) {
+		if(ImGui::MenuButton(ICON_FA_TRASH, _("Clear console"))) {
 			lines.clear();
 		}
 		if(visible) {
@@ -151,35 +154,37 @@ public:
 			
 			ImGui::SameLine();
 			ImGui::BeginChild("##LuaTermCommands");
-				ImGui::SeparatorText("Execution");
+				ImGui::SeparatorText(_("Execution"));
 				if(ImGui::Button(ICON_FA_PLAY)) {
 					ExecuteCommandBuffer();
 				}
-				ImGui::SetItemTooltip("Execute the command buffer");
+				// TRANSLATORS: Tooltip
+				ImGui::SetItemTooltip(_("Execute the command buffer"));
 				ImGui::SameLine();
-				ImGui::CheckboxFlags("Single line", &flags, ImGuiInputTextFlags_CtrlEnterForNewLine);
+				ImGui::CheckboxFlags(_("Single line"), &flags, ImGuiInputTextFlags_CtrlEnterForNewLine);
 				
-				ImGui::SetItemTooltip("When checked, the command buffer is sent when pressing Enter\n"
+				// TRANSLATORS: Tooltip. The escaped sequence is the ICON_FA_PLAY icon
+				ImGui::SetItemTooltip(_("When checked, the command buffer is sent when pressing Enter\n"
 									  "Otherwise, you can enter multiple lines at once and execute\n"
-									  "them with Ctrl-Enter or the " ICON_FA_PLAY " button");
+									  "them with Ctrl-Enter or the \xef\x81\x8b button"));
 
-				ImGui::SeparatorText("History");
+				ImGui::SeparatorText(_("History"));
 				if(ImGui::Button(ICON_FA_ARROW_UP)) {
 					HistoryPrev();
 				}
-				ImGui::SetItemTooltip("Previous command");
+				ImGui::SetItemTooltip(_("Previous command"));
 
 				ImGui::SameLine();
 				if(ImGui::Button(ICON_FA_ARROW_DOWN)) {
 					HistoryNext();
 				}
-				ImGui::SetItemTooltip("Next command");
+				ImGui::SetItemTooltip(_("Next command"));
 
 				ImGui::SameLine();
 				if(ImGui::Button(ICON_FA_TRASH)) {
 					HistoryClear();
 				}
-				ImGui::SetItemTooltip("Clear history");
+				ImGui::SetItemTooltip(_("Clear history"));
 				
 			ImGui::EndChild();
 			
@@ -208,11 +213,14 @@ LuaConsole::LuaConsole (HINSTANCE hDLL): Module (hDLL)
 	cConsoleCmd[0]=0;
 
 	// Register a custom command for opening the console window
-	dwCmd = oapiRegisterCustomCmd ((char*)"Lua console window",
-		(char*)"Open a Lua script interpreter window.",
+	// TRANSLATORS: Custom command name
+	dwCmd = oapiRegisterCustomCmd ((char*)_("Lua console window"),
+		// TRANSLATORS: Custom command description
+		(char*)_("Open a Lua script interpreter window."),
 		OpenDlgClbk, this);
 
-	dwMenuCmd = oapiRegisterCustomMenuCmd ("Lua", "MenuInfoBar/LuaConsole.png", OpenDlgClbk, this);
+	// TRANSLATORS: Name in menu bar
+	dwMenuCmd = oapiRegisterCustomMenuCmd (_("Lua"), "MenuInfoBar/LuaConsole.png", OpenDlgClbk, this);
 
 	hDlg = new LuaConsoleDlg(cConsoleCmd);
 }

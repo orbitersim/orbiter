@@ -1,0 +1,113 @@
+# This file was auto-generated, DO NOT modify it directly
+msgid ""
+msgstr ""
+"Content-Type: text/plain; charset=UTF-8\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+"X-Generator: Lua xgettext.lua\n"
+
+#: Src/Plugin/Rcontrol/Rcontrol.cpp:90
+#. Dialog title
+msgctxt "RControl"
+msgid "Orbiter Remote Vessel Control"
+msgstr ""
+
+#: Src/Plugin/Rcontrol/Rcontrol.cpp:94
+#. Custom command name
+msgctxt "RControl"
+msgid "Remote Vessel Control"
+msgstr ""
+
+#: Src/Plugin/Rcontrol/Rcontrol.cpp:96
+#. Custom command description
+msgctxt "RControl"
+msgid "Operate the engines of any spacecraft from a dialog box."
+msgstr ""
+
+#: Src/Plugin/Rcontrol/Rcontrol.cpp:100
+#. Name in menu bar
+msgctxt "RControl"
+msgid "Rcontrol"
+msgstr ""
+
+#: Src/Plugin/Rcontrol/Rcontrol.cpp:136
+msgctxt "RControl"
+msgid "Vessel"
+msgstr ""
+
+#: Src/Plugin/Rcontrol/Rcontrol.cpp:155
+msgctxt "RControl"
+msgid "Set focus"
+msgstr ""
+
+#: Src/Plugin/Rcontrol/Rcontrol.cpp:158
+msgctxt "RControl"
+msgid "Engines"
+msgstr ""
+
+#: Src/Plugin/Rcontrol/Rcontrol.cpp:162
+#. The escaped sequence is the ICON_FA_ANGLES_LEFT icon
+msgctxt "RControl"
+msgid "\\xef\\x84\\x80 Retro"
+msgstr ""
+
+#: Src/Plugin/Rcontrol/Rcontrol.cpp:169
+#. The escaped sequence is the ICON_FA_ANGLES_RIGHT icon
+msgctxt "RControl"
+msgid "Main \\xef\\x84\\x81"
+msgstr ""
+
+#: Src/Plugin/Rcontrol/Rcontrol.cpp:175
+msgctxt "RControl"
+msgid "Hover"
+msgstr ""
+
+#: Src/Plugin/Rcontrol/Rcontrol.cpp:180
+msgctxt "RControl"
+msgid "RCS level"
+msgstr ""
+
+#: Src/Plugin/Rcontrol/Rcontrol.cpp:187
+msgctxt "RControl"
+msgid "RCS Rotation"
+msgstr ""
+
+#: Src/Plugin/Rcontrol/Rcontrol.cpp:218
+msgctxt "RControl"
+msgid "RCS Translation"
+msgstr ""
+
+#: Src/Plugin/Rcontrol/Rcontrol.cpp:243
+msgctxt "RControl"
+msgid "Nav mode"
+msgstr ""
+
+#: Src/Plugin/Rcontrol/Rcontrol.cpp:246
+msgctxt "RControl"
+msgid "Killrot"
+msgstr ""
+
+#: Src/Plugin/Rcontrol/Rcontrol.cpp:250
+msgctxt "RControl"
+msgid "Prograde"
+msgstr ""
+
+#: Src/Plugin/Rcontrol/Rcontrol.cpp:254
+msgctxt "RControl"
+msgid "Normal"
+msgstr ""
+
+#: Src/Plugin/Rcontrol/Rcontrol.cpp:258
+msgctxt "RControl"
+msgid "HLevel"
+msgstr ""
+
+#: Src/Plugin/Rcontrol/Rcontrol.cpp:262
+msgctxt "RControl"
+msgid "Retrograde"
+msgstr ""
+
+#: Src/Plugin/Rcontrol/Rcontrol.cpp:266
+msgctxt "RControl"
+msgid "Anti Normal"
+msgstr ""
+

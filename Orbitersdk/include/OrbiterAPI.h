@@ -683,6 +683,7 @@ public:
 	 * \note This class must by derived from in order to define a custom ImGui dialog
 	 */
 	ImGuiDialog(const char *n, ImGuiDefaultSize ds = {350.0,280.0}):name(n),defaultSize(ds) {}
+	ImGuiDialog(const char *icon, const char *n, ImGuiDefaultSize ds = {350.0,280.0}):name(std::string(icon)+" "+n),defaultSize(ds) {}
 	virtual ~ImGuiDialog();
 	bool IsActive() { return active; }
 	void Activate();

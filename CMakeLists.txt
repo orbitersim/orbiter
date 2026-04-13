@@ -103,6 +103,9 @@ find_package(HTMLHelp)
 find_package(LATEX)
 find_package(MFC)
 
+# Pot file generation
+include(cmake/i18n.cmake)
+
 # We don't query Qt with find_package because we need the 64-bit version here
 set(Qt5_x64_DIR
 	"Qt5_x64_DIR_NOTFOUND"
@@ -266,7 +269,7 @@ endfunction()
 
 
 # Installation
-install(DIRECTORY Scenarios Textures Meshes Config GravityModels Script Flights BinAssets/
+install(DIRECTORY Scenarios Textures Meshes Config GravityModels Flights BinAssets/
 	DESTINATION ${ORBITER_INSTALL_ROOT_DIR}
 )
 
@@ -298,6 +301,7 @@ add_subdirectory(Orbitersdk)
 add_subdirectory(OVP)
 add_subdirectory(Sound)
 add_subdirectory(Html)
+add_subdirectory(Script)
 
 if(ORBITER_MAKE_DOC)
 	add_subdirectory(Doc)
@@ -352,3 +356,6 @@ if (ORBITER_MAKE_TESTS)
       enable_testing()
       add_subdirectory(Tests)
 endif()
+
+generate_flights_pots(Flights)
+generate_i18n_report()

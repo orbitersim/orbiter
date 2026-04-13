@@ -5,6 +5,7 @@
 #include "Pane.h"
 #include "Util.h"
 #include "Vessel.h"
+#include "i18n.h"
 
 using std::min;
 using std::max;
@@ -13,8 +14,8 @@ extern Orbiter *g_pOrbiter;
 extern Vessel *g_focusobj;
 extern char DBG_MSG[256];
 
-static const char *btmlbl[3] = {"PWR","SEL","MNU"};
 int nnv0 = 7; // number of nav modes available
+static const DWORD colors[] = {0x0088ff88,0x0088aaff,0x0088ffff,0x00ffee88};
 
 // texture dimensions
 static float texw = 512.0f, texh = 256.0f;
@@ -72,6 +73,8 @@ DefaultPanel::DefaultPanel (Pane *_pane, int cidx): pane(_pane)
 	transpmfd = g_pOrbiter->Cfg()->CfgLogicPrm.bMfdTransparent;
 	compact_layout = g_pOrbiter->Cfg()->CfgLogicPrm.bGlasspitCompact;
 	colidx = cidx;
+
+	unicode_support = g_pOrbiter->Cfg()->NLSEnabled();
 
 	elevtrim = 100;
 
@@ -384,7 +387,8 @@ void DefaultPanel::InitDeviceObjects ()
 	int fh2 = max(10, min(18, pane->H/55));
 	int fh3 = (4*fh)/5;
 	mfdPen  = gc->clbkCreatePen (1, 0, RGB(0,255,0));
-	mfdFont = gc->clbkCreateFont (fh1, true, "Sans");
+	mfdFont = gc->clbkCreateFont (fh1, true, "Sans", FONT_BOLD);
+	btnyoffset = (btnh - fh1)/2+1;
 }
 
 void DefaultPanel::RestoreDeviceObjects (LPDIRECT3D7 d3d, LPDIRECT3DDEVICE7 dev)
@@ -411,7 +415,16 @@ SURFHANDLE DefaultPanel::LoadTexture (int idx)
 		case 3: strcat (cbuf, "_blue"); break;
 	}
 	strcat (cbuf, ".dds");
-	return gc->clbkLoadTexture (cbuf, 0x4);
+//	return gc->clbkLoadTexture (cbuf, 0x4);
+
+	SURFHANDLE srf = gc->clbkLoadTexture (cbuf, 0x4|0x2);
+	oapi::Sketchpad *skp = oapiGetSketchpad(srf);
+	// Remove PWR/SEL/MNU labels
+	oapiBlt(srf, srf, 196, 154, 196, 166, 87, 13);
+	// Remove PWR label (when off)
+	oapiBlt(srf, srf, 326, 165, 326, 175, 26, 10);
+	oapiReleaseSketchpad(skp);
+	return srf;
 }
 
 void DefaultPanel::SwitchColour (int idx)
@@ -537,6 +550,44 @@ void DefaultPanel::Render ()
 	vofs += 4*5;
 
 	gc->clbkRender2DPanel (&surf, (MESHHANDLE)&mesh, &transf, transpmfd);
+
+	// Alternative drawing with unicode support
+	if(unicode_support) {
+		oapi::Sketchpad *skp = gc->clbkGetSketchpad (0);
+		for (i = 0; i < 2; i++) {
+			GroupSpec *grp = mesh.GetGroup(4+i);
+			skp->SetFont(mfdFont);
+			if(pane->mfd[i].instr)
+				skp->SetTextColor(0x008888ff);
+			else
+				skp->SetTextColor(0x00444477);
+
+			skp->SetTextAlign(oapi::Sketchpad::CENTER);
+			int w = grp->Vtx[1].x - grp->Vtx[0].x;
+			skp->Text(grp->Vtx[0].x + w/2 + 1, grp->Vtx[0].y+btnyoffset, _c("MFD Button", "PWR"), 0);
+		}
+
+
+		for (int i = 0; i < 2; i++)
+			RenderMFDButtons(i, skp);
+
+		skp->SetFont(mfdFont);
+		skp->SetTextAlign(oapi::Sketchpad::CENTER);
+
+		for (int i = 0; i < 2; i++) {
+			// MNU/SEL group
+			if(pane->mfd[i].instr) {
+				skp->SetTextColor(colors[colidx]);
+				grp = mesh.GetGroup(1+2*i);
+				int w = grp->Vtx[201].x - grp->Vtx[200].x;
+				skp->Text(grp->Vtx[200].x + w/2 + 1, grp->Vtx[200].y+btnyoffset, _c("MFD Button", "SEL"), 0);
+
+				w = grp->Vtx[209].x - grp->Vtx[208].x;
+				skp->Text(grp->Vtx[208].x + w/2 + 1, grp->Vtx[208].y+btnyoffset, _c("MFD Button", "MNU"), 0);
+			}
+		}
+		oapiReleaseSketchpad(skp);
+	}
 }
 
 bool DefaultPanel::ProcessMouse (UINT event, DWORD state, int x, int y)
@@ -716,8 +767,31 @@ void DefaultPanel::MFDModeChanged(int mfd, int mode)
 	RepaintMFDButtons (mfd);
 }
 
+
+void DefaultPanel::RenderMFDButtons (int id, oapi::Sketchpad *skp)
+{
+	if (id >= 2) return;
+	if (!gc || !pane->mfd[id].instr) return;
+
+	static char label0[3] = {0,0,0};
+
+	skp->SetFont(mfdFont);
+	skp->SetTextColor(colors[colidx]);
+	skp->SetTextAlign(oapi::Sketchpad::CENTER);
+
+	for (int i = 0; i < 2; i++) {
+		for (int j = 0; j < 6; j++) {
+			int vofs = (i*6+j)*16+4;
+			const char *label = pane->mfd[id].instr->ButtonLabel (i*6+j);
+			if (!label) label = label0;
+			skp->Text(btnx[id][i]+btnw/2,btny[j]+btnyoffset,label,0);
+		}
+	}
+}
+
 void DefaultPanel::RepaintMFDButtons (int id)
 {
+	if(unicode_support) return;
 	if (id >= 2) return;
 	if (!gc || !pane->mfd[id].instr) return;
 

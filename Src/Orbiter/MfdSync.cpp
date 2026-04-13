@@ -8,6 +8,9 @@
 #include "Select.h"
 #include <stdio.h>
 
+#define TRANSLATION_CONTEXT "MFD Sync"
+#include "i18n.h"
+
 using namespace std;
 
 extern PlanetarySystem *g_psys;
@@ -277,10 +280,10 @@ bool Instrument_OSync::KeyBuffered (DWORD key)
 		Refresh();
 		return true;
 	case OAPI_KEY_N:  // number of transit times
-		g_input->Open ("Transit list length:", 0, 20, Instrument_OSync::CallbackNorbit, (void*)this);
+		g_input->Open (_("Transit list length:"), 0, 20, Instrument_OSync::CallbackNorbit, (void*)this);
 		return true;
 	case OAPI_KEY_T:  // select target
-		OpenSelect_Tgt ("Sync MFD: Target", ClbkEnter_Tgt, vessel->ElRef(), 2);
+		OpenSelect_Tgt (_("Sync MFD: Target"), ClbkEnter_Tgt, vessel->ElRef(), 2);
 		return true;
 	}
 	return false;
@@ -325,7 +328,7 @@ void Instrument_OSync::SetTarget (const RigidBody *target)
 
 bool Instrument_OSync::ClbkEnter_Tgt (Select *menu, int item, char *str, void *data)
 {
-	Body *obj = g_psys->GetObj (str, true);
+	Body *obj = g_psys->GetObj (_revname(str), true);
 	if (obj) {
 		Instrument_OSync *instr = (Instrument_OSync*)data;
 		instr->SetTarget ((RigidBody*)obj);

@@ -17,6 +17,8 @@
 #include "imgui.h"
 #include "imgui_extras.h"
 #include "IconsFontAwesome6.h"
+#define TRANSLATION_CONTEXT "RControl"
+#include "I18NAPI.h"
 
 // ==============================================================
 // The module interface class - singleton implementation
@@ -84,14 +86,18 @@ void oapi::RControl::hookOpenDlg(void *ctx) {
 // --------------------------------------------------------------
 
 oapi::RControl::RControl(HINSTANCE hDLL)
-	: Module(hDLL), ImGuiDialog("Orbiter Remote Vessel Control", {344,328})
+	// TRANSLATORS: Dialog title
+	: Module(hDLL), ImGuiDialog(_("Orbiter Remote Vessel Control"), {344,328})
 {
 	// Register the custom command for the plugin
-	m_dwCmd = oapiRegisterCustomCmd((char*)"Remote Vessel Control",
-		(char*)"Operate the engines of any spacecraft from a dialog box.",
+	// TRANSLATORS: Custom command name
+	m_dwCmd = oapiRegisterCustomCmd((char*)_("Remote Vessel Control"),
+		// TRANSLATORS: Custom command description
+		(char*)_("Operate the engines of any spacecraft from a dialog box."),
 		hookOpenDlg, this);
 
-	m_dwMenuCmd = oapiRegisterCustomMenuCmd ("Rcontrol", "MenuInfoBar/Rcontrol.png", hookOpenDlg, this);
+	// TRANSLATORS: Name in menu bar
+	m_dwMenuCmd = oapiRegisterCustomMenuCmd (_("Rcontrol"), "MenuInfoBar/Rcontrol.png", hookOpenDlg, this);
 
 	m_pVessel = nullptr;
 	m_RCSlevel = 1.0f;
@@ -127,7 +133,7 @@ bool ButtonPressed(const char *label, const ImVec2 &size)
 void oapi::RControl::OnDraw()
 {
 	char cbuf[128];
-	ImGui::SeparatorText("Vessel");
+	ImGui::SeparatorText(_("Vessel"));
 	ImGui::SetNextItemWidth(160.0f);
 	if(ImGui::BeginAnimatedCombo("##Vessel", m_vesselName.c_str(), ImGuiComboFlags_HeightLargest)) {
 		for (int i = 0; i < oapiGetVesselCount(); i++) {
@@ -146,37 +152,39 @@ void oapi::RControl::OnDraw()
 		ImGui::EndAnimatedCombo();
 	}
 	ImGui::SameLine();
-	if(ImGui::Button("Set focus")) {
+	if(ImGui::Button(_("Set focus"))) {
 		oapiSetFocusObject(m_pVessel->GetHandle());
 	}
-	ImGui::SeparatorText("Engines");
+	ImGui::SeparatorText(_("Engines"));
 	float lvl = -m_pVessel->GetThrusterGroupLevel (THGROUP_RETRO);
 	ImGui::SetNextItemWidth(160.0f);
-	if(ImGui::SliderFloat("##Retro", &lvl, -1.0, 0.0, ICON_FA_ANGLES_LEFT " Retro", ImGuiSliderFlags_AlwaysClamp)) {
+	// TRANSLATORS: The escaped sequence is the ICON_FA_ANGLES_LEFT icon
+	if(ImGui::SliderFloat("##Retro", &lvl, -1.0, 0.0, _("\xef\x84\x80 Retro"), ImGuiSliderFlags_AlwaysClamp)) {
 		m_pVessel->SetThrusterGroupLevel (THGROUP_RETRO, -lvl);
 	}
 	ImGui::SameLine();
 	lvl = m_pVessel->GetThrusterGroupLevel (THGROUP_MAIN);
 	ImGui::SetNextItemWidth(160.0f);
-	if(ImGui::SliderFloat("##Main", &lvl, 0.0, 1.0, "Main " ICON_FA_ANGLES_RIGHT, ImGuiSliderFlags_AlwaysClamp)) {
+	// TRANSLATORS: The escaped sequence is the ICON_FA_ANGLES_RIGHT icon
+	if(ImGui::SliderFloat("##Main", &lvl, 0.0, 1.0, _("Main \xef\x84\x81"), ImGuiSliderFlags_AlwaysClamp)) {
 		m_pVessel->SetThrusterGroupLevel (THGROUP_MAIN, lvl);
 	}
 
 	lvl = m_pVessel->GetThrusterGroupLevel (THGROUP_HOVER);
 	ImGui::SetNextItemWidth(160.0f);
-	if(ImGui::SliderFloat("##Hover", &lvl, 0.0, 1.0, "Hover", ImGuiSliderFlags_AlwaysClamp)) {
+	if(ImGui::SliderFloat("##Hover", &lvl, 0.0, 1.0, _("Hover"), ImGuiSliderFlags_AlwaysClamp)) {
 		m_pVessel->SetThrusterGroupLevel (THGROUP_HOVER, lvl);
 	}
 	ImGui::SameLine();
 	ImGui::SetNextItemWidth(160.0f);
-	ImGui::SliderFloat("##RCS", &m_RCSlevel, 0.0, 1.0, "RCS level", ImGuiSliderFlags_AlwaysClamp);
+	ImGui::SliderFloat("##RCS", &m_RCSlevel, 0.0, 1.0, _("RCS level"), ImGuiSliderFlags_AlwaysClamp);
 
 	float w = ImGui::CalcTextSize(ICON_FA_ARROW_UP).x * 2.0f;
 	ImVec2 btnSize = ImVec2(w, w);
 	w = ImGui::GetContentRegionAvail().x / 2.0f;
 	ImVec2 childSize = ImVec2(w, btnSize.y * 5.0f);
 	ImGui::BeginChild("Left", childSize);
-	ImGui::SeparatorText("RCS Rotation");
+	ImGui::SeparatorText(_("RCS Rotation"));
 
 	ImGui::Dummy(btnSize);
 	ImGui::SameLine();
@@ -207,7 +215,7 @@ void oapi::RControl::OnDraw()
 	ImGui::EndChild();
 	ImGui::SameLine();
 	ImGui::BeginChild("Right", childSize);
-	ImGui::SeparatorText("RCS Translation");
+	ImGui::SeparatorText(_("RCS Translation"));
 	ImGui::Dummy(btnSize);
 	ImGui::SameLine();
 	if(ButtonPressed(ICON_FA_ARROW_UP, btnSize))
@@ -232,29 +240,29 @@ void oapi::RControl::OnDraw()
 		m_pVessel->IncThrusterGroupLevel_SingleStep (THGROUP_ATT_RIGHT, m_RCSlevel);
 	ImGui::EndChild();
 
-	ImGui::SeparatorText("Nav mode");
+	ImGui::SeparatorText(_("Nav mode"));
 	
 	btnSize.x = ImGui::GetContentRegionAvail().x / 3.0f - ImGui::GetStyle().FramePadding.x * 4.0f / 3.0f;
-	if(ImGui::Button("Killrot", btnSize))
+	if(ImGui::Button(_("Killrot"), btnSize))
 		m_pVessel->ToggleNavmode(NAVMODE_KILLROT);
 
 	ImGui::SameLine();
-	if(ImGui::Button("Prograde", btnSize))
+	if(ImGui::Button(_("Prograde"), btnSize))
 		m_pVessel->ToggleNavmode(NAVMODE_PROGRADE);
 
 	ImGui::SameLine();
-	if(ImGui::Button("Normal", btnSize))
+	if(ImGui::Button(_("Normal"), btnSize))
 		m_pVessel->ToggleNavmode(NAVMODE_NORMAL);
 
 
-	if(ImGui::Button("HLevel", btnSize))
+	if(ImGui::Button(_("HLevel"), btnSize))
 		m_pVessel->ToggleNavmode(NAVMODE_HLEVEL);
 
 	ImGui::SameLine();
-	if(ImGui::Button("Retrograde", btnSize))
+	if(ImGui::Button(_("Retrograde"), btnSize))
 		m_pVessel->ToggleNavmode(NAVMODE_RETROGRADE);
 
 	ImGui::SameLine();
-	if(ImGui::Button("Anti Normal", btnSize))
+	if(ImGui::Button(_("Anti Normal"), btnSize))
 		m_pVessel->ToggleNavmode(NAVMODE_ANTINORMAL);
 }

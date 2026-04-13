@@ -1,0 +1,45 @@
+# This file was auto-generated, DO NOT modify it directly
+msgid ""
+msgstr ""
+"Content-Type: text/plain; charset=UTF-8\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+"X-Generator: Lua xgettext.lua\n"
+
+#: Src/Plugin/Framerate/Framerate.cpp:86
+#. Dialog title
+msgctxt "Framerate"
+msgid "Orbiter Performance Meter"
+msgstr ""
+
+#: Src/Plugin/Framerate/Framerate.cpp:90
+#. Custom command description
+msgctxt "Framerate"
+msgid "Simulation frame rate / time step monitor"
+msgstr ""
+
+#: Src/Plugin/Framerate/Framerate.cpp:92
+#. Custom command name
+msgctxt "Framerate"
+msgid "Performance Meter"
+msgstr ""
+
+#: Src/Plugin/Framerate/Framerate.cpp:122
+msgctxt "Framerate"
+msgid "F/s"
+msgstr ""
+
+#: Src/Plugin/Framerate/Framerate.cpp:124
+msgctxt "Framerate"
+msgid "dt/s"
+msgstr ""
+
+#: Src/Plugin/Framerate/Framerate.cpp:128
+msgctxt "Framerate"
+msgid "FPS"
+msgstr ""
+
+#: Src/Plugin/Framerate/Framerate.cpp:130
+msgctxt "Framerate"
+msgid "dt"
+msgstr ""
+

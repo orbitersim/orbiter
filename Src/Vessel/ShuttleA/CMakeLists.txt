@@ -121,3 +121,6 @@ install(DIRECTORY ${THUMBNAIL_SOURCE_DIR}/
 if(ORBITER_MAKE_DOC)
 	add_subdirectory(Help)
 endif()
+
+generate_pot(ShuttleA)
+install_po_files()

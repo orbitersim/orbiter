@@ -1,0 +1,308 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: Orbiter Flights\n"
+"POT-Creation-Date: \n"
+"PO-Revision-Date: \n"
+"Last-Translator: \n"
+"Language-Team: \n"
+"Language: fr_FR\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n > 1);\n"
+"X-Generator: Poedit 3.8\n"
+
+#: Flights/Smack! Rescue/system.dat:4
+msgctxt "Flight"
+msgid ""
+"\"Smack! Rescue\" playback for chapter 2 of \"Go Play In Space\" - Press F1 "
+"to enter cockpit, then wait for docking to complete. Playback control (Cntrl-"
+"F5) should be set to \"Play at Recording Speed\" (9 minute playback)."
+msgstr ""
+"Rejeu de « Smack! Rescue », chapitre 2 de « Go Play In Space » — Appuyez sur "
+"F1 pour entrer dans le cockpit, puis attendez la fin de l’amarrage. La "
+"lecture (Ctrl-F5) doit être réglée sur « Lire à la vitesse "
+"d’enregistrement » (9 minutes)."
+
+#: Flights/Smack! Rescue/system.dat:6
+msgctxt "Flight"
+msgid ""
+"Note: This patch-1 version now has camera preset controls built into the "
+"playback, so it will switch to different external and internal views "
+"automatically."
+msgstr ""
+"Remarque : Cette version intègre désormais des préréglages de caméra dans la "
+"lecture ; elle basculera donc automatiquement entre différentes vues "
+"externes et internes."
+
+#: Flights/Smack! Rescue/system.dat:8
+msgctxt "Flight"
+msgid ""
+"The two Delta Gliders are docked but their orbit is bad - press DST on the "
+"right (Orbit) MFD and note that the PeA value (periapsis altitude, lowest "
+"orbit point) is negative."
+msgstr ""
+"Les deux Delta Glider sont amarrés, mais leur orbite est mauvaise — appuyez "
+"sur DST sur le MFD droit (Orbit) et notez que la valeur PeA est négative "
+"(altitude du périapse, point le plus bas de l’orbite)."
+
+#: Flights/Smack! Rescue/system.dat:9
+msgctxt "Flight"
+msgid ""
+"The first step is to stop the rotation with the Kill Rotation button (right "
+"side of panel) or the keypad 5 key"
+msgstr ""
+"La première étape consiste à arrêter la rotation à l’aide du bouton « Kill "
+"Rotation » (panneau droit) ou de la touche 5 du pavé numérique"
+
+#: Flights/Smack! Rescue/system.dat:13
+msgctxt "Flight"
+msgid ""
+"With rotation stopped, we can undock with the Control-D key (at Sim time "
+"77s, upper right corner) which gives a small negative CVEL for separation"
+msgstr ""
+"Une fois la rotation stoppée, nous pouvons nous désamarrer avec la touche "
+"Ctrl+D (au temps de simulation t=77 s, coin supérieur droit), ce qui génère "
+"une CVEL négative (vitesse d'approche relative)"
+
+#: Flights/Smack! Rescue/system.dat:16
+msgctxt "Flight"
+msgid ""
+"We switch RCS mode from rotation (ROT) to translation (LIN) with the rotary "
+"dial or the keypad / (slash) key (at Sim 87s)"
+msgstr ""
+"Nous passons le RCS de rotation (ROT) à translation (LIN) à l’aide du "
+"sélecteur rotatif ou de la touche / (division) du pavé numérique (au temps "
+"de simulation t=87 s)."
+
+#: Flights/Smack! Rescue/system.dat:20
+msgctxt "Flight"
+msgid ""
+"We are using the keypad 9 (back) thrust to speed up separation - note the "
+"CVEL and DST values on the Docking (left) MFD.  We want DST about 30 m or so"
+msgstr ""
+"Nous utilisons la touche 9 du pavé numérique (poussée arrière) pour "
+"accélérer la séparation — notez les valeurs CVEL et DST sur le MFD Docking "
+"(gauche). Nous visons une distance DST d’environ 30 m"
+
+#: Flights/Smack! Rescue/system.dat:23
+msgctxt "Flight"
+msgid ""
+"We use keypad 6 (forward thrust) to cancel out the rearward velocity "
+"(negative CVEL)"
+msgstr ""
+"Nous utilisons la touche 6 du pavé numérique (poussée avant) pour annuler la "
+"vitesse de recul (CVEL négatif)."
+
+#: Flights/Smack! Rescue/system.dat:26
+msgctxt "Flight"
+msgid ""
+"Oops, stopped too soon, so use keypad 6 (forward) and 9 (reverse thrust) to "
+"get to DST 30 or so and to zero out CVEL"
+msgstr ""
+"Oups, arrêt trop rapide : utilisez les touches 6 (poussée avant) et 9 "
+"(poussée arrière) pour atteindre une DST d’environ 30 m et ramener CVEL à "
+"zéro"
+
+#: Flights/Smack! Rescue/system.dat:28
+msgctxt "Flight"
+msgid "Using fine forward thrust (Control-num-6) to get CVEL to zero"
+msgstr ""
+"Utilisation d’une poussée avant fine (Ctrl + pavé numérique 6) pour ramener "
+"CVEL à zéro"
+
+#: Flights/Smack! Rescue/system.dat:29
+msgctxt "Flight"
+msgid ""
+"At Sim 219s, we will briefly slow down time to allow us to control both "
+"spacecraft almost simultaneously.  The R key slows time, the T key "
+"accelerates time."
+msgstr ""
+"À t=219 s, nous ralentirons brièvement la simulation pour pouvoir contrôler "
+"les deux vaisseaux presque simultanément. La touche R passe en avance "
+"ralentie, la touche T en avance plus rapide."
+
+#: Flights/Smack! Rescue/system.dat:30
+msgctxt "Flight"
+msgid ""
+"With time at 1/10th normal, you can use the F3 key to switch between GL-01 "
+"and GL-02 to set PROGRADE for each spacecraft.  "
+msgstr ""
+"Avec l'avance réglée à 0.1x, vous pouvez utiliser la touche F3 pour basculer "
+"entre les vaisseaux GL-01 et GL-02 afin de régler l'orientation PROGRADE de "
+"chaque vaisseau.  "
+
+#: Flights/Smack! Rescue/system.dat:33
+msgctxt "Flight"
+msgid ""
+"Setting time to 0.1x (look for Wrp above right), pressing Prograde button "
+"(or [ key), then switching to GL-02 and pressing Prograde there. Note that "
+"the playback will not switch spacecraft automatically."
+msgstr ""
+"Avance à 0,1x (vérifiez en haut à droite), appuyez sur le bouton Prograde "
+"(ou la touche [), puis passez à GL-02 (F3) et appuyez sur Prograde "
+"également. Notez que le changement de vaisseau n'est pas automatique."
+
+#: Flights/Smack! Rescue/system.dat:37
+msgctxt "Flight"
+msgid ""
+"Now back to normal time (you can use F1 to switch to external view to see "
+"the ships rotate in sync)"
+msgstr ""
+"Retour en avance normale 1x (vous pouvez utiliser F1 pour passer en vue "
+"externe et observer les vaisseaux tourner en synchronisation)"
+
+#: Flights/Smack! Rescue/system.dat:38
+msgctxt "Flight"
+msgid " "
+msgstr ""
+
+#: Flights/Smack! Rescue/system.dat:40
+msgctxt "Flight"
+msgid ""
+"Forgot to close nose cone (K key), not very critical above atmosphere, but "
+"it looks cooler in external views if closed.  I'll do this in both ships "
+"(watch external view)."
+msgstr ""
+"J’ai oublié de fermer la porte d'amarrage (touche K) — pas très critique au-"
+"dessus de l’atmosphère, mais c’est plus esthétique en vue externe si fermé. "
+"Je vais le faire sur les deux vaisseaux (observez en vue externe)."
+
+#: Flights/Smack! Rescue/system.dat:43
+msgctxt "Flight"
+msgid ""
+"If you have Orbiter Sound installed (which you should), you can stop the "
+"proximity beeping. On left MFD buttons, click SEL, Radio/MP3 panel, RAD, "
+"SEL, Docking."
+msgstr ""
+"Si vous avez installé Orbiter Sound, vous pouvez arrêter le bip de "
+"proximité. Sur les boutons du MFD gauche, cliquez sur SEL, panneau Radio/"
+"MP3, RAD, SEL, Docking."
+
+#: Flights/Smack! Rescue/system.dat:46
+msgctxt "Flight"
+msgid ""
+"We need to be near apoapsis to fire main engines to raise periapsis "
+"(apoapsis is open circle on orbit diagram, ApT ~845 s, about 14 minutes to "
+"go), so accelerate time 10x..."
+msgstr ""
+"Nous devons nous rapprocher de l’apoapse pour allumer les moteurs principaux "
+"et élever le périapse (l’apoapse est représenté par un cercle évidé sur le "
+"diagramme orbital, ApT ~845 s, soit 14 minutes restantes), donc accélérons "
+"le temps ×10…"
+
+#: Flights/Smack! Rescue/system.dat:50
+msgctxt "Flight"
+msgid ""
+"Now briefly accelerate time to 100x (T key), looking for ApT about 60 "
+"seconds to slow back down to 10x..."
+msgstr ""
+"Accélérez maintenant brièvement le temps à ×100 (touche T), en surveillant "
+"ApT jusqu’à environ 60 secondes, puis ralentissez à nouveau à ×10…"
+
+#: Flights/Smack! Rescue/system.dat:53
+msgctxt "Flight"
+msgid "Now back to 10x time (R key)..."
+msgstr "Retour maintenant à ×10 du temps (touche R)…"
+
+#: Flights/Smack! Rescue/system.dat:55
+msgctxt "Flight"
+msgid "Now back to 1x (real) time (R key again)..."
+msgstr "Retour maintenant au temps réel (×1) (touche R à nouveau)…"
+
+#: Flights/Smack! Rescue/system.dat:59
+msgctxt "Flight"
+msgid ""
+"What are the green boxes?  The Docking HUD has been left on and the green "
+"boxes are a projected path to the GL-02's docking port, which is facing away "
+"from us."
+msgstr ""
+"C'est quoi les cadres verts ? Le HUD d’amarrage est resté activé, et les "
+"cadres verts représentent le couloir vers le port d’amarrage de GL-02, qui "
+"nous fait face dans la direction opposée."
+
+#: Flights/Smack! Rescue/system.dat:60
+msgctxt "Flight"
+msgid ""
+"Again slowing time to 0.1x to push GL-01 throttles to max, F3-switch to "
+"GL-02, fire its main engines, then switch back to GL-01 to watch "
+"eccentricity."
+msgstr ""
+"On ralentit à nouveau le temps à ×0.1 pour pousser les manettes des "
+"propulseurs du GL-01 à fond, bascule F3 vers GL-02, allumer ses moteurs "
+"principaux, puis revenir à GL-01 pour surveiller l’excentricité."
+
+#: Flights/Smack! Rescue/system.dat:63
+msgctxt "Flight"
+msgid ""
+"Full thrust for both spacecraft, back to 1x time (Again note that F3 "
+"spacecraft switches are under user control in playback, they are not part of "
+"the recording)"
+msgstr ""
+"Pleine poussée pour les deux vaisseaux, retour au temps réel (×1) (notez à "
+"nouveau que les basculements de vaisseau avec F3 sont sous contrôle de "
+"l’utilisateur pendant le rejeu, ils ne font pas partie de l’enregistrement)."
+
+#: Flights/Smack! Rescue/system.dat:65
+msgctxt "Flight"
+msgid "Here comes GL-02 on the left if you're in the cockpit of GL-01..."
+msgstr "Voici GL-02 à gauche si vous êtes dans le cockpit de GL-01…"
+
+#: Flights/Smack! Rescue/system.dat:67
+msgctxt "Flight"
+msgid ""
+"Time has again been slowed to 0.1x for engine cutoff according to safe orbit "
+"parameters (Ecc < 0.02, PeA > 200 km)"
+msgstr ""
+"Le temps a de nouveau été ralenti à ×0.1 pour couper les moteurs selon des "
+"paramètres d’orbite sûrs (Ecc < 0,02, PeA > 200 km)."
+
+#: Flights/Smack! Rescue/system.dat:70
+msgctxt "Flight"
+msgid ""
+"Engines shut down, 1x time - but it looks like GL-02 engines burned a little "
+"long (I was slow on the throttles).  No problem, we just won't be orbiting "
+"quite so close."
+msgstr ""
+"Moteurs coupés, temps réel (×1) — mais on dirait que les moteurs de GL-02 "
+"ont brûlé un peu trop longtemps (j’ai été lent sur les manettes). Pas de "
+"problème, nous ne serons juste pas en orbite aussi proche."
+
+#: Flights/Smack! Rescue/system.dat:72
+msgctxt "Flight"
+msgid ""
+"Orbits for both ships are now safely above the atmosphere (200 km in "
+"Orbiter).  Replay will end shortly, or press control-F5 and click the Stop "
+"button any time."
+msgstr ""
+"Les orbites des deux vaisseaux sont maintenant en toute sécurité au-dessus "
+"de l’atmosphère (200 km dans Orbiter). Le rejeu se terminera bientôt, sinon "
+"appuyez sur Ctrl-F5 et cliquez sur le bouton Stop à tout moment."
+
+#: Flights/Smack! Rescue/system.dat:74
+msgctxt "Flight"
+msgid ""
+"Use F3 and click on some of the other ships in this scenario to see where "
+"they are, or even to fly them once replay ends."
+msgstr ""
+"Utilisez F3 et cliquez sur certains des autres vaisseaux de ce scénario pour "
+"voir où ils se trouvent, ou même pour les piloter une fois le rejeu terminé."
+
+#: Flights/Smack! Rescue/system.dat:75
+msgctxt "Flight"
+msgid ""
+"Or press Control-F1 and click on some of the planets or moons listed there "
+"to go visit them.  See chapter 2 of \"Go Play In Space\" for more ideas."
+msgstr ""
+"Ou appuyez sur Ctrl-F1 et cliquez sur certaines des planètes ou lunes "
+"listées pour aller les visiter. Consultez le chapitre 2 de « Go Play In "
+"Space » pour plus d’idées."
+
+#: Flights/Smack! Rescue/system.dat:76
+msgctxt "Flight"
+msgid ""
+"Playback ends in 10 seconds and you will have control of the spacecraft.  "
+"Good orbiting."
+msgstr ""
+"Le rejeu se termine dans 10 secondes et vous aurez le contrôle des "
+"vaisseaux.  Bonnes orbites."

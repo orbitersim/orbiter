@@ -151,7 +151,7 @@ bool orbiter::ConsoleNG::ParseCmd()
 		}
 	}
 	else if (!_strnicmp(cmd, "exit", 4)) {
-		m_pOrbiter->CloseSession();
+		m_pOrbiter->CloseSession(false);
 		return true;
 	}
 	else if (!_strnicmp(cmd, "vessel", 6)) {
@@ -310,7 +310,7 @@ INT_PTR CALLBACK ServerDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lPara
 		switch (LOWORD(wParam)) {
 		case IDOK:
 			if (s_console)
-				s_console->GetOrbiter()->CloseSession();
+				s_console->GetOrbiter()->CloseSession(false);
 		}
 		break;
 	case WM_CLOSE:

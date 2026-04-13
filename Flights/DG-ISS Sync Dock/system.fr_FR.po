@@ -1,0 +1,588 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: Orbiter Flights\n"
+"POT-Creation-Date: \n"
+"PO-Revision-Date: \n"
+"Last-Translator: \n"
+"Language-Team: \n"
+"Language: fr_FR\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n > 1);\n"
+"X-Generator: Poedit 3.8\n"
+
+#: Flights/DG-ISS Sync Dock/system.dat:4
+msgctxt "Flight"
+msgid ""
+"DG-ISS Sync-Dock, rendezvous-docking recording for \"Go Play In Space\" 2nd "
+"Edition, chapter 5 \"Dancing in the Dark.\"  Note that the docking HUD is "
+"displayed, that the Sync Orbit MFD is on the left..."
+msgstr ""
+"Rendez-vous et amarrage à l'ISS, « Go Play In Space », 2ème édition, "
+"chapitre 5 « Dancing in the Dark ».  Notez que le HUD est en mode Amarrage, "
+"le MFD gauche est sur Sync..."
+
+#: Flights/DG-ISS Sync Dock/system.dat:6
+msgctxt "Flight"
+msgid ""
+"...and the Orbit MFD is on the right.  First thing to do is time accelerate "
+"to get the ISS to our ship's periapsis so we can note the altitude "
+"there...              time accelerating........"
+msgstr ""
+"…et le MFD droit est sur Orbit (paramètres orbitaux).  Tout d'abord une "
+"accélération temporelle pour voir l'altitude de l'ISS quand elle est alignée "
+"avec notre périgée...              Avance rapide..."
+
+#: Flights/DG-ISS Sync Dock/system.dat:9
+msgctxt "Flight"
+msgid ""
+"Note that our orbital planes are already aligned (Inc), but our position "
+"(green line) is ahead of the ISS position (ISS), so we need to get into a "
+"slightly bigger, longer period orbit so the ISS can catch up with us."
+msgstr ""
+"Notez que nos plans orbitaux sont déjà alignés (Inc), mais notre position "
+"(ligne verte) est en avance sur celle de l'ISS. Il faut donc manœuvrer vers "
+"une orbite un peu plus grande (plus lente) pour que l'ISS puisse nous "
+"rattraper."
+
+#: Flights/DG-ISS Sync Dock/system.dat:13
+msgctxt "Flight"
+msgid "1000x warp factor, the Earth is really zipping by..."
+msgstr "Accélération temporelle x1000, la Terre défile..."
+
+#: Flights/DG-ISS Sync Dock/system.dat:15
+msgctxt "Flight"
+msgid "Slowing time to 100x"
+msgstr "Ralentissement à x100"
+
+#: Flights/DG-ISS Sync Dock/system.dat:18
+msgctxt "Flight"
+msgid ""
+"The docking HUD shows a box around the target (ISS) when in field of view, "
+"or an arrow pointing to it if off-screen.  A circle with a plus sign shows "
+"ISS relative velocity, with V[ISS] pointing to it when off-screen."
+msgstr ""
+"Le HUD montre un rectangle autour de la cible (ISS) quand elle est dans le "
+"champ visuel, ou une flèche la pointant quand elle est hors champ.  Un "
+"cercle avec le signe + représente le vecteur vitesse relative par rapport à "
+"l'ISS, ou une flèche V[ISS] si hors champ."
+
+#: Flights/DG-ISS Sync Dock/system.dat:21
+msgctxt "Flight"
+msgid ""
+"Note that when the ISS target box goes off-screen, the ISS arrow appears."
+msgstr "Notez que quand le rectangle sort de l'écran, la flèche apparaît."
+
+#: Flights/DG-ISS Sync Dock/system.dat:23
+msgctxt "Flight"
+msgid "Back to 1x (real time)."
+msgstr "Retour à l'avance normale (x1)."
+
+#: Flights/DG-ISS Sync Dock/system.dat:26
+msgctxt "Flight"
+msgid ""
+"Note that as the ISS (yellow line) reaches our periapsis (green dot), its "
+"(yellow) Alt value in Orbit MFD is 360.3 km.  "
+msgstr ""
+"Notez que quand l'ISS (ligne jaune) est au niveau de notre périapse (rond "
+"vert), son altitude (marqueur Alt en jaune) est de 360,3km.  "
+
+#: Flights/DG-ISS Sync Dock/system.dat:29
+msgctxt "Flight"
+msgid ""
+"The next thing to do is accelerate to apoapsis where a small prograde burn "
+"can raise our PeA to match the ISS...     time accelerating... "
+msgstr ""
+"La prochaine chose à faire est de rejoindre l'apogée en avance rapide, où "
+"une brève poussée prograde va relever notre périgée (PeA) pour correspondre "
+"à celle de l'ISS...     Avance rapide… "
+
+#: Flights/DG-ISS Sync Dock/system.dat:33
+msgctxt "Flight"
+msgid "...now back to 1x."
+msgstr "…retour en x1."
+
+#: Flights/DG-ISS Sync Dock/system.dat:36
+msgctxt "Flight"
+msgid ""
+"Turning prograde for the burn, noting the DTMin on Sync MFD is about 44 s "
+"and raising the PeA to 360.3k will decrease this, but not to zero."
+msgstr ""
+"Orientation prograde pour la poussée, DTMin sur le MFD Sync vaut env. 44s, "
+"et DTMin diminuera - mais pas jusqu'à zéro - quand PeA augmentera vers "
+"360,3km."
+
+#: Flights/DG-ISS Sync Dock/system.dat:38
+msgctxt "Flight"
+msgid ""
+"Firing short bursts of main engine (numpad + key) to raise PeA to 360.3k to "
+"match ISS height at this point."
+msgstr ""
+"Poussées brèves (touche + du pavé numérique) pour monter le PeA à 360,3km, "
+"afin d'égaler l'altitude de l'ISS à cet endroit."
+
+#: Flights/DG-ISS Sync Dock/system.dat:40
+msgctxt "Flight"
+msgid ""
+"Still in Prograde mode, switching to translation [LIN] mode to tweak PeA "
+"with forward (num-6) and backward (num-9) thrusts."
+msgstr ""
+"Toujours en mode Prograde, changement de RCS de Rotation à Linéaire (LIN) "
+"pour ajuster le PeA avec de brèves impulsions avant/arrière (touches 6 et 9 "
+"du pavé numérique)."
+
+#: Flights/DG-ISS Sync Dock/system.dat:42
+msgctxt "Flight"
+msgid ""
+"OK, our PeA is now 360.3k, matching ISS altitude at our periapsis.  Get "
+"ready to warp time 10-100x again..."
+msgstr ""
+"Bien, notre PeA est maintenant de 360,3km, égal à l'altitude de l'ISS à "
+"notre périgée.  Attention pour l'avance rapide..."
+
+#: Flights/DG-ISS Sync Dock/system.dat:46
+msgctxt "Flight"
+msgid ""
+"Time warping at 100x to quickly coast to periapsis where we can fire "
+"prograde and raise our apoapsis to increase our orbital period (T) slightly, "
+"allowing the ISS to catch up with us."
+msgstr ""
+"Accélération temporelle x100, pour rapidement atteindre le périgée où nous "
+"pourrons faire une poussée prograde et donc relever notre apogée et allonger "
+"légèrement la période orbitale, permettant à l'ISS de nous rattraper."
+
+#: Flights/DG-ISS Sync Dock/system.dat:48
+msgctxt "Flight"
+msgid ""
+"Sunrise over eastern Europe.  The Sync Orbit MFD shows a yellow line on the "
+"orbit where closest approach occurs.  The two columns are times to the "
+"reference point for ship and target."
+msgstr ""
+"Lever de soleil sur l'Europe de l'est.  Le MFD Sync montre une ligne en "
+"jaune où la distance minimale sera atteinte.  Les deux colonnes sont les "
+"durées pour atteindre le point de référence par notre vaisseau et la cible "
+"(ISS)."
+
+#: Flights/DG-ISS Sync Dock/system.dat:51
+msgctxt "Flight"
+msgid ""
+"Other key Sync MFD numbers are Dist (to target) and RVel (relative "
+"velocity). Note also that RInc is shown as 0.00 degrees (planes aligned).  "
+"Coming up on periapsis..."
+msgstr ""
+"D'autres indicateurs clés sont Dist (distance à la cible) et RVel (vitesse "
+"relative). Notez également que RInc vaut 0,00° (plans alignés).  En approche "
+"du périgée..."
+
+#: Flights/DG-ISS Sync Dock/system.dat:54
+msgctxt "Flight"
+msgid ""
+"Back at 1x time, thrusters still LIN, linear thruster num-6/9 bursts (fwd-"
+"back) will adjust DTMin to nearly zero."
+msgstr ""
+"Retour à l'avance normale (x1), toujours en RCS LIN, quelques impulsions "
+"avant/arrière (touches 6/9 du pavé) vont ajuster DTMin vers zéro."
+
+#: Flights/DG-ISS Sync Dock/system.dat:56
+msgctxt "Flight"
+msgid ""
+"Kill Rotation to turn off Prograde, and now we time accelerate for a couple "
+"of orbits to reach the orbit where DTMin=0 and the ISS will hopefully be "
+"close by (but not too close, a few km)."
+msgstr ""
+"Passage en RCS Kill Rotation (annuler la rotation) et avance rapide pendant "
+"quelques orbites afin d'atteindre celle où le DTmin vaut 0. L'ISS sera "
+"proche (mais pas trop, quelques kilomètres)."
+
+#: Flights/DG-ISS Sync Dock/system.dat:59
+msgctxt "Flight"
+msgid ""
+"Note that DG period (T) is now 5.540k s, vs. 5.501k for ISS, 39 s longer for "
+"us, so ISS can catch up.  "
+msgstr ""
+"Notez que la période orbitale (T) est maintenant de 5540s, contre 5501s pour "
+"l'ISS, 39s plus longue pour nous, afin que l'ISS puisse nous rattraper.  "
+
+#: Flights/DG-ISS Sync Dock/system.dat:61
+msgctxt "Flight"
+msgid ""
+"We've got a couple of orbits to fast forward through, so we'll just show a "
+"few progress reports."
+msgstr "Nous avons quelques orbites devant nous..."
+
+#: Flights/DG-ISS Sync Dock/system.dat:63
+msgctxt "Flight"
+msgid ""
+"Yellow line is orbit 1 (Ob 1), so really two orbits to go (we intercept on "
+"orbit zero)."
+msgstr ""
+"La ligne en jaune est l'orbite numéro 1, nous avons donc encore les orbites "
+"Ob 1 et Ob 0 devant nous (interception à l'orbite 0)."
+
+#: Flights/DG-ISS Sync Dock/system.dat:64
+msgctxt "Flight"
+msgid "Another sunset, ISS target box passes 403 km away."
+msgstr "Un autre couché de soleil, le cadre de l'ISS passe à 403km."
+
+#: Flights/DG-ISS Sync Dock/system.dat:66
+msgctxt "Flight"
+msgid ""
+"Just passed our reference point, now on orbit zero, 5.314k seconds Sh-ToR, "
+"Dist 304.3k, an orbit away from intercept."
+msgstr ""
+"Nous venons de passer notre point de référence, 5314s,  304,3km ; encore une "
+"orbite avant interception."
+
+#: Flights/DG-ISS Sync Dock/system.dat:69
+msgctxt "Flight"
+msgid "ISS should be just visible in target box, 46 km away."
+msgstr "L'ISS devrait être visible dans le cadre de visée, à 46km."
+
+#: Flights/DG-ISS Sync Dock/system.dat:73
+msgctxt "Flight"
+msgid ""
+"Note that the yellow numbers are now on orbit zero (Ob 0) and the Sh-ToR "
+"time value is getting smaller as we approach the rendezvous point."
+msgstr ""
+"Notez que les nombres en jaune sont maintenant sur l'orbite 0, et que le "
+"temps indiqué diminue à l'approche du point de rendez-vous."
+
+#: Flights/DG-ISS Sync Dock/system.dat:75
+msgctxt "Flight"
+msgid ""
+"The ISS has been barely visible in darkness framed by the target box in the "
+"HUD, but now sunrise is approaching, and the ISS will momentarily be backlit "
+"against the Earth's limb (distance about 10 km). "
+msgstr ""
+"L'ISS est à peine visible dans l'obscurité, entourée du cadre de visée, mais "
+"le soleil va bientôt se lever et l'ISS sera un instant à contre-jour "
+"(distance ~10km). "
+
+#: Flights/DG-ISS Sync Dock/system.dat:78
+msgctxt "Flight"
+msgid ""
+"Coming out of warp shortly since the ISS is getting close - at around 3.5 "
+"km, we will enter ROT mode and rotate the ship to point at the V[ISS] ball. "
+msgstr ""
+"Sortie d'avance rapide car l'ISS se rapproche - environ  3,5km, activation "
+"du mode rotation (ROT) et réorientation pour pointer vers le réticule "
+"V[ISS]. "
+
+#: Flights/DG-ISS Sync Dock/system.dat:81
+msgctxt "Flight"
+msgid ""
+"Rotating (yaw right) to point at V[ISS] which is now behind us.  We want to "
+"put the direction symbol on the velocity indicator, preparing to zero out "
+"our relative velocity to ISS."
+msgstr ""
+"Rotation à droite pour pointer vers -V[ISS] qui est maintenant derrière "
+"nous.  Nous voulons aligner le marqueur de direction avec le vecteur vitesse "
+"afin de réduire la vitesse relative avec l'ISS."
+
+#: Flights/DG-ISS Sync Dock/system.dat:83
+msgctxt "Flight"
+msgid ""
+"Nearly pointing at V[ISS] symbol, so kill rotation (num-5).  ISS range still "
+"closing at 18.69 m/s, waiting until Dist is under 2 km to zero out V[ISS]."
+msgstr ""
+"Presque alignés, annulation de rotation (touche 5 du pavé).  L'ISS "
+"s'approche toujours à  18,69m/s, nous attendons que Dist soit à moins de 2km "
+"pour annuler -V[ISS]."
+
+#: Flights/DG-ISS Sync Dock/system.dat:84
+msgctxt "Flight"
+msgid "Any time now, I should start braking..."
+msgstr "Décélération imminente..."
+
+#: Flights/DG-ISS Sync Dock/system.dat:86
+msgctxt "Flight"
+msgid "Any time now, right here over Stuttgart..."
+msgstr "D'un moment à l'autre, juste ici au-dessus de Stuttgart..."
+
+#: Flights/DG-ISS Sync Dock/system.dat:88
+msgctxt "Flight"
+msgid "WHAT AM I WAITING FOR!?!!?!"
+msgstr "QU'EST-CE QUE J'ATTENDS!?!!?!"
+
+#: Flights/DG-ISS Sync Dock/system.dat:89
+msgctxt "Flight"
+msgid "FINALLY!"
+msgstr "C'EST PAS TROP TÔT!"
+
+#: Flights/DG-ISS Sync Dock/system.dat:91
+msgctxt "Flight"
+msgid ""
+"This is a very long burst of forward LIN thruster that is not slowing us "
+"down all that much.  A bit disappointing, and the ISS is getting quite close."
+msgstr ""
+"C'est une très longue impulsion des petits moteurs, qui ne fait pas grand "
+"effet.  C'est assez décevant, et l'ISS s'approche rapidement."
+
+#: Flights/DG-ISS Sync Dock/system.dat:94
+msgctxt "Flight"
+msgid ""
+"Yikes! Blimey! Oy! Waited too long to start braking.  The LIN thrusters are "
+"clearly not enough, so we will need a few bursts of main engines to avoid "
+"colliding with ISS!"
+msgstr ""
+"Misère ! J'ai attendu trop longtemps pour freiner.  Ces propulseurs sont "
+"clairement insuffisants, il va falloir quelques poussées des moteurs "
+"principaux pour éviter la collision !"
+
+#: Flights/DG-ISS Sync Dock/system.dat:96
+msgctxt "Flight"
+msgid ""
+"We've slowed down but still chasing the V[ISS] symbol and using thrusters to "
+"take out residual velocity. "
+msgstr ""
+"Nous avons ralenti, mais nous poursuivons toujours le symbole -V[ISS], tout "
+"en utilisant les propulseurs pour éliminer la vitesse résiduelle. "
+
+#: Flights/DG-ISS Sync Dock/system.dat:99
+msgctxt "Flight"
+msgid ""
+"That was a bit close!  Range only ~800 m but relative V is near zero, so "
+"time to pitch down to put the nose on the ISS and see how it looks for "
+"docking."
+msgstr ""
+"C'était moins une !  L'ISS est à ~800m mais la vitesse relative est presque "
+"nulle, pivotons pour pointer vers l'ISS et voir comment l'amarrage s'annonce."
+
+#: Flights/DG-ISS Sync Dock/system.dat:101
+msgctxt "Flight"
+msgid ""
+"The ISS is on the nose, 800 m away and (thankfully) not closing (yet)! Click "
+"[PWR] button on now unneeded Sync MFD on left side to improve visibility.  "
+"Or if you want to stop that beeping, click [SEL], then [Radio/MP3 Panel], "
+"then [RAD], then [PWR]. "
+msgstr ""
+"L'ISS est droit devant, à 800m et (heureusement) immobile ! Cliquez [PWR] "
+"sur le MFD Sync gauche devenu inutile, pour améliorer la visibilité. "
+
+#: Flights/DG-ISS Sync Dock/system.dat:104
+msgctxt "Flight"
+msgid ""
+"On right MFD, QUICKLY click [SEL] then [Docking] then click [NAV] three "
+"times to reach NAV4 for docking port D-01.  Then click the [HUD] button.  "
+"I'm rotating right away to aim for those boxes..."
+msgstr ""
+"Sur le MFD droit, appuyez VITE sur [SEL] puis [Docking] et enfin [NAV] 3 "
+"fois pour basculer sur NAV4, afin d'amarrer au port D-01. Puis appuyez sur "
+"[HUD]. Pivotons tout de suite vers le couloir d'amarrage..."
+
+#: Flights/DG-ISS Sync Dock/system.dat:106
+msgctxt "Flight"
+msgid ""
+"[LIN] mode, thrusting forward to start closing on the outer docking boxes, "
+"NOT on the ISS itself (yet)."
+msgstr ""
+"RCS LIN, impulsion avant pour s'approcher des cadres externes, PAS encore de "
+"l'ISS."
+
+#: Flights/DG-ISS Sync Dock/system.dat:107
+msgctxt "Flight"
+msgid ""
+"Compare the Dock MFD to the outside view - ISS to left and down, + (target) "
+"symbol on MFD to left and down."
+msgstr ""
+"Comparez le MFD à la vue extérieure - L'ISS est en bas à gauche, le réticule "
+"(+) sur le MFD est en bas à gauche."
+
+#: Flights/DG-ISS Sync Dock/system.dat:109
+msgctxt "Flight"
+msgid ""
+"The range is closing slowly but I don't want to get fast near the ISS, so I "
+"use a little 10x time warpage."
+msgstr ""
+"L'approche est lente mais il ne faut pas manœuvrer trop vite près de l'ISS, "
+"utilisons l'avance rapide x10."
+
+#: Flights/DG-ISS Sync Dock/system.dat:112 Dock/system.dat:120
+msgctxt "Flight"
+msgid "Back to 1x time."
+msgstr "Retour en avance normale x1."
+
+#: Flights/DG-ISS Sync Dock/system.dat:115
+msgctxt "Flight"
+msgid ""
+"Still impatient, still closing slowly, use a little more 10x time warpology."
+msgstr "L'approche est assez lente, encore un peu de x10."
+
+#: Flights/DG-ISS Sync Dock/system.dat:118
+msgctxt "Flight"
+msgid ""
+"As we pass the ISS off to the left, CVEL goes negative and distance "
+"increases. We head for the outer boxes to allow time to get lined up with "
+"the port."
+msgstr ""
+"Dès que nous passons l'ISS sur la gauche, CVEL (vitesse d'approche) passe en "
+"négatif et la distance augmente. Nous visons les cadres extérieurs afin "
+"d'avoir du temps pour nous aligner."
+
+#: Flights/DG-ISS Sync Dock/system.dat:121
+msgctxt "Flight"
+msgid ""
+"The goal here?  To try to center ourselves inside one of the outer HUD "
+"docking boxes, and both aligned with and level with the docking port.  "
+msgstr ""
+"L'objectif ? Se placer au milieu d'un de ces cadres dans le HUD, pour nous "
+"aligner à la bonne hauteur avec le port d'amarrage. "
+
+#: Flights/DG-ISS Sync Dock/system.dat:123
+msgctxt "Flight"
+msgid ""
+"Rotate left to get ISS and boxes back in view.  Also want to put the "
+"\"cross\" (-V[ISS] symbol) back in the boxes since this is our direction "
+"relative to ISS."
+msgstr ""
+"Rotation à gauche pour retrouver le cadre de l'ISS en vue. Il faut aussi "
+"replacer le réticule V[ISS] vers le couloir car c'est notre déplacement "
+"relatif à l'ISS."
+
+#: Flights/DG-ISS Sync Dock/system.dat:124
+msgctxt "Flight"
+msgid ""
+"Now closing on boxes, rotating for rough line-up with them, want double line "
+"at top for correct orientation to docking port."
+msgstr ""
+"Approche du couloir, rotation pour alignement grossier, il faut juste la "
+"ligne double vers le haut pour avoir une orientation correcte avec le port."
+
+#: Flights/DG-ISS Sync Dock/system.dat:125
+msgctxt "Flight"
+msgid ""
+"Dock MFD shows no visible X (angular alignment indicator), so angle "
+"alignment is poor, rotate to line up better. ISS is \"below\" on the MFD."
+msgstr ""
+"Le MFD Docking n'affiche aucun X (indicateur d'alignement angulaire), ça "
+"veut dire que l'alignement est mauvais. Rotation pour améliorer ça. L'ISS "
+"est \"en bas\" sur le MFD."
+
+#: Flights/DG-ISS Sync Dock/system.dat:126
+msgctxt "Flight"
+msgid ""
+"Pitching up, red X comes into view on MFD; we need to center it (with ROT "
+"thrusters only) in MFD for correct angular alignment with port's axis."
+msgstr ""
+"Rotation vers le haut, la croix rouge apparaît sur l'affichage ; il faut la "
+"centrer (en mode rotation) pour s'aligner correctement avec l'axe du port."
+
+#: Flights/DG-ISS Sync Dock/system.dat:127
+msgctxt "Flight"
+msgid ""
+"Rotations get the X roughly centered and changed to white, temporarily "
+"stable, then start to adjust linear position."
+msgstr ""
+"Le repère X est à peu près centré et coloré en blanc, stable pour l'instant, "
+"c'est le moment d'ajuster la position linéaire."
+
+#: Flights/DG-ISS Sync Dock/system.dat:128
+msgctxt "Flight"
+msgid ""
+"LIN mode, thrusting TOWARD the MFD cross (left, right, up, down) to try to "
+"get it lined up."
+msgstr ""
+"RCS LIN, impulsion vers le repère sur le MFD pour tenter de nous aligner."
+
+#: Flights/DG-ISS Sync Dock/system.dat:129
+msgctxt "Flight"
+msgid ""
+"CVEL close to zero to allow time for alignment.  We are centered better in "
+"the docking boxes, but MFD cross is still off center."
+msgstr ""
+"CVEL réduit pour laisser du temps  Nous sommes mieux centrés dans les cadres "
+"mais le réticule du MFD est toujours décalé."
+
+#: Flights/DG-ISS Sync Dock/system.dat:130
+msgctxt "Flight"
+msgid ""
+"ROT mode, roll to put the solid white arrow at top of MFD target for "
+"rotational alignment."
+msgstr ""
+"RCS ROT, on roule afin de placer la flèche blanche en haut de l'affichage "
+"pour l'alignement en roulis."
+
+#: Flights/DG-ISS Sync Dock/system.dat:131
+msgctxt "Flight"
+msgid ""
+"Left-right lineup of cross looks good, ISS target still a bit high and "
+"rotation X still a bit off center."
+msgstr ""
+"L'alignement gauche-droite est bon, l'ISS est toujours un peu haute et la "
+"rotation désaxée."
+
+#: Flights/DG-ISS Sync Dock/system.dat:132
+msgctxt "Flight"
+msgid ""
+"Tweak the rotation cross centering just a small amount (Cntrl-Thrusters)."
+msgstr ""
+"On ajuste le réticule de rotation au centre avec de petites impulsions "
+"(Ctrl+pavé num.)"
+
+#: Flights/DG-ISS Sync Dock/system.dat:133
+msgctxt "Flight"
+msgid ""
+"Distance under 160 m, CVEL 0.21, still chasing lineup with linear thrusters."
+msgstr ""
+"Moins de 160m, CVEL 0.21, encore quelques translations pour nous aligner."
+
+#: Flights/DG-ISS Sync Dock/system.dat:134
+msgctxt "Flight"
+msgid ""
+"Working LIN thrusters to control transverse drift and to put HUD plus-symbol "
+"(-V[ISS]) just above docking port."
+msgstr ""
+"On joue sur les petits moteurs pour ajuster la dérive transverse et placer "
+"le V[ISS] du HUD juste au dessus du port."
+
+#: Flights/DG-ISS Sync Dock/system.dat:135
+msgctxt "Flight"
+msgid "Lineup looks good, DST 135 m, CVEL 0.26"
+msgstr "Alignement bon, distance 135m, CVEL 0.26"
+
+#: Flights/DG-ISS Sync Dock/system.dat:136
+msgctxt "Flight"
+msgid "Lineup good, 105 m, CVEL 0.29"
+msgstr "Alignement bon, 106m, CVEL 0.29"
+
+#: Flights/DG-ISS Sync Dock/system.dat:137
+msgctxt "Flight"
+msgid "Fixing up a little drift, range 90 m, closing at 0.29 m/s"
+msgstr "Petite correction de dérive, distance 90m, approche à  0.29m/s"
+
+#: Flights/DG-ISS Sync Dock/system.dat:138
+msgctxt "Flight"
+msgid ""
+"Good lineup, 60 m, HUD -V cross just above dock port (acounts for offset "
+"between DG eye and docking port)."
+msgstr ""
+"Alignement correct, 60m, réticule du HUD juste au dessus du port (pour "
+"prendre en compte le décalage entre le port et le point de vue)."
+
+#: Flights/DG-ISS Sync Dock/system.dat:139
+msgctxt "Flight"
+msgid "Lineup OK, 50 m, CVEL 0.29"
+msgstr "Alignement OK, 50m,  CVEL 0.29"
+
+#: Flights/DG-ISS Sync Dock/system.dat:140
+msgctxt "Flight"
+msgid "Good lineup, 20 m, CVEL .28"
+msgstr "Alignement correct, 20m, CVEL 0.28"
+
+#: Flights/DG-ISS Sync Dock/system.dat:141
+msgctxt "Flight"
+msgid "Slight drift, 10 m, .28 CVEL"
+msgstr "Légère dérive, 10m, 0.28"
+
+#: Flights/DG-ISS Sync Dock/system.dat:142
+msgctxt "Flight"
+msgid ""
+"At 2.5 m, reverse thruster (num-9) to reduce CVEL, CVEL 0.14, dropping..."
+msgstr ""
+"2.5m, rétro-impulsion (num-9) pour réduire la vitesse. CVEL 0.14, en chute..."
+
+#: Flights/DG-ISS Sync Dock/system.dat:143
+msgctxt "Flight"
+msgid "Range 1 m, CVEL 0.11, about to dock."
+msgstr "Distance 1m, CVEL 0.11m/s, amarrage imminent."

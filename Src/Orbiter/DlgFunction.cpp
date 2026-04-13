@@ -10,9 +10,12 @@
 #include "imgui.h"
 #include "IconsFontAwesome6.h"
 
+#define TRANSLATION_CONTEXT "Dialog Function"
+#include "I18NAPI.h"
+
 extern Orbiter *g_pOrbiter;
 
-DlgFunction::DlgFunction() : ImGuiDialog(ICON_FA_PUZZLE_PIECE " Orbiter: Custom functions", {340, 290}) {
+DlgFunction::DlgFunction() : ImGuiDialog(ICON_FA_PUZZLE_PIECE, _("Orbiter: Custom functions"), {340, 290}) {
 	SetHelp("html/orbiter.chm", "/customcmd.htm");
 }
 

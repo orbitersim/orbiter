@@ -25,6 +25,9 @@
 #include <sstream>
 #include <vector>
 
+#define TRANSLATION_CONTEXT "D3D9Client"
+#include "I18NAPI.h"
+
 #define IKernelSize 150
 
 using namespace oapi;
@@ -1618,7 +1621,7 @@ void Scene::RenderMainScene()
 					oapiGetGlobalPos(hObj, &pp);
 
 					m_celSphere->EnsureMarkerDrawingContext((oapi::Sketchpad**)&pSketch, 0, m_celSphere->MarkerColor(0), m_celSphere->MarkerPen(0));
-					RenderObjectMarker(pSketch, pp, std::string(name), std::string(), 0, viewH / 80);
+					RenderObjectMarker(pSketch, pp, std::string(_name(name)), std::string(), 0, viewH / 80);
 				}
 
 				if (isActive && (mkrmode & MKR_SURFMARK) && (oapiGetObjectType(hObj) == OBJTP_PLANET))
@@ -2317,7 +2320,7 @@ void Scene::RenderVesselMarker(vVessel *vV, D3D9Pad *pSketch)
 {
 	DWORD mkrmode = *(DWORD*)gc->GetConfigParam(CFGPRM_SURFMARKERFLAG);
 	if ((mkrmode & (MKR_ENABLE | MKR_VMARK)) == (MKR_ENABLE | MKR_VMARK)) {
-		RenderObjectMarker(pSketch, vV->GlobalPos(), std::string(vV->GetName()), std::string(), 0, viewH / 80);
+		RenderObjectMarker(pSketch, vV->GlobalPos(), std::string(_name(vV->GetName())), std::string(), 0, viewH / 80);
 	}
 }
 

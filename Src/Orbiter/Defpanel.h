@@ -37,6 +37,7 @@ public:
 	inline void SetRCSDisplayMode (int mode) { rcsdispmode = mode; }
 	void MFDModeChanged(int mfd, int mode);
 	void RepaintMFDButtons (int id);
+	void RenderMFDButtons (int id, oapi::Sketchpad *skp);	// only for unicode support
 	Instrument::Spec GetMFDSpec () const;
 
 	/**
@@ -82,6 +83,7 @@ private:
 	float blockdx;                       // engine info block offset from left
 	float blockdy;                       // engine info block offset from top
 	float btnx[2][2], btny[6];
+	int btnyoffset;
 	float bbtnx[2][3], bbtny;            // MFD bottom button geometry parameters
 	int /*nvbw, nvbh,*/ nvby;                // navmode button geometry
 	bool nvbstate[7];                    // navbutton states
@@ -102,6 +104,7 @@ private:
 	double engmain;                      // current main engine display state
 	double enghovr;                      // current hover engine display state
 	char engstat_str[4][8];              // status strings for engine display block
+	bool unicode_support;                // Use alternate method for drawing unicode text
 };
 
 #endif // !__DEFPANEL_H

@@ -1,0 +1,169 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: Orbiter Flights\n"
+"POT-Creation-Date: \n"
+"PO-Revision-Date: \n"
+"Last-Translator: \n"
+"Language-Team: \n"
+"Language: fr_FR\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n > 1);\n"
+"X-Generator: Poedit 3.8\n"
+
+#: Flights/3 Minute Tour of Kennedy Space Center/system.dat:2
+msgctxt "Flight"
+msgid "Welcome to a quick aerial tour of Kennedy Space Center in Orbiter 2016!"
+msgstr ""
+"Bienvenue pour une visite aérienne rapide du Centre spatial Kennedy dans "
+"Orbiter !"
+
+#: Flights/3 Minute Tour of Kennedy Space Center/system.dat:3
+msgctxt "Flight"
+msgid ""
+"Welcome to a quick aerial tour of Kennedy Space Center in Orbiter 2016!    "
+"This is a recorded flight, so just sit back and enjoy the view."
+msgstr ""
+"Bienvenue pour une visite aérienne rapide du Centre spatial Kennedy dans "
+"Orbiter !    Ceci est un enregistrement, alors installez-vous "
+"confortablement et profitez de la vue."
+
+#: Flights/3 Minute Tour of Kennedy Space Center/system.dat:5
+msgctxt "Flight"
+msgid ""
+"Accelerating down runway 33 of the Shuttle Landing Facility (SLF) in a DG "
+"type spaceplane."
+msgstr ""
+"Accélération en piste 33 de la Shuttle Landing Facility (SLF) à bord d’un "
+"avion spatial de type DG."
+
+#: Flights/3 Minute Tour of Kennedy Space Center/system.dat:8
+msgctxt "Flight"
+msgid "Rotation and takeoff."
+msgstr "Rotation et décollage."
+
+#: Flights/3 Minute Tour of Kennedy Space Center/system.dat:10
+msgctxt "Flight"
+msgid "Gear up."
+msgstr "Rentrée du train."
+
+#: Flights/3 Minute Tour of Kennedy Space Center/system.dat:12
+msgctxt "Flight"
+msgid "Orbiter now supports higher texture resolutions for improved realism."
+msgstr ""
+"Orbiter prend désormais en charge des résolutions de textures plus élevées "
+"pour un réalisme amélioré."
+
+#: Flights/3 Minute Tour of Kennedy Space Center/system.dat:13
+msgctxt "Flight"
+msgid ""
+"Orbiter now supports higher texture resolutions for improved realism.    The "
+"area around KSC has been textured from aerial photographs with a resolution "
+"of about 1 meter per pixel."
+msgstr ""
+"Orbiter prend désormais en charge des résolutions de textures plus élevées "
+"pour un réalisme amélioré. La zone autour du KSC a été texturée à partir de "
+"photographies aériennes avec une résolution d’environ 1 mètre par pixel."
+
+#: Flights/3 Minute Tour of Kennedy Space Center/system.dat:15
+msgctxt "Flight"
+msgid ""
+"While the KSC terrain is flat, Orbiter's new surface elevation support has "
+"been put to use for modelling vegetation."
+msgstr ""
+"Même si le terrain du KSC est plat, Orbiter prend en charge le relief pour "
+"modéliser la végétation."
+
+#: Flights/3 Minute Tour of Kennedy Space Center/system.dat:16
+msgctxt "Flight"
+msgid "Buzzing the Vehicle Assembly Building (VAB)."
+msgstr "Survol à basse altitude du Vehicle Assembly Building (VAB)."
+
+#: Flights/3 Minute Tour of Kennedy Space Center/system.dat:18
+msgctxt "Flight"
+msgid ""
+"Orbiter 2016 also models water surfaces more realistically than previous "
+"editions."
+msgstr ""
+"Orbiter 2016 modélise également les surfaces d’eau de manière plus réaliste "
+"que précédemment."
+
+#: Flights/3 Minute Tour of Kennedy Space Center/system.dat:20
+msgctxt "Flight"
+msgid ""
+"Pad A of Launch Complex 39 (LC-39A) is ahead, used for launches of the "
+"Apollo program, and later the Space Shuttle."
+msgstr ""
+"Le pas de tir A du Complexe de Lancement 39A (LC-39A) est droit devant, il a "
+"servi aux lancements du programme Apollo, puis plus tard pour la Navette "
+"Spatiale."
+
+#: Flights/3 Minute Tour of Kennedy Space Center/system.dat:22
+msgctxt "Flight"
+msgid "And there is LC-39B."
+msgstr "Et voici le LC-39B."
+
+#: Flights/3 Minute Tour of Kennedy Space Center/system.dat:23
+msgctxt "Flight"
+msgid ""
+"And there is LC-39B.    Looks like a Shuttle is preparing for launch at this "
+"very moment."
+msgstr ""
+"Et voici le LC-39B.    On dirait qu’une navette se prépare au lancement à "
+"cet instant même."
+
+#: Flights/3 Minute Tour of Kennedy Space Center/system.dat:26
+msgctxt "Flight"
+msgid "It's time to return to base. Preparing for landing."
+msgstr "Il est temps de retourner à la base. Préparation à l’atterrissage."
+
+#: Flights/3 Minute Tour of Kennedy Space Center/system.dat:27
+msgctxt "Flight"
+msgid "Throttle to idle ..."
+msgstr "Réduction des gaz…"
+
+#: Flights/3 Minute Tour of Kennedy Space Center/system.dat:28
+msgctxt "Flight"
+msgid "Throttle to idle ...    Gear down ..."
+msgstr "Réduction des gaz…    Sortie du train d'atterrissage..."
+
+#: Flights/3 Minute Tour of Kennedy Space Center/system.dat:30
+msgctxt "Flight"
+msgid "Coming in pretty high and fast."
+msgstr "On arrive assez haut et vite."
+
+#: Flights/3 Minute Tour of Kennedy Space Center/system.dat:31
+msgctxt "Flight"
+msgid "No need to panic ..."
+msgstr "Pas de panique…"
+
+#: Flights/3 Minute Tour of Kennedy Space Center/system.dat:32
+msgctxt "Flight"
+msgid "No need to panic just yet ..."
+msgstr "Pas de panique… Pas encore..."
+
+#: Flights/3 Minute Tour of Kennedy Space Center/system.dat:35
+msgctxt "Flight"
+msgid "Smooth and easy"
+msgstr "Tout en douceur et sans effort"
+
+#: Flights/3 Minute Tour of Kennedy Space Center/system.dat:36
+msgctxt "Flight"
+msgid "Touchdown!"
+msgstr "Atterrissage réussi!"
+
+#: Flights/3 Minute Tour of Kennedy Space Center/system.dat:37
+msgctxt "Flight"
+msgid ""
+"There you go - not exactly a regulation landing, but it is pretty hard to "
+"miss the SLF runway (it's one of the longest in the world)."
+msgstr ""
+"Voilà – ce n’est pas très réglementaire comme atterrissage, mais difficile "
+"de rater la piste du Shuttle Landing Facility (c’est l’une des plus longues "
+"au monde)."
+
+#: Flights/3 Minute Tour of Kennedy Space Center/system.dat:38
+msgctxt "Flight"
+msgid "Thanks for watching - now it's over to you, commander."
+msgstr "Merci d’avoir regardé – maintenant, à vous de jouer, commandant."

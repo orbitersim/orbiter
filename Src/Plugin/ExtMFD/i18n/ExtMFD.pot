@@ -1,0 +1,62 @@
+# This file was auto-generated, DO NOT modify it directly
+msgid ""
+msgstr ""
+"Content-Type: text/plain; charset=UTF-8\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+"X-Generator: Lua xgettext.lua\n"
+
+#: Src/Plugin/ExtMFD/ExtMFD.cpp:47
+msgctxt "External MFD"
+msgid "External MFD"
+msgstr ""
+
+#: Src/Plugin/ExtMFD/ExtMFD.cpp:48
+msgctxt "External MFD"
+msgid "Opens a multifunctional display in an external window"
+msgstr ""
+
+#: Src/Plugin/ExtMFD/ExtMFD.cpp:51
+msgctxt "External MFD"
+msgid "MFD"
+msgstr ""
+
+#: Src/Plugin/ExtMFD/MFDWindow.cpp:87
+msgctxt "External MFD"
+msgid "Help"
+msgstr ""
+
+#: Src/Plugin/ExtMFD/MFDWindow.cpp:91
+msgctxt "External MFD"
+msgid "Pin this MFD to the current vessel"
+msgstr ""
+
+#: Src/Plugin/ExtMFD/MFDWindow.cpp:91
+msgctxt "External MFD"
+msgid "Unpin this MFD from the vessel"
+msgstr ""
+
+#: Src/Plugin/ExtMFD/MFDWindow.cpp:97
+msgctxt "External MFD"
+msgid "Lock aspect ratio"
+msgstr ""
+
+#: Src/Plugin/ExtMFD/MFDWindow.cpp:97
+msgctxt "External MFD"
+msgid "Unlock aspect ratio"
+msgstr ""
+
+#: Src/Plugin/ExtMFD/MFDWindow.cpp:192
+msgctxt "External MFD"
+msgid "PWR"
+msgstr ""
+
+#: Src/Plugin/ExtMFD/MFDWindow.cpp:198
+msgctxt "External MFD"
+msgid "SEL"
+msgstr ""
+
+#: Src/Plugin/ExtMFD/MFDWindow.cpp:202
+msgctxt "External MFD"
+msgid "MNU"
+msgstr ""
+

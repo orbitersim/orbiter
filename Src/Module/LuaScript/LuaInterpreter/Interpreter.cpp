@@ -8,6 +8,7 @@
 #include "MFDAPI.h"
 #include "DrawAPI.h"
 #include "gcCoreAPI.h"
+#include "I18NAPI.h"
 #include <list>
 
 using std::min;
@@ -794,6 +795,16 @@ void Interpreter::LoadAPI ()
 		{NULL, NULL}
 	};
 	luaL_openlib (L, "proc", procLib, 0);
+
+	// Load i18n library
+	static const struct luaL_reg i18nLib[] = {
+		{"set_context", i18n_set_context},
+		{"gettext", i18n_gettext},
+		{"getname", i18n_getname},
+		{"getrevname", i18n_getrevname},
+		{NULL, NULL}
+	};
+	luaL_openlib (L, "i18n", i18nLib, 0);
 
 	// Load the oapi library
 	static const struct luaL_reg oapiLib[] = {
@@ -2182,6 +2193,93 @@ int Interpreter::bit_mask(lua_State* L)
 
 // ============================================================================
 // 
+/***
+Internationalisation functions.
+@module i18n
+*/
+
+/***
+Set the translation context.
+
+The string extractor while generate a msgctx in the .pot file accordingly.
+
+@function set_context
+@tparam string msgctx
+@usage i18n.set_context("My awesome addon")
+*/
+int Interpreter::i18n_set_context (lua_State *L)
+{
+	ASSERT_SYNTAX(lua_isstring(L,1), "Argument 1: expected string");
+
+	Interpreter *interp = GetInterpreter(L);
+	interp->i18n_context = lua_tostring (L, 1);
+	return 0;
+}
+
+/***
+Translate a string.
+
+Note: A shorthand is provided that will be matched by the string extractor: _("Hello world")
+
+Note: The context set by a previous set_context call will be used automatically
+
+@function gettext
+@tparam string msgid
+@usage hw = i18n.gettext("Hello world")
+*/
+int Interpreter::i18n_gettext (lua_State *L)
+{
+	ASSERT_SYNTAX(lua_isstring(L,1), "Argument 1: expected string");
+
+	Interpreter *interp = GetInterpreter(L);
+	lua_pushstring(L, _c(interp->i18n_context.c_str(), lua_tostring (L, 1)));
+	return 1;
+}
+
+/***
+Translate a name.
+
+This is a specialized version of gettext that is used when translating proper names defined globally (planets, bases, vessels...)
+
+Note: a shorthand is provided: _name("Earth")
+
+@function getname
+@tparam string name
+@usage localized_name = i18n.getname("Earth")
+*/
+int Interpreter::i18n_getname (lua_State *L)
+{
+	ASSERT_SYNTAX(lua_isstring(L,1), "Argument 1: expected string");
+
+	lua_pushstring(L, _name(lua_tostring (L, 1)));
+	return 1;
+}
+
+/***
+Reverse translate a name.
+
+This function is used to get back the original (English) name from a localized name.
+It is used mainly when processing user inputs, if she for example provided a localized name
+and you want to use it with oapi.get_gbody. It must be converted first.
+
+Note: if no corresponding entry is found, the provided string is returned
+
+Note: a shorthand is provided: _revname("Protée")
+
+@function getname
+@tparam string localized name
+@usage proteus = i18n.getrevname("Protée")
+*/
+int Interpreter::i18n_getrevname (lua_State *L)
+{
+	ASSERT_SYNTAX(lua_isstring(L,1), "Argument 1: expected string");
+
+	lua_pushstring(L, _revname(lua_tostring (L, 1)));
+	return 1;
+}
+
+// ============================================================================
+// 
 
 /***
 Vector library functions.
@@ -2579,6 +2677,9 @@ int Interpreter::procFrameskip (lua_State *L)
 	interp->frameskip (L);
 	return 0;
 }
+
+
+
 
 // ============================================================================
 // oapi library functions

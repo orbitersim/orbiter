@@ -1,0 +1,587 @@
+# This file was auto-generated, DO NOT modify it directly
+msgid ""
+msgstr ""
+"Project-Id-Version: \n"
+"POT-Creation-Date: \n"
+"PO-Revision-Date: \n"
+"Last-Translator: \n"
+"Language-Team: \n"
+"Language: fr_FR\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n > 1);\n"
+"X-Generator: Poedit 3.8\n"
+
+#: Src/Vessel/DeltaGlider/DeltaGlider.cpp:169
+msgctxt "DG dialog"
+msgid "DG Controls"
+msgstr "Contrôles DeltaGlider"
+
+#: Src/Vessel/DeltaGlider/DeltaGlider.cpp:273
+msgctxt "DG dialog"
+msgid "Lights"
+msgstr "Lumières"
+
+#: Src/Vessel/DeltaGlider/DeltaGlider.cpp:275
+msgctxt "DG dialog"
+msgid "Instruments"
+msgstr "Instruments"
+
+#: Src/Vessel/DeltaGlider/DeltaGlider.cpp:280
+msgctxt "DG dialog"
+msgid "Strobe"
+msgstr "Feu stroboscopique"
+
+#: Src/Vessel/DeltaGlider/DeltaGlider.cpp:285
+msgctxt "DG dialog"
+msgid "Navigation"
+msgstr "Navigation"
+
+#: Src/Vessel/DeltaGlider/DeltaGlider.cpp:290
+msgctxt "DG dialog"
+msgid "Landing / Docking"
+msgstr "Atterrissage / Amarrage"
+
+#: Src/Vessel/DeltaGlider/DeltaGlider.cpp:292
+msgctxt "DG dialog"
+msgid "Off###ldlightoff"
+msgstr "Aucune###floodlightoff"
+
+#: Src/Vessel/DeltaGlider/DeltaGlider.cpp:293
+msgctxt "DG dialog"
+msgid "Docking"
+msgstr "Amarrage"
+
+#: Src/Vessel/DeltaGlider/DeltaGlider.cpp:294
+msgctxt "DG dialog"
+msgid "Landing"
+msgstr "Atterrissage"
+
+#: Src/Vessel/DeltaGlider/DeltaGlider.cpp:299
+msgctxt "DG dialog"
+msgid "Flood Light"
+msgstr "Lumière d'ambience cockpit"
+
+#: Src/Vessel/DeltaGlider/DeltaGlider.cpp:301
+msgctxt "DG dialog"
+msgid "Off###floodlightoff"
+msgstr "Aucune###floodlightoff"
+
+#: Src/Vessel/DeltaGlider/DeltaGlider.cpp:302
+msgctxt "DG dialog"
+msgid "White"
+msgstr "Blanche"
+
+#: Src/Vessel/DeltaGlider/DeltaGlider.cpp:303
+msgctxt "DG dialog"
+msgid "Red"
+msgstr "Rouge"
+
+#: Src/Vessel/DeltaGlider/DeltaGlider.cpp:154
+msgctxt "DG dialog - Airbrake"
+msgid "Half-extended"
+msgstr "Mi-course"
+
+#: Src/Vessel/DeltaGlider/DeltaGlider.cpp:196
+msgctxt "DG dialog - Airbrake"
+msgid "Airbrake"
+msgstr "Aérofrein"
+
+#: Src/Vessel/DeltaGlider/DeltaGlider.cpp:197
+msgctxt "DG dialog - Airbrake"
+msgid "Retract"
+msgstr "Rétracter"
+
+#: Src/Vessel/DeltaGlider/DeltaGlider.cpp:199
+msgctxt "DG dialog - Airbrake"
+msgid "Retracted"
+msgstr "Rétracté"
+
+#: Src/Vessel/DeltaGlider/DeltaGlider.cpp:200
+msgctxt "DG dialog - Airbrake"
+msgid "Retracting"
+msgstr "Rétractation..."
+
+#: Src/Vessel/DeltaGlider/DeltaGlider.cpp:201
+msgctxt "DG dialog - Airbrake"
+msgid "Extending"
+msgstr "Déploiement..."
+
+#: Src/Vessel/DeltaGlider/DeltaGlider.cpp:202
+msgctxt "DG dialog - Airbrake"
+msgid "Extended"
+msgstr "Déployé"
+
+#: Src/Vessel/DeltaGlider/DeltaGlider.cpp:203
+msgctxt "DG dialog - Airbrake"
+msgid "Extend"
+msgstr "Déployer"
+
+#: Src/Vessel/DeltaGlider/DeltaGlider.cpp:218
+msgctxt "DG dialog - Airlock"
+msgid "Inner Airlock"
+msgstr "Sas interne"
+
+#: Src/Vessel/DeltaGlider/DeltaGlider.cpp:219
+#: Src/Vessel/DeltaGlider/DeltaGlider.cpp:230
+msgctxt "DG dialog - Airlock"
+msgid "Close"
+msgstr "Fermer"
+
+#: Src/Vessel/DeltaGlider/DeltaGlider.cpp:221
+#: Src/Vessel/DeltaGlider/DeltaGlider.cpp:232
+msgctxt "DG dialog - Airlock"
+msgid "Closed"
+msgstr "Fermé"
+
+#: Src/Vessel/DeltaGlider/DeltaGlider.cpp:222
+#: Src/Vessel/DeltaGlider/DeltaGlider.cpp:233
+msgctxt "DG dialog - Airlock"
+msgid "Closing"
+msgstr "Fermeture..."
+
+#: Src/Vessel/DeltaGlider/DeltaGlider.cpp:223
+#: Src/Vessel/DeltaGlider/DeltaGlider.cpp:234
+msgctxt "DG dialog - Airlock"
+msgid "Opening"
+msgstr "Ouverture..."
+
+#: Src/Vessel/DeltaGlider/DeltaGlider.cpp:224
+#: Src/Vessel/DeltaGlider/DeltaGlider.cpp:235
+msgctxt "DG dialog - Airlock"
+msgid "Opened"
+msgstr "Ouvert"
+
+#: Src/Vessel/DeltaGlider/DeltaGlider.cpp:225
+#: Src/Vessel/DeltaGlider/DeltaGlider.cpp:236
+msgctxt "DG dialog - Airlock"
+msgid "Open"
+msgstr "Ouvrir"
+
+#: Src/Vessel/DeltaGlider/DeltaGlider.cpp:229
+msgctxt "DG dialog - Airlock"
+msgid "Outer Airlock"
+msgstr "Sas externe"
+
+#: Src/Vessel/DeltaGlider/DeltaGlider.cpp:251
+msgctxt "DG dialog - Escape Ladder"
+msgid "Escape Ladder"
+msgstr "Échelle de secours"
+
+#: Src/Vessel/DeltaGlider/DeltaGlider.cpp:252
+msgctxt "DG dialog - Escape Ladder"
+msgid "Stow"
+msgstr "Replier"
+
+#: Src/Vessel/DeltaGlider/DeltaGlider.cpp:254
+msgctxt "DG dialog - Escape Ladder"
+msgid "Stowed"
+msgstr "Repliée"
+
+#: Src/Vessel/DeltaGlider/DeltaGlider.cpp:255
+msgctxt "DG dialog - Escape Ladder"
+msgid "Stowing"
+msgstr "Rétractation..."
+
+#: Src/Vessel/DeltaGlider/DeltaGlider.cpp:256
+msgctxt "DG dialog - Escape Ladder"
+msgid "Extending"
+msgstr "Déploiement..."
+
+#: Src/Vessel/DeltaGlider/DeltaGlider.cpp:257
+msgctxt "DG dialog - Escape Ladder"
+msgid "Extended"
+msgstr "Déployée"
+
+#: Src/Vessel/DeltaGlider/DeltaGlider.cpp:258
+msgctxt "DG dialog - Escape Ladder"
+msgid "Extend"
+msgstr "Déployer"
+
+#: Src/Vessel/DeltaGlider/DeltaGlider.cpp:174
+msgctxt "DG dialog - Landing Gear"
+msgid "Landing Gear"
+msgstr "Train d'atterrissage"
+
+#: Src/Vessel/DeltaGlider/DeltaGlider.cpp:175
+msgctxt "DG dialog - Landing Gear"
+msgid "Up"
+msgstr "Rentrer"
+
+#: Src/Vessel/DeltaGlider/DeltaGlider.cpp:177
+msgctxt "DG dialog - Landing Gear"
+msgid "Raised"
+msgstr "Rentré"
+
+#: Src/Vessel/DeltaGlider/DeltaGlider.cpp:178
+msgctxt "DG dialog - Landing Gear"
+msgid "Raising"
+msgstr "Rentrée..."
+
+#: Src/Vessel/DeltaGlider/DeltaGlider.cpp:179
+msgctxt "DG dialog - Landing Gear"
+msgid "Lowering"
+msgstr "Sortie..."
+
+#: Src/Vessel/DeltaGlider/DeltaGlider.cpp:180
+msgctxt "DG dialog - Landing Gear"
+msgid "Lowered"
+msgstr "Sorti"
+
+#: Src/Vessel/DeltaGlider/DeltaGlider.cpp:181
+msgctxt "DG dialog - Landing Gear"
+msgid "Down"
+msgstr "Sortir"
+
+#: Src/Vessel/DeltaGlider/DeltaGlider.cpp:240
+msgctxt "DG dialog - Nose Cone"
+msgid "Nose Cone"
+msgstr "Pointe avant"
+
+#: Src/Vessel/DeltaGlider/DeltaGlider.cpp:241
+msgctxt "DG dialog - Nose Cone"
+msgid "Close"
+msgstr "Fermer"
+
+#: Src/Vessel/DeltaGlider/DeltaGlider.cpp:243
+msgctxt "DG dialog - Nose Cone"
+msgid "Closed"
+msgstr "Fermée"
+
+#: Src/Vessel/DeltaGlider/DeltaGlider.cpp:244
+msgctxt "DG dialog - Nose Cone"
+msgid "Closing"
+msgstr "Fermeture..."
+
+#: Src/Vessel/DeltaGlider/DeltaGlider.cpp:245
+msgctxt "DG dialog - Nose Cone"
+msgid "Opening"
+msgstr "Ouverture..."
+
+#: Src/Vessel/DeltaGlider/DeltaGlider.cpp:246
+msgctxt "DG dialog - Nose Cone"
+msgid "Opened"
+msgstr "Ouverte"
+
+#: Src/Vessel/DeltaGlider/DeltaGlider.cpp:247
+msgctxt "DG dialog - Nose Cone"
+msgid "Open"
+msgstr "Ouvrir"
+
+#: Src/Vessel/DeltaGlider/DeltaGlider.cpp:262
+msgctxt "DG dialog - Radiator"
+msgid "Radiator"
+msgstr "Radiateur"
+
+#: Src/Vessel/DeltaGlider/DeltaGlider.cpp:263
+msgctxt "DG dialog - Radiator"
+msgid "Stow"
+msgstr "Rétracter"
+
+#: Src/Vessel/DeltaGlider/DeltaGlider.cpp:265
+msgctxt "DG dialog - Radiator"
+msgid "Stowed"
+msgstr "Rétracté"
+
+#: Src/Vessel/DeltaGlider/DeltaGlider.cpp:266
+msgctxt "DG dialog - Radiator"
+msgid "Stowing"
+msgstr "Rétractation..."
+
+#: Src/Vessel/DeltaGlider/DeltaGlider.cpp:267
+msgctxt "DG dialog - Radiator"
+msgid "Extending"
+msgstr "Déploiement..."
+
+#: Src/Vessel/DeltaGlider/DeltaGlider.cpp:268
+msgctxt "DG dialog - Radiator"
+msgid "Extended"
+msgstr "Déployé"
+
+#: Src/Vessel/DeltaGlider/DeltaGlider.cpp:269
+msgctxt "DG dialog - Radiator"
+msgid "Extend"
+msgstr "Déployer"
+
+#: Src/Vessel/DeltaGlider/DeltaGlider.cpp:185
+msgctxt "DG dialog - Retro Doors"
+msgid "Retro Doors"
+msgstr "Trappes rétropropulsion"
+
+#: Src/Vessel/DeltaGlider/DeltaGlider.cpp:186
+msgctxt "DG dialog - Retro Doors"
+msgid "Close"
+msgstr "Fermer"
+
+#: Src/Vessel/DeltaGlider/DeltaGlider.cpp:188
+msgctxt "DG dialog - Retro Doors"
+msgid "Closed"
+msgstr "Fermées"
+
+#: Src/Vessel/DeltaGlider/DeltaGlider.cpp:189
+msgctxt "DG dialog - Retro Doors"
+msgid "Closing"
+msgstr "Fermeture..."
+
+#: Src/Vessel/DeltaGlider/DeltaGlider.cpp:190
+msgctxt "DG dialog - Retro Doors"
+msgid "Opening"
+msgstr "Ouverture..."
+
+#: Src/Vessel/DeltaGlider/DeltaGlider.cpp:191
+msgctxt "DG dialog - Retro Doors"
+msgid "Opened"
+msgstr "Ouvertes"
+
+#: Src/Vessel/DeltaGlider/DeltaGlider.cpp:192
+msgctxt "DG dialog - Retro Doors"
+msgid "Open"
+msgstr "Ouvrir"
+
+#: Src/Vessel/DeltaGlider/DeltaGlider.cpp:207
+msgctxt "DG dialog - Top Hatch"
+msgid "Top Hatch"
+msgstr "Trappe de toit"
+
+#: Src/Vessel/DeltaGlider/DeltaGlider.cpp:208
+msgctxt "DG dialog - Top Hatch"
+msgid "Close"
+msgstr "Fermer"
+
+#: Src/Vessel/DeltaGlider/DeltaGlider.cpp:210
+msgctxt "DG dialog - Top Hatch"
+msgid "Closed"
+msgstr "Fermée"
+
+#: Src/Vessel/DeltaGlider/DeltaGlider.cpp:211
+msgctxt "DG dialog - Top Hatch"
+msgid "Closing"
+msgstr "Fermeture..."
+
+#: Src/Vessel/DeltaGlider/DeltaGlider.cpp:212
+msgctxt "DG dialog - Top Hatch"
+msgid "Opening"
+msgstr "Ouverture..."
+
+#: Src/Vessel/DeltaGlider/DeltaGlider.cpp:213
+msgctxt "DG dialog - Top Hatch"
+msgid "Opened"
+msgstr "Ouverte"
+
+#: Src/Vessel/DeltaGlider/DeltaGlider.cpp:214
+msgctxt "DG dialog - Top Hatch"
+msgid "Open"
+msgstr "Ouvrir"
+
+#~ msgctxt "DG dialog"
+#~ msgid "Up###gearaction"
+#~ msgstr "Sortir###gearaction"
+
+#~ msgctxt "DG dialog"
+#~ msgid "Lowered###gearstate"
+#~ msgstr "Sorti###gearstate"
+
+#~ msgctxt "DG dialog"
+#~ msgid "Lowering###gearstate"
+#~ msgstr "Sortie...###gearstate"
+
+#~ msgctxt "DG dialog"
+#~ msgid "Raised###gearstate"
+#~ msgstr "Rentré###gearstate"
+
+#~ msgctxt "DG dialog"
+#~ msgid "Raising###gearstate"
+#~ msgstr "Rentrée...###gearstate"
+
+#~ msgctxt "DG dialog"
+#~ msgid "Down###gearaction"
+#~ msgstr "Rentrer###gearaction"
+
+#~ msgctxt "DG dialog"
+#~ msgid "Close###retrodooraction"
+#~ msgstr "Fermer###retrodooraction"
+
+#~ msgctxt "DG dialog"
+#~ msgid "Closed###retrodoorsstate"
+#~ msgstr "Fermée###retrodoorsstate"
+
+#~ msgctxt "DG dialog"
+#~ msgid "Closing###retrodoorsstate"
+#~ msgstr "Fermeture...###retrodoorsstate"
+
+#~ msgctxt "DG dialog"
+#~ msgid "Opened###retrodoorsstate"
+#~ msgstr "Ouverte###retrodoorsstate"
+
+#~ msgctxt "DG dialog"
+#~ msgid "Opening###retrodoorsstate"
+#~ msgstr "Ouverture...###retrodoorsstate"
+
+#~ msgctxt "DG dialog"
+#~ msgid "Open###retrodooraction"
+#~ msgstr "Ouvrir###retrodooraction"
+
+#~ msgctxt "DG dialog"
+#~ msgid "Retract###airbrakeaction"
+#~ msgstr "Déployer###airbrakeaction"
+
+#~ msgctxt "DG dialog"
+#~ msgid "Extended###airbrakestate"
+#~ msgstr "Déployé###airbrakestate"
+
+#~ msgctxt "DG dialog"
+#~ msgid "Extending###airbrakestate"
+#~ msgstr "Déploiement###airbrakestate"
+
+#~ msgctxt "DG dialog"
+#~ msgid "Retracted###airbrakestate"
+#~ msgstr "Rétracté###airbrakestate"
+
+#~ msgctxt "DG dialog"
+#~ msgid "Retracting###airbrakestate"
+#~ msgstr "Rétractation...###airbrakestate"
+
+#~ msgctxt "DG dialog"
+#~ msgid "Extend###airbrakeaction"
+#~ msgstr "Rétracter###airbrakeaction"
+
+#~ msgctxt "DG dialog"
+#~ msgid "Close###hatchaction"
+#~ msgstr "Fermer###hatchaction"
+
+#~ msgctxt "DG dialog"
+#~ msgid "Closed###hatchstate"
+#~ msgstr "Fermée###hatchstate"
+
+#~ msgctxt "DG dialog"
+#~ msgid "Closing###hatchstate"
+#~ msgstr "Fermeture...###hatchstate"
+
+#~ msgctxt "DG dialog"
+#~ msgid "Opened###hatchstate"
+#~ msgstr "Ouverte###hatchstate"
+
+#~ msgctxt "DG dialog"
+#~ msgid "Opening###hatchstate"
+#~ msgstr "Ouverture...###hatchstate"
+
+#~ msgctxt "DG dialog"
+#~ msgid "Open###hatchaction"
+#~ msgstr "Ouvrir###hatchaction"
+
+#~ msgctxt "DG dialog"
+#~ msgid "Close###ilockaction"
+#~ msgstr "Fermer###ilockaction"
+
+#~ msgctxt "DG dialog"
+#~ msgid "Closed###airlockstate"
+#~ msgstr "Fermé###airlockstate"
+
+#~ msgctxt "DG dialog"
+#~ msgid "Closing###airlockstate"
+#~ msgstr "Fermeture...###airlockstate"
+
+#~ msgctxt "DG dialog"
+#~ msgid "Opened###airlockstate"
+#~ msgstr "Ouvert###airlockstate"
+
+#~ msgctxt "DG dialog"
+#~ msgid "Opening###airlockstate"
+#~ msgstr "Ouverture...###airlockstate"
+
+#~ msgctxt "DG dialog"
+#~ msgid "Open###ilockaction"
+#~ msgstr "Ouvrir###ilockaction"
+
+#~ msgctxt "DG dialog"
+#~ msgid "Close###olockaction"
+#~ msgstr "Fermer###olockaction"
+
+#~ msgctxt "DG dialog"
+#~ msgid "Open###olockaction"
+#~ msgstr "Ouvrir###olockaction"
+
+#~ msgctxt "DG dialog"
+#~ msgid "Close###noseconeaction"
+#~ msgstr "Fermer###noseconeaction"
+
+#~ msgctxt "DG dialog"
+#~ msgid "Closed###noseconestate"
+#~ msgstr "Fermée###noseconestate"
+
+#~ msgctxt "DG dialog"
+#~ msgid "Closing###noseconestate"
+#~ msgstr "Fermeture...###noseconestate"
+
+#~ msgctxt "DG dialog"
+#~ msgid "Opened###noseconestate"
+#~ msgstr "Ouverte###noseconestate"
+
+#~ msgctxt "DG dialog"
+#~ msgid "Opening###noseconestate"
+#~ msgstr "Ouverture...###noseconestate"
+
+#~ msgctxt "DG dialog"
+#~ msgid "Open###noseconeaction"
+#~ msgstr "Ouvrir###noseconeaction"
+
+#~ msgctxt "DG dialog"
+#~ msgid "Stow###ladderaction"
+#~ msgstr "Rétracter###ladderaction"
+
+#~ msgctxt "DG dialog"
+#~ msgid "Extended###ladderstate"
+#~ msgstr "Déployée###ladderstate"
+
+#~ msgctxt "DG dialog"
+#~ msgid "Extending###ladderstate"
+#~ msgstr "Déploiement...###ladderstate"
+
+#~ msgctxt "DG dialog"
+#~ msgid "Stowed###ladderstate"
+#~ msgstr "Rétractée###ladderstate"
+
+#~ msgctxt "DG dialog"
+#~ msgid "Stowing###ladderstate"
+#~ msgstr "Rétractation...###ladderstate"
+
+#~ msgctxt "DG dialog"
+#~ msgid "Extend###ladderaction"
+#~ msgstr "Déployer###ladderaction"
+
+#~ msgctxt "DG dialog"
+#~ msgid "Stow###radiatoraction"
+#~ msgstr "Rétracter###radiatoraction"
+
+#~ msgctxt "DG dialog"
+#~ msgid "Extended###radiatorstate"
+#~ msgstr "Déployé###radiatorstate"
+
+#~ msgctxt "DG dialog"
+#~ msgid "Extending###radiatorstate"
+#~ msgstr "Déploiement...###radiatorstate"
+
+#~ msgctxt "DG dialog"
+#~ msgid "Stowed###radiatorstate"
+#~ msgstr "Rétracté###radiatorstate"
+
+#~ msgctxt "DG dialog"
+#~ msgid "Stowing###radiatorstate"
+#~ msgstr "Rétractation...###radiatorstate"
+
+#~ msgctxt "DG dialog"
+#~ msgid "Extend###radiatoraction"
+#~ msgstr "Déployer###radiatoraction"
+
+#~ msgctxt "DG dialog"
+#~ msgid "Open###tophatcho"
+#~ msgstr "Ouvrir###tophatcho"
+
+#~ msgctxt "DG dialog"
+#~ msgid "Close###nconec"
+#~ msgstr "Fermer###nconec"
+
+#~ msgctxt "DG dialog"
+#~ msgid "Open###nconeo"
+#~ msgstr "Ouvrir###nconeo"

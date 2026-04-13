@@ -22,6 +22,8 @@
 #include <iomanip>
 #include <sstream>
 #include "IconsFontAwesome6.h"
+#define TRANSLATION_CONTEXT "Notes"
+#include "I18NAPI.h"
 
 class ImGuiNote;
 static std::vector<ImGuiNote *> g_notes;
@@ -202,11 +204,14 @@ DLLCLBK void InitModule (HINSTANCE hDLL)
 	// To allow the user to open our new dialog box, we create
 	// an entry in the "Custom Functions" list which is accessed
 	// in Orbiter via Ctrl-F4.
-	g_dwCmd = oapiRegisterCustomCmd ((char*)"Notes",
-		(char*)"Opens an onscreen note",
+	// TRANSLATORS: Custom command name
+	g_dwCmd = oapiRegisterCustomCmd ((char*)_("Notes"),
+	// TRANSLATORS: Custom command description
+		(char*)_("Opens an onscreen note"),
 		OpenDlgClbk, NULL);
 
-	g_dwMenuCmd = oapiRegisterCustomMenuCmd ("Note", "MenuInfoBar/Notes.png", OpenDlgClbk, NULL);
+	// TRANSLATORS: Name in menu bar
+	g_dwMenuCmd = oapiRegisterCustomMenuCmd (_("Note"), "MenuInfoBar/Notes.png", OpenDlgClbk, NULL);
 }
 
 // ==============================================================

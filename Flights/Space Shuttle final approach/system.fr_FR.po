@@ -1,0 +1,125 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: Orbiter Flights\n"
+"POT-Creation-Date: \n"
+"PO-Revision-Date: \n"
+"Last-Translator: \n"
+"Language-Team: \n"
+"Language: fr_FR\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n > 1);\n"
+"X-Generator: Poedit 3.8\n"
+
+#: Flights/Space Shuttle final approach/system.dat:4
+msgctxt "Flight"
+msgid ""
+"This is Space Shuttle Atlantis on final approach to Shuttle Landing Facility "
+"Runway 33 at the Kennedy Space Center."
+msgstr ""
+"Voici la navette spatiale Atlantis en approche finale de la piste 33 du "
+"Shuttle Landing Facility au Kennedy Space Center."
+
+#: Flights/Space Shuttle final approach/system.dat:8
+msgctxt "Flight"
+msgid "This flight has been pre-recorded, so just sit back and enjoy the ride."
+msgstr ""
+"Ce vol a été préenregistré, installez-vous confortablement et profitez de la "
+"vue."
+
+#: Flights/Space Shuttle final approach/system.dat:10
+msgctxt "Flight"
+msgid ""
+"When you feel ready to take control, simply press Ctrl-C and take the stick."
+msgstr ""
+"Lorsque vous vous sentirez prêt à prendre le contrôle, appuyez simplement "
+"sur Ctrl-C et prenez le manche."
+
+#: Flights/Space Shuttle final approach/system.dat:12
+msgctxt "Flight"
+msgid ""
+"We approaching the HAC (horizontal alignment cylinder) from the south-west."
+msgstr ""
+"Nous approchons du HAC (cylindre d’alignement horizontal) depuis le sud-"
+"ouest."
+
+#: Flights/Space Shuttle final approach/system.dat:14
+msgctxt "Flight"
+msgid ""
+"The left HSI display has been slaved to the SLF-33 Instrument Landing System "
+"transmitter. Keep an eye on the deviation indicator, which shows your offset "
+"from the approach path."
+msgstr ""
+"Le MFD HSI à gauche a été couplé à l’émetteur ILS de la piste SLF-33. "
+"Surveillez l’indicateur de déviation, qui montre votre écart par rapport à "
+"la trajectoire d’approche."
+
+#: Flights/Space Shuttle final approach/system.dat:16
+msgctxt "Flight"
+msgid ""
+"A left turn wraps the flight path around the HAC and aligns the Shuttle with "
+"the runway."
+msgstr ""
+"Un virage à gauche fait varier la trajectoire de vol autour du HAC et aligne "
+"la navette sur la piste."
+
+#: Flights/Space Shuttle final approach/system.dat:18
+msgctxt "Flight"
+msgid ""
+"The Vehicle Assembly Building (VAB) at the KSC is coming into view straight "
+"ahead."
+msgstr ""
+"Le VAB (bâtiment d'assemblage des fusées) du KSC apparaît droit devant."
+
+#: Flights/Space Shuttle final approach/system.dat:20
+msgctxt "Flight"
+msgid "The Shuttle as a very steep glideslope of 20°."
+msgstr "La navette suit une trajectoire de descente très raide de 20°."
+
+#: Flights/Space Shuttle final approach/system.dat:21
+msgctxt "Flight"
+msgid ""
+"The PAPI approach path indicators (the row of red and white lights ahead of "
+"the runway) have been adjusted to the Shuttle's approach slope. Two white "
+"and two red lights show that you are on glideslope."
+msgstr ""
+"Les indicateurs de trajectoire PAPI (la rangée de feux rouges et blancs "
+"devant la piste) ont été réglés sur la pente d’approche de la navette. Deux "
+"blancs et deux rouges indiquent que vous êtes sur la bonne trajectoire de "
+"descente."
+
+#: Flights/Space Shuttle final approach/system.dat:26
+msgctxt "Flight"
+msgid "The split rudder brake is being deployed."
+msgstr "Déploiement de l'aérofrein."
+
+#: Flights/Space Shuttle final approach/system.dat:28
+msgctxt "Flight"
+msgid "Ten seconds before touchdown the landing gear is lowered."
+msgstr "Dix secondes avant l’atterrissage, sortie des trains."
+
+#: Flights/Space Shuttle final approach/system.dat:29
+msgctxt "Flight"
+msgid "The final flare lifts the Shuttle nose and reduces the glide angle."
+msgstr ""
+"L'arrondi final soulève le nez de la navette et réduit l’angle de descente."
+
+#: Flights/Space Shuttle final approach/system.dat:31
+msgctxt "Flight"
+msgid "Main gear touchdown!"
+msgstr "Train principal au sol!"
+
+#: Flights/Space Shuttle final approach/system.dat:33
+msgctxt "Flight"
+msgid "And the nose wheel drops to the runway."
+msgstr "Et la roue avant touche la piste."
+
+#: Flights/Space Shuttle final approach/system.dat:39
+msgctxt "Flight"
+msgid ""
+"Space Shuttle Atlantis rolls to a full stop on the runway to complete a "
+"successful mission."
+msgstr ""
+"La navette spatiale Atlantis roule jusqu’à l’arrêt complet sur la piste, "
+"concluant ainsi une mission réussie."

@@ -27,6 +27,9 @@
 #include "imgui.h"
 #include "IconsFontAwesome6.h"
 
+#define TRANSLATION_CONTEXT "Atlantis Dialogs"
+#include "I18NAPI.h"
+
 using std::min;
 using std::max;
 
@@ -55,25 +58,25 @@ HELPCONTEXT g_hc = {
 
 extern void GetSRB_State (double met, double &thrust_level, double &prop_level);
 
-AtlantisDialog::AtlantisDialog(Atlantis *atlantis):ImGuiDialog("Atlantis Control")
+AtlantisDialog::AtlantisDialog(Atlantis *atlantis):ImGuiDialog(_("Atlantis Control"), {240,115})
 {
 	m_atlantis = atlantis;
 }
 
 void AtlantisDialog::OnDraw()
 {
-	if(ImGui::Button("Ascent Autopilot")) {
+	if(ImGui::Button(_("Ascent Autopilot"))) {
 		oapiOpenDialog(m_atlantis->AscentAutopilot());
 	}
-	if(ImGui::Button("Payload Door Operation")) {
+	if(ImGui::Button(_("Payload Door Operation"))) {
 		oapiOpenDialog(m_atlantis->plop);
 	}
-	if(ImGui::Button("RMS Operation")) {
+	if(ImGui::Button(_("RMS Operation"))) {
 		m_atlantis->OpenRMSDlg();
 	}
 }
 
-RMSDialog::RMSDialog(Atlantis *atlantis):ImGuiDialog("Atlantis RMS Control")
+RMSDialog::RMSDialog(Atlantis *atlantis):ImGuiDialog(_("Atlantis RMS Control"), {236,435})
 {
 	m_atlantis = atlantis;
 }
@@ -83,11 +86,11 @@ void RMSDialog::OnDraw()
 
 	// show grapple points
 	bool show = oapiGetShowGrapplePoints ();
-	if(ImGui::Checkbox("Show Grapple Points", &show)) {
+	if(ImGui::Checkbox(_("Show Grapple Points"), &show)) {
 		oapiSetShowGrapplePoints (show);
 	}
 
-	ImGui::SeparatorText("Wrist");
+	ImGui::SeparatorText(_("Wrist"));
 	ImVec2 sz = ImGui::CalcTextSize(ICON_FA_ARROW_ROTATE_RIGHT) * 2.0f;
 
 	ImGui::Button(ICON_FA_ARROW_ROTATE_RIGHT"##Wrist", sz);
@@ -128,7 +131,7 @@ void RMSDialog::OnDraw()
 
 
 
-	ImGui::SeparatorText("Elbow");
+	ImGui::SeparatorText(_("Elbow"));
 	// up/down
 	ImGui::Dummy(sz);
 	ImGui::SameLine();
@@ -146,7 +149,7 @@ void RMSDialog::OnDraw()
 	}
 
 
-	ImGui::SeparatorText("Shoulder");
+	ImGui::SeparatorText(_("Shoulder"));
 
 	ImGui::Dummy(sz);
 	ImGui::SameLine();
@@ -174,9 +177,9 @@ void RMSDialog::OnDraw()
 		m_atlantis->SetAnimationArm (m_atlantis->anim_arm_sy, m_atlantis->arm_sy);
 	}
 
-	ImGui::SeparatorText("RMS");
+	ImGui::SeparatorText(_("RMS"));
 	ImGui::BeginDisabled(m_atlantis->SatGrappled());
-	if(ImGui::Button("Stow")) {
+	if(ImGui::Button(_("Stow"))) {
 		if (m_atlantis->center_arm = !m_atlantis->center_arm) {
 			m_atlantis->center_arm_t = oapiGetSimTime();
 		}
@@ -184,14 +187,14 @@ void RMSDialog::OnDraw()
 	ImGui::EndDisabled();
 	ImGui::SameLine();
 	ImGui::BeginDisabled(m_atlantis->center_arm);
-	if(ImGui::Button(m_atlantis->SatGrappled() ? "Release" : "Grapple")) {
+	if(ImGui::Button(m_atlantis->SatGrappled() ? _("Release") : _("Grapple"))) {
 		m_atlantis->ToggleGrapple();
 	}
 	ImGui::EndDisabled();
 
-	ImGui::SeparatorText("Payload");
+	ImGui::SeparatorText(_("Payload"));
 	ImGui::BeginDisabled(!m_atlantis->SatStowed() && !m_atlantis->CanArrest());
-	if(ImGui::Button(m_atlantis->SatStowed() ? "Purge" : "Arrest")) {
+	if(ImGui::Button(m_atlantis->SatStowed() ? _("Purge") : _("Arrest"))) {
 		m_atlantis->ToggleArrest();
 	}
 	ImGui::EndDisabled();

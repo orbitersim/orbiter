@@ -37,6 +37,8 @@
 #include <math.h>
 #include <time.h>
 #include "OrbiterSDK.h"
+#define TRANSLATION_CONTEXT "DG dialog"
+#include "I18NAPI.h"
 #include <imgui.h>
 
 using std::min;
@@ -149,12 +151,12 @@ class DlgControl: public ImGuiDialog {
 	DeltaGlider *m_dg;
 
 	static void DrawState(const AnimState2 &state, const char *closed, const char *closing, const char *opening, const char *opened) {
-		const char *desc = "Half-extended";
+		const char *desc = _c("DG dialog - Airbrake", "Half-extended");
 		if(state.IsOpen())    desc = opened;
 		if(state.IsClosed())  desc = closed;
 		if(state.IsOpening()) desc = opening;
 		if(state.IsClosing()) desc = closing;
-		ImGui::SetNextItemWidth(80.0f);
+		ImGui::SetNextItemWidth(100.0f);
 		float progress = state.State();
 		ImGui::BeginDisabled(true);
 		ImGui::SameLine();
@@ -164,105 +166,141 @@ class DlgControl: public ImGuiDialog {
 
 }
 public:
-	DlgControl(DeltaGlider *dg):ImGuiDialog("DG Controls"), m_dg(dg) {}
+	DlgControl(DeltaGlider *dg):ImGuiDialog(_("DG Controls"), {663,477}), m_dg(dg) {}
 	void OnDraw() {
 		const float child_height = 50.0f;
-		const ImVec2 button_sz(ImVec2(60, 20));
+		const ImVec2 button_sz(ImVec2(80, 20));
 		ImGui::BeginChild("Landing Gear", ImVec2(ImGui::GetContentRegionAvail().x * 0.5f, child_height));
-		ImGui::SeparatorText("Landing Gear");
-		if(ImGui::Button("Up###lgearup", button_sz)) { m_dg->SubsysGear()->RaiseGear(); }
-		DrawState(m_dg->SubsysGear()->GearState(), "Raised", "Raising", "Lowering", "Lowered");
-		if(ImGui::Button("Down###lgeardown", button_sz)) { m_dg->SubsysGear()->LowerGear(); }
+		ImGui::SeparatorText(_c("DG dialog - Landing Gear", "Landing Gear"));
+		if(ImGui::Button(_c("DG dialog - Landing Gear", "Up"), button_sz)) { m_dg->SubsysGear()->RaiseGear(); }
+		DrawState(m_dg->SubsysGear()->GearState(),
+			_c("DG dialog - Landing Gear", "Raised"),
+			_c("DG dialog - Landing Gear", "Raising"),
+			_c("DG dialog - Landing Gear", "Lowering"),
+			_c("DG dialog - Landing Gear", "Lowered"));
+		if(ImGui::Button(_c("DG dialog - Landing Gear", "Down"), button_sz)) { m_dg->SubsysGear()->LowerGear(); }
 		ImGui::EndChild();
 		ImGui::SameLine();
 		ImGui::BeginChild("Retro Doors", ImVec2(0.0f, child_height));
-		ImGui::SeparatorText("Retro Doors");
-		if(ImGui::Button("Close###rdoorsc", button_sz)) { m_dg->SubsysMainRetro()->CloseRetroCover(); }
-		DrawState(m_dg->SubsysMainRetro()->RetroCoverState(), "Closed", "Closing", "Opening", "Opened");
-		if(ImGui::Button("Open###rdoorso", button_sz)) { m_dg->SubsysMainRetro()->OpenRetroCover(); }
+		ImGui::SeparatorText(_c("DG dialog - Retro Doors", "Retro Doors"));
+		if(ImGui::Button(_c("DG dialog - Retro Doors", "Close"), button_sz)) { m_dg->SubsysMainRetro()->CloseRetroCover(); }
+		DrawState(m_dg->SubsysMainRetro()->RetroCoverState(),
+			_c("DG dialog - Retro Doors", "Closed"),
+			_c("DG dialog - Retro Doors", "Closing"),
+			_c("DG dialog - Retro Doors", "Opening"),
+			_c("DG dialog - Retro Doors", "Opened"));
+		if(ImGui::Button(_c("DG dialog - Retro Doors", "Open"), button_sz)) { m_dg->SubsysMainRetro()->OpenRetroCover(); }
 		ImGui::EndChild();
 
 		ImGui::BeginChild("Airbrake", ImVec2(ImGui::GetContentRegionAvail().x * 0.5f, child_height));
-		ImGui::SeparatorText("Airbrake");
-		if(ImGui::Button("Retract###airbraker", button_sz)) { m_dg->SubsysAerodyn()->RetractAirbrake(); }
-		DrawState(m_dg->SubsysAerodyn()->AirbrakeSubsys()->State(), "Retracted", "Retracting", "Extending", "Extended");
-		if(ImGui::Button("Extend###airbrakee", button_sz)) { m_dg->SubsysAerodyn()->ExtendAirbrake(); }
+		ImGui::SeparatorText(_c("DG dialog - Airbrake", "Airbrake"));
+		if(ImGui::Button(_c("DG dialog - Airbrake", "Retract"), button_sz)) { m_dg->SubsysAerodyn()->RetractAirbrake(); }
+		DrawState(m_dg->SubsysAerodyn()->AirbrakeSubsys()->State(),
+			_c("DG dialog - Airbrake", "Retracted"),
+			_c("DG dialog - Airbrake", "Retracting"),
+			_c("DG dialog - Airbrake", "Extending"),
+			_c("DG dialog - Airbrake", "Extended"));
+		if(ImGui::Button(_c("DG dialog - Airbrake", "Extend"), button_sz)) { m_dg->SubsysAerodyn()->ExtendAirbrake(); }
 		ImGui::EndChild();
 		ImGui::SameLine();
 		ImGui::BeginChild("Top Hatch", ImVec2(0.0f, child_height));
-		ImGui::SeparatorText("Top Hatch");
-		if(ImGui::Button("Close###tophatchc", button_sz)) { m_dg->SubsysPressure()->CloseHatch(); }
-		DrawState(m_dg->SubsysPressure()->HatchState(), "Closed", "Closing", "Opening", "Opened");
-		if(ImGui::Button("Open###tophatcho", button_sz)) { m_dg->SubsysPressure()->OpenHatch(); }
+		ImGui::SeparatorText(_c("DG dialog - Top Hatch", "Top Hatch"));
+		if(ImGui::Button(_c("DG dialog - Top Hatch", "Close"), button_sz)) { m_dg->SubsysPressure()->CloseHatch(); }
+		DrawState(m_dg->SubsysPressure()->HatchState(),
+			_c("DG dialog - Top Hatch", "Closed"),
+			_c("DG dialog - Top Hatch", "Closing"),
+			_c("DG dialog - Top Hatch", "Opening"),
+			_c("DG dialog - Top Hatch", "Opened"));
+		if(ImGui::Button(_c("DG dialog - Top Hatch", "Open"), button_sz)) { m_dg->SubsysPressure()->OpenHatch(); }
 		ImGui::EndChild();
 
 		ImGui::BeginChild("Inner Airlock", ImVec2(ImGui::GetContentRegionAvail().x * 0.5f, child_height));
-		ImGui::SeparatorText("Inner Airlock");
-		if(ImGui::Button("Close###ilockc", button_sz)) { m_dg->SubsysPressure()->CloseInnerAirlock(); }
-		DrawState(m_dg->SubsysPressure()->ILockState(), "Closed", "Closing", "Opening", "Opened");
-		if(ImGui::Button("Open###ilocko", button_sz)) { m_dg->SubsysPressure()->OpenInnerAirlock(); }
+		ImGui::SeparatorText(_c("DG dialog - Airlock", "Inner Airlock"));
+		if(ImGui::Button(_c("DG dialog - Airlock", "Close"), button_sz)) { m_dg->SubsysPressure()->CloseInnerAirlock(); }
+		DrawState(m_dg->SubsysPressure()->ILockState(),
+			_c("DG dialog - Airlock", "Closed"),
+			_c("DG dialog - Airlock", "Closing"),
+			_c("DG dialog - Airlock", "Opening"),
+			_c("DG dialog - Airlock", "Opened"));
+		if(ImGui::Button(_c("DG dialog - Airlock", "Open"), button_sz)) { m_dg->SubsysPressure()->OpenInnerAirlock(); }
 		ImGui::EndChild();
 		ImGui::SameLine();
 		ImGui::BeginChild("Outer Airlock", ImVec2(0.0f, child_height));
-		ImGui::SeparatorText("Outer Airlock");
-		if(ImGui::Button("Close###olockc", button_sz)) { m_dg->SubsysPressure()->CloseOuterAirlock(); }
-		DrawState(m_dg->SubsysPressure()->OLockState(), "Closed", "Closing", "Opening", "Opened");
-		if(ImGui::Button("Open###olocko", button_sz)) { m_dg->SubsysPressure()->OpenOuterAirlock(); }
+		ImGui::SeparatorText(_c("DG dialog - Airlock", "Outer Airlock"));
+		if(ImGui::Button(_c("DG dialog - Airlock", "Close"), button_sz)) { m_dg->SubsysPressure()->CloseOuterAirlock(); }
+		DrawState(m_dg->SubsysPressure()->OLockState(),
+			_c("DG dialog - Airlock", "Closed"),
+			_c("DG dialog - Airlock", "Closing"),
+			_c("DG dialog - Airlock", "Opening"),
+			_c("DG dialog - Airlock", "Opened"));
+		if(ImGui::Button(_c("DG dialog - Airlock", "Open"), button_sz)) { m_dg->SubsysPressure()->OpenOuterAirlock(); }
 		ImGui::EndChild();
 
 		ImGui::BeginChild("Nose Cone", ImVec2(ImGui::GetContentRegionAvail().x * 0.5f, child_height));
-		ImGui::SeparatorText("Nose Cone");
-		if(ImGui::Button("Close###nconec", button_sz)) { m_dg->SubsysDocking()->CloseNcone(); }
-		DrawState(m_dg->SubsysDocking()->NconeState(), "Closed", "Closing", "Opening", "Opened");
-		if(ImGui::Button("Open###nconeo", button_sz)) { m_dg->SubsysDocking()->OpenNcone(); }
+		ImGui::SeparatorText(_c("DG dialog - Nose Cone", "Nose Cone"));
+		if(ImGui::Button(_c("DG dialog - Nose Cone", "Close"), button_sz)) { m_dg->SubsysDocking()->CloseNcone(); }
+		DrawState(m_dg->SubsysDocking()->NconeState(),
+			_c("DG dialog - Nose Cone", "Closed"),
+			_c("DG dialog - Nose Cone", "Closing"),
+			_c("DG dialog - Nose Cone", "Opening"),
+			_c("DG dialog - Nose Cone", "Opened"));
+		if(ImGui::Button(_c("DG dialog - Nose Cone", "Open"), button_sz)) { m_dg->SubsysDocking()->OpenNcone(); }
 		ImGui::EndChild();
 		ImGui::SameLine();
 		ImGui::BeginChild("Escape Ladder", ImVec2(0.0f, child_height));
-		ImGui::SeparatorText("Escape Ladder");
-		if(ImGui::Button("Stow###eladders", button_sz)) { m_dg->SubsysDocking()->RetractLadder(); }
-		DrawState(m_dg->SubsysDocking()->LadderState(), "Stowed", "Stowing", "Extending", "Extended");
-		if(ImGui::Button("Extend###eladdere", button_sz)) { m_dg->SubsysDocking()->ExtendLadder(); }
+		ImGui::SeparatorText(_c("DG dialog - Escape Ladder", "Escape Ladder"));
+		if(ImGui::Button(_c("DG dialog - Escape Ladder", "Stow"), button_sz)) { m_dg->SubsysDocking()->RetractLadder(); }
+		DrawState(m_dg->SubsysDocking()->LadderState(),
+			_c("DG dialog - Escape Ladder", "Stowed"),
+			_c("DG dialog - Escape Ladder", "Stowing"),
+			_c("DG dialog - Escape Ladder", "Extending"),
+			_c("DG dialog - Escape Ladder", "Extended"));
+		if(ImGui::Button(_c("DG dialog - Escape Ladder", "Extend"), button_sz)) { m_dg->SubsysDocking()->ExtendLadder(); }
 		ImGui::EndChild();
 
 		ImGui::BeginChild("Radiator", ImVec2(0.0f, child_height));
-		ImGui::SeparatorText("Radiator");
-		if(ImGui::Button("Stow###radiators", button_sz)) { m_dg->SubsysThermal()->CloseRadiator(); }
-		DrawState(m_dg->SubsysThermal()->RadiatorState(), "Stowed", "Stowing", "Extending", "Extended");
-		if(ImGui::Button("Extend###radiatore", button_sz)) { m_dg->SubsysThermal()->OpenRadiator(); }
+		ImGui::SeparatorText(_c("DG dialog - Radiator", "Radiator"));
+		if(ImGui::Button(_c("DG dialog - Radiator", "Stow"), button_sz)) { m_dg->SubsysThermal()->CloseRadiator(); }
+		DrawState(m_dg->SubsysThermal()->RadiatorState(),
+			_c("DG dialog - Radiator", "Stowed"),
+			_c("DG dialog - Radiator", "Stowing"),
+			_c("DG dialog - Radiator", "Extending"),
+			_c("DG dialog - Radiator", "Extended"));
+		if(ImGui::Button(_c("DG dialog - Radiator", "Extend"), button_sz)) { m_dg->SubsysThermal()->OpenRadiator(); }
 		ImGui::EndChild();
 
 		ImGui::BeginChild("Lights");
-		ImGui::SeparatorText("Lights");
+		ImGui::SeparatorText(_("Lights"));
 		bool instrument_light = m_dg->SubsysLights()->InstrumentlightSubsys()->GetLight();
-		if(ImGui::Checkbox("Instruments", &instrument_light)) {
+		if(ImGui::Checkbox(_("Instruments"), &instrument_light)) {
 			m_dg->SubsysLights()->InstrumentlightSubsys()->SetLight(instrument_light);
 		}
 		ImGui::SameLine();
 		bool strobe_light = m_dg->SubsysLights()->StrobelightSubsys()->GetLight();
-		if(ImGui::Checkbox("Strobe", &strobe_light)) {
+		if(ImGui::Checkbox(_("Strobe"), &strobe_light)) {
 			m_dg->SubsysLights()->StrobelightSubsys()->SetLight(strobe_light);
 		}
 		ImGui::SameLine();
 		bool navigation_light = m_dg->SubsysLights()->NavlightSubsys()->GetLight();
-		if(ImGui::Checkbox("Navigation", &navigation_light)) {
+		if(ImGui::Checkbox(_("Navigation"), &navigation_light)) {
 			m_dg->SubsysLights()->NavlightSubsys()->SetLight(navigation_light);
 		}
 
 		ImGui::BeginChild("Landing / Docking", ImVec2(0.0f, child_height));
-		ImGui::SeparatorText("Landing / Docking");
+		ImGui::SeparatorText(_("Landing / Docking"));
 		int ld_light = m_dg->SubsysLights()->LandDocklightSubsys()->GetLight();
-		ImGui::RadioButton("Off###ldlightoff", &ld_light, 0); ImGui::SameLine();
-		ImGui::RadioButton("Docking", &ld_light, 1); ImGui::SameLine();
-		ImGui::RadioButton("Landing", &ld_light, 2);
+		ImGui::RadioButton(_("Off###ldlightoff"), &ld_light, 0); ImGui::SameLine();
+		ImGui::RadioButton(_("Docking"), &ld_light, 1); ImGui::SameLine();
+		ImGui::RadioButton(_("Landing"), &ld_light, 2);
 		m_dg->SubsysLights()->LandDocklightSubsys()->SetLight(ld_light);
 		ImGui::EndChild();
 
 		ImGui::BeginChild("Flood Light", ImVec2(0.0f, child_height));
-		ImGui::SeparatorText("Flood Light");
+		ImGui::SeparatorText(_("Flood Light"));
 		int flood_light = m_dg->SubsysLights()->CockpitlightSubsys()->GetLight();
-		ImGui::RadioButton("Off###floodlightoff", &flood_light, 0); ImGui::SameLine();
-		ImGui::RadioButton("White", &flood_light, 1); ImGui::SameLine();
-		ImGui::RadioButton("Red", &flood_light, 2);
+		ImGui::RadioButton(_("Off###floodlightoff"), &flood_light, 0); ImGui::SameLine();
+		ImGui::RadioButton(_("White"), &flood_light, 1); ImGui::SameLine();
+		ImGui::RadioButton(_("Red"), &flood_light, 2);
 		m_dg->SubsysLights()->CockpitlightSubsys()->SetLight(flood_light);
 		ImGui::EndChild();
 		ImGui::EndChild();
@@ -309,6 +347,7 @@ DeltaGlider::DeltaGlider (OBJHANDLE hObj, int fmodel)
 	contrail_tex      = NULL;
 	hPanelMesh        = NULL;
 	panelcol          = 0;
+	legacy_mfd_buttons = !I18N::Enabled();
 	campos            = CAM_GENERIC;
 	th_main_level     = 0.0;
 	skinpath[0] = '\0';
@@ -1731,6 +1770,8 @@ DLLCLBK void InitModule (HINSTANCE hModule)
 	// allocate SketchPad resources
 	g_Param.pen[0] = oapiCreatePen (PS_SOLID, 1, RGB(224,224,224));
 	g_Param.pen[1] = oapiCreatePen (PS_SOLID, 3, RGB(164,164,164));
+	g_Param.font[0] = oapiCreateFont(13, false, "Sans");
+	g_Param.font[1] = oapiCreateFont(15, false, "Sans");
 	g_Param.surf = oapiLoadTexture ("DG\\blitsrc1.dds", true);
 }
 
@@ -1745,6 +1786,7 @@ DLLCLBK void ExitModule (HINSTANCE hModule)
 
 	// deallocate SketchPad resources
 	for (i = 0; i < 2; i++) oapiReleasePen(g_Param.pen[i]);
+	for (i = 0; i < 2; i++) oapiReleaseFont(g_Param.font[i]);
 	oapiReleaseTexture (g_Param.surf);
 }
 

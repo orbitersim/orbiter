@@ -31,3 +31,5 @@ install(TARGETS Framerate
 	RUNTIME
 	DESTINATION ${ORBITER_INSTALL_PLUGIN_DIR}
 )
+generate_pot(Framerate)
+install_po_files()

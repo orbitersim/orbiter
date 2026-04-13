@@ -13,6 +13,56 @@
 
 using std::min;
 
+static std::wstring ToWide(const char* input)
+{
+    if (!input) return L"";
+
+    // Try UTF-8 first
+    int len = MultiByteToWideChar(
+        CP_UTF8,
+        MB_ERR_INVALID_CHARS,
+        input,
+        -1,
+        nullptr,
+        0
+    );
+
+    if (len > 0) {
+        std::wstring out(len - 1, L'\0');
+        MultiByteToWideChar(
+            CP_UTF8,
+            MB_ERR_INVALID_CHARS,
+            input,
+            -1,
+            out.data(),
+            len
+        );
+        return out;
+    }
+
+    // Fallback to Windows-1252
+    len = MultiByteToWideChar(
+        1252,
+        0,
+        input,
+        -1,
+        nullptr,
+        0
+    );
+
+    std::wstring out(len - 1, L'\0');
+    MultiByteToWideChar(
+        1252,
+        0,
+        input,
+        -1,
+        out.data(),
+        len
+    );
+
+    return out;
+}
+
 
 
 instrument::instrument(int x, int y,Panel* i_parent)
@@ -638,24 +688,29 @@ oapiRegisterMFD(type,mfdspecs);
 };
 void inst_MFD::PaintMe()
 {
-//oapiBlt(parent->surf,hMFDSRF,0,0,0,0,310,296); 
-HDC hDC=oapiGetDC(parent->surf);
-HDC hDC2=oapiGetDC(hMFDSRF);
-BitBlt(hDC,0,0,350,296,hDC2,0,0,SRCCOPY);
-SelectObject(hDC, hFNT_Panel);
-SetTextColor (hDC, RGB(20, 20, 20));
-SetTextAlign (hDC, TA_CENTER);
-SetBkMode (hDC, TRANSPARENT);
+	//oapiBlt(parent->surf,hMFDSRF,0,0,0,0,310,296); 
+	HDC hDC=oapiGetDC(parent->surf);
+	HDC hDC2=oapiGetDC(hMFDSRF);
+	BitBlt(hDC,0,0,350,296,hDC2,0,0,SRCCOPY);
+	SelectObject(hDC, hFNT_Panel);
+	SetTextColor (hDC, RGB(20, 20, 20));
+	SetTextAlign (hDC, TA_CENTER);
+	SetBkMode (hDC, TRANSPARENT);
 
-const char *label;
+	const char *label;
 	for (int bt = 0; bt < 12; bt++) {
-		if (label = oapiMFDButtonLabel (type, bt))
-			{if (bt<6) TextOut (hDC, 31, 58+34*bt, label, strlen(label));
-			else TextOut (hDC, 322, 58+34*(bt-6), label, strlen(label));}
-		else break;
+		if (label = oapiMFDButtonLabel (type, bt)) {
+			std::wstring ws = ToWide(label);
+			if (bt<6)
+				TextOutW (hDC, 31, 58+34*bt, ws.c_str(), ws.length());
+			else
+				TextOutW (hDC, 322, 58+34*(bt-6), ws.c_str(), ws.length());
+		}
+		else
+			break;
 	}
-oapiReleaseDC(parent->surf,hDC);
-oapiReleaseDC(hMFDSRF,hDC2);
+	oapiReleaseDC(parent->surf,hDC);
+	oapiReleaseDC(hMFDSRF,hDC2);
 
 };
 

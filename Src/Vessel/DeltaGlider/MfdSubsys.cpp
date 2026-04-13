@@ -13,6 +13,7 @@
 
 #include "MfdSubsys.h"
 #include "meshres_vc.h"
+#include "I18NAPI.h"
 
 // ==============================================================
 // Constants for button labels
@@ -92,6 +93,7 @@ MfdSubsystem::MfdSubsystem (DeltaGlider *v, int mfdident)
 
 void MfdSubsystem::ModeChanged ()
 {
+	DG()->TriggerRedrawArea (0, 0, ELID_BTNROW);
 	for (int i = 0; i < 2; i++)
 		DG()->TriggerRedrawArea (0, 0, ELID_BTNCOL[i]);
 }
@@ -104,7 +106,7 @@ bool MfdSubsystem::clbkLoadPanel2D (int panelid, PANELHANDLE hPanel, DWORD viewW
 
 	const int xofs = (mfdid == MFD_LEFT ? 173:736);
 	SURFHANDLE panel2dtex = oapiGetTextureHandle(DG()->panelmesh0,1);
-	DG()->RegisterPanelArea (hPanel, ELID_BTNROW, _R( 51+xofs,359,321+xofs,377), PANEL_REDRAW_NEVER, PANEL_MOUSE_LBDOWN|PANEL_MOUSE_ONREPLAY, panel2dtex, btnrow); // bottom button row
+	DG()->RegisterPanelArea (hPanel, ELID_BTNROW,    _R( 51+xofs,359,321+xofs,377), PANEL_REDRAW_USER, PANEL_MOUSE_LBDOWN, panel2dtex, btnrow); // bottom button row
 	DG()->RegisterPanelArea (hPanel, ELID_BTNCOL[0], _R(    xofs,100, 25+xofs,323), PANEL_REDRAW_USER, PANEL_MOUSE_LBDOWN|PANEL_MOUSE_LBPRESSED|PANEL_MOUSE_ONREPLAY, panel2dtex, btncol[0]); // left button column
 	DG()->RegisterPanelArea (hPanel, ELID_BTNCOL[1], _R(348+xofs,100,373+xofs,323), PANEL_REDRAW_USER, PANEL_MOUSE_LBDOWN|PANEL_MOUSE_LBPRESSED|PANEL_MOUSE_ONREPLAY, panel2dtex, btncol[1]); // right button column
 
@@ -120,7 +122,7 @@ bool MfdSubsystem::clbkLoadVC (int vcid)
 	vctex = oapiGetTextureHandle (DG()->vcmesh_tpl, 20);
 	const double xofs = (mfdid == MFD_LEFT ? -0.2684 : 0.0616);
 
-	oapiVCRegisterArea (ELID_BTNROW, PANEL_REDRAW_MOUSE, PANEL_MOUSE_LBDOWN|PANEL_MOUSE_LBUP|PANEL_MOUSE_LBPRESSED|PANEL_MOUSE_ONREPLAY);
+	oapiVCRegisterArea (ELID_BTNROW, PANEL_REDRAW_MOUSE|PANEL_REDRAW_USER, PANEL_MOUSE_LBDOWN|PANEL_MOUSE_LBUP|PANEL_MOUSE_LBPRESSED|PANEL_MOUSE_ONREPLAY);
 	oapiVCSetAreaClickmode_Quadrilateral (ELID_BTNROW, _V(0.0840+xofs, 1.0745, 7.2238), _V(0.1228+xofs, 1.0745, 7.2238), _V(0.0840+xofs, 1.0587, 7.2180), _V(0.1228+xofs, 1.0587, 7.2180));
 
 	oapiVCRegisterArea (ELID_BTNCOL[0], PANEL_REDRAW_MOUSE|PANEL_REDRAW_USER, PANEL_MOUSE_LBDOWN|PANEL_MOUSE_LBUP|PANEL_MOUSE_LBPRESSED|PANEL_MOUSE_ONREPLAY);
@@ -187,6 +189,29 @@ MfdButtonRow::MfdButtonRow (MfdSubsystem *_subsys)
 {
 }
 
+// --------------------------------------------------------------
+bool MfdButtonRow::Redraw2D (SURFHANDLE surf)
+{
+	if(subsys->DG()->legacy_mfd_buttons) return false;
+
+	const int xofs = (subsys->MfdId() == MFD_LEFT ? 173:736);
+
+	oapiBlt (surf, surf,  50 + xofs, 815, 773, 22, 28, CHH); // blank PWR label
+	oapiBlt (surf, surf, 263 + xofs, 815, 773, 22, 28, CHH); // blank SEL label
+	oapiBlt (surf, surf, 294 + xofs, 815, 773, 22, 28, CHH); // blank MNU label
+
+	oapi::Sketchpad *skp = oapiGetSketchpad(surf);
+	skp->SetTextAlign(oapi::Sketchpad::CENTER, oapi::Sketchpad::TOP);
+	skp->SetFont(g_Param.font[0]);
+	skp->SetTextColor(0x000000FF);
+	skp->Text( 50 + xofs + 14, 815, _core("MFD Button", "PWR"), 0);
+	skp->SetTextColor(0x00FFFFFF);
+	skp->Text(263 + xofs + 14, 815, _core("MFD Button", "SEL"), 0);
+	skp->Text(294 + xofs + 14, 815, _core("MFD Button", "MNU"), 0);
+	oapiReleaseSketchpad(skp);
+
+	return false;
+}
 // --------------------------------------------------------------
 
 bool MfdButtonRow::RedrawVC (DEVMESHHANDLE hMesh, SURFHANDLE surf)
@@ -272,19 +297,35 @@ bool MfdButtonCol::Redraw2D (SURFHANDLE surf)
 	for (btn = 0; btn < nbtn; btn++)
 		oapiBlt (surf, surf, xcnt-14, lbly[btn], 773, 22, 28, CHH); // blank label
 
-	for (btn = 0; btn < 6; btn++) {
-		if (label = oapiMFDButtonLabel (subsys->MfdId(), btn+sd*6)) {
-			len = strlen(label);
-			for (w = i = 0; i < len; i++) w += CHW[label[i]];
-			for (i = 0, x = xcnt-w/2; i < len; i++) {
-				w = CHW[label[i]];
-				if (w) {
-					oapiBlt (surf, surf, x, lbly[btn], CHX[label[i]], CHY, w, CHH);
-					x += w;
+	if(subsys->DG()->legacy_mfd_buttons) {
+		for (btn = 0; btn < 6; btn++) {
+			if (label = oapiMFDButtonLabel (subsys->MfdId(), btn+sd*6)) {
+				len = strlen(label);
+				for (w = i = 0; i < len; i++) w += CHW[label[i]];
+				for (i = 0, x = xcnt-w/2; i < len; i++) {
+					w = CHW[label[i]];
+					if (w) {
+						oapiBlt (surf, surf, x, lbly[btn], CHX[label[i]], CHY, w, CHH);
+						x += w;
+					}
 				}
-			}
-		} else break;
+			} else break;
+		}
+	} else {
+		oapi::Sketchpad *skp = oapiGetSketchpad(surf);
+		skp->SetTextAlign(oapi::Sketchpad::CENTER, oapi::Sketchpad::TOP);
+		skp->SetTextColor(0x00FFFFFF);
+		skp->SetFont(g_Param.font[0]);
+
+		for (btn = 0; btn < 6; btn++) {
+			if (label = oapiMFDButtonLabel (subsys->MfdId(), btn+sd*6)) {
+				skp->Text(xcnt,lbly[btn]-2,label, 0);
+			} else break;
+		}
+
+		oapiReleaseSketchpad(skp);
 	}
+
     return false;
 }
 
@@ -301,68 +342,97 @@ bool MfdButtonCol::RedrawVC (DEVMESHHANDLE hMesh, SURFHANDLE surf)
 		return false;
 
 	} else { // process label change
+		if(subsys->DG()->legacy_mfd_buttons) {
 
-		static const int CHX[256] = { // MFD label font: character x-offsets
-			0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
-			0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
-			0,0,0,0,0,0,0,0,0,0,0,333/*+*/,0,342/*-*/,0,359/* / */,
-			492/*0*/,501/*1*/,510/*2*/,520/*3*/,529/*4*/,538/*5*/,547/*6*/,556/*7*/,565/*8*/,575/*9*/,627/*:*/,621/*;*/,373/*<*/,652/*=*/,381/*>*/,0,
-			0,81/*A*/,90/*B*/,100/*C*/,110/*D*/,120/*E*/,129/*F*/,138/*G*/,150/*H*/,159/*I*/,164/*J*/,173/*K*/,183/*L*/,192/*M*/,203/*N*/,213/*O*/,
-			224/*P*/,233/*Q*/,243/*R*/,253/*S*/,263/*T*/,271/*U*/,281/*V*/,291/*W*/,305/*X*/,314/*Y*/,324/*Z*/,0,0,0,0,0,
-			0,273/*a*/,282/*b*/,291/*c*/,299/*d*/,309/*e*/,318/*f*/,324/*g*/,333/*h*/,342/*i*/,347/*j*/,353/*k*/,362/*l*/,367/*m*/,380/*n*/,389/*o*/,
-			398/*p*/,407/*q*/,416/*r*/,423/*s*/,431/*t*/,438/*u*/,447/*v*/,456/*w*/,466/*x*/,475/*y*/,483/*z*/,0,0,0,0,0,
-			0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
-			0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
-			0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
-			0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
-			0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
-			0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
-			0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
-			0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
-		};
+			static const int CHX[256] = { // MFD label font: character x-offsets
+				0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+				0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+				0,0,0,0,0,0,0,0,0,0,0,333/*+*/,0,342/*-*/,0,359/* / */,
+				492/*0*/,501/*1*/,510/*2*/,520/*3*/,529/*4*/,538/*5*/,547/*6*/,556/*7*/,565/*8*/,575/*9*/,627/*:*/,621/*;*/,373/*<*/,652/*=*/,381/*>*/,0,
+				0,81/*A*/,90/*B*/,100/*C*/,110/*D*/,120/*E*/,129/*F*/,138/*G*/,150/*H*/,159/*I*/,164/*J*/,173/*K*/,183/*L*/,192/*M*/,203/*N*/,213/*O*/,
+				224/*P*/,233/*Q*/,243/*R*/,253/*S*/,263/*T*/,271/*U*/,281/*V*/,291/*W*/,305/*X*/,314/*Y*/,324/*Z*/,0,0,0,0,0,
+				0,273/*a*/,282/*b*/,291/*c*/,299/*d*/,309/*e*/,318/*f*/,324/*g*/,333/*h*/,342/*i*/,347/*j*/,353/*k*/,362/*l*/,367/*m*/,380/*n*/,389/*o*/,
+				398/*p*/,407/*q*/,416/*r*/,423/*s*/,431/*t*/,438/*u*/,447/*v*/,456/*w*/,466/*x*/,475/*y*/,483/*z*/,0,0,0,0,0,
+				0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+				0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+				0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+				0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+				0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+				0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+				0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+				0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+			};
 
-		const int CHW[256] = { // MFD label font: character widths
-			0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
-			0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
-			0,0,0,0,0,0,0,0,0,0,0,6/*+*/,0,6/*-*/,0,5/* / */,
-			6/*0*/,6/*1*/,6/*2*/,6/*3*/,6/*4*/,6/*5*/,6/*6*/,6/*7*/,6/*8*/,6/*9*/,2/*:*/,2/*;*/,8/*<*/,6/*=*/,8/*>*/,0,
-			0,9/*A*/,9/*B*/,9/*C*/,9/*D*/,8/*E*/,8/*F*/,10/*G*/,8/*H*/,4/*I*/,7/*J*/,8/*K*/,7/*L*/,10/*M*/,9/*N*/,10/*O*/,
-			8/*P*/,9/*Q*/,9/*R*/,9/*S*/,8/*T*/,9/*U*/,8/*V*/,12/*W*/,8/*X*/,9/*Y*/,8/*Z*/,0,0,0,0,0,
-			0,6/*a*/,6/*b*/,6/*c*/,6/*d*/,6/*e*/,4/*f*/,6/*g*/,6/*h*/,2/*i*/,3/*j*/,5/*k*/,2/*l*/,8/*m*/,6/*n*/,6/*o*/,
-			6/*p*/,6/*q*/,4/*r*/,6/*s*/,4/*t*/,6/*u*/,6/*v*/,9/*w*/,6/*x*/,6/*y*/,6/*z*/,0,0,0,0,0,
-			0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
-			0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
-			0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
-			0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
-			0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
-			0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
-			0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
-			0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
-		};
-		const int CHY = 1012;
+			const int CHW[256] = { // MFD label font: character widths
+				0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+				0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+				0,0,0,0,0,0,0,0,0,0,0,6/*+*/,0,6/*-*/,0,5/* / */,
+				6/*0*/,6/*1*/,6/*2*/,6/*3*/,6/*4*/,6/*5*/,6/*6*/,6/*7*/,6/*8*/,6/*9*/,2/*:*/,2/*;*/,8/*<*/,6/*=*/,8/*>*/,0,
+				0,9/*A*/,9/*B*/,9/*C*/,9/*D*/,8/*E*/,8/*F*/,10/*G*/,8/*H*/,4/*I*/,7/*J*/,8/*K*/,7/*L*/,10/*M*/,9/*N*/,10/*O*/,
+				8/*P*/,9/*Q*/,9/*R*/,9/*S*/,8/*T*/,9/*U*/,8/*V*/,12/*W*/,8/*X*/,9/*Y*/,8/*Z*/,0,0,0,0,0,
+				0,6/*a*/,6/*b*/,6/*c*/,6/*d*/,6/*e*/,4/*f*/,6/*g*/,6/*h*/,2/*i*/,3/*j*/,5/*k*/,2/*l*/,8/*m*/,6/*n*/,6/*o*/,
+				6/*p*/,6/*q*/,4/*r*/,6/*s*/,4/*t*/,6/*u*/,6/*v*/,9/*w*/,6/*x*/,6/*y*/,6/*z*/,0,0,0,0,0,
+				0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+				0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+				0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+				0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+				0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+				0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+				0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+				0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+			};
+			const int CHY = 1012;
 
-		surf = subsys->VcTex();
+			surf = subsys->VcTex();
 
-		const int xcnt0 = 148, dx = 40, wlbl = 32, hlbl = 12;
-		const char *label;
-		int btn, xcnt, x, y = 14+sd*41+subsys->MfdId()*82, w, len, i;
+			const int xcnt0 = 148, dx = 40, wlbl = 32, hlbl = 12;
+			const char *label;
+			int btn, xcnt, x, y = 14+sd*41+subsys->MfdId()*82, w, len, i;
 
-		for (btn = 0; btn < 6; btn++)
-			oapiBlt (surf, surf, xcnt0-wlbl/2+btn*dx, y, 0, 128, wlbl, hlbl); // blank label
+			for (btn = 0; btn < 6; btn++)
+				oapiBlt (surf, surf, xcnt0-wlbl/2+btn*dx, y, 0, 128, wlbl, hlbl); // blank label
 
-		for (btn = 0; btn < 6; btn++) {
-			if (label = oapiMFDButtonLabel (subsys->MfdId(), btn+sd*6)) {
-				len = strlen(label);
-				for (w = i = 0; i < len; i++) w += CHW[label[i]];
-				xcnt = xcnt0 + btn*dx;
-				for (i = 0, x = xcnt-w/2; i < len; i++) {
-					w = CHW[label[i]];
-					if (w) {
-						oapiBlt (surf, surf, x, y, CHX[label[i]], CHY, w, hlbl);
-						x += w;
+			for (btn = 0; btn < 6; btn++) {
+				if (label = oapiMFDButtonLabel (subsys->MfdId(), btn+sd*6)) {
+					len = strlen(label);
+					for (w = i = 0; i < len; i++) w += CHW[label[i]];
+					xcnt = xcnt0 + btn*dx;
+					for (i = 0, x = xcnt-w/2; i < len; i++) {
+						w = CHW[label[i]];
+						if (w) {
+							oapiBlt (surf, surf, x, y, CHX[label[i]], CHY, w, hlbl);
+							x += w;
+						}
 					}
-				}
-			} else break;
+				} else break;
+			}
+		} else {
+			surf = subsys->VcTex();
+
+			const int xcnt0 = 148, dx = 40, wlbl = 32, hlbl = 12;
+			const char *label;
+			int btn, xcnt, x, y = 14+sd*41+subsys->MfdId()*82, w, len, i;
+
+			for (btn = 0; btn < 6; btn++)
+				oapiBlt (surf, surf, xcnt0-wlbl/2+btn*dx, y, 133, 212, 30, 24); // blank buttons label
+
+			oapiBlt (surf, surf, 133, 171, 133, 212, 30, 26); // blank PWR label
+			oapiBlt (surf, surf, 133+40, 171, 133, 212, 30, 26); // blank HLP label
+
+			oapi::Sketchpad *skp = oapiGetSketchpad(surf);
+			skp->SetTextAlign(oapi::Sketchpad::CENTER, oapi::Sketchpad::TOP);
+			skp->SetTextColor(0x0057DFA8);
+			skp->SetFont(g_Param.font[1]);
+
+			for (btn = 0; btn < 6; btn++) {
+				if (label = oapiMFDButtonLabel (subsys->MfdId(), btn+sd*6)) {
+					xcnt = xcnt0 + btn*dx;
+					skp->Text(xcnt, y, label, 0);
+				} else break;
+			}
+			skp->Text(149, 177, _core("MFD Button", "SEL"), 0);
+			skp->Text(149+40, 177, _core("MFD Button", "MNU"), 0);
+			oapiReleaseSketchpad(skp);
 		}
 		return true;
 	}
