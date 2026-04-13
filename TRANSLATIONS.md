@@ -12,7 +12,6 @@
 | [Flights/Space Shuttle final approach/system.pot](Flights/Space%20Shuttle%20final%20approach/system.pot) | 15 |
 | [Flights/Space Shuttle to ISS/system.pot](Flights/Space%20Shuttle%20to%20ISS/system.pot) | 81 |
 | [Flights/Welcome to Orbiter 2024/system.pot](Flights/Welcome%20to%20Orbiter%202024/system.pot) | 4 |
-| [Flights/Welcome/system.pot](Flights/Welcome/system.pot) | 36 |
 | [OVP/D3D9Client/i18n/D3D9Client.pot](OVP/D3D9Client/i18n/D3D9Client.pot) | 8 |
 | [Script/Atlantis/launch.pot](Script/Atlantis/launch.pot) | 32 |
 | [Script/Challenges/Challenges.pot](Script/Challenges/Challenges.pot) | 25 |
@@ -44,9 +43,8 @@
 | Flights/Space Shuttle final approach/system.pot | ✅ OK |
 | Flights/Space Shuttle to ISS/system.pot | ✅ OK |
 | Flights/Welcome to Orbiter 2024/system.pot | ✅ OK |
-| Flights/Welcome/system.pot | ❌ No PO file |
 | OVP/D3D9Client/i18n/D3D9Client.pot | ✅ OK |
-| Script/Atlantis/launch.pot | ❌ No PO file |
+| Script/Atlantis/launch.pot | ✅ OK |
 | Script/Challenges/Challenges.pot | ✅ OK |
 | Script/Demos/AtmAutopilot.pot | ✅ OK |
 | Script/solsys2016.pot | ✅ OK |
