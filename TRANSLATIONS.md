@@ -35,28 +35,28 @@
 
 | File | Status |
 |------|--------|
-| Flights/3 Minute Tour of Kennedy Space Center/system.pot | ✅ OK |
-| Flights/DG stunts/system.pot | ✅ OK |
-| Flights/DG to the moon/system.pot | ✅ OK |
-| Flights/DG-ISS Sync Dock/system.pot | ✅ OK |
-| Flights/Smack! Rescue/system.pot | ✅ OK |
-| Flights/Space Shuttle final approach/system.pot | ✅ OK |
-| Flights/Space Shuttle to ISS/system.pot | ✅ OK |
-| Flights/Welcome to Orbiter 2024/system.pot | ✅ OK |
-| OVP/D3D9Client/i18n/D3D9Client.pot | ✅ OK |
-| Script/Atlantis/launch.pot | ✅ OK |
-| Script/Challenges/Challenges.pot | ✅ OK |
-| Script/Demos/AtmAutopilot.pot | ✅ OK |
-| Script/solsys2016.pot | ✅ OK |
-| Src/Orbiter/i18n/Orbiter.pot | ✅ OK |
-| Src/Plugin/ExtMFD/i18n/ExtMFD.pot | ✅ OK |
-| Src/Plugin/FlightData/i18n/FlightData.pot | ✅ OK |
-| Src/Plugin/Framerate/i18n/Framerate.pot | ✅ OK |
-| Src/Plugin/LuaConsole/i18n/LuaConsole.pot | ✅ OK |
-| Src/Plugin/Notes/i18n/Notes.pot | ✅ OK |
-| Src/Plugin/Rcontrol/i18n/Rcontrol.pot | ✅ OK |
-| Src/Vessel/Atlantis/Atlantis/i18n/Atlantis.pot | ✅ OK |
-| Src/Vessel/DeltaGlider/i18n/DeltaGlider.pot | ✅ OK |
-| Src/Vessel/ShuttleA/i18n/ShuttleA.pot | ✅ OK |
+| Flights/3 Minute Tour of Kennedy Space Center/system.fr_FR.po | ✅ OK |
+| Flights/DG stunts/system.fr_FR.po | ✅ OK |
+| Flights/DG to the moon/system.fr_FR.po | ✅ OK |
+| Flights/DG-ISS Sync Dock/system.fr_FR.po | ✅ OK |
+| Flights/Smack! Rescue/system.fr_FR.po | ✅ OK |
+| Flights/Space Shuttle final approach/system.fr_FR.po | ✅ OK |
+| Flights/Space Shuttle to ISS/system.fr_FR.po | ✅ OK |
+| Flights/Welcome to Orbiter 2024/system.fr_FR.po | ✅ OK |
+| OVP/D3D9Client/i18n/D3D9Client.fr_FR.po | ✅ OK |
+| Script/Atlantis/launch.fr_FR.po | ✅ OK |
+| Script/Challenges/Challenges.fr_FR.po | ✅ OK |
+| Script/Demos/AtmAutopilot.fr_FR.po | ✅ OK |
+| Script/solsys2016.fr_FR.po | ✅ OK |
+| Src/Orbiter/i18n/Orbiter.fr_FR.po | ✅ OK |
+| Src/Plugin/ExtMFD/i18n/ExtMFD.fr_FR.po | ✅ OK |
+| Src/Plugin/FlightData/i18n/FlightData.fr_FR.po | ✅ OK |
+| Src/Plugin/Framerate/i18n/Framerate.fr_FR.po | ✅ OK |
+| Src/Plugin/LuaConsole/i18n/LuaConsole.fr_FR.po | ✅ OK |
+| Src/Plugin/Notes/i18n/Notes.fr_FR.po | ✅ OK |
+| Src/Plugin/Rcontrol/i18n/Rcontrol.fr_FR.po | ✅ OK |
+| Src/Vessel/Atlantis/Atlantis/i18n/Atlantis.fr_FR.po | ✅ OK |
+| Src/Vessel/DeltaGlider/i18n/DeltaGlider.fr_FR.po | ✅ OK |
+| Src/Vessel/ShuttleA/i18n/ShuttleA.fr_FR.po | ✅ OK |
 </details>
 

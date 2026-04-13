@@ -52,6 +52,7 @@ local function parse_po_file(path)
     local current_msgctxt
     local current_msgid
     local current_msgstr
+    local state
 
     for line in file:lines() do
         line = line:gsub("\r", ""):match("^%s*(.-)%s*$")
@@ -103,6 +104,7 @@ local function parse_po_file(path)
             current_msgctxt = nil
             current_msgid = nil
             current_msgstr = nil
+            state = nil
         end
     end
 
@@ -113,12 +115,9 @@ local function parse_po_file(path)
         else
             key = current_msgid
         end
-        if key and key~="" then
+        if key and key ~= "" then
             results[key]=current_msgstr
         end
-        current_msgctxt = nil
-        current_msgid = nil
-        current_msgstr = nil
     end
 
     file:close()
@@ -156,7 +155,7 @@ for line in io.lines(input_file) do
         local dir, file = dir_file(path)
 
         if dir and file then
-            local base, ext = base_ext(file)
+            local _, ext = base_ext(file)
 
             if ext == "pot" then
                 local base = path:match("^(.*)%.pot$")
@@ -178,12 +177,6 @@ for line in io.lines(input_file) do
     end
 end
 
-local outfile = io.open(output_file, "wb")
-if not outfile then
-	io.stderr:write("Cannot open output file: " .. output_file .. "\n")
-	os.exit(1)
-end
-
 function tableLength(tab)
   local length = 0
   for _ in pairs(tab) do
@@ -192,6 +185,7 @@ function tableLength(tab)
   return length
 end
 
+-- Create an iterator to iterate over a map in a sorted way
 function orderedMap(t)
     local keys = {}
 
@@ -200,7 +194,12 @@ function orderedMap(t)
     end
 
     table.sort(keys, function(a, b)
-        return t[b].path > t[a].path
+        -- if sorting locales, sort by key
+        if t[a].path == nil or t[b].path == nil then
+            return a<b
+        end
+        -- else we're sorting pot/po file list
+        return t[a].path < t[b].path
     end)
 
     local i = 0
@@ -241,6 +240,12 @@ function url_encode(str)
     return str
 end
 
+local outfile = io.open(output_file, "wb")
+if not outfile then
+	io.stderr:write("Cannot open output file: " .. output_file .. "\n")
+	os.exit(1)
+end
+
 outfile:write("# List of POT files\n")
 outfile:write("<details>\n")
 outfile:write("<summary>Show files</summary>\n\n")
@@ -261,9 +266,9 @@ for locale, po_files in orderedMap(locales) do
     for pot, pot_path in orderedMap(pots) do
         if po_files[pot] then
             local cov = coverage(pot_path.content, po_files[pot].content)
-            outfile:write("| "..make_relative(pot_path.path).." | "..cov.." |\n")
+            outfile:write("| "..make_relative(po_files[pot].path).." | "..cov.." |\n")
         else
-            outfile:write("| "..make_relative(pot_path.path).." | ❌ No PO file |\n")
+            outfile:write("| "..make_relative(pot_path.path:gsub(".pot", "."..locale..".po")).." | ❌ PO file not found |\n")
         end
     end
     outfile:write("</details>\n\n")
