@@ -17,7 +17,7 @@ void Init(bool notifymissing);
 const std::vector<std::pair<std::string,std::string>> &GetLocales();
 
 // Get name of the current locale, returns the provided name if not found
-// GetLocaleName("en_UK") -> "English (United Kingdom)"
+// GetLocaleName("en_GB") -> "English (United Kingdom)"
 const char *GetLocaleName(const char *name);
 
 // Load a locale

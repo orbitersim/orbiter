@@ -1,3 +1,6 @@
+-- Copyright (c) 2026 Gondos
+-- Licensed under the MIT License
+
 -- dat2pot.lua
 -- Usage:
 --   lua dat2pot.lua [--strip-prefix=PATH] input/system.dat output/system.pot
@@ -94,13 +97,15 @@ for line in infile:lines() do
     if text then
         local msgid = po_escape(text)
 
-        if not messages[msgid] then
-            messages[msgid] = {}
-            table.insert(msg_order, msgid)  -- preserve order
-        end
+        if msgid ~= " " and msgid ~= "" then
+            if not messages[msgid] then
+                messages[msgid] = {}
+                table.insert(msg_order, msgid)  -- preserve order
+            end
 
-        local rel = make_relative(input_path)
-        table.insert(messages[msgid], rel .. ":" .. line_number)
+            local rel = make_relative(input_path)
+            table.insert(messages[msgid], rel .. ":" .. line_number)
+        end
     end
 end
 

@@ -478,8 +478,8 @@ void Init(bool notifymissing) {
     g_notifyMissing = notifymissing;
     g_locales.clear();
 
-	// en_UK is always available (hardcoded msgids)
-    g_locales.emplace_back("en_UK", "English (United Kingdom)");
+	// en_GB is always available (hardcoded msgids)
+    g_locales.emplace_back("en_GB", "English (United Kingdom)");
 
 	auto locales = ExtractLocales();
 	for(const auto &locale: locales) {

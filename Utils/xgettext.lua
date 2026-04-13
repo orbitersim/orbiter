@@ -1,3 +1,6 @@
+-- Copyright (c) 2026 Gondos
+-- Licensed under the MIT License
+
 -- xgettext.lua
 -- Usage:
 --   lua xgettext.lua [--strip-prefix=PATH] output.pot filelist.txt

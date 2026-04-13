@@ -35,6 +35,8 @@ Most strings are associated with a context, and some have translators notes to h
 
 Some tools may "compile" your .po files to .mo files. Orbiter does not use them.
 
+A list of .pot files and translation status are available [here](TRANSLATIONS.md).
+
 Note : Orbiter only support UTF-8 encoded .po files
 
 ### Locale name

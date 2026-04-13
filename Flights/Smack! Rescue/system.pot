@@ -75,11 +75,6 @@ msgctxt "Flight"
 msgid "Now back to normal time (you can use F1 to switch to external view to see the ships rotate in sync)"
 msgstr ""
 
-#: Flights/Smack! Rescue/system.dat:38
-msgctxt "Flight"
-msgid " "
-msgstr ""
-
 #: Flights/Smack! Rescue/system.dat:40
 msgctxt "Flight"
 msgid "Forgot to close nose cone (K key), not very critical above atmosphere, but it looks cooler in external views if closed.  I'll do this in both ships (watch external view)."

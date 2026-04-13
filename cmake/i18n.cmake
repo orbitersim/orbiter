@@ -1,3 +1,6 @@
+# Copyright (c) 2026 Gondos
+# Licensed under the MIT License
+
 function(generate_pot TARGET_NAME)
     # Use the directory where this function is called as the source
     set(SOURCE_DIR "${CMAKE_CURRENT_SOURCE_DIR}")
@@ -162,4 +165,39 @@ function(install_po_files)
     else()
         message(STATUS "No .po files found in ${INPUT_DIR}")
     endif()
+endfunction()
+
+
+function(generate_i18n_report)
+    # Recursively collect all source/header files
+    file(GLOB_RECURSE SOURCES
+        CONFIGURE_DEPENDS
+        "${CMAKE_SOURCE_DIR}/*.po"
+        "${CMAKE_SOURCE_DIR}/*.pot"
+    )
+
+	# Exclude install dir
+	file(TO_CMAKE_PATH "${CMAKE_INSTALL_PREFIX}" INSTALL_DIR_NORM)
+	list(FILTER SOURCES EXCLUDE REGEX "^${INSTALL_DIR_NORM}/")
+	# Exclude binary dir
+	file(TO_CMAKE_PATH "${CMAKE_BINARY_DIR}" BINARY_DIR_NORM)
+	list(FILTER SOURCES EXCLUDE REGEX "^${BINARY_DIR_NORM}/")
+
+    set(FILELIST "${CMAKE_BINARY_DIR}/i18n_all_files.txt")
+    file(WRITE "${FILELIST}" "")
+    foreach(src ${SOURCES})
+        file(APPEND "${FILELIST}" "${src}\n")
+    endforeach()
+
+    set(REPORT_FILE "${CMAKE_BINARY_DIR}/i18n_report.txt")
+    add_custom_command(
+        OUTPUT "${REPORT_FILE}"
+        COMMAND $<TARGET_FILE:lua::exe> "${CMAKE_SOURCE_DIR}/Utils/report_i18n.lua" "--strip-prefix=${CMAKE_SOURCE_DIR}" "${CMAKE_BINARY_DIR}/i18n_all_files.txt" "${CMAKE_SOURCE_DIR}/TRANSLATIONS.md"
+        DEPENDS "${CMAKE_SOURCE_DIR}/Utils/report_i18n.lua" ${SOURCES} "${FILELIST}"
+        COMMENT "Creating translation report..."
+        VERBATIM
+    )
+    add_custom_target(i18n-report ALL
+        DEPENDS "${REPORT_FILE}"
+    )
 endfunction()

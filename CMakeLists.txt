@@ -358,3 +358,4 @@ if (ORBITER_MAKE_TESTS)
 endif()
 
 generate_flights_pots(Flights)
+generate_i18n_report()
