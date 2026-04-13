@@ -120,7 +120,10 @@ int D3D9Config::MaxLights()
 {
 	if (LightConfig == 0) return 1;
 	if (LightConfig <= 2) return 4;
-	return 8;
+	if (LightConfig <= 4) return 8;
+	if (LightConfig <= 6) return 12;
+	if (LightConfig <= 8) return 16;
+	return 20;
 }
 
 bool D3D9Config::ReadParams ()
@@ -165,8 +168,8 @@ bool D3D9Config::ReadParams ()
 	if (oapiReadItem_float (hFile, (char*)"StereoConvergence", d))		Convergence = max(0.05, min(1.0, d));
 	if (oapiReadItem_int   (hFile, (char*)"DebugLvl", i))				DebugLvl = i;
 	if (oapiReadItem_float (hFile, (char*)"VCNearPlane", d))			VCNearPlane = max(-1.0, min(1.0, d));
-	if (oapiReadItem_int   (hFile, (char*)"LightCongiguration", i))	LightConfig = max(min(4, i), 0); // Old typo stored?
-	if (oapiReadItem_int   (hFile, (char*)"LightConfiguration", i))	LightConfig = max(min(4, i), 0); // ...this will override it anyhow
+	if (oapiReadItem_int   (hFile, (char*)"LightCongiguration", i))	LightConfig = max(min(10, i), 0); // Old typo stored?
+	if (oapiReadItem_int   (hFile, (char*)"LightConfiguration", i))	LightConfig = max(min(10, i), 0); // ...this will override it anyhow
 	if (oapiReadItem_int   (hFile, (char*)"DisableDrvMgm", i))			DisableDriverManagement = max(0, min(1, i));
 	if (oapiReadItem_int   (hFile, (char*)"NVPerfHUD", i))				NVPerfHUD = max(0, min(1, i));
 	if (oapiReadItem_int   (hFile, (char*)"DebugLineFontSize", i))		DebugFontSize = i;
