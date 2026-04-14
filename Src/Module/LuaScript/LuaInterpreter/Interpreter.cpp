@@ -54,22 +54,13 @@ VECTOR3 lua_tovector (lua_State *L, int idx)
 Interpreter::Interpreter ()
 {
 	L = luaL_newstate();  // create new Lua context
-	is_busy = false;      // waiting for input
 	is_term = false;      // no attached terminal by default
-	bExecLocal = false;   // flag for locally created mutexes
-	bWaitLocal = false;
-	jobs = 0;             // background jobs
-	status = 0;           // normal
 	term_verbose = 0;     // verbosity level
 	postfunc = 0;
 	postcontext = 0;
 	// store interpreter context in the registry
 	lua_pushlightuserdata (L, this);
 	lua_setfield (L, LUA_REGISTRYINDEX, "interp");
-
-	hExecMutex = CreateMutex (NULL, TRUE, NULL);
-	hWaitMutex = CreateMutex (NULL, FALSE, NULL);
-
 }
 
 void Interpreter::LazyInitGCCore() {
@@ -87,6 +78,12 @@ static int traceback(lua_State *L) {
     return 1;
 }
 
+void Interpreter::OnError(const char *msg)
+{
+	oapiWriteLogError("%s", msg);
+	oapiAddNotification(OAPINOTIF_ERROR, "Lua error", msg);
+}
+
 int Interpreter::LuaCall(lua_State *L, int narg, int nres)
 {
 	int base = lua_gettop(L) - narg;
@@ -95,25 +92,40 @@ int Interpreter::LuaCall(lua_State *L, int narg, int nres)
 	int res = lua_pcall(L, narg, nres, base);
 	lua_remove(L, base);
 	if(res != 0) {
+		Interpreter *interp = GetInterpreter (L);
 		const char *msg = lua_tostring(L, -1);
-		// Lua "threads" that are terminated when the scenario ends generate "Lua thread terminated" errors
-		// This is expected and should not generate logs/notifications
-		// Warning: the string must match with the one in oapi_init.lua: proc.skip ()
-		// strstr may be heavy but it's only an error path
-		if(strstr(msg, "Lua thread terminated") == NULL) {
-			oapiWriteLogError("%s", msg);
-			oapiAddNotification(OAPINOTIF_ERROR, "Lua error", msg);
-		}
+		interp->OnError(msg);
 	}
+	return res;
+}
+
+void Interpreter::hookTimeout(lua_State* L, lua_Debug* ar)
+{
+	Interpreter *interp = GetInterpreter (L);
+    auto now = std::chrono::steady_clock::now();
+    int elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(now - interp->startTime).count();
+	static int i;
+	i++;
+    if (elapsed > 100) { // milliseconds
+        luaL_error(L, "Script execution time exceeded");
+    }
+}
+
+int Interpreter::LuaCallTimeout(lua_State *L, int nargs, int nres)
+{
+	startTime = std::chrono::steady_clock::now();
+
+	// Call hook every 100000 instructions
+	lua_sethook(L, hookTimeout, LUA_MASKCOUNT, 100000);
+	int res = LuaCall(L, nargs, nres);
+	lua_sethook(L, nullptr, 0, 0);
+
 	return res;
 }
 
 Interpreter::~Interpreter ()
 {
 	lua_close (L);
-
-	if (hExecMutex) CloseHandle (hExecMutex);
-	if (hWaitMutex) CloseHandle (hWaitMutex);
 }
 
 void Interpreter::Initialise ()
@@ -134,21 +146,6 @@ void Interpreter::Initialise ()
 	LoadStartupScript (); // load default initialisation script
 }
 
-int Interpreter::Status () const
-{
-	return status;
-}
-
-bool Interpreter::IsBusy () const
-{
-	return is_busy;
-}
-
-void Interpreter::Terminate ()
-{
-	status = 1;
-}
-
 void Interpreter::PostStep (double simt, double simdt, double mjd)
 {
 	if (postfunc) {
@@ -156,6 +153,19 @@ void Interpreter::PostStep (double simt, double simdt, double mjd)
 		postfunc = 0;
 		postcontext = 0;
 	}
+
+	// check if proc.active is set and call proc.update if necessary
+	lua_getglobal(L, "proc");
+	lua_getfield(L, -1, "active");
+	bool hasTasks = lua_toboolean(L, -1);
+	lua_pop(L, 1);
+
+	if (hasTasks) {
+		lua_getfield(L, -1, "update");
+		LuaCallTimeout(L, 0, 0);
+	}
+
+	lua_pop(L, 1);
 }
 
 int Interpreter::lua_tointeger_safe (lua_State *L, int idx, int prmno, const char *funcname)
@@ -673,72 +683,13 @@ void Interpreter::lua_pushsketchpad (lua_State *L, oapi::Sketchpad *skp)
 #endif
 }
 
-void Interpreter::WaitExec (DWORD timeout)
-{
-	// Called by orbiter thread or interpreter thread to wait its turn
-	// Orbiter waits for the script for 1 second to return
-	WaitForSingleObject (hWaitMutex, timeout); // wait for synchronisation mutex
-	WaitForSingleObject (hExecMutex, timeout); // wait for execution mutex
-	ReleaseMutex (hWaitMutex);              // release synchronisation mutex
-}
-
-void Interpreter::EndExec ()
-{
-	// called by orbiter thread or interpreter thread to hand over control
-	ReleaseMutex (hExecMutex);
-}
-
-void Interpreter::frameskip (lua_State *L)
-{
-	if (status == 1) { // termination request
-		lua_pushboolean(L, 1);
-		lua_setfield (L, LUA_GLOBALSINDEX, "wait_exit");
-	} else {
-		EndExec();
-		WaitExec();
-	}
-}
-
-int Interpreter::ProcessChunk (const char *chunk, int n)
-{
-	WaitExec();
-	int res = RunChunk (chunk, n);
-	EndExec();
-	return res;
-}
-
 int Interpreter::RunChunk (const char *chunk, int n)
 {
 	int res = 0;
 	if (chunk[0]) {
-		is_busy = true;
 		// run command
 		luaL_loadbuffer (L, chunk, n, "line");
-		res = LuaCall (L, 0, 0);
-		if (res) {
-			auto error = lua_tostring(L, -1);
-			if (error) { // can be nullptr
-				if (is_term) {
-					// term_strout ("Execution error.");
-					term_strout(error, true);
-				}
-				is_busy = false;
-				return res;
-			}
-		}
-		// check for leftover background jobs
-		lua_getfield (L, LUA_GLOBALSINDEX, "_nbranch");
-		LuaCall (L, 0, 1);
-		jobs = lua_tointeger (L, -1);
-		lua_pop (L, 1);
-		is_busy = false;
-	} else {
-		// idle loop: execute background jobs
-		lua_getfield (L, LUA_GLOBALSINDEX, "_idle");
-		LuaCall (L, 0, 1);
-		jobs = lua_tointeger (L, -1);
-		lua_pop (L, 1);
-		res = -1;
+		LuaCallTimeout (L, 0, 0);
 	}
 	return res;
 }
@@ -788,18 +739,10 @@ void Interpreter::LoadAPI ()
 	};
 	luaL_openlib (L, "mat", matLib, 0);
 
-	// Load the process library
-	static const struct luaL_reg procLib[] = {
-		{"Frameskip", procFrameskip},
-		{NULL, NULL}
-	};
-	luaL_openlib (L, "proc", procLib, 0);
-
 	// Load the oapi library
 	static const struct luaL_reg oapiLib[] = {
 		{"get_orbiter_version", oapi_get_orbiter_version},
 		{"get_viewport_size", oapi_get_viewport_size},
-
 		{"get_objhandle", oapiGetObjectHandle},
 		{"get_objcount", oapiGetObjectCount},
 		{"get_objname", oapiGetObjectName},
@@ -1660,7 +1603,13 @@ void Interpreter::LoadVesselStatusAPI()
 
 void Interpreter::LoadStartupScript ()
 {
-	luaL_dofile (L, "./Script/oapi_init.lua");
+	luaL_dostring(L, "package.path = package.path .. ';Script/?.lua'");
+	int res = luaL_dofile (L, "./Script/oapi_init.lua");
+	if(res != 0) {
+		const char *msg = lua_tostring(L, -1);
+		oapiWriteLogError("%s", msg);
+		oapiAddNotification(OAPINOTIF_ERROR, "Lua error", msg);
+	}
 }
 
 bool Interpreter::InitialiseVessel (lua_State *L, VESSEL *v)
@@ -2565,19 +2514,6 @@ int Interpreter::mat_rotm (lua_State *L) {
 			  t*x*z-y*s, t*y*z+x*s, t*z*z+c);
 	lua_pushmatrix(L, rot);
 	return 1;
-}
-
-// ============================================================================
-// process library functions
-
-int Interpreter::procFrameskip (lua_State *L)
-{
-	// return control to the orbiter core for execution of one time step
-	// This should be called in the loop of any "wait"-type function
-
-	Interpreter *interp = GetInterpreter(L);
-	interp->frameskip (L);
-	return 0;
 }
 
 // ============================================================================
