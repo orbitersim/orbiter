@@ -1,0 +1,11 @@
+BEGIN_HEADER
+InitialState on
+ColourIdx 4
+END_HEADER
+
+BEGIN_DATA
++341.00	-10.70	:	Barnard Regio			
++230.40	+47.00	:	Galileo Regio			
++178.80	+6.80	:	Marius Regio			
++355.20	-33.50	:	Nicholson Regio			
++327.50	+33.20	:	Perrine Regio			

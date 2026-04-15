@@ -1,0 +1,48 @@
+BEGIN_HEADER
+InitialState on
+ColourIdx 1
+ShapeIdx 1
+END_HEADER
+
+BEGIN_DATA
++182.50	-43.00	:	Áine
++182.50	+13.80	:	Amaethon
++129.40	-14.70	:	Amergin
++284.90	-12.60	:	Angus
++190.50	+1.40	:	Avagddu
++262.20	-52.80	:	Balor
++261.30	+37.60	:	Bress
++278.70	+10.80	:	Brigid
++278.90	-26.50	:	Camulus
++178.10	+2.60	:	Cilix
++283.60	-2.50	:	Cliodhna
++271.90	-36.90	:	Cormac
++191.30	+37.30	:	Dagda
++152.70	-65.40	:	Deirdre
++258.00	-61.30	:	Diarmuid
++275.60	-55.30	:	Dylan
++280.20	-31.90	:	Elathan
++126.70	-50.50	:	Eochaid
++57.20	-37.30	:	Govannan
++260.60	-59.70	:	Gráinne
++15.50	+9.10	:	Gwern
++278.40	-60.50	:	Gwydion
++138.20	-1.80	:	Llyr
++102.40	-40.20	:	Luchtar
++315.70	+28.00	:	Lug
++162.10	-16.80	:	Mael Dúin
++281.10	+58.80	:	Maeve
++120.30	+3.10	:	Manannán
++176.30	-25.60	:	Math
++21.20	+3.70	:	Midir
++207.40	-4.90	:	Morvran
++143.10	+21.10	:	Niamh
++72.10	+87.40	:	Ogma
++146.60	-52.30	:	Oisín
++200.90	-66.10	:	Pryderi
++88.60	-25.20	:	Pwyll
++165.10	-80.90	:	Rhiannon
++222.00	-22.80	:	Taliesin
++195.60	+0.80	:	Tegid
++187.60	+59.90	:	Tuag
++269.30	-48.50	:	Uaithne
