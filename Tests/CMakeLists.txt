@@ -45,26 +45,22 @@ endfunction()
 # Register unit tests
 add_test_file(Lua.Interpreter)
 
-if (BUILD_ORBITER_SERVER)
+# Sanity check for scenario tests
+add_test(
+	NAME "Scenario.SanityCheck"
+	COMMAND $<TARGET_FILE:Orbiter> "--scenariox=${CMAKE_SOURCE_DIR}/Scenarios/Delta-glider/Smack!.scn" "--maxframes=60"
+	WORKING_DIRECTORY ${ORBITER_BINARY_ROOT_DIR}
+)
+set_tests_properties(Scenario.SanityCheck PROPERTIES TIMEOUT 60)
 
-	# Sanity check for scenario tests
+# Register scenario tests
+file(GLOB TestScenarios "${CMAKE_SOURCE_DIR}/Scenarios/Tests/*.scn")
+foreach(Scenario ${TestScenarios})
+	get_filename_component(test_name ${Scenario} NAME_WE)
 	add_test(
-		NAME "Scenario.SanityCheck"
-		COMMAND $<TARGET_FILE:Orbiter_server> "--scenariox=${CMAKE_SOURCE_DIR}/Scenarios/Delta-glider/Smack!.scn" "--maxframes=60"
+		NAME "Scenario.${test_name}"
+		COMMAND $<TARGET_FILE:Orbiter> "--scenariox=${Scenario}"
 		WORKING_DIRECTORY ${ORBITER_BINARY_ROOT_DIR}
 	)
-	set_tests_properties(Scenario.SanityCheck PROPERTIES TIMEOUT 60)
-
-	# Register scenario tests
-	file(GLOB TestScenarios "${CMAKE_SOURCE_DIR}/Scenarios/Tests/*.scn")
-	foreach(Scenario ${TestScenarios})
-		get_filename_component(test_name ${Scenario} NAME_WE)
-		add_test(
-			NAME "Scenario.${test_name}"
-			COMMAND $<TARGET_FILE:Orbiter_server> "--scenariox=${Scenario}"
-			WORKING_DIRECTORY ${ORBITER_BINARY_ROOT_DIR}
-		)
-		set_tests_properties(Scenario.${test_name} PROPERTIES TIMEOUT 60)
-	endforeach()
-
-endif()
+	set_tests_properties(Scenario.${test_name} PROPERTIES TIMEOUT 60)
+endforeach()

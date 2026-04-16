@@ -27,8 +27,6 @@ typedef struct {
 	bool owning;    // do we need to handle vtx memory
 } index_data;
 
-
-
 std::list<NOTEHANDLE *> g_notehandles;
 
 int OpenHelp (void *context);
@@ -131,6 +129,7 @@ void Interpreter::Initialise ()
 	LoadAnnotationAPI (); // load screen annotation methods
 	LoadVesselStatusAPI ();
 	LoadXRSoundAPI ();
+	LoadInterpolatorAPI ();
 	LoadStartupScript (); // load default initialisation script
 }
 
@@ -956,6 +955,16 @@ void Interpreter::LoadAPI ()
 		{"get_cameraglobaldir", oapi_get_cameraglobaldir},
 		{"move_groundcamera", oapi_move_groundcamera},
 		{"set_cameracockpitdir", oapi_set_cameracockpitdir},
+		{"get_camerainternal", oapi_get_camerainternal},
+		{"get_cameramode", oapi_get_cameramode},
+		{"get_cameraproxygbody", oapi_camera_proxygbody},
+		{"get_camerarotationmatrix", oapi_camera_rotationmatrix},
+		{"get_cameratargetdist", oapi_camera_targetdist},
+		{"get_cameraazimuth", oapi_camera_azimuth},
+		{"get_camerapolar", oapi_camera_polar},
+		{"set_camerascaledist", oapi_camera_scaledist},
+		{"set_camerarotazimuth", oapi_camera_rotazimuth},
+		{"set_camerarotpolar", oapi_camera_rotpolar},
 			
 		// Custom camera
 		{"setup_customcamera", oapi_setup_customcamera},
@@ -1363,6 +1372,16 @@ void Interpreter::LoadAPI ()
 	lua_pushnumber (L, OAPINOTIF_ERROR); lua_setfield (L, -2, "ERROR");
 	lua_pushnumber (L, OAPINOTIF_INFO); lua_setfield (L, -2, "INFO");
 	lua_setglobal (L, "OAPINOTIF");
+
+	lua_createtable (L, 0, 7);
+	lua_pushnumber (L, CAM_COCKPIT);          lua_setfield (L, -2, "COCKPIT");
+	lua_pushnumber (L, CAM_TARGETRELATIVE);   lua_setfield (L, -2, "TARGETRELATIVE");
+	lua_pushnumber (L, CAM_ABSDIRECTION);     lua_setfield (L, -2, "ABSDIRECTION");
+	lua_pushnumber (L, CAM_GLOBALFRAME);      lua_setfield (L, -2, "GLOBALFRAME");
+	lua_pushnumber (L, CAM_TARGETTOOBJECT);   lua_setfield (L, -2, "TARGETTOOBJECT");
+	lua_pushnumber (L, CAM_TARGETFROMOBJECT); lua_setfield (L, -2, "TARGETFROMOBJECT");
+	lua_pushnumber (L, CAM_GROUNDOBSERVER);   lua_setfield (L, -2, "GROUNDOBSERVER");
+	lua_setglobal (L, "CAM");
 
 	static const struct luaL_reg TileCacheLib[] = {
 		{"__gc", tilecache_collect},
@@ -6176,6 +6195,166 @@ int Interpreter::oapi_set_cameracockpitdir(lua_State *L)
 		transition = lua_toboolean(L, 3);
 	}
 	oapiCameraSetCockpitDir(polar, azimuth, transition);
+	return 0;
+}
+
+/***
+Returns flag to indicate internal/external camera mode.
+ 
+@function get_camerainternal
+@treturn boolean true indicates an internal camera mode, i.e. the camera is located inside a vessel
+cockpit. In this case, the camera target is always the current focus object.
+false indicates an external camera mode, i.e. the camera points toward an object
+from outside. The camera target may be a vessel, planet, spaceport, etc.
+*/
+int Interpreter::oapi_get_camerainternal (lua_State *L)
+{
+	bool ret = oapiCameraInternal();
+	lua_pushboolean(L, ret);
+	return 1;
+
+}
+
+/***
+Returns the current camera view mode.
+
+Possible return value:
+
+- CAM.COCKPIT: cockpit (internal) mode
+- CAM.TARGETRELATIVE: tracking mode (relative direction)
+- CAM.ABSDIRECTION: tracking mode (absolute direction)
+- CAM.GLOBALFRAME: tracking mode (global frame)
+- CAM.TARGETTOOBJECT: tracking mode (target to object)
+- CAM.TARGETFROMOBJECT: tracking mode (object to target)
+- CAM.GROUNDOBSERVER: ground observer mode
+
+@function get_cameramode
+@treturn number camera mode
+*/
+int Interpreter::oapi_get_cameramode (lua_State *L)
+{
+	int mode = oapiCameraMode();
+	lua_pushnumber(L, mode);
+	return 1;
+}
+
+/***
+Returns celestial body whose surface is closest to the camera.
+
+@function get_cameraproxygbody
+@treturn handle celestial body handle
+*/
+int Interpreter::oapi_camera_proxygbody (lua_State *L)
+{
+	OBJHANDLE hObj = oapiCameraProxyGbody();
+	lua_pushlightuserdata(L, hObj);
+	return 1;
+}
+
+/***
+Returns a rotation matrix which performs the transformation
+from the camera rotation into global coordinates.
+
+@function get_camerarotationmatrix
+@treturn matrix rotation matrix
+*/
+int Interpreter::oapi_camera_rotationmatrix (lua_State *L)
+{
+	MATRIX3 rot;
+	oapiCameraRotationMatrix(&rot);
+	lua_pushmatrix(L, rot);
+	return 1;
+}
+
+/***
+Returns the distance between the camera and its target [m].
+
+@function get_cameratargetdist
+@treturn number Distance between camera and camera target [m].
+*/
+int Interpreter::oapi_camera_targetdist (lua_State *L)
+{
+	double dist = oapiCameraTargetDist();
+	lua_pushnumber(L, dist);
+	return 1;
+}
+
+/***
+Returns the current camera azimuth angle with respect to the target.
+
+Note: this function is useful only in external camera mode. In internal mode, it will
+always return 0.
+
+@function get_cameraazimuth
+@treturn number Camera azimuth angle [rad]. Value 0 indicates that the camera is behind the target.
+*/
+int Interpreter::oapi_camera_azimuth (lua_State *L)
+{
+	double az = oapiCameraAzimuth();
+	lua_pushnumber(L, az);
+	return 1;
+}
+
+/***
+Returns the current camera polar angle with respect to the target.
+
+Note: this function is useful only in external camera mode. In internal mode, it will always return 0.
+
+@function get_camerapolar
+@treturn number Camera polar angle [rad]. Value 0 indicates that the camera is at the same elevation as the target.
+*/
+int Interpreter::oapi_camera_polar (lua_State *L)
+{
+	double pol = oapiCameraPolar();
+	lua_pushnumber(L, pol);
+	return 1;
+}
+
+/***
+Moves the camera closer to the target or further away.
+
+Note: setting dscale < 1 will move the camera closer to its target. dscale > 1 will
+move it further away.
+
+Note: this function is ignored if the camera is in internal mode.
+
+@function set_camerascaledist
+@tparam number dscale distance scaling factor
+*/
+int Interpreter::oapi_camera_scaledist (lua_State *L)
+{
+	double dist = luaL_checknumber(L, 1);
+	oapiCameraScaleDist(dist);
+	return 0;
+}
+
+/***
+Rotate the camera around the target (azimuth angle).
+
+Note: this function is ignored if the camera is in internal mode.
+
+@function set_camerarotazimuth
+@tparam number dazimuth change in azimuth angle [rad]
+*/
+int Interpreter::oapi_camera_rotazimuth (lua_State *L)
+{
+	double az = luaL_checknumber(L, 1);
+	oapiCameraRotAzimuth(az);
+	return 0;
+}
+
+/***
+Rotate the camera around the target (polar angle).
+
+Note: this function is ignored if the camera is in internal mode.
+
+@function set_camerarotpolar
+@tparam number dpolar change in polar angle [rad]
+*/
+int Interpreter::oapi_camera_rotpolar (lua_State *L)
+{
+	double pol = luaL_checknumber(L, 1);
+	oapiCameraRotPolar(pol);
 	return 0;
 }
 

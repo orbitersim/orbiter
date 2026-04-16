@@ -140,53 +140,27 @@ local tdvtx_gearup = {
 -- ==============================================================
 
 -- 1. vertical lift component (wings and body)
-
+local AOA = {-180*RAD,-60*RAD,-30*RAD, -2*RAD, 15*RAD,20*RAD,25*RAD,60*RAD,180*RAD}
+local CL  = {       0,      0,   -0.4,      0,    0.7,     1,   0.8,     0,      0}
+local CM  = {       0,      0,  0.014, 0.0039, -0.006,-0.008,-0.010,     0,      0}
+local VInterp = interpolator.nonuniform(AOA, CL, CM)
 local function VLiftCoeff(hVessel,aoa,M,Re)
-	local nabsc = 9
-	local AOA = {-180*RAD,-60*RAD,-30*RAD, -2*RAD, 15*RAD,20*RAD,25*RAD,60*RAD,180*RAD}
-	local CL  = {       0,      0,   -0.4,      0,    0.7,     1,   0.8,     0,      0}
-	local CM  = {       0,      0,  0.014, 0.0039, -0.006,-0.008,-0.010,     0,      0}
-
-	local i = 1
-	while AOA[i+1] < aoa and i < nabsc do
-		i = i + 1
-	end
-
-	local cl, cm, cd
-	if i < nabsc then
-		local f = (aoa - AOA[i]) / (AOA[i + 1] - AOA[i])
-		cl = CL[i] + (CL[i + 1] - CL[i]) * f  -- aoa-dependent lift coefficient
-		cm = CM[i] + (CM[i + 1] - CM[i]) * f  -- aoa-dependent moment coefficient
-	else
-		cl = CL[nabsc]
-		cm = CM[nabsc]
-	end
+	local cl, cm = VInterp(aoa)
 	local saoa = math.sin(aoa)
 	local pd = 0.015 + 0.4*saoa*saoa  -- profile drag
-	cd = pd + oapi.get_induceddrag (cl, 1.5, 0.7) + oapi.get_wavedrag (M, 0.75, 1.0, 1.1, 0.04)
+	local cd = pd + oapi.get_induceddrag (cl, 1.5, 0.7) + oapi.get_wavedrag (M, 0.75, 1.0, 1.1, 0.04)
 	-- profile drag + (lift-)induced drag + transonic/supersonic wave (compressibility) drag
 	return cl, cm, cd
 end
 
 -- 2. horizontal lift component (vertical stabilisers and body)
+local BETA = {-180*RAD,-135*RAD,-90*RAD,-45*RAD,45*RAD,90*RAD,135*RAD,180*RAD}
+local CL   = {       0,     0.3,      0,   -0.3,   0.3,     0,   -0.3,      0}
+local HInterp = interpolator.nonuniform(BETA, CL)
 
 local function HLiftCoeff(hVessel,beta,M,Re)
-	local nabsc = 8
-	local BETA = {-180*RAD,-135*RAD,-90*RAD,-45*RAD,45*RAD,90*RAD,135*RAD,180*RAD}
-	local CL   = {       0,     0.3,      0,   -0.3,   0.3,     0,   -0.3,      0}
-
-	local i = 1
-	while BETA[i+1] < beta and i < nabsc do
-		i = i + 1
-	end
-
-	local cl, cd
-	if i < nabsc then
-		cl = CL[i] + (CL[i + 1] - CL[i]) * (beta - BETA[i]) / (BETA[i + 1] - BETA[i])
-	else
-		cl = CL[nabsc]
-	end
-	cd = 0.015 + oapi.get_induceddrag (cl, 1.5, 0.6) + oapi.get_wavedrag (M, 0.75, 1.0, 1.1, 0.04);
+	local cl = HInterp(beta)
+	local cd = 0.015 + oapi.get_induceddrag (cl, 1.5, 0.6) + oapi.get_wavedrag (M, 0.75, 1.0, 1.1, 0.04);
 	return cl, 0, cd
 end
 

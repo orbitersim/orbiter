@@ -385,14 +385,9 @@ end
 	-- This uses a documented lift slope of 0.0437/deg, everything else is rather ad-hoc
 local VCL = {0.1, 0.17, 0.2, 0.2, 0.17, 0.1, 0, -0.11, -0.24, -0.38,  -0.5,  -0.5, -0.02, 0.6355,    0.63,   0.46, 0.28, 0.13, 0.0, -0.16, -0.26, -0.29, -0.24, -0.1, 0.1}
 local VCM = {  0,    0,   0,   0,    0,   0, 0,     0,    0,0.002,0.004, 0.0025,0.0012,      0,-0.0012,-0.0007,    0,    0,   0,     0,     0,     0,     0,    0,   0}
-local Vstep = 15 * RAD
-local Vistep = 1 / Vstep
+local VInterp = interpolator.uniform(-math.pi, math.pi, VCL, VCM)
 local function VLiftCoeff(hVessel,aoa,M,Re)
-	aoa = aoa + PI
-	local idx = 1 + math.floor(math.max(0, math.min(23, aoa*Vistep)))
-	local d = aoa*Vistep - idx + 1
-	local cl = VCL[idx] + (VCL[idx+1]-VCL[idx])*d
-	local cm = VCM[idx] + (VCM[idx+1]-VCM[idx])*d
+	local cl, cm = VInterp(aoa)
 	local cd = 0.055 + oapi.get_induceddrag(cl, 2.266, 0.6)
 
 	return cl,cm,cd
@@ -405,13 +400,9 @@ end
 -- 2. horizontal lift component (vertical stabiliser and body)
 -----------------------------------------------------------------
 local HCL = {0, 0.2, 0.3, 0.2, 0, -0.2, -0.3, -0.2, 0, 0.2, 0.3, 0.2, 0, -0.2, -0.3, -0.2, 0}
-local Hstep = 22.5 * RAD
-local Histep = 1 / Hstep
+local HInterp = interpolator.uniform(-math.pi, math.pi, HCL)
 local function HLiftCoeff(hVessel,beta,M,Re)
-	beta = beta + PI
-	local idx = 1 + math.floor(math.max(0, math.min(15, beta*Histep)))
-	local d = beta*Histep - idx + 1
-	local cl = HCL[idx] + (HCL[idx+1]-HCL[idx])*d
+	local cl = HInterp(beta)
 	local cd = 0.02 + oapi.get_induceddrag(cl, 1.5, 0.6)
     return cl,0,cd
 end
