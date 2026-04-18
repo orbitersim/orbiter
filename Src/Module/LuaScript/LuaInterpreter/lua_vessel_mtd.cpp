@@ -3688,7 +3688,7 @@ int Interpreter::v_edit_airfoil (lua_State *L)
 				funcref = luaL_ref(L, LUA_REGISTRYINDEX);
 			}
 			else {
-				term_strout(L, "Invalid callback parameter in edit_airfoil, string or function expected", true);
+				luaL_error(L, "Invalid callback parameter in edit_airfoil, string or function expected");
 				return 0;
 			}
 
