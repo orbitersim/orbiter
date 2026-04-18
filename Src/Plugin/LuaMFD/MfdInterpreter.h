@@ -29,7 +29,6 @@ public:
 	inline LineSpec *FirstLine() const { return lineFirst; }
 	inline DWORD LineCount() const { return nline; }
 	void term_strout (const char *str, bool iserr=false);
-	void term_out (lua_State *L, bool iserr=false);
 	void term_clear ();
 
 protected:
