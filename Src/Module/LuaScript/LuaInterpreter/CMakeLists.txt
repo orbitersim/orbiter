@@ -8,6 +8,7 @@ set(BUILD_OUT_DIR ${CMAKE_CURRENT_BINARY_DIR}/out)
 add_library(LuaInterpreter SHARED
         Interpreter.cpp
         lua_vessel_mtd.cpp
+        lua_vecmat.cpp
 )
 
 if(ORBITER_BUILD_XRSOUND)

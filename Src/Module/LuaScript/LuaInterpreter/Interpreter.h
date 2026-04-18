@@ -350,6 +350,7 @@ protected:
 	static int help_api (lua_State *L);
 
 	// vector library functions
+	virtual void LoadVecMatAPI ();
 	static int vec_set (lua_State *L);
 	static int vec_add (lua_State *L);
 	static int vec_sub (lua_State *L);
