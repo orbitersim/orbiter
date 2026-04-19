@@ -169,15 +169,13 @@ function SolarSail:UpdateSail (rpressure)
 		if nb.fix then
 			self.sail_vbuf[i] = V0
 		else
-			local dv = {}
+			local dv
 			for j = 1, nb.nnd do
-				local vj = vtx[nb.nd[j]]
-				dv.x = vj.x - vi.x
-				dv.y = vj.y - vi.y
-				dv.z = vj.z - vi.z
-				local dst = vec.length(dv)
+				local vj = vtx[nb.nd[j]].pos
+				dv = vj - vi
+				local dst = dv:length()
 				if dst > nb.dst0[j] then -- is stretched
-					F = vec.add(F, vec.mul(dv,(elast/nb.dst0[j])))
+					F = F + dv * (elast/nb.dst0[j])
 				end
 			end
 			self.sail_vbuf[i] = F
@@ -203,7 +201,7 @@ function SolarSail:UpdateSail (rpressure)
 		local nm = vec.unit(Nml(vtx[1+idx[idx_offset]], vtx[1+idx[idx_offset+1]], vtx[1+idx[idx_offset+2]]))
 		for j = 0,2 do
 			local offset = 1+idx[idx_offset+j]
-			nml[offset] = vec.add((nml[offset] or V0), nm)
+			nml[offset] = (nml[offset] or V0) + nm
 			nsd[offset] = (nsd[offset] or 0) + 1
 		end
 	end
@@ -211,7 +209,7 @@ function SolarSail:UpdateSail (rpressure)
 	for i = 1, self.sail_nvtx do
 		local N = vec.div(nml[i], nsd[i])
 		vtx[i].normal = N
-		vtx[i+self.sail_nvtx].normal = vec.sub(V0, N)
+		vtx[i+self.sail_nvtx].normal = -N
 	end
 
 	local ges = {}
@@ -282,11 +280,11 @@ function SolarSail:clbkPreStep (simt, simdt, mjd)
 
 		local f = vec.dotp (self.mf, nml)
 		if f < 0 then
-			nml = vec.sub(0,nml)
+			nml = -nml
 			f = -f
 		end
 		f = f * paddle_area*albedo
-		self:add_force (vec.mul(nml,f), ppos[i])
+		self:add_force (nml * f, ppos[i])
 	end
 end
 

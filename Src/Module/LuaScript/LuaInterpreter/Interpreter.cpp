@@ -36,18 +36,6 @@ int OpenHelp (void *context);
 // ============================================================================
 // nonmember functions
 
-VECTOR3 lua_tovector (lua_State *L, int idx)
-{
-	VECTOR3 vec;
-	lua_getfield (L, idx, "x");
-	vec.x = lua_tonumber (L, -1); lua_pop (L,1);
-	lua_getfield (L, idx, "y");
-	vec.y = lua_tonumber (L, -1); lua_pop (L,1);
-	lua_getfield (L, idx, "z");
-	vec.z = lua_tonumber (L, -1); lua_pop (L,1);
-	return vec;
-}
-
 // ============================================================================
 // class Interpreter
 
@@ -278,23 +266,23 @@ void *Interpreter::luamtd_field_tolightuserdata_safe (lua_State *L, int idx, con
 	return lua_field_tolightuserdata_safe (L, idx, idx-1, fieldname, funcname);
 }
 
-VECTOR3 Interpreter::lua_field_tovector_safe (lua_State *L, int idx, int prmno, const char *fieldname, const char *funcname)
+VECTOR3 *Interpreter::lua_field_tovector_safe (lua_State *L, int idx, int prmno, const char *fieldname, const char *funcname, VECTOR3 *tmp)
 {
 	lua_getfield(L, idx, fieldname);
 	AssertPrmType(L, -1, prmno, PRMTP_VECTOR, funcname, fieldname);
-	VECTOR3 v = lua_tovector(L, -1);
+	VECTOR3 *v = lua_tovector(L, -1, tmp);
 	lua_pop(L, 1);
 	return v;
 }
 
-VECTOR3 Interpreter::lua_field_tovector_safe (lua_State *L, int idx, const char *fieldname, const char *funcname)
+VECTOR3 *Interpreter::lua_field_tovector_safe (lua_State *L, int idx, const char *fieldname, const char *funcname, VECTOR3 *tmp)
 {
-	return lua_field_tovector_safe (L, idx, idx, fieldname, funcname);
+	return lua_field_tovector_safe (L, idx, idx, fieldname, funcname, tmp);
 }
 
-VECTOR3 Interpreter::luamtd_field_tovector_safe (lua_State *L, int idx, const char *fieldname, const char *funcname)
+VECTOR3 *Interpreter::luamtd_field_tovector_safe (lua_State *L, int idx, const char *fieldname, const char *funcname, VECTOR3 *tmp)
 {
-	return lua_field_tovector_safe (L, idx, idx-1, fieldname, funcname);
+	return lua_field_tovector_safe (L, idx, idx-1, fieldname, funcname, tmp);
 }
 
 const char *Interpreter::lua_tostringex (lua_State *L, int idx, char *cbuf)
@@ -304,28 +292,8 @@ const char *Interpreter::lua_tostringex (lua_State *L, int idx, char *cbuf)
 	const char *str = lua_tostring (L,idx);
 	if (str) {
 		return str;
-	} else if (lua_isvector (L,idx)) {
-		VECTOR3 v = lua_tovector (L,idx);
-		sprintf (cbuf, "[%g %g %g]", v.x, v.y, v.z);
-		return cbuf;
-	} else if (lua_ismatrix (L,idx)) {
-		MATRIX3 m = lua_tomatrix(L,idx);
-		int i, len[9], lmax[3];
-		for (i = 0; i < 9; i++) {
-			sprintf (cbuf, "%g", m.data[i]);
-			len[i] = strlen(cbuf);
-		}
-		lmax[0] = max(len[0], max(len[3], len[6]));
-		lmax[1] = max(len[1], max(len[4], len[7]));
-		lmax[2] = max(len[2], max(len[5], len[8]));
-
-		sprintf (cbuf, "[%*g %*g %*g]\n[%*g %*g %*g]\n[%*g %*g %*g]",
-			lmax[0], m.m11, lmax[1], m.m12, lmax[2], m.m13,
-			lmax[0], m.m21, lmax[1], m.m22, lmax[2], m.m23,
-			lmax[0], m.m31, lmax[1], m.m32, lmax[2], m.m33);
-		return cbuf;
 	}
-	else if (lua_istouchdownvtx (L,idx)) {
+	if (lua_istouchdownvtx (L,idx)) {
 		TOUCHDOWNVTX tdvx = lua_totouchdownvtx (L,idx);
 		sprintf (cbuf, "{pos=[%g %g %g] stiffness=%g damping=%g mu=%g mu_lng=%g}",
 			tdvx.pos.x, tdvx.pos.y, tdvx.pos.z,
@@ -337,14 +305,6 @@ const char *Interpreter::lua_tostringex (lua_State *L, int idx, char *cbuf)
 	} else if (lua_isboolean (L,idx)) {
 		int res = lua_toboolean (L,idx);
 		strcpy (cbuf, res ? "true":"false");
-		return cbuf;
-	} else if (lua_islightuserdata (L,idx)) {
-		void *p = lua_touserdata(L,idx);
-		sprintf (cbuf, "0x%08p [data]", p);
-		return cbuf;
-	} else if (lua_isuserdata (L,idx)) {
-		void *p = lua_touserdata(L,idx);
-		sprintf (cbuf, "0x%08p [object]", p);
 		return cbuf;
 	} else if (lua_istable (L, idx)) {
 		if (idx < 0) idx--;
@@ -362,6 +322,26 @@ const char *Interpreter::lua_tostringex (lua_State *L, int idx, char *cbuf)
 			lua_pop(L, 1);
 		}
 		return tbuf;
+	} else if (lua_ismatrix (L,idx)) {
+		MATRIX3* m = (MATRIX3*)luaL_checkudata(L, 1, MAT3_META);
+        sprintf(cbuf,
+            "matrix([%f %f %f][%f %f %f][%f %f %f])",
+            m->m11, m->m12, m->m13,
+            m->m21, m->m22, m->m23,
+            m->m31, m->m32, m->m33
+        );
+		return cbuf;
+	} else if (lua_isvector (L,idx)) {
+        VECTOR3* v = (VECTOR3*)luaL_checkudata(L, 1, VEC3_META);
+        lua_pushfstring(L, "vector(%f,%f,%f)", v->x, v->y, v->z);
+	} else if (lua_islightuserdata (L,idx)) {
+		void *p = lua_touserdata(L,idx);
+		sprintf (cbuf, "0x%08p [data]", p);
+		return cbuf;
+	} else if (lua_isuserdata (L,idx)) {
+		void *p = lua_touserdata(L,idx);
+		sprintf (cbuf, "0x%08p [object]", p);
+		return cbuf;
 	} else if (lua_isfunction (L, idx)) {
 		strcpy (cbuf, "[function]");
 		return cbuf;
@@ -1553,14 +1533,14 @@ void Interpreter::term_echo (lua_State *L, int level)
 void Interpreter::term_strout (lua_State *L, const char *str, bool iserr)
 {
 	Interpreter *interp = GetInterpreter(L);
-	fprintf(stderr, "%s\n", str);
+	if(iserr) fprintf(stderr, "%s\n", str);
 	interp->term_strout (str, iserr);
 }
 
 void Interpreter::warn_obsolete(lua_State *L, const char *funcname)
 {
 	char cbuf[1024];
-	sprintf(cbuf, "Obsolete function used: %s", funcname);
+	snprintf(cbuf, 1024, "Obsolete function used: %s", funcname);
 	term_strout(L, cbuf, true);
 }
 
@@ -2820,21 +2800,23 @@ int Interpreter::oapi_VC_set_areaclickmode_quadrilateral(lua_State* L)
 {
 	int id = (int)lua_tointeger(L, 1);
 	if(lua_isvector(L, 2)) {
-		VECTOR3 p1 = lua_tovector(L, 2);
-		VECTOR3 p2 = lua_tovector(L, 3);
-		VECTOR3 p3 = lua_tovector(L, 4);
-		VECTOR3 p4 = lua_tovector(L, 5);
-		oapiVCSetAreaClickmode_Quadrilateral(id, p1, p2, p3, p4);
+		VECTOR3 tp1, tp2, tp3, tp4;
+		VECTOR3 *p1 = lua_tovector(L, 2, &tp1);
+		VECTOR3 *p2 = lua_tovector(L, 3, &tp2);
+		VECTOR3 *p3 = lua_tovector(L, 4, &tp3);
+		VECTOR3 *p4 = lua_tovector(L, 5, &tp4);
+		oapiVCSetAreaClickmode_Quadrilateral(id, *p1, *p2, *p3, *p4);
 	} else {
+		VECTOR3 tp1, tp2, tp3, tp4;
 		lua_rawgeti(L, 2, 1);
-		VECTOR3 p1 = lua_tovector(L, -1); lua_pop(L, 1);
+		VECTOR3 *p1 = lua_tovector(L, -1, &tp1); lua_pop(L, 1);
 		lua_rawgeti(L, 2, 2);
-		VECTOR3 p2 = lua_tovector(L, -1); lua_pop(L, 1);
+		VECTOR3 *p2 = lua_tovector(L, -1, &tp2); lua_pop(L, 1);
 		lua_rawgeti(L, 2, 3);
-		VECTOR3 p3 = lua_tovector(L, -1); lua_pop(L, 1);
+		VECTOR3 *p3 = lua_tovector(L, -1, &tp3); lua_pop(L, 1);
 		lua_rawgeti(L, 2, 4);
-		VECTOR3 p4 = lua_tovector(L, -1); lua_pop(L, 1);
-		oapiVCSetAreaClickmode_Quadrilateral(id, p1, p2, p3, p4);
+		VECTOR3 *p4 = lua_tovector(L, -1, &tp4); lua_pop(L, 1);
+		oapiVCSetAreaClickmode_Quadrilateral(id, *p1, *p2, *p3, *p4);
 	}
 	return 0;
 }
@@ -2856,9 +2838,10 @@ This function can be called repeatedly, to change the mouse-sensitive area.
 int Interpreter::oapi_VC_set_areaclickmode_spherical(lua_State* L)
 {
 	int id = (int)lua_tointeger(L, 1);
-	VECTOR3 cnt = lua_tovector(L, 2);
+	VECTOR3 tcnt;
+	VECTOR3 *cnt = lua_tovector(L, 2, &tcnt);
 	double radius = lua_tonumber(L, 3);
-	oapiVCSetAreaClickmode_Spherical(id,cnt, radius);
+	oapiVCSetAreaClickmode_Spherical(id, *cnt, radius);
 	return 0;
 }
 
@@ -2989,12 +2972,13 @@ oapi.VC_registerHUD(hud)
 int Interpreter::oapi_VC_registerHUD(lua_State* L)
 {
 	VCHUDSPEC hs;
+	VECTOR3 tmp;
 	lua_getfield(L, 1, "nmesh"); ASSERT_SYNTAX(lua_isnumber(L, -1), "Argument : missing field 'nmesh'");
 	hs.nmesh = lua_tointeger(L, -1); lua_pop(L, 1);
 	lua_getfield(L, 1, "ngroup"); ASSERT_SYNTAX(lua_isnumber(L, -1), "Argument : missing field 'ngroup'");
 	hs.ngroup = lua_tointeger(L, -1); lua_pop(L, 1);
 	lua_getfield(L, 1, "hudcnt"); ASSERT_SYNTAX(lua_isvector(L, -1), "Argument : missing field 'hudcnt'");
-	hs.hudcnt = lua_tovector(L, -1); lua_pop(L, 1);
+	hs.hudcnt = *lua_tovector(L, -1, &tmp); lua_pop(L, 1);
 	lua_getfield(L, 1, "size"); ASSERT_SYNTAX(lua_isnumber(L, -1), "Argument : missing field 'size'");
 	hs.size = lua_tonumber(L, -1); lua_pop(L, 1);
 
@@ -3555,9 +3539,10 @@ int Interpreter::oapi_global_to_equ(lua_State* L)
 {
 	OBJHANDLE hObj;
 	if (lua_islightuserdata(L, 1) && (hObj = lua_toObject(L, 1))) {
-		VECTOR3 glob = lua_tovector(L, 2);
+		VECTOR3 tglob;
+		VECTOR3 *glob = lua_tovector(L, 2, &tglob);
 		double lng, lat, rad;
-		oapiGlobalToEqu(hObj, glob, &lng, &lat, &rad);
+		oapiGlobalToEqu(hObj, *glob, &lng, &lat, &rad);
 		lua_createtable(L, 0, 3);
 		lua_pushnumber(L, lng);
 		lua_setfield(L, -2, "lng");
@@ -3582,9 +3567,10 @@ int Interpreter::oapi_global_to_local(lua_State* L)
 {
 	OBJHANDLE hObj;
 	if (lua_islightuserdata(L, 1) && (hObj = lua_toObject(L, 1))) {
-		VECTOR3 glob = lua_tovector(L, 2);
+		VECTOR3 tglob;
+		VECTOR3 *glob = lua_tovector(L, 2, &tglob);
 		VECTOR3 loc;
-		oapiGlobalToLocal(hObj, &glob, &loc);
+		oapiGlobalToLocal(hObj, glob, &loc);
 		lua_pushvector(L, loc);
 	}
 	else lua_pushnil(L);
@@ -3607,9 +3593,10 @@ The returned table contains the equatorial coordinates and has the following fie
 int Interpreter::oapi_local_to_equ(lua_State* L) {
 	OBJHANDLE hObj;
 	if (lua_islightuserdata(L, 1) && (hObj = lua_toObject(L, 1))) {
-		VECTOR3 loc = lua_tovector(L, 2);
+		VECTOR3 tloc;
+		VECTOR3 *loc = lua_tovector(L, 2, &tloc);
 		double lng, lat, rad;
-		oapiLocalToEqu(hObj, loc, &lng, &lat, &rad);
+		oapiLocalToEqu(hObj, *loc, &lng, &lat, &rad);
 		lua_createtable(L, 0, 3);
 		lua_pushnumber(L, lng);
 		lua_setfield(L, -2, "lng");
@@ -5285,8 +5272,9 @@ int Interpreter::oapi_get_navsignal (lua_State *L)
 	ASSERT_SYNTAX (lua_islightuserdata (L,1), "Argument 1: invalid type (expected handle)");
 	ASSERT_SYNTAX (hNav = (NAVHANDLE)lua_touserdata (L,1), "Argument 1: invalid object");
 	ASSERT_SYNTAX (lua_isvector (L, 2), "Argument 2: invalid type (expected vector)");
-	VECTOR3 gpos = lua_tovector(L,2);
-	double sig = oapiGetNavSignal (hNav, gpos);
+	VECTOR3 tgpos;
+	VECTOR3 *gpos = lua_tovector(L, 2, &tgpos);
+	double sig = oapiGetNavSignal (hNav, *gpos);
 	lua_pushnumber (L, sig);
 	return 1;	
 }
@@ -5717,16 +5705,17 @@ int Interpreter::oapi_setup_customcamera(lua_State *L)
 			luaL_error(L, "vessel of vessel handle expected");
 		}
 
-		VECTOR3 pos = lua_tovector(L, 3);
-		VECTOR3 dir = lua_tovector(L, 4);
-		VECTOR3 up = lua_tovector(L, 5);
+		VECTOR3 tpos, tdir, tup;
+		VECTOR3 *pos = lua_tovector(L, 3, &tpos);
+		VECTOR3 *dir = lua_tovector(L, 4, &tdir);
+		VECTOR3 *up = lua_tovector(L, 5, &tup);
 		double fov = luaL_checknumber(L, 6);
 		SURFHANDLE hSurf = (SURFHANDLE)lua_touserdata(L,7);
 		DWORD flags = 255;
 		if(lua_gettop(L)>=8) {
 			flags = luaL_checkinteger(L, 8);
 		}
-		hCam = pCore->SetupCustomCamera(hCam, hVessel, pos, dir, up, fov, hSurf, flags);
+		hCam = pCore->SetupCustomCamera(hCam, hVessel, *pos, *dir, *up, fov, hSurf, flags);
 		if(cc) {
 			cc->hCam = hCam;
 			lua_pushvalue(L, 1);
@@ -5961,33 +5950,38 @@ int Interpreter::oapi_create_animationcomponent (lua_State *L)
 	if (!_stricmp(typestr, "rotation")) {
 		lua_getfield(L,1,"ref");
 		ASSERT_VECTOR(L,-1);
-		VECTOR3 ref = lua_tovector(L,-1);
+		VECTOR3 tref;
+		VECTOR3 *ref = lua_tovector(L,-1, &tref);
 		lua_pop(L,1);
 		lua_getfield(L,1,"axis");
 		ASSERT_VECTOR(L,-1);
-		VECTOR3 axis = lua_tovector(L,-1);
+		VECTOR3 taxis;
+		VECTOR3 *axis = lua_tovector(L,-1, &taxis);
 		lua_pop(L,1);
 		lua_getfield(L,1,"angle");
 		ASSERT_NUMBER(L,-1);
 		double angle = lua_tonumber(L,-1);
 		lua_pop(L,1);
-		trans = new MGROUP_ROTATE(mesh,grp,ngrp,ref,axis,(float)angle);
+		trans = new MGROUP_ROTATE(mesh,grp,ngrp,*ref,*axis,(float)angle);
 	} else if (!_stricmp(typestr, "translation")) {
 		lua_getfield(L,1,"shift");
 		ASSERT_VECTOR(L,-1);
-		VECTOR3 shift = lua_tovector(L,-1);
+		VECTOR3 tshift;
+		VECTOR3 *shift = lua_tovector(L,-1, &tshift);
 		lua_pop(L,1);
-		trans = new MGROUP_TRANSLATE(mesh,grp,ngrp,shift);
+		trans = new MGROUP_TRANSLATE(mesh,grp,ngrp,*shift);
 	} else if (!_stricmp(typestr, "scaling")) {
 		lua_getfield(L,1,"ref");
 		ASSERT_VECTOR(L,-1);
-		VECTOR3 ref = lua_tovector(L,-1);
+		VECTOR3 tref;
+		VECTOR3 *ref = lua_tovector(L,-1, &tref);
 		lua_pop(L,1);
 		lua_getfield(L,1,"scale");
 		ASSERT_VECTOR(L,-1);
-		VECTOR3 scale = lua_tovector(L,-1);
+		VECTOR3 tscale;
+		VECTOR3 *scale = lua_tovector(L,-1, &tscale);
 		lua_pop(L,1);
-		trans = new MGROUP_SCALE(mesh,grp,ngrp,ref,scale);
+		trans = new MGROUP_SCALE(mesh,grp,ngrp,*ref,*scale);
 	} else {
 		ASSERT_SYNTAX(0,"Invalid animation type");
 	}
@@ -6094,7 +6088,8 @@ int Interpreter::oapi_set_panelblink (lua_State *L)
 	} else {
 		for (i = 0; i < 4; i++) {
 			ASSERT_VECTOR(L,i+1);
-			v[i] = lua_tovector(L,i+1);
+			VECTOR3 tmp;
+			v[i] = *lua_tovector(L,i+1,&tmp);
 		}
 		oapiSetPanelBlink (v);
 	}
@@ -6825,8 +6820,9 @@ int Interpreter::oapi_writescenario_vec (lua_State* L)
 	ASSERT_STRING(L, 2);
 	const char* item = lua_tostringex(L, 2);
 	ASSERT_VECTOR(L, 3);
-	const VECTOR3 vec = lua_tovector(L, 3);
-	oapiWriteScenario_vec(scn, const_cast<char*>(item), vec);
+	VECTOR3 tvec;
+	VECTOR3 *vec = lua_tovector(L, 3, &tvec);
+	oapiWriteScenario_vec(scn, const_cast<char*>(item), *vec);
 	return 0;
 }
 
@@ -7136,9 +7132,10 @@ int Interpreter::oapi_writeitem_vec (lua_State* L)
 	ASSERT_VECTOR(L, 3);
 
 	const char* item = lua_tostringex(L, 2);
-	VECTOR3 vec = lua_tovector(L, 3);
+	VECTOR3 tvec;
+	VECTOR3 *vec = lua_tovector(L, 3, &tvec);
 
-	oapiWriteItem_vec(f,  const_cast<char*>(item), vec);
+	oapiWriteItem_vec(f,  const_cast<char*>(item), *vec);
 	return 0;
 }
 
@@ -7349,9 +7346,10 @@ int Interpreter::oapi_create_beacon(lua_State *L)
 	luaL_getmetatable(L, "Beacon.vtable");
 	lua_setmetatable(L, -2);
 
+	VECTOR3 tmp;
 	lua_getfield (L, 1, "shape");  beacon->bs.shape = luaL_checkinteger (L, -1);  lua_pop (L,1);
-	lua_getfield (L, 1, "pos");  beacon->pos = lua_tovector_safe (L, -1, "create_beacon");  lua_pop (L,1);
-	lua_getfield (L, 1, "col");  beacon->col = lua_tovector_safe (L, -1, "create_beacon");  lua_pop (L,1);
+	lua_getfield (L, 1, "pos");  beacon->pos = *lua_tovector_safe (L, -1, "create_beacon", &tmp);  lua_pop (L,1);
+	lua_getfield (L, 1, "col");  beacon->col = *lua_tovector_safe (L, -1, "create_beacon", &tmp);  lua_pop (L,1);
 	lua_getfield (L, 1, "size");  beacon->bs.size = luaL_checknumber (L, -1);  lua_pop (L,1);
 	lua_getfield (L, 1, "falloff");  beacon->bs.falloff = luaL_checknumber (L, -1);  lua_pop (L,1);
 	lua_getfield (L, 1, "period");  beacon->bs.period = luaL_checknumber (L, -1);  lua_pop (L,1);
@@ -8650,8 +8648,9 @@ int Interpreter::le_set_position (lua_State *L)
 	LightEmitter *le = lua_tolightemitter(L,1);
 	ASSERT_SYNTAX(le, "Invalid emitter object");
 	ASSERT_MTDVECTOR(L,2);
-	VECTOR3 pos = lua_tovector(L,2);
-	le->SetPosition (pos);
+	VECTOR3 tpos;
+	VECTOR3 *pos = lua_tovector(L,2,&tpos);
+	le->SetPosition (*pos);
 	return 0;
 }
 
@@ -8727,8 +8726,9 @@ int Interpreter::le_set_direction (lua_State *L)
 	LightEmitter *le = lua_tolightemitter(L,1);
 	ASSERT_SYNTAX(le, "Invalid emitter object");
 	ASSERT_MTDVECTOR(L,2);
-	VECTOR3 dir = lua_tovector(L,2);
-	le->SetDirection (dir);
+	VECTOR3 tdir;
+	VECTOR3 *dir = lua_tovector(L, 2, &tdir);
+	le->SetDirection (*dir);
 	return 0;
 }
 
@@ -9804,10 +9804,11 @@ int Interpreter::ntvproxy_set(lua_State *L)
 	else if(!strcmp(member, "z"))
 		(*vtx)->z = luaL_checknumber(L, 3);
 	else if(!strcmp(member, "pos")) {
-		VECTOR3 pos = lua_tovector(L, 3);
-		(*vtx)->x = pos.x;
-		(*vtx)->y = pos.y;
-		(*vtx)->z = pos.z;
+		VECTOR3 tpos;
+		VECTOR3 *pos = lua_tovector(L, 3, &tpos);
+		(*vtx)->x = pos->x;
+		(*vtx)->y = pos->y;
+		(*vtx)->z = pos->z;
 	} else if(!strcmp(member, "tu"))
 		(*vtx)->tu = luaL_checknumber(L, 3);
 	else if(!strcmp(member, "tv"))
@@ -9819,10 +9820,11 @@ int Interpreter::ntvproxy_set(lua_State *L)
 	else if(!strcmp(member, "nz"))
 		(*vtx)->nz = luaL_checknumber(L, 3);
 	else if(!strcmp(member, "normal")) {
-		VECTOR3 normal = lua_tovector(L, 3);
-		(*vtx)->nx = normal.x;
-		(*vtx)->ny = normal.y;
-		(*vtx)->nz = normal.z;
+		VECTOR3 tnormal;
+		VECTOR3 *normal = lua_tovector(L, 3, &tnormal);
+		(*vtx)->nx = normal->x;
+		(*vtx)->ny = normal->y;
+		(*vtx)->nz = normal->z;
 	} else
 		luaL_error(L, "Invalid member access for vertex: %s", member);
 
@@ -10413,13 +10415,14 @@ int Interpreter::beacon_set (lua_State *L)
 {
 	BEACONLIGHTSPEC_Lua *beacon = (BEACONLIGHTSPEC_Lua *)luaL_checkudata(L, 1, "Beacon.vtable");
     const char *member = luaL_checkstring(L, 2);
+	VECTOR3 tmp;
 
 	if(!strcmp(member, "shape"))
 		beacon->bs.shape = luaL_checkinteger(L, 3);
 	else if(!strcmp(member, "pos"))
-		beacon->pos = lua_tovector_safe(L, 3, "beacon_set");
+		beacon->pos = *lua_tovector_safe(L, 3, "beacon_set", &tmp);
 	else if(!strcmp(member, "col"))
-		beacon->col = lua_tovector_safe(L, 3, "beacon_set");
+		beacon->col = *lua_tovector_safe(L, 3, "beacon_set", &tmp);
 	else if(!strcmp(member, "size"))
 		beacon->bs.size = luaL_checknumber(L, 3);
 	else if(!strcmp(member, "falloff"))
