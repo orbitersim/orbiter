@@ -21,10 +21,6 @@ local SRB_STABILISATION_TIME = 4.0
 local PI2   = 6.28318530717958647693
 local GGRAV = 6.67259e-11
 
-local function normalize(v)
-	return vec.div(v, vec.length(v))
-end
-
 -- "class members"
 local pitch_profile = {}
 local launch_azimuth
@@ -285,22 +281,22 @@ function ascap.set_launchazimuth(azimuth)
 	local clng = math.cos(tmp.lng)
 	local slat = math.sin(tmp.lat)
 	local clat = math.cos(tmp.lat)
-	local equ = normalize(equ) -- unit radius vector
+	local equ = equ:unit() -- unit radius vector
 	
 	-- launch direction in local planet frame
-	local dir = {x=-clng*slat*caz - slng*saz, y=clat*caz, z=-slng*slat*caz + clng*saz}
+	local dir = _V(-clng*slat*caz - slng*saz, clat*caz, -slng*slat*caz + clng*saz)
 
 	-- normal of orbital plane in local planet frame
-	local nml = vec.crossp(dir, equ)
+	local nml = dir:crossp(equ)
 
 	-- normal of equator plane in local planet frame
 	local ne = _V(0, 1, 0)
 
 	-- direction of ascending node
-	local nd = normalize(vec.crossp(nml, ne))
+	local nd = nml:crossp(ne):unit()
 
 	-- orbit inclination
-	tgt.inc = math.acos(vec.dotp(nml, ne))
+	tgt.inc = math.acos(nml:dotp(ne))
 
 	-- longitude of ascending node
 	tgt.lan = math.atan2(nd.z, nd.x)
@@ -313,7 +309,7 @@ function ascap.set_launchazimuth(azimuth)
 
 	local R1 = _M(1,0,0, 0,cinc,sinc, 0,-sinc,cinc)
 	local R2 = _M(clan,0,-slan, 0,1,0, slan,0,clan)
-	tgt.R = mat.mmul(R2,R1)
+	tgt.R = R2 * R1
 end
 
 --------------------------------------------------------------
@@ -327,16 +323,15 @@ function ascap.calc_targetazimuth()
 	local pR = oapi.get_rotationmatrix(hRef)
 	local pos = vi:get_globalpos()
 
-	local equ = oapi.global_to_local(hRef, pos)    -- vessel position in planet frame
-	equ = normalize(equ)
-	local ep = mat.tmul(tgt.R, equ)                -- rotate to equator plane
+	local equ = oapi.global_to_local(hRef, pos):unit()  -- vessel position in planet frame
+	local ep = mat.tmul(tgt.R, equ)                     -- rotate to equator plane
 	local elng = math.atan2(ep.z, ep.x)                 -- longitude of rotated position
-	local dir = {x=-math.sin(elng), y=0, z=math.cos(elng)}   -- rotated target direction
-	dir = mat.mul(tgt.R,dir)                       -- target direction in planet frame
-	dir = mat.mul(pR, dir)                         -- target direction in global frame
+	local dir = _V(-math.sin(elng), 0, math.cos(elng))  -- rotated target direction
+	dir = tgt.R * dir                                   -- target direction in planet frame
+	dir = pR * dir                                      -- target direction in global frame
 	local vR = vi:get_rotationmatrix()
-	dir = mat.tmul(vR, dir)                        -- target direction in vessel frame
-	local hdir = vi:horizonrot(dir)                -- target direction in local horizon frame
+	dir = mat.tmul(vR, dir)                             -- target direction in vessel frame
+	local hdir = vi:horizonrot(dir)                     -- target direction in local horizon frame
 	local az = math.atan2(hdir.x,hdir.z)                -- target azimuth
 
 	if status < 3 and met >= t_roll_upright then -- compensate for SSME tilt during roll to avoid azimuth deviation
