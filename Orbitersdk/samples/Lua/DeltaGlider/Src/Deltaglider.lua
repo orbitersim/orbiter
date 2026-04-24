@@ -143,7 +143,7 @@ local tdvtx_gearup = {
 local AOA = {-180*RAD,-60*RAD,-30*RAD, -2*RAD, 15*RAD,20*RAD,25*RAD,60*RAD,180*RAD}
 local CL  = {       0,      0,   -0.4,      0,    0.7,     1,   0.8,     0,      0}
 local CM  = {       0,      0,  0.014, 0.0039, -0.006,-0.008,-0.010,     0,      0}
-local VInterp = interpolator.nonuniform(AOA, CL, CM)
+local VInterp = interpolator.nonuniform_linear(AOA, CL, CM)
 local function VLiftCoeff(hVessel,aoa,M,Re)
 	local cl, cm = VInterp(aoa)
 	local saoa = math.sin(aoa)
@@ -156,7 +156,7 @@ end
 -- 2. horizontal lift component (vertical stabilisers and body)
 local BETA = {-180*RAD,-135*RAD,-90*RAD,-45*RAD,45*RAD,90*RAD,135*RAD,180*RAD}
 local CL   = {       0,     0.3,      0,   -0.3,   0.3,     0,   -0.3,      0}
-local HInterp = interpolator.nonuniform(BETA, CL)
+local HInterp = interpolator.nonuniform_linear(BETA, CL)
 
 local function HLiftCoeff(hVessel,beta,M,Re)
 	local cl = HInterp(beta)

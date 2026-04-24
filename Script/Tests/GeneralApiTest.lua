@@ -417,7 +417,7 @@ function VLiftCoeff(hVessel,aoa,M,Re)
 	return cl,cm,cd
 end
 
-interp = interpolator.uniform(-math.pi, math.pi, VCL, VCM)
+interp = interpolator.uniform_linear(-math.pi, math.pi, VCL, VCM)
 for i=-3,3,0.1 do
     local rcl,rcm,rcd = VLiftCoeff(nil, i, 0, 0) -- only aoa is used
     local icl, icm = interp(i)
@@ -452,7 +452,7 @@ local function VLiftCoeffDG(hVessel,aoa,M,Re)
 	-- profile drag + (lift-)induced drag + transonic/supersonic wave (compressibility) drag
 	return cl, cm, cd
 end
-nuinterp = interpolator.nonuniform({-180*RAD,-60*RAD,-30*RAD, -2*RAD, 15*RAD,20*RAD,25*RAD,60*RAD,180*RAD},
+nuinterp = interpolator.nonuniform_linear({-180*RAD,-60*RAD,-30*RAD, -2*RAD, 15*RAD,20*RAD,25*RAD,60*RAD,180*RAD},
                                    {       0,      0,   -0.4,      0,    0.7,     1,   0.8,     0,      0},
                                    {       0,      0,  0.014, 0.0039, -0.006,-0.008,-0.010,     0,      0})
 for i=-3,3,0.1 do
