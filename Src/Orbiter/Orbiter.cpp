@@ -104,10 +104,6 @@ bool g_bStateUpdate = false;
 DWORD  launch_tick;      // counts the first 3 frames
 DWORD  g_vtxcount = 0;   // vertices/frame rendered (for diagnosis)
 DWORD  g_tilecount = 0;  // surface tiles/frame rendered (for diagnosis)
-BOOL   use_fine_counter;         // high-precision timer available?
-double fine_counter_step;        // step interval of high-precision counter (or 0 if not available)
-LARGE_INTEGER fine_counter_freq; // high-precision tick frequency
-LARGE_INTEGER fine_counter;      // current high-precision time value
 TimeData td;             // timing information
 
 // Configuration parameters set from Driver.cfg
@@ -206,7 +202,6 @@ INT WINAPI WinMain (HINSTANCE hInstance, HINSTANCE, LPSTR strCmdLine, INT nCmdSh
 	// Initialise random number generator
 	//srand ((unsigned)time (NULL));
 	srand(12345);
-	LOGOUT("Timer precision: %g sec", fine_counter_step);
 
 	oapiRegisterCustomControls(hInstance);
 
@@ -296,11 +291,6 @@ Orbiter::Orbiter ()
 
 	// Initialise timer
 	timeBeginPeriod(1);
-	if (use_fine_counter = QueryPerformanceFrequency(&fine_counter_freq)) {
-		double freq = fine_counter_freq.LowPart;
-		if (fine_counter_freq.HighPart) freq += fine_counter_freq.HighPart * 4294967296.0;
-		fine_counter_step = 1.0 / freq;
-	}
 
 	pDI             = new DInput(this); TRACENEW
 	pConfig         = new Config; TRACENEW
@@ -754,7 +744,6 @@ HWND Orbiter::CreateRenderWindow (Config *pCfg, const char *scenario)
 	strcpy (ScenarioName, scenario);
 	g_qsaveid = 0;
 	launch_tick = 3;
-	if (pCfg->CfgDebugPrm.TimerMode == 2) use_fine_counter = FALSE;
 
 	// Generate logical world objects
 	if (gclient) {
