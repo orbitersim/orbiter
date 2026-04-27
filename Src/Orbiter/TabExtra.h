@@ -295,26 +295,6 @@ private:
 };
 
 //-----------------------------------------------------------------------------
-// Debugging parameters: timer settings
-//-----------------------------------------------------------------------------
-
-class ExtraTimerSettings: public BuiltinLaunchpadItem {
-public:
-	ExtraTimerSettings (const orbiter::ExtraTab *tab): BuiltinLaunchpadItem (tab) {}
-	char *Name ();
-	char *Description ();
-	bool clbkOpen (HWND hParent);
-
-private:
-	void InitDialog (HWND hWnd);
-	void ResetDialog (HWND hWnd);
-	void SetDialog (HWND hWnd, const CFG_DEBUGPRM &prm);
-	bool StoreParams (HWND hWnd);
-	bool OpenHelp (HWND hWnd);
-	static INT_PTR CALLBACK DlgProc (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
-};
-
-//-----------------------------------------------------------------------------
 // Debugging parameters: performance options
 //-----------------------------------------------------------------------------
 
