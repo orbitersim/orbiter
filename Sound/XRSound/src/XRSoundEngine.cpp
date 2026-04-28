@@ -18,7 +18,19 @@ ISoundEngine *XRSoundEngine::s_pKlangEngine = nullptr;
 XRSoundConfigFileParser XRSoundEngine::s_globalConfig;
 bool XRSoundEngine::s_bIrrKlangEngineNeedsInitialization = true;
 WavContext *XRSoundEngine::s_pMusicFolderWavContext = nullptr;  // this global, vessel-independent context will exist until the irrKlang engine is terminated
-CString XRSoundEngine::s_csVersion;
+std::string XRSoundEngine::s_csVersion;
+
+static bool equalsIgnoreCase(const std::string& a, const std::string& b) {
+    if (a.size() != b.size()) return false;
+
+    for (size_t i = 0; i < a.size(); ++i) {
+        if (std::tolower(static_cast<unsigned char>(a[i])) !=
+            std::tolower(static_cast<unsigned char>(b[i]))) {
+            return false;
+        }
+    }
+    return true;
+}
 
 // Perform one-time initialization of our irrKlang singleton.
 // Returns: true on success, false on error (which means no sounds will play).
@@ -161,7 +173,7 @@ bool XRSoundEngine::LoadWav(const int soundID, const char *pSoundFilename, const
     if (pContext)
     {
         // already have a sound in this slot
-        if (pContext->csSoundFilename.CompareNoCase(pSoundFilename) == 0)
+        if (equalsIgnoreCase(pContext->csSoundFilename, pSoundFilename))
             return true;    // file is unchanged, so nothing to load
         bEnabled = pContext->bEnabled;   // preserve the existing bEnabled flag
 
@@ -171,7 +183,7 @@ bool XRSoundEngine::LoadWav(const int soundID, const char *pSoundFilename, const
             StopWav(soundID);   // in case something is still playing
             // only the filename changes here; other fields in the WavContext do not.
             pContext->csSoundFilename = pSoundFilename;
-            VERBOSE_LOG(this, "XRSoundEngine::LoadWav for global MusicFolder success: %s", static_cast<const char *>(pContext->ToStr(false)));
+            VERBOSE_LOG(this, "XRSoundEngine::LoadWav for global MusicFolder success: %s", pContext->ToStr(false).c_str());
             return true;
         }
     }
@@ -183,7 +195,7 @@ bool XRSoundEngine::LoadWav(const int soundID, const char *pSoundFilename, const
     // the sound file actually exists.
     if (!ConfigFileParser::IsFileReadable(pSoundFilename))
     {
-        VERBOSE_LOG(this, "XRSoundEngine::LoadWav WARNING: Unable to open sound file for %s", static_cast<const char*>(context.ToStr(false)));
+        VERBOSE_LOG(this, "XRSoundEngine::LoadWav WARNING: Unable to open sound file for %s", context.ToStr(false).c_str());
         return false;
     }
        
@@ -192,7 +204,7 @@ bool XRSoundEngine::LoadWav(const int soundID, const char *pSoundFilename, const
     m_allWavsMap.erase(soundID);
     m_allWavsMap.insert(soundID_WavContext_Pair(soundID, context));   // copied by value
 
-    VERBOSE_LOG(this, "XRSoundEngine::LoadWav success: %s", static_cast<const char*>(context.ToStr(false)));
+    VERBOSE_LOG(this, "XRSoundEngine::LoadWav success: %s", context.ToStr(false).c_str());
     return true;
 }
 
@@ -248,23 +260,23 @@ bool XRSoundEngine::PlayWav(const int soundID, const bool bLoop, const float vol
     {
         // sound is not playing, so let's start immediately and track it via its pISound interface
         // NOTE: we start this paused so that we can set the proper volume level before starting it via UpdateSoundState
-        pISound = pContext->pISound = s_pKlangEngine->play2D(pContext->csSoundFilename, bLoop, true, true);
+        pISound = pContext->pISound = s_pKlangEngine->play2D(pContext->csSoundFilename.c_str(), bLoop, true, true);
         if (pISound == nullptr)   // this means the sound could not be played; e.g., corrupt file, etc.
         {
-            VERBOSE_LOG(this, "XRSoundEngine::PlayWav ERROR: could not play sound %s", static_cast<const char*>(pContext->ToStr()));
+            VERBOSE_LOG(this, "XRSoundEngine::PlayWav ERROR: could not play sound %s", pContext->ToStr().c_str());
             return false;
         }
         UpdateSoundState(*pContext);        // update volume immediately and unpause it w/o waiting for the next timestep
-        VERBOSE_LOG(this, "XRSoundEngine::PlayWav playing sound %s", static_cast<const char*>(pContext->ToStr()));
+        VERBOSE_LOG(this, "XRSoundEngine::PlayWav playing sound %s", pContext->ToStr().c_str());
     }
     else
     {
         // to prevent spamming the log each frame, don't re-log PlayWav message for a sound that's already playing unless its volume or bLoop has changed
         if (bLogVolumeChange)
-            VERBOSE_LOG(this, "XRSoundEngine::PlayWav adjusting volume for playing sound %s", static_cast<const char*>(pContext->ToStr()));
+            VERBOSE_LOG(this, "XRSoundEngine::PlayWav adjusting volume for playing sound %s", pContext->ToStr().c_str());
 
         if (bLoopChanged)
-            VERBOSE_LOG(this, "XRSoundEngine::PlayWav adjusting bLoop setting for playing sound %s", static_cast<const char*>(pContext->ToStr()));
+            VERBOSE_LOG(this, "XRSoundEngine::PlayWav adjusting bLoop setting for playing sound %s", pContext->ToStr().c_str());
     }
 
     // Note: the sound will be have its bLoop & volumed adjusted for distance each frame, be freed, etc. by UpdateStateOfAllSounds in the next clbkPreStep.
@@ -338,7 +350,7 @@ bool XRSoundEngine::StopWavImpl(WavContext *pContext, XRSoundEngine *pEngine)
         {
             bStopped = true;
             if (pEngine)
-                VERBOSE_LOG(pEngine, "XRSoundEngine::StopWavImpl: stopping sound %s", static_cast<const char*>(pContext->ToStr()));
+                VERBOSE_LOG(pEngine, "XRSoundEngine::StopWavImpl: stopping sound %s", pContext->ToStr().c_str());
             pISound->stop();
         }
         pISound->drop();    // free irrKlang resources for this sound
@@ -375,7 +387,7 @@ const char *XRSoundEngine::GetWavFilename(const int soundID)
     const char *pFilename = nullptr;
     const WavContext *pContext = FindWavContext(soundID);
     if (pContext)
-        pFilename = pContext->csSoundFilename;
+        pFilename = pContext->csSoundFilename.c_str();
 
     return pFilename;
 }
@@ -401,7 +413,7 @@ bool XRSoundEngine::SetPaused(const int soundID, const bool bPause)
 
         // Log the change only if we are changing the paused state
         if (pContext->bPaused != bPause)   // are we changing the paused state?
-            VERBOSE_LOG(this, "XRSoundEngine::SetPaused: setting sound %s paused state = %d", static_cast<const char*>(pContext->ToStr()), bPause);
+            VERBOSE_LOG(this, "XRSoundEngine::SetPaused: setting sound %s paused state = %d", pContext->ToStr().c_str(), bPause);
 
         pContext->bPaused = bPause;
         UpdateSoundState(*pContext);    // pause or unpause immediately without waiting for the next sound step
@@ -452,13 +464,13 @@ void XRSoundEngine::WriteLog(const char *pMsg)
     _ASSERTE(m_pConfig);
 
     // prefix the vessel ID to the log message if we can get it
-    CString msg;
-    msg.Format("[%s][%.03lf] %s", GetLogID(), XRSoundDLL::GetAbsoluteSimTime(), pMsg);
+    char msg[256];
+    snprintf(msg, 256, "[%s][%.03lf] %s", GetLogID(), XRSoundDLL::GetAbsoluteSimTime(), pMsg);
 
     // Hopefully we won't need this check, but it's here as a sanity check in case something unexpected happens in the field.
     // reduce log verbosity by not re-logging the exact same message (ever) 
     const double simt = XRSoundDLL::GetAbsoluteSimTime();
-    if ((msg != m_lastLogLine) /* || (simt >= m_nextDuplicateLogLineSimt) */)
+    if ((m_lastLogLine != msg) /* || (simt >= m_nextDuplicateLogLineSimt) */)
     {
         m_lastLogLine = msg;
         // m_nextDuplicateLogLineSimt = simt + 1.0;
@@ -528,14 +540,16 @@ double XRSoundEngine::ComputeVariableLevel(const double min, const double max, d
 // e.g., "XRSound 1.00 Beta-1 (Build Date Jan 17, 2018)"
 const char *XRSoundEngine::GetVersionStr()
 {
-    if (s_csVersion.IsEmpty())
-        s_csVersion.Format("XRSound %.2f %s[%s %s], Build Date : %s", XRSOUND_ENGINE_VERSION, XRSOUND_BETA_STR, ARCH_TYPE, BUILD_TYPE, __DATE__);
-
-    return static_cast<const char *>(s_csVersion);
+    if (s_csVersion.empty()) {
+		char cbuf[256];
+		snprintf(cbuf, 256, "XRSound %.2f %s[%s %s], Build Date : %s", XRSOUND_ENGINE_VERSION, XRSOUND_BETA_STR, ARCH_TYPE, BUILD_TYPE, __DATE__);
+        s_csVersion = cbuf;
+	}
+    return s_csVersion.c_str();
 }
 
 // Returns vector of valid sound filename extensions; e.g., ".flac", ".mp3", etc.
-vector<CString> XRSoundEngine::GetValidSoundFileExtensions()
+vector<std::string> XRSoundEngine::GetValidSoundFileExtensions()
 {
     _ASSERTE(m_pConfig);
     return m_pConfig->SupportedSoundFileTypesAsVector();
@@ -575,15 +589,15 @@ bool XRSoundEngine::PauseOrReumseMusic(const bool bPause)
             // If *pausing*, don't change the state in the WavContext of the sound here: 1) we don't need to because Orbiter will no longer call our PreStep while it
             // is paused, and 2) We want to preserve the current state of each sounds's bPaused flag anyway so that each will be unpaused or remain paused 
             // as desired when Orbiter unpauses and this method is called again.
-            CString msg;
+            char msg[256];
             if (bPause)
             {
-                msg.Format("Pausing global music slot %s", static_cast<const char *>(s_pMusicFolderWavContext->ToStr()));
+                snprintf(msg, 256, "Pausing global music slot %s", static_cast<const char *>(s_pMusicFolderWavContext->ToStr().c_str()));
                 pISound->setIsPaused(true);
             }
             else
             {
-                msg.Format("Unpausing global music slot %s", static_cast<const char*>(s_pMusicFolderWavContext->ToStr()));
+                snprintf(msg, 256, "Unpausing global music slot %s", static_cast<const char*>(s_pMusicFolderWavContext->ToStr().c_str()));
                 pISound->setIsPaused(false);
             }
             XRSoundDLL::WriteLog(msg);

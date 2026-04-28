@@ -19,9 +19,9 @@
 // Only invoked by our base class's static DestroyInstance method
 void VesselXRSoundEngine::FreeResources()
 {
-    CString msg;
-    msg.Format("XRSoundEngine::FreeResources: freeing XRSound engine resources for vessel '%s'",
-        static_cast<const char *>(GetVesselName()));
+    char msg[256];
+    snprintf(msg, 256, "XRSoundEngine::FreeResources: freeing XRSound engine resources for vessel '%s'",
+        GetVesselName().c_str());
     s_globalConfig.WriteLog(msg);
 
     // stop all of this vessel's sounds and free all irrKlang resources for them
@@ -66,8 +66,8 @@ VesselXRSoundEngine::VesselXRSoundEngine(const OBJHANDLE hVessel) :
     m_pConfig->ParseVesselSoundConfig(pVessel);
     if (m_pConfig->ParseFailed())
     {
-        CString msg;
-        msg.Format("Error parsing configuration file(s) '%s' -- see above error messages for details.", m_pConfig->GetConfigFilenames());
+        char msg[256];
+        snprintf(msg, 256, "Error parsing configuration file(s) '%s' -- see above error messages for details.", m_pConfig->GetConfigFilenames());
         m_pConfig->WriteLog(msg);
     }
 
@@ -308,7 +308,7 @@ void VesselXRSoundEngine::PollAllAnimationStates()
 
     const int animationCount = pVessel->GetAnimPtr(&pAllAnimations);
 
-    auto prevAnimIDStateMap = m_animIDStateMap;  // deep-clone map of values from previous frame since we will rebuild the active map below.
+    HASHMAP_ANIMID_ANIMATIONSTATE prevAnimIDStateMap = m_animIDStateMap;  // deep-clone map of values from previous frame since we will rebuild the active map below.
     m_animIDStateMap.clear();   // we rebuild this every frame
 
                                 // loop through all animations defined for this vessel during this frame
@@ -358,8 +358,8 @@ void VesselXRSoundEngine::PollAllAnimationStates()
 
         if (bStateTransitioned && GetConfig().LogVesselAnimations)
         {
-            CString csMsg;
-            csMsg.Format("  >> LogVesselAnimations: [%s][animation ID = %d, state = %s]", static_cast<const char *>(GetVesselClassName()), animID, animationState.ToStr());
+            char csMsg[256];
+            snprintf(csMsg, 256, "  >> LogVesselAnimations: [%s][animation ID = %d, state = %s]", GetVesselClassName().c_str(), animID, animationState.ToStr());
             WriteLog(csMsg);
         }
     }
@@ -566,7 +566,7 @@ bool VesselXRSoundEngine::IsOATValid()
 void VesselXRSoundEngine::LoadGlobalSounds()
 {
 #define LOAD_GLOBAL_SOUND(soundID, pbType)  \
-    if (*GetConfig().soundID) LoadWav(XRSound::soundID, GetConfig().soundID, XRSound::PlaybackType::pbType)
+    if (!GetConfig().soundID.empty()) LoadWav(XRSound::soundID, GetConfig().soundID.c_str(), XRSound::PlaybackType::pbType)
 
     // load the global sounds: (these are used by multiple SoundPreSteps)
     LOAD_GLOBAL_SOUND(SwitchOn, InternalOnly);
@@ -577,17 +577,17 @@ void VesselXRSoundEngine::LoadGlobalSounds()
 void VesselXRSoundEngine::LoadDefaultSounds()
 {
     // add default sounds
-    AddDefaultSound(new AirConditioningDefaultSoundPreStep(this), XRSound::AirConditioning, GetConfig().AirConditioning, XRSound::PlaybackType::InternalOnly);
-    AddDefaultSound(new LandedWindDefaultSoundPreStep(this), XRSound::LandedWind, GetConfig().LandedWind, XRSound::PlaybackType::Wind);
-    AddDefaultSound(new AudioGreetingDefaultSoundPreStep(this), XRSound::AudioGreeting, GetConfig().AudioGreeting, XRSound::PlaybackType::Radio);
-    AddDefaultSound(new CustomEnginesDefaultSoundPreStep(this), XRSound::CustomEngines, GetConfig().CustomEngines, XRSound::PlaybackType::BothViewFar);
-    AddDefaultSound(new WheelbrakeDefaultSoundPreStep(this), XRSound::Wheekbrakes, GetConfig().Wheelbrakes, XRSound::PlaybackType::BothViewClose);
-    AddDefaultSound(new DockingRadarDefaultSoundPreStep(this), XRSound::DockingRadarBeep, GetConfig().DockingRadarBeep, XRSound::PlaybackType::InternalOnly);
+    AddDefaultSound(new AirConditioningDefaultSoundPreStep(this), XRSound::AirConditioning, GetConfig().AirConditioning.c_str(), XRSound::PlaybackType::InternalOnly);
+    AddDefaultSound(new LandedWindDefaultSoundPreStep(this), XRSound::LandedWind, GetConfig().LandedWind.c_str(), XRSound::PlaybackType::Wind);
+    AddDefaultSound(new AudioGreetingDefaultSoundPreStep(this), XRSound::AudioGreeting, GetConfig().AudioGreeting.c_str(), XRSound::PlaybackType::Radio);
+    AddDefaultSound(new CustomEnginesDefaultSoundPreStep(this), XRSound::CustomEngines, GetConfig().CustomEngines.c_str(), XRSound::PlaybackType::BothViewFar);
+    AddDefaultSound(new WheelbrakeDefaultSoundPreStep(this), XRSound::Wheekbrakes, GetConfig().Wheelbrakes.c_str(), XRSound::PlaybackType::BothViewClose);
+    AddDefaultSound(new DockingRadarDefaultSoundPreStep(this), XRSound::DockingRadarBeep, GetConfig().DockingRadarBeep.c_str(), XRSound::PlaybackType::InternalOnly);
 
-    AddDefaultSound(new EngineDefaultSoundPreStep(this, THGROUP_MAIN, 0.20f, 1.0f), XRSound::MainEngines, GetConfig().MainEngines, XRSound::PlaybackType::BothViewFar);
-    AddDefaultSound(new EngineDefaultSoundPreStep(this, THGROUP_RETRO, 0.10f, 0.60f), XRSound::RetroEngines, GetConfig().RetroEngines, XRSound::PlaybackType::BothViewFar);
-    AddDefaultSound(new EngineDefaultSoundPreStep(this, THGROUP_HOVER, 0.20f, 1.0f), XRSound::HoverEngines, GetConfig().HoverEngines, XRSound::PlaybackType::BothViewFar);
-    AddDefaultSound(new RCSDefaultSoundPreStep(this), XRSound::RCSSustain, GetConfig().RCSSustain, XRSound::PlaybackType::BothViewMedium);
+    AddDefaultSound(new EngineDefaultSoundPreStep(this, THGROUP_MAIN, 0.20f, 1.0f), XRSound::MainEngines, GetConfig().MainEngines.c_str(), XRSound::PlaybackType::BothViewFar);
+    AddDefaultSound(new EngineDefaultSoundPreStep(this, THGROUP_RETRO, 0.10f, 0.60f), XRSound::RetroEngines, GetConfig().RetroEngines.c_str(), XRSound::PlaybackType::BothViewFar);
+    AddDefaultSound(new EngineDefaultSoundPreStep(this, THGROUP_HOVER, 0.20f, 1.0f), XRSound::HoverEngines, GetConfig().HoverEngines.c_str(), XRSound::PlaybackType::BothViewFar);
+    AddDefaultSound(new RCSDefaultSoundPreStep(this), XRSound::RCSSustain, GetConfig().RCSSustain.c_str(), XRSound::PlaybackType::BothViewMedium);
 
     AddSoundPreStep(new RCSModeDefaultSoundPreStep(this));
     AddSoundPreStep(new AFCtrlModeDefaultSoundPreStep(this));
@@ -601,12 +601,12 @@ void VesselXRSoundEngine::LoadDefaultSounds()
 
 
     // add default sound groups
-    AddDefaultSound(new AmbientDefaultSoundGroupPreStep(this), XRSound::CabinAmbienceGroup, GetConfig().CabinAmbienceGroup, XRSound::PlaybackType::InternalOnly);
-    AddDefaultSound(new ATCDefaultSoundGroupPreStep(this), XRSound::RadioATCGroup, GetConfig().ATCFolder, XRSound::PlaybackType::Radio);
-    AddDefaultSound(new AltitudeCalloutsDefaultSoundGroupPreStep(this), XRSound::AltitudeCalloutsGroup, GetConfig().AltitudeCalloutsGroup, XRSound::PlaybackType::Radio);
-    AddDefaultSound(new DockingCalloutsDefaultSoundGroupPreStep(this), XRSound::DockingDistanceCalloutsGroup, GetConfig().DockingDistanceCalloutsGroup, XRSound::PlaybackType::Radio);
-    AddDefaultSound(new MachCalloutsDefaultSoundGroupPreStep(this), XRSound::MachCalloutsGroup, GetConfig().MachCalloutsGroup, XRSound::PlaybackType::Radio);
-    AddDefaultSound(new MusicDefaultSoundGroupPreStep(this), XRSound::MusicFolder, GetConfig().MusicFolder, XRSound::PlaybackType::Radio);
+    AddDefaultSound(new AmbientDefaultSoundGroupPreStep(this), XRSound::CabinAmbienceGroup, GetConfig().CabinAmbienceGroup.c_str(), XRSound::PlaybackType::InternalOnly);
+    AddDefaultSound(new ATCDefaultSoundGroupPreStep(this), XRSound::RadioATCGroup, GetConfig().ATCFolder.c_str(), XRSound::PlaybackType::Radio);
+    AddDefaultSound(new AltitudeCalloutsDefaultSoundGroupPreStep(this), XRSound::AltitudeCalloutsGroup, GetConfig().AltitudeCalloutsGroup.c_str(), XRSound::PlaybackType::Radio);
+    AddDefaultSound(new DockingCalloutsDefaultSoundGroupPreStep(this), XRSound::DockingDistanceCalloutsGroup, GetConfig().DockingDistanceCalloutsGroup.c_str(), XRSound::PlaybackType::Radio);
+    AddDefaultSound(new MachCalloutsDefaultSoundGroupPreStep(this), XRSound::MachCalloutsGroup, GetConfig().MachCalloutsGroup.c_str(), XRSound::PlaybackType::Radio);
+    AddDefaultSound(new MusicDefaultSoundGroupPreStep(this), XRSound::MusicFolder, GetConfig().MusicFolder.c_str(), XRSound::PlaybackType::Radio);
 
     // Loop through each AnimationSounds object defined for this vessel and add an AnimationSoundPreStep for each.
     // NOTE: this includes any custom animation sounds defined by users, too, not just default animation sounds that are already in the default 
@@ -752,7 +752,7 @@ double VesselXRSoundEngine::GetPlasmaLevel()
     // This code is lifted from SetHullTempsPostStep::AddHeat in XR1PostSteps.cpp.  It does not need to be precise; it is just to get an approximate 
     // level of plasma for the vessel in at atmosphere.
     const double HULL_HEATING_FACTOR = 3.1034e-10;
-    const double workingHullHeatingFactor = HULL_HEATING_FACTOR * 0.642; // tweaked very carefully…
+    const double workingHullHeatingFactor = HULL_HEATING_FACTOR * 0.642; // tweaked very carefullyâ€¦
 
     const double atmPressure = pVessel->GetAtmPressure();
     const double airspeed = pVessel->GetAirspeed();   // check *airspeed* here, not ground speed
