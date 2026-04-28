@@ -6,8 +6,8 @@
 // Licensed under the MIT License
 // ==============================================================
 
-#include "FileList.h"
 #include "Orbitersdk.h"   // for oapiRand
+#include "FileList.h"
 
 // Convenience constructor for when you want to accept all file types
 FileList::FileList(const char *pRootPath, const bool bRecurseSubfolders) :
@@ -26,7 +26,7 @@ FileList::FileList(const char *pRootPath, const bool bRecurseSubfolders, const c
 //  pRootPath: base path to scan; may be relative or absolute path
 //  bRecurseSubfolders: true to recurse, false to not
 //  pFileTypesToAccept: vector of case-insensitive file extensions to accept (e.g., '.cfg', '.flac', etc).  If empty, all files are accepted.
-FileList::FileList(const char *pRootPath, const bool bRecurseSubfolders, const vector<CString> &fileTypesToAccept) :
+FileList::FileList(const char *pRootPath, const bool bRecurseSubfolders, const vector<std::string> &fileTypesToAccept) :
     FileList(pRootPath, bRecurseSubfolders)
 {
     m_fileTypesToAccept = fileTypesToAccept;     // copied by value (i.e., it is cloned)
@@ -93,7 +93,7 @@ bool FileList::clbkFilterNode(const fs::directory_entry& entry)
             // see if we have a case-insensitive match for this extension in our master list
             for (auto it = m_fileTypesToAccept.begin(); it != m_fileTypesToAccept.end(); it++)
             {
-                if (stricmp(entry.path().extension().string().c_str(), *it) == 0)
+                if (stricmp(entry.path().extension().string().c_str(), it->c_str()) == 0)
                 {
                     bAcceptFile = true;
                     break;
@@ -115,7 +115,7 @@ void FileList::clbkProcessFile(const fs::directory_entry& entry)
 
 // Returns a random file entry from the list that is not a repeat of the previous one (provided there are at least two files in the list).
 // Returns empty string if the list is empty.
-const CString FileList::GetRandomFile()
+const std::string FileList::GetRandomFile()
 {
     const int fileCount = GetScannedFileCount();
 
@@ -139,7 +139,7 @@ const CString FileList::GetRandomFile()
 // Returns a random file entry from the list that is not a repeat of the previous one (provided there are at least two files in the list).
 //   index: 0..GetScannedFileCount()-1
 // Returns empty string if the list is empty.
-const CString FileList::GetFile(const int index) const
+const std::string FileList::GetFile(const int index) const
 {
     const int fileCount = GetScannedFileCount();
 
@@ -151,26 +151,30 @@ const CString FileList::GetFile(const int index) const
 }
 
 // Returns the first file in our file list with the specified basename (case-insensitive search), or nullptr if no file found.
-const CString *FileList::FindFileWithBasename(const char *pBasename) const
+const std::string *FileList::FindFileWithBasename(const char *pBasename) const
 {
     _ASSERTE(pBasename);
     _ASSERTE(*pBasename);
 
-    const CString *pRetVal = nullptr;
+    const std::string *pRetVal = nullptr;
     if (pBasename && *pBasename)
     {
-        for (vector<CString>::const_iterator it = m_allFiles.begin(); it != m_allFiles.end(); it++)
+        for (vector<std::string>::const_iterator it = m_allFiles.begin(); it != m_allFiles.end(); it++)
         {
-            const CString &filespec = *it;   // e.g., "foo\bar.flac", "C:\foo\bar.flac", etc.
+            const std::string &filespec = *it;   // e.g., "foo\bar.flac", "C:\foo\bar.flac", etc.
+
+			int lastSeparatorIndex;
 
             // locate the filename portion of the string
-            int lastSeparatorIndex = filespec.ReverseFind('\\');
-            if (lastSeparatorIndex < 0)
-                lastSeparatorIndex = -1;     // we have just a filename ("bar.flac") -- no leading path; adjust so it will start at index 0 below
+			size_t pos = filespec.rfind('\\');
+			if (pos == std::string::npos)
+				lastSeparatorIndex = -1;     // we have just a filename ("bar.flac") -- no leading path; adjust so it will start at index 0 below
+			else
+				lastSeparatorIndex = static_cast<int>(pos);
 
             // see if the basename part matches what we're looking for
             // Note: it would be faster for very large filelists to use a hashmap, but this is faster for lists of a few hundred files or less
-            const char *pCandidateFilename = static_cast<const char *>(filespec) + lastSeparatorIndex + 1;  // point to filename portion of string (skip over "\")
+            const char *pCandidateFilename = static_cast<const char *>(filespec.c_str()) + lastSeparatorIndex + 1;  // point to filename portion of string (skip over "\")
             for (int i=0;; i++)
             {
                 if (!pCandidateFilename[i] || (pCandidateFilename[i] == '.'))   // end of filespec string or end of filename portion (if any)?
