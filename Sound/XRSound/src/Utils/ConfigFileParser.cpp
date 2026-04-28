@@ -19,9 +19,9 @@
 
 #include "ConfigFileParser.h"
 
-#include <Shlwapi.h>   // for PathFileExists
-#include <string.h>
-#include <atlstr.h>
+#include <string>
+#include <ctime>
+#include <chrono>
 
 // Constructor
 // pDefaultFilename = path to default config file; may be relative to Orbiter root or absolute
@@ -259,7 +259,6 @@ void ConfigFileParser::TrimString(char *pStr)
     strcpy(pOrgStart, pStart);
 }
 
-
 // log a message
 void ConfigFileParser::WriteLog(const char *pMsg) const
 {
@@ -267,22 +266,30 @@ void ConfigFileParser::WriteLog(const char *pMsg) const
     if ((pMsg == nullptr) || (m_pLogFile == nullptr)) 
         return;
 
-    CStringA csMsg;
+	char csMsg[256];
     // get and format the current time
-    SYSTEMTIME st;
-    GetLocalTime(&st);
-    CString csPrefix;
-    if (!GetLogPrefix().IsEmpty())
-        csPrefix.Format("[%s] ", static_cast<const char *>(GetLogPrefix()));
+    auto now = std::chrono::system_clock::now();
+    std::time_t t = std::chrono::system_clock::to_time_t(now);
+    std::tm tm{};
 
-    csMsg.Format("%02d.%02d.%04d %02d:%02d:%02d.%03d - %s%s\n", 
-        st.wMonth, st.wDay, st.wYear, 
-        st.wHour, st.wMinute, st.wSecond, st.wMilliseconds,
-        static_cast<const char *>(csPrefix), pMsg);
+	// Warning MS BS, POSIX is localtime_r(&t, &tm);
+    localtime_s(&tm, &t);
+
+    auto ms = std::chrono::duration_cast<std::chrono::milliseconds>(
+        now.time_since_epoch()) % 1000;
+
+	char csPrefix[256] = {0};
+    if (!GetLogPrefix().empty())
+        snprintf(csPrefix, 256, "[%s] ", GetLogPrefix().c_str());
+
+    snprintf(csMsg, 256, "%02d.%02d.%04d %02d:%02d:%02d.%03d - %s%s\n", 
+        tm.tm_mon + 1, tm.tm_mday, tm.tm_year + 1900, 
+        tm.tm_hour, tm.tm_min, tm.tm_sec, (int)ms.count(),
+        csPrefix, pMsg);
 
     // no point in checking for error here
     OutputDebugString(csMsg);   // send to debug console
-    fwrite(csMsg, 1, csMsg.GetLength(), m_pLogFile);
+    fwrite(csMsg, 1, strlen(csMsg), m_pLogFile);
 
     // flush to disk in case we crash or are terminated
     fflush(m_pLogFile);

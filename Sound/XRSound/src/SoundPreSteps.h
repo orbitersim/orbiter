@@ -7,7 +7,6 @@
 
 #pragma once
 
-#include <atlstr.h>             // for CString
 #include <unordered_map>
 
 #include "OrbiterSDK.h"
@@ -62,7 +61,7 @@ protected:
     bool PlaySwitch(const bool bOn, const float volume = 1.0);
     bool LoadWav(const int soundID, const char *pSoundFilename, const XRSound::PlaybackType playbackType);
     bool PlayWav(const int soundID, const bool bLoop = false, const float volume = 1.0);
-    bool LoadAndPlayWavUsingID(const int soundID, const char *pWavFile, const bool bLoop, const XRSound::PlaybackType playbackType, const float volume = 1.0);
+    bool LoadAndPlayWavUsingID(const int soundID, const std::string &pWavFile, const bool bLoop, const XRSound::PlaybackType playbackType, const float volume = 1.0);
     bool StopWav(const int soundID);
 
     VesselXRSoundEngine *m_pEngine;

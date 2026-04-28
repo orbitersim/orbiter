@@ -15,9 +15,9 @@ class ModuleXRSoundEngine : public XRSoundEngine
 public:
     static ModuleXRSoundEngine *CreateInstance(const char *pUniqueModuleName);
 
-    const CString &GetModuleName() const { return m_csModuleName; }
+    const std::string &GetModuleName() const { return m_csModuleName; }
     virtual EngineType GetEngineType() override { return EngineType::Module; }
-    virtual const char *GetLogID() override { return GetModuleName(); }
+    virtual const char *GetLogID() override { return GetModuleName().c_str(); }
 
     virtual bool SetDefaultSoundEnabled(const XRSound::DefaultSoundID soundID, const bool bEnabled) override;
     virtual bool GetDefaultSoundEnabled(const XRSound::DefaultSoundID soundID) override;
@@ -25,7 +25,7 @@ public:
     virtual const char *GetDefaultSoundGroupFolder(const XRSound::DefaultSoundID groupSoundID) const override;
 
 protected:
-    CString m_csModuleName;   // unique module ID
+    std::string m_csModuleName;   // unique module ID
 
     virtual void FreeResources() override;
     virtual void UpdateSoundState(WavContext &context) override;
