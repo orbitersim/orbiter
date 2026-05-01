@@ -55,7 +55,7 @@ jobs:
         mv Orbiter-x64/Orbiter.zip Orbiter-x64.zip
 
     - name: "Create nightly release"
-      uses: softprops/action-gh-release@v2
+      uses: softprops/action-gh-release@v3
       with:
         body: https://cdn.openorbiter.space/orbiter-releases/Orbiter-${{ inputs.version }}.zip
         tag_name: ${{ inputs.version }}
