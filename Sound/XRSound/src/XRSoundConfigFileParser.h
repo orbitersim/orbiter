@@ -165,6 +165,13 @@ public:
     CString RCSAttackMinusY;
     CString RCSAttackMinusZ;
 
+    CString RCSClosePlusX;
+    CString RCSClosePlusY;
+    CString RCSClosePlusZ;
+    CString RCSCloseMinusX;
+    CString RCSCloseMinusY;
+    CString RCSCloseMinusZ;
+
     CString RCSSustain;
 
     CString SwitchOn;

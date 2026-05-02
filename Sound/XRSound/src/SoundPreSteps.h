@@ -155,13 +155,14 @@ protected:
     class RCSAttackForAxisSound
     {
     public:
-        RCSAttackForAxisSound(const double &axisThrustLevel, const int soundID, VesselXRSoundEngine *pEngine, const bool bNegativeAxis, const char *pWavFilePath);
+        RCSAttackForAxisSound(const double &axisThrustLevel, const int soundID, VesselXRSoundEngine *pEngine, const bool bNegativeAxis, const char *pWavFilePath, const int closeSoundID, const char *pCloseWavFilePath);
         ~RCSAttackForAxisSound();
         void clbkPreStep();
 
     protected:
         const double &m_axisThrustLevel;
         int m_soundID;
+        int m_closeSoundID;
         VesselXRSoundEngine *m_pEngine;
         bool m_bNegativeAxis;         // if true, thrust level is along the negative axis
         bool m_bAttackSoundMayPlay;   // if true, RCS Attack sound should start playing on the next call to clbkPreStep *if* thrust level >= m_minThrustLevelForSound

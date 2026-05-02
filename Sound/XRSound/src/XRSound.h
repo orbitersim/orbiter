@@ -80,6 +80,12 @@ public:
         RCSAttackMinusX,            // 10043
         RCSAttackMinusY,            // 10044
         RCSAttackMinusZ,            // 10045
+        RCSClosePlusX,              // 10046
+        RCSClosePlusY,              // 10047
+        RCSClosePlusZ,              // 10048
+        RCSCloseMinusX,             // 10049
+        RCSCloseMinusY,             // 10050
+        RCSCloseMinusZ,             // 10051
         LastDefaultSound,
 
         // these are sound IDs that play from a group of files, each in a configured folder

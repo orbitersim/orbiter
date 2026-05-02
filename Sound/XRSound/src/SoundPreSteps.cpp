@@ -351,19 +351,19 @@ RCSDefaultSoundPreStep::RCSDefaultSoundPreStep(VesselXRSoundEngine *pEngine) :
 
     // we have six total axes, but need to check for both rotation and translation: rotation and translation for a given axis share the same sound slot
     const XRSoundConfigFileParser &config = m_pEngine->GetConfig();
-    m_pRCSAttackForAxisSoundArray[0]  = new RCSAttackForAxisSound(m_thrustVectorsROT.x, XRSound::RCSAttackPlusX, pEngine, false, config.RCSAttackPlusX);
-    m_pRCSAttackForAxisSoundArray[1]  = new RCSAttackForAxisSound(m_thrustVectorsLIN.x, XRSound::RCSAttackPlusX, pEngine, false, config.RCSAttackPlusX);
-    m_pRCSAttackForAxisSoundArray[2]  = new RCSAttackForAxisSound(m_thrustVectorsROT.y, XRSound::RCSAttackPlusY, pEngine, false, config.RCSAttackPlusY);
-    m_pRCSAttackForAxisSoundArray[3]  = new RCSAttackForAxisSound(m_thrustVectorsLIN.y, XRSound::RCSAttackPlusY, pEngine, false, config.RCSAttackPlusY);
-    m_pRCSAttackForAxisSoundArray[4]  = new RCSAttackForAxisSound(m_thrustVectorsROT.z, XRSound::RCSAttackPlusZ, pEngine, false, config.RCSAttackPlusZ);
-    m_pRCSAttackForAxisSoundArray[5]  = new RCSAttackForAxisSound(m_thrustVectorsLIN.z, XRSound::RCSAttackPlusZ, pEngine, false, config.RCSAttackPlusZ);
+    m_pRCSAttackForAxisSoundArray[0]  = new RCSAttackForAxisSound(m_thrustVectorsROT.x, XRSound::RCSAttackPlusX, pEngine, false, config.RCSAttackPlusX, XRSound::RCSClosePlusX, config.RCSClosePlusX);
+    m_pRCSAttackForAxisSoundArray[1]  = new RCSAttackForAxisSound(m_thrustVectorsLIN.x, XRSound::RCSAttackPlusX, pEngine, false, config.RCSAttackPlusX, XRSound::RCSClosePlusX, config.RCSClosePlusX);
+    m_pRCSAttackForAxisSoundArray[2]  = new RCSAttackForAxisSound(m_thrustVectorsROT.y, XRSound::RCSAttackPlusY, pEngine, false, config.RCSAttackPlusY, XRSound::RCSClosePlusY, config.RCSClosePlusY);
+    m_pRCSAttackForAxisSoundArray[3]  = new RCSAttackForAxisSound(m_thrustVectorsLIN.y, XRSound::RCSAttackPlusY, pEngine, false, config.RCSAttackPlusY, XRSound::RCSClosePlusY, config.RCSClosePlusY);
+    m_pRCSAttackForAxisSoundArray[4]  = new RCSAttackForAxisSound(m_thrustVectorsROT.z, XRSound::RCSAttackPlusZ, pEngine, false, config.RCSAttackPlusZ, XRSound::RCSClosePlusZ, config.RCSClosePlusZ);
+    m_pRCSAttackForAxisSoundArray[5]  = new RCSAttackForAxisSound(m_thrustVectorsLIN.z, XRSound::RCSAttackPlusZ, pEngine, false, config.RCSAttackPlusZ, XRSound::RCSClosePlusZ, config.RCSClosePlusZ);
 
-    m_pRCSAttackForAxisSoundArray[6]  = new RCSAttackForAxisSound(m_thrustVectorsROT.x, XRSound::RCSAttackMinusX, pEngine, true, config.RCSAttackMinusX);
-    m_pRCSAttackForAxisSoundArray[7]  = new RCSAttackForAxisSound(m_thrustVectorsLIN.x, XRSound::RCSAttackMinusX, pEngine, true, config.RCSAttackMinusX);
-    m_pRCSAttackForAxisSoundArray[8]  = new RCSAttackForAxisSound(m_thrustVectorsROT.y, XRSound::RCSAttackMinusY, pEngine, true, config.RCSAttackMinusY);
-    m_pRCSAttackForAxisSoundArray[9]  = new RCSAttackForAxisSound(m_thrustVectorsLIN.y, XRSound::RCSAttackMinusY, pEngine, true, config.RCSAttackMinusY);
-    m_pRCSAttackForAxisSoundArray[10] = new RCSAttackForAxisSound(m_thrustVectorsROT.z, XRSound::RCSAttackMinusZ, pEngine, true, config.RCSAttackMinusZ);
-    m_pRCSAttackForAxisSoundArray[11] = new RCSAttackForAxisSound(m_thrustVectorsLIN.z, XRSound::RCSAttackMinusZ, pEngine, true, config.RCSAttackMinusZ);
+    m_pRCSAttackForAxisSoundArray[6]  = new RCSAttackForAxisSound(m_thrustVectorsROT.x, XRSound::RCSAttackMinusX, pEngine, true, config.RCSAttackMinusX, XRSound::RCSCloseMinusX, config.RCSCloseMinusX);
+    m_pRCSAttackForAxisSoundArray[7]  = new RCSAttackForAxisSound(m_thrustVectorsLIN.x, XRSound::RCSAttackMinusX, pEngine, true, config.RCSAttackMinusX, XRSound::RCSCloseMinusX, config.RCSCloseMinusX);
+    m_pRCSAttackForAxisSoundArray[8]  = new RCSAttackForAxisSound(m_thrustVectorsROT.y, XRSound::RCSAttackMinusY, pEngine, true, config.RCSAttackMinusY, XRSound::RCSCloseMinusY, config.RCSCloseMinusY);
+    m_pRCSAttackForAxisSoundArray[9]  = new RCSAttackForAxisSound(m_thrustVectorsLIN.y, XRSound::RCSAttackMinusY, pEngine, true, config.RCSAttackMinusY, XRSound::RCSCloseMinusY, config.RCSCloseMinusY);
+    m_pRCSAttackForAxisSoundArray[10] = new RCSAttackForAxisSound(m_thrustVectorsROT.z, XRSound::RCSAttackMinusZ, pEngine, true, config.RCSAttackMinusZ, XRSound::RCSCloseMinusZ, config.RCSCloseMinusZ);
+    m_pRCSAttackForAxisSoundArray[11] = new RCSAttackForAxisSound(m_thrustVectorsLIN.z, XRSound::RCSAttackMinusZ, pEngine, true, config.RCSAttackMinusZ, XRSound::RCSCloseMinusZ, config.RCSCloseMinusZ);
 }
 
 // Destructor
@@ -429,17 +429,19 @@ void RCSDefaultSoundPreStep::clbkPreStep(const double simt, const double simdt, 
 
 // Constructor
 //   pWavFilePath: may be nullptr or empty; if so, this sound will not play
-RCSDefaultSoundPreStep::RCSAttackForAxisSound::RCSAttackForAxisSound(const double &axisThrustLevel, const int soundID, VesselXRSoundEngine *pEngine, const bool bNegativeAxis, const char *pWavFilePath) :
-    m_axisThrustLevel(axisThrustLevel), m_soundID(soundID), m_bAttackSoundMayPlay(true), m_pEngine(pEngine), m_bNegativeAxis(bNegativeAxis)
+RCSDefaultSoundPreStep::RCSAttackForAxisSound::RCSAttackForAxisSound(const double &axisThrustLevel, const int soundID, VesselXRSoundEngine *pEngine, const bool bNegativeAxis, const char *pWavFilePath, const int closeSoundID, const char *pCloseWavFilePath) :
+    m_axisThrustLevel(axisThrustLevel), m_soundID(soundID), m_closeSoundID(closeSoundID), m_bAttackSoundMayPlay(true), m_pEngine(pEngine), m_bNegativeAxis(bNegativeAxis)
 {
     // if load fails or sound file path is not set, RCSAttack sound will not play
     m_pEngine->LoadWav(soundID, pWavFilePath, XRSound::PlaybackType::BothViewClose);  
+    m_pEngine->LoadWav(closeSoundID, pCloseWavFilePath, XRSound::PlaybackType::BothViewClose);  
 }
 
 // Destructor
 RCSDefaultSoundPreStep::RCSAttackForAxisSound::~RCSAttackForAxisSound()
 {
     m_pEngine->StopWav(m_soundID);
+    m_pEngine->StopWav(m_closeSoundID);
 }
 
 // Invoked at every PreStep by our owning RCSDefaultSoundPreStep
@@ -460,6 +462,12 @@ void RCSDefaultSoundPreStep::RCSAttackForAxisSound::clbkPreStep()
     }
     else 
     {
+        if (!m_bAttackSoundMayPlay)
+        {
+            // Thrust fell below the minimum threshold, so the thruster just turned off.
+            // Play the close sound at a fixed volume since the thruster was likely fully on.
+            m_pEngine->PlayWav(m_closeSoundID, false, 1.0f);
+        }
         // Reset, since thrust fell below the minimum threshold for sound to play for it.  
         // However, do not stop the RCSAttack sound currently playing, if any: RCSAttack sounds always finish playing.
         m_bAttackSoundMayPlay = true;
@@ -961,25 +969,25 @@ void AutopilotOnOffSoundPreStep::clbkPreStep(const double simt, const double sim
 
     // check if any navmode (autopilot) *besides killrot* is engaged; only ONE of these other nav modes can be engaged at any one time
     /*
-    • #define NAVMODE_KILLROT 1
+    â€¢ #define NAVMODE_KILLROT 1
     "Kill rotation" mode
     
-    • #define NAVMODE_HLEVEL 2
+    â€¢ #define NAVMODE_HLEVEL 2
     "Hold level with horizon" mode
     
-    • #define NAVMODE_PROGRADE 3
+    â€¢ #define NAVMODE_PROGRADE 3
     "Prograde" mode
     
-    • #define NAVMODE_RETROGRADE 4
+    â€¢ #define NAVMODE_RETROGRADE 4
     "Retrograde" mode
     
-    • #define NAVMODE_NORMAL 5
+    â€¢ #define NAVMODE_NORMAL 5
     "Normal to orbital plane" mode
     
-    • #define NAVMODE_ANTINORMAL 6
+    â€¢ #define NAVMODE_ANTINORMAL 6
     "Anti-normal to orbital plane" mode
     
-    • #define NAVMODE_HOLDALT 7
+    â€¢ #define NAVMODE_HOLDALT 7
     "Hold altitude" mode
     */
     int currentNavmode = 0;   // assume no autopilot engaged
