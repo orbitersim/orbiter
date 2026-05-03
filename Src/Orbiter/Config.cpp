@@ -205,7 +205,7 @@ CFG_UIPRM CfgUIPrm_default = {
 	2,          // MenuMode (auto-hide menu bar)
 	35,         // MenuButtonSize
 	35,         // MenuButtonHoverSize
-	18,          // MenuButtonSpacing
+	18,         // MenuButtonSpacing
 	false,      // bMenuLabelAlways (always display labels)
 	true,       // bWarpAlways (always display time acceleration != 1)
 	0,          // InfoMode (show info bars)
@@ -215,7 +215,8 @@ CFG_UIPRM CfgUIPrm_default = {
 	10,         // MenuScrollspeed (1-20)
 	0,          // SelVesselTab: tab to open in vessel selection dialog
 	4,          // SelVesselRange "nearby" range for vessel selection dialog (100km)
-	false       // bSelVesselFlat (no flat assemblies) in vessel selection dialog)
+	false,      // bSelVesselFlat (no flat assemblies) in vessel selection dialog),
+	""     // Locale
 };
 
 CFG_DEMOPRM CfgDemoPrm_default = {
@@ -742,6 +743,8 @@ bool Config::Load(const char *fname)
 	GetInt (ifs, "SelVesselTab", CfgUIPrm.SelVesselTab);
 	GetInt (ifs, "SelVesselRange", CfgUIPrm.SelVesselRange);
 	GetBool (ifs, "SelVesselFlat", CfgUIPrm.bSelVesselFlat);
+	if (GetString (ifs, "Locale", cbuf))
+		CfgUIPrm.locale = cbuf;
 
 	// demo parameters
 	GetBool (ifs, "DemoMode", CfgDemoPrm.bDemo);
@@ -1301,6 +1304,8 @@ BOOL Config::Write (const char *fname) const
 			ofs << "SelVesselRange = " << CfgUIPrm.SelVesselRange << '\n';
 		if (CfgUIPrm.bSelVesselFlat != CfgUIPrm_default.bSelVesselFlat || bEchoAll)
 			ofs << "SelVesselFlat = " << BoolStr (CfgUIPrm.bSelVesselFlat) << '\n';
+		if (CfgUIPrm.locale != CfgUIPrm_default.locale || bEchoAll)
+			ofs << "Locale = " << CfgUIPrm.locale << '\n';
 	}
 
 	if (memcmp (&CfgDemoPrm, &CfgDemoPrm_default, sizeof(CFG_DEMOPRM)) || bEchoAll) {
@@ -1453,6 +1458,11 @@ void Config::PTexPath(char* cbuf, const char* name, const char* ext)
 	strncpy(cbuf, ptxpath, ptxlen);
 	if (ext) sprintf(cbuf + ptxlen, "%s.%s", name, ext);
 	else     strcpy(cbuf + ptxlen, name);
+}
+
+bool Config::NLSEnabled()
+{
+	return !CfgUIPrm.locale.empty();
 }
 
 bool Config::IsActiveModule(const std::string& name)

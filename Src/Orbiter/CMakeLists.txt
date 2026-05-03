@@ -5,6 +5,7 @@
 set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -SAFESEH:NO")
 FetchContent_MakeAvailable(imgui)
 FetchContent_MakeAvailable(implot)
+FetchContent_MakeAvailable(freetype)
 
 # Sources for all Orbiter executable targets
 set(common_src
@@ -59,6 +60,7 @@ set(common_src
 	htmlctrl.c
 	Select.cpp
 	OptionsPages.cpp
+	i18n.cpp
 # Body classes
 	Body.cpp
 	BodyIntegrator.cpp
@@ -121,6 +123,7 @@ set(common_src
 	Orbiter.rc
 	Orbiter.ico
 	${imgui_SOURCE_DIR}/backends/imgui_impl_win32.cpp
+	${imgui_SOURCE_DIR}/misc/freetype/imgui_freetype.cpp
 )
 
 set(Orbiter_includes
@@ -165,9 +168,9 @@ set_target_properties(Orbiter
 	FOLDER Core
 )
 
-target_include_directories(Orbiter PUBLIC ${Orbiter_includes} ${TRACY_CLIENT_INCLUDE} ${imgui_SOURCE_DIR}/ ${imgui_SOURCE_DIR}/backends ${implot_SOURCE_DIR}/)
+target_include_directories(Orbiter PUBLIC ${Orbiter_includes} ${TRACY_CLIENT_INCLUDE} ${imgui_SOURCE_DIR}/ ${imgui_SOURCE_DIR}/misc/freetype ${imgui_SOURCE_DIR}/backends ${implot_SOURCE_DIR}/)
 
-target_link_libraries(Orbiter ${Orbiter_common_libs} ${Orbiter_libs} ${TRACY_CLIENT})
+target_link_libraries(Orbiter ${Orbiter_common_libs} ${Orbiter_libs} ${TRACY_CLIENT} freetype)
 
 add_dependencies(Orbiter ${Orbiter_depends})
 
@@ -189,3 +192,7 @@ add_custom_command(TARGET ${OrbiterTgt}	POST_BUILD
 string(TIMESTAMP DATE "%d %b %Y")
 string(TIMESTAMP VERSION "%y%m%d")
 configure_file(about.hpp.in about.hpp @ONLY)
+
+# /!\ ORBITER_INSTALL_ROOT_DIR is relative to CMAKE_INSTALL_PREFIX
+generate_pot(Orbiter)
+install_po_files()

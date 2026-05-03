@@ -1,0 +1,122 @@
+# This file was auto-generated, DO NOT modify it directly
+msgid ""
+msgstr ""
+"Project-Id-Version: \n"
+"POT-Creation-Date: \n"
+"PO-Revision-Date: \n"
+"Last-Translator: \n"
+"Language-Team: \n"
+"Language: fr_FR\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n > 1);\n"
+"X-Generator: Poedit 3.8\n"
+
+#. Dialog title
+#: Src/Plugin/Rcontrol/Rcontrol.cpp:90
+msgctxt "RControl"
+msgid "Orbiter Remote Vessel Control"
+msgstr "Téléopération vaisseau"
+
+#. Custom command name
+#: Src/Plugin/Rcontrol/Rcontrol.cpp:94
+msgctxt "RControl"
+msgid "Remote Vessel Control"
+msgstr "Téléopération"
+
+#. Custom command description
+#: Src/Plugin/Rcontrol/Rcontrol.cpp:96
+msgctxt "RControl"
+msgid "Operate the engines of any spacecraft from a dialog box."
+msgstr ""
+"Contrôler les propulseurs de n'importe quel vaisseau depuis une boîte de "
+"dialogue."
+
+#. Name in menu bar
+#: Src/Plugin/Rcontrol/Rcontrol.cpp:100
+msgctxt "RControl"
+msgid "Rcontrol"
+msgstr "TéléOp"
+
+#: Src/Plugin/Rcontrol/Rcontrol.cpp:136
+msgctxt "RControl"
+msgid "Vessel"
+msgstr "Vaisseau"
+
+#: Src/Plugin/Rcontrol/Rcontrol.cpp:155
+msgctxt "RControl"
+msgid "Set focus"
+msgstr "Cibler"
+
+#: Src/Plugin/Rcontrol/Rcontrol.cpp:158
+msgctxt "RControl"
+msgid "Engines"
+msgstr "Propulseurs"
+
+#. The escaped sequence is the ICON_FA_ANGLES_LEFT icon
+#: Src/Plugin/Rcontrol/Rcontrol.cpp:162
+msgctxt "RControl"
+msgid "\\xef\\x84\\x80 Retro"
+msgstr "\\xef\\x84\\x80 Rétro"
+
+#. The escaped sequence is the ICON_FA_ANGLES_RIGHT icon
+#: Src/Plugin/Rcontrol/Rcontrol.cpp:169
+msgctxt "RControl"
+msgid "Main \\xef\\x84\\x81"
+msgstr "Principal \\xef\\x84\\x81"
+
+#: Src/Plugin/Rcontrol/Rcontrol.cpp:175
+msgctxt "RControl"
+msgid "Hover"
+msgstr "Sustentation"
+
+#: Src/Plugin/Rcontrol/Rcontrol.cpp:180
+msgctxt "RControl"
+msgid "RCS level"
+msgstr "Poussée RCS"
+
+#: Src/Plugin/Rcontrol/Rcontrol.cpp:187
+msgctxt "RControl"
+msgid "RCS Rotation"
+msgstr "Rotation RCS"
+
+#: Src/Plugin/Rcontrol/Rcontrol.cpp:218
+msgctxt "RControl"
+msgid "RCS Translation"
+msgstr "Translation RCS"
+
+#: Src/Plugin/Rcontrol/Rcontrol.cpp:243
+msgctxt "RControl"
+msgid "Nav mode"
+msgstr "Commande d'attitude"
+
+#: Src/Plugin/Rcontrol/Rcontrol.cpp:246
+msgctxt "RControl"
+msgid "Killrot"
+msgstr "Arrêt rotation"
+
+#: Src/Plugin/Rcontrol/Rcontrol.cpp:250
+msgctxt "RControl"
+msgid "Prograde"
+msgstr "Prograde"
+
+#: Src/Plugin/Rcontrol/Rcontrol.cpp:254
+msgctxt "RControl"
+msgid "Normal"
+msgstr "Normal"
+
+#: Src/Plugin/Rcontrol/Rcontrol.cpp:258
+msgctxt "RControl"
+msgid "HLevel"
+msgstr "Horizontal"
+
+#: Src/Plugin/Rcontrol/Rcontrol.cpp:262
+msgctxt "RControl"
+msgid "Retrograde"
+msgstr "Rétrograde"
+
+#: Src/Plugin/Rcontrol/Rcontrol.cpp:266
+msgctxt "RControl"
+msgid "Anti Normal"
+msgstr "Anti Normal"

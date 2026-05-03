@@ -1,0 +1,211 @@
+# This file was auto-generated, DO NOT modify it directly
+msgid ""
+msgstr ""
+"Project-Id-Version: \n"
+"POT-Creation-Date: \n"
+"PO-Revision-Date: \n"
+"Last-Translator: \n"
+"Language-Team: \n"
+"Language: fr_FR\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n > 1);\n"
+"X-Generator: Poedit 3.8\n"
+
+#: Script/Challenges/Challenge1.lua:31 Script/Challenges/Challenge2.lua:31
+#: Script/Challenges/Challenge3.lua:31 Script/Challenges/Challenge4.lua:31
+msgid ""
+"\n"
+"----------------------------------"
+msgstr ""
+"\n"
+"----------------------------------"
+
+#: Script/Challenges/Challenge1.lua:31 Script/Challenges/Challenge2.lua:31
+#: Script/Challenges/Challenge3.lua:31 Script/Challenges/Challenge4.lua:31
+msgid "Fuel used"
+msgstr "Carburant consommé"
+
+#: Script/Challenges/Challenge1.lua:31 Script/Challenges/Challenge2.lua:31
+#: Script/Challenges/Challenge3.lua:31 Script/Challenges/Challenge4.lua:31
+msgid ""
+"High score list:\n"
+"\n"
+msgstr ""
+"Meilleurs scores :\n"
+"\n"
+
+#: Script/Challenges/Challenge1.lua:31 Script/Challenges/Challenge2.lua:31
+#: Script/Challenges/Challenge3.lua:31 Script/Challenges/Challenge4.lua:31
+msgid "Name"
+msgstr "Nom"
+
+#: Script/Challenges/Challenge1.lua:37 Script/Challenges/Challenge2.lua:37
+#: Script/Challenges/Challenge3.lua:37 Script/Challenges/Challenge4.lua:37
+msgid "No high scores yet!"
+msgstr "Aucun score !"
+
+#: Script/Challenges/Challenge1.lua:49
+msgid ""
+"Flight challenge:\n"
+"\n"
+"Launch the Delta-glider into orbit and dock\n"
+"with the International Space Station.\n"
+"Use as little fuel as possible.\n"
+msgstr ""
+"Défi :\n"
+"\n"
+"Placez le Delta-Glider en orbite et amarrez-vous\n"
+"à la Station Spatiale Internationale.\n"
+"Utilisez le moins de carburant possible.\n"
+
+#: Script/Challenges/Challenge1.lua:59
+msgid "Could not find GL-01. Aborting"
+msgstr "Impossible de trouver GL-01. Arrêt"
+
+#: Script/Challenges/Challenge1.lua:62 Script/Challenges/Challenge2.lua:61
+#: Script/Challenges/Challenge3.lua:63 Script/Challenges/Challenge4.lua:63
+msgid "Wrong vessel class. Aborting"
+msgstr "Mauvaise classe de vaisseau. Arrêt"
+
+#: Script/Challenges/Challenge1.lua:72 Script/Challenges/Challenge2.lua:71
+#: Script/Challenges/Challenge3.lua:73 Script/Challenges/Challenge4.lua:73
+msgid "Initial propellant mass: %.2f kg\n"
+msgstr "Carburant initial : %.2f kg\n"
+
+#: Script/Challenges/Challenge1.lua:74 Script/Challenges/Challenge2.lua:73
+#: Script/Challenges/Challenge3.lua:75 Script/Challenges/Challenge4.lua:75
+msgid ""
+"Initial propellant mass: %.2f kg\n"
+"Used so far: %.2f kg\n"
+msgstr ""
+"Carburant initial : %.2f kg\n"
+"Consommé : %.2f kg\n"
+
+#: Script/Challenges/Challenge1.lua:99 Script/Challenges/Challenge2.lua:98
+#: Script/Challenges/Challenge3.lua:100
+msgid "Fuel used: %.2f kg"
+msgstr "Carburant consommé : %.2f kg"
+
+#: Script/Challenges/Challenge1.lua:110 Script/Challenges/Challenge2.lua:109
+#: Script/Challenges/Challenge3.lua:111 Script/Challenges/Challenge4.lua:156
+msgid "Challenge completed successfully!\n"
+msgstr "Défi réussi avec succès!\n"
+
+#: Script/Challenges/Challenge1.lua:111 Script/Challenges/Challenge2.lua:110
+#: Script/Challenges/Challenge3.lua:112 Script/Challenges/Challenge4.lua:157
+msgid "Total fuel expenditure: %.2f kg"
+msgstr "Consommation totale : %.2f kg"
+
+#: Script/Challenges/Challenge1.lua:118 Script/Challenges/Challenge2.lua:117
+#: Script/Challenges/Challenge3.lua:119 Script/Challenges/Challenge4.lua:164
+msgid ""
+"\n"
+"\n"
+"You made it into the high score!"
+msgstr ""
+"\n"
+"\n"
+"Nouveau meilleur score !"
+
+#: Script/Challenges/Challenge1.lua:120 Script/Challenges/Challenge2.lua:119
+#: Script/Challenges/Challenge3.lua:121 Script/Challenges/Challenge4.lua:166
+msgid "High score: Enter your name:"
+msgstr "Meilleur score : entrez votre nom :"
+
+#: Script/Challenges/Challenge2.lua:48
+msgid ""
+"Flight challenge:\n"
+"\n"
+"Transfer to the moon and dock with orbiting\n"
+"wheel, Luna-Ob1. Minimize fuel use.\n"
+msgstr ""
+"Défi :\n"
+"\n"
+"Allez jusqu'à l'orbite lunaire et amarrez-vous\n"
+"à la roue orbitale Luna-Ob1. Utilisez le moins de carburant possible.\n"
+
+#: Script/Challenges/Challenge2.lua:58 Script/Challenges/Challenge3.lua:60
+#: Script/Challenges/Challenge4.lua:60
+msgid "Could not find GL-1. Aborting"
+msgstr "Impossible de trouver GL-1. Arrêt"
+
+#: Script/Challenges/Challenge3.lua:50
+msgid ""
+"Flight challenge:\n"
+"\n"
+"Advanced lunar transfer: Transfer to the moon\n"
+"and dock with orbiting wheel, Luna-Ob1. Minimize\n"
+"fuel use.\n"
+"\n"
+"This time you need to consider plane alignments.\n"
+msgstr ""
+"Défi :\n"
+"\n"
+"Allez jusqu'à l'orbite lunaire et amarrez-vous\n"
+"à la roue orbitale Luna-Ob1. Utilisez le moins de carburant possible.\n"
+"\n"
+"Cette fois, surveillez les plans orbitaux.\n"
+
+#: Script/Challenges/Challenge4.lua:50
+msgid ""
+"Flight challenge:\n"
+"\n"
+"This sounds simple enough: Deorbit the glider and\n"
+"land at Kennedy Space Center, SLF Runway 33\n"
+"- without refuelling.\n"
+"\n"
+"Tip: a direct approach is not the best strategy here.\n"
+msgstr ""
+"Défi :\n"
+"\n"
+"Ça a l'air simple : désorbitez le Delta-Glider et\n"
+"atterrissez au Kennedy Space Center, piste SLF 33\n"
+"- sans ravitaillement.\n"
+"\n"
+"Conseil : l'approche directe n'est pas la bonne stratégie.\n"
+
+#: Script/Challenges/Challenge4.lua:110 Script/Challenges/Challenge4.lua:96
+msgid "Mission failed!"
+msgstr "Mission échouée !"
+
+#: Script/Challenges/Challenge4.lua:111 Script/Challenges/Challenge4.lua:97
+msgid "Script terminated."
+msgstr "Fin de script."
+
+#: Script/Challenges/Challenge4.lua:123
+msgid ""
+"Mission failure: hard surface impact!\n"
+"(%.2f m/s)"
+msgstr ""
+"Échec : impact violent !\n"
+"(%.2f m/s)"
+
+#: Script/Challenges/Challenge4.lua:132
+msgid ""
+"Fuel remaining:\n"
+"%.2f kg (Main) + %.2f (RCS)"
+msgstr ""
+"Carburant restant :\n"
+"%.2f kg (Main) + %.2f (RCS)"
+
+#: Script/Challenges/Challenge4.lua:139
+msgid ""
+"\n"
+"\n"
+"Distance to target: %g km\n"
+msgstr ""
+"\n"
+"\n"
+"Distance à la cible : %g km\n"
+
+#: Script/Challenges/Challenge4.lua:144
+msgid ""
+"\n"
+"\n"
+"Ground contact!"
+msgstr ""
+"\n"
+"\n"
+"Atterrissage !"

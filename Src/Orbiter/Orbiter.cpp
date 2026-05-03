@@ -46,6 +46,7 @@
 #include "imgui.h"
 #include "imgui_impl_win32.h"
 #include <filesystem>
+#include "i18n.h"
 
 #include "Tracy.hpp"
 
@@ -165,6 +166,18 @@ int _matherr(struct _exception *except )
 	return 0;
 }
 
+
+// Hacky class to handle playback annotations without breaking the old ABI
+class PlaybackAnnotation: public ScreenAnnotation
+{
+	public:
+		PlaybackAnnotation(GraphicsClient *_gc): ScreenAnnotation(_gc) {}
+		void Render() override {
+			if(g_pOrbiter->Cfg()->CfgRecPlayPrm.bShowNotes) {
+				ScreenAnnotation::Render();
+			}
+		}
+};
 
 // =======================================================================
 // WinMain()
@@ -344,25 +357,6 @@ Orbiter::Orbiter ()
 		ctrlKeyboard[i] = ctrlJoystick[i] = ctrlTotal[i] = 0; // reset keyboard and joystick attitude requests
 
 	memset (simkstate, 0, 256);
-
-
-	RegisterMenuCmd("Ship",     "MenuInfoBar/ship.png",     [](void *) {g_pOrbiter->DlgMgr()->EnsureEntry<DlgFocus>();});
-	RegisterMenuCmd("Camera",   "MenuInfoBar/camera.png",   [](void *) {g_pOrbiter->DlgMgr()->EnsureEntry<DlgCamera>();});
-	RegisterMenuCmd("Speed",    "MenuInfoBar/speed.png",    [](void *) {g_pOrbiter->DlgMgr()->EnsureEntry<DlgTacc>();});
-	RegisterMenuCmd("Pause",    "MenuInfoBar/pause.png",    [](void *) {g_pOrbiter->TogglePause();});
-	RegisterMenuCmd("Function", "MenuInfoBar/function.png", [](void *) {g_pOrbiter->DlgMgr()->EnsureEntry<DlgFunction>();});
-	RegisterMenuCmd("Info",     "MenuInfoBar/info.png",     [](void *) {g_pOrbiter->DlgMgr()->EnsureEntry<DlgInfo>();});
-	RegisterMenuCmd("Options",  "MenuInfoBar/options.png",  [](void *) {g_pOrbiter->DlgMgr()->EnsureEntry<DlgOptions>();});
-	RegisterMenuCmd("Map",      "MenuInfoBar/map.png",      [](void *) {g_pOrbiter->DlgMgr()->EnsureEntry<DlgMap>();});
-	RegisterMenuCmd("Record",   "MenuInfoBar/record.png",   [](void *) {g_pOrbiter->DlgMgr()->EnsureEntry<DlgRecorder>();});
-	RegisterMenuCmd("Help",     "MenuInfoBar/help.png",     [](void *) {
-			extern HELPCONTEXT DefHelpContext;
-			DefHelpContext.topic = (char*)"/mainmenu.htm";
-			g_pOrbiter->OpenHelp (&DefHelpContext);			
-		});
-	RegisterMenuCmd("Save",     "MenuInfoBar/save.png",     [](void *) {g_pOrbiter->Quicksave();});
-	RegisterMenuCmd("Exit",     "MenuInfoBar/exit.png",     [](void *) {PostMessage(g_pOrbiter->GetRenderWnd(), WM_CLOSE, 0, 0);});
-
 }
 
 //-----------------------------------------------------------------------------
@@ -393,6 +387,26 @@ HRESULT Orbiter::Create (HINSTANCE hInstance)
 	hInst = hInstance;
 	pConfig->Load(MasterConfigFile);
 	strcpy (cfgpath, pConfig->CfgDirPrm.ConfigDir);   cfglen = strlen (cfgpath);
+
+	I18N::Init(false);
+	I18N::LoadLocale(pConfig->CfgUIPrm.locale.c_str());
+
+	RegisterMenuCmd(_c("MenuInfoBar", "Ship"),     "MenuInfoBar/ship.png",     [](void *) {g_pOrbiter->DlgMgr()->EnsureEntry<DlgFocus>();});
+	RegisterMenuCmd(_c("MenuInfoBar", "Camera"),   "MenuInfoBar/camera.png",   [](void *) {g_pOrbiter->DlgMgr()->EnsureEntry<DlgCamera>();});
+	RegisterMenuCmd(_c("MenuInfoBar", "Speed"),    "MenuInfoBar/speed.png",    [](void *) {g_pOrbiter->DlgMgr()->EnsureEntry<DlgTacc>();});
+	RegisterMenuCmd(_c("MenuInfoBar", "Pause"),    "MenuInfoBar/pause.png",    [](void *) {g_pOrbiter->TogglePause();});
+	RegisterMenuCmd(_c("MenuInfoBar", "Function"), "MenuInfoBar/function.png", [](void *) {g_pOrbiter->DlgMgr()->EnsureEntry<DlgFunction>();});
+	RegisterMenuCmd(_c("MenuInfoBar", "Info"),     "MenuInfoBar/info.png",     [](void *) {g_pOrbiter->DlgMgr()->EnsureEntry<DlgInfo>();});
+	RegisterMenuCmd(_c("MenuInfoBar", "Options"),  "MenuInfoBar/options.png",  [](void *) {g_pOrbiter->DlgMgr()->EnsureEntry<DlgOptions>();});
+	RegisterMenuCmd(_c("MenuInfoBar", "Map"),      "MenuInfoBar/map.png",      [](void *) {g_pOrbiter->DlgMgr()->EnsureEntry<DlgMap>();});
+	RegisterMenuCmd(_c("MenuInfoBar", "Record"),   "MenuInfoBar/record.png",   [](void *) {g_pOrbiter->DlgMgr()->EnsureEntry<DlgRecorder>();});
+	RegisterMenuCmd(_c("MenuInfoBar", "Help"),     "MenuInfoBar/help.png",     [](void *) {
+			extern HELPCONTEXT DefHelpContext;
+			DefHelpContext.topic = (char*)"/mainmenu.htm";
+			g_pOrbiter->OpenHelp (&DefHelpContext);			
+		});
+	RegisterMenuCmd(_c("MenuInfoBar", "Save"),     "MenuInfoBar/save.png",     [](void *) {g_pOrbiter->Quicksave();});
+	RegisterMenuCmd(_c("MenuInfoBar", "Exit"),     "MenuInfoBar/exit.png",     [](void *) {PostMessage(g_pOrbiter->GetRenderWnd(), WM_CLOSE, 0, 0);});
 
 	if (FAILED (hr = pDI->Create (hInstance))) return hr;
 
@@ -725,7 +739,7 @@ HWND Orbiter::CreateRenderWindow (Config *pCfg, const char *scenario)
 
 		// Create keyboard device
 		if (!pDI->CreateKbdDevice ()) {
-			CloseSession ();
+			CloseSession (false);
 			return 0;
 		}
 
@@ -744,7 +758,7 @@ HWND Orbiter::CreateRenderWindow (Config *pCfg, const char *scenario)
 		pDlgMgr->AddEntry(g_input);
 
 		// playback screen annotation manager
-		snote_playback = gclient->clbkCreateAnnotation ();
+		snote_playback = new PlaybackAnnotation(gclient);
 	}
 	else {
 		pDlgMgr = new DialogManager(this, m_pConsole->WindowHandle());
@@ -885,7 +899,7 @@ void Orbiter::PreCloseSession()
 // Name: CloseSession()
 // Desc: Destroy render window and associated devices
 //-----------------------------------------------------------------------------
-void Orbiter::CloseSession ()
+void Orbiter::CloseSession (bool restart)
 {
 	DWORD i;
 
@@ -898,6 +912,13 @@ void Orbiter::CloseSession ()
 	if (hScnInterp) {
 		script->DelInterpreter (hScnInterp);
 		hScnInterp = NULL;
+	}
+
+	if(restart) {
+		const char *name = "orbiter.exe";
+		char scn[MAX_PATH];
+		snprintf(scn, 256, "\"%s\"", CurrentScenario);
+		_execl (name, name, "-l", "-S", scn, NULL);   // respawn the process
 	}
 
 	if (ConsoleManager::IsConsoleExclusive())
@@ -1485,9 +1506,9 @@ VOID Orbiter::Quicksave ()
 		if (ScenarioName[i-1] == '\\') break;
 	sprintf (fname, "Quicksave\\%s %04d", ScenarioName+i, ++g_qsaveid);
 	if(SaveScenario (fname, desc, 0))
-		oapiAddNotification(OAPINOTIF_SUCCESS, "Scenario saved successfully", fname);
+		oapiAddNotification(OAPINOTIF_SUCCESS, _c("Notification", "Scenario saved successfully"), fname);
 	else
-		oapiAddNotification(OAPINOTIF_ERROR, "Failed to save scenario", fname);
+		oapiAddNotification(OAPINOTIF_ERROR, _c("Notification", "Failed to save scenario"), fname);
 }
 
 //-----------------------------------------------------------------------------
@@ -1581,7 +1602,7 @@ void Orbiter::EndPlayback ()
 oapi::ScreenAnnotation *Orbiter::CreateAnnotation (bool exclusive, double size, COLORREF col)
 {
 	if (!gclient) return NULL;
-	oapi::ScreenAnnotation *sn = gclient->clbkCreateAnnotation();
+	oapi::ScreenAnnotation *sn = new ScreenAnnotation(gclient);
 	if (!sn) return NULL;
 	
 	sn->SetSize (size);
@@ -1597,22 +1618,6 @@ oapi::ScreenAnnotation *Orbiter::CreateAnnotation (bool exclusive, double size, 
 	snote = tmp;
 	snote[nsnote++] = sn;
 	return sn;
-
-	//DWORD w = oclient->GetFramework()->GetRenderWidth();
-	//DWORD h = oclient->GetFramework()->GetRenderHeight();
-
-	//ScreenNote *sn = new ScreenNote (this, w, h);
-	//sn->SetSize (size);
-	//sn->SetColour (col);
-
-	//ScreenNote **tmp = new ScreenNote*[nsnote+1];
-	//if (nsnote) {
-	//	memcpy (tmp, snote, nsnote*sizeof(ScreenNote*));
-	//	delete []snote;
-	//}
-	//snote = tmp;
-	//snote[nsnote++] = sn;
-	//return sn;
 }
 
 bool Orbiter::DeleteAnnotation (oapi::ScreenAnnotation *sn)
@@ -1742,11 +1747,6 @@ const Mesh *Orbiter::LoadMeshGlobal (const char *fname, LoadMeshClbkFunc fClbk)
 VOID Orbiter::Output2DData ()
 {
 	g_pane->Draw ();
-	if (g_pane) {
-		for (DWORD i = 0; i < nsnote; i++)
-			snote[i]->Render();
-		if (snote_playback && pConfig->CfgRecPlayPrm.bShowNotes) snote_playback->Render();
-	}
 }
 
 //-----------------------------------------------------------------------------
@@ -1816,7 +1816,7 @@ void Orbiter::EndTimeStep (bool running)
 	// check for termination of demo mode
 	if (SessionLimitReached())
 		if (hRenderWnd) PostMessage(hRenderWnd, WM_CLOSE, 0, 0);
-		else CloseSession();
+		else CloseSession(false);
 }
 
 bool Orbiter::SessionLimitReached() const
@@ -2648,7 +2648,7 @@ LRESULT Orbiter::MsgProc (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 		return 0;
 
 	case WM_DESTROY:
-		CloseSession ();
+		CloseSession (false);
         break;
 	}
     return DefWindowProc (hWnd, uMsg, wParam, lParam);

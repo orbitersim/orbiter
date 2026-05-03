@@ -436,7 +436,9 @@ bool D3D9Pad::TextW (int x, int y, const LPWSTR str, int len)
 	// No "Setup" here, done in PrintSkp()
 
 	if (!cfont) return false;
-	if (len == -1) len = int(wcslen(str));
+	// The API says 0 for auto length but the historical code used -1
+	// so we keep both
+	if (len == -1 || !len) len = int(wcslen(str));
 	if (!len) return true;
 
 	D3D9TextPtr pText = static_cast<const D3D9PadFont *>(cfont)->pFont;

@@ -23,6 +23,9 @@
 #include "Util.h"
 #include "Psys.h"
 
+#define TRANSLATION_CONTEXT "MFD Generic"
+#include "i18n.h"
+
 using namespace std;
 
 extern Orbiter *g_pOrbiter;
@@ -198,28 +201,28 @@ void Instrument::GlobalExit (oapi::GraphicsClient *gc)
 void Instrument::RegisterBuiltinModes ()
 {
 	static MFDMODESPECEX def_mode[BUILTIN_MFD_MODES] = {
-		{(char*)"Orbit",        OAPI_KEY_O, 0, 0},
-		{(char*)"Surface",      OAPI_KEY_S, 0, 0},
-		{(char*)"Map",          OAPI_KEY_M, 0, 0},
-		{(char*)"HSI",          OAPI_KEY_H, 0, 0},
-		{(char*)"VOR/VTOL",     OAPI_KEY_L, 0, 0},
-		{(char*)"Docking",      OAPI_KEY_D, 0, 0},
-		{(char*)"Align Planes", OAPI_KEY_A, 0, 0},
-		{(char*)"Sync Orbit",   OAPI_KEY_Y, 0, 0},
-		{(char*)"Transfer",     OAPI_KEY_X, 0, 0},
-		{(char*)"COM/NAV",      OAPI_KEY_C, 0, 0}
+		{const_cast<char *>("Orbit"),        OAPI_KEY_O, 0, 0},
+		{const_cast<char *>("Surface"),      OAPI_KEY_S, 0, 0},
+		{const_cast<char *>("Map"),          OAPI_KEY_M, 0, 0},
+		{const_cast<char *>("HSI"),          OAPI_KEY_H, 0, 0},
+		{const_cast<char *>("VOR/VTOL"),     OAPI_KEY_L, 0, 0},
+		{const_cast<char *>("Docking"),      OAPI_KEY_D, 0, 0},
+		{const_cast<char *>("Align Planes"), OAPI_KEY_A, 0, 0},
+		{const_cast<char *>("Sync Orbit"),   OAPI_KEY_Y, 0, 0},
+		{const_cast<char *>("Transfer"),     OAPI_KEY_X, 0, 0},
+		{const_cast<char *>("COM/NAV"),      OAPI_KEY_C, 0, 0}
 	};
 	static MFDMODESPEC def_oldmode[BUILTIN_MFD_MODES] = { // obsolete
-		{(char*)"Orbit",        OAPI_KEY_O, 0},
-		{(char*)"Surface",      OAPI_KEY_S, 0},
-		{(char*)"Map",          OAPI_KEY_M, 0},
-		{(char*)"HSI",          OAPI_KEY_H, 0},
-		{(char*)"VOR/VTOL",     OAPI_KEY_L, 0},
-		{(char*)"Docking",      OAPI_KEY_D, 0},
-		{(char*)"Align Planes", OAPI_KEY_A, 0},
-		{(char*)"Sync Orbit",   OAPI_KEY_Y, 0},
-		{(char*)"Transfer",     OAPI_KEY_X, 0},
-		{(char*)"COM/NAV",      OAPI_KEY_C, 0}
+		{const_cast<char *>("Orbit"),        OAPI_KEY_O, 0},
+		{const_cast<char *>("Surface"),      OAPI_KEY_S, 0},
+		{const_cast<char *>("Map"),          OAPI_KEY_M, 0},
+		{const_cast<char *>("HSI"),          OAPI_KEY_H, 0},
+		{const_cast<char *>("VOR/VTOL"),     OAPI_KEY_L, 0},
+		{const_cast<char *>("Docking"),      OAPI_KEY_D, 0},
+		{const_cast<char *>("Align Planes"), OAPI_KEY_A, 0},
+		{const_cast<char *>("Sync Orbit"),   OAPI_KEY_Y, 0},
+		{const_cast<char *>("Transfer"),     OAPI_KEY_X, 0},
+		{const_cast<char *>("COM/NAV"),      OAPI_KEY_C, 0}
 	};
 
 	static int def_id[BUILTIN_MFD_MODES] = {
@@ -1017,23 +1020,23 @@ bool Instrument::ClbkSelect_CelBody (Select *menu, int item, char *str, void *da
 		n = (SelCelBodyFlag & 1 ? 0 : g_psys->nStar());
 		for (i = 0; i < n; i++) {
 			Star *star = g_psys->GetStar (i);
-			menu->Append (star->Name());
+			menu->Append (_name(star->Name()));
 		}
 		if (n) menu->AppendSeparator();
 		n = g_psys->nPlanet();
 		for (i = 0; i < n; i++) {
 			Planet *planet = g_psys->GetPlanet (i);
 			if (planet->isMoon()) continue; // only use primaries in root
-			menu->Append (planet->Name(), planet->nSecondary() ? ITEM_SUBMENU : 0);
+			menu->Append (_name(planet->Name()), planet->nSecondary() ? ITEM_SUBMENU : 0);
 		}
 		return true;
 	} else { // submenu
-		CelestialBody *cbody = g_psys->GetGravObj (str, true);
+		CelestialBody *cbody = g_psys->GetGravObj (_revname(str), true);
 		if (cbody) {
 			n = cbody->nSecondary();
 			for (i = 0; i < n; i++) {
 				const CelestialBody *moon = cbody->Secondary(i);
-				menu->Append (moon->Name(), moon->nSecondary() ? ITEM_SUBMENU : 0);
+				menu->Append (_name(moon->Name()), moon->nSecondary() ? ITEM_SUBMENU : 0);
 			}
 			return (n > 0);
 		} else return false;
@@ -1060,53 +1063,51 @@ bool Instrument::ClbkSelect_Tgt (Select *menu, int item, char *str, void *data)
 
 	if (!str) { // main menu
 		if (!(flag & 1)) {
-			menu->Append ("By name ...");
+			menu->Append (_("By name ..."));
 			menu->AppendSeparator ();
 		}
-		menu->Append ("Spacecraft", ITEM_SUBMENU | ITEM_NOHILIGHT);
-		menu->Append ("Celestial bodies", ITEM_SUBMENU | ITEM_NOHILIGHT);
+		menu->Append (_("Spacecrafts"), ITEM_SUBMENU | ITEM_NOHILIGHT);
+		menu->Append (_("Celestial bodies"), ITEM_SUBMENU | ITEM_NOHILIGHT);
 		return true;
 	} else {    // submenu
-		if (!strcmp (str, "Spacecraft")) {
+		if (!strcmp (str, _("Spacecrafts"))) {
 			// pick craft orbiting the reference body
 			for (i = j = 0; i < g_psys->nVessel(); i++) {
 				Vessel *v = g_psys->GetVessel (i);
 				if (v == mfd->vessel || v->GetStatus() != FLIGHTSTATUS_FREEFLIGHT) continue;
-				if (v->ElRef() == ref) menu->Append (v->Name()), j++;
+				if (v->ElRef() == ref) menu->Append (_name(v->Name())), j++;
 			}
 			if (!j && ref) {
-				strcpy (cbuf, "None orbiting "); strcat (cbuf, ref->Name());
-				menu->Append (cbuf, ITEM_NOHILIGHT);
+				menu->Append (_("None orbiting"), ITEM_NOHILIGHT);
 			}
 			if (i > j && !(flag & 2)) {
 				menu->AppendSeparator();
-				menu->Append ("More spacecraft", ITEM_SUBMENU | ITEM_NOHILIGHT);
+				menu->Append (_("More spacecrafts"), ITEM_SUBMENU | ITEM_NOHILIGHT);
 			}
 			return true;
-		} else if (!strcmp (str, "More spacecraft")) {
+		} else if (!strcmp (str, _("More spacecrafts"))) {
 			// pick all craft
 			for (i = j = 0; i < g_psys->nVessel(); i++) {
 				Vessel *v = g_psys->GetVessel (i);
 				if (v == mfd->vessel || v->GetStatus() != FLIGHTSTATUS_FREEFLIGHT) continue;
-				if (v->ElRef() != ref) menu->Append (v->Name()), j++;
+				if (v->ElRef() != ref) menu->Append (_name(v->Name())), j++;
 			}
 			return (j > 0);
-		} else if (!strcmp (str, "Celestial bodies")) {
+		} else if (!strcmp (str, _("Celestial bodies"))) {
 			// pick bodies orbiting the reference body
 			for (i = j = 0; i < g_psys->nGrav(); i++) {
 				CelestialBody *cbody = g_psys->GetGravObj (i);
-				if (cbody->ElRef() == ref) menu->Append (cbody->Name()), j++;
+				if (cbody->ElRef() == ref) menu->Append (_name(cbody->Name())), j++;
 			}
 			if (!j && ref) {
-				strcpy (cbuf, "None orbiting "); strcat (cbuf, ref->Name());
-				menu->Append (cbuf, ITEM_NOHILIGHT);
+				menu->Append (_("None orbiting"), ITEM_NOHILIGHT);
 			}
 			if (i > j && !(flag & 2)) {
 				menu->AppendSeparator();
-				menu->Append ("More celestial bodies", ITEM_SUBMENU | ITEM_NOHILIGHT);
+				menu->Append (_("More celestial bodies"), ITEM_SUBMENU | ITEM_NOHILIGHT);
 			}
 			return true;
-		} else if (!strcmp (str, "More celestial bodies")) {
+		} else if (!strcmp (str, _("More celestial bodies"))) {
 			return ClbkSelect_CelBody (menu, 0, 0, data);
 		} else {
 			return ClbkSelect_CelBody (menu, item, str, data);
@@ -1117,15 +1118,15 @@ bool Instrument::ClbkSelect_Tgt (Select *menu, int item, char *str, void *data)
 bool Instrument::ClbkEnter_Tgt (Select *menu, int item, char *str, void *data)
 {
 	Instrument* mfd = (Instrument*)data;
-	if (!strcmp (str, "By name ...")) {
+	if (!strcmp (str, _("By name ..."))) {
 		g_input->Open (seltgtprm.title, 0, 25, ClbkName_Tgt, data);
 		return true;
-	} else return seltgtprm.clbk (menu, item, str, data);
+	} else return seltgtprm.clbk (menu, item, const_cast<char *>(_revname(str)), data);
 }
 
 bool Instrument::ClbkName_Tgt (InputBox*, char *str, void *data)
 {
-	return seltgtprm.clbk (g_select, 0, str, data);
+	return seltgtprm.clbk (g_select, 0, const_cast<char *>(_revname(str)), data);
 }
 
 void Instrument::Write (ostream &ofs) const

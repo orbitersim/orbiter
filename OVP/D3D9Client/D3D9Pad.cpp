@@ -46,6 +46,55 @@ std::vector<FontCache *> fcache;
 oapi::Font * deffont = 0;
 oapi::Pen * defpen = 0;
 
+static std::wstring ToWide(const char* input)
+{
+    if (!input) return L"";
+
+    // Try UTF-8 first
+    int len = MultiByteToWideChar(
+        CP_UTF8,
+        MB_ERR_INVALID_CHARS,
+        input,
+        -1,
+        nullptr,
+        0
+    );
+
+    if (len > 0) {
+        std::wstring out(len - 1, L'\0');
+        MultiByteToWideChar(
+            CP_UTF8,
+            MB_ERR_INVALID_CHARS,
+            input,
+            -1,
+            out.data(),
+            len
+        );
+        return out;
+    }
+
+    // Fallback to Windows-1252
+    len = MultiByteToWideChar(
+        1252,
+        0,
+        input,
+        -1,
+        nullptr,
+        0
+    );
+
+    std::wstring out(len - 1, L'\0');
+    MultiByteToWideChar(
+        1252,
+        0,
+        input,
+        -1,
+        out.data(),
+        len
+    );
+
+    return out;
+}
 
 static std::string UTF8ToCP1252(const char *utf8, int ulen)
 {
@@ -970,6 +1019,7 @@ DWORD D3D9Pad::GetTextWidth (const char *utf8, int ulen)
 {
 	if (utf8) if (utf8[0] == '_') if (strcmp(utf8, "_SkpVerInfo") == 0) return 2;
 	if (cfont==NULL) return 0;
+	if(!ulen) ulen = strlen(utf8);
 
 	std::string str = UTF8ToCP1252(utf8, ulen);
 
@@ -1101,6 +1151,7 @@ bool D3D9Pad::TextBox (int x1, int y1, int x2, int y2, const char *utf8, int ule
 	// No "Setup" required, done on PrintSkp
 
 	if (cfont==NULL) return false;
+	if(!ulen) ulen = strlen(utf8);
 
 	bool result = true;
 	int lineSpace = static_cast<D3D9PadFont *>(cfont)->pFont->GetLineSpace();
@@ -1130,36 +1181,11 @@ bool D3D9Pad::TextBox (int x1, int y1, int x2, int y2, const char *utf8, int ule
 //
 bool D3D9Pad::Text (int x, int y, const char *utf8, int ulen)
 {
-	std::string str = UTF8ToCP1252(utf8, ulen);
-
-#ifdef SKPDBG 
-	Log("Text(%s)", str);
-#endif
-	// No "Setup" required, done on PrintSkp
-
-	if (cfont==NULL) return false;
-
-	D3D9TextPtr pText = static_cast<D3D9PadFont *>(cfont)->pFont;
-
-	switch(tah) {
-		default:
-		case LEFT:   pText->SetTextHAlign(0); break;
-		case CENTER: pText->SetTextHAlign(1); break;
-		case RIGHT:  pText->SetTextHAlign(2); break;
-	}
-
-	switch(tav) {
-		default:
-		case TOP:      pText->SetTextVAlign(0); break;
-		case BASELINE: pText->SetTextVAlign(1); break;
-		case BOTTOM:   pText->SetTextVAlign(2); break;
-	}
-
-	pText->SetRotation(static_cast<D3D9PadFont *>(cfont)->rotation);
-	pText->SetScaling(1.0f);
-	pText->PrintSkp(this, float(x - 1), float(y - 1), str.c_str(), str.length(), (bkmode == OPAQUE));
-
-	return true;
+	// Reroute text drawing to TextW for better UTF-8 support
+	if(!ulen) ulen = strlen(utf8);
+	std::wstring wstr = ToWide(utf8);
+	// Looks like there is a one pixel difference between Text and TextW coordinates...
+	return TextW(x + 1, y + 1, const_cast<wchar_t *>(wstr.c_str()), ulen);
 }
 
 

@@ -6,6 +6,9 @@
 #include "Psys.h"
 #include "Nav.h"
 
+#define TRANSLATION_CONTEXT "MFD Docking"
+#include "i18n.h"
+
 using namespace std;
 
 extern PlanetarySystem *g_psys;
@@ -618,7 +621,7 @@ bool Instrument_Docking::KeyBuffered (DWORD key)
 		Refresh();
 		return true;
 	case OAPI_KEY_T:  // select target - OBSOLETE
-		g_select->Open ("Docking MFD: Target", ClbkSelection_Target, ClbkEnter_Target, (void*)this);
+		g_select->Open (_("Docking MFD: Target"), ClbkSelection_Target, ClbkEnter_Target, (void*)this);
 		return true;
 	}
 	return false;
@@ -678,19 +681,19 @@ bool Instrument_Docking::ClbkSelection_Target (Select *menu, int item, char *str
 	Vessel *vessel;
 
 	if (!str) { // main menu
-		menu->Append ("By name ...");
+		menu->Append (_("By name ..."));
 		menu->AppendSeparator ();
 		for (i = 0; i < g_psys->nVessel(); i++) {
 			vessel = g_psys->GetVessel (i);
 			if (vessel == mfd->vessel) continue;
-			menu->Append (vessel->Name(), vessel->nDock() ? ITEM_SUBMENU : 0);
+			menu->Append (_name(vessel->Name()), vessel->nDock() ? ITEM_SUBMENU : 0);
 		}
 		return true;
 	} else { // submenu
 		char cbuf[256];
 		if (vessel = g_psys->GetVessel (str, true)) {
 			for (i = 0; i < vessel->nDock(); i++) {
-				sprintf (cbuf, "%s, dock %d", vessel->Name(), i+1);
+				sprintf (cbuf, _("%s, dock %d"), _name(vessel->Name()), i+1);
 				menu->Append (cbuf);
 			}
 			return true;
@@ -702,8 +705,8 @@ bool Instrument_Docking::ClbkSelection_Target (Select *menu, int item, char *str
 bool Instrument_Docking::ClbkEnter_Target (Select *menu, int item, char *str, void *data)
 {
 	Instrument_Docking *mfd = (Instrument_Docking*)data;
-	if (!strcmp (str, "By name ...")) {
-		g_input->Open ("Docking MFD: Enter target (e.g. 'ISS' or 'ISS 1')", 0, 30, CallbackTarget, data);
+	if (!strcmp (str, _("By name ..."))) {
+		g_input->Open (_("Docking MFD: Enter target (e.g. 'ISS' or 'ISS 1')"), 0, 30, CallbackTarget, data);
 		return true;
 	} else
 		return mfd->SetTarget (str);
@@ -725,7 +728,7 @@ bool Instrument_Docking::SetTarget (char *str)
 		name[len-1] = '\0';
 		bdock = (sscanf (str+len+5, "%d", &dock) == 1);
 	}
-	Vessel *obj = g_psys->GetVessel (name, true);
+	Vessel *obj = g_psys->GetVessel (_revname(name), true);
 	if (!obj) return false;
 	if (bdock && (dock < 1 || (DWORD)dock > obj->nDock())) return false;
 	Legacy_ref = obj;

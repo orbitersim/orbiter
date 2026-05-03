@@ -13,6 +13,8 @@
 #include "Orbitersdk.h"
 #include "imgui.h"
 #include "implot.h"
+#define TRANSLATION_CONTEXT "Framerate"
+#include "I18NAPI.h"
 #define NDATA 256
 
 // ==============================================================
@@ -80,11 +82,14 @@ DLLCLBK void ExitModule (HINSTANCE hDLL)
 // --------------------------------------------------------------
 
 oapi::Framerate::Framerate(HINSTANCE hDLL)
-	: Module(hDLL), ImGuiDialog("Orbiter Performance Meter", {500,350})
+	// TRANSLATORS: Dialog title
+	: Module(hDLL), ImGuiDialog(_("Orbiter Performance Meter"), {500,350})
 {
 	// Register the custom command for the plugin
-	static char* desc = (char*)"Simulation frame rate / time step monitor";
-	m_dwCmd = oapiRegisterCustomCmd((char*)"Performance Meter", desc, hookOpenDlg, this);
+	// TRANSLATORS: Custom command description
+	static char* desc = (char*)_("Simulation frame rate / time step monitor");
+	// TRANSLATORS: Custom command name
+	m_dwCmd = oapiRegisterCustomCmd((char*)_("Performance Meter"), desc, hookOpenDlg, this);
 
 	m_sysT = 0.0;
 	m_simT = 0.0;
@@ -114,15 +119,15 @@ void oapi::Framerate::OnDraw()
 		ImPlot::SetupAxis(ImAxis_X1, NULL, ImPlotAxisFlags_AutoFit | ImPlotAxisFlags_NoTickLabels);
 		ImPlot::SetupAxisLimitsConstraints(ImAxis_X1, 0, NDATA);
 
-        ImPlot::SetupAxis(ImAxis_Y1, "F/s", ImPlotAxisFlags_AutoFit);
+        ImPlot::SetupAxis(ImAxis_Y1, _("F/s"), ImPlotAxisFlags_AutoFit);
 		ImPlot::SetupAxisLimitsConstraints(ImAxis_Y1, 0, 10000.0);
-        ImPlot::SetupAxis(ImAxis_Y2, "dt/s", ImPlotAxisFlags_AuxDefault | ImPlotAxisFlags_AutoFit);
+        ImPlot::SetupAxis(ImAxis_Y2, _("dt/s"), ImPlotAxisFlags_AuxDefault | ImPlotAxisFlags_AutoFit);
 		ImPlot::SetupAxisScale(ImAxis_Y2, ImPlotScale_Log10);
 
 		ImPlot::SetAxes(ImAxis_X1, ImAxis_Y1);
-        ImPlot::PlotLine("FPS", m_FPS.data(), NDATA, 1.0, 0.0, ImPlotLineFlags_None, m_idx);
+        ImPlot::PlotLine(_("FPS"), m_FPS.data(), NDATA, 1.0, 0.0, ImPlotLineFlags_None, m_idx);
         ImPlot::SetAxes(ImAxis_X1, ImAxis_Y2);
-        ImPlot::PlotLine("dt", m_DTPS.data(), NDATA, 1.0, 0.0, ImPlotLineFlags_None, m_idx);
+        ImPlot::PlotLine(_("dt"), m_DTPS.data(), NDATA, 1.0, 0.0, ImPlotLineFlags_None, m_idx);
         ImPlot::EndPlot();
     }
 }

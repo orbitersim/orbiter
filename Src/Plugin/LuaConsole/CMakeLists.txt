@@ -39,3 +39,5 @@ install(TARGETS LuaConsole
 install(FILES LuaConsole.png
 	DESTINATION ${ORBITER_INSTALL_TEXTURES_DIR}/MenuInfoBar
 )
+generate_pot(LuaConsole)
+install_po_files()

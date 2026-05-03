@@ -1,0 +1,25 @@
+# This file was auto-generated, DO NOT modify it directly
+msgid ""
+msgstr ""
+"Content-Type: text/plain; charset=UTF-8\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+"X-Generator: Lua xgettext.lua\n"
+
+#: Src/Plugin/Notes/Notes.cpp:208
+#. Custom command name
+msgctxt "Notes"
+msgid "Notes"
+msgstr ""
+
+#: Src/Plugin/Notes/Notes.cpp:210
+#. Custom command description
+msgctxt "Notes"
+msgid "Opens an onscreen note"
+msgstr ""
+
+#: Src/Plugin/Notes/Notes.cpp:214
+#. Name in menu bar
+msgctxt "Notes"
+msgid "Note"
+msgstr ""
+

@@ -590,3 +590,8 @@ function simplecopy(obj)
         return obj
     end
 end
+
+-- i18n
+_ = i18n.gettext
+_name = i18n.getname
+_revname = i18n.getrevname

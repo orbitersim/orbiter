@@ -32,6 +32,7 @@
 #include "InstrVs.h"
 #include "resource.h"
 #include "meshres.h"
+#include "I18NAPI.h"
 #include <math.h>
 #include <stdio.h>
 
@@ -132,7 +133,8 @@ ShuttleA::ShuttleA (OBJHANDLE hObj, int fmodel)
 	}
 	hPanelMesh = NULL;
 	npel = 0;
-	main_tex      = NULL;
+	main_tex = NULL;
+	vcmfd_tex = NULL;
 }
 
 // --------------------------------------------------------------
@@ -148,6 +150,7 @@ ShuttleA::~ShuttleA ()
 		delete pel[i];
 
 	if (main_tex) oapiDestroySurface(main_tex);
+	if (vcmfd_tex) oapiDestroySurface(vcmfd_tex);
 }
 
 // --------------------------------------------------------------
@@ -711,6 +714,7 @@ void ShuttleA::RedrawPanel_MFDButton (SURFHANDLE surf, int mfd, int side)
 		else break;
 	}
 	oapiReleaseSketchpad(pSkp);
+	oapiSaveSurface("Images/xxx.png",surf, oapi::ImageFileFormat::IMAGE_PNG);
 }
 
 // --------------------------------------------------------------
@@ -1242,6 +1246,42 @@ void ShuttleA::clbkSetClassCaps (FILEHANDLE cfg)
 		oapiBlt (main_tex, hTex, 0, 0, 0, 0, 256, 256);
 
 		PaintMarkings( main_tex );
+	}
+
+	// ************************ Replace MFD buttons************************
+	if(I18N::Enabled()) {
+		hTex = oapiGetTextureHandle (vcmesh_tpl, 8);
+		if (hTex)
+		{
+			vcmfd_tex = oapiCreateTextureSurface (1024, 512);
+			oapiBlt (vcmfd_tex, hTex, 0, 0, 0, 0, 1024, 512);
+
+			// Remove original text
+			oapiBlt(vcmfd_tex, vcmfd_tex, 116,469,238,468,26,22);
+			oapiBlt(vcmfd_tex, vcmfd_tex, 160,469,238,468,26,22);
+			oapiBlt(vcmfd_tex, vcmfd_tex, 205,469,238,468,26,22);
+			oapiBlt(vcmfd_tex, vcmfd_tex, 793,469,238,468,26,22);
+			oapiBlt(vcmfd_tex, vcmfd_tex, 837,469,238,468,26,22);
+			oapiBlt(vcmfd_tex, vcmfd_tex, 882,469,238,468,26,22);
+
+			// Add localized text
+			oapi::Sketchpad *skp = oapiGetSketchpad (vcmfd_tex);
+			if(skp) {
+				const char *btns[] = { _core("MFD Button", "PWR"), _core("MFD Button", "SEL"), _core("MFD Button", "MNU")};
+				skp->SetFont(g_Param.pFont[0]);
+				skp->SetTextAlign(oapi::Sketchpad::CENTER);
+				skp->SetTextColor(0x00119911);
+				skp->Text(116+13,469+4,btns[0],0);
+				skp->Text(160+13,469+4,btns[1],0);
+				skp->Text(205+13,469+4,btns[2],0);
+				skp->Text(793+13,469+4,btns[0],0);
+				skp->Text(837+13,469+4,btns[1],0);
+				skp->Text(882+13,469+4,btns[2],0);
+				oapiReleaseSketchpad(skp);
+			}
+
+			oapiSetTexture (vcmesh_tpl, 8, vcmfd_tex);
+		}
 	}
 
 	// ******************** Assign panel elements *************************
@@ -2439,6 +2479,7 @@ DLLCLBK void InitModule (HINSTANCE hModule)
 
 	// allocate Sketchpad resources
 	g_Param.pFont[0] = oapiCreateFont(-10, false, (char*)"Arial");
+	g_Param.pFont[1] = oapiCreateFont(-16, false, (char*)"Sans", FONT_BOLD);
 	g_Param.pPen[0] = oapiCreatePen(1, 3, RGB(120, 220, 120));
 	g_Param.pPen[1] = oapiCreatePen(1, 1, RGB(220, 220, 120));
 	g_Param.pPen[2] = oapiCreatePen(1, 1, RGB(0, 0, 0));
@@ -2447,7 +2488,33 @@ DLLCLBK void InitModule (HINSTANCE hModule)
 
 	// load 2D panel texture
 	ShuttleA::panel2dtex = oapiLoadTexture ("ShuttleA\\panel2d.dds");
-	ShuttleA::paneleltex = oapiLoadSurfaceEx("ShuttleA\\panel_el.dds", OAPISURFACE_TEXTURE | OAPISURFACE_RENDERTARGET);
+
+	if(I18N::Enabled()) {
+		// Replace PWR/SEL/MNU buttons
+		for(int mfdid = 0; mfdid < 2; mfdid++) {
+			for(int btn = 0; btn < 3; btn++) {
+				// Clear original text
+				oapiBlt (ShuttleA::panel2dtex, ShuttleA::panel2dtex, 120 + 50 * btn + 910 * mfdid, 992, 1168, 992, 30, 16);
+			}
+		}
+		oapi::Sketchpad *skp = oapiGetSketchpad(ShuttleA::panel2dtex);
+		skp->SetFont(g_Param.pFont[0]);
+		skp->SetTextAlign(oapi::Sketchpad::CENTER);
+		skp->SetTextColor(0x00119911);
+
+		const char *btns[] = { _core("MFD Button", "PWR"), _core("MFD Button", "SEL"), _core("MFD Button", "MNU")};
+		for(int mfdid = 0; mfdid < 2; mfdid++) {
+			for(int btn = 0; btn < 3; btn++) {
+				// Add localized text
+				skp->Text(120 + 50 * btn + 910 * mfdid + 15, 992 + 2, btns[btn],0);
+			}
+		}
+
+		oapiReleaseSketchpad(skp);
+	}
+
+
+	ShuttleA::paneleltex = oapiLoadSurfaceEx("ShuttleA\\panel_el.dds", OAPISURFACE_TEXTURE | OAPISURFACE_RENDERTARGET | OAPISURFACE_MIPMAPS);
 	ShuttleA::aditex = oapiLoadTexture ("Common\\adiball_grey.dds");
 }
 
@@ -2458,7 +2525,7 @@ DLLCLBK void ExitModule (HINSTANCE hModule)
 {
 	int i;
 	// deallocate Sketchpad resources
-	for (i = 0; i < 1; i++) oapiReleaseFont(g_Param.pFont[i]);
+	for (i = 0; i < 2; i++) oapiReleaseFont(g_Param.pFont[i]);
 	for (i = 0; i < 3; i++) oapiReleasePen(g_Param.pPen[i]);
 	for (i = 0; i < 2; i++) oapiReleaseBrush(g_Param.pBrush[i]);
 

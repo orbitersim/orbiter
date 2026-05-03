@@ -1,0 +1,182 @@
+# This file was auto-generated, DO NOT modify it directly
+msgid ""
+msgstr ""
+"Content-Type: text/plain; charset=UTF-8\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+"X-Generator: Lua xgettext.lua\n"
+
+#: Src/Vessel/Atlantis/Atlantis/AscentAP.cpp:34
+msgctxt "Atlantis Autopilot"
+msgid "Atlantis Ascent Autopilot"
+msgstr ""
+
+#: Src/Vessel/Atlantis/Atlantis/AscentAP.cpp:575
+msgctxt "Atlantis Autopilot"
+msgid "Launch azimuth (°)"
+msgstr ""
+
+#: Src/Vessel/Atlantis/Atlantis/AscentAP.cpp:581
+msgctxt "Atlantis Autopilot"
+msgid "Orbit Altitude (km)"
+msgstr ""
+
+#: Src/Vessel/Atlantis/Atlantis/AscentAP.cpp:587
+msgctxt "Atlantis Autopilot"
+msgid "Disengage"
+msgstr ""
+
+#: Src/Vessel/Atlantis/Atlantis/AscentAP.cpp:590
+msgctxt "Atlantis Autopilot"
+msgid "Launch"
+msgstr ""
+
+#: Src/Vessel/Atlantis/Atlantis/AscentAP.cpp:595
+msgctxt "Atlantis Autopilot"
+msgid "Engage"
+msgstr ""
+
+#: Src/Vessel/Atlantis/Atlantis/AscentAP.cpp:602
+msgctxt "Atlantis Autopilot"
+msgid "MET: %s"
+msgstr ""
+
+#: Src/Vessel/Atlantis/Atlantis/AscentAP.cpp:604
+msgctxt "Atlantis Autopilot"
+msgid "Ascent Profile"
+msgstr ""
+
+#: Src/Vessel/Atlantis/Atlantis/AscentAP.cpp:608
+msgctxt "Atlantis Autopilot"
+msgid "Thrust (%)"
+msgstr ""
+
+#: Src/Vessel/Atlantis/Atlantis/AscentAP.cpp:609
+msgctxt "Atlantis Autopilot"
+msgid "Altitude (km)"
+msgstr ""
+
+#: Src/Vessel/Atlantis/Atlantis/AscentAP.cpp:612
+msgctxt "Atlantis Autopilot"
+msgid "SRB"
+msgstr ""
+
+#: Src/Vessel/Atlantis/Atlantis/AscentAP.cpp:613
+msgctxt "Atlantis Autopilot"
+msgid "SSME"
+msgstr ""
+
+#: Src/Vessel/Atlantis/Atlantis/AscentAP.cpp:615
+msgctxt "Atlantis Autopilot"
+msgid "Altitude"
+msgstr ""
+
+#: Src/Vessel/Atlantis/Atlantis/Atlantis.cpp:61
+msgctxt "Atlantis Dialogs"
+msgid "Atlantis Control"
+msgstr ""
+
+#: Src/Vessel/Atlantis/Atlantis/Atlantis.cpp:68
+msgctxt "Atlantis Dialogs"
+msgid "Ascent Autopilot"
+msgstr ""
+
+#: Src/Vessel/Atlantis/Atlantis/Atlantis.cpp:71
+msgctxt "Atlantis Dialogs"
+msgid "Payload Door Operation"
+msgstr ""
+
+#: Src/Vessel/Atlantis/Atlantis/Atlantis.cpp:74
+msgctxt "Atlantis Dialogs"
+msgid "RMS Operation"
+msgstr ""
+
+#: Src/Vessel/Atlantis/Atlantis/Atlantis.cpp:79
+msgctxt "Atlantis Dialogs"
+msgid "Atlantis RMS Control"
+msgstr ""
+
+#: Src/Vessel/Atlantis/Atlantis/Atlantis.cpp:89
+msgctxt "Atlantis Dialogs"
+msgid "Show Grapple Points"
+msgstr ""
+
+#: Src/Vessel/Atlantis/Atlantis/Atlantis.cpp:93
+msgctxt "Atlantis Dialogs"
+msgid "Wrist"
+msgstr ""
+
+#: Src/Vessel/Atlantis/Atlantis/Atlantis.cpp:134
+msgctxt "Atlantis Dialogs"
+msgid "Elbow"
+msgstr ""
+
+#: Src/Vessel/Atlantis/Atlantis/Atlantis.cpp:152
+msgctxt "Atlantis Dialogs"
+msgid "Shoulder"
+msgstr ""
+
+#: Src/Vessel/Atlantis/Atlantis/Atlantis.cpp:180
+msgctxt "Atlantis Dialogs"
+msgid "RMS"
+msgstr ""
+
+#: Src/Vessel/Atlantis/Atlantis/Atlantis.cpp:182
+msgctxt "Atlantis Dialogs"
+msgid "Stow"
+msgstr ""
+
+#: Src/Vessel/Atlantis/Atlantis/Atlantis.cpp:190
+msgctxt "Atlantis Dialogs"
+msgid "Grapple"
+msgstr ""
+
+#: Src/Vessel/Atlantis/Atlantis/Atlantis.cpp:190
+msgctxt "Atlantis Dialogs"
+msgid "Release"
+msgstr ""
+
+#: Src/Vessel/Atlantis/Atlantis/Atlantis.cpp:195
+msgctxt "Atlantis Dialogs"
+msgid "Payload"
+msgstr ""
+
+#: Src/Vessel/Atlantis/Atlantis/Atlantis.cpp:197
+msgctxt "Atlantis Dialogs"
+msgid "Arrest"
+msgstr ""
+
+#: Src/Vessel/Atlantis/Atlantis/Atlantis.cpp:197
+msgctxt "Atlantis Dialogs"
+msgid "Purge"
+msgstr ""
+
+#: Src/Vessel/Atlantis/Atlantis/PlBayOp.cpp:19
+msgctxt "Atlantis Payload Bay Panel"
+msgid "Payload Operations"
+msgstr ""
+
+#: Src/Vessel/Atlantis/Atlantis/PlBayOp.cpp:170
+msgctxt "Atlantis Payload Bay Panel"
+msgid "Scale"
+msgstr ""
+
+#: Src/Vessel/Atlantis/Atlantis/PlBayOp.cpp:171
+msgctxt "Atlantis Payload Bay Panel"
+msgid "x0.5"
+msgstr ""
+
+#: Src/Vessel/Atlantis/Atlantis/PlBayOp.cpp:176
+msgctxt "Atlantis Payload Bay Panel"
+msgid "x1"
+msgstr ""
+
+#: Src/Vessel/Atlantis/Atlantis/PlBayOp.cpp:182
+msgctxt "Atlantis Payload Bay Panel"
+msgid "Help"
+msgstr ""
+
+#: Src/Vessel/Atlantis/Atlantis/PlBayOp.cpp:186
+msgctxt "Atlantis Payload Bay Panel"
+msgid "Close"
+msgstr ""
+

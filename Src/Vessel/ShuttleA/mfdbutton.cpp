@@ -11,6 +11,9 @@
 
 #define STRICT 1
 #include "mfdbutton.h"
+#include "I18NAPI.h"
+
+extern GDIParams g_Param;
 
 // MFD button font geometry
 
@@ -111,21 +114,38 @@ bool MFDButtonCol::Redraw2D (SURFHANDLE surf)
 	// blank buttons
 	oapiBlt (surf, surf, xcnt-texlabelw/2, y, xcnt-texlabelw/2, PANELEL_TEXH-MFD_font_height*30, texlabelw, MFD_font_height*6);
 
-	// write labels
-	for (btn = 0; btn < 6; btn++) {
-		if (label = oapiMFDButtonLabel (mfdid, btn+lr*6)) {
-			len = strlen(label);
-			for (w = i = 0; i < len; i++) w += MFD_font_width[label[i]];
-			for (i = 0, x = xcnt-w/2; i < len; i++) {
-				w = MFD_font_width[label[i]];
-				ysrc = (label[i] < 'S' ? 0:16);
-				if (w) {
-					oapiBlt (surf, surf, x, y, MFD_font_xpos[label[i]], ysrc, w, MFD_font_height);
-					x += w;
+	if(I18N::Enabled()) {
+		oapi::Sketchpad *skp = oapiGetSketchpad(surf);
+		skp->SetFont(g_Param.pFont[1]);
+		skp->SetTextAlign(oapi::Sketchpad::CENTER);
+		skp->SetTextColor(0x00119911);
+
+		// write labels
+		for (btn = 0; btn < 6; btn++) {
+			if (label = oapiMFDButtonLabel (mfdid, btn+lr*6)) {
+				skp->Text(xcnt,y-1,label,0);
+			} else break;
+			y += MFD_font_height;
+		}
+
+		oapiReleaseSketchpad(skp);
+	} else {
+		// write labels
+		for (btn = 0; btn < 6; btn++) {
+			if (label = oapiMFDButtonLabel (mfdid, btn+lr*6)) {
+				len = strlen(label);
+				for (w = i = 0; i < len; i++) w += MFD_font_width[label[i]];
+				for (i = 0, x = xcnt-w/2; i < len; i++) {
+					w = MFD_font_width[label[i]];
+					ysrc = (label[i] < 'S' ? 0:16);
+					if (w) {
+						oapiBlt (surf, surf, x, y, MFD_font_xpos[label[i]], ysrc, w, MFD_font_height);
+						x += w;
+					}
 				}
-			}
-		} else break;
-		y += MFD_font_height;
+			} else break;
+			y += MFD_font_height;
+		}
 	}
     return false;
 }

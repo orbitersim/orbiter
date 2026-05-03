@@ -35,7 +35,7 @@
 220.683 TACC 1.000000
 223.8 CAMERA PRESET 5
 224 NOTE Now back to normal time (you can use F1 to switch to external view to see the ships rotate in sync)
-234 NOTE    
+234 NOTEOFF
 241 NOTEPOS 0.02 0.18 0.4 0.9
 241 NOTE Forgot to close nose cone (K key), not very critical above atmosphere, but it looks cooler in external views if closed.  I'll do this in both ships (watch external view).
 242 CAMERA PRESET 0

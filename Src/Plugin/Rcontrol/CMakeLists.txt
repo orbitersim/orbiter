@@ -35,3 +35,5 @@ install(TARGETS Rcontrol
 install(FILES Rcontrol.png
 	DESTINATION ${ORBITER_INSTALL_TEXTURES_DIR}/MenuInfoBar
 )
+generate_pot(Rcontrol)
+install_po_files()

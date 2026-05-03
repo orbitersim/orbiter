@@ -15,6 +15,7 @@
 #include "Vessel.h"
 #include "SuperVessel.h"
 #include "Log.h"
+#include "i18n.h"
 
 using namespace std;
 
@@ -181,7 +182,7 @@ bool PlanetarySystem::Read (char *fname, const Config* config, OutputLoadStatusC
 	for (;;) {
 		sprintf (label, "Star%zd", stars.size() + 1);
 		if (!GetItemString (ifs, label, cbuf)) break;
-		OutputLoadStatus (cbuf, outputLoadStatus, callbackContext);
+		OutputLoadStatus (_name(cbuf), outputLoadStatus, callbackContext);
 		AddStar (new Star (cbuf)); TRACENEW
 	}
 
@@ -189,7 +190,7 @@ bool PlanetarySystem::Read (char *fname, const Config* config, OutputLoadStatusC
 	for (i = 0;; i++) {
 		sprintf (label, "Planet%d", i+1);
 		if (!GetItemString (ifs, label, cbuf)) break;
-		OutputLoadStatus (cbuf, outputLoadStatus, callbackContext);
+		OutputLoadStatus (_name(cbuf), outputLoadStatus, callbackContext);
 		Planet *planet = new Planet (cbuf); TRACENEW
 		AddPlanet (planet, stars[0]);
 		ScanMoons (ifs, planet, planet->Name());
@@ -215,7 +216,8 @@ bool PlanetarySystem::Read (char *fname, const Config* config, OutputLoadStatusC
 void PlanetarySystem::OutputLoadStatus (const char *bname, OutputLoadStatusCallback outputLoadStatus, void* callbackContext)
 {
 	char cbuf[256];
-	sprintf (cbuf, "%s: %s", m_Name.c_str(), bname);
+	// TRANSLATORS: Spashscreen (e.g. Sol: Earth)
+	sprintf (cbuf, _c("Splashscreen", "%s: %s"), _name(m_Name.c_str()), bname);
 	outputLoadStatus(cbuf, 0, callbackContext);
 }
 

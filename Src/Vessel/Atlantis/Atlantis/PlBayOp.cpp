@@ -4,6 +4,8 @@
 #include "PlBayOp.h"
 #include "meshres_vc.h"
 #include <stdio.h>
+#define TRANSLATION_CONTEXT "Atlantis Payload Bay Panel"
+#include "I18NAPI.h"
 
 using std::min;
 using std::max;
@@ -14,7 +16,7 @@ extern const char *ActionString[5];
 
 // ==============================================================
 
-PayloadBayOp::PayloadBayOp (Atlantis *_sts):ImGuiDialog("Payload Operations"), sts(_sts)
+PayloadBayOp::PayloadBayOp (Atlantis *_sts):ImGuiDialog(_("Payload Operations")), sts(_sts)
 {
 	m_panel = oapiLoadTexture("Atlantis/r13l.dds");
 	int w,h;
@@ -165,23 +167,23 @@ void PayloadBayOp::Display() {
 		// Context menu
 		ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(6,6));
 		if(ImGui::BeginPopupContextWindow("##PlBayOpMenu")) {
-			ImGui::Text("Scale");
-			if(ImGui::RadioButton("x0.5", m_scale == 0.5f)) {
+			ImGui::Text(_("Scale"));
+			if(ImGui::RadioButton(_("x0.5"), m_scale == 0.5f)) {
 				m_scale = 0.5f;
 				ImGui::CloseCurrentPopup();
 			}
 			ImGui::SameLine();
-			if(ImGui::RadioButton("x1", m_scale == 1.0f)) {
+			if(ImGui::RadioButton(_("x1"), m_scale == 1.0f)) {
 				m_scale = 1.0f;
 				ImGui::CloseCurrentPopup();
 			}
 
 			ImGui::Separator();
-			if (ImGui::Selectable("Help")) {
+			if (ImGui::Selectable(_("Help"))) {
 				g_hc.topic = (char*)"/BayOp.htm";
 				oapiOpenHelp (&g_hc);
 			}
-			if (ImGui::Selectable("Close")) { oapiCloseDialog(this); }
+			if (ImGui::Selectable(_("Close"))) { oapiCloseDialog(this); }
 			ImGui::EndPopup();
 		}
 		ImGui::PopStyleVar();

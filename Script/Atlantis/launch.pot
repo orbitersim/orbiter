@@ -1,0 +1,167 @@
+# This file was auto-generated, DO NOT modify it directly
+msgid ""
+msgstr ""
+"Content-Type: text/plain; charset=UTF-8\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+"X-Generator: Lua xgettext.lua\n"
+
+#: C:/github/openorbiter/Script/Atlantis/launch.lua:5
+msgctxt "Atantis launch script"
+msgid "Space Shuttle Atlantis ascent autopilot"
+msgstr ""
+
+#: C:/github/openorbiter/Script/Atlantis/launch.lua:6
+msgctxt "Atantis launch script"
+msgid "Run function 'launch()' to start"
+msgstr ""
+
+#: C:/github/openorbiter/Script/Atlantis/launch.lua:7
+msgctxt "Atantis launch script"
+msgid "Global variables (can be adjusted before launch):"
+msgstr ""
+
+#: C:/github/openorbiter/Script/Atlantis/launch.lua:8
+msgctxt "Atantis launch script"
+msgid "vif: target spacecraft interface (default: current)"
+msgstr ""
+
+#: C:/github/openorbiter/Script/Atlantis/launch.lua:9
+msgctxt "Atantis launch script"
+msgid "orbit_alt: target altitude [m] (default 300e3)"
+msgstr ""
+
+#: C:/github/openorbiter/Script/Atlantis/launch.lua:10
+msgctxt "Atantis launch script"
+msgid "azimuth: launch azimuth [rad] (default: 90*RAD)"
+msgstr ""
+
+#: C:/github/openorbiter/Script/Atlantis/launch.lua:54
+msgctxt "Atantis launch script"
+msgid "MET = "
+msgstr ""
+
+#: C:/github/openorbiter/Script/Atlantis/launch.lua:55
+msgctxt "Atantis launch script"
+msgid "Solid rocket booster separation"
+msgstr ""
+
+#: C:/github/openorbiter/Script/Atlantis/launch.lua:88
+msgctxt "Atantis launch script"
+msgid "pitch "
+msgstr ""
+
+#: C:/github/openorbiter/Script/Atlantis/launch.lua:93
+msgctxt "Atantis launch script"
+msgid "hold altitude programme"
+msgstr ""
+
+#: C:/github/openorbiter/Script/Atlantis/launch.lua:105
+msgctxt "Atantis launch script"
+msgid "Ascent autopilot initiated."
+msgstr ""
+
+#: C:/github/openorbiter/Script/Atlantis/launch.lua:106
+msgctxt "Atantis launch script"
+msgid "Attached to: "
+msgstr ""
+
+#: C:/github/openorbiter/Script/Atlantis/launch.lua:107
+msgctxt "Atantis launch script"
+msgid "Launch azimuth: "
+msgstr ""
+
+#: C:/github/openorbiter/Script/Atlantis/launch.lua:108
+msgctxt "Atantis launch script"
+msgid "Target altitude: "
+msgstr ""
+
+#: C:/github/openorbiter/Script/Atlantis/launch.lua:110
+msgctxt "Atantis launch script"
+msgid "**** WARNING: Unexpected vessel type"
+msgstr ""
+
+#: C:/github/openorbiter/Script/Atlantis/launch.lua:120
+msgctxt "Atantis launch script"
+msgid "Exit launch autopilot."
+msgstr ""
+
+#: C:/github/openorbiter/Script/Atlantis/launch.lua:134
+msgctxt "Atantis launch script"
+msgid "Main engine ignition"
+msgstr ""
+
+#: C:/github/openorbiter/Script/Atlantis/launch.lua:138
+msgctxt "Atantis launch script"
+msgid "We have liftoff!"
+msgstr ""
+
+#: C:/github/openorbiter/Script/Atlantis/launch.lua:144
+msgctxt "Atantis launch script"
+msgid "Start roll programme"
+msgstr ""
+
+#: C:/github/openorbiter/Script/Atlantis/launch.lua:151
+msgctxt "Atantis launch script"
+msgid "initial pitch"
+msgstr ""
+
+#: C:/github/openorbiter/Script/Atlantis/launch.lua:157
+msgctxt "Atantis launch script"
+msgid "initiate roll and yaw stabilisation"
+msgstr ""
+
+#: C:/github/openorbiter/Script/Atlantis/launch.lua:161
+msgctxt "Atantis launch script"
+msgid "Start pitch programme"
+msgstr ""
+
+#: C:/github/openorbiter/Script/Atlantis/launch.lua:178
+msgctxt "Atantis launch script"
+msgid "Main engine cut off"
+msgstr ""
+
+#: C:/github/openorbiter/Script/Atlantis/launch.lua:182
+msgctxt "Atantis launch script"
+msgid "roll upright"
+msgstr ""
+
+#: C:/github/openorbiter/Script/Atlantis/launch.lua:186
+msgctxt "Atantis launch script"
+msgid "jettison tank"
+msgstr ""
+
+#: C:/github/openorbiter/Script/Atlantis/launch.lua:190
+msgctxt "Atantis launch script"
+msgid "RCS for moving away from tank"
+msgstr ""
+
+#: C:/github/openorbiter/Script/Atlantis/launch.lua:206
+msgctxt "Atantis launch script"
+msgid "Start OMS1 programme"
+msgstr ""
+
+#: C:/github/openorbiter/Script/Atlantis/launch.lua:211
+msgctxt "Atantis launch script"
+msgid "OMS burn to raise apogee to "
+msgstr ""
+
+#: C:/github/openorbiter/Script/Atlantis/launch.lua:212
+msgctxt "Atantis launch script"
+msgid "OMS burn 1 (target apogee "
+msgstr ""
+
+#: C:/github/openorbiter/Script/Atlantis/launch.lua:219 C:/github/openorbiter/Script/Atlantis/launch.lua:239
+msgctxt "Atantis launch script"
+msgid "OMS shutdown"
+msgstr ""
+
+#: C:/github/openorbiter/Script/Atlantis/launch.lua:229
+msgctxt "Atantis launch script"
+msgid "Start OMS2 programme"
+msgstr ""
+
+#: C:/github/openorbiter/Script/Atlantis/launch.lua:231
+msgctxt "Atantis launch script"
+msgid "OMS burn for orbit circularisation"
+msgstr ""
+

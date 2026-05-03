@@ -1,0 +1,189 @@
+# This file was auto-generated, DO NOT modify it directly
+msgid ""
+msgstr ""
+"Project-Id-Version: \n"
+"POT-Creation-Date: \n"
+"PO-Revision-Date: \n"
+"Last-Translator: \n"
+"Language-Team: \n"
+"Language: fr_FR\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n > 1);\n"
+"X-Generator: Poedit 3.8\n"
+
+#: Src/Vessel/Atlantis/Atlantis/AscentAP.cpp:34
+msgctxt "Atlantis Autopilot"
+msgid "Atlantis Ascent Autopilot"
+msgstr "Autopilote d'ascension Atlantis"
+
+#: Src/Vessel/Atlantis/Atlantis/AscentAP.cpp:575
+msgctxt "Atlantis Autopilot"
+msgid "Launch azimuth (°)"
+msgstr "Azimuth de lancement (°)"
+
+#: Src/Vessel/Atlantis/Atlantis/AscentAP.cpp:581
+msgctxt "Atlantis Autopilot"
+msgid "Orbit Altitude (km)"
+msgstr "Altitude cible (km)"
+
+#: Src/Vessel/Atlantis/Atlantis/AscentAP.cpp:587
+msgctxt "Atlantis Autopilot"
+msgid "Disengage"
+msgstr "Désactiver"
+
+#: Src/Vessel/Atlantis/Atlantis/AscentAP.cpp:590
+msgctxt "Atlantis Autopilot"
+msgid "Launch"
+msgstr "Lancement"
+
+#: Src/Vessel/Atlantis/Atlantis/AscentAP.cpp:595
+msgctxt "Atlantis Autopilot"
+msgid "Engage"
+msgstr "Activer"
+
+#: Src/Vessel/Atlantis/Atlantis/AscentAP.cpp:602
+msgctxt "Atlantis Autopilot"
+msgid "MET: %s"
+msgstr "MET: %s"
+
+#: Src/Vessel/Atlantis/Atlantis/AscentAP.cpp:604
+msgctxt "Atlantis Autopilot"
+msgid "Ascent Profile"
+msgstr "Profil de montée"
+
+#: Src/Vessel/Atlantis/Atlantis/AscentAP.cpp:608
+msgctxt "Atlantis Autopilot"
+msgid "Thrust (%)"
+msgstr "Poussée (%)"
+
+#: Src/Vessel/Atlantis/Atlantis/AscentAP.cpp:609
+msgctxt "Atlantis Autopilot"
+msgid "Altitude (km)"
+msgstr "Altitude (km)"
+
+#: Src/Vessel/Atlantis/Atlantis/AscentAP.cpp:612
+msgctxt "Atlantis Autopilot"
+msgid "SRB"
+msgstr "SRB"
+
+#: Src/Vessel/Atlantis/Atlantis/AscentAP.cpp:613
+msgctxt "Atlantis Autopilot"
+msgid "SSME"
+msgstr "SSME"
+
+#: Src/Vessel/Atlantis/Atlantis/AscentAP.cpp:615
+msgctxt "Atlantis Autopilot"
+msgid "Altitude"
+msgstr "Altitude"
+
+#: Src/Vessel/Atlantis/Atlantis/Atlantis.cpp:61
+msgctxt "Atlantis Dialogs"
+msgid "Atlantis Control"
+msgstr "Contrôle d'Atlantis"
+
+#: Src/Vessel/Atlantis/Atlantis/Atlantis.cpp:68
+msgctxt "Atlantis Dialogs"
+msgid "Ascent Autopilot"
+msgstr "Autopilote de montée"
+
+#: Src/Vessel/Atlantis/Atlantis/Atlantis.cpp:71
+msgctxt "Atlantis Dialogs"
+msgid "Payload Door Operation"
+msgstr "Commande des portes de soute"
+
+#: Src/Vessel/Atlantis/Atlantis/Atlantis.cpp:74
+msgctxt "Atlantis Dialogs"
+msgid "RMS Operation"
+msgstr "Opérations du RMS"
+
+#: Src/Vessel/Atlantis/Atlantis/Atlantis.cpp:79
+msgctxt "Atlantis Dialogs"
+msgid "Atlantis RMS Control"
+msgstr "Contrôle RMS"
+
+#: Src/Vessel/Atlantis/Atlantis/Atlantis.cpp:89
+msgctxt "Atlantis Dialogs"
+msgid "Show Grapple Points"
+msgstr "Afficher les points d'attache"
+
+#: Src/Vessel/Atlantis/Atlantis/Atlantis.cpp:93
+msgctxt "Atlantis Dialogs"
+msgid "Wrist"
+msgstr "Poignet"
+
+#: Src/Vessel/Atlantis/Atlantis/Atlantis.cpp:134
+msgctxt "Atlantis Dialogs"
+msgid "Elbow"
+msgstr "Coude"
+
+#: Src/Vessel/Atlantis/Atlantis/Atlantis.cpp:152
+msgctxt "Atlantis Dialogs"
+msgid "Shoulder"
+msgstr "Épaule"
+
+#: Src/Vessel/Atlantis/Atlantis/Atlantis.cpp:180
+msgctxt "Atlantis Dialogs"
+msgid "RMS"
+msgstr "RMS"
+
+#: Src/Vessel/Atlantis/Atlantis/Atlantis.cpp:182
+msgctxt "Atlantis Dialogs"
+msgid "Stow"
+msgstr "Replier"
+
+#: Src/Vessel/Atlantis/Atlantis/Atlantis.cpp:190
+msgctxt "Atlantis Dialogs"
+msgid "Grapple"
+msgstr "Saisir"
+
+#: Src/Vessel/Atlantis/Atlantis/Atlantis.cpp:190
+msgctxt "Atlantis Dialogs"
+msgid "Release"
+msgstr "Relâcher"
+
+#: Src/Vessel/Atlantis/Atlantis/Atlantis.cpp:195
+msgctxt "Atlantis Dialogs"
+msgid "Payload"
+msgstr "Charge utile"
+
+#: Src/Vessel/Atlantis/Atlantis/Atlantis.cpp:197
+msgctxt "Atlantis Dialogs"
+msgid "Arrest"
+msgstr "Arrimage"
+
+#: Src/Vessel/Atlantis/Atlantis/Atlantis.cpp:197
+msgctxt "Atlantis Dialogs"
+msgid "Purge"
+msgstr "Désarrimage"
+
+#: Src/Vessel/Atlantis/Atlantis/PlBayOp.cpp:19
+msgctxt "Atlantis Payload Bay Panel"
+msgid "Payload Operations"
+msgstr "Opérations de soute"
+
+#: Src/Vessel/Atlantis/Atlantis/PlBayOp.cpp:170
+msgctxt "Atlantis Payload Bay Panel"
+msgid "Scale"
+msgstr "Échelle"
+
+#: Src/Vessel/Atlantis/Atlantis/PlBayOp.cpp:171
+msgctxt "Atlantis Payload Bay Panel"
+msgid "x0.5"
+msgstr "x0.5"
+
+#: Src/Vessel/Atlantis/Atlantis/PlBayOp.cpp:176
+msgctxt "Atlantis Payload Bay Panel"
+msgid "x1"
+msgstr "x1"
+
+#: Src/Vessel/Atlantis/Atlantis/PlBayOp.cpp:182
+msgctxt "Atlantis Payload Bay Panel"
+msgid "Help"
+msgstr "Aide"
+
+#: Src/Vessel/Atlantis/Atlantis/PlBayOp.cpp:186
+msgctxt "Atlantis Payload Bay Panel"
+msgid "Close"
+msgstr "Fermer"

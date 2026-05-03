@@ -1,0 +1,303 @@
+# This file was auto-generated, DO NOT modify it directly
+msgid ""
+msgstr ""
+"Project-Id-Version: \n"
+"POT-Creation-Date: \n"
+"PO-Revision-Date: \n"
+"Last-Translator: \n"
+"Language-Team: \n"
+"Language: fr_FR\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n > 1);\n"
+"X-Generator: Poedit 3.8\n"
+
+#: Script/solsys2016.lua:29
+msgid ""
+"Radius: 2,440km  Mass: 3.285×10^23kg  Mean orbital radius: 57.91×10^6km "
+"(0.387AU)  Orbital period: 7.601×10^6s (88.0 days)"
+msgstr ""
+"Rayon : 2440km  Masse : 3,285×10^23kg  Rayon orbital moyen : 57,91×10^6km "
+"(0,387UA)  Période orbitale : 7,601×10^6s (88,0 jours)"
+
+#: Script/solsys2016.lua:75
+msgid ""
+"Radius: 6,052km  Mass: 4.867×10^24kg  Mean orbital radius: 108.2×10^6km "
+"(0.723AU)  Orbital period: 1.941×10^7s (224.7 days)"
+msgstr ""
+"Rayon : 6052km  Masse : 4,867×10^24kg  Rayon orbital moyen : 108,2×10^6km "
+"(0,723UA)  Période orbitale : 1,941×10^7s (224,7 jours)"
+
+#: Script/solsys2016.lua:95
+msgid ""
+"Radius: 6,371km  Mass: 5.972×10^24kg  Mean orbital radius: 149.6×10^6km "
+"(1AU)  Orbital period: 3.156×10^7s (365.24 days)"
+msgstr ""
+"Rayon : 6371km  Masse : 5,972×10^24kg  Rayon orbital moyen : 149,6×10^6km "
+"(1UA)  Période orbitale : 3,156×10^7s (365,24 jours)"
+
+#: Script/solsys2016.lua:118
+msgid "Florida and Kennedy Space Center"
+msgstr "Floride et Kennedy Space Center"
+
+#: Script/solsys2016.lua:139
+msgid "South America: Andes"
+msgstr "Amérique du Sud : Andes"
+
+#: Script/solsys2016.lua:159
+msgid ""
+"Natural satellite of Earth  Radius: 1,737km  Mass: 7.348×10^22kg  Mean "
+"orbital radius: 3.8×10^5km  Orbital period: 2.317×10^6s (27.32 days)"
+msgstr ""
+"Satellite naturel de la Terre  Rayon : 1737km  Masse : 7,348×10^22kg  Rayon "
+"orbital moyen : 3,8×10^5km  Période orbitale : 2,317×10^6s (27,32 jours)"
+
+#: Script/solsys2016.lua:178
+msgid "Mare Crisium to Mare Australe"
+msgstr "De Mare Crisium à Mare Australe"
+
+#: Script/solsys2016.lua:199
+msgid "Mare Moscoviense and Titov crater"
+msgstr "Mare Moscoviense et cratère Titov"
+
+#: Script/solsys2016.lua:219
+msgid ""
+"Radius: 3,390km  Mass: 6.39×10^23kg  Mean orbital radius: 227.9×10^6km "
+"(1.52AU)  Orbital period: 5.94×10^7s (687.0 days)"
+msgstr ""
+"Rayon : 3390km  Masse : 6,39×10^23kg  Rayon orbital moyen : 227,9×10^6km "
+"(1,52UA)  Période orbitale : 5,94×10^7s (687,0 jours)"
+
+#: Script/solsys2016.lua:240
+msgid "Noctis Labyrinthus and Valles Marineris"
+msgstr "Noctis Labyrinthus et Valles Marineris"
+
+#: Script/solsys2016.lua:264
+msgid "Olympus Base and Olympus Mons"
+msgstr "Base Olympus et Olympus Mons"
+
+#: Script/solsys2016.lua:288
+msgid ""
+"Natural satellite of Mars    Mean radius: 11.27km  Mass: 1.066×10^16kg  Mean "
+"orbital radius: 9,374km  Orbital period: 2.755×10^4s (0.32 days)"
+msgstr ""
+"Satellite naturel de Mars  Rayon moyen : 11,27km  Masse : 1,066×10^16kg  "
+"Rayon orbital moyen : 9374km  Période orbitale : 2,755×10^4s (0,32 jours)"
+
+#: Script/solsys2016.lua:306
+msgid ""
+"Natural satellite of Mars    Mean radius: 6.2km  Mass: 1.48×10^15kg  Mean "
+"orbital radius: 23,463km  Orbital period: 1.091×10^5s (1.263 days)"
+msgstr ""
+"Satellite naturel de Mars  Rayon moyen : 6,2km  Masse : 1,48×10^15kg  Rayon "
+"orbital moyen : 23463km  Période orbitale : 1,091×10^5s (1,263 jours)"
+
+#: Script/solsys2016.lua:329
+msgid ""
+"Asteriod belt object  Mean radius: 262.5km  Mass: 2.589×10^20kg  Mean "
+"orbital radius: 3.533×10^8km (2.3618AU)  Orbital period: 1.145×10^8s (3.63 "
+"years)"
+msgstr ""
+"Corps de la ceinture d’astéroïdes  Rayon moyen : 262,5km  Masse : "
+"2,589×10^20kg  Rayon orbital moyen : 3,533×10^8km (2,3618UA)  Période "
+"orbitale : 1,145×10^8s (3,63 ans)"
+
+#: Script/solsys2016.lua:350
+msgid ""
+"Radius: 69,911km  Mass: 1.898×10^27kg  Mean orbital radius: 778.5×10^6km "
+"(5.20AU)  Orbital period: 3.743×10^8s (11.86 years)"
+msgstr ""
+"Rayon : 69911km  Masse : 1,898×10^27kg  Rayon orbital moyen : 778,5×10^6km "
+"(5,20UA)  Période orbitale : 3,743×10^8s (11,86 ans)"
+
+#: Script/solsys2016.lua:376
+msgid ""
+"Natural satellite of Jupiter  Radius: 1,821.6km  Mass: 8.932×10^22kg  Mean "
+"orbital radius: 421,700km  Orbital period: 1.529×10^5s (1.769 days)"
+msgstr ""
+"Satellite naturel de Jupiter  Rayon : 1821,6km  Masse : 8,932×10^22kg  Rayon "
+"orbital moyen : 421700km  Période orbitale : 1,529×10^5s (1,769 jours)"
+
+#: Script/solsys2016.lua:398
+msgid ""
+"Natural satellite of Jupiter  Radius: 1,560.8km  Mass: 4.800×10^22kg  Mean "
+"orbital radius: 670,900km  Orbital period: 3.068×10^5s (3.551 days)"
+msgstr ""
+"Satellite naturel de Jupiter  Rayon : 1560,8km  Masse : 4,800×10^22kg  Rayon "
+"orbital moyen : 670900km  Période orbitale : 3,068×10^5s (3,551 jours)"
+
+#: Script/solsys2016.lua:422
+msgid ""
+"Natural satellite of Jupiter  Radius: 2,634.1km  Mass: 1.482×10^23kg  Mean "
+"orbital radius: 1.0703×10^6km  Orbital period: 6.182×10^5s (7.155 days)"
+msgstr ""
+"Satellite naturel de Jupiter  Rayon : 2634,1km  Masse : 1,482×10^23kg  Rayon "
+"orbital moyen : 1,0703×10^6km  Période orbitale : 6,182×10^5s (7,155 jours)"
+
+#: Script/solsys2016.lua:447
+msgid ""
+"Natural satellite of Jupiter  Radius: 2,410.3km  Mass: 1.076×10^23kg  Mean "
+"orbital radius: 1.883×10^6km  Orbital period: 1.442×10^6s (16.690 days)"
+msgstr ""
+"Satellite naturel de Jupiter  Rayon : 2410,3km  Masse : 1,076×10^23kg  Rayon "
+"orbital moyen : 1,883×10^6km  Période orbitale : 1,442×10^6s (16,690 jours)"
+
+#: Script/solsys2016.lua:469
+msgid ""
+"Radius: 58,232km  Mass:  5.683×10^26kg  Mean orbital radius: 1.433×10^9km "
+"(9.58AU)  Orbital period: 9.2960×10^8s (29.46 years)"
+msgstr ""
+"Rayon : 58232km  Masse :  5,683×10^26kg  Rayon orbital moyen : 1,433×10^9km "
+"(9,58UA)  Période orbitale : 9,2960×10^8s (29,46 ans)"
+
+#: Script/solsys2016.lua:490
+msgid ""
+"Natural satellite of Saturn  Radius: 198.2km  Mass:  3.7493×10^19kg  Mean "
+"orbital radius: 185,320km  Orbital period: 81389s (0.942 days)"
+msgstr ""
+"Satellite naturel de Saturne  Rayon : 198,2km  Masse : 3,7493×10^19kg  Rayon "
+"orbital moyen : 185320km  Période orbitale : 81389s (0,942 jours)"
+
+#: Script/solsys2016.lua:511
+msgid ""
+"Natural satellite of Saturn  Radius: 252.1km  Mass: 1.0802×10^20kg  Mean "
+"orbital radius: 237,912km  Orbital period: 1.184×10^5s (1.370 days)"
+msgstr ""
+"Satellite naturel de Saturne  Rayon : 252,1km  Masse : 1,0802×10^20kg  Rayon "
+"orbital moyen : 237912km  Période orbitale : 1,184×10^5s (1,370 jours)"
+
+#: Script/solsys2016.lua:535
+msgid ""
+"Natural satellite of Saturn  Radius: 531.1km  Mass: 6.1745×10^20kg  Mean "
+"orbital radius: 294,572km  Orbital period: 1.631×10^5s (1.888 days)"
+msgstr ""
+"Satellite naturel de Saturne  Rayon : 531,1km  Masse : 6,1745×10^20kg  Rayon "
+"orbital moyen : 294572km  Période orbitale : 1,631×10^5s (1,888 jours)"
+
+#: Script/solsys2016.lua:556
+msgid ""
+"Natural satellite of Saturn  Radius: 561.4km  Mass: 1.0955×10^21kg  Mean "
+"orbital radius: 377,336km  Orbital period: 2.365×10^5s (2.737 days)"
+msgstr ""
+"Satellite naturel de Saturne  Rayon : 561,4km  Masse : 1,0955×10^21kg  Rayon "
+"orbital moyen : 377336km  Période orbitale : 2,365×10^5s (2,737 jours)"
+
+#: Script/solsys2016.lua:581
+msgid ""
+"Natural satellite of Saturn  Radius: 763.8km  Mass: 2.306518×10^21kg  Mean "
+"orbital radius: 527,067km  Orbital period: 3.904×10^5s (4.518 days)"
+msgstr ""
+"Satellite naturel de Saturne  Rayon : 763,8km  Masse : 2,306518×10^21kg  "
+"Rayon orbital moyen : 527067km  Période orbitale : 3,904×10^5s (4,518 jours)"
+
+#: Script/solsys2016.lua:607
+msgid ""
+"Natural satellite of Saturn  Radius: 2575.5km  Mass: 1.3452×10^23kg  Mean "
+"orbital radius: 1.2217×10^6km  Orbital period: 1.378×10^6s (15.945 days)"
+msgstr ""
+"Satellite naturel de Saturne  Rayon : 2575,5km  Masse : 1,3452×10^23kg  "
+"Rayon orbital moyen : 1,2217×10^6km  Période orbitale : 1,378×10^6s (15,945 "
+"jours)"
+
+#: Script/solsys2016.lua:631
+msgid ""
+"Natural satellite of Saturn  Radius: 734.5km  Mass: 1.8056×10^21kg  Mean "
+"orbital radius: 3.5601×10^6km  Orbital period: 6.853×10^6s (79.322 days)"
+msgstr ""
+"Satellite naturel de Saturne  Rayon : 734,5km  Masse : 1,8056×10^21kg  Rayon "
+"orbital moyen : 3,5601×10^6km  Période orbitale : 6,853×10^6s (79,322 jours)"
+
+#: Script/solsys2016.lua:652
+msgid ""
+"Radius: 25,362km  Mass: 8.681×10^25kg  Mean orbital radius: 2.877×10^9km "
+"(19.23AU)  Orbital period: 2.6515×10^9s (84.0205 years)"
+msgstr ""
+"Rayon : 25362km  Masse : 8,681×10^25kg  Rayon orbital moyen : 2,877×10^9km "
+"(19,23UA)  Période orbitale : 2,6515×10^9s (84,0205 ans)"
+
+#: Script/solsys2016.lua:672
+msgid ""
+"Natural satellite of Uranus  Radius: 235.8km  Mass: 6.59×10^19kg  Mean "
+"orbital radius: 129,840km  Orbital period: 1.2212×10^5s (1.413 days)"
+msgstr ""
+"Satellite naturel d'Uranus  Rayon : 235,8km  Masse : 6,59×10^19kg  Rayon "
+"orbital moyen : 129840km  Période orbitale : 1,2212×10^5s (1,413 jours)"
+
+#: Script/solsys2016.lua:692
+msgid ""
+"Natural satellite of Uranus  Radius: 578.9km  Mass: 1.353×10^21kg  Mean "
+"orbital radius: 190,900km  Orbital period: 2.17728×10^5s (2.520 days)"
+msgstr ""
+"Satellite naturel d'Uranus  Rayon : 578,9km  Masse : 1,353×10^21kg  Rayon "
+"orbital moyen : 190900km  Période orbitale : 2,17728×10^5s (2,520 jours)"
+
+#: Script/solsys2016.lua:712
+msgid ""
+"Natural satellite of Uranus  Radius: 584.7km  Mass: 1.172×10^21kg  Mean "
+"orbital radius: 265,967km  Orbital period: 3.5804×10^5s (4.144 days)"
+msgstr ""
+"Satellite naturel d'Uranus  Rayon : 584,7km  Masse : 1,172×10^21kg  Rayon "
+"orbital moyen : 265967km  Période orbitale : 3,5804×10^5s (4,144 jours)"
+
+#: Script/solsys2016.lua:736
+msgid ""
+"Natural satellite of Uranus  Radius: 788.4km  Mass: 3.527×10^21kg  Mean "
+"orbital radius: 436,282km  Orbital period: 7.522×10^5s (8.706 days)"
+msgstr ""
+"Satellite naturel d'Uranus  Rayon : 788,4km  Masse : 3,527×10^21kg  Rayon "
+"orbital moyen : 436282km  Période orbitale : 7,522×10^5s (8,706 jours)"
+
+#: Script/solsys2016.lua:762
+msgid ""
+"Natural satellite of Uranus  Radius: 761.4km  Mass: 3.014×10^21kg  Mean "
+"orbital radius: 583,416km  Orbital period: 1.163×10^6s (13.463 days)"
+msgstr ""
+"Satellite naturel d'Uranus  Rayon : 761,4km  Masse : 3,014×10^21kg  Rayon "
+"orbital moyen : 583416km  Période orbitale : 1,163×10^6s (13,463 jours)"
+
+#: Script/solsys2016.lua:788
+msgid ""
+"Radius: 24,622km  Mass: 1.024×10^26kg  Mean orbital radius: 4.498×10^9km "
+"(30.07AU)  Orbital period: 5.1997×10^9s (164.8 years)"
+msgstr ""
+"Rayon : 24622km  Masse : 1,024×10^26kg  Rayon orbital moyen : 4,498×10^9km "
+"(30,07UA)  Période orbitale : 5,1997×10^9s (164,8 ans)"
+
+#: Script/solsys2016.lua:810
+msgid ""
+"Natural satellite of Neptune  Radius: 1353.4km  Mass: 2.14×10^22kg  Mean "
+"orbital radius: 354,757km  Orbital period: -5.0776×10^5s (-5.877 days) - "
+"retrograde"
+msgstr ""
+"Satellite naturel de Neptune  Rayon : 1353,4km  Masse : 2,14×10^22kg  Rayon "
+"orbital moyen : 354757km  Période orbitale : -5,0776×10^5s (-5,877 jours) - "
+"rétrograde"
+
+#: Script/solsys2016.lua:830
+msgid ""
+"Natural satellite of Neptune  Radius: 210km  Mass: 4.4×10^19kg  Mean orbital "
+"radius: 117,647km  Orbital period: 9.6968×10^4s (1.12231477 days)"
+msgstr ""
+"Satellite naturel de Neptune  Rayon : 210km  Masse : 4,4×10^19kg  Rayon "
+"orbital moyen : 117647km  Période orbitale : 9,6968×10^4s (1,12231477 jours)"
+
+#: Script/solsys2016.lua:854
+msgid ""
+"Natural satellite of Neptune  Radius: 170km  Mean orbital radius: "
+"5.5141×10^6km  Orbital period: 3.1115×10^7s (360.1362 days)"
+msgstr ""
+"Satellite naturel de Neptune  Rayon : 170km  Rayon orbital moyen : "
+"5,5141×10^6km  Période orbitale : 3,1115×10^7s (360,1362 jours)"
+
+#: Script/solsys2016.lua:908
+msgid "Earthrise"
+msgstr "Lever de Terre"
+
+#: Script/solsys2016.lua:909
+msgid ""
+"This concludes the journey through Orbiter's solar system.    Let's finish "
+"with a view towards the home planet."
+msgstr ""
+"Ceci conclut le voyage à travers le système solaire d’Orbiter.    Terminons "
+"par une vue de notre planète mère."

@@ -38,6 +38,9 @@
 #include "IProcess.h"
 #include <filesystem>
 
+#define TRANSLATION_CONTEXT "D3D9Client"
+#include "I18NAPI.h"
+
 using namespace oapi;
 
 // ==============================================================
@@ -525,10 +528,10 @@ vPlanet::vPlanet (OBJHANDLE _hObj, const Scene *scene) :
 	
 	if (!bHasTextures) {
 		VESSEL* vss = oapiGetFocusInterface();
-		sprintf_s(msg, sizeof(msg), "[WARNING] Surface textures are missing for %s", GetName());
+		sprintf_s(msg, sizeof(msg), _("[WARNING] Surface textures are missing for %s"), _name(GetName()));
 		if (vss && (vss->GetGravityRef() == hObj)) {
 			oapiWriteLog(msg);
-			MessageBox(GetClient()->GetWindow(), msg, "Warning", MB_OK);
+			oapiAddNotification(OAPINOTIF_ERROR, msg);
 		}
 		else oapiWriteLog(msg);
 	}

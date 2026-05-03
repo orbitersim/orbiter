@@ -1,12 +1,13 @@
 -- Load attitude functions
 run('attctrl')
+i18n.set_context("Atantis launch script")
 
-term.out('Space Shuttle Atlantis ascent autopilot')
-term.out('Run function \'launch()\' to start')
-term.out('Global variables (can be adjusted before launch):')
-term.out('vif: target spacecraft interface (default: current)')
-term.out('orbit_alt: target altitude [m] (default 300e3)')
-term.out('azimuth: launch azimuth [rad] (default: 90*RAD)')
+term.out(_('Space Shuttle Atlantis ascent autopilot'))
+term.out(_('Run function \'launch()\' to start'))
+term.out(_('Global variables (can be adjusted before launch):'))
+term.out(_('vif: target spacecraft interface (default: current)'))
+term.out(_('orbit_alt: target altitude [m] (default 300e3)'))
+term.out(_('azimuth: launch azimuth [rad] (default: 90*RAD)'))
 
 -- Reset some of the attitude parameters
 pitch_a = 0.6
@@ -50,8 +51,8 @@ function met_counter ()
   local met, metstr
   for i=-7,10000 do
     met = oapi.get_simtime()-t0
-    metstr = 'MET = '..string.format('%0.0f',met)
-	if i==126 then comment = 'Solid rocket booster separation' end
+    metstr = _('MET = ')..string.format('%0.0f',met)
+	if i==126 then comment = _('Solid rocket booster separation') end
 	if comment ~= last_comment then
 	  comment_timer = 0
 	else
@@ -84,12 +85,12 @@ function ascent_pitch_prog (v)
   local p = {70,60,50,40,30,20, 10,  0,-5}  -- pitch targets
   local t = {20,10,10,10,40,65,195,130,30}  -- pitch intervals
   for i = 1,7 do
-    term.out ('pitch '..p[i])
+    term.out (_('pitch ')..p[i])
 	setpitch (v,RAD*p[i],t[i],0)
 	-- note that we set a tolerance of 0 to prevent the
 	-- pitch programme from terminating prematurely
   end
-  term.out ('hold altitude programme')
+  term.out (_('hold altitude programme'))
   pitch_a = 1.0
   pitch_b = 3.0
   setpitch (v,0,160,0,spdpitch)
@@ -101,12 +102,12 @@ end
 -- ------------------------------------------------------
 
 function launch ()
-  term.out('Ascent autopilot initiated.')
-  term.out('Attached to: '..vif:get_name())
-  term.out('Launch azimuth: '..azimuth*DEG..'deg.')
-  term.out('Target altitude: '..orbit_alt*1e-3..'km')
+  term.out(_('Ascent autopilot initiated.'))
+  term.out(_('Attached to: ')..vif:get_name())
+  term.out(_('Launch azimuth: ')..azimuth*DEG..'deg.')
+  term.out(_('Target altitude: ')..orbit_alt*1e-3..'km')
   if vif:get_classname() ~= 'Atlantis' then
-    term.out('**** WARNING: Unexpected vessel type')
+    term.out(_('**** WARNING: Unexpected vessel type'))
     term.out('**** '..vif:get_classname())
   end
   ascent(vif)
@@ -116,7 +117,7 @@ function launch ()
       oms_burn2 (vif,orbit_alt)
     end
   end
-  term.out('Exit launch autopilot.')
+  term.out(_('Exit launch autopilot.'))
 end
 
 
@@ -130,34 +131,34 @@ function ascent (v)
 
   proc.wait_simdt(3);
   v:set_thrustergrouplevel (THGROUP.MAIN, 1)
-  comment = 'Main engine ignition'
+  comment = _('Main engine ignition')
   proc.wait_simdt(4) -- SSME ignition
 
   t0 = oapi.get_simtime()         -- set MET reference
-  comment = 'We have liftoff!'
+  comment = _('We have liftoff!')
 
   local dr = 10+(PI/2-azimuth)*DEG*0.1
   if dr < 0 then dr=0 elseif dr > 21 then dr=21 end
 
   proc.wait_simtime(t0+6)
-  comment = 'Start roll programme'
+  comment = _('Start roll programme')
   SetRCS(v, RCSMODE.BANK, -1)  -- roll programme
 
   proc.wait_simtime(t0+6+dr)
   SetRCS(v, RCSMODE.BANK, 0)   -- end roll programme
 
   proc.wait_simtime(t0+21)
-  term.out('initial pitch')
+  term.out(_('initial pitch'))
   SetRCS(v, RCSMODE.PITCH, 1) -- intital pitch to avoid gimbal lock
   proc.wait_simtime(t0+24)
   SetRCS(v, RCSMODE.PITCH, 0)
 
   proc.wait_simtime(t0+25)
-  comment = 'initiate roll and yaw stabilisation'
+  comment = _('initiate roll and yaw stabilisation')
   bank_prog = proc.bg(setbank,v,PI,500,0)
   yaw_prog  = proc.bg(setyaw,v,azimuth,500,0)
   pitch_prog = proc.bg(ascent_pitch_prog, v)
-  comment = 'Start pitch programme'
+  comment = _('Start pitch programme')
   -- run the roll/yaw stabilisation and the pitch control
   -- in separate program branches
 
@@ -174,19 +175,19 @@ function ascent (v)
   proc.kill(pitch_prog)
   -- end the ascent attitude control programs
 
-  term.out('Main engine cut off')
+  term.out(_('Main engine cut off'))
   v:set_thrustergrouplevel (THGROUP.MAIN, 0)
 
   proc.wait_simdt(10)
-  term.out('roll upright')
+  term.out(_('roll upright'))
   setbank(v,0,40,0)
   setpitch(v,0,20,0)
 
-  term.out('jettison tank')
+  term.out(_('jettison tank'))
   v:send_bufferedkey(ktable.J)
 
   proc.wait_simdt(10)
-  term.out('RCS for moving away from tank')
+  term.out(_('RCS for moving away from tank'))
   v:set_thrustergrouplevel (THGROUP.ATT_UP,1)
   proc.wait_simdt(2)
   v:set_thrustergrouplevel (THGROUP.ATT_UP,0)
@@ -202,20 +203,20 @@ end
 -- ------------------------------------------------------
 
 function oms_burn1 (v,ap_alt)
-  term.out('Start OMS1 programme')
+  term.out(_('Start OMS1 programme'))
   local bank_programme  = proc.bg(setbank,v,0,500,0)
   local yaw_programme   = proc.bg(setyaw,v,azimuth,500,0)
   local pitch_programme = proc.bg(setpitch,v,RAD*15,500,0)
   proc.wait_simdt (20);
-  comment = 'OMS burn to raise apogee to '..ap_alt*1e-3..'km'
-  term.out ('OMS burn 1 (target apogee '..ap_alt*1e-3..'km)')
+  comment = _('OMS burn to raise apogee to ')..ap_alt*1e-3..'km'
+  term.out (_('OMS burn 1 (target apogee ')..ap_alt*1e-3..'km)')
   v:set_thrustergrouplevel (THGROUP.MAIN,1)
   proc.wait_ge (apd, R_Earth+ap_alt, v)
   proc.kill(bank_programme)
   proc.kill(yaw_programme)
   proc.kill(pitch_programme)
   v:set_thrustergrouplevel (THGROUP.MAIN,0)
-  comment = 'OMS shutdown'
+  comment = _('OMS shutdown')
 end
 
 
@@ -225,9 +226,9 @@ end
 -- ------------------------------------------------------
 
 function oms_burn2 (v,ap_alt)
-  term.out ('Start OMS2 programme')
+  term.out (_('Start OMS2 programme'))
   proc.wait_le (apt, 50, v)
-  comment = 'OMS burn for orbit circularisation'
+  comment = _('OMS burn for orbit circularisation')
   local att_programme = proc.bg(setdir,v,v.get_progradedir,0,500,0)
   proc.wait_le (apt, 20, v)
   local minalt = apd(v)-R_Earth-5e3
@@ -235,5 +236,5 @@ function oms_burn2 (v,ap_alt)
   proc.wait_ge (ped, minalt+R_Earth, v)
   proc.kill(att_programme)
   v:set_thrustergrouplevel (THGROUP.MAIN,0)
-  comment = 'OMS shutdown'
+  comment = _('OMS shutdown')
 end

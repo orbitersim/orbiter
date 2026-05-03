@@ -6,6 +6,9 @@
 #include "Log.h"
 #include "imgui_extras.h"
 
+#define TRANSLATION_CONTEXT "Playback editor"
+#include "i18n.h"
+
 using namespace std;
 
 extern Orbiter *g_pOrbiter;
@@ -17,7 +20,7 @@ static bool CompareEvents (const PlaybackEvent *first, const PlaybackEvent *seco
   return first->T0() < second->T0();
 }
 
-DlgPlaybackEditor::DlgPlaybackEditor() : ImGuiDialog("Playback Editor", {900,600}) {
+DlgPlaybackEditor::DlgPlaybackEditor() : ImGuiDialog(_("Playback Editor"), {900,600}) {
 	SetHelp("html/orbiter.chm", "/playbackedit.htm");
 
 	m_sysfname = nullptr;
@@ -31,7 +34,7 @@ DlgPlaybackEditor::~DlgPlaybackEditor() {
 void DlgPlaybackEditor::OnDraw() {
 	ImGuiWindowFlags window_flags = ImGuiWindowFlags_HorizontalScrollbar;
 
-	ImGui::Text("Playback Editor - Simulation time : %f", td.SimT0);
+	ImGui::Text(_("Playback Editor - Simulation time : %f"), td.SimT0);
 	ImGui::BeginChild("ChildL", ImVec2(ImGui::GetContentRegionAvail().x/2.0, 0), ImGuiChildFlags_ResizeX,  window_flags);
 
     const ImGuiTableFlags flags = ImGuiTableFlags_SizingStretchProp|ImGuiTableFlags_ScrollY | ImGuiTableFlags_RowBg | ImGuiTableFlags_BordersOuter | ImGuiTableFlags_BordersV | ImGuiTableFlags_Resizable | ImGuiTableFlags_Reorderable | ImGuiTableFlags_Hideable;
@@ -40,9 +43,9 @@ void DlgPlaybackEditor::OnDraw() {
     if (ImGui::BeginTable("table_scrolly", 3, flags, outer_size))
     {
         ImGui::TableSetupScrollFreeze(0, 1); // Make top row always visible
-        ImGui::TableSetupColumn("Timestamp", ImGuiTableColumnFlags_None, 0.5f);
-        ImGui::TableSetupColumn("Event", ImGuiTableColumnFlags_None, 0.5f);
-        ImGui::TableSetupColumn("Details", ImGuiTableColumnFlags_None, 2.0f);
+        ImGui::TableSetupColumn(_("Timestamp"), ImGuiTableColumnFlags_None, 0.5f);
+        ImGui::TableSetupColumn(_("Event"), ImGuiTableColumnFlags_None, 0.5f);
+        ImGui::TableSetupColumn(_("Details"), ImGuiTableColumnFlags_None, 2.0f);
         ImGui::TableHeadersRow();
 
 		int i = 0;
@@ -56,7 +59,7 @@ void DlgPlaybackEditor::OnDraw() {
 			ImGui::TableSetColumnIndex(0);
 			ImGui::Text("%0.2f", td.SimT0);
 			ImGui::TableSetColumnIndex(1);
-			ImGui::TextUnformatted("NOW");
+			ImGui::TextUnformatted(_("NOW"));
 			ImGui::PopStyleColor();
 		}
 		for(auto &e : m_Events) {
@@ -73,7 +76,7 @@ void DlgPlaybackEditor::OnDraw() {
 				ImGui::TableSetColumnIndex(0);
 				ImGui::Text("%0.2f", td.SimT0);
 				ImGui::TableSetColumnIndex(1);
-				ImGui::TextUnformatted("NOW");
+				ImGui::TextUnformatted(_("NOW"));
 				ImGui::PopStyleColor();
 			}
 
@@ -90,7 +93,7 @@ void DlgPlaybackEditor::OnDraw() {
 			char tag[32];
 			e->TagStr(tag);
 			ImGui::TableSetColumnIndex(1);
-			ImGui::Text("%s",tag);
+			ImGui::TextUnformatted(tag);
 			ImGui::TableSetColumnIndex(2);
 			e->DrawPreview();
 		}
@@ -98,9 +101,9 @@ void DlgPlaybackEditor::OnDraw() {
         ImGui::EndTable();
     }
 
-	ImGui::SeparatorText("Insert event");
+	ImGui::SeparatorText(_("Insert event"));
 	if(ImGui::Button("NOTE")) {
-		InsertEvent(new NoteEvent (td.SimT0, "New note"));
+		InsertEvent(new NoteEvent (td.SimT0, _("New note")));
 	}
 	ImGui::SameLine();
 	if(ImGui::Button("NOTEOFF")) {
@@ -126,10 +129,10 @@ void DlgPlaybackEditor::OnDraw() {
 		InsertEvent(new CameraEvent (td.SimT0));
 	}
 	ImGui::SameLine();
-	if(ImGui::Button("<Other>")) {
+	if(ImGui::Button(_("<Other>"))) {
 		InsertEvent(new GenericEvent (td.SimT0, "<TAG>", ""));
 	}
-	if(ImGui::Button("Delete")) {
+	if(ImGui::Button(_("Delete"))) {
 		DeleteSelectedEvent();
 	}
 	ImGui::EndChild();
@@ -139,7 +142,7 @@ void DlgPlaybackEditor::OnDraw() {
 	ImGui::BeginChild("ChildRT", ImVec2(ImGui::GetContentRegionAvail().x, ImGui::GetContentRegionAvail().y - 40), true, window_flags);
 	if(m_SelectedEvent) {
 		m_SelectedEvent->DrawEdit();
-		if(ImGui::Button("Apply")) {
+		if(ImGui::Button(_("Apply"))) {
 			m_SelectedEvent->ApplyChanges();
 			m_Events.sort(CompareEvents);
 		}
@@ -147,11 +150,11 @@ void DlgPlaybackEditor::OnDraw() {
 	}
 	ImGui::EndChild();
 	ImGui::BeginChild("ChildRB", ImVec2(ImGui::GetContentRegionAvail().x, ImGui::GetContentRegionAvail().y), true, window_flags);
-	if(ImGui::Button("Commit changes")) {
+	if(ImGui::Button(_("Commit changes"))) {
 		SaveEventFile();
 	}
 	ImGui::SameLine();
-	if(ImGui::Button("Discard uncommited changes")) {
+	if(ImGui::Button(_("Discard uncommited changes"))) {
 		ClearEvents();
 		ScanEventFile();
 	}
@@ -302,7 +305,7 @@ void PlaybackEvent::WriteEvent (ofstream &ofs, const char *eventtype, const char
 }
 
 void PlaybackEvent::DrawEdit() {
-	ImGui::InputText("Event Time", m_tmp_t0, sizeof(m_tmp_t0), ImGuiInputTextFlags_CharsDecimal);
+	ImGui::InputText(_("Event Time"), m_tmp_t0, sizeof(m_tmp_t0), ImGuiInputTextFlags_CharsDecimal);
 }
 
 void PlaybackEvent::ApplyChanges() {
@@ -372,10 +375,10 @@ void GenericEvent::DrawEdit() {
 	if(content) strncpy(lcontent, content, 4095);
 	ltag[4095]='\0';
 	lcontent[4095]='\0';
-	if(ImGui::InputText("Tag", ltag, sizeof(ltag))) {
+	if(ImGui::InputText(_("Tag"), ltag, sizeof(ltag))) {
 		SetTag(ltag);
 	}
-	if(ImGui::InputText("Content", lcontent, sizeof(lcontent))) {
+	if(ImGui::InputText(_("Content"), lcontent, sizeof(lcontent))) {
 		SetContent(lcontent);
 	}
 }
@@ -397,9 +400,9 @@ void TaccEvent::TagStr (char *str)
 void TaccEvent::DescStr (char *str)
 {
 	if (delay) {
-		sprintf (str, "%0.2fx (delay %0.1f)", tacc, delay);
+		sprintf (str, _("%0.2fx (delay %0.1f)"), tacc, delay);
 	} else {
-		sprintf (str, "%0.2fx", tacc);
+		sprintf (str, _("%0.2fx"), tacc);
 	}
 }
 
@@ -413,17 +416,17 @@ void TaccEvent::Write (ofstream &ofs)
 
 void TaccEvent::DrawPreview() {
 	if (delay) {
-		ImGui::Text ("%0.2fx (delay %0.1f)", tacc, delay);
+		ImGui::Text (_("%0.2fx (delay %0.1f)"), tacc, delay);
 	} else {
-		ImGui::Text ("%0.2fx", tacc);
+		ImGui::Text (_("%0.2fx"), tacc);
 	}
 }
 
 void TaccEvent::DrawEdit() {
 	PlaybackEvent::DrawEdit();
 
-    ImGui::SliderFloat("Time Acceleration", &tmp_tacc, 0.1f, 10000.0f, "%.1f", ImGuiSliderFlags_Logarithmic);
-	ImGui::InputText("Delay (s)", tmp_delay, sizeof(tmp_delay), ImGuiInputTextFlags_CharsDecimal);
+    ImGui::SliderFloat(_("Time Acceleration"), &tmp_tacc, 0.1f, 10000.0f, "%.1f", ImGuiSliderFlags_Logarithmic);
+	ImGui::InputText(_("Delay [s]"), tmp_delay, sizeof(tmp_delay), ImGuiInputTextFlags_CharsDecimal);
 
 }
 void TaccEvent::ApplyChanges() {
@@ -489,7 +492,7 @@ void CameraEvent::DrawPreview() {
 
 void CameraEvent::DrawEdit() {
 	PlaybackEvent::DrawEdit();
-	ImGui::Text("Camera configuration: ");
+	ImGui::TextUnformatted(_("Camera configuration: "));
 	ImGui::SameLine();
 	ImGui::TextUnformatted(m_tmp_modestr);
 
@@ -497,7 +500,7 @@ void CameraEvent::DrawEdit() {
 	int np = g_camera->nPreset();
 	if(np) {
 		ImGui::Separator();
-		ImGui::TextUnformatted("Presets:");
+		ImGui::TextUnformatted(_("Presets:"));
 		for(int i=0;i<np;i++) {
 			CameraMode *cm = g_camera->GetPreset (i);
 			cm->GetDescr (descr, 256);
@@ -509,7 +512,7 @@ void CameraEvent::DrawEdit() {
 		}
 	}
 	ImGui::Separator();
-	ImGui::Text("Current view: ");
+	ImGui::TextUnformatted(_("Current view: "));
 	CameraMode *cm = g_camera->GetCMode();
 	char cbuf[256];
 	cm->Store (cbuf);
@@ -528,6 +531,7 @@ void CameraEvent::ApplyChanges() {
 
 NoteEvent::NoteEvent (double _t0, const char *_note): PlaybackEvent (_t0)
 {
+	if(!_note) _note = "";
 	note = strdup(_note);
 	strncpy(m_tmp_note, note, sizeof(m_tmp_note));
 }
@@ -712,7 +716,7 @@ void NotecolEvent::DrawPreview() {
 
 void NotecolEvent::DrawEdit() {
 	PlaybackEvent::DrawEdit();
-	ImGui::Text("Note Color");
+	ImGui::TextUnformatted(_("Note Color"));
 	ImGui::ColorPicker3("Color", m_tmp, ImGuiColorEditFlags_NoInputs|ImGuiColorEditFlags_NoLabel);
 }
 void NotecolEvent::ApplyChanges() {
@@ -753,7 +757,7 @@ void NotesizeEvent::DrawPreview() {
 
 void NotesizeEvent::DrawEdit() {
 	PlaybackEvent::DrawEdit();
-	ImGui::InputText("Note Size", m_tmp_size, sizeof(m_tmp_size), ImGuiInputTextFlags_CharsDecimal);
+	ImGui::InputText(_("Note Size"), m_tmp_size, sizeof(m_tmp_size), ImGuiInputTextFlags_CharsDecimal);
 }
 void NotesizeEvent::ApplyChanges() {
 	PlaybackEvent::ApplyChanges();

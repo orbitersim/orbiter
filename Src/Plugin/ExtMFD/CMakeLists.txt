@@ -37,3 +37,5 @@ install(TARGETS ExtMFD
 install(FILES ExtMFD.png
 	DESTINATION ${ORBITER_INSTALL_TEXTURES_DIR}/MenuInfoBar
 )
+generate_pot(ExtMFD)
+install_po_files()

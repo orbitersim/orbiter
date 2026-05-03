@@ -3,6 +3,16 @@ project(imgui)
 Include(FetchContent)
 
 FetchContent_Declare(
+    freetype
+    GIT_REPOSITORY https://gitlab.freedesktop.org/freetype/freetype.git
+    GIT_TAG VER-2-14-1   # pick a stable release
+	EXCLUDE_FROM_ALL
+)
+
+FetchContent_MakeAvailable(freetype)
+install(TARGETS freetype RUNTIME DESTINATION ${ORBITER_INSTALL_ROOT_DIR})
+
+FetchContent_Declare(
   imgui
   GIT_REPOSITORY https://github.com/ocornut/imgui.git
   GIT_TAG v1.92.5-docking
@@ -11,7 +21,7 @@ FetchContent_Declare(
 )
 FetchContent_MakeAvailable(imgui)
 
-install(FILES ${imgui_SOURCE_DIR}/misc/fonts/Roboto-Medium.ttf fa-solid-900.ttf ${imgui_SOURCE_DIR}/misc/fonts/Cousine-Regular.ttf Lekton-Bold.ttf architext.regular.ttf
+install(FILES ${imgui_SOURCE_DIR}/misc/fonts/Roboto-Medium.ttf fa-solid-900.ttf ${imgui_SOURCE_DIR}/misc/fonts/Cousine-Regular.ttf Lekton-Bold.ttf architext.regular.ttf NotoSansJP-Regular.ttf
 	DESTINATION ${ORBITER_INSTALL_ROOT_DIR}/Fonts
 )
 

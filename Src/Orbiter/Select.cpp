@@ -4,6 +4,7 @@
 #include "Select.h"
 #include "imgui.h"
 #include "imgui_extras.h"
+#include "i18n.h"
 
 Select::Select():ImGuiDialog("Select") {
     active = false;
@@ -56,21 +57,26 @@ void Select::DrawMenu(std::list<SelectEntry>& entries) {
             if (ImGui::BeginMenu(e.m_Text.c_str(), e.m_SubEntries.size() != 0)) {
                 DrawMenu(e.m_SubEntries);
                 ImGui::EndMenu();
-                if (ImGui::IsItemHovered(ImGuiHoveredFlags_RectOnly) && !(e.m_Flags & ITEM_NOHILIGHT)) {
-                    if (ImGui::IsMouseReleased(0)) {
+				
+				if(!(e.m_Flags & ITEM_NOHILIGHT)) {
+	                if (ImGui::IsKeyPressed(ImGuiKey_Enter) || (ImGui::IsItemHovered(ImGuiHoveredFlags_RectOnly) && ImGui::IsMouseReleased(0))) {
                         cbEnter(this, i, const_cast<char*>(e.m_Text.c_str()), userdata);
                         active = false;
                         ImGui::CloseCurrentPopup();
-                    }
-                }
+	                }
+				}
             }
             i++;
         }
         else {
+			if(e.m_Flags & ITEM_NOHILIGHT)
+				ImGui::BeginDisabled();
             if (ImGui::MenuItem(e.m_Text.c_str())) {
                 cbEnter(this, i, const_cast<char*>(e.m_Text.c_str()), userdata);
                 active = false;
             }
+			if(e.m_Flags & ITEM_NOHILIGHT)
+				ImGui::EndDisabled();
             i++;
         }
     }
@@ -165,13 +171,13 @@ void InputBox::OnDraw() {
             ImGui::SetKeyboardFocusHere();
         bool entered = ImGui::InputText("##InputText", inputbuf, IM_ARRAYSIZE(inputbuf), ImGuiInputTextFlags_EnterReturnsTrue);
 
-        if (ImGui::Button("OK") || entered) {
+        if (ImGui::Button(_c("InputBox", "OK")) || entered) {
             cbEnter(this, inputbuf, userdata);
             ImGui::CloseCurrentPopup();
             active = false;
         }
         ImGui::SameLine();
-        if (ImGui::Button("Cancel")) {
+        if (ImGui::Button(_c("InputBox", "Cancel"))) {
             if (cbCancel)
                 cbCancel(this, inputbuf, userdata);
             ImGui::CloseCurrentPopup();

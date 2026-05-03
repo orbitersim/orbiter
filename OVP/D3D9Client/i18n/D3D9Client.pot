@@ -1,0 +1,47 @@
+# This file was auto-generated, DO NOT modify it directly
+msgid ""
+msgstr ""
+"Content-Type: text/plain; charset=UTF-8\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+"X-Generator: Lua xgettext.lua\n"
+
+#: OVP/D3D9Client/CSphereMgr.cpp:63
+msgctxt "D3D9Client"
+msgid "Loading Celestial Sphere..."
+msgstr ""
+
+#: OVP/D3D9Client/D3D9Client.cpp:559
+msgctxt "D3D9Client"
+msgid "Building Shader Programs..."
+msgstr ""
+
+#: OVP/D3D9Client/D3D9Client.cpp:1263
+msgctxt "D3D9Client"
+msgid "Record"
+msgstr ""
+
+#: OVP/D3D9Client/D3D9Client.cpp:1264
+msgctxt "D3D9Client"
+msgid "Replay"
+msgstr ""
+
+#: OVP/D3D9Client/D3D9Client.cpp:1278
+msgctxt "D3D9Client"
+msgid "Frozen"
+msgstr ""
+
+#: OVP/D3D9Client/D3D9Client.cpp:3133
+msgctxt "D3D9Client"
+msgid "Loading..."
+msgstr ""
+
+#: OVP/D3D9Client/D3D9Client.cpp:3140
+msgctxt "D3D9Client"
+msgid "Warning: Config folder not present in /Modules/Server/. Please create symbolic link."
+msgstr ""
+
+#: OVP/D3D9Client/VPlanet.cpp:531
+msgctxt "D3D9Client"
+msgid "[WARNING] Surface textures are missing for %s"
+msgstr ""
+

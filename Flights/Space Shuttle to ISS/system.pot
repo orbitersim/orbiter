@@ -1,0 +1,412 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: Orbiter Flights\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+#: Flights/Space Shuttle to ISS/system.dat:4
+msgctxt "Flight"
+msgid "Please unpause the simulation (Ctrl-P) to play the tutorial."
+msgstr ""
+
+#: Flights/Space Shuttle to ISS/system.dat:6
+msgctxt "Flight"
+msgid "Welcome! You are in command of Space Shuttle Atlantis to fly a resupply mission to the International Space Station."
+msgstr ""
+
+#: Flights/Space Shuttle to ISS/system.dat:7
+msgctxt "Flight"
+msgid "Atlantis is ready on pad LC39B of Kennedy Space Center. T-80 seconds and counting."
+msgstr ""
+
+#: Flights/Space Shuttle to ISS/system.dat:9
+msgctxt "Flight"
+msgid "This flight is pre-recorded, but I will explain the procedures and the use of the autopilot, so you can fly your own mission later."
+msgstr ""
+
+#: Flights/Space Shuttle to ISS/system.dat:10
+msgctxt "Flight"
+msgid "The left MFD has been set to the Shuttle ascent autopilot interface mode (AscentAP), where you can set the launch parameters."
+msgstr ""
+
+#: Flights/Space Shuttle to ISS/system.dat:14
+msgctxt "Flight"
+msgid "You can adjust the launch azimuth angle by pressing the AZ- and AZ+ buttons."
+msgstr ""
+
+#: Flights/Space Shuttle to ISS/system.dat:15
+msgctxt "Flight"
+msgid "You can adjust the launch azimuth angle by pressing the AZ- and AZ+ buttons.    The launch azimuth is the initial heading the Shuttle will follow after launch. It governs the inclination of the orbit you enter."
+msgstr ""
+
+#: Flights/Space Shuttle to ISS/system.dat:16
+msgctxt "Flight"
+msgid "You want to intercept the International Space Station orbiting at an inclination of 51.6° on the descending section of its orbit, and the launch azimuth has already been set up accordingly for a SE launch."
+msgstr ""
+
+#: Flights/Space Shuttle to ISS/system.dat:17
+msgctxt "Flight"
+msgid "You can adjust the altitude of the target orbit with the AL- and AL+ buttons."
+msgstr ""
+
+#: Flights/Space Shuttle to ISS/system.dat:18
+msgctxt "Flight"
+msgid "You can adjust the altitude of the target orbit with the AL- and AL+ buttons.    This has also been adjusted to approximately match the ISS altitude at 350km."
+msgstr ""
+
+#: Flights/Space Shuttle to ISS/system.dat:19
+msgctxt "Flight"
+msgid "Pressing the L button will initiate the launch sequence. (In this tutorial, this will be done automatically.)"
+msgstr ""
+
+#: Flights/Space Shuttle to ISS/system.dat:24
+msgctxt "Flight"
+msgid "Space Shuttle main engine ignition!"
+msgstr ""
+
+#: Flights/Space Shuttle to ISS/system.dat:25
+msgctxt "Flight"
+msgid "Space Shuttle main engine ignition!    Solid rocket booster ignition!    Liftoff of Space Shuttle Atlantis on its mission to the International Space Station."
+msgstr ""
+
+#: Flights/Space Shuttle to ISS/system.dat:27
+msgctxt "Flight"
+msgid "The autopilot controls the engine gimbals to roll towards the commanded launch azimuth."
+msgstr ""
+
+#: Flights/Space Shuttle to ISS/system.dat:29
+msgctxt "Flight"
+msgid "The Shuttle launch stack then starts to pitch over backwards to enter the pre-defined ascent profile."
+msgstr ""
+
+#: Flights/Space Shuttle to ISS/system.dat:33
+msgctxt "Flight"
+msgid "On the MAP MFD display, it can be seen that the Shuttle's launch location at Cape Canaveral, Florida, is just about to pass underneath the ISS's orbital plane (symbolised by the yellow line)."
+msgstr ""
+
+#: Flights/Space Shuttle to ISS/system.dat:34
+msgctxt "Flight"
+msgid "This event marks the launch window - it allows the shuttle to launch into the same orbital plane without the need for fuel-expensive plane changes later on."
+msgstr ""
+
+#: Flights/Space Shuttle to ISS/system.dat:35
+msgctxt "Flight"
+msgid "In fact, if you look closely, the ISS's orbital plane is still slightly east of the launch position. This is because during ascent, the shuttle's eastward compoent of its tangential velocity is still below its eventual orbital velocity, meaning that the ISS will continue to gain on the shuttle position."
+msgstr ""
+
+#: Flights/Space Shuttle to ISS/system.dat:36
+msgctxt "Flight"
+msgid "Note how, as it pitches over and starts to accumulate a horizontal velocity component, the shuttle's orbital plane (indicated by the green line) is slowly rotating to match the ISS's plane."
+msgstr ""
+
+#: Flights/Space Shuttle to ISS/system.dat:40
+msgctxt "Flight"
+msgid "The launch autopilot manages the first part of the flight, from launch to orbit circularisation."
+msgstr ""
+
+#: Flights/Space Shuttle to ISS/system.dat:41
+msgctxt "Flight"
+msgid "So for now you can lean back and enjoy the ride."
+msgstr ""
+
+#: Flights/Space Shuttle to ISS/system.dat:45
+msgctxt "Flight"
+msgid "While the autopilot is active, it shows the current (Cur) and target (Tgt) control parameters."
+msgstr ""
+
+#: Flights/Space Shuttle to ISS/system.dat:46
+msgctxt "Flight"
+msgid "Time to mention another function of the AscentAP MFD mode: Clicking the PG+ and PG- buttons pages through the available display pages (only the first two are currently active)."
+msgstr ""
+
+#: Flights/Space Shuttle to ISS/system.dat:47
+msgctxt "Flight"
+msgid "On page 2, the MFD shows the gimbal positions of the space shuttle main engines (SSME) and the solid rocket boosters (SRB)."
+msgstr ""
+
+#: Flights/Space Shuttle to ISS/system.dat:52
+msgctxt "Flight"
+msgid "SRB separation at MET=126s!"
+msgstr ""
+
+#: Flights/Space Shuttle to ISS/system.dat:53
+msgctxt "Flight"
+msgid "SRB separation at MET=126s!    The spent solid rocket boosters fall back into the Atlantic off the Florida coast."
+msgstr ""
+
+#: Flights/Space Shuttle to ISS/system.dat:55
+msgctxt "Flight"
+msgid "The ascent is now powered with the Shuttle's main engines, fed from the external tank."
+msgstr ""
+
+#: Flights/Space Shuttle to ISS/system.dat:58
+msgctxt "Flight"
+msgid "The Orbiter/ET assembly rotates upright by gimballing the Shuttle's main engines"
+msgstr ""
+
+#: Flights/Space Shuttle to ISS/system.dat:62
+msgctxt "Flight"
+msgid "Main engine cutoff."
+msgstr ""
+
+#: Flights/Space Shuttle to ISS/system.dat:63
+msgctxt "Flight"
+msgid "The empty external tank is jettisoned. It will follow its suborbital trajectory and go down in the southern Indian Ocean."
+msgstr ""
+
+#: Flights/Space Shuttle to ISS/system.dat:65
+msgctxt "Flight"
+msgid "The two engines of the Orbital Maneuvering System fire for the OMS-1 burn. The purpose of this burn is to achieve the commanded apogee altitude of 350km."
+msgstr ""
+
+#: Flights/Space Shuttle to ISS/system.dat:68
+msgctxt "Flight"
+msgid "OMS cutoff. The apogee altitude is now 350km as programmed.    The orbiter will now coast to apogee, where the second OMS burn will take place."
+msgstr ""
+
+#: Flights/Space Shuttle to ISS/system.dat:70
+msgctxt "Flight"
+msgid "The payload bay doors are opened to expose the radiators."
+msgstr ""
+
+#: Flights/Space Shuttle to ISS/system.dat:72
+msgctxt "Flight"
+msgid "Fast-forwarding to apogee ..."
+msgstr ""
+
+#: Flights/Space Shuttle to ISS/system.dat:75
+msgctxt "Flight"
+msgid "Approaching apogee, the OMS engines fire for the OMS-2 burn to raise perigee and circularise the orbit."
+msgstr ""
+
+#: Flights/Space Shuttle to ISS/system.dat:77
+msgctxt "Flight"
+msgid "This is the end of the OMS-2 burn. The orbiter is now in an approximately circular orbit at altitude 350km, coplanar with that of the ISS."
+msgstr ""
+
+#: Flights/Space Shuttle to ISS/system.dat:78
+msgctxt "Flight"
+msgid "This also concludes the control of the ascent autopilot, which has now deactivated itself. The following maneuvers are planned and executed by hand."
+msgstr ""
+
+#: Flights/Space Shuttle to ISS/system.dat:82
+msgctxt "Flight"
+msgid "In preparation for the next maneuvers we need to set up the instruments."
+msgstr ""
+
+#: Flights/Space Shuttle to ISS/system.dat:83
+msgctxt "Flight"
+msgid "First, switch the head-up display (HUD) to Orbit mode, by pressing \"H\" twice."
+msgstr ""
+
+#: Flights/Space Shuttle to ISS/system.dat:84
+msgctxt "Flight"
+msgid "In Orbit mode, the HUD displays a pitch ladder with respect to the orbital plane, and a yaw tape that shows the angle to the orbital velocity vector (the prograde direction)."
+msgstr ""
+
+#: Flights/Space Shuttle to ISS/system.dat:85
+msgctxt "Flight"
+msgid "The next task is to fine-tune the orbital plane to match that of the ISS."
+msgstr ""
+
+#: Flights/Space Shuttle to ISS/system.dat:86
+msgctxt "Flight"
+msgid "This will require a velocity change (Delta-V) normal (perpendicular) to the orbital plane, executed at the intersection (node) of current and target planes."
+msgstr ""
+
+#: Flights/Space Shuttle to ISS/system.dat:89
+msgctxt "Flight"
+msgid "This type of plane change is assisted by the \"Align planes\" MFD mode.    On the left MFD, Click <SEL>, <Align planes>."
+msgstr ""
+
+#: Flights/Space Shuttle to ISS/system.dat:90
+msgctxt "Flight"
+msgid "Next, pick the target object. Click <TGT>, press Enter, type \"iss\", press Enter."
+msgstr ""
+
+#: Flights/Space Shuttle to ISS/system.dat:91
+msgctxt "Flight"
+msgid "The display shows the current orbital position (P) in relation to the descending (DN) and ascending node (AN) defining the line of nodes (the yellow line) with the target plane."
+msgstr ""
+
+#: Flights/Space Shuttle to ISS/system.dat:92
+msgctxt "Flight"
+msgid "Other useful readout values are the relative inclination between the planes (RInc), the rate of change (Rate), the time to node (Tn) and the estimated burn times (TthA, TthD) for matching the planes, at ascending and descending node, respectively."
+msgstr ""
+
+#: Flights/Space Shuttle to ISS/system.dat:94
+msgctxt "Flight"
+msgid "The plane change will require a burn normal to the orbital plane, so we need to orient the orbiter correspondingly."
+msgstr ""
+
+#: Flights/Space Shuttle to ISS/system.dat:95
+msgctxt "Flight"
+msgid "An additional problem is the fact that on the Shuttle, the OMS engines are tilted by about 15 degrees against the longitudinal axis.    This must be taken into account when rotating the orbiter."
+msgstr ""
+
+#: Flights/Space Shuttle to ISS/system.dat:96
+msgctxt "Flight"
+msgid "The \"Attitude RCS\" MFD mode can assist here.    On the right MFD, click <SEL>, <Attitude RCS>."
+msgstr ""
+
+#: Flights/Space Shuttle to ISS/system.dat:97
+msgctxt "Flight"
+msgid "Click <SET>, followed by <BAS>, to switch the base attitude mode to \"Normal\"."
+msgstr ""
+
+#: Flights/Space Shuttle to ISS/system.dat:98
+msgctxt "Flight"
+msgid "Click <+R> to add a pitch rotation to the base mode. Now click <+V> repeatedly until the rotation angle is set at +15 degrees."
+msgstr ""
+
+#: Flights/Space Shuttle to ISS/system.dat:99
+msgctxt "Flight"
+msgid "Clicking <GO> will activate the commanded attitude mode. (In this tutorial, this is done automatically)."
+msgstr ""
+
+#: Flights/Space Shuttle to ISS/system.dat:102
+msgctxt "Flight"
+msgid "Rotating the shuttle normal to the orbital plane (+15 deg)."
+msgstr ""
+
+#: Flights/Space Shuttle to ISS/system.dat:103
+msgctxt "Flight"
+msgid "A short OMS burn for precisely matching the orbital plane with the ISS."
+msgstr ""
+
+#: Flights/Space Shuttle to ISS/system.dat:106
+msgctxt "Flight"
+msgid "Watch the relative inclination (RInc) slowly dropping down to zero."
+msgstr ""
+
+#: Flights/Space Shuttle to ISS/system.dat:109 Flights/Space Shuttle to ISS/system.dat:140
+msgctxt "Flight"
+msgid "OMS cutoff."
+msgstr ""
+
+#: Flights/Space Shuttle to ISS/system.dat:110
+msgctxt "Flight"
+msgid "Switching back to prograde orientation."
+msgstr ""
+
+#: Flights/Space Shuttle to ISS/system.dat:111
+msgctxt "Flight"
+msgid "The next manoever will be a prograde burn to increase the orbital period, in order to let the ISS catch up for rendezvous."
+msgstr ""
+
+#: Flights/Space Shuttle to ISS/system.dat:112
+msgctxt "Flight"
+msgid "The position of the prograde burn will become the perigee location of the orbit."
+msgstr ""
+
+#: Flights/Space Shuttle to ISS/system.dat:113
+msgctxt "Flight"
+msgid "The perigee location will also be the designated rendezvous point with the ISS."
+msgstr ""
+
+#: Flights/Space Shuttle to ISS/system.dat:114
+msgctxt "Flight"
+msgid "Since the current orbit is approximately circular, the perigee is not yet well defined. The next burn can be initiated anywhere along the orbital trajectory."
+msgstr ""
+
+#: Flights/Space Shuttle to ISS/system.dat:115
+msgctxt "Flight"
+msgid "However, we will delay the burn until we emerge from the Earth's shadow. This will ensure that the eventual rendezvous and docking manoever can take place in daylight."
+msgstr ""
+
+#: Flights/Space Shuttle to ISS/system.dat:117
+msgctxt "Flight"
+msgid "Fast forwarding ..."
+msgstr ""
+
+#: Flights/Space Shuttle to ISS/system.dat:121
+msgctxt "Flight"
+msgid "To time the prograde burn, switch the left MFD to Sync Orbit mode."
+msgstr ""
+
+#: Flights/Space Shuttle to ISS/system.dat:122
+msgctxt "Flight"
+msgid "To time the prograde burn, switch the left MFD to Sync Orbit mode.    Press <SEL>, <Sync Orbit>."
+msgstr ""
+
+#: Flights/Space Shuttle to ISS/system.dat:123
+msgctxt "Flight"
+msgid "Next, press <TGT> for target selection, followed by <Enter>. Type \"iss\", and press <Enter>."
+msgstr ""
+
+#: Flights/Space Shuttle to ISS/system.dat:124
+msgctxt "Flight"
+msgid "Press <MOD> twice, until the \"Ref\" readout shows \"Sh periapsis\". This sets the target rendezvous point to our current periapsis position."
+msgstr ""
+
+#: Flights/Space Shuttle to ISS/system.dat:125
+msgctxt "Flight"
+msgid "Finally, press <LEN>, type \"15\", press <Enter>. This sets the length of the arrival time list to 15 orbits."
+msgstr ""
+
+#: Flights/Space Shuttle to ISS/system.dat:128
+msgctxt "Flight"
+msgid "Turning prograde + 15deg for the next burn, again with the help of the AttitudeRCS MFD mode."
+msgstr ""
+
+#: Flights/Space Shuttle to ISS/system.dat:129
+msgctxt "Flight"
+msgid "OMS ignition for prograde burn."
+msgstr ""
+
+#: Flights/Space Shuttle to ISS/system.dat:132
+msgctxt "Flight"
+msgid "The arrival time list on the right side of the Sync Orbit MFD shows the time to rendezvous point of your spacecraft (Sh-ToR) and the target craft (Tg-ToR) for a sequence of orbits, where \"0\" refers to the current orbit."
+msgstr ""
+
+#: Flights/Space Shuttle to ISS/system.dat:133
+msgctxt "Flight"
+msgid "The pair of entries indicated in yellow represents the closest match of arrival times between you and the target."
+msgstr ""
+
+#: Flights/Space Shuttle to ISS/system.dat:134
+msgctxt "Flight"
+msgid "As your orbit period increases during the prograde burn, this will eventually jump to the end of the list, and then start moving up the list."
+msgstr ""
+
+#: Flights/Space Shuttle to ISS/system.dat:135
+msgctxt "Flight"
+msgid "The earliear you want the rendezvous to take place, the longer you will need to burn (and the longer you will need to decelerate at rendezvous to match orbits)."
+msgstr ""
+
+#: Flights/Space Shuttle to ISS/system.dat:136
+msgctxt "Flight"
+msgid "Thus, there is a tradeoff between rendezvous time and fuel expenditure.    If you are short on fuel, you can target a later orbit for rendezvous."
+msgstr ""
+
+#: Flights/Space Shuttle to ISS/system.dat:137
+msgctxt "Flight"
+msgid "In this instance, we are planning for rendezvous in orbit 5."
+msgstr ""
+
+#: Flights/Space Shuttle to ISS/system.dat:141
+msgctxt "Flight"
+msgid "Returning to prograde attitude."
+msgstr ""
+
+#: Flights/Space Shuttle to ISS/system.dat:142
+msgctxt "Flight"
+msgid "The arrival times are now synchronized for perigee in orbit 5, approximately 8 hours (27.8k seconds) from now."
+msgstr ""
+
+#: Flights/Space Shuttle to ISS/system.dat:143
+msgctxt "Flight"
+msgid "The next task in preparation for the rendezvous is to make sure that the orbit radius at perigee matches that of the ISS."
+msgstr ""
+
+#: Flights/Space Shuttle to ISS/system.dat:144
+msgctxt "Flight"
+msgid "For that purpose, we need to record the ISS's radius distance when it passes our perigee longitude."
+msgstr ""
+
+#: Flights/Space Shuttle to ISS/system.dat:147
+msgctxt "Flight"
+msgid "Switch the left MFD to Orbit mode:    Press <SEL>, <Orbit>."
+msgstr ""
+
