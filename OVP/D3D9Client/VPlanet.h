@@ -13,11 +13,13 @@
 #include "AtmoControls.h"
 #include "D3D9Util.h"
 #include "Mesh.h"
+#include "RockScatter.h"
 #include <list>
 
 class D3D9Mesh;
 class SurfTile;
 class CloudTile;
+class RockScatter;
 
 bool FilterElevationPhysics(OBJHANDLE hPlanet, int lvl, int ilat, int ilng, double elev_res, INT16* elev);
 
@@ -263,6 +265,11 @@ public:
 	DWORD			GetPhysicsPatchRes() const { return physics_patchres; }
 	sOverlay *		AddOverlaySurface(VECTOR4 lnglat, gcCore::OlayType type, LPDIRECT3DTEXTURE9 pSrf = NULL, sOverlay *pOld = NULL, const FVECTOR4* pB = NULL);
 	sOverlay *		IntersectOverlay(VECTOR4 bounds, FVECTOR4* texcoord) const;
+
+	// Surface rock scatter
+	RockScatterCfg RockCfg;
+	const RockScatterCfg& GetRockConfig() const { return RockCfg; }
+	RockScatter* GetRockScatter() const { return rockScatter; }
 	
 
 	// Surface base interface -------------------------------------------------
@@ -425,6 +432,7 @@ private:
 	bool bFog;                // render distance fog?
 	FogParam fog;             // distance fog render parameters
 	D3D9Mesh *mesh;           // mesh for non-spherical body
+	RockScatter *rockScatter; // procedural surface rock renderer
 	VECTOR3	vRefPoint;		  // Auxiliary reference point for normal mapped water
 	ScatterParams SPrm;		  // Parameters for atmospheric configuration dialog
 	ScatterParams OPrm;		  // Parameters for atmospheric configuration dialog

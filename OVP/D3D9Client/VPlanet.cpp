@@ -36,6 +36,7 @@
 #include "VectorHelpers.h"
 #include "OapiExtension.h"
 #include "IProcess.h"
+#include "RockScatter.h"
 #include <filesystem>
 
 using namespace oapi;
@@ -366,6 +367,21 @@ vPlanet::vPlanet (OBJHANDLE _hObj, const Scene *scene) :
 	pSunColor(), pRaySkyView(), pMieSkyView(), pLandViewRay(), pLandViewMie(), pAmbientSky(), pLandViewAtn(), ShaderName("Auto\0")
 {
 	memset(&MicroCfg, 0, sizeof(MicroCfg));
+
+	// RockScatter defaults — cannot memset RockCfg because it contains std::string
+	RockCfg.bEnabled      = false;
+	RockCfg.fDrawDist     = 500.0f;
+	RockCfg.fDensity      = 0.01f;
+	RockCfg.uSeed         = 0;
+	RockCfg.fSizeSmall[0] = 0.1f;  RockCfg.fSizeSmall[1]  = 0.5f;
+	RockCfg.fSizeMedium[0]= 0.5f;  RockCfg.fSizeMedium[1] = 2.0f;
+	RockCfg.fSizeLarge[0] = 2.0f;  RockCfg.fSizeLarge[1]  = 8.0f;
+	RockCfg.fRatioSmall   = 0.70f;
+	RockCfg.fRatioMedium  = 0.25f;
+	RockCfg.fRatioLarge   = 0.05f;
+	RockCfg.sMeshPrefix.clear();
+
+	rockScatter = NULL;
 	vRefPoint = _V(1,0,0);
 	atm_mode = 0;
 	iConfig = 0;
@@ -509,6 +525,8 @@ vPlanet::vPlanet (OBJHANDLE _hObj, const Scene *scene) :
 
 	ParseConfig(oapiGetObjectFileName(hObj));
 
+	// RockScatter is created lazily on first Render() to ensure D3D is fully ready
+
 	UpdateScatter();
 
 	char msg[256]; char path[MAX_PATH];
@@ -560,6 +578,7 @@ vPlanet::~vPlanet ()
 	if (hazemgr2) delete hazemgr2;
 	if (ringmgr)  delete ringmgr;
 	if (mesh)     delete mesh;
+	if (rockScatter) delete rockScatter;
 
 	SAFE_RELEASE(pSunColor);
 	SAFE_RELEASE(pRaySkyView);
@@ -614,6 +633,64 @@ bool vPlanet::ParseConfig(const char* fname)
 				>> albedo.x
 				>> albedo.y
 				>> albedo.z;
+		}
+
+		// SurfaceRocks = TRUE/FALSE
+		if (startsWith(line, "SurfaceRocks"))
+		{
+			RockCfg.bEnabled = (line.find("TRUE") != std::string::npos || line.find("true") != std::string::npos || line.find("1") != std::string::npos);
+		}
+		// RockDrawDist = <float>
+		if (startsWith(line, "RockDrawDist"))
+		{
+			std::istringstream iss(line); iss >> dummy >> dummy >> RockCfg.fDrawDist;
+		}
+		// RockDensity = <float>
+		if (startsWith(line, "RockDensity"))
+		{
+			std::istringstream iss(line); iss >> dummy >> dummy >> RockCfg.fDensity;
+		}
+		// RockSeed = <uint>
+		if (startsWith(line, "RockSeed"))
+		{
+			int v = 0;
+			std::istringstream iss(line); iss >> dummy >> dummy >> v;
+			RockCfg.uSeed = (UINT)v;
+		}
+		// RockSizeSmall = <float> <float>
+		if (startsWith(line, "RockSizeSmall"))
+		{
+			std::istringstream iss(line); iss >> dummy >> dummy >> RockCfg.fSizeSmall[0] >> RockCfg.fSizeSmall[1];
+		}
+		// RockSizeMedium = <float> <float>
+		if (startsWith(line, "RockSizeMedium"))
+		{
+			std::istringstream iss(line); iss >> dummy >> dummy >> RockCfg.fSizeMedium[0] >> RockCfg.fSizeMedium[1];
+		}
+		// RockSizeLarge = <float> <float>
+		if (startsWith(line, "RockSizeLarge"))
+		{
+			std::istringstream iss(line); iss >> dummy >> dummy >> RockCfg.fSizeLarge[0] >> RockCfg.fSizeLarge[1];
+		}
+		// RockRatioSmall = <float>
+		if (startsWith(line, "RockRatioSmall"))
+		{
+			std::istringstream iss(line); iss >> dummy >> dummy >> RockCfg.fRatioSmall;
+		}
+		// RockRatioMedium = <float>
+		if (startsWith(line, "RockRatioMedium"))
+		{
+			std::istringstream iss(line); iss >> dummy >> dummy >> RockCfg.fRatioMedium;
+		}
+		// RockRatioLarge = <float>
+		if (startsWith(line, "RockRatioLarge"))
+		{
+			std::istringstream iss(line); iss >> dummy >> dummy >> RockCfg.fRatioLarge;
+		}
+		// RockMesh = <string>
+		if (startsWith(line, "RockMesh"))
+		{
+			std::istringstream iss(line); iss >> dummy >> dummy >> RockCfg.sMeshPrefix;
 		}
 	}
 	return true;
@@ -1059,12 +1136,24 @@ bool vPlanet::Render(LPDIRECT3DDEVICE9 dev)
 			RenderSphere (dev);
 		}
 
-		if (nbase) RenderBaseStructures (dev);
+		// Render procedural rocks
+		if (Config->bRockEnable > 0) {
+			if (!rockScatter) rockScatter = new RockScatter(this, dev);
+			rockScatter->Render(dev);
+		}
 
-		if (prm.bCloud && (prm.cloudvis & 2))
+		if (nbase) {
+			RenderBaseStructures (dev);
+		}
+
+		if (prm.bCloud && (prm.cloudvis & 2)) {
 			RenderCloudLayer (dev, D3DCULL_CCW);	  // render clouds from above
+		}
 
-		if (hazemgr) hazemgr->Render (dev, mWorld, true); // haze across planet disc
+		if (hazemgr) {
+			hazemgr->Render (dev, mWorld, true); // haze across planet disc
+		}
+		
 		if (ringmgr) {
 			ringmgr->Render (dev, mWorld, true);
 			dev->SetRenderState(D3DRS_CULLMODE, D3DCULL_CCW);
@@ -1177,7 +1266,9 @@ void vPlanet::RenderSphere (LPDIRECT3DDEVICE9 dev)
 		dev->SetRenderState(D3DRS_CULLMODE, D3DCULL_CCW);
 		if (prm.bFog) D3D9Effect::FX->SetFloat(D3D9Effect::eFogDensity, fogfactor/dist_scale);
 		surfmgr->SetAmbientColor(prm.AmbColor);
+
 		surfmgr->Render (dev, mWorld, dist_scale, patchres, 0.0, prm.bFog); // surface
+
 		if (prm.bFog) D3D9Effect::FX->SetFloat(D3D9Effect::eFogDensity, fogfactor);
 	}
 
@@ -1247,6 +1338,11 @@ void vPlanet::RenderBaseShadows(LPDIRECT3DDEVICE9 dev, float depth)
 	if (scn->GetRenderFlags() & 0x20) {
 		if (bObjectShadow) {
 			for (DWORD i = 0; i < nbase; i++) if (vbase[i]) vbase[i]->RenderGroundShadow(dev, depth);
+			
+			if (Config->bRockEnable > 0 && Config->bRockShadows) {
+				if (rockScatter) rockScatter->RenderShadows(dev, depth);
+			}
+			
 			// reset device parameters
 			dev->SetRenderState(D3DRS_STENCILENABLE, FALSE);
 		}

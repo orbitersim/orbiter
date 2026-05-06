@@ -4706,6 +4706,44 @@ bool Vessel::AddSurfaceForces (Vector *F, Vector *M, const StateVectors *s, doub
 	return true;
 }
 
+// Extracts vertices from all visual meshes into vessel-local coords.
+// Only rebuilds when mesh count changes.
+
+void Vessel::RebuildHullCache() {
+  if (m_hullCacheMeshCount == nmesh)
+    return; // cache is up to date
+  m_hullCache.clear();
+  m_hullCache.reserve(256);
+
+  for (UINT mi = 0; mi < nmesh; mi++) {
+    if (!meshlist[mi])
+      continue;
+    MESHHANDLE hMesh = meshlist[mi]->hMesh;
+    if (!hMesh)
+      continue;
+
+    VECTOR3 meshOfs = meshlist[mi]->meshofs;
+    DWORD nGrp = oapiMeshGroupCount(hMesh);
+
+    for (DWORD g = 0; g < nGrp; g++) {
+      MESHGROUPEX *grp = oapiMeshGroupEx(hMesh, g);
+      if (!grp || !grp->Vtx)
+        continue;
+
+      // Downsample: use every 4th vertex for dense meshes
+      DWORD step = (grp->nVtx > 100) ? 4 : 1;
+      for (DWORD v = 0; v < grp->nVtx; v += step) {
+        VECTOR3 pt;
+        pt.x = grp->Vtx[v].x + meshOfs.x;
+        pt.y = grp->Vtx[v].y + meshOfs.y;
+        pt.z = grp->Vtx[v].z + meshOfs.z;
+        m_hullCache.push_back(pt);
+      }
+    }
+  }
+  m_hullCacheMeshCount = nmesh;
+}
+
 // =======================================================================
 // vessel state update
 
@@ -4768,6 +4806,74 @@ void Vessel::Update (bool force)
 		UpdateSurfParams();
 
 	if (proxyplanet && fstatus != FLIGHTSTATUS_LANDED && !bFRplayback) {
+
+		// mesh-to-mesh collision using cached hull vertices
+		if (sp.alt < 2.0 * size) {
+			if (auto gc = g_pOrbiter->GetGraphicsClient()) {
+				// Rebuild hull cache if meshes changed (noop if not)
+				RebuildHullCache();
+
+				if (!m_hullCache.empty()) {
+					// Get vessel position in planet-local frame
+					Vector localPosV(s1->pos - proxyplanet->s1->pos);
+					localPosV.Set(tmul(proxyplanet->s1->R, localPosV));
+					VECTOR3 localPos = {localPosV.x, localPosV.y, localPosV.z};
+
+					// Build vessel-to-planet-local transform: R_planet^-1 * R_vessel
+					Matrix V2P;
+					V2P.Set(s1->R);
+					V2P.tpremul(proxyplanet->s1->R);
+
+					// Transform cached vessel-local hull points to planet-local
+					std::vector<VECTOR3> hullPtsWorld(m_hullCache.size());
+					for (size_t h = 0; h < m_hullCache.size(); h++) {
+						Vector vp(m_hullCache[h].x, m_hullCache[h].y, m_hullCache[h].z);
+						Vector plv = mul(V2P, vp);
+						hullPtsWorld[h] = {plv.x + localPosV.x, plv.y + localPosV.y,
+										   plv.z + localPosV.z};
+					}
+
+					auto hitRes = gc->clbkCheckRockCollision(
+						(OBJHANDLE)proxyplanet, hullPtsWorld.data(),
+						(int)hullPtsWorld.size(), localPos, size);
+
+					if (hitRes.hit) {
+						// Collision normal: rock center -> vessel CoM direction, to global
+						Vector norm(hitRes.normal.x, hitRes.normal.y, hitRes.normal.z);
+						Vector normGlobal = mul(proxyplanet->s1->R, norm);
+
+						// Gently push vessel CoM away from rock.
+						// Resolve only 30% of penetration per frame to avoid snap/eject
+						// feel. Deep penetrations resolve over 3-4 frames naturally.
+						double correction = min(hitRes.depth * 0.3, size * 0.1);
+						s1->pos += normGlobal * correction;
+						rpos_base = s1->pos;
+						rpos_add.Set(0, 0, 0);
+
+						// Kill approach velocity + tiny bounce (restitution 0.1).
+						double pRad = proxyplanet->Size();
+						double vground = Pi2 * pRad * sp.clat / proxyplanet->RotT();
+						Vector groundVel(-vground * sp.slng, 0.0, vground * sp.clng);
+						groundVel.Set(mul(proxyplanet->s1->R, groundVel) +
+									  proxyplanet->s1->vel);
+						Vector surfRelVel = s1->vel - groundVel;
+
+						double vToward = dotp(surfRelVel, normGlobal);
+						if (vToward < 0.0) {
+							double restitution = 0.1; // 10% bounce-back
+							s1->vel -= normGlobal * vToward * (1.0 + restitution);
+							rvel_base = s1->vel;
+							rvel_add.Set(0, 0, 0);
+						}
+
+						oapiWriteLogV("ROCK_COLLISION[%s]: depth=%.4f vToward=%.3f "
+									  "normal=(%.3f,%.3f,%.3f)",
+									  Name(), hitRes.depth, vToward, norm.x, norm.y,
+									  norm.z);
+					}
+				}
+			}
+		}
 
 		// handle planetary surface touchdown events
 		if (sp.alt < 2.0*size) {

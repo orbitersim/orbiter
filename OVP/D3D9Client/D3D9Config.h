@@ -98,6 +98,14 @@ public:
 	int bIrradiance;
 	int bAtmoQuality;
 	int NoPlanetAA;					///< Disable planet surface anti-aliasing to prevent white pixels at horizon 
+	int bRockEnable;				///< Surface rock scatter enable (0=disabled, 1=enabled, default=1)
+	int bRockCollision;             ///< Surface rock scatter collisions (0=disabled, 1=enabled, default=0)
+	int bRockShadows;				///< Surface rock shadow casting (0=disabled, 1=enabled, default=1)
+	float fRockDensityMult;			///< Surface rock density multiplier (0.1...3.0, default=1.0)
+	float fRockDistMult;			///< Surface rock draw distance multiplier (0.1...50.0, default=1.0)
+	float fRockDistSmall;			///< Small rock draw distance multiplier (0.1...2.0, default=0.5)
+	float fRockDistMedium;			///< Medium rock draw distance multiplier (0.1...2.0, default=0.8)
+	float fRockDistLarge;			///< Large rock draw distance multiplier (0.1...2.0, default=1.0)
 	char *DebugFont;				///< Font face for debug lines (default="Fixed")
 	char *SolCfg;					///< Solar system to use (default="Sol")
 	float GFXIntensity;			///< Post Processing | Light glow intensity (0.0...1.0, default=0.5)

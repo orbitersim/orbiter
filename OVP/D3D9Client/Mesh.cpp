@@ -2936,6 +2936,146 @@ void D3D9Mesh::RenderShadowsEx(float alpha, const LPD3DXMATRIX pP, const LPD3DXM
 }
 
 
+// Batch rendering for instanced scatter
+
+void D3D9Mesh::RenderBatchBegin(const D3D9Sun *sun)
+{
+	if (!IsOK()) return;
+
+	pBuf->Map(pDev);
+
+	if (bMtrlModidied) {
+		CheckMeshStatus();
+		bMtrlModidied = false;
+	}
+
+	Scene *scn = gc->GetScene();
+
+	// Setup sun light
+	if (sun) SetSunLight(sun);
+
+	HR(D3D9Effect::FX->SetBool(D3D9Effect::eBaseBuilding, true));
+
+	pDev->SetVertexDeclaration(pMeshVertexDecl);
+	pDev->SetStreamSource(0, pBuf->pVB, 0, sizeof(NMVERTEX));
+	pDev->SetIndices(pBuf->pIB);
+
+	FX->SetTechnique(eVesselTech);
+	FX->SetBool(eFresnel, false);
+	FX->SetBool(eEnvMapEnable, false);
+	FX->SetBool(eTuneEnabled, false);
+	FX->SetBool(eLightsEnabled, false);
+	FX->SetBool(eOITEnable, false);
+	FX->SetVector(eColor, ptr(D3DXVECTOR4(0, 0, 0, 0)));
+
+	ConfigureAtmo();
+
+	// No local lights for scatter rocks (they're far from bases/vessels)
+	for (int i = 0; i < Config->MaxLights(); i++) memcpy(&Locals[i], &null_light, sizeof(LightStruct));
+	FX->SetValue(eLights, Locals, sizeof(LightStruct) * Config->MaxLights());
+
+	UINT numPasses = 0;
+	HR(FX->Begin(&numPasses, D3DXFX_DONOTSAVESTATE));
+
+	// Set up material and texture state for the first (typically only) group
+	TexFlow FC;
+	memset(&FC, 0, sizeof(FC));
+
+	if (nGrp > 0) {
+		HR(FX->BeginPass(Grp[0].Shader));
+
+		DWORD ti = Grp[0].TexIdx;
+		if (ti != SPEC_DEFAULT && Tex[ti] != NULL) {
+			FX->SetTexture(eTex0, Tex[ti]->GetTexture());
+			FX->SetBool(eTextured, true);
+		}
+		else {
+			FX->SetBool(eTextured, false);
+		}
+
+		D3D9MatExt *mat;
+		if (Grp[0].MtrlIdx == SPEC_DEFAULT) mat = &defmat;
+		else mat = &Mtrl[Grp[0].MtrlIdx];
+		FX->SetValue(eMtrl, mat, sizeof(D3D9MatExt) - 4);
+		FX->SetFloat(eMtrlAlpha, 1.0f);
+
+		FX->SetBool(eFullyLit, false);
+		FX->SetBool(eNoColor, false);
+		FX->SetBool(eSwitch, false);
+		FX->SetBool(eRghnSw, false);
+
+		FX->SetValue(eFlow, &FC, sizeof(TexFlow));
+	}
+}
+
+void D3D9Mesh::RenderBatchInstance(const LPD3DXMATRIX pW)
+{
+	if (!IsOK() || nGrp == 0) return;
+
+	FX->SetMatrix(eW, pW);
+	FX->CommitChanges();
+
+	for (DWORD g = 0; g < nGrp; g++) {
+		pDev->DrawIndexedPrimitive(D3DPT_TRIANGLELIST, Grp[g].VertOff, 0, Grp[g].nVert, Grp[g].IdexOff, Grp[g].nFace);
+		D3D9Stats.Mesh.Vertices += Grp[g].nVert;
+		D3D9Stats.Mesh.MeshGrps++;
+	}
+	D3D9Stats.Mesh.Meshes++;
+}
+
+void D3D9Mesh::RenderBatchEnd()
+{
+	if (nGrp > 0) {
+		HR(FX->EndPass());
+	}
+	HR(FX->End());
+}
+
+void D3D9Mesh::RenderShadowBatchBegin(const D3DXVECTOR4 *param)
+{
+	if (!IsOK()) return;
+
+	pDev->SetVertexDeclaration(pPosTexDecl);
+	pDev->SetStreamSource(0, pBuf->pSB, 0, sizeof(SMVERTEX));
+	pDev->SetIndices(pBuf->pIB);
+
+	FX->SetTechnique(eShadowTech);
+	if (param) FX->SetVector(eTexOff, param);
+
+	UINT numPasses = 0;
+	FX->Begin(&numPasses, D3DXFX_DONOTSAVESTATE);
+	FX->BeginPass(1);
+}
+
+void D3D9Mesh::RenderShadowBatchInstance(float alpha, const LPD3DXMATRIX pProj, const LPD3DXMATRIX pW, const D3DXVECTOR4 *light, const D3DXVECTOR4 *param)
+{
+	if (!IsOK()) return;
+
+	FX->SetMatrix(eW, pW);
+	FX->SetMatrix(eGT, pProj);
+	FX->SetFloat(eMix, alpha);
+	if (light) FX->SetVector(eColor, light);
+	else FX->SetVector(eColor, ptr(D3DXVECTOR4(0, 1, 0, 0)));
+	if (param) FX->SetVector(eTexOff, param);
+
+	FX->SetBool(eOITEnable, false);
+	FX->CommitChanges();
+
+	for (DWORD g = 0; g < nGrp; g++) {
+		if (Grp[g].UsrFlag & 0x3) continue;
+		pDev->DrawIndexedPrimitive(D3DPT_TRIANGLELIST, Grp[g].VertOff, 0, Grp[g].nVert, Grp[g].IdexOff, Grp[g].nFace);
+		D3D9Stats.Mesh.Vertices += Grp[g].nVert;
+		D3D9Stats.Mesh.MeshGrps++;
+	}
+	D3D9Stats.Mesh.Meshes++;
+}
+
+void D3D9Mesh::RenderShadowBatchEnd()
+{
+	FX->EndPass();
+	FX->End();
+}
+
 
 // ================================================================================================
 // This is a rendering routine for a Exterior Mesh, non-spherical moons/asteroids

@@ -19,6 +19,12 @@
 #include "D3D9Surface.h"
 #include "D3D9TextMgr.h"
 #include "D3D9Frame.h"
+#include "D3D9Effect.h"
+#include "Mesh.h"
+#include "Scene.h"
+#include "CelSphere.h"
+#include "VPlanet.h"
+#include "RockScatter.h"
 #include "D3D9Pad.h"
 #include "CSphereMgr.h"
 #include "Scene.h"
@@ -2725,6 +2731,29 @@ bool D3D9Client::clbkFilterElevation(OBJHANDLE hPlanet, int ilat, int ilng, int 
 {
 	_TRACE;
 	return FilterElevationPhysics(hPlanet, lvl, ilat, ilng, elev_res, elev);
+}
+
+GraphicsClient::SurfaceCollisionResult D3D9Client::clbkCheckRockCollision(OBJHANDLE hPlanet, const VECTOR3* hullPtsLocal, int nPts, const VECTOR3& vesselPosLocal, double vesselRadius) const
+{
+	SurfaceCollisionResult res = { false, {0,0,0}, 0.0, {0,0,0} };
+	if (!hPlanet || !GetScene()) return res;
+	vObject *vobj = GetScene()->GetVisObject(hPlanet);
+	if (!vobj) return res;
+	vPlanet *vpl = (vPlanet*)vobj;
+	RockScatter *scatter = vpl->GetRockScatter();
+	if (!scatter) return res;
+
+	// Only collide with rocks closer than the configured draw distance
+	float maxCollisionDist = vpl->RockCfg.fDrawDist * Config->fRockDistMult;
+
+	RockScatter::CollisionResult rr = scatter->CheckCollision(hullPtsLocal, nPts, vesselPosLocal, vesselRadius, maxCollisionDist);
+	if (rr.hit) {
+		res.hit = true;
+		res.normal = rr.normal;
+		res.depth = rr.depth;
+		res.contactPtLocal = rr.contactPtLocal;
+	}
+	return res;
 }
 void D3D9Client::clbkImGuiNewFrame()
 {

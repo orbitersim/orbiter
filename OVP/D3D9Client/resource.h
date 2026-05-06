@@ -245,3 +245,16 @@
 #define IDC_ATG5                                4064
 #define IDC_ATG6                                4065
 #define IDC_ATM_PAGE                            4066
+#define IDC_ROCK_ENABLE                         4070
+#define IDC_ROCK_COLLISION                      4076
+#define IDC_ROCK_SHADOWS                        4071
+#define IDC_ROCK_DENSITY                        4072
+#define IDC_ROCK_DIST                           4073
+#define IDC_ROCK_DENSITY_TXT                    4074
+#define IDC_ROCK_DIST_TXT                       4075
+#define IDC_ROCK_DIST_SMALL                     4077
+#define IDC_ROCK_DIST_SMALL_TXT                 4078
+#define IDC_ROCK_DIST_MEDIUM                    4079
+#define IDC_ROCK_DIST_MEDIUM_TXT                4080
+#define IDC_ROCK_DIST_LARGE                     4081
+#define IDC_ROCK_DIST_LARGE_TXT                 4082
