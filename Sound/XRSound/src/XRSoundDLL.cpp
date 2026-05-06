@@ -46,8 +46,8 @@ VesselXRSoundEngine *XRSoundDLL::GetXRSoundEngineInstance(const OBJHANDLE hVesse
     if (!bIsValidVessel)
     {
         // should never happen!
-        CString msg;
-        msg.Format("XRSoundDLL::GetXRSoundEngineInstance ERROR: vessel handle passed is invalid! bInvokedByClientVessel = %d", bInvokedByClientVessel);
+        char msg[256];
+        snprintf(msg, 256, "XRSoundDLL::GetXRSoundEngineInstance ERROR: vessel handle passed is invalid! bInvokedByClientVessel = %d", bInvokedByClientVessel);
         WriteLog(msg);
         return nullptr;
     }
@@ -65,15 +65,15 @@ VesselXRSoundEngine *XRSoundDLL::GetXRSoundEngineInstance(const OBJHANDLE hVesse
         // if this ship has thrusters; it should have default sounds
         const DWORD dwThrusterCount = pVessel->GetThrusterCount();
         const bool bShouldHaveDefaultSounds = (dwThrusterCount > 0);
-        CString csVesselDesc;
-        csVesselDesc.Format("'%s' [class name '%s'], bInvokedByClientVessel = %d, dwThrusterCount = %u, bShouldHaveDefaultSounds = %d",
+        char csVesselDesc[256];
+        snprintf(csVesselDesc, 256, "'%s' [class name '%s'], bInvokedByClientVessel = %d, dwThrusterCount = %u, bShouldHaveDefaultSounds = %d",
             pVessel->GetName(), pVessel->GetClassName(), bInvokedByClientVessel, dwThrusterCount, bShouldHaveDefaultSounds);
 
         // if the request for an engine came from a vessel, it should *always* succeed, even if it would not normally have default sounds
         if (bInvokedByClientVessel || bShouldHaveDefaultSounds)
         {
-            CString msg;
-            msg.Format("XRSoundDLL::GetXRSoundEngineInstance: creating new XRSoundEngine instance for vessel %s", static_cast<const char *>(csVesselDesc));
+            char msg[256];
+            snprintf(msg, 256, "XRSoundDLL::GetXRSoundEngineInstance: creating new XRSoundEngine instance for vessel %s", static_cast<const char *>(csVesselDesc));
 
             pEngine = VesselXRSoundEngine::CreateInstance(hVessel);
             if (pEngine)
@@ -106,8 +106,8 @@ ModuleXRSoundEngine *XRSoundDLL::GetXRSoundEngineInstance(const char *pUniqueMod
     if (!bIsValidModuleID)
     {
         // should never happen!
-        CString msg;
-        msg.Format("XRSoundDLL::GetXRSoundEngineInstance ERROR: pUniqueModuleName passed is nullptr or empty!");
+        char msg[256];
+        snprintf(msg, 256, "XRSoundDLL::GetXRSoundEngineInstance ERROR: pUniqueModuleName passed is nullptr or empty!");
         WriteLog(msg);
         return nullptr;
     }
@@ -115,8 +115,8 @@ ModuleXRSoundEngine *XRSoundDLL::GetXRSoundEngineInstance(const char *pUniqueMod
     ModuleXRSoundEngine *pEngine = s_pInstance->FindXRSoundEngineForModule(pUniqueModuleName);
     if (!pEngine)   // no existing engine found for this module
     {
-        CString csMsg;
-        csMsg.Format("XRSoundDLL::GetXRSoundEngineInstance: creating new XRSoundEngine instance for module '%s'", pUniqueModuleName);
+        char csMsg[256];
+        snprintf(csMsg, 256, "XRSoundDLL::GetXRSoundEngineInstance: creating new XRSoundEngine instance for module '%s'", pUniqueModuleName);
         pEngine = ModuleXRSoundEngine::CreateInstance(pUniqueModuleName);
         if (pEngine)
         {
@@ -125,7 +125,7 @@ ModuleXRSoundEngine *XRSoundDLL::GetXRSoundEngineInstance(const char *pUniqueMod
         }
         else
         {
-            csMsg.Format("XRSoundDLL::GetXRSoundEngineInstance: WARNING: nullptr or empty module name supplied; returning nullptr.");
+            snprintf(csMsg, 256, "XRSoundDLL::GetXRSoundEngineInstance: WARNING: nullptr or empty module name supplied; returning nullptr.");
         }
         s_pInstance->WriteLog(csMsg);
     }
@@ -165,8 +165,8 @@ void XRSoundDLL::ParseGlobalConfigFile()
     globalConfig.ParseFile();
     if (globalConfig.ParseFailed())
     {
-        CString msg;
-        msg.Format("Error parsing configuration file '%s' -- see above error messages for details.", globalConfig.GetDefaultFilename());
+        char msg[256];
+        snprintf(msg, 256, "Error parsing configuration file '%s' -- see above error messages for details.", globalConfig.GetDefaultFilename());
         globalConfig.WriteLog(msg);
     }
 }

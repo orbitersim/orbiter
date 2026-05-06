@@ -7,6 +7,7 @@
 
 #include "SoundPreSteps.h"
 #include "XRSoundDLL.h"     // for GetSystemUptime
+#include <string>
 
 // Plays a switch sound: On (high click), or Off (low click)
 bool SoundPreStep::PlaySwitch(const bool bOn, const float volume)
@@ -47,13 +48,13 @@ bool SoundPreStep::StopWav(const int soundID)
 //   playbackType: how to play or fade the sound
 //   volume 0..1.0
 // Returns true on success, or false if load or play failed
-bool SoundPreStep::LoadAndPlayWavUsingID(const int soundID, const char *pWavFile, const bool bLoop, const XRSound::PlaybackType playbackType, const float volume)
+bool SoundPreStep::LoadAndPlayWavUsingID(const int soundID, const std::string &pWavFile, const bool bLoop, const XRSound::PlaybackType playbackType, const float volume)
 {
     bool bSuccess = true;
 
-    if ((soundID >= 0) && pWavFile && *pWavFile)
+    if ((soundID >= 0) && !pWavFile.empty())
     {
-        bSuccess = m_pEngine->LoadWav(soundID, pWavFile, playbackType);
+        bSuccess = m_pEngine->LoadWav(soundID, pWavFile.c_str(), playbackType);
         if (bSuccess)
             bSuccess = m_pEngine->PlayWav(soundID, bLoop, volume);
     }
@@ -351,19 +352,19 @@ RCSDefaultSoundPreStep::RCSDefaultSoundPreStep(VesselXRSoundEngine *pEngine) :
 
     // we have six total axes, but need to check for both rotation and translation: rotation and translation for a given axis share the same sound slot
     const XRSoundConfigFileParser &config = m_pEngine->GetConfig();
-    m_pRCSAttackForAxisSoundArray[0]  = new RCSAttackForAxisSound(m_thrustVectorsROT.x, XRSound::RCSAttackPlusX, pEngine, false, config.RCSAttackPlusX, XRSound::RCSClosePlusX, config.RCSClosePlusX);
-    m_pRCSAttackForAxisSoundArray[1]  = new RCSAttackForAxisSound(m_thrustVectorsLIN.x, XRSound::RCSAttackPlusX, pEngine, false, config.RCSAttackPlusX, XRSound::RCSClosePlusX, config.RCSClosePlusX);
-    m_pRCSAttackForAxisSoundArray[2]  = new RCSAttackForAxisSound(m_thrustVectorsROT.y, XRSound::RCSAttackPlusY, pEngine, false, config.RCSAttackPlusY, XRSound::RCSClosePlusY, config.RCSClosePlusY);
-    m_pRCSAttackForAxisSoundArray[3]  = new RCSAttackForAxisSound(m_thrustVectorsLIN.y, XRSound::RCSAttackPlusY, pEngine, false, config.RCSAttackPlusY, XRSound::RCSClosePlusY, config.RCSClosePlusY);
-    m_pRCSAttackForAxisSoundArray[4]  = new RCSAttackForAxisSound(m_thrustVectorsROT.z, XRSound::RCSAttackPlusZ, pEngine, false, config.RCSAttackPlusZ, XRSound::RCSClosePlusZ, config.RCSClosePlusZ);
-    m_pRCSAttackForAxisSoundArray[5]  = new RCSAttackForAxisSound(m_thrustVectorsLIN.z, XRSound::RCSAttackPlusZ, pEngine, false, config.RCSAttackPlusZ, XRSound::RCSClosePlusZ, config.RCSClosePlusZ);
+    m_pRCSAttackForAxisSoundArray[0]  = new RCSAttackForAxisSound(m_thrustVectorsROT.x, XRSound::RCSAttackPlusX, pEngine, false, config.RCSAttackPlusX.c_str(), XRSound::RCSClosePlusX, config.RCSClosePlusX.c_str());
+    m_pRCSAttackForAxisSoundArray[1]  = new RCSAttackForAxisSound(m_thrustVectorsLIN.x, XRSound::RCSAttackPlusX, pEngine, false, config.RCSAttackPlusX.c_str(), XRSound::RCSClosePlusX, config.RCSClosePlusX.c_str());
+    m_pRCSAttackForAxisSoundArray[2]  = new RCSAttackForAxisSound(m_thrustVectorsROT.y, XRSound::RCSAttackPlusY, pEngine, false, config.RCSAttackPlusY.c_str(), XRSound::RCSClosePlusY, config.RCSClosePlusY.c_str());
+    m_pRCSAttackForAxisSoundArray[3]  = new RCSAttackForAxisSound(m_thrustVectorsLIN.y, XRSound::RCSAttackPlusY, pEngine, false, config.RCSAttackPlusY.c_str(), XRSound::RCSClosePlusY, config.RCSClosePlusY.c_str());
+    m_pRCSAttackForAxisSoundArray[4]  = new RCSAttackForAxisSound(m_thrustVectorsROT.z, XRSound::RCSAttackPlusZ, pEngine, false, config.RCSAttackPlusZ.c_str(), XRSound::RCSClosePlusZ, config.RCSClosePlusZ.c_str());
+    m_pRCSAttackForAxisSoundArray[5]  = new RCSAttackForAxisSound(m_thrustVectorsLIN.z, XRSound::RCSAttackPlusZ, pEngine, false, config.RCSAttackPlusZ.c_str(), XRSound::RCSClosePlusZ, config.RCSClosePlusZ.c_str());
 
-    m_pRCSAttackForAxisSoundArray[6]  = new RCSAttackForAxisSound(m_thrustVectorsROT.x, XRSound::RCSAttackMinusX, pEngine, true, config.RCSAttackMinusX, XRSound::RCSCloseMinusX, config.RCSCloseMinusX);
-    m_pRCSAttackForAxisSoundArray[7]  = new RCSAttackForAxisSound(m_thrustVectorsLIN.x, XRSound::RCSAttackMinusX, pEngine, true, config.RCSAttackMinusX, XRSound::RCSCloseMinusX, config.RCSCloseMinusX);
-    m_pRCSAttackForAxisSoundArray[8]  = new RCSAttackForAxisSound(m_thrustVectorsROT.y, XRSound::RCSAttackMinusY, pEngine, true, config.RCSAttackMinusY, XRSound::RCSCloseMinusY, config.RCSCloseMinusY);
-    m_pRCSAttackForAxisSoundArray[9]  = new RCSAttackForAxisSound(m_thrustVectorsLIN.y, XRSound::RCSAttackMinusY, pEngine, true, config.RCSAttackMinusY, XRSound::RCSCloseMinusY, config.RCSCloseMinusY);
-    m_pRCSAttackForAxisSoundArray[10] = new RCSAttackForAxisSound(m_thrustVectorsROT.z, XRSound::RCSAttackMinusZ, pEngine, true, config.RCSAttackMinusZ, XRSound::RCSCloseMinusZ, config.RCSCloseMinusZ);
-    m_pRCSAttackForAxisSoundArray[11] = new RCSAttackForAxisSound(m_thrustVectorsLIN.z, XRSound::RCSAttackMinusZ, pEngine, true, config.RCSAttackMinusZ, XRSound::RCSCloseMinusZ, config.RCSCloseMinusZ);
+    m_pRCSAttackForAxisSoundArray[6]  = new RCSAttackForAxisSound(m_thrustVectorsROT.x, XRSound::RCSAttackMinusX, pEngine, true, config.RCSAttackMinusX.c_str(), XRSound::RCSCloseMinusX, config.RCSCloseMinusX.c_str());
+    m_pRCSAttackForAxisSoundArray[7]  = new RCSAttackForAxisSound(m_thrustVectorsLIN.x, XRSound::RCSAttackMinusX, pEngine, true, config.RCSAttackMinusX.c_str(), XRSound::RCSCloseMinusX, config.RCSCloseMinusX.c_str());
+    m_pRCSAttackForAxisSoundArray[8]  = new RCSAttackForAxisSound(m_thrustVectorsROT.y, XRSound::RCSAttackMinusY, pEngine, true, config.RCSAttackMinusY.c_str(), XRSound::RCSCloseMinusY, config.RCSCloseMinusY.c_str());
+    m_pRCSAttackForAxisSoundArray[9]  = new RCSAttackForAxisSound(m_thrustVectorsLIN.y, XRSound::RCSAttackMinusY, pEngine, true, config.RCSAttackMinusY.c_str(), XRSound::RCSCloseMinusY, config.RCSCloseMinusY.c_str());
+    m_pRCSAttackForAxisSoundArray[10] = new RCSAttackForAxisSound(m_thrustVectorsROT.z, XRSound::RCSAttackMinusZ, pEngine, true, config.RCSAttackMinusZ.c_str(), XRSound::RCSCloseMinusZ, config.RCSCloseMinusZ.c_str());
+    m_pRCSAttackForAxisSoundArray[11] = new RCSAttackForAxisSound(m_thrustVectorsLIN.z, XRSound::RCSAttackMinusZ, pEngine, true, config.RCSAttackMinusZ.c_str(), XRSound::RCSCloseMinusZ, config.RCSCloseMinusZ.c_str());
 }
 
 // Destructor
@@ -508,17 +509,17 @@ void RCSModeDefaultSoundPreStep::clbkPreStep(const double simt, const double sim
         // Note: we use XRSound::Radio mode for these so the pilot can hear them even in external view (e.g., when they switch modes via the keyboard)
         case RCS_ROT:
             PlaySwitch(true);  // "On" click sound
-            LoadAndPlayWavUsingID(XRSound::Rotation, GetConfig().RCSRotation, false, XRSound::PlaybackType::Radio);
+            LoadAndPlayWavUsingID(XRSound::Rotation, GetConfig().RCSRotation.c_str(), false, XRSound::PlaybackType::Radio);
             break;
 
         case RCS_LIN:
             PlaySwitch(true);  // "On" click sound
-            LoadAndPlayWavUsingID(XRSound::Translation, GetConfig().RCSTranslation, false, XRSound::PlaybackType::Radio);
+            LoadAndPlayWavUsingID(XRSound::Translation, GetConfig().RCSTranslation.c_str(), false, XRSound::PlaybackType::Radio);
             break;
 
         case RCS_NONE:
             PlaySwitch(false);  // "Off" click sound
-            LoadAndPlayWavUsingID(XRSound::Off, GetConfig().RCSOff, false, XRSound::PlaybackType::Radio);
+            LoadAndPlayWavUsingID(XRSound::Off, GetConfig().RCSOff.c_str(), false, XRSound::PlaybackType::Radio);
             break;
 
         default:
@@ -620,8 +621,8 @@ void LogThrusterDataPreStep::clbkPreStep(const double simt, const double simdt, 
                 double thrusterMax = pVessel->GetThrusterMax(thHandle, 0);
                 const double thrust = thrusterMax * thLevel / 1000;  // in kilonewtons
 
-                CString msg;
-                msg.Format("LogThrusterData: [thruster index %u] thrust level = %lf, thrust = %lf kN", i, thLevel, thrust);
+                char msg[256];
+                snprintf(msg, 256, "LogThrusterData: [thruster index %u] thrust level = %lf, thrust = %lf kN", i, thLevel, thrust);
                 WriteLog(msg);
             }
         }
@@ -654,20 +655,18 @@ void CustomEnginesDefaultSoundPreStep::clbkPreStep(const double simt, const doub
         m_bFirstRun = false;
 
         // we want to show the actual integers here, not SupportedSoundFileTypes string, in case of parse errors resulting in unexpected 0 values
-        CString thrusterIdxStr;
+        std::string thrusterIdxStr;
         for (unsigned int i = 0; i < customThrusterIndexes.size(); i++)
         {
             if (i > 0)
                 thrusterIdxStr += " ";
 
-            CString intVal;
-            intVal.Format("%d", customThrusterIndexes[i]);
-            thrusterIdxStr += intVal;
+            thrusterIdxStr += std::to_string(customThrusterIndexes[i]);
         }
 
         // log which custom thruster IDs we are using
-        CString msg;
-        msg.Format("CustomEnginesDefaultSoundPreStep: using custom engine sound '%s' for thrusters w/indexes [%s]", static_cast<const char*>(m_pEngine->GetWavFilename(soundID)), static_cast<const char *>(thrusterIdxStr));
+        char msg[256];
+        snprintf(msg, 256, "CustomEnginesDefaultSoundPreStep: using custom engine sound '%s' for thrusters w/indexes [%s]", m_pEngine->GetWavFilename(soundID), thrusterIdxStr.c_str());
         WriteLog(msg);
     }
 
@@ -708,7 +707,7 @@ TakeoffAndLandingCalloutsAndCrashPreStep::TakeoffAndLandingCalloutsAndCrashPreSt
     m_previousFrameAirspeed(-1)
 {
 #define LOAD_SOUND(soundID, pbType)  \
-    if (*GetConfig().soundID) LoadWav(XRSound::soundID, GetConfig().soundID, XRSound::PlaybackType::pbType)
+    if (!GetConfig().soundID.empty()) LoadWav(XRSound::soundID, GetConfig().soundID.c_str(), XRSound::PlaybackType::pbType)
 
     LOAD_SOUND(Crash,           BothViewFar);
     LOAD_SOUND(MetalCrunch,     BothViewFar);
@@ -909,8 +908,8 @@ void WheelbrakeDefaultSoundPreStep::clbkPreStep(const double simt, const double 
 FlightWindAndPlasmaSoundPreStep::FlightWindAndPlasmaSoundPreStep(VesselXRSoundEngine *pEngine) :
     SoundPreStep(pEngine)
 {
-    LoadWav(XRSound::FlightWind, GetConfig().FlightWind, XRSound::PlaybackType::BothViewFar);
-    LoadWav(XRSound::ReentryPlasma, GetConfig().ReentryPlasma, XRSound::PlaybackType::BothViewFar);
+    LoadWav(XRSound::FlightWind, GetConfig().FlightWind.c_str(), XRSound::PlaybackType::BothViewFar);
+    LoadWav(XRSound::ReentryPlasma, GetConfig().ReentryPlasma.c_str(), XRSound::PlaybackType::BothViewFar);
 }
 
 void FlightWindAndPlasmaSoundPreStep::clbkPreStep(const double simt, const double simdt, const double mjd)
@@ -953,8 +952,8 @@ void FlightWindAndPlasmaSoundPreStep::clbkPreStep(const double simt, const doubl
 AutopilotOnOffSoundPreStep::AutopilotOnOffSoundPreStep(VesselXRSoundEngine *pEngine) :
     SoundPreStep(pEngine), m_prevNavmode(-1)
 {
-    LoadWav(XRSound::AutopilotOn, GetConfig().AutopilotOn, XRSound::PlaybackType::InternalOnly);
-    LoadWav(XRSound::AutopilotOff, GetConfig().AutopilotOff, XRSound::PlaybackType::InternalOnly);
+    LoadWav(XRSound::AutopilotOn, GetConfig().AutopilotOn.c_str(), XRSound::PlaybackType::InternalOnly);
+    LoadWav(XRSound::AutopilotOff, GetConfig().AutopilotOff.c_str(), XRSound::PlaybackType::InternalOnly);
 }
 
 void AutopilotOnOffSoundPreStep::clbkPreStep(const double simt, const double simdt, const double mjd)
@@ -1100,8 +1099,8 @@ void DisableAutopilotsForTimeAccPreStep::clbkPreStep(const double simt, const do
         {
             if (pVessel->GetNavmodeState(i))
             {
-                CString msg;
-                msg.Format("DisableAutopilotsForTimeAccPreStep: auto-disabling autopilot w/navmode %d due to time acceleration (%dx) [configured max time acc threshold for autopilots is %dx]",
+                char msg[256];
+                snprintf(msg, 256, "DisableAutopilotsForTimeAccPreStep: auto-disabling autopilot w/navmode %d due to time acceleration (%dx) [configured max time acc threshold for autopilots is %dx]",
                     i, static_cast<int>(currentTimeACC), static_cast<int>(maxTimeAccForAP));
                 WriteLog(msg);
                 pVessel->DeactivateNavmode(i);

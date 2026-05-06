@@ -14,6 +14,7 @@
 #include "AnimationState.h"
 #include "XRSound.h"    // for PlaybackType
 #include <unordered_map>
+#include <sstream>
 
 static const char *XRSOUND_CONFIG_FILE = "XRSound\\XRSound.cfg";
 
@@ -24,8 +25,8 @@ static const char *XRSOUND_LOG_FILE = "XRSound.log";
 
 // Defines map of animation state -> wav file path.
 // key = animation state, value = path to wav file for that state
-typedef std::unordered_map<AnimationState::StateType, CString> HASHMAP_ANIMATIONSTATE_WAVFILEPATH;
-typedef std::pair<AnimationState::StateType, CString> animationState_wavFilePath_Pair;
+typedef std::unordered_map<AnimationState::StateType, std::string> HASHMAP_ANIMATIONSTATE_WAVFILEPATH;
+typedef std::pair<AnimationState::StateType, std::string> animationState_wavFilePath_Pair;
 
 // Class encapsulating a single vessel animation's sounds.  So if a vessel defines custom 
 // sounds for four animations, there will be four instances of VesselAnimationSounds, too.
@@ -83,36 +84,37 @@ public:
     virtual bool ParseLine(const char *pSection, const char *pPropertyName, const char *pValue, const bool bParsingOverrideFile) override;
 
     // state data read from the config file
-    // Note: if a CString filename / file path is empty, it means that default sound is disabled.
-    // Therefore, we do no initialize these CString values to a default value in the constructor.
-    CString SupportedSoundFileTypes;
-    std::vector<CString> SupportedSoundFileTypesAsVector() const
+    // Note: if a std::string filename / file path is empty, it means that default sound is disabled.
+    // Therefore, we do no initialize these std::string values to a default value in the constructor.
+    std::string SupportedSoundFileTypes;
+    std::vector<std::string> SupportedSoundFileTypesAsVector() const
     {
         static const char *pTokenStr = " ";
-        std::vector<CString> vec;
-        int strPos = 0;
-        CString csToken = SupportedSoundFileTypes.Tokenize(pTokenStr, strPos);
-        while (!csToken.IsEmpty())
-        {
-            vec.push_back(csToken);
-            csToken = SupportedSoundFileTypes.Tokenize(pTokenStr, strPos);
-        }
-        return vec;
+        std::vector<std::string> vec;
+		std::istringstream iss(SupportedSoundFileTypes);
+		std::string token;
+
+		while (iss >> token)
+		{
+			vec.push_back(token); // identical semantics
+		}
+
+		return vec;
     }
     
-    CString CustomEngines;      // wav file to play for these engines
-    CString CustomEnginesThrusterIndexes;
+    std::string CustomEngines;      // wav file to play for these engines
+    std::string CustomEnginesThrusterIndexes;
     std::vector<int> CustomEnginesThrusterIndexesAsVector() const
     {
         static const char *pTokenStr = " ";
         std::vector<int> vec;
-        int strPos = 0;
-        CString csToken = CustomEnginesThrusterIndexes.Tokenize(pTokenStr, strPos);
-        while (!csToken.IsEmpty())
-        {
-            vec.push_back(atoi(csToken));  // will be 0 if invalid integer, but that's good enough
-            csToken = CustomEnginesThrusterIndexes.Tokenize(pTokenStr, strPos);
-        }
+		std::istringstream iss(CustomEnginesThrusterIndexes);
+		std::string token;
+
+		while (iss >> token)
+		{
+			vec.push_back(std::atoi(token.c_str())); // identical semantics
+		}
         return vec;
     }
 
@@ -137,8 +139,8 @@ public:
     double ATCDelayPlanetMultiplier;
 
     // These are sound file (relative) paths; however, if they hold the special value of "none", it means the sound is disabled
-    CString AirConditioning;
-    CString LandedWind;
+    std::string AirConditioning;
+    std::string LandedWind;
     float MusicVolume;
     double UpdateInterval;
     double WarningGearIsUpAltitude;
@@ -152,71 +154,71 @@ public:
 
     double MinThrusterLevelForRCSSoundEffects;
     
-    CString AudioGreeting;
+    std::string AudioGreeting;
 
-    CString MainEngines;
-    CString HoverEngines;
-    CString RetroEngines;
+    std::string MainEngines;
+    std::string HoverEngines;
+    std::string RetroEngines;
 
-    CString RCSAttackPlusX;
-    CString RCSAttackPlusY;
-    CString RCSAttackPlusZ;
-    CString RCSAttackMinusX;
-    CString RCSAttackMinusY;
-    CString RCSAttackMinusZ;
+    std::string RCSAttackPlusX;
+    std::string RCSAttackPlusY;
+    std::string RCSAttackPlusZ;
+    std::string RCSAttackMinusX;
+    std::string RCSAttackMinusY;
+    std::string RCSAttackMinusZ;
 
-    CString RCSClosePlusX;
-    CString RCSClosePlusY;
-    CString RCSClosePlusZ;
-    CString RCSCloseMinusX;
-    CString RCSCloseMinusY;
-    CString RCSCloseMinusZ;
+    std::string RCSClosePlusX;
+    std::string RCSClosePlusY;
+    std::string RCSClosePlusZ;
+    std::string RCSCloseMinusX;
+    std::string RCSCloseMinusY;
+    std::string RCSCloseMinusZ;
 
-    CString RCSSustain;
+    std::string RCSSustain;
 
-    CString SwitchOn;
-    CString SwitchOff;
+    std::string SwitchOn;
+    std::string SwitchOff;
 
-    CString RCSRotation;
-    CString RCSTranslation;
-    CString RCSOff;
+    std::string RCSRotation;
+    std::string RCSTranslation;
+    std::string RCSOff;
 
-    CString AFPitch;
-    CString AFOn;
-    CString AFOff;
+    std::string AFPitch;
+    std::string AFOn;
+    std::string AFOff;
 
-    CString Crash;
-    CString MetalCrunch;
-    CString WheelChirp;
-    CString Touchdown;
-    CString WheelStop;
-    CString TiresRolling;
-    CString OneHundredKnots;
-    CString Liftoff;
-    CString WarningGearIsUp;
-    CString YouAreClearedToLand;
+    std::string Crash;
+    std::string MetalCrunch;
+    std::string WheelChirp;
+    std::string Touchdown;
+    std::string WheelStop;
+    std::string TiresRolling;
+    std::string OneHundredKnots;
+    std::string Liftoff;
+    std::string WarningGearIsUp;
+    std::string YouAreClearedToLand;
 
-    CString Docking;
-    CString DockingCallout;
-    CString Undocking;
-    CString UndockingCallout;
+    std::string Docking;
+    std::string DockingCallout;
+    std::string Undocking;
+    std::string UndockingCallout;
 
-    CString Wheelbrakes;
-    CString DockingRadarBeep;
-    CString FlightWind;
-    CString ReentryPlasma;
-    CString SonicBoom;
-    CString AutopilotOn;
-    CString AutopilotOff;
-    CString SubsonicCallout;
+    std::string Wheelbrakes;
+    std::string DockingRadarBeep;
+    std::string FlightWind;
+    std::string ReentryPlasma;
+    std::string SonicBoom;
+    std::string AutopilotOn;
+    std::string AutopilotOff;
+    std::string SubsonicCallout;
 
     // Group (folder) paths;  however, if they hold the special value of "none", it means the sound group is disabled
-    CString CabinAmbienceGroup;
-    CString ATCFolder;
-    CString AltitudeCalloutsGroup;
-    CString DockingDistanceCalloutsGroup;
-    CString MachCalloutsGroup;
-    CString MusicFolder;
+    std::string CabinAmbienceGroup;
+    std::string ATCFolder;
+    std::string AltitudeCalloutsGroup;
+    std::string DockingDistanceCalloutsGroup;
+    std::string MachCalloutsGroup;
+    std::string MusicFolder;
 
     // Returns AnimationSounds object for a given animation ID, or nullptr if not found
     AnimationSounds *GetAnimationSounds(const int animationID);

@@ -50,10 +50,10 @@ bool DefaultSoundGroupPreStep::SetFolder(const char *pFolderSubpath)
     // do not recurse subfolders
     m_pSoundFilesList = new FileList(pFolderSubpath, false, m_pEngine->GetValidSoundFileExtensions());
     const bool bSuccess = m_pSoundFilesList->Scan();
-    CString msg;
+    char msg[256];
     if (!bSuccess)
     {
-        msg.Format("DefaultSoundGroupPreStep::SetFolder ERROR: folder path '%s' set for soundID %d does not exist.",
+        snprintf(msg, 256, "DefaultSoundGroupPreStep::SetFolder ERROR: folder path '%s' set for soundID %d does not exist.",
             pFolderSubpath, m_soundID);
         WriteLog(msg);
         return false;
@@ -61,7 +61,7 @@ bool DefaultSoundGroupPreStep::SetFolder(const char *pFolderSubpath)
 
     if (m_pSoundFilesList->IsEmpty())
     {
-        msg.Format("DefaultSoundGroupPreStep::SetFolder ERROR: folder path '%s' set for soundID %d exists, but no supported sound file types found.",
+        snprintf(msg, 256, "DefaultSoundGroupPreStep::SetFolder ERROR: folder path '%s' set for soundID %d exists, but no supported sound file types found.",
             pFolderSubpath, m_soundID);
         WriteLog(msg);
         return false;
@@ -69,7 +69,7 @@ bool DefaultSoundGroupPreStep::SetFolder(const char *pFolderSubpath)
 
     // if we reach here, folder is valid and contains at least one valid sound file
     VERBOSE_LOG(m_pEngine, "DefaultSoundGroupPreStep::SetFolder: successfully scanned folder path '%s' for soundID %d: %d sound file(s) found with extensions [%s].",
-        pFolderSubpath, m_soundID, m_pSoundFilesList->GetScannedFileCount(), static_cast<const char *>(GetConfig().SupportedSoundFileTypes));
+        pFolderSubpath, m_soundID, m_pSoundFilesList->GetScannedFileCount(), GetConfig().SupportedSoundFileTypes.c_str());
     m_bWavPresent = true;
     m_csFolderSubpath = pFolderSubpath;  // success; e.g., "Default\Cabin Ambience"
 
@@ -77,32 +77,32 @@ bool DefaultSoundGroupPreStep::SetFolder(const char *pFolderSubpath)
 }
 
 // Returns a random sound file path, different from the previous call's value
-CString DefaultSoundGroupPreStep::GetRandomSoundFile()
+std::string DefaultSoundGroupPreStep::GetRandomSoundFile()
 {
     _ASSERTE(m_pSoundFilesList);
-    CString file = m_pSoundFilesList->GetRandomFile();
-    if (file.IsEmpty())
+    std::string file = m_pSoundFilesList->GetRandomFile();
+    if (file.empty())
     {
-        CString msg;
-        msg.Format("DefaultSoundGroupPreStep::GetRandomSoundFile WARNING: sound files list is empty for soundID %d", m_soundID);
+        char msg[256];
+        snprintf(msg, 256, "DefaultSoundGroupPreStep::GetRandomSoundFile WARNING: sound files list is empty for soundID %d", m_soundID);
         WriteLog(msg);
     }
     return file;
 }
 
 // Returns the next sound file in the list
-CString DefaultSoundGroupPreStep::GetNextSoundFile()
+std::string DefaultSoundGroupPreStep::GetNextSoundFile()
 {
     _ASSERTE(m_pSoundFilesList);
-    CString file = m_pSoundFilesList->GetFile(m_currentSoundFileIndex);
+    std::string file = m_pSoundFilesList->GetFile(m_currentSoundFileIndex);
     m_currentSoundFileIndex++;
     if (m_currentSoundFileIndex >= m_pSoundFilesList->GetScannedFileCount())
         m_currentSoundFileIndex = 0;  // wrapped around
 
-    if (file.IsEmpty())
+    if (file.empty())
     {
-        CString msg;
-        msg.Format("DefaultSoundGroupPreStep::GetNextSoundFile WARNING: sound files list is empty for soundID %d", m_soundID);
+		char msg[256];
+        snprintf(msg, 256, "DefaultSoundGroupPreStep::GetNextSoundFile WARNING: sound files list is empty for soundID %d", m_soundID);
         WriteLog(msg);
     }
     return file;
@@ -139,9 +139,9 @@ bool DefaultSoundGroupPreStep::LoadWavWithBasename(const char *pBasename)
 
     bool bSuccess = false;
 
-    const CString *pcsFilespec = m_pSoundFilesList->FindFileWithBasename(pBasename);
+    const std::string *pcsFilespec = m_pSoundFilesList->FindFileWithBasename(pBasename);
     if (pcsFilespec)
-        bSuccess = LoadWav(*pcsFilespec);
+        bSuccess = LoadWav(pcsFilespec->c_str());
 
     return bSuccess;
 }
@@ -201,10 +201,10 @@ void RandomDefaultSoundGroupPreStep::PlayRandom()
 {
     if (!IsWavPlaying())    // wait until next step if the previous (long) wav is still playing
     {
-        const CString csSoundFile = GetRandomSoundFile();  // never repeats from the previous value (unless only one file exists in the list).
-        if (!csSoundFile.IsEmpty())       // sanity check; should never be empty here
+        const std::string &csSoundFile = GetRandomSoundFile();  // never repeats from the previous value (unless only one file exists in the list).
+        if (!csSoundFile.empty())       // sanity check; should never be empty here
         {
-            LoadWav(csSoundFile);
+            LoadWav(csSoundFile.c_str());
             PlayWav(false);
         }
     }
@@ -363,8 +363,8 @@ void AltitudeCalloutsDefaultSoundGroupPreStep::clbkPreStep(const double simt, co
                         // play on descent only
                         if ((m_previousFrameAltitude > a) && (altitude <= a))   // descent
                         {
-                            CString csBasename;
-                            csBasename.Format("%d", static_cast<int>(a));
+                            char csBasename[32];
+                            snprintf(csBasename, 32, "%d", static_cast<int>(a));
                             if (LoadAndPlayWavWithBasename(csBasename))
                                 SetNextMinimumCalloutTime(simt);
                             break;
@@ -494,8 +494,8 @@ void DockingCalloutsDefaultSoundGroupPreStep::clbkPreStep(const double simt, con
                     // play on approach only
                     if ((m_previousFrameDistance > dist) && (distance <= dist))   // closing
                     {
-                        CString csBasename;
-                        csBasename.Format("%d", static_cast<int>(dist));
+                        char csBasename[32];
+                        snprintf(csBasename, 32, "%d", static_cast<int>(dist));
                         if (LoadAndPlayWavWithBasename(csBasename))
                             SetNextMinimumCalloutTime(simt);
                         break;
@@ -518,8 +518,8 @@ MachCalloutsDefaultSoundGroupPreStep::MachCalloutsDefaultSoundGroupPreStep(Vesse
     m_previousMach(-1), m_nextMinimumCalloutTime(-1)
 {
     // load our two custom sounds handled by this prestep
-    m_pEngine->LoadWav(XRSound::SonicBoom, GetConfig().SonicBoom, XRSound::PlaybackType::BothViewFar);
-    m_pEngine->LoadWav(XRSound::SubsonicCallout, GetConfig().SubsonicCallout, XRSound::PlaybackType::Radio);
+    m_pEngine->LoadWav(XRSound::SonicBoom, GetConfig().SonicBoom.c_str(), XRSound::PlaybackType::BothViewFar);
+    m_pEngine->LoadWav(XRSound::SubsonicCallout, GetConfig().SubsonicCallout.c_str(), XRSound::PlaybackType::Radio);
 }
 
 // This is based on the XR vessels' MachCalloutsPreStep method
@@ -576,8 +576,8 @@ void MachCalloutsDefaultSoundGroupPreStep::clbkPreStep(const double simt, const 
                 if (((m_previousMach < m) && (mach >= m)) ||  // acceleration
                     ((m_previousMach > m) && (mach <= m)))    // deceleration
                 {
-                    CString csBasename;
-                    csBasename.Format("Mach %d", static_cast<int>(m));
+                    char csBasename[32];
+                    snprintf(csBasename, 32, "Mach %d", static_cast<int>(m));
                     LoadAndPlayWavWithBasename(csBasename);
                     break;
                 }
@@ -659,10 +659,10 @@ void MusicDefaultSoundGroupPreStep::clbkPreStep(const double simt, const double 
             {
                 // time to start the next song
                 m_startNextSongRealtime = -1;        // reset
-                CString csMusicFile = ((GetConfig().MusicOrder == XRSoundConfigFileParser::SeqRandom::Sequential) ? GetNextSoundFile() : GetRandomSoundFile());
+                std::string csMusicFile = ((GetConfig().MusicOrder == XRSoundConfigFileParser::SeqRandom::Sequential) ? GetNextSoundFile() : GetRandomSoundFile());
 
-                if (!csMusicFile.IsEmpty())
-                    LoadAndPlayWav(csMusicFile, GetConfig().MusicVolume);
+                if (!csMusicFile.empty())
+                    LoadAndPlayWav(csMusicFile.c_str(), GetConfig().MusicVolume);
                 // else list is empty or file could not be played, so we will restart the timer to try the next song, if any, in the next frame since the sound is not playing
             }
         }

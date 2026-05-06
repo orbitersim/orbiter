@@ -8,9 +8,8 @@
 
 #pragma once
 
-#include <atlstr.h>		// for CString
 #include <vector>
-
+#include <string>
 using namespace std;
 
 #include <filesystem>
@@ -21,7 +20,7 @@ class FileList
 public:
     FileList(const char *pRootPath, const bool bRecurseSubfolders);
     FileList(const char *pRootPath, const bool bRecurseSubfolders, const char *pFileTypeToAccept);
-    FileList(const char *pRootPath, const bool bRecurseSubfolders, const vector<CString> &fileTypesToAccept);
+    FileList(const char *pRootPath, const bool bRecurseSubfolders, const vector<std::string> &fileTypesToAccept);
     virtual ~FileList();
 
     static bool DirectoryExists(const char *pPath)
@@ -36,10 +35,10 @@ public:
     // Returns true on succeess, or false if the root path does not exist or is not a directory.
     bool Scan()
     {
-        if (!DirectoryExists(m_rootPath))
+        if (!DirectoryExists(m_rootPath.c_str()))
             return false;
 
-        Scan(m_rootPath, 0);
+        Scan(m_rootPath.c_str(), 0);
         return true;
     }
 
@@ -52,25 +51,25 @@ public:
 
     int GetScannedFileCount() const { return static_cast<int>(m_allFiles.size()); }
     bool IsEmpty() const { return m_allFiles.empty(); }
-    const vector<CString> &GetScannedFilesList() const { return m_allFiles;  }
-    const CString &GetRootPath() const { return m_rootPath; }
+    const vector<std::string> &GetScannedFilesList() const { return m_allFiles;  }
+    const std::string &GetRootPath() const { return m_rootPath; }
 
     // returns a random file entry from the list that is not a repeat of the previous one (provided there are at least two files in the list).
-    const CString GetRandomFile();
+    const std::string GetRandomFile();
 
     // returns a file entry from the list at the specified index (0..GetScannedFileCount()-1)
-    const CString GetFile(const int index) const;
+    const std::string GetFile(const int index) const;
 
     // Returns the first file in the list with the specified basename.
-    const CString *FindFileWithBasename(const char *pBasename) const;
+    const std::string *FindFileWithBasename(const char *pBasename) const;
 
 protected:
     void Scan(const char *pPath, const int recursionLevel);
 
-    CString m_rootPath;
+    std::string m_rootPath;
     bool m_bRecurseSubfolders;
-    vector<CString> m_fileTypesToAccept;
+    vector<std::string> m_fileTypesToAccept;
     int m_previousRandomFileIndex;  // 0..GetScannedFileCount()-1
 
-    vector<CString> m_allFiles;     // full path of all files in the tree, starting with pRootPath.
+    vector<std::string> m_allFiles;     // full path of all files in the tree, starting with pRootPath.
 };

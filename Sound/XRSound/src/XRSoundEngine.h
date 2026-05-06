@@ -8,7 +8,6 @@
 
 #pragma once
 
-#include <atlstr.h>             // for CString
 #include <unordered_map>
 
 #include "OrbiterSDK.h"
@@ -70,21 +69,21 @@ struct WavContext
     }
 
     // used for logging
-    CString ToStr(const bool bShowLoopAndVolume = true) const
+    std::string ToStr(const bool bShowLoopAndVolume = true) const
     { 
-        CString msg;
+		char cbuf[256];
         if (bShowLoopAndVolume)
         {
-            msg.Format("[soundID = %d, playbackType = %s (%d), bLoop = %d, volume = %.2lf, bPaused = %d, bEnabled = %d, filename = '%s']",
-                soundID, PlaybackTypeToStr(playbackType), playbackType, bLoop, volume, bPaused, bEnabled, static_cast<const char *>(csSoundFilename));
+            snprintf(cbuf, 256, "[soundID = %d, playbackType = %s (%d), bLoop = %d, volume = %.2lf, bPaused = %d, bEnabled = %d, filename = '%s']",
+                soundID, PlaybackTypeToStr(playbackType), playbackType, bLoop, volume, bPaused, bEnabled, static_cast<const char *>(csSoundFilename.c_str()));
         }
         else
         {
-            msg.Format("[soundID = %d, playbackType = %s (%d), filename = '%s']",
-                soundID, PlaybackTypeToStr(playbackType), playbackType, static_cast<const char *>(csSoundFilename));
+            snprintf(cbuf, 256, "[soundID = %d, playbackType = %s (%d), filename = '%s']",
+                soundID, PlaybackTypeToStr(playbackType), playbackType, static_cast<const char *>(csSoundFilename.c_str()));
         }
         
-        return msg;
+        return cbuf;
     }
 
     // Used for logging
@@ -112,7 +111,7 @@ struct WavContext
 
     // data added via LoadWav
     int soundID;
-    CString csSoundFilename;
+    std::string csSoundFilename;
     XRSound::PlaybackType playbackType;   // InternalOnly, BothViewFar, Radio, etc.
 
     // data added via PlayWav and SetPaused
@@ -205,7 +204,7 @@ public:
     void SetAllWavPaused(const bool bPaused);     
     
     XRSoundConfigFileParser &GetConfig() { _ASSERTE(m_pConfig);  return *m_pConfig; }
-    vector<CString> GetValidSoundFileExtensions();    // e.g., ".flac", ".wav", ".mp3", etc.
+    vector<std::string> GetValidSoundFileExtensions();    // e.g., ".flac", ".wav", ".mp3", etc.
     const char *GetWavFilename(const int soundID);
     
     // returns Orbiter's camera's global coordinates
@@ -250,8 +249,8 @@ protected:
 
 private:
     static WavContext *s_pMusicFolderWavContext;  // our special, global MusicFolder sound
-    static CString s_csVersion;
-    CString m_lastLogLine;  // last log message written to XRSound.log
+    static std::string s_csVersion;
+    std::string m_lastLogLine;  // last log message written to XRSound.log
     double m_nextDuplicateLogLineSimt;
 };
 
@@ -260,7 +259,8 @@ private:
 {                                                   \
     if (pEngine->GetConfig().EnableVerboseLogging)  \
     {                                               \
-        CString msg; msg.Format(str, __VA_ARGS__);  \
+        char msg[256];                              \
+		snprintf(msg, 256, str, __VA_ARGS__);       \
         pEngine->WriteLog(msg);                     \
     }                                               \
 }

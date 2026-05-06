@@ -10,7 +10,6 @@
 
 #include "OrbiterSDK.h"
 #include "XRSoundEngine.h"
-#include "CStringHasher.h"
 
 // Defines the master map of all known Orbiter vessels (handles) -> XRSoundEngine * for it.
 // key = vessel handle (void *), value = XRSoundEngine * for that vessel (may be nullptr).
@@ -19,8 +18,8 @@ typedef pair<OBJHANDLE, VesselXRSoundEngine *> vesselHandle_XRSoundEnginePtr_Pai
 
 // Defines the master map of all known Orbiter vessels (handles) -> XRSoundEngine * for it.
 // key = vessel handle (void *), value = XRSoundEngine * for that vessel (may be nullptr).
-typedef unordered_map<CString, ModuleXRSoundEngine *, CStringHasher, CStringHasher> HASHMAP_CSTRING_XRSOUNDENGINEPTR;
-typedef pair<CString, ModuleXRSoundEngine *> CString_XRSoundEnginePtr_Pair;
+typedef unordered_map<std::string, ModuleXRSoundEngine *> HASHMAP_CSTRING_XRSOUNDENGINEPTR;
+typedef pair<std::string, ModuleXRSoundEngine *> CString_XRSoundEnginePtr_Pair;
 
 
 // Orbiter module that maintains state data and methods for our DLL singleton object
