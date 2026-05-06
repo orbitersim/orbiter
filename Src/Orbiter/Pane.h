@@ -274,8 +274,6 @@ private:
 	SURFHANDLE mfdTex_blank; // dummy texture for blank MFD surfaces
 	MenuInfoBar *mibar;      // main menu and info displays
 
-	HPEN  hPen[6];           // pen resources
-	HBRUSH hBrush1, hBrush2; // brush resources
 	int panelmode;           // 0=none, 1=MFDs only, 2=2D panels, 3=virtual cockpit
 
 	HUD *hud;                  // head up display

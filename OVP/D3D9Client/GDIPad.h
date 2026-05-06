@@ -30,7 +30,7 @@ public:
 	 * \brief Selects a new font to use.
 	 * \param font pointer to font resource
 	 * \return Previously selected font.
-	 * \sa GDIFont, GDIClient::clbkCreateFont
+	 * \sa GDIFont, D3D9Client::clbkCreateFont
 	 */
 	oapi::Font *SetFont (oapi::Font *font);
 
@@ -38,7 +38,7 @@ public:
 	 * \brief Selects a new pen to use.
 	 * \param pen pointer to pen resource, or NULL to disable outlines
 	 * \return Previously selected pen.
-	 * \sa GDIPen, GDIClient::clbkCreatePen
+	 * \sa GDIPen, D3D9Client::clbkCreatePen
 	 */
 	oapi::Pen *SetPen (oapi::Pen *pen);
 
@@ -46,7 +46,7 @@ public:
 	 * \brief Selects a new brush to use.
 	 * \param brush pointer to brush resource, or NULL to disable fill mode
 	 * \return Previously selected brush.
-	 * \sa GDIBrush, GDIClient::clbkCreateBrush
+	 * \sa GDIBrush, D3D9Client::clbkCreateBrush
 	 */
 	oapi::Brush *SetBrush (oapi::Brush *brush);
 
@@ -275,4 +275,4 @@ private:
 	oapi::Brush *cbrush; // currently selected brush (NULL if none)
 };
 
-#endif // !__GDICLIENT_H
+#endif // !__GDIPAD_H

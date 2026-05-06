@@ -1004,7 +1004,6 @@ public:
 	 * \default None, returns NULL.
 	 * \note Clients which can obtain a Windows GDI handle for a surface should
 	 *   overload this method.
-	 * \todo This method should be moved into the GDIClient class
 	 */
 	HDC clbkGetSurfaceDC (SURFHANDLE surf);
 
@@ -1015,7 +1014,6 @@ public:
 	 * \default None.
 	 * \note Clients which can obtain a Windows GDI handle for a surface should
 	 *   overload this method to release an existing GDI.
-	 * \todo This method should be moved into the GDIClient class
 	 */
 	void clbkReleaseSurfaceDC (SURFHANDLE surf, HDC hDC);
 	// @}

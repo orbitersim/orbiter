@@ -850,8 +850,6 @@ void ScreenAnnotation::SetSize (double scale)
 		hf = (int)(viewH*txtscale/35.0);
 		if (font) gc->clbkReleaseFont (font);
 		font = gc->clbkCreateFont (-hf, true, "Sans");
-		//if (hFont) DeleteObject (hFont);
-		//hFont = CreateFont (-hf, 0, 0, 0, 400, 0, 0, 0, 0, 3, 2, 1, 49, "Arial");
 	}
 }
 
