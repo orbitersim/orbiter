@@ -57,7 +57,7 @@ function GimbalControl:SetMainPGimbal (which, lvl)
 	dir.z = 1
 	dir.y = MAIN_PGIMBAL_RANGE*lvl
 	self.mpgimbal[which] = dir.y
-	self:DG():SetMainThrusterDir (which, vec.unit(dir))
+	self:DG():SetMainThrusterDir (which, dir:unit())
 end
 
 --------------------------------------------------------------
@@ -68,7 +68,7 @@ function GimbalControl:SetMainYGimbal (which, lvl)
 	dir.z = 1
 	dir.x = MAIN_YGIMBAL_RANGE*lvl
 	self.mygimbal[which] = dir.x
-	self:DG():SetMainThrusterDir (which, vec.unit(dir))
+	self:DG():SetMainThrusterDir (which, dir:unit())
 end
 
 --------------------------------------------------------------
@@ -196,7 +196,7 @@ function GimbalControl:TrackMainGimbal ()
 			--dir.y = mpgimbal[i]
 			--dir.x = mygimbal[i]
 			local dir = _V(self.mygimbal[i], self.mpgimbal[i], 1)
-			self:DG():SetMainThrusterDir (i, vec.unit(dir))
+			self:DG():SetMainThrusterDir (i, dir:unit())
 		end
 		self:DG():trigger_redrawarea (0, 0, self.ELID_DISPLAY)
 	end
