@@ -13,7 +13,6 @@ public:
 	int DelInterpreter (INTERPRETERHANDLE);
 	INTERPRETERHANDLE RunInterpreter (const char *cmd);
 	bool ExecScriptCmd (INTERPRETERHANDLE hInterp, const char *cmd);
-	bool AsyncScriptCmd (INTERPRETERHANDLE hInterp, const char *cmd);
 	lua_State *GetLua (INTERPRETERHANDLE hInterp);
 
 protected:

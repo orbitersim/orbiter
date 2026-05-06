@@ -35,11 +35,7 @@ public:
 		~Environment();
 		Interpreter *CreateInterpreter ();
 		Interpreter *interp;  // interpreter instance
-		HANDLE hThread;       // interpreter thread
 		bool termInterp;      // interpreter kill flag
-		bool singleCmd;       // terminate after single command
-		char *cmd;            // interpreter command
-		static unsigned int WINAPI InterpreterThreadProc (LPVOID context);
 	};
 
 	InterpreterList (HINSTANCE hDLL);
