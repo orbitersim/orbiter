@@ -292,6 +292,21 @@ void RockScatter::CreateRockMeshes() {
 
         D3D9Mesh *d9m = new D3D9Mesh(hMesh, true);
         if (d9m) {
+          // Fallback: If Orbiter's mesh parser failed to parse the TEXTURES block (TextureCount <= 1), manually bind it
+          if (d9m->GetTextureCount() <= 1 && d9m->GetGroupCount() > 0) {
+            std::string texName = fname;
+            if (texName.length() > 4) texName.erase(texName.length() - 4);
+            texName += ".dds";
+            
+            SURFHANDLE hTex = oapiLoadTexture(texName.c_str());
+            if (hTex) {
+              for (DWORD i = 0; i < d9m->GetGroupCount(); i++) {
+                D3D9Mesh::GROUPREC *grp = const_cast<D3D9Mesh::GROUPREC*>(d9m->GetGroup(i));
+                if (grp) grp->TexIdx = 0;
+              }
+              d9m->SetTexture(0, hTex);
+            }
+          }
           bool isSmall = (lowerBase.find("small") != std::string::npos);
           bool isMedium = (lowerBase.find("medium") != std::string::npos);
           bool isLarge = (lowerBase.find("large") != std::string::npos);

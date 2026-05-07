@@ -1,6 +1,4 @@
-MSH
-1
-
+MSHX1
 GROUPS 1
 MATERIAL 1
 TEXTURE 1
@@ -325,11 +323,13 @@ GEOM 125 192
 
 MATERIALS 1
 rocc_Material
+MATERIAL rocc_Material
 1.0 1.0 1.0 1.0
 1.0 1.0 1.0 1.0
-1.0 1.0 1.0 1.0
+1.0 1.0 1.0 1.0 20.0
 0.0 0.0 0.0 1.0
-20.0
 
 TEXTURES 1
-LunarRock_A_BaseColor.dds
+LunarRock_A.dds
+
+
