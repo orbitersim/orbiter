@@ -23,6 +23,7 @@
 
 #include <array>
 #include <fstream>
+#include <vector>
 
 #include "Vesselbase.h"
 #include "Log.h"
@@ -1707,6 +1708,11 @@ private:
 	} **meshlist;
 	UINT nmesh;        // number of meshes
 	DWORD_PTR mesh_crc;    // visual state checksum
+
+	// Hull vertex cache for rock collision (vessel-local coords)
+	std::vector<VECTOR3> m_hullCache;   // cached hull vertices in vessel-local frame
+	UINT m_hullCacheMeshCount;          // nmesh when cache was last built
+	void RebuildHullCache();            // (re)build m_hullCache from meshlist
 
 	UINT exhaust_id;   // next exhaust id to attach
 

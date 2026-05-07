@@ -298,6 +298,16 @@ public:
 	void			RenderRings2(const LPD3DXMATRIX pW, LPDIRECT3DTEXTURE9 pTex, float irad, float orad);
 	void			RenderAxisVector(LPD3DXMATRIX pW, const D3DXCOLOR *pColor, float len);
 	void			RenderSimplified(const LPD3DXMATRIX pW, LPDIRECT3DCUBETEXTURE9 *pEnv = NULL, int nEnv = 0, bool bSP = false);
+
+	// Batch rendering for instanced scatter
+	// Call Begin once, then Instance per-object, then End.
+	void			RenderBatchBegin(const D3D9Sun *sun);
+	void			RenderBatchInstance(const LPD3DXMATRIX pW);
+	void			RenderBatchEnd();
+	void			RenderShadowBatchBegin(const D3DXVECTOR4 *param);
+	void			RenderShadowBatchInstance(float alpha, const LPD3DXMATRIX pProj, const LPD3DXMATRIX pW, const D3DXVECTOR4 *light, const D3DXVECTOR4 *param);
+	void			RenderShadowBatchEnd();
+
 	void			CheckMeshStatus();
 	void			ResetTransformations();
 	void			TransformGroup(DWORD n, const D3DXMATRIX *m);
