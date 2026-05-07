@@ -102,9 +102,9 @@ void D3D9Config::Reset ()
 	bRockCollision      = 0;
 	bRockShadows		= 1;
 	fRockDensityMult    = 1.0f;
-	fRockDistMult       = 1.0f;
-	fRockDistSmall      = 0.5f;
-	fRockDistMedium     = 0.8f;
+	fRockMaxDist        = 2000.0f;
+	fRockDistSmall      = 0.25f;
+	fRockDistMedium     = 0.5f;
 	fRockDistLarge      = 1.0f;
 	
 	GFXIntensity = 0.5;
@@ -211,10 +211,10 @@ bool D3D9Config::ReadParams ()
 	if (oapiReadItem_int   (hFile, (char*)"RockCollision", i))      bRockCollision = max(0, min(1, i));
 	if (oapiReadItem_int   (hFile, (char*)"RockShadows", i))		bRockShadows = max(0, min(1, i));
 	if (oapiReadItem_float (hFile, (char*)"RockDensityMult", d))	fRockDensityMult = (float)max(0.1, min(10.0, d));
-	if (oapiReadItem_float (hFile, (char*)"RockDistMult", d))		fRockDistMult = (float)max(0.1, min(50.0, d));
-	if (oapiReadItem_float (hFile, (char*)"RockDistSmall", d))		fRockDistSmall = (float)max(0.1, min(2.0, d));
-	if (oapiReadItem_float (hFile, (char*)"RockDistMedium", d))	fRockDistMedium = (float)max(0.1, min(2.0, d));
-	if (oapiReadItem_float (hFile, (char*)"RockDistLarge", d))		fRockDistLarge = (float)max(0.1, min(2.0, d));
+	if (oapiReadItem_float (hFile, (char*)"RockMaxDist", d))		fRockMaxDist = (float)max(100.0, min(20000.0, d));
+	if (oapiReadItem_float (hFile, (char*)"RockDistSmall", d))		fRockDistSmall = (float)max(0.0, min(1.0, d));
+	if (oapiReadItem_float (hFile, (char*)"RockDistMedium", d))	fRockDistMedium = (float)max(0.0, min(1.0, d));
+	if (oapiReadItem_float (hFile, (char*)"RockDistLarge", d))		fRockDistLarge = (float)max(0.0, min(1.0, d));
 	if (oapiReadItem_float (hFile, (char*)"OrbitalShadowMult", d))			    OrbitalShadowMult = max(0.5, min(10.0, d));
 
 	if (oapiReadItem_float (hFile, (char*)"GFXIntensity", d))					GFXIntensity = max(0.0, min(1.0, d));
@@ -310,7 +310,7 @@ void D3D9Config::WriteParams ()
 	oapiWriteItem_int   (hFile, (char*)"RockCollision", bRockCollision);
 	oapiWriteItem_int   (hFile, (char*)"RockShadows", bRockShadows);
 	oapiWriteItem_float (hFile, (char*)"RockDensityMult", fRockDensityMult);
-	oapiWriteItem_float (hFile, (char*)"RockDistMult", fRockDistMult);
+	oapiWriteItem_float (hFile, (char*)"RockMaxDist", fRockMaxDist);
 	oapiWriteItem_float (hFile, (char*)"RockDistSmall", fRockDistSmall);
 	oapiWriteItem_float (hFile, (char*)"RockDistMedium", fRockDistMedium);
 	oapiWriteItem_float (hFile, (char*)"RockDistLarge", fRockDistLarge);

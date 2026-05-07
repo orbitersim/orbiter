@@ -518,23 +518,23 @@ INT_PTR CALLBACK VideoTab::SetupDlgProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPA
 				SetWindowTextA(GetDlgItem(hWnd, IDC_ROCK_DENSITY_TXT), lbl);
 			}
 			if (HWND(lParam)==GetDlgItem(hWnd, IDC_ROCK_DIST)) {
-				Config->fRockDistMult = float(pos) / 10.0f;
-				sprintf_s(lbl,32,"%.1fx", Config->fRockDistMult);
+				Config->fRockMaxDist = float(pos) * 100.0f;
+				sprintf_s(lbl,32,"%dm", (int)Config->fRockMaxDist);
 				SetWindowTextA(GetDlgItem(hWnd, IDC_ROCK_DIST_TXT), lbl);
 			}
 			if (HWND(lParam)==GetDlgItem(hWnd, IDC_ROCK_DIST_SMALL)) {
 				Config->fRockDistSmall = float(pos) / 100.0f;
-				sprintf_s(lbl,32,"%.2fx", Config->fRockDistSmall);
+				sprintf_s(lbl,32,"%d%%", (int)(Config->fRockDistSmall * 100.0f));
 				SetWindowTextA(GetDlgItem(hWnd, IDC_ROCK_DIST_SMALL_TXT), lbl);
 			}
 			if (HWND(lParam)==GetDlgItem(hWnd, IDC_ROCK_DIST_MEDIUM)) {
 				Config->fRockDistMedium = float(pos) / 100.0f;
-				sprintf_s(lbl,32,"%.2fx", Config->fRockDistMedium);
+				sprintf_s(lbl,32,"%d%%", (int)(Config->fRockDistMedium * 100.0f));
 				SetWindowTextA(GetDlgItem(hWnd, IDC_ROCK_DIST_MEDIUM_TXT), lbl);
 			}
 			if (HWND(lParam)==GetDlgItem(hWnd, IDC_ROCK_DIST_LARGE)) {
 				Config->fRockDistLarge = float(pos) / 100.0f;
-				sprintf_s(lbl,32,"%.2fx", Config->fRockDistLarge);
+				sprintf_s(lbl,32,"%d%%", (int)(Config->fRockDistLarge * 100.0f));
 				SetWindowTextA(GetDlgItem(hWnd, IDC_ROCK_DIST_LARGE_TXT), lbl);
 			}
 		}
@@ -828,40 +828,40 @@ void VideoTab::InitSetupDialog(HWND hWnd)
 	SendDlgItemMessage(hWnd, IDC_MICROBIAS,   TBM_SETPOS, 1, int(Config->MicroBias));
 
 	SendDlgItemMessage(hWnd, IDC_ROCK_DENSITY, TBM_SETRANGEMIN, 1, 1);
-	SendDlgItemMessage(hWnd, IDC_ROCK_DENSITY, TBM_SETRANGEMAX, 1, 100);
-	SendDlgItemMessage(hWnd, IDC_ROCK_DENSITY, TBM_SETTICFREQ, 10, 0);
+	SendDlgItemMessage(hWnd, IDC_ROCK_DENSITY, TBM_SETRANGEMAX, 1, 30);
+	SendDlgItemMessage(hWnd, IDC_ROCK_DENSITY, TBM_SETTICFREQ, 5, 0);
 	SendDlgItemMessage(hWnd, IDC_ROCK_DENSITY, TBM_SETPOS, 1, int(Config->fRockDensityMult * 10.0f));
 
 	SendDlgItemMessage(hWnd, IDC_ROCK_DIST, TBM_SETRANGEMIN, 1, 1);
-	SendDlgItemMessage(hWnd, IDC_ROCK_DIST, TBM_SETRANGEMAX, 1, 500);
-	SendDlgItemMessage(hWnd, IDC_ROCK_DIST, TBM_SETTICFREQ, 50, 0);
-	SendDlgItemMessage(hWnd, IDC_ROCK_DIST, TBM_SETPOS, 1, int(Config->fRockDistMult * 10.0f));
+	SendDlgItemMessage(hWnd, IDC_ROCK_DIST, TBM_SETRANGEMAX, 1, 200);
+	SendDlgItemMessage(hWnd, IDC_ROCK_DIST, TBM_SETTICFREQ, 10, 0);
+	SendDlgItemMessage(hWnd, IDC_ROCK_DIST, TBM_SETPOS, 1, int(Config->fRockMaxDist / 100.0f));
 
 	sprintf_s(cbuf, 32, "%.1fx", Config->fRockDensityMult);
 	SetWindowTextA(GetDlgItem(hWnd, IDC_ROCK_DENSITY_TXT), cbuf);
-	sprintf_s(cbuf, 32, "%.1fx", Config->fRockDistMult);
+	sprintf_s(cbuf, 32, "%dm", (int)Config->fRockMaxDist);
 	SetWindowTextA(GetDlgItem(hWnd, IDC_ROCK_DIST_TXT), cbuf);
 
-	SendDlgItemMessage(hWnd, IDC_ROCK_DIST_SMALL, TBM_SETRANGEMIN, 1, 10);
-	SendDlgItemMessage(hWnd, IDC_ROCK_DIST_SMALL, TBM_SETRANGEMAX, 1, 200);
+	SendDlgItemMessage(hWnd, IDC_ROCK_DIST_SMALL, TBM_SETRANGEMIN, 1, 0);
+	SendDlgItemMessage(hWnd, IDC_ROCK_DIST_SMALL, TBM_SETRANGEMAX, 1, 100);
 	SendDlgItemMessage(hWnd, IDC_ROCK_DIST_SMALL, TBM_SETTICFREQ, 10, 0);
 	SendDlgItemMessage(hWnd, IDC_ROCK_DIST_SMALL, TBM_SETPOS, 1, int(Config->fRockDistSmall * 100.0f));
 
-	SendDlgItemMessage(hWnd, IDC_ROCK_DIST_MEDIUM, TBM_SETRANGEMIN, 1, 10);
-	SendDlgItemMessage(hWnd, IDC_ROCK_DIST_MEDIUM, TBM_SETRANGEMAX, 1, 200);
+	SendDlgItemMessage(hWnd, IDC_ROCK_DIST_MEDIUM, TBM_SETRANGEMIN, 1, 0);
+	SendDlgItemMessage(hWnd, IDC_ROCK_DIST_MEDIUM, TBM_SETRANGEMAX, 1, 100);
 	SendDlgItemMessage(hWnd, IDC_ROCK_DIST_MEDIUM, TBM_SETTICFREQ, 10, 0);
 	SendDlgItemMessage(hWnd, IDC_ROCK_DIST_MEDIUM, TBM_SETPOS, 1, int(Config->fRockDistMedium * 100.0f));
 
-	SendDlgItemMessage(hWnd, IDC_ROCK_DIST_LARGE, TBM_SETRANGEMIN, 1, 10);
-	SendDlgItemMessage(hWnd, IDC_ROCK_DIST_LARGE, TBM_SETRANGEMAX, 1, 200);
+	SendDlgItemMessage(hWnd, IDC_ROCK_DIST_LARGE, TBM_SETRANGEMIN, 1, 0);
+	SendDlgItemMessage(hWnd, IDC_ROCK_DIST_LARGE, TBM_SETRANGEMAX, 1, 100);
 	SendDlgItemMessage(hWnd, IDC_ROCK_DIST_LARGE, TBM_SETTICFREQ, 10, 0);
 	SendDlgItemMessage(hWnd, IDC_ROCK_DIST_LARGE, TBM_SETPOS, 1, int(Config->fRockDistLarge * 100.0f));
 
-	sprintf_s(cbuf, 32, "%.2fx", Config->fRockDistSmall);
+	sprintf_s(cbuf, 32, "%d%%", int(Config->fRockDistSmall * 100.0f));
 	SetWindowTextA(GetDlgItem(hWnd, IDC_ROCK_DIST_SMALL_TXT), cbuf);
-	sprintf_s(cbuf, 32, "%.2fx", Config->fRockDistMedium);
+	sprintf_s(cbuf, 32, "%d%%", int(Config->fRockDistMedium * 100.0f));
 	SetWindowTextA(GetDlgItem(hWnd, IDC_ROCK_DIST_MEDIUM_TXT), cbuf);
-	sprintf_s(cbuf, 32, "%.2fx", Config->fRockDistLarge);
+	sprintf_s(cbuf, 32, "%d%%", int(Config->fRockDistLarge * 100.0f));
 	SetWindowTextA(GetDlgItem(hWnd, IDC_ROCK_DIST_LARGE_TXT), cbuf);
 
 	SendDlgItemMessage(hWnd, IDC_TILECOUNT, CB_SETCURSEL, Config->MaxTiles, 0);
@@ -988,7 +988,7 @@ void VideoTab::SaveSetupState(HWND hWnd)
 	Config->LODBias       = 0.2 * double(SendDlgItemMessage(hWnd, IDC_LODBIAS,  TBM_GETPOS, 0, 0));
 	Config->MicroBias     = int(SendDlgItemMessage(hWnd, IDC_MICROBIAS,  TBM_GETPOS, 0, 0));
 	Config->fRockDensityMult = (float)SendDlgItemMessage(hWnd, IDC_ROCK_DENSITY, TBM_GETPOS, 0, 0) / 10.0f;
-	Config->fRockDistMult    = (float)SendDlgItemMessage(hWnd, IDC_ROCK_DIST, TBM_GETPOS, 0, 0) / 10.0f;
+	Config->fRockMaxDist     = (float)SendDlgItemMessage(hWnd, IDC_ROCK_DIST, TBM_GETPOS, 0, 0) * 100.0f;
 	Config->fRockDistSmall   = (float)SendDlgItemMessage(hWnd, IDC_ROCK_DIST_SMALL, TBM_GETPOS, 0, 0) / 100.0f;
 	Config->fRockDistMedium  = (float)SendDlgItemMessage(hWnd, IDC_ROCK_DIST_MEDIUM, TBM_GETPOS, 0, 0) / 100.0f;
 	Config->fRockDistLarge   = (float)SendDlgItemMessage(hWnd, IDC_ROCK_DIST_LARGE, TBM_GETPOS, 0, 0) / 100.0f;

@@ -2744,7 +2744,7 @@ GraphicsClient::SurfaceCollisionResult D3D9Client::clbkCheckRockCollision(OBJHAN
 	if (!scatter) return res;
 
 	// Only collide with rocks closer than the configured draw distance
-	float maxCollisionDist = vpl->RockCfg.fDrawDist * Config->fRockDistMult;
+	float maxCollisionDist = Config->fRockMaxDist;
 
 	RockScatter::CollisionResult rr = scatter->CheckCollision(hullPtsLocal, nPts, vesselPosLocal, vesselRadius, maxCollisionDist);
 	if (rr.hit) {

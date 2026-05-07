@@ -713,7 +713,7 @@ void RockScatter::Render(LPDIRECT3DDEVICE9 pDev) {
   if (scn->GetCameraProxyVisual() != m_planet)
     return;
 
-  float activeDrawDist = cfg.fDrawDist * Config->fRockDistMult;
+  float activeDrawDist = Config->fRockMaxDist;
   float fov = (float)scn->GetCameraAperture();
 
   // Camera and vessel positions
@@ -769,7 +769,7 @@ void RockScatter::Render(LPDIRECT3DDEVICE9 pDev) {
   int vesselIlat = (int)((PI * 0.5 - vesselLat) / tileSize);
   int vesselIlng = (int)((vesselLng + PI) / tileSize);
   int nLngBands = 1 << (lvl + 1);
-  int searchR = max(2, min(25, (int)ceil(Config->fRockDistMult * 0.5)));
+  int searchR = max(2, min(25, (int)ceil(Config->fRockMaxDist / cfg.fDrawDist * 0.5)));
 
   D3D9Sun sunParams = m_planet->GetObjectAtmoParams(camRel);
   float drawDist2 = activeDrawDist * activeDrawDist;
@@ -957,7 +957,7 @@ void RockScatter::RenderShadows(LPDIRECT3DDEVICE9 pDev, float alpha) {
   if (scn->GetCameraProxyVisual() != m_planet)
     return;
 
-  float activeDrawDist = cfg.fDrawDist * Config->fRockDistMult;
+  float activeDrawDist = Config->fRockMaxDist;
   float fov = (float)scn->GetCameraAperture();
 
   VECTOR3 camGlob = scn->GetCameraGPos();
@@ -1014,7 +1014,7 @@ void RockScatter::RenderShadows(LPDIRECT3DDEVICE9 pDev, float alpha) {
   int vesselIlat = (int)((PI * 0.5 - vesselLat) / tileSize);
   int vesselIlng = (int)((vesselLng + PI) / tileSize);
   int nLngBands = 1 << (lvl + 1);
-  int searchR = max(2, min(25, (int)ceil(Config->fRockDistMult * 0.5)));
+  int searchR = max(2, min(25, (int)ceil(Config->fRockMaxDist / cfg.fDrawDist * 0.5)));
 
   float drawDist2 = activeDrawDist * activeDrawDist;
   D3DXVECTOR4 param = D9OffsetRange(planetRad, 30e3);
