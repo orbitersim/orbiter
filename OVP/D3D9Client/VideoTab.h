@@ -7,8 +7,14 @@
 
 #ifndef __VIDEOTAB_H
 #define __VIDEOTAB_H
+#include <string>
 #include <vector>
 #include <map>
+#include "Orbitersdk.h"
+
+using namespace std;
+
+namespace oapi { class D3D9Client; }
 
 // ==============================================================
 
@@ -46,7 +52,6 @@ private:
 	INT_PTR CALLBACK SetupDlgProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
 	INT_PTR CALLBACK CreditsDlgProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
 	void InitCreditsDialog(HWND hWnd);
-	void CreateSymbolicLinks();
 	void InitSetupDialog(HWND hWnd);
 	void SaveSetupState(HWND hWnd);
 	void ScanAtmoCfgs();

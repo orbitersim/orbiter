@@ -522,9 +522,6 @@ INT_PTR CALLBACK VideoTab::SetupDlgProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPA
 			MessageBoxA(hWnd,"You must restart launchpad for changes to take effect","Notification",MB_OK);
 			break;
 
-		case IDC_SYMBOLIC:
-			CreateSymbolicLinks();
-			break;
 
 		case IDC_CREDITS:
 			LoadLibrary("riched20.dll");
@@ -953,76 +950,7 @@ void VideoTab::SaveSetupState(HWND hWnd)
 
 
 
-void VideoTab::CreateSymbolicLinks()
-{
-	// Ask user
-	//
-	int ret = MessageBox(NULL, "This function will create a symbolic links in /Modules/Server/ folder "
-								"as required by some addons like the spacecraft3.dll.\n\n"
-								"Do you want to proceed ?", "D3D9Client Configuration", MB_YESNO);
-	if (ret != IDYES) {
-		return;
-	}
 
-	std::string result("");
-
-	// Config -> Modules/Server/Config
-	//
-	result += "Config: ";
-	if (junction::TargetDirectoryExists(OapiExtension::GetConfigDir()))
-	{
-		if (!junction::IsDirectoryJunction("Modules\\Server\\Config"))
-		{
-			if (!junction::CreateJunctionPoint(OapiExtension::GetConfigDir(), "Modules\\Server\\Config"))
-			{
-				result += (GetLastError() == ERROR_DIR_NOT_EMPTY)
-						? "OK. A non-empty 'Config' directory already exists."
-						: "FAIL. Could not create link.";
-			} else {
-				result += "OK. Link created.";
-			}
-		} else {
-			result += "OK. Link exists.";
-		}
-	} else {
-		result += "FAIL. Target does not exist!";
-	}
-	result += "\r\n";
-
-	// Sound -> Modules/Server/Sound
-	//
-	if (OapiExtension::RunsOrbiter2010())
-	{
-		result += "Sound: ";
-		if (junction::TargetDirectoryExists("Sound"))
-		{
-			if (OapiExtension::RunsOrbiterSound40()) {
-				result += "OK. OrbiterSound (4.0) detected. No link necessary.";
-			}
-			else if (!junction::IsDirectoryJunction("Modules\\Server\\Sound"))
-			{
-				if (!junction::CreateJunctionPoint("Sound", "Modules\\Server\\Sound"))
-				{
-					result += (GetLastError() == ERROR_DIR_NOT_EMPTY)
-							? "OK. A non-empty 'Sound' directory already exists."
-							: "FAIL. Could not create link.";
-				}
-				else {
-					result += "OK. Link created.";
-				}
-			}
-			else {
-				result += "OK. Link exists.";
-			}
-		}
-		else {
-			result += "OK. OrbiterSound not installed.";
-		}
-		result += "\r\n";
-	}
-
-	MessageBox(NULL, result.c_str(), "D3D9Client Configuration", MB_OK);
-}
 
 
 
