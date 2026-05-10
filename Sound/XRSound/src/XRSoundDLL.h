@@ -2,7 +2,7 @@
 // Defines the XRSound API engine implementation; this file is not distributed with XRSound.
 // The code for this exists in XRSound.dll.
 // 
-// Copyright (c) 2018-2021 Douglas Beachy
+// Copyright (c) 2018-2026 Douglas Beachy
 // Licensed under the MIT License
 // ==============================================================
 
@@ -74,3 +74,4 @@ protected:
     double m_nextIrrKlangUpdateRealtime;
     double m_absoluteSimTime;   // replaces simt and oapiGetSimTime(), both of which are unreliable!  See note in XRSoundDLL::clbkPreStep.
 };
+

@@ -1,7 +1,7 @@
 // ==============================================================
 // Defines the default group sound handlers for XRSound.
 // 
-// Copyright (c) 2018-2021 Douglas Beachy
+// Copyright (c) 2018-2026 Douglas Beachy
 // Licensed under the MIT License
 // ==============================================================
 
@@ -153,3 +153,4 @@ public:
 protected:
     double m_startNextSongRealtime;  // -1 = "not set yet"
 };
+

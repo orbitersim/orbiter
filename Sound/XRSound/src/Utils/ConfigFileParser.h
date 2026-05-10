@@ -1,7 +1,7 @@
 // ==============================================================
 // From the XR Vessel Framework
 //
-// Copyright (c) 2006-2021 Douglas Beachy
+// Copyright (c) 2006-2026 Douglas Beachy
 // Licensed under the MIT License
 //
 // ConfigFileParser.h
@@ -88,3 +88,4 @@ protected:
 private:
     std::string m_logPrefix;
 };
+

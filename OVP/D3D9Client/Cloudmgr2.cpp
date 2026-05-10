@@ -1,6 +1,6 @@
 // ==============================================================
 //   ORBITER VISUALISATION PROJECT (OVP)
-//   Copyright (C) 2006-2016 Martin Schweiger
+//   Copyright (C) 2006-2026 Martin Schweiger
 //   Dual licensed under GPL v3 and LGPL v3
 // ==============================================================
 
@@ -298,3 +298,4 @@ void TileManager2<CloudTile>::Unload(int lvl)
 	tiletree[0].DelAbove(lvl);
 	tiletree[1].DelAbove(lvl);
 }
+

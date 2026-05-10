@@ -2,7 +2,7 @@
 // D3DClient.h
 // Part of the ORBITER VISUALISATION PROJECT (OVP)
 // Dual licensed under GPL v3 and LGPL v3
-// Copyright (C) 2006-2016 Martin Schweiger
+// Copyright (C) 2006-2026 Martin Schweiger
 //				 2012-2016 Jarmo Nikkanen
 // ==============================================================
 
@@ -1482,3 +1482,4 @@ public:
 };
 
 #endif // !__D3D9CLIENT_H
+

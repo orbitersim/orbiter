@@ -1,7 +1,7 @@
 // ==============================================================
 // From the XR Vessel Framework
 // 
-// Copyright (c) 2006-2021 Douglas Beachy
+// Copyright (c) 2006-2026 Douglas Beachy
 // Licensed under the MIT License
 //
 // ConfigFileParser.cpp
@@ -360,4 +360,5 @@ bool ConfigFileParser::ValidateFloat(const float value, const float min, const f
 
     return retVal;
 }
+
 

@@ -2,7 +2,7 @@
 // TileLabel.h
 // Part of the ORBITER VISUALISATION PROJECT (OVP)
 // Dual licensed under GPL v3 and LGPL v3
-// Copyright (C) 2017 Martin Schweiger (martins/apogee)
+// Copyright (C) 2017-2026 Martin Schweiger (martins/apogee)
 //                    Peter Schneider (Kuddel)
 // ==============================================================
 
@@ -55,3 +55,4 @@ private:
 };
 
 #endif // !__TILELABEL_H
+

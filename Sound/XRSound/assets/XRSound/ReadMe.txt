@@ -3,7 +3,7 @@ XRSound 3.0
 
 Version Date: 31-Jul-2021
   
-Copyright (c) 2018-2021 Douglas Beachy
+Copyright (c) 2018-2026 Douglas Beachy
 Licensed under the MIT license
 
 https://www.alteaaerospace.com
@@ -19,7 +19,7 @@ LICENSE
 
 MIT License
 
-Copyright (c) 2018-2021 Douglas Beachy
+Copyright (c) 2018-2026 Douglas Beachy
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -70,3 +70,4 @@ You are now ready to launch Orbiter, and you should hear default sounds playing 
 Happy orbiting!
 
 -- end --
+

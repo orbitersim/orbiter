@@ -1,5 +1,5 @@
 // ===================================================
-// Copyright (C) 2021 Jarmo Nikkanen
+// Copyright (C) 2021-2026 Jarmo Nikkanen
 // licensed under LGPL v2
 // ===================================================
 
@@ -784,4 +784,5 @@ void gcCore2::ReleaseIPInterface(gcIPInterface* pIPI)
 	if (pIPI->pIPI) delete pIPI->pIPI;
 	delete pIPI;
 }
+
 

@@ -1,7 +1,7 @@
 // ==============================================================
 // XRSoundConfigFileParser.cpp : Parses XRSound.cfg
 //
-// Copyright (c) 2018 Douglas Beachy
+// Copyright (c) 2018-2026 Douglas Beachy
 // Licensed under the MIT License
 //
 // This software is FREEWARE and may not be sold!e
@@ -662,3 +662,4 @@ int AnimationSounds::GetSoundIDForAnimationState(AnimationState::StateType state
     }
     return animationID;
 }
+

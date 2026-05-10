@@ -1,7 +1,7 @@
 // ==============================================================
 // Implements default sounds handlers for XRSound.
 // 
-// Copyright (c) 2018-2021 Douglas Beachy
+// Copyright (c) 2018-2026 Douglas Beachy
 // Licensed under the MIT License
 // ==============================================================
 
@@ -1109,3 +1109,4 @@ void DisableAutopilotsForTimeAccPreStep::clbkPreStep(const double simt, const do
         }
     }
 }
+

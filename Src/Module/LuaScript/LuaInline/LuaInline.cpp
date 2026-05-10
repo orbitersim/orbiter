@@ -4,7 +4,7 @@
 // ==============================================================
 //           ORBITER MODULE: LUA Inline Interpreter
 //                  Part of the ORBITER SDK
-//            Copyright (C) 2007 Martin Schweiger
+//            Copyright (C) 2007-2026 Martin Schweiger
 //                   All rights reserved
 //
 // LuaInline.cpp
@@ -258,3 +258,4 @@ DLLCLBK lua_State *opcGetLua (INTERPRETERHANDLE hInterp)
 	InterpreterList::Environment *env = (InterpreterList::Environment*)hInterp;
 	return env->interp->GetState();
 }
+

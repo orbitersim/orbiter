@@ -1,7 +1,7 @@
 // ==============================================================
 // XRSound static library main source file.
 // 
-// Copyright (c) 2018-2021 Douglas Beachy
+// Copyright (c) 2018-2026 Douglas Beachy
 // Licensed under the MIT License
 //
 // This software is FREEWARE and may not be sold!
@@ -392,3 +392,4 @@ bool XRSoundImpl::HaveMinDLLVersion(const float minimumVersionRequired) const
 {
     return (GetVersion() >= minimumVersionRequired);  // also checks IsPresent()
 }
+

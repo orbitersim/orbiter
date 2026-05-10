@@ -2,7 +2,7 @@
 // VPlanet.cpp
 // Part of the ORBITER VISUALISATION PROJECT (OVP)
 // Dual licensed under GPL v3 and LGPL v3
-// Copyright (C) 2006-2016 Martin Schweiger
+// Copyright (C) 2006-2026 Martin Schweiger
 //				 2010-2016 Jarmo Nikkanen
 // ==============================================================
 
@@ -1586,3 +1586,4 @@ void vPlanet::LoadMicroTextures(LPDIRECT3DDEVICE9 pDev)
 		}
 	}
 }
+

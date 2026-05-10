@@ -1,7 +1,7 @@
 // ==============================================================
 // XRSound.h : Defines the XRSound 2.0 public API.
 // 
-// Copyright (c) 2018-2021 Douglas Beachy
+// Copyright (c) 2018-2026 Douglas Beachy
 // Licensed under the MIT License
 // ==============================================================
 
@@ -239,3 +239,4 @@ protected:
     // this has protected access to prevent incorrect instantiation by vessel code: always use the static XRSound::CreateInstance method to create an instance of XRSound
     XRSound() { }
 };
+

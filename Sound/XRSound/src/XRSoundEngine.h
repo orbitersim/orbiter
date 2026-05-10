@@ -2,7 +2,7 @@
 // Base class for the XRSound API engine implementation; this file is not distributed with XRSound.
 // The code for this exists in XRSound.dll.
 // 
-// Copyright (c) 2018-2021 Douglas Beachy
+// Copyright (c) 2018-2026 Douglas Beachy
 // Licensed under the MIT License
 // ==============================================================
 
@@ -273,3 +273,4 @@ private:
 // calling convention, NOT the normal __stdcall that C++ uses.
 extern "C" typedef XRSoundEngine* (__cdecl* VesselXRSoundEngineInstanceFuncPtr)(OBJHANDLE hVessel);
 extern "C" typedef XRSoundEngine* (__cdecl* ModuleXRSoundEngineInstanceFuncPtr)(const char* pUniqueModuleName);
+

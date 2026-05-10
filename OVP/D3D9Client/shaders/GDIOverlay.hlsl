@@ -1,7 +1,7 @@
 // ==============================================================
 // Part of the ORBITER VISUALISATION PROJECT (OVP)
 // Dual licensed under GPL v3 and LGPL v3
-// Copyright (C) 2016 Jarmo Nikkanen
+// Copyright (C) 2016-2026 Jarmo Nikkanen
 // ==============================================================
 
 uniform extern float4  vColorKey;

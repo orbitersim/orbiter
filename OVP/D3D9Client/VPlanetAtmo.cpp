@@ -2,7 +2,7 @@
 // VPlanet.cpp
 // Part of the ORBITER VISUALISATION PROJECT (OVP)
 // Dual licensed under LGPL v3
-// Copyright (C) 2006-2022 Martin Schweiger
+// Copyright (C) 2006-2026 Martin Schweiger
 //				 2010-2022 Jarmo Nikkanen
 // ==============================================================
 
@@ -1456,5 +1456,6 @@ void vPlanet::TestComputations(Sketchpad* pSkp)
 	}
 	pSkp->SetViewMode(Sketchpad::USER);
 }
+
 
 

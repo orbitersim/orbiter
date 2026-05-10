@@ -1,7 +1,7 @@
 // ==============================================================
 // Defines the default sounds for XRSound.
 // 
-// Copyright (c) 2018-2021 Douglas Beachy
+// Copyright (c) 2018-2026 Douglas Beachy
 // Licensed under the MIT License
 // ==============================================================
 
@@ -293,3 +293,4 @@ public:
     DisableAutopilotsForTimeAccPreStep(VesselXRSoundEngine *pEngine);
     virtual void clbkPreStep(const double simt, const double simdt, const double mjd) override;
 };
+

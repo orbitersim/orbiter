@@ -3,7 +3,7 @@
 
 // ==============================================================
 //              This file is part of ORBITER
-//          Copyright 2000-2007 Martin Schweiger
+//          Copyright 2000-2026 Martin Schweiger
 //
 // Vessel.h
 // Interface of class Vessel
@@ -1860,4 +1860,5 @@ private:
 };
 
 #endif // !__VESSEL_H
+
 

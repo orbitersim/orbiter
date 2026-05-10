@@ -1,7 +1,7 @@
 // ==============================================================
 // XRSound engine class bound to a vessel.
 // 
-// Copyright (c) 2018-2021 Douglas Beachy
+// Copyright (c) 2018-2026 Douglas Beachy
 // Licensed under the MIT License
 // ==============================================================
 
@@ -836,3 +836,4 @@ DefaultSoundGroupPreStep *VesselXRSoundEngine::FindDefaultSoundGroupPreStep(cons
 
     return pFound;
 }
+

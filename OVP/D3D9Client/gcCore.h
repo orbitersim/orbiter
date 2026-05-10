@@ -1,5 +1,5 @@
 // ===================================================
-// Copyright (C) 2012-2021 Jarmo Nikkanen
+// Copyright (C) 2012-2026 Jarmo Nikkanen
 // licensed under LGPL v2
 // ===================================================
 
@@ -906,3 +906,4 @@ inline gcCore2* gcGetCoreInterface()
 }
 
 #endif // !__GC_CORE
+

@@ -1,7 +1,7 @@
 // ==============================================================
 // XRSoundEngine10.h : Defines the XRSoundEngine version 1.x interface.
 //
-// Copyright (c) 2018-2021 Douglas Beachy
+// Copyright (c) 2018-2026 Douglas Beachy
 // Licensed under the MIT License
 // ==============================================================
 
@@ -53,3 +53,4 @@ public:
 #else
 #define BUILD_TYPE "Release"
 #endif
+

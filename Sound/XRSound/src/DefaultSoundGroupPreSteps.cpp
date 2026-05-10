@@ -1,7 +1,7 @@
 // ==============================================================
 // Implements default group sound handlers for XRSound.
 // 
-// Copyright (c) 2018-2021 Douglas Beachy
+// Copyright (c) 2018-2026 Douglas Beachy
 // Licensed under the MIT License
 // ==============================================================
 
@@ -669,4 +669,5 @@ void MusicDefaultSoundGroupPreStep::clbkPreStep(const double simt, const double 
         // else song is already playing, so nothing more to do
     }
 }
+
 

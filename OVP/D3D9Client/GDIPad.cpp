@@ -2,7 +2,7 @@
 // GDIPad.cpp
 // Part of the ORBITER VISUALISATION PROJECT (OVP)
 // Dual licensed under GPL v3 and LGPL v3
-// Copyright (C) 2006 - 2016 Martin Schweiger
+// Copyright (C) 2006-2026 Martin Schweiger
 // ==============================================================
 
 #include "GDIPad.h"
@@ -303,3 +303,4 @@ void GDIPad::PolyPolyline (const IVECTOR2 *pt, const int *npt, const int nline)
 {
 	::PolyPolyline (hDC, (const POINT*)pt, (const DWORD*)npt, nline);
 }
+

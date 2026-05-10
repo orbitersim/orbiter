@@ -2,7 +2,7 @@
 // Parses a tree of files, optionally recursing subdirectories,
 // and invoking an abstract callback method for each file and folder.
 // 
-// Copyright (c) 2018-2021 Douglas Beachy
+// Copyright (c) 2018-2026 Douglas Beachy
 // Licensed under the MIT license
 // ==============================================================
 
@@ -73,3 +73,4 @@ protected:
 
     vector<std::string> m_allFiles;     // full path of all files in the tree, starting with pRootPath.
 };
+

@@ -2,7 +2,7 @@
 // XRSoundConfigFileParser.h
 // Parses XRSound.cfg
 //
-// Copyright (c) 2018-2021 Douglas Beachy
+// Copyright (c) 2018-2026 Douglas Beachy
 // Licensed under the MIT License
 // ==============================================================
 
@@ -232,3 +232,4 @@ protected:
     // key = animation ID, value = AnimationSounds for that animation
     HASHMAP_ANIMATIONID_ANIMATIONSOUNDS m_animationSoundsMap;
 };
+

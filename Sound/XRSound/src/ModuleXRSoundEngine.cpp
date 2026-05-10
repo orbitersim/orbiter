@@ -1,7 +1,7 @@
 // ==============================================================
 // XRSound engine class bound to an Orbiter module (i.e., to a unique ID).
 // 
-// Copyright (c) 2018-2021 Douglas Beachy
+// Copyright (c) 2018-2026 Douglas Beachy
 // Licensed under the MIT License
 // ==============================================================
 
@@ -111,3 +111,4 @@ void ModuleXRSoundEngine::UpdateSoundState(WavContext &context)
         }
     }
 }
+

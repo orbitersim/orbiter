@@ -2,7 +2,7 @@
 // XRSoundEngine class that is bound to an Orbiter vessel; this file is not distributed with XRSound.
 // The code for this exists in XRSound.dll.
 // 
-// Copyright (c) 2018-2021 Douglas Beachy
+// Copyright (c) 2018-2026 Douglas Beachy
 // Licensed under the MIT License
 // ==============================================================
 

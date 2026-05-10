@@ -1,7 +1,7 @@
 // ==============================================================
 // XRSoundDLL.cpp : Main class file for XRSound Orbiter module.
 //
-// Copyright (c) 2018-2021 Douglas Beachy
+// Copyright (c) 2018-2026 Douglas Beachy
 // Licensed under the MIT License
 // ==============================================================
 
@@ -455,3 +455,4 @@ void XRSoundDLL::WriteLog(const char *pMsg)
 {
     GetGlobalConfig().WriteLog(pMsg);
 }
+

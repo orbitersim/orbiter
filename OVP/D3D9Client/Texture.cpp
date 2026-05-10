@@ -2,7 +2,7 @@
 // Texture.cpp
 // Part of the ORBITER VISUALISATION PROJECT (OVP)
 // Dual licensed under GPL v3 and LGPL v3
-// Copyright (C) 2006 -2016 Martin Schweiger
+// Copyright (C) 2006-2026 Martin Schweiger
 // ==============================================================
 
 // ==============================================================
@@ -192,3 +192,4 @@ DWORD TextureManager::MakeTexId (const char *fname)
 	for (const char *c = fname; *c; c++) id += *c;
 	return id;
 }
+
