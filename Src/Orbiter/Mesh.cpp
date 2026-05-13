@@ -894,7 +894,16 @@ istream &operator>> (istream &is, Mesh &mesh)
 					if (bnormal) {
 						j = sscanf (cbuf, "%f%f%f%f%f%f%f%f",
 							&v.x, &v.y, &v.z, &v.nx, &v.ny, &v.nz, &v.tu, &v.tv);
-						if (j < 6) calcnml = true;
+						if (j < 6) {
+							calcnml = true;
+							// sscanf wrote UV coords into normal fields - relocate them
+							v.tu = v.nx;
+							v.tv = v.ny;
+							// Zero the normal so CalcNormals() will recalculate this vertex
+							v.nx = 0.0f;
+							v.ny = 0.0f;
+							v.nz = 0.0f;
+						}
 					} else {
 						j = sscanf (cbuf, "%f%f%f%f%f",
 							&v.x, &v.y, &v.z, &v.tu, &v.tv);
