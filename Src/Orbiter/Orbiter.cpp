@@ -2000,13 +2000,21 @@ HRESULT Orbiter::UserInput ()
 
 	if (didev = GetDInput()->GetKbdDevice()) {
 		ImGuiIO& io = ImGui::GetIO();
+
+		// When focus-follows-mouse is active and the mouse is not over any
+		// ImGui window, route keyboard input to the simulation even though
+		// ImGui's WantCaptureKeyboard may still be true (NavEnableKeyboard
+		// keeps ImGui's internal focus alive after a click).
+		bool imguiWantsKeyboard = io.WantCaptureKeyboard &&
+			(pConfig->CfgUIPrm.MouseFocusMode == 0 || io.WantCaptureMouse);
+
 		// keyboard input: immediate key interpretation
 		hr = didev->GetDeviceState (sizeof(buffer), &buffer);
 		if ((hr == DIERR_NOTACQUIRED || hr == DIERR_INPUTLOST) && SUCCEEDED (didev->Acquire()))
 			hr = didev->GetDeviceState (sizeof(buffer), &buffer);
 
 		// Direct input bypasses the proc loop so we skip it here
-		if (SUCCEEDED (hr) && !io.WantCaptureKeyboard)
+		if (SUCCEEDED (hr) && !imguiWantsKeyboard)
 			for (i = 0; i < 256; i++)
 				simkstate[i] |= buffer[i];
 		bool consume = BroadcastImmediateKeyboardEvent (simkstate);
@@ -2019,7 +2027,7 @@ HRESULT Orbiter::UserInput ()
 		hr = didev->GetDeviceData (sizeof(DIDEVICEOBJECTDATA), dod, &dwItems, 0);
 		if ((hr == DIERR_NOTACQUIRED || hr == DIERR_INPUTLOST) && SUCCEEDED (didev->Acquire()))
 			hr = didev->GetDeviceData (sizeof(DIDEVICEOBJECTDATA), dod, &dwItems, 0);
-		if (SUCCEEDED (hr) && !io.WantCaptureKeyboard) {
+		if (SUCCEEDED (hr) && !imguiWantsKeyboard) {
 			BroadcastBufferedKeyboardEvent (buffer, dod, dwItems);
 			if (!skipkbd) {
 				KbdInputBuffered_System (buffer, dod, dwItems);
@@ -2518,12 +2526,14 @@ LRESULT Orbiter::MsgProc (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 
 	// *** User Keyboard Input ***
 	case WM_CHAR:
-	case WM_KEYDOWN:
-		if (ImGuiIO& io = ImGui::GetIO(); io.WantCaptureKeyboard) {
+	case WM_KEYDOWN: {
+		ImGuiIO& io = ImGui::GetIO();
+		bool imguiWantsKbd = io.WantCaptureKeyboard &&
+			(pConfig->CfgUIPrm.MouseFocusMode == 0 || io.WantCaptureMouse);
+		if (imguiWantsKbd) {
 			return 0;
 		}
-
-		break;
+		} break;
 
 	// Mouse event handler
 	case WM_LBUTTONDOWN:
@@ -2554,6 +2564,15 @@ LRESULT Orbiter::MsgProc (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 			break; //return 0;
 		} break;
 	case WM_MOUSEMOVE: {
+			// Focus-follows-mouse: must run before the WantCaptureMouse early-out,
+			// otherwise moving the mouse over an ImGui window (which sets
+			// WantCaptureMouse) would prevent focus from returning to the
+			// render window, breaking the "focus follows mouse" setting.
+			if (!bKeepFocus && pConfig->CfgUIPrm.MouseFocusMode != 0 && GetFocus() != hWnd) {
+				if (GetWindowThreadProcessId(hWnd, NULL) == GetWindowThreadProcessId(GetFocus(), NULL))
+					SetFocus(hWnd);
+			}
+
 			if (ImGuiIO& io = ImGui::GetIO(); io.WantCaptureMouse) {
 				return 0;
 			}
@@ -2561,10 +2580,6 @@ LRESULT Orbiter::MsgProc (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 			int x = LOWORD(lParam);
 			int y = HIWORD(lParam);
 			MouseEvent(uMsg, wParam, x, y);
-			if (!bKeepFocus && pConfig->CfgUIPrm.MouseFocusMode != 0 && GetFocus() != hWnd) {
-				if (GetWindowThreadProcessId(hWnd, NULL) == GetWindowThreadProcessId(GetFocus(), NULL))
-					SetFocus(hWnd);
-			}
 		}
 		return 0;
 
