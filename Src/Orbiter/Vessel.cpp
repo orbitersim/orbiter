@@ -355,6 +355,7 @@ void Vessel::DefaultGenericCaps ()
 	CWz[1]             = 0.3;
 	CWx                = 0.3;
 	CWy                = 0.3;
+	bCWexplicit        = false;
 	wingaspect         = 1.0;
 	wingeff            = 2.8;
 	trim_scale         = 0.0;
@@ -522,8 +523,10 @@ void Vessel::ReadGenericCaps (ifstream &ifs)
 	} else 
 		GetItemReal (ifs, "COG_OverGround", cog_elev);  // obsolete
 
-	if (GetItemString (ifs, "CW", cbuf))
+	if (GetItemString (ifs, "CW", cbuf)) {
 		sscanf (cbuf, "%lf%lf%lf%lf", CWz, CWz+1, &CWx, &CWy);
+		bCWexplicit = true;
+	}
 	GetItemReal   (ifs, "WingAspect", wingaspect);
 	GetItemReal   (ifs, "WingEffectiveness", wingeff);
 	GetItemVector (ifs, "CrossSections", cs);
@@ -4232,6 +4235,8 @@ void Vessel::UpdateAerodynamicForces ()
 
 void Vessel::UpdateAerodynamicForces_OLD ()
 {
+	if (!bCWexplicit) return; // no explicit drag definition = no legacy drag (issue #573)
+
 	const double eps = 1e-8;
 
 	if (sp.airspd < eps) return; // nothing to do
@@ -7882,6 +7887,7 @@ void VESSEL::SetCW (double cw_z_pos, double cw_z_neg, double cw_x, double cw_y) 
 	vessel->CWz[1] = cw_z_neg;
 	vessel->CWx    = cw_x;
 	vessel->CWy    = cw_y;
+	vessel->bCWexplicit = true;
 
 	vessel->vd_forw = vessel->cs.z * 0.5*vessel->CWz[0];
 	vessel->vd_back = vessel->cs.z * 0.5*vessel->CWz[1];
