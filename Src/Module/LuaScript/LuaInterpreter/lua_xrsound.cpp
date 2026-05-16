@@ -1,4 +1,4 @@
-// Copyright (c) 2024 TheGondos
+// Copyright (c) 2024-2026 TheGondos
 // Licensed under the MIT License
 
 #define INTERPRETER_IMPLEMENTATION
@@ -557,4 +557,5 @@ int Interpreter::xrsound_collect(lua_State *L)
 	delete snd;
 	return 0;
 }
+
 

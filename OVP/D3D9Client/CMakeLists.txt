@@ -42,7 +42,6 @@ set(SourceFiles
 	GDIPad.cpp
 	HazeMgr.cpp
 	IProcess.cpp
-	Junction.cpp
 	Log.cpp
 	MaterialMgr.cpp
 	Mesh.cpp
@@ -92,7 +91,6 @@ set(IncludeFiles
 	GDIPad.h
 	HazeMgr.h
 	IProcess.h
-	Junction.h
 	Log.h
 	MaterialMgr.h
 	Mesh.h

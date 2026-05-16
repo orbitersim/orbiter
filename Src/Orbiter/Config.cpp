@@ -138,7 +138,6 @@ CFG_VISHELPPRM CfgVisHelpPrm_default = {
 CFG_DEBUGPRM CfgDebugPrm_default = {
 	0,			// ShutdownMode (0=deallocate memory)
 	0.0,		// fixed time step (0=variable)
-	0,			// timer mode (0=auto)
 	false,      // bDisableSmoothFont (don't disable font smoothing)
 	false,      // bForceReenableSmoothFont (don't force reenabling font smoothing on exit)
 	2,          // bHtmlScnDesc (use html browser window for scenario desciption in launchpad)
@@ -702,8 +701,6 @@ bool Config::Load(const char *fname)
 		CfgDebugPrm.ShutdownMode = i;
 	if (GetReal (ifs, "FixedStep", d) && d >= 0)
 		CfgDebugPrm.FixedStep = d;
-	if (GetInt (ifs, "TimerMode", i) && i >= 0 && i <= 2)
-		CfgDebugPrm.TimerMode = i;
 	GetBool (ifs, "DisableFontSmoothing", CfgDebugPrm.bDisableSmoothFont);
 	GetBool (ifs, "ForceReenableFontSmoothing", CfgDebugPrm.bForceReenableSmoothFont);
 	GetInt (ifs, "HtmlScnDesc", CfgDebugPrm.bHtmlScnDesc);
@@ -1130,8 +1127,6 @@ BOOL Config::Write (const char *fname) const
 			ofs << "ShutdownMode = " << CfgDebugPrm.ShutdownMode << '\n';
 		if (CfgDebugPrm.FixedStep != CfgDebugPrm_default.FixedStep || bEchoAll)
 			ofs << "FixedStep = " << CfgDebugPrm.FixedStep << '\n';
-		if (CfgDebugPrm.TimerMode != CfgDebugPrm_default.TimerMode || bEchoAll)
-			ofs << "TimerMode = " << CfgDebugPrm.TimerMode << '\n';
 		if (CfgDebugPrm.bDisableSmoothFont != CfgDebugPrm_default.bDisableSmoothFont || bEchoAll)
 			ofs << "DisableFontSmoothing = " << BoolStr (CfgDebugPrm.bDisableSmoothFont) << '\n';
 		if (CfgDebugPrm.bForceReenableSmoothFont != CfgDebugPrm_default.bForceReenableSmoothFont || bEchoAll)

@@ -110,8 +110,6 @@ set(common_src
 	D3d7util.cpp
 	D3dmath.cpp
 	Di7frame.cpp
-# Graphics interface base class for GDI clients
-	${GDICLIENT_DIR}/GDIClient.cpp
 # Utils
 	Log.cpp
 	Memstat.cpp

@@ -1,7 +1,7 @@
 // ==============================================================
 // XRSound engine implementation.
 // 
-// Copyright (c) 2018-2021 Douglas Beachy
+// Copyright (c) 2018-2026 Douglas Beachy
 // Licensed under the MIT License
 // ==============================================================
 
@@ -115,3 +115,4 @@ int XRSoundEngine::GetPlayPosition(const int soundID)
     }
     return retVal;
 }
+

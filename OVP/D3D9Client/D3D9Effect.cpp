@@ -2,7 +2,7 @@
 // D3D9Effect.cpp
 // Part of the ORBITER VISUALISATION PROJECT (OVP)
 // Dual licensed under GPL v3 and LGPL v3
-// Copyright (C) 2011 - 2016 Jarmo Nikkanen
+// Copyright (C) 2011-2026 Jarmo Nikkanen
 // ===========================================================================================
 
 #include "D3D9Effect.h"
@@ -1019,3 +1019,4 @@ void D3D9Effect::RenderArrow(OBJHANDLE hObj, const VECTOR3 *ofs, const VECTOR3 *
     HR(FX->EndPass());
     HR(FX->End()); 
 }
+

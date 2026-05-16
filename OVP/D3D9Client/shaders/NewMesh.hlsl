@@ -1,7 +1,7 @@
 // ==============================================================
 // Part of the ORBITER VISUALISATION PROJECT (OVP)
 // Dual licensed under GPL v3 and LGPL v3
-// Copyright (C) 2022 Jarmo Nikkanen
+// Copyright (C) 2022-2026 Jarmo Nikkanen
 // ==============================================================
 
 #define BOOL bool
@@ -170,3 +170,4 @@ float4 NormalDepth_PS(NormalTexVS frg) : COLOR
 	float z = sqrt(saturate(1.0 - (x * x + y * y)));
 	return float4(x, y, z, D);
 }
+

@@ -1,5 +1,5 @@
 // ===================================================
-// Copyright (C) 2012-2021 Jarmo Nikkanen
+// Copyright (C) 2012-2026 Jarmo Nikkanen
 // licensed under LGPL v2
 // ===================================================
 
@@ -675,3 +675,4 @@ public:
 		mat->m41 = (pos.x);		  mat->m42 = (pos.y);		mat->m43 = (pos.z);		  mat->m44 = 1.0f;
 	}
 };
+

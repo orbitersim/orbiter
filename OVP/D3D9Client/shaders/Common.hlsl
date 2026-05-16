@@ -18,12 +18,12 @@ float4 Paraboloidal_LVLH(sampler s, float3 i)
 
 float3 Sq(float3 x)
 {
-	return x*x;
+	return x * x;
 }
 
 float4 Sq(float4 x)
 {
-	return x*x;
+	return x * x;
 }
 
 
@@ -86,7 +86,7 @@ void LocalLights(
 	[unroll] for (i = 0; i < 4; i++) dif[i] = dot(-p[i], nrmW);
 
 	dif = saturate(dif);
-	dif *= (att*spt);
+	dif *= (att * spt);
 
 	// Specular lights factors
 	if (bSpec) {
@@ -94,7 +94,7 @@ void LocalLights(
 		[unroll] for (i = 0; i < 4; i++) spe[i] = dot(reflect(p[i], nrmW), posWN) * (dif[i] > 0);
 
 		spe = pow(saturate(spe), sp);
-		spe *= (att*spt);
+		spe *= (att * spt);
 	}
 
 	diff_out = 0;
@@ -152,7 +152,7 @@ void LocalLightsBeckman(
 		[unroll] for (i = 0; i < 4; i++) dHN[i] = dot(H[i], nrmW);
 	}
 
-	
+
 
 	// Attennuation factors
 	float4 att;
@@ -176,18 +176,18 @@ void LocalLightsBeckman(
 	dif = saturate(dif);
 
 	// Specular lights factors
-	
+
 	if (bSpec) {
 
-		float r2 = fRgh*fRgh;
-		float4 d2 = dHN*dHN;
-		float4 w = rcp(3.14*r2*d2*d2);
-		float4 q = rcp(r2*d2);
+		float r2 = fRgh * fRgh;
+		float4 d2 = dHN * dHN;
+		float4 w = rcp(3.14 * r2 * d2 * d2);
+		float4 q = rcp(r2 * d2);
 
-		spe = (att*spt*dif) * w * exp((d2 - 1.0f) * q);
+		spe = (att * spt * dif) * w * exp((d2 - 1.0f) * q);
 	}
 
-	dif *= (att*spt);
+	dif *= (att * spt);
 
 	diff_out = 0;
 	spec_out = 0;
@@ -205,48 +205,49 @@ void LocalLightsEx(out float3 cDiffLocal, out float3 cSpecLocal, in float3 nrmW,
 {
 
 #if LMODE !=0
-	if (!gLightsEnabled) {
-		cDiffLocal = 0;
-		cSpecLocal = 0;
-	}
+    if (!gLightsEnabled) {
+        cDiffLocal = 0;
+        cSpecLocal = 0;
+    }
 #endif
 
-#if LMODE == 1
-	if (ubBeckman) LocalLightsBeckman(cDiffLocal, cSpecLocal, nrmW, posW, sp, 0, false);
-	else LocalLights(cDiffLocal, cSpecLocal, nrmW, posW, sp, 0, false);
-
-#elif LMODE == 2
-	if (ubBeckman) LocalLightsBeckman(cDiffLocal, cSpecLocal, nrmW, posW, sp, 0, true);
-	else LocalLights(cDiffLocal, cSpecLocal, nrmW, posW, sp, 0, true);
-
-#elif LMODE == 3
-	float3 dd, ss;
-	if (ubBeckman) {
-		LocalLightsBeckman(cDiffLocal, cSpecLocal, nrmW, posW, sp, 0, false);
-		LocalLightsBeckman(dd, ss, nrmW, posW, sp, 4, false);
-	}
-	else {
-		LocalLights(cDiffLocal, cSpecLocal, nrmW, posW, sp, 0, false);
-		LocalLights(dd, ss, nrmW, posW, sp, 4, false);
-	}
-	cDiffLocal += dd;
-	cSpecLocal += ss;
-
-#elif LMODE == 4
-	float3 dd, ss;
-	if (ubBeckman) {
-		LocalLightsBeckman(cDiffLocal, cSpecLocal, nrmW, posW, sp, 0, true);
-		LocalLightsBeckman(dd, ss, nrmW, posW, sp, 4, true);
-	}
-	else {
-		LocalLights(cDiffLocal, cSpecLocal, nrmW, posW, sp, 0, true);
-		LocalLights(dd, ss, nrmW, posW, sp, 4, true);
-	}
-	cDiffLocal += dd;
-	cSpecLocal += ss;
-#else
-	cDiffLocal = 0;
-	cSpecLocal = 0;
+#if LMODE == 0
+    cDiffLocal = 0;
+    cSpecLocal = 0;
+#elif (LMODE & 1) == 1 // partial
+    float3 dd, ss;
+	int i;
+    if (ubBeckman) {
+        [unroll] for (i = 0; i < MAX_LIGHTS; i += 4) {
+            LocalLightsBeckman(dd, ss, nrmW, posW, sp, i, false);
+            cDiffLocal += dd;
+            cSpecLocal += ss;
+        }
+    }
+    else {
+        [unroll] for (i = 0; i < MAX_LIGHTS; i += 4) {
+            LocalLights(dd, ss, nrmW, posW, sp, i, false);
+            cDiffLocal += dd;
+            cSpecLocal += ss;
+        }
+    }
+#elif (LMODE & 1) == 0 // full
+    float3 dd, ss;
+    int i;
+    if (ubBeckman) {
+        [unroll] for (i = 0; i < MAX_LIGHTS; i += 4) {
+            LocalLightsBeckman(dd, ss, nrmW, posW, sp, i, true);
+            cDiffLocal += dd;
+            cSpecLocal += ss;
+        }
+    }
+    else {
+        [unroll] for (i = 0; i < MAX_LIGHTS; i += 4) {
+            LocalLights(dd, ss, nrmW, posW, sp, i, true);
+            cDiffLocal += dd;
+            cSpecLocal += ss;
+        }
+    }
 #endif
 }
 
@@ -319,7 +320,7 @@ float SampleShadows(float2 sp, float pd)
 //
 float SampleShadows2(float2 sp, float pd)
 {
-	
+
 	float val = 0;
 	float m = KERNEL_RADIUS * gSHD[1];
 
@@ -340,7 +341,7 @@ float SampleShadows3(float2 sp, float pd, float4 frame)
 	frame *= KERNEL_RADIUS * gSHD[1];
 
 	[unroll] for (int i = 0; i < KERNEL_SIZE; i++) {
-		float2 ofs = frame.xy*kernel[i].x + frame.zw*kernel[i].y;
+		float2 ofs = frame.xy * kernel[i].x + frame.zw * kernel[i].y;
 		if (tex2D(ShadowS, sp + ofs).r > pd) val += kernel[i].z;
 	}
 
@@ -352,7 +353,7 @@ float SampleShadows3(float2 sp, float pd, float4 frame)
 //
 float SampleShadowsEx(float2 sp, float pd, float4 sc)
 {
-	
+
 #if SHDMAP == 1
 	return SampleShadows(sp, pd);
 #elif SHDMAP == 2 || SHDMAP == 4
@@ -360,7 +361,7 @@ float SampleShadowsEx(float2 sp, float pd, float4 sc)
 #else
 	float si, co;
 	sc += (gSHD[2] * 2.0f);
-	sincos(sc.y + sc.x*149.0f, si, co);
+	sincos(sc.y + sc.x * 149.0f, si, co);
 	return SampleShadows3(sp, pd, float4(si, co, co, -si));
 #endif
 }
@@ -380,11 +381,11 @@ float ComputeShadow(float4 shdH, float dLN, float4 sc)
 
 	if (sp.x < 0 || sp.y < 0) return 1.0f;	// If a sample is outside border -> fully lit
 	if (sp.x > 1 || sp.y > 1) return 1.0f;
-	
+
 	float fShadow;
 
 	float kr = gSHD[0] * KERNEL_RADIUS;
-	float dx = rsqrt(1.0 - dLN*dLN);
+	float dx = rsqrt(1.0 - dLN * dLN);
 	float ofs = kr / (dLN * dx);
 	float omx = min(0.05 + ofs, 0.5);
 
@@ -394,6 +395,6 @@ float ComputeShadow(float4 shdH, float dLN, float4 sc)
 	if (pd > 1) pd = 1;
 
 	fShadow = SampleShadowsEx(sp, pd, sc);
-	
+
 	return 1 - fShadow;
 }

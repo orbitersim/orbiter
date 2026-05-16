@@ -3,7 +3,7 @@
 
 // ==============================================================
 //              This file is part of ORBITER
-//          Copyright 2000-2007 Martin Schweiger
+//          Copyright 2000-2026 Martin Schweiger
 //
 // Vessel.h
 // Interface of class Vessel
@@ -1594,6 +1594,7 @@ private:
 	double emass, fmass, pfmass; // empty mass, current total fuel mass, previous total fuel mass
 	double cog_elev;             // elevation of centre of gravity over ground when landed
 	double CWz[2], CWx, CWy;     // wind resistance form factors (forward/backward,vert,side)
+	bool bCWexplicit;             // true if CW coefficients were explicitly set (via API or config)
 	double wingfactor;           // aspect ratio * effectiveness factor // OBSOLETE
 	double wingaspect, wingeff;  // wing form factors
 	double pitch_moment_scale;   // scale factor for pitch moment
@@ -1860,4 +1861,5 @@ private:
 };
 
 #endif // !__VESSEL_H
+
 

@@ -1,4 +1,4 @@
--- Copyright (c) 2021 Jarmo Nikkanen
+-- Copyright (c) 2021-2026 Jarmo Nikkanen
 -- Copyright 2024 (c) Gondos
 -- Licensed under the MIT License
 
@@ -347,3 +347,4 @@ end
 -- Return a module created from CameraMFD
 -- ==============================================================
 return MFDModule(CameraMFD)
+

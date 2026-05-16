@@ -6,20 +6,20 @@
 
 #define NAME1 "ORBITER Space Flight Simulator"
 
-#define SIG1A "(c) 2000-2023 Martin Schweiger"
+#define SIG1A "(c) 2000-2026 Martin Schweiger"
 
-#define SIG1B "Copyright (c) 2000-2023 Martin Schweiger"
+#define SIG1B "Copyright (c) 2000-2026 Martin Schweiger"
 
-#define SIG1AA "(c) 2000-2023"
+#define SIG1AA "(c) 2000-2026"
 
 #define SIG1AB "Martin Schweiger"
 
-#define SIG2 "orbit.medphys.ucl.ac.uk"
+#define SIG2 "openorbiter.space"
 
 #ifdef ISBETA
-  #define SIG4 "Build @DATE@ [v.@VERSION@ BETA]"
+#define SIG4 "Build @DATE@ [v.@VERSION@ BETA]"
 #else
-  #define SIG4 "Build @DATE@ [v.@VERSION@]"
+#define SIG4 "Build @DATE@ [v.@VERSION@]"
 #endif
 
 #define SIG5 "orbiter-forum.com"

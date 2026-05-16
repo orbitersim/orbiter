@@ -2,7 +2,7 @@
 // Defines the AnimationState class.
 // Tracks the state of a single vessel animation (or "door") across frames; used for default sounds.
 // 
-// Copyright (c) 2018-2021 Douglas Beachy
+// Copyright (c) 2018-2026 Douglas Beachy
 // Licensed under the MIT License
 // ==============================================================
 
@@ -64,3 +64,4 @@ public:
         }
     }
 };
+

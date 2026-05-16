@@ -1,7 +1,7 @@
 // ==============================================================
 // XRSound engine class bound to an Orbiter module (i.e., to a unique ID).
 // 
-// Copyright (c) 2018-2021 Douglas Beachy
+// Copyright (c) 2018-2026 Douglas Beachy
 // Licensed under the MIT License
 // ==============================================================
 
@@ -54,9 +54,9 @@ ModuleXRSoundEngine::~ModuleXRSoundEngine()
 // Only invoked by our base class's static DestroyInstance method
 void ModuleXRSoundEngine::FreeResources()
 {
-    CString msg;
-    msg.Format("ModuleXRSoundEngine::FreeResources: freeing XRSound engine resources for module '%s'",
-        static_cast<const char *>(m_csModuleName));
+    char msg[256];
+    snprintf(msg, 256, "ModuleXRSoundEngine::FreeResources: freeing XRSound engine resources for module '%s'",
+        m_csModuleName.c_str());
     s_globalConfig.WriteLog(msg);
 
     // stop all of this module's sounds and free all irrKlang resources for them
@@ -111,3 +111,4 @@ void ModuleXRSoundEngine::UpdateSoundState(WavContext &context)
         }
     }
 }
+

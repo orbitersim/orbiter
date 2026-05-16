@@ -2,7 +2,7 @@
 // D3DClient.h
 // Part of the ORBITER VISUALISATION PROJECT (OVP)
 // Dual licensed under GPL v3 and LGPL v3
-// Copyright (C) 2006-2016 Martin Schweiger
+// Copyright (C) 2006-2026 Martin Schweiger
 //				 2012-2016 Jarmo Nikkanen
 // ==============================================================
 
@@ -1004,7 +1004,6 @@ public:
 	 * \default None, returns NULL.
 	 * \note Clients which can obtain a Windows GDI handle for a surface should
 	 *   overload this method.
-	 * \todo This method should be moved into the GDIClient class
 	 */
 	HDC clbkGetSurfaceDC (SURFHANDLE surf);
 
@@ -1015,7 +1014,6 @@ public:
 	 * \default None.
 	 * \note Clients which can obtain a Windows GDI handle for a surface should
 	 *   overload this method to release an existing GDI.
-	 * \todo This method should be moved into the GDIClient class
 	 */
 	void clbkReleaseSurfaceDC (SURFHANDLE surf, HDC hDC);
 	// @}
@@ -1484,3 +1482,4 @@ public:
 };
 
 #endif // !__D3D9CLIENT_H
+

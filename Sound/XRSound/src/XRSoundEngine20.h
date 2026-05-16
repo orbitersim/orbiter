@@ -1,7 +1,7 @@
 // ==============================================================
 // XRSoundEngine20.h : Defines the XRSoundEngine version 2.x interface.
 //
-// Copyright (c) 2018-2021 Douglas Beachy
+// Copyright (c) 2018-2026 Douglas Beachy
 // Licensed under the MIT License
 // ==============================================================
 
@@ -21,3 +21,4 @@ public:
     virtual EngineType GetEngineType() = 0;
     virtual const char *GetLogID() = 0;  // e.g., vessel or module name
 };
+

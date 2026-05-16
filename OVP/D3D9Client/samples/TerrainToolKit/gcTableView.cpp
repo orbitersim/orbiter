@@ -1,5 +1,5 @@
 // ==================================================================
-// Copyright (c) 2021 Jarmo Nikkanen
+// Copyright (c) 2021-2026 Jarmo Nikkanen
 // Licensed under the MIT License
 // ==================================================================
 
@@ -928,3 +928,4 @@ int gcPropertyTree::AddComboBoxItem(HPROP hCombo, const char *label)
 	if (!hCombo->hCtrl) return -1;
 	return int(SendMessage(hCombo->hCtrl, CB_ADDSTRING, 0, (LPARAM)label));
 }
+

@@ -568,6 +568,18 @@ void DialogManager::ImGuiNewFrame()
 	ImGui_ImplWin32_NewFrame();
 	ImGui::NewFrame();
 
+	// Focus-follows-mouse: when the mouse is not over any ImGui window,
+	// clear ImGui's internal focused window. Without this, clicking an
+	// ImGui window permanently sets WantCaptureKeyboard (due to
+	// NavEnableKeyboard), blocking all DirectInput keyboard processing
+	// even after the mouse leaves the ImGui window.
+	if (g_pOrbiter->Cfg()->CfgUIPrm.MouseFocusMode != 0) {
+		ImGuiIO& io = ImGui::GetIO();
+		if (!io.WantCaptureMouse) {
+			ImGui::SetWindowFocus(static_cast<const char*>(nullptr));
+		}
+	}
+
 	RenderNotifications();
 
 	// We can't use a range-based loop here because Display() may unregister the current dialog
@@ -647,7 +659,7 @@ Added:
 
 MIT License
 
-Copyright (c) 2021 Patrick
+Copyright (c) 2021-2026 Patrick
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -1213,3 +1225,4 @@ namespace ImGui {
 		ImGui::EndChild();
 	}
 }
+

@@ -743,12 +743,23 @@ int Interpreter::RunChunk (const char *chunk, int n)
 	return res;
 }
 
-void Interpreter::term_out (lua_State *L, bool iserr)
+void Interpreter::term_out(lua_State *L, bool iserr)
 {
-	const char *str = lua_tostringex (L,-1);
-	if (str) term_strout (str, iserr);
-}
+    int n = lua_gettop(L);
+    std::string line;
 
+    for (int i = 1; i <= n; i++) {
+        const char *str = lua_tostringex(L, i);
+        if (str) {
+            if (i > 1) line += "\t";
+            line += str;
+        }
+    }
+
+    if (!line.empty()) {
+        term_strout(line.c_str(), iserr);
+    }
+}
 void Interpreter::LoadAPI ()
 {
 	// Load global functions

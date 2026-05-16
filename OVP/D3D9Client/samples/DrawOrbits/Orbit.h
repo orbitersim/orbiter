@@ -1,6 +1,6 @@
 
 // ==================================================================
-// Copyright (c) 2021 Jarmo Nikkanen
+// Copyright (c) 2021-2026 Jarmo Nikkanen
 // Licensed under the MIT License
 // ==================================================================
 
@@ -229,4 +229,5 @@ private:
 	VECTOR3 _Aux;	//!< Perpendicular to _Equ and _Pol
 	VECTOR3 _Pol;	//!< Reference Pole (i.e. _K_ECL)
 };
+
 
