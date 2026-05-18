@@ -69,7 +69,7 @@ VesselXRSoundEngine *XRSoundDLL::GetXRSoundEngineInstance(const OBJHANDLE hVesse
         const char *pName = pVessel->GetName();
         const char *pClassName = pVessel->GetClassName();
         snprintf(csVesselDesc, 256, "'%s' [class name '%s'], bInvokedByClientVessel = %d, dwThrusterCount = %u, bShouldHaveDefaultSounds = %d",
-            pName ? pName : "<null>", pClassName ? pClassName : "<null>", bInvokedByClientVessel, dwThrusterCount, bShouldHaveDefaultSounds);
+            pName ? pName : "<unknown>", pClassName ? pClassName : "<unknown>", bInvokedByClientVessel, dwThrusterCount, bShouldHaveDefaultSounds);
 
         // if the request for an engine came from a vessel, it should *always* succeed, even if it would not normally have default sounds
         if (bInvokedByClientVessel || bShouldHaveDefaultSounds)
@@ -372,29 +372,24 @@ void XRSoundDLL::clbkPreStep(double simtDoNotUse, double simdt, double mjd)
     // for performance reasons, only update all the sound engines for all vessels n times per second, NOT every frame
     if (simt >= m_nextSoundEnginesRefreshSimt)
     {
-        __try {
-            UpdateAllVesselsMap();
-        } __except(1) {
-            WriteLog("*** CRASH in UpdateAllVesselsMap! ***");
-        }
+        UpdateAllVesselsMap();
 
         // loop through each sound-enabled vessel and update the volume / playback state of each
         for (auto it = m_allVesselsMap.begin(); it != m_allVesselsMap.end(); it++)
         {
             const OBJHANDLE hVessel = it->first;
-            if (!oapiIsVessel(hVessel))
-                continue;  // skip invalid vessels
-            VesselXRSoundEngine *pEngine = it->second;
-            if (!pEngine)
-                continue;
-            __try {
+            __try
+            {
+                _ASSERTE(oapiIsVessel(hVessel));    // should still be a valid vessel, since UpdateAllVesselsMap() removes invalid (i.e., now-deleted) vessels
+                VesselXRSoundEngine *pEngine = it->second;
+                _ASSERTE(pEngine);
                 pEngine->clbkPreStep(simt, simdt, mjd);
-            } __except(1) {
-                VESSEL *pV = oapiGetVesselInterface(hVessel);
-                char msg[256];
-                const char *n = (pV && pV->GetName()) ? pV->GetName() : "<null>";
-                snprintf(msg, 256, "*** CRASH in VesselXRSoundEngine::clbkPreStep for vessel '%s'! ***", n);
-                WriteLog(msg);
+            }
+            __except(EXCEPTION_EXECUTE_HANDLER)
+            {
+                char csMsg[256];
+                snprintf(csMsg, 256, "XRSoundDLL::clbkPreStep ERROR: Access Violation in VesselXRSoundEngine::clbkPreStep for vessel %s", oapiIsVessel(hVessel) ? oapiGetVesselInterface(hVessel)->GetName() : "<invalid>");
+                WriteLog(csMsg);
             }
         }
         m_nextSoundEnginesRefreshSimt = simt + GetGlobalConfig().UpdateInterval;
@@ -405,10 +400,13 @@ void XRSoundDLL::clbkPreStep(double simtDoNotUse, double simdt, double mjd)
     const double systemUptime = GetSystemUptime();
     if (systemUptime >= m_nextIrrKlangUpdateRealtime)
     {
-        __try {
+        __try
+        {
             XRSoundEngine::UpdateIrrKlangEngine();
-        } __except(1) {
-            WriteLog("*** CRASH in UpdateIrrKlangEngine! ***");
+        }
+        __except(EXCEPTION_EXECUTE_HANDLER)
+        {
+            WriteLog("XRSoundDLL::clbkPreStep ERROR: Access Violation in XRSoundEngine::UpdateIrrKlangEngine");
         }
         m_nextIrrKlangUpdateRealtime = systemUptime + 0.05;     // 20 updates per second in realtime
     }
