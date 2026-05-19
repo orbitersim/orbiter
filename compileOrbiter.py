@@ -434,7 +434,15 @@ def main():
                 buildAndInstall(targetDir)
                 
             elif choice == '3':
-                localPath = input(f"{Colors.INFO}Enter the full path to the local repository: {Colors.RESET}").strip().strip('"').strip("'")
+                # Grab the current directory for the prompt default
+                current_dir = os.getcwd()
+                
+                localPath = input(f"{Colors.INFO}Enter the full path to the local repository or press ENTER for the current one: {Colors.RESET}").strip().strip('"').strip("'")
+                
+                # Default to the current directory if input is empty
+                if not localPath:
+                    localPath = current_dir
+                
                 if not os.path.isdir(localPath):
                     printError(f"Directory '{localPath}' does not exist.")
                     continue
