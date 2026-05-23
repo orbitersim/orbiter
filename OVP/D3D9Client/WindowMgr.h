@@ -1,7 +1,7 @@
 
 // =================================================================================================================================
 //
-// Copyright (C) 2019 Jarmo Nikkanen
+// Copyright (C) 2019-2026 Jarmo Nikkanen
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation
 // files (the "Software"), to use, copy, modify, merge, publish, distribute, interact with the Software and sublicense copies
@@ -257,3 +257,4 @@ private:
 
 
 #endif
+

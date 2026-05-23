@@ -48,7 +48,6 @@ endif()
 
 # Define directories and file paths for some common binaries
 set(OVP_DIR "${CMAKE_SOURCE_DIR}/OVP")
-set(GDICLIENT_DIR "${OVP_DIR}/GDIClient")
 
 set(ORBITER_SOURCE_ROOT_DIR ${CMAKE_SOURCE_DIR})
 set(ORBITER_SOURCE_DIR ${ORBITER_SOURCE_ROOT_DIR}/Src/Orbiter)
@@ -86,7 +85,6 @@ set(ORBITER_INSTALL_SDK_DIR ${ORBITER_INSTALL_ROOT_DIR}/Orbitersdk)
 set(ORBITER_SDK_LIB $<TARGET_FILE:Orbitersdk>)
 set(ORBITER_DLGCTRL_LIB $<TARGET_FILE:DlgCtrl>)
 set(LUAINTERPRETER_LIB $<TARGET_LINKER_FILE:LuaInterpreter>)
-set(GDICLIENT_LIB $<TARGET_LINKER_FILE:GDIClient>)
 
 set(EXTERN_DIR "${CMAKE_SOURCE_DIR}/Extern")
 

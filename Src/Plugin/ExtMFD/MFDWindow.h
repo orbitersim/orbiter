@@ -4,7 +4,7 @@
 // ==============================================================
 //                  ORBITER MODULE: ExtMFD
 //                  Part of the ORBITER SDK
-//            Copyright (C) 2006 Martin Schweiger
+//            Copyright (C) 2006-2026 Martin Schweiger
 //                   All rights reserved
 //
 // MFDWindow.h

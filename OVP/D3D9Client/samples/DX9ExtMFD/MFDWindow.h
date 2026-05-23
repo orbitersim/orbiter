@@ -1,5 +1,5 @@
 // ==============================================================          
-// Copyright (C) 2006 Martin Schweiger
+// Copyright (C) 2006-2026 Martin Schweiger
 // Licensed under the MIT License
 // ==============================================================
 
@@ -43,3 +43,4 @@ private:
 };
 
 #endif // !__MFDWINDOW_H
+

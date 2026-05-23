@@ -4,7 +4,7 @@
 // ==============================================================
 //                  ORBITER MODULE: ExtMFD
 //                  Part of the ORBITER SDK
-//            Copyright (C) 2006 Martin Schweiger
+//            Copyright (C) 2006-2026 Martin Schweiger
 //                   All rights reserved
 //
 // ExtMFD.cpp
@@ -257,3 +257,4 @@ static void OpenDlgClbk (void *context)
 	ImGuiNote *note = new ImGuiNote();
 	oapiOpenDialog(note);
 }
+

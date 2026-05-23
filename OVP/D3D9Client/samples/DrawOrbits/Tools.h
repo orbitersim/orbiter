@@ -1,6 +1,6 @@
 
 // ==================================================================
-// Copyright (c) 2021 Jarmo Nikkanen
+// Copyright (c) 2021-2026 Jarmo Nikkanen
 // Licensed under the MIT License
 // ==================================================================
 
@@ -508,3 +508,4 @@ double  GetHeading(OBJHANDLE Ref, VECTOR3 &_Pos, VECTOR3 &_Vel);
 //@}
 
 #endif
+

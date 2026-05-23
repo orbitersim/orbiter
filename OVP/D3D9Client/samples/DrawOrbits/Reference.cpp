@@ -1,6 +1,6 @@
 
 // ==================================================================
-// Copyright (c) 2021 Jarmo Nikkanen
+// Copyright (c) 2021-2026 Jarmo Nikkanen
 // Licensed under the MIT License
 // ==================================================================
 
@@ -327,3 +327,4 @@ double ReferenceClass::GetSOI(OBJHANDLE obj)
 	return(oapiGetSize(obj));
 
 }
+

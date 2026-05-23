@@ -2,7 +2,7 @@
 // Atmospheric controls implementation
 // Part of the ORBITER VISUALISATION PROJECT (OVP)
 // Dual licensed under GPL v3 and LGPL v3
-// Copyright (C) 2014-2016 Jarmo Nikkanen
+// Copyright (C) 2014-2026 Jarmo Nikkanen
 // ==============================================================
 
 #ifndef __ATMOCONTROLS_H
@@ -105,3 +105,4 @@ namespace AtmoControls {
 };
 
 #endif // !__ATMOCONTROLS_H
+

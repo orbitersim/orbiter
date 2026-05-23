@@ -2,7 +2,7 @@
 // Scene.cpp
 // Part of the ORBITER VISUALISATION PROJECT (OVP)
 // Dual licensed under GPL v3 and LGPL v3
-// Copyright (C) 2007 - 2016 Martin Schweiger
+// Copyright (C) 2007-2026 Martin Schweiger
 //				 2012 - 2016 Jarmo Nikkanen
 // ==============================================================
 
@@ -3838,3 +3838,4 @@ int distcomp (const void *arg1, const void *arg2)
 	double d2 = ((PList*)arg2)->dist;
 	return (d1 > d2 ? -1 : d1 < d2 ? 1 : 0);
 }
+

@@ -166,7 +166,7 @@ int main (int argc, char *argv[])
 
 	cout << "+-----------------------------------------------------------------------+\n";
 	cout << "|                   meshc: Mesh compiler for ORBITER                    |\n";
-	cout << "|        Build: " << __DATE__ << "      (c) 2001-2018 Martin Schweiger         |\n";
+	cout << "|        Build: " << __DATE__ << "      (c) 2001-2026 Martin Schweiger         |\n";
 	cout << "+-----------------------------------------------------------------------+\n\n";
 
 	ParseArgs(argc, argv, &param);

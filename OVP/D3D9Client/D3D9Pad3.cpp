@@ -1,6 +1,6 @@
 
 // ===================================================
-// Copyright (C) 2012-2021 Jarmo Nikkanen
+// Copyright (C) 2012-2026 Jarmo Nikkanen
 // licensed under LGPL v2
 // ===================================================
 
@@ -302,3 +302,4 @@ void D3D9Pad::SetClipDistance(float nr, float fr)
 	mP._33 = fr / (fr - nr);
 	mP._43 = -nr * mP._33;
 }
+

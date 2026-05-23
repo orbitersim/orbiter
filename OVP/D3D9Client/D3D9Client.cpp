@@ -2,7 +2,7 @@
 // D3D9Client.cpp
 // Part of the ORBITER VISUALISATION PROJECT (OVP)
 // Dual licensed under GPL v3 and LGPL v3
-// Copyright (C) 2006-2016 Martin Schweiger
+// Copyright (C) 2006-2026 Martin Schweiger
 //				 2012-2016 Jarmo Nikkanen
 // ==============================================================
 
@@ -3070,7 +3070,6 @@ void D3D9Client::SplashScreen()
 #endif
 
 	char dataB[128]; sprintf_s(dataB,128,"Build %s %lu 20%lu [%u]", months[m], d, y, oapiGetOrbiterVersion());
-	char dataD[] = { "Warning: Config folder not present in /Modules/Server/. Please create symbolic link." };
 	//char dataE[] = { "Note: Cubic Interpolation is use... Consider using linear for better elevation matching" };
 	//char dataF[] = { "Note: Terrain flattening offline due to cubic interpolation" };
 
@@ -3083,14 +3082,6 @@ void D3D9Client::SplashScreen()
 
 	DWORD VPOS = viewH - 50;
 	DWORD LSPACE = 20;
-
-	SetTextAlign(hDC, TA_CENTER);
-	DWORD cattrib = GetFileAttributes("Modules/Server/Config");
-
-	if ((cattrib&0x10)==0 || cattrib==INVALID_FILE_ATTRIBUTES) {
-		TextOut(hDC, viewW/2, VPOS, dataD, lstrlen(dataD));
-		VPOS -= LSPACE;
-	}
 
 	SelectObject(hDC, hO);
 	DeleteObject(hF);
@@ -3309,3 +3300,4 @@ VisObject::VisObject(OBJHANDLE hObj) : hObj(hObj)
 VisObject::~VisObject ()
 {
 }
+

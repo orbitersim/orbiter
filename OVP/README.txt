@@ -1,6 +1,6 @@
 ORBITER VISUALISATION PROJECT
 Graphics Client Plugins for Orbiter Space Flight Simulator
-Copyright (C) 2006-2014  Martin Schweiger
+Copyright (C) 2006-2026  Martin Schweiger
 
 
 The aim of the Orbiter Visualisation Project (OVP) is to provide 3-D
@@ -67,4 +67,5 @@ instructions.
 - Launch orbiter_ng.exe from your Orbiter main directory, activate the D3D7Client
   module on the Modules tab, set the parameters on the Video tab, and launch a
   scenario.
+
 
