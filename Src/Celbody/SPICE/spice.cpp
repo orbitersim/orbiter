@@ -1,5 +1,25 @@
-// Copyright(c) Alex Frost
-// Licensed under the MIT License
+/*
+Copyright(c) 2026 Alex Frost
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files(the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and /or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions :
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+
+*/
 
 //#pragma warning( disable : 6067 )
 
@@ -186,32 +206,23 @@ void SpiceBody::clbkInit(FILEHANDLE cfg)
 		// oapiWriteLog(s);
 		if (!LoadAtmosphereModule(s))
 		{
-			sprintf_s(s, 256, "spice.dll: Error in %s - Module_Atm is wrong!", cfg);
+			sprintf_s(s, 256, "spice.dll: Error in %s - Module_Atm is wrong!", body_name);
 			show_error(s);
 			return;
 		};
 		// if (atm==NULL) oapiWriteLog("NULL atm");
 	};
 
-	if (!oapiReadItem_string(cfg, "Kernel", s))
+	if (oapiReadItem_string(cfg, "Kernel", s) && !stringsplit(s, ",", kernels))
 	{
-		sprintf_s(s, 256, "spice.dll: Error in %s - No kernel file specified!", cfg);
+		sprintf_s(s, 256, "spice.dll: Error in %s - Kernel parameter is wrong!", body_name);
 		show_error(s);
-		exit(1);
-		return;
-	}
-
-	if (!stringsplit(s, ",", kernels))
-	{
-		sprintf_s(s, 256, "spice.dll: Error in %s - Kernel parameter is wrong or misformatted!", cfg);
-		show_error(s);
-		exit(1);
 		return;
 	}
 
 	if (!oapiReadItem_string(cfg, "Body", body_name))
 	{
-		sprintf_s(s, 256, "spice.dll: Error in %s - Not specified: Body!", cfg);
+		sprintf_s(s, 256, "spice.dll: Error in %s - Not specified: body name!", body_name);
 		show_error(s);
 		exit(1);
 		return;
@@ -219,7 +230,7 @@ void SpiceBody::clbkInit(FILEHANDLE cfg)
 
 	if (!oapiReadItem_string(cfg, "Barycenter", bary_name))
 	{
-		sprintf_s(s, 256, "spice.dll: Error in %s - Not specified: Barycenter!", cfg);
+		sprintf_s(s, 256, "spice.dll: Error in %s - Not specified: barycenter name!", body_name);
 		show_error(s);
 		exit(1);
 		return;
@@ -232,7 +243,7 @@ void SpiceBody::clbkInit(FILEHANDLE cfg)
 
 	if (!oapiReadItem_string(cfg, "ParentBarycenter", parent_bary_name))
 	{
-		sprintf_s(s, 256, "spice.dll: Error in %s - Not specified: ParentBarycenter!", cfg);
+		sprintf_s(s, 256, "spice.dll: Error in %s - Not specified the ParentBarycenter!", body_name);
 		show_error(s);
 		exit(1);
 		return;
@@ -248,7 +259,7 @@ void SpiceBody::clbkInit(FILEHANDLE cfg)
 
 	if (!oapiReadItem_string(cfg, "Origin", origin_name))
 	{
-		sprintf_s(s, 256, "spice.dll: Error in %s - Not specified: Origin!", cfg);
+		sprintf_s(s, 256, "spice.dll: Error in %s - Not specified the origin name!", body_name);
 		show_error(s);
 		exit(1);
 		return;
@@ -276,17 +287,19 @@ void SpiceBody::clbkInit(FILEHANDLE cfg)
 		}
 	}
 
+
 	for (vector<string>::iterator i = kernels.begin(); i != kernels.end(); i++)
 	{
 		trimspaces(*i);
 		if (!load_kernel(*i))
 		{
-			sprintf_s(s, 256, "spice.dll: Couldn't load kernel: %s", (*i).c_str());
+			sprintf_s(s, 256, "spice.dll: %s - Couldn't load kernel: %s", body_name, (*i).c_str());
 			show_error(s);
 			exit(1);
 			return;
 		}
 	}
+
 
 	if (!get_id(body_name, &body_id))
 	{
@@ -611,7 +624,6 @@ int SpiceBody::clbkEphemeris(double mjd, int req, double* r)
 	}
 
 	return resp;
-
 }
 
 int SpiceBody::clbkFastEphemeris(double simt, int req, double* r)
