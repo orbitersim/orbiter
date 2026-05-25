@@ -20,6 +20,28 @@
 #include "imgui_extras.h"
 #include "IconsFontAwesome6.h"
 
+#include <vector>
+
+static std::vector<bool> g_usedWindowIds;
+
+int GetFreeWindowId() {
+	for (size_t i = 0; i < g_usedWindowIds.size(); ++i) {
+		if (!g_usedWindowIds[i]) {
+			g_usedWindowIds[i] = true;
+			return i + 1;
+		}
+	}
+	g_usedWindowIds.push_back(true);
+	return g_usedWindowIds.size();
+}
+
+void FreeWindowId(int id) {
+	int index = id - 1;
+	if (index >= 0 && index < (int)g_usedWindowIds.size()) {
+		g_usedWindowIds[index] = false;
+	}
+}
+
 // ==============================================================
 // class MFDWindow
 
@@ -72,7 +94,7 @@ void DlgExtMFD::Display() {
 	ImVec2 pos = mouse + offset;
 	ImGui::SetNextWindowPos(pos, ImGuiCond_FirstUseEver);
 
-	ImGui::SetNextWindowSize(ImVec2(defaultSize.width, defaultSize.height), ImGuiCond_Once);
+	ImGui::SetNextWindowSize(ImVec2(defaultSize.width, defaultSize.height), ImGuiCond_FirstUseEver);
 	ImGui::SetNextWindowSizeConstraints(ImVec2(382,366), ImVec2(FLT_MAX, FLT_MAX), AspectRatio, m_mfd);
 	
 	char cbuf[256] = ICON_FA_TABLET_SCREEN_BUTTON " MFD [";
@@ -207,16 +229,18 @@ void DlgExtMFD::OnDraw() {
 
 MFDWindow::MFDWindow(const MFDSPEC& spec) : ExternMFD(spec)
 {
+	m_windowId = GetFreeWindowId();
 	fnth = 0;
 	vstick = false;
 	char cbuf[128];
-	sprintf(cbuf, "ExtMFD%lld", (uint64_t)Id());
+	sprintf(cbuf, "ExtMFD_%d", m_windowId);
 	m_window = std::make_unique<DlgExtMFD>(cbuf, this);
 	oapiOpenDialog(m_window.get());
 }
 
 MFDWindow::~MFDWindow()
 {
+	FreeWindowId(m_windowId);
 }
 
 void MFDWindow::SetVessel(OBJHANDLE hV)
