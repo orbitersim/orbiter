@@ -11,8 +11,20 @@ FetchContent_Declare(
 )
 FetchContent_MakeAvailable(imgui)
 
-install(FILES ${imgui_SOURCE_DIR}/misc/fonts/Roboto-Medium.ttf fa-solid-900.ttf ${imgui_SOURCE_DIR}/misc/fonts/Cousine-Regular.ttf Lekton-Bold.ttf architext.regular.ttf
+set(IMGUI_FONTS
+    ${imgui_SOURCE_DIR}/misc/fonts/Roboto-Medium.ttf
+    ${CMAKE_CURRENT_SOURCE_DIR}/fa-solid-900.ttf
+    ${imgui_SOURCE_DIR}/misc/fonts/Cousine-Regular.ttf
+    ${CMAKE_CURRENT_SOURCE_DIR}/Lekton-Bold.ttf
+    ${CMAKE_CURRENT_SOURCE_DIR}/architext.regular.ttf
+)
+
+install(FILES ${IMGUI_FONTS}
 	DESTINATION ${ORBITER_INSTALL_ROOT_DIR}/Fonts
+)
+
+file(COPY ${IMGUI_FONTS}
+	DESTINATION ${CMAKE_BINARY_DIR}/Fonts
 )
 
 install(FILES ${imgui_SOURCE_DIR}/imgui.h ${imgui_SOURCE_DIR}/imconfig.h
