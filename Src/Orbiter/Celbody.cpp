@@ -472,12 +472,19 @@ void CelestialBody::Update (bool force)
 	}
 #endif
 
-	// If planet supports precession, update precession parameters
-	// (should not be necessary at each frame)
-	if (prec_T) UpdatePrecession ();
+	if(rot_extern){
+		// CODE
 
-	// Update rotation parameters
-	UpdateRotation ();
+	}
+	else
+	{
+		// If planet supports precession, update precession parameters
+		// (should not be necessary at each frame)
+		if (prec_T) UpdatePrecession ();
+
+		// Update rotation parameters
+		UpdateRotation ();
+	}
 
 	RigidBody::Update (force);   // dynamic update
 
@@ -569,6 +576,14 @@ int CelestialBody::ExternFastEphemeris (double simt, int req, double *res) const
 		int format;
 		modIntf.oplanetFastEphemeris (simt, res, format);
 		return EPHEM_TRUEPOS | EPHEM_TRUEVEL | EPHEM_POLAR;
+	}
+	return 0;
+}
+
+int ExternRotation(double mjd, Matrix *rot) const
+{
+	if(module){
+		return module->clbkRotation(mjd, rot);
 	}
 	return 0;
 }

@@ -16,8 +16,8 @@
 
 /**
  * \file CelBodyAPI.h
- * \brief Contains interface classes for celestial bodies: \ref CELBODY and
- *   \ref CELBODY2.
+ * \brief Contains interface classes for celestial bodies: \ref CELBODY,
+ *   \ref CELBODY2, and \ref CELBODY3.
  */
 
 #ifndef __CELBODYAPI_H
@@ -622,6 +622,34 @@ public:
 
 protected:
 	CELBODY2 *cbody; ///< associated celestial body instance
+};
+
+
+// ======================================================================
+/**
+* \class CELBODY3
+* \brief Extension to CELBODY2 class.
+* \details This class introduces extended rotation model API methods. It contains an
+*   \ref ATMOSPHERE class instance (just like CELBODY2) which handles all atmosphere data requests.
+*   The atmosphere class can be either defined directly in the celestial body's
+*   plugin module, or it can be loaded from an external module. This latter option
+*   allows to replace atmospheric models easily, without having to re-implement
+*   other parts of the code, such as the ephemeris calculations.
+* \sa CELBODY, CELBODY2, ATMOSPHERE
+*/
+// ======================================================================
+class OAPIFUNC CELBODY3: public CELBODY2 {
+	friend class ATMOSPHERE;
+
+	/**
+	* \brief Called by Orbiter to update the body's rotation
+	* \param mjd MJD of the requested rotation data
+	* \param rot pointer to rotation matrix
+	* \par Default action:
+	*  None, returning 0
+	* \note TBD
+	*/
+	virtual int clbkRotation(double mjd, Matrix *rot);
 };
 
 #endif // !__CELBODYAPI_H
