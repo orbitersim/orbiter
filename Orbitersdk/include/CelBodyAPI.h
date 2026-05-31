@@ -38,6 +38,8 @@
 #define EPHEM_POLAR       0x40	///< data is returned in polar format
 //@}
 
+#include "Vecmat.h"
+
 // Used for ephemeris interpolation
 struct Sample {
 	double t;
@@ -640,6 +642,19 @@ protected:
 // ======================================================================
 class OAPIFUNC CELBODY3: public CELBODY2 {
 	friend class ATMOSPHERE;
+public:
+	/**
+	* \brief Constructor. Creates a CELBODY3 instance for a celestial body.
+	* \param hCBody body handle
+	*/
+	CELBODY3(OBJHANDLE hCBody);
+
+	/**
+	 * \brief Destructor. Destroys the CELBODY3 instance.
+	 * \default Calls the FreeAtmosphere method, to delete the atmosphere instance
+	 *   and unload any external atmosphere modules.
+	 */
+	virtual ~CELBODY3();
 
 	/**
 	* \brief Called by Orbiter to update the body's rotation

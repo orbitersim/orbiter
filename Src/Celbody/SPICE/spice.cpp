@@ -80,7 +80,7 @@ bool get_id(char* name, int* id)
 	return found == SPICETRUE;
 }
 
-class SpiceBody : public CELBODY2
+class SpiceBody : public CELBODY3
 {
 public:
 	SpiceBody(OBJHANDLE hCBody);
@@ -89,6 +89,7 @@ public:
 	int clbkEphemeris(double mjd, int req, double* ret);
 	int clbkFastEphemeris(double simt, int req, double* ret);
 	bool clbkAtmParam(double alt, ATMPARAM* prm);
+	int clbkRotation(double mjd, Matrix* rot);
 
 	inline bool LegacyAtmosphereInterface() const
 	{
@@ -136,7 +137,7 @@ void SpiceBody::show_error(char* s)
 	error = true;
 }
 
-SpiceBody::SpiceBody(OBJHANDLE hCBody) : CELBODY2(hCBody)
+SpiceBody::SpiceBody(OBJHANDLE hCBody) : CELBODY3(hCBody)
 {
 	// add constructor code here
 	version = 2;
@@ -727,6 +728,18 @@ double SpiceBody::calc_gm(double* state1, double* state2, double dt)
 	r1 = (r1 + r2) / 2.0;
 	g = sqrt(g) / dt * r1 * r1;
 	return g;
+}
+
+int SpiceBody::clbkRotation(double mjd, Matrix* rot) {
+
+	double t = ((mjd - 51544.5) * 86400.0);
+	double rotMat[3][3];
+
+	pxform_c(body_name, "ECLIPJ2000", t, rotMat);
+
+	rot->Set();
+
+	return 1;
 }
 
 DLLCLBK void InitModule(HINSTANCE hModule)

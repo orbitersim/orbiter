@@ -26,6 +26,7 @@ typedef void   (*OPLANET_AtmPrm)(double alt, ATMPARAM *prm);
 class CelestialBody: public RigidBody {
 friend class CELBODY;
 friend class CELBODY2;
+friend class CELBODY3;
 
 public:
 	CelestialBody (double _mass, double _size);
@@ -185,11 +186,10 @@ protected:
 	void UpdateRotation ();
 	// Calculate rotation parameters at the current simulation date
 
-	void SetRotation(Quaternion);
-
 	void RegisterModule (char *dllname);
 	void ClearModule ();
 	CELBODY *module;         // pointer to module interface class, if available
+	CELBODY3 *module3;       // specific CELBODY3 version of module pointer
 
 	bool bFixedElements;
 	// Set this to true if the object's elements never change

@@ -36,6 +36,7 @@ CelestialBody::CelestialBody (double _mass, double _size)
 	el = new Elements; TRACENEW
 	ClearModule();
 	usePinesGravity = false;
+	rot_extern = false;
 }
 
 CelestialBody::CelestialBody (char *fname)
@@ -185,7 +186,8 @@ void CelestialBody::DefaultParam ()
 	elframe           = ELFRAME_ECLIPTIC; // reference frame for elements
 	bInitFromElements = false;
 	hMod              = 0;
-	module            = 0;
+	module            = NULL;
+	module3           = NULL;
 	bFixedElements = false;
 }
 
@@ -472,9 +474,9 @@ void CelestialBody::Update (bool force)
 	}
 #endif
 
-	if(rot_extern){
-		// CODE
-
+	if(ExternRotation(td.MJD1, &(s1->R))){
+		// Use externally defined rotation code to calculate the complete compete planetary rotation matrix and apply it.
+		// It the above call returns 0, fall down to statement below.
 	}
 	else
 	{
@@ -580,10 +582,11 @@ int CelestialBody::ExternFastEphemeris (double simt, int req, double *res) const
 	return 0;
 }
 
-int ExternRotation(double mjd, Matrix *rot) const
+int CelestialBody::ExternRotation(double mjd, Matrix *rot) const
 {
-	if(module){
-		return module->clbkRotation(mjd, rot);
+	if(module3 && rot_extern){
+		module3->clbkRotation(mjd, rot);
+		return 1;
 	}
 	return 0;
 }
@@ -985,6 +988,22 @@ double CELBODY2::SidRotPeriod () const
 	return ((CelestialBody*)hBody)->rot_T;
 }
 
+// =======================================================================
+// class CELBODY3: API interface class
+
+CELBODY3::CELBODY3(OBJHANDLE hCBody) : CELBODY2(hCBody)
+{
+	version++;
+}
+
+CELBODY3::~CELBODY3()
+{
+	CELBODY2::~CELBODY2();
+}
+
+int CELBODY3::clbkRotation(double mjd, Matrix *ret)
+{return 0;}
+
 
 // =======================================================================
 // class ATMOSPHERE: API interface class
@@ -1007,4 +1026,6 @@ bool ATMOSPHERE::clbkParams (const PRM_IN *prm_in, PRM_OUT *prm_out)
 {
 	return false;
 }
+
+
 
