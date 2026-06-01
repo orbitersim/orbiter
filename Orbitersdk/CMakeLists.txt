@@ -8,8 +8,8 @@ file(GLOB_RECURSE includes
 	RELATIVE ${CMAKE_CURRENT_SOURCE_DIR}
 	LIST_DIRECTORIES false
 	include/*
-	../Src/Orbiter/Vecmat.h
 )
+
 foreach(fname ${includes})
 	list(APPEND input
 		${CMAKE_CURRENT_SOURCE_DIR}/${fname}

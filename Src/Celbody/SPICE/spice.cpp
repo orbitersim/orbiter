@@ -89,7 +89,8 @@ public:
 	int clbkEphemeris(double mjd, int req, double* ret);
 	int clbkFastEphemeris(double simt, int req, double* ret);
 	bool clbkAtmParam(double alt, ATMPARAM* prm);
-	int clbkRotation(double mjd, Matrix* rot);
+	int clbkRotation(double mjd, double* rotMat);
+	bool bRotation() const;
 
 	inline bool LegacyAtmosphereInterface() const
 	{
@@ -158,6 +159,13 @@ bool SpiceBody::bEphemeris() const
 	// class supports ephemeris calculation
 	return !error;
 }
+
+bool SpiceBody::bRotation() const
+{
+	// class supports ephemeris calculation
+	return !error;
+}
+
 
 void trimspaces(string& str)
 {
@@ -730,14 +738,24 @@ double SpiceBody::calc_gm(double* state1, double* state2, double dt)
 	return g;
 }
 
-int SpiceBody::clbkRotation(double mjd, Matrix* rot) {
+int SpiceBody::clbkRotation(double mjd, double* rotMat) {
 
 	double t = ((mjd - 51544.5) * 86400.0);
-	double rotMat[3][3];
+	double rotMatDouble[3][3];
 
-	pxform_c(body_name, "ECLIPJ2000", t, rotMat);
+	pxform_c(body_name, "ECLIPJ2000", t, rotMatDouble);
 
-	rot->Set();
+	rotMat[0] = rotMatDouble[0][0];
+	rotMat[1] = rotMatDouble[0][1];
+	rotMat[2] = rotMatDouble[0][2];
+
+	rotMat[3] = rotMatDouble[1][0];
+	rotMat[4] = rotMatDouble[1][1];
+	rotMat[5] = rotMatDouble[1][2];
+
+	rotMat[6] = rotMatDouble[2][0];
+	rotMat[7] = rotMatDouble[2][1];
+	rotMat[8] = rotMatDouble[2][2];
 
 	return 1;
 }

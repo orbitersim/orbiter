@@ -38,8 +38,6 @@
 #define EPHEM_POLAR       0x40	///< data is returned in polar format
 //@}
 
-#include "Vecmat.h"
-
 // Used for ephemeris interpolation
 struct Sample {
 	double t;
@@ -230,7 +228,7 @@ public:
 
 	/**
 	* \brief Return version number
-	* \return Version number (1 for CELBODY, 2 for CELBODY2)
+	* \return Version number (1 for CELBODY, 2 for CELBODY2, 3 for CELBODY3)
 	*/
 	inline int Version() const { return version; }
 
@@ -657,14 +655,28 @@ public:
 	virtual ~CELBODY3();
 
 	/**
+	* \brief Returns the handle of the associated object.
+	*/
+	inline OBJHANDLE GetHandle() const { return hBody; }
+
+	/**
 	* \brief Called by Orbiter to update the body's rotation
 	* \param mjd MJD of the requested rotation data
-	* \param rot pointer to rotation matrix
+	* \param rot pointer to rotation matrix 3x3
 	* \par Default action:
 	*  None, returning 0
 	* \note TBD
 	*/
-	virtual int clbkRotation(double mjd, Matrix *rot);
+	virtual int clbkRotation(double mjd, double* rotMat);
+
+	/**
+	* \brief Returns \e true or \e false depending on whether the module supports module-defined rotation.
+	* \return If your module supports rotation calculation (that is, if it defines the
+	*  clbkRotation method) return \e true. Otherwise return \e false.
+	* \par Default action:
+	*  Returns \e false.
+	*/
+	virtual bool bRotation() const;
 };
 
 #endif // !__CELBODYAPI_H

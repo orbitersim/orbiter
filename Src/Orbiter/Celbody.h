@@ -166,9 +166,9 @@ protected:
 	// external module.
 	// Returns false if not supported by module
 
-	int ExternRotation(double mjd, Matrix *rot) const;
+	int ExternRotation(double mjd, double *ret) const;
 	// Try to obtain rotation data at mjd from external module
-	// return value contains satisfied requests
+	// return value contains satisfied requests 3x3 element matrix
 
 	int ExternState (double *res);
 	// Try to obtain current ephemeris data (true and barycentric) from external
