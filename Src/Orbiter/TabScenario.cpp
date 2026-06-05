@@ -666,7 +666,7 @@ INT_PTR CALLBACK orbiter::ScenarioTab::SaveProc (HWND hWnd, UINT uMsg, WPARAM wP
 //-----------------------------------------------------------------------------
 void orbiter::ScenarioTab::ClearQSFolder()
 {
-	fs::path scnpath{ fs::absolute(pLp->App()->ScnPath("Quicksave")) };
+	fs::path scnpath{ pLp->App()->ScnPath("Quicksave") };
 	scnpath.replace_extension(); // remove ".scn"
 
 	std::string msg = "Are you sure you want to delete all quicksaves? This affects:\n";
@@ -696,29 +696,11 @@ void orbiter::ScenarioTab::ClearQSFolder()
 		return;
 	}
 
-#ifdef _WIN32
-	// SHFileOperation needs an absolute path
-	scnpath.replace_extension(); // remove ".scn"
-	// pFrom needs to be null terminated twice
-	std::string strpath = scnpath.string() + '\0';
-	SHFILEOPSTRUCT op;
-	op.hwnd = LaunchpadWnd();
-	op.wFunc = FO_DELETE;
-	op.pFrom = strpath.c_str();
-	op.pTo = NULL;
-	op.fFlags = FOF_ALLOWUNDO;
-	if(!SHFileOperation(&op)) {
-		fs::create_directory(scnpath);
-	}
-#else
-	scnpath.replace_extension(); // remove ".scn"
-
 	std::error_code ec;
 	fs::remove_all(scnpath, ec);
 	if (!ec) {
 		fs::create_directory(scnpath);
 	}
-#endif
 }
 
 //-----------------------------------------------------------------------------
