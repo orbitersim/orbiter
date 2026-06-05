@@ -24,7 +24,7 @@
 
 static std::vector<bool> g_usedWindowIds;
 
-int GetFreeWindowId() {
+static int GetFreeWindowId() {
 	for (size_t i = 0; i < g_usedWindowIds.size(); ++i) {
 		if (!g_usedWindowIds[i]) {
 			g_usedWindowIds[i] = true;
@@ -35,7 +35,7 @@ int GetFreeWindowId() {
 	return g_usedWindowIds.size();
 }
 
-void FreeWindowId(int id) {
+static void FreeWindowId(int id) {
 	int index = id - 1;
 	if (index >= 0 && index < (int)g_usedWindowIds.size()) {
 		g_usedWindowIds[index] = false;
