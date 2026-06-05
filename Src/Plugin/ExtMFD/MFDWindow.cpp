@@ -290,13 +290,7 @@ void DlgExtMFD::OnDraw() {
 	//sz.x - button_sz.x * 4
 	ImGui::SetCursorPosX(60);
 
-	ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(0.9, 0, 0, 1));
-	if (ImGui::Button("PWR", button_sz)) {
-		m_mfd->ProcessButton(12, PANEL_MOUSE_LBDOWN);
 
-	}
-	ImGui::PopStyleColor();
-	ImGui::SameLine();
 	if (ImGui::Button("SEL", button_sz)) {
 		m_mfd->ProcessButton(13, PANEL_MOUSE_LBDOWN);
 	}
