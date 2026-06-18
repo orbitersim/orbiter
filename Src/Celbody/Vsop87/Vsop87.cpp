@@ -273,17 +273,33 @@ void VSOPOBJ::Interpolate (double t, double *data, const Sample *s0, const Sampl
 	int i;
 	double dt = s1->t - s0->t;
 
-	// step 1: linear interpolation
-	double fac = (t - s0->t) / dt;
-	for (i = 0; i < 6; i++)
-		data[i] = fac * (s1->param[i] - s0->param[i]) + s0->param[i];
+	if (dt == 0.0) {
+		for (i = 0; i < 6; i++) data[i] = s0->param[i];
+		return;
+	}
 
-	if (!(fmtflag & EPHEM_POLAR)) {
-		// step 2: radius interpolation
-		fac = ((t - s0->t)/dt * s1->rad + (s1->t - t)/dt * s0->rad)/Radius(data);
-		for (i = 0; i < 3; i++)
-			data[i] *= fac;
-		// Warning: velocities are not corrected here!
+	double u = (t - s0->t) / dt;
+	double u2 = u * u;
+	double u3 = u2 * u;
+
+	double h00 = 2.0 * u3 - 3.0 * u2 + 1.0;
+	double h10 = u3 - 2.0 * u2 + u;
+	double h01 = -2.0 * u3 + 3.0 * u2;
+	double h11 = u3 - u2;
+
+	double dh00 = 6.0 * u2 - 6.0 * u;
+	double dh10 = 3.0 * u2 - 4.0 * u + 1.0;
+	double dh01 = -6.0 * u2 + 6.0 * u;
+	double dh11 = 3.0 * u2 - 2.0 * u;
+
+	for (i = 0; i < 3; i++) {
+		double p0 = s0->param[i];
+		double p1 = s1->param[i];
+		double v0 = s0->param[i+3] * dt;
+		double v1 = s1->param[i+3] * dt;
+
+		data[i] = h00 * p0 + h10 * v0 + h01 * p1 + h11 * v1;
+		data[i+3] = (dh00 * p0 + dh10 * v0 + dh01 * p1 + dh11 * v1) / dt;
 	}
 }
 
