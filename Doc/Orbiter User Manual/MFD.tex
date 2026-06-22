@@ -739,7 +739,7 @@ Closing speed should be reduced as the ship approaches the dock (using RCS in li
 
 \begin{itemize}
 \item To dock successfully you must approach the dock to within 0.3 m. Additional restrictions may be implemented in the future (speed, alignment, etc.)
-\item No collision checks are currently performed. If you fail to dock and keep closing in, you may fly your ship through the target vessel.
+\item Collision detection is now performed between vessels based on their surface meshes. If you fail to dock and impact the station, the collision will be resolved according to rigid-body physics, potentially damaging your vessel or knocking both objects out of their current state.
 \end{itemize}
 
 

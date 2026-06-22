@@ -268,6 +268,9 @@ typedef void *HDC;
   *   DWORD
   */
 #define CFGPRM_SURFMARKERFLAG 0x0026
+#define CFGPRM_SURFACESCATTER   0x0027
+#define CFGPRM_SCATTERMAXDIST    0x0028
+#define CFGPRM_SCATTERDENSITYMULT 0x0029
 /// @}
 
 /**
@@ -1477,6 +1480,8 @@ public:
 	 *   is loaded in the core, the callback is invoked.
 	 */
 	virtual bool clbkFilterElevation(OBJHANDLE hPlanet, int ilat, int ilng, int lvl, double elev_res, INT16* elev) { return false; }
+
+
 	// @}
 
 	virtual void clbkImGuiNewFrame () = 0;

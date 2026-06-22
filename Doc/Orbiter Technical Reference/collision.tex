@@ -1,0 +1,702 @@
+\documentclass[Orbiter Technical Reference.tex]{subfiles}
+\begin{document}
+
+\section{Mesh-to-mesh collision detection and response}
+\textbf{EvESpirit}\\
+\textbf{June 6, 2026}
+
+
+\subsection{Introduction}
+Orbiter implements a rigid-body collision system for vessel-to-vessel,
+vessel-to-base, and vessel-to-scatter (foliage or rocks - part of the
+Scatterer system) interactions.
+Collision remains optionally toggleable for all three categories within
+Launchpad $\to$ Options $\to$ Physics settings.
+
+The \emph{primary} collision detection method is a convex hull system based
+on the Gilbert-Johnson-Keerthi (GJK) algorithm~\cite{gjk1988} for
+intersection testing and the Expanding Polytope Algorithm (EPA) for
+penetration depth computation. Today, this is arguably the most widely used
+continuous collision detection algorithm in modern 3D video game physics engines
+and robotics simulations.
+Every vessel is, by default, treated as a convex collider
+(\texttt{bIsConvexCollider~=~true}), meaning its sampled hull point cloud
+is wrapped in convex sub-hulls that are tested for overlap via GJK/EPA.
+This sub-hull method guarantees a much tighter mesh wrap than a standard convex
+evaluation would be capable of, and is likewise commonly used throughout
+the wider industry.
+
+A \emph{fallback} point-to-triangle detection path, mathematically
+equivalent to the M\"oller-Trumbore ray-triangle intersection
+test~\cite{moller1997}, is retained for the case where both vessels in a
+pair have opted out of convex collision
+(\texttt{bIsConvexCollider~=~false}).
+
+The collision \emph{response} for all paths is handled by a standard
+Newtonian rigid-body impulse solver~\cite{ibarra2003}, which computes
+normal and tangential impulses and applies them as linear and angular
+velocity changes.
+
+To maintain framerates that are relatively equivalent or only mildly
+affected within the simulation, the system is split into two phases:
+a \emph{broad phase} that cheaply discards non-colliding pairs, and a
+\emph{narrow phase} that performs the full geometric intersection test.
+
+
+\subsection{System architecture}
+\label{ssec:architecture}
+When a vessel pair survives the broad phase
+(Section~\ref{ssec:broadphase}), the narrow-phase path is selected
+based on each vessel's \texttt{bIsConvexCollider} flag:
+
+\begin{enumerate}
+\item \textbf{Convex-Convex} (both \texttt{bIsConvexCollider = true}).
+  Each vessel's hull is decomposed into clustered convex sub-hulls
+  (Section~\ref{ssec:hullcloud}).  Every pair of sub-hull slices
+  undergoes an AABB overlap check; overlapping pairs are tested with
+  the GJK algorithm (Section~\ref{ssec:gjk}) for intersection and,
+  upon confirmation, the EPA (Section~\ref{ssec:epa}) to obtain the
+  penetration depth, contact normal, and contact point.  This is the
+  default and fastest path.
+
+\item \textbf{Convex-Concave} (one vessel convex, the other not).
+  The convex vessel's clustered hull slices are tested against the
+  concave vessel's raw triangle mesh
+  (Section~\ref{ssec:convex_concave}).  Each triangle of the concave
+  vessel is transformed to planet-local space and tested against the
+  overlapping convex hull slices via GJK/EPA.
+
+\item \textbf{Concave-Concave} (both \texttt{bIsConvexCollider = false}).
+  The legacy point-to-triangle path
+  (Section~\ref{ssec:narrowphase_legacy}).  Hull points of each vessel
+  are tested against the triangles of the other vessel using
+  barycentric coordinate containment and M\"oller-Trumbore
+  ray-triangle CCD.  This is a symmetric test (hull A vs.\ mesh B
+  \emph{and} hull B vs.\ mesh A).
+\end{enumerate}
+
+
+\subsection{Broad phase - bounding-sphere rejection}
+\label{ssec:broadphase}
+Given two vessels $A$ and $B$ with bounding-sphere radii
+$r_A$ and $r_B$, the broad phase operates on their relative position and
+velocity vectors:
+\begin{equation*}
+\vec{p}_{\mathrm{rel}} = \vec{p}_B - \vec{p}_A, \qquad
+\vec{v}_{\mathrm{rel}} = \vec{v}_B - \vec{v}_A
+\end{equation*}
+The combined bounding radius is $r_{\Sigma} = r_A + r_B$.
+A pair is immediately discarded if the vessels are separating
+\emph{and} already well apart:
+\begin{equation*}
+\vec{p}_{\mathrm{rel}} \cdot \vec{v}_{\mathrm{rel}} \ge 0
+\;\;\text{and}\;\;
+|\vec{p}_{\mathrm{rel}}| > r_{\Sigma} + \epsilon
+\end{equation*}
+where $\epsilon$ is a small safety margin (5\,m).
+
+The 5\,m value was chosen to be larger than typical vessel surface 
+irregularities ($\sim$1-2\,m for detailed meshes) while remaining small 
+enough to avoid premature engagement at long range.
+
+For approaching vessels ($\vec{p}_{\mathrm{rel}} \cdot \vec{v}_{\mathrm{rel}} < 0$),
+the time of closest approach is estimated as
+\begin{equation*}
+t_{\mathrm{min}} = -\frac{\vec{p}_{\mathrm{rel}} \cdot \vec{v}_{\mathrm{rel}}}
+                         {|\vec{v}_{\mathrm{rel}}|^2}
+\end{equation*}
+If $t_{\mathrm{min}}$ falls within the current simulation time step $\Delta t$,
+the predicted closest-approach distance is checked against $r_{\Sigma}$:
+\begin{equation*}
+|\vec{p}_{\mathrm{rel}} + \vec{v}_{\mathrm{rel}}\,t_{\mathrm{min}}|
+> r_{\Sigma} + \epsilon
+\;\;\Rightarrow\;\; \text{skip pair}
+\end{equation*}
+Only pairs that survive both tests proceed to the narrow phase.
+
+When two vessels are close enough to enter the narrow phase, the
+simulation time warp is automatically reduced to $1\times$ to ensure
+the collision is resolved at full temporal resolution.
+
+
+\subsection{Hull point cloud construction}
+\label{ssec:hullcloud}
+Each vessel maintains a dense point cloud sampled from its mesh
+geometry.  The cache is built by \texttt{RebuildHullCache()}, which
+iterates over all mesh groups and constructs a densely sampled,
+spatially clustered representation suitable for both convex hull
+wrapping (GJK/EPA) and point-to-triangle testing (fallback).
+
+\subsubsection{Triangle subdivision}
+For each triangle in every mesh group, the three vertices (offset by the
+mesh displacement) are recursively subdivided by bisecting the longest
+edge until no edge exceeds 1.0\,m.  This ensures uniform point density
+across the hull surface, preventing gaps in coverage on large triangles
+that would otherwise leave regions undetectable.
+
+\subsubsection{BSP clustering}
+The dense point cloud for each mesh group is spatially partitioned by a
+binary space partition (BSP) that recursively bisects the longest axis
+of the point set's bounding box until each cluster fits within a
+$5.0 \times 5.0 \times 5.0$\,m box.  An overlap margin of 1.1\,m is
+applied at each split to ensure that hull points near the bisection
+plane appear in \emph{both} child clusters, sealing potential gaps
+between adjacent convex sub-hulls.
+
+\subsubsection{Deduplication}
+Within each cluster, points are sorted lexicographically by
+$(x, y, z)$ and deduplicated with a tolerance of $10^{-4}$\,m.
+This eliminates the redundant vertices introduced by the subdivision
+of shared triangle edges.
+
+\subsubsection{Slice assembly}
+The clusters are flattened into a single \texttt{m\_hullCacheStatic}
+array, sorted by mesh index, group index, and cluster index.  A
+corresponding \texttt{HullGroupSlice} structure records the start index,
+point count, and per-frame AABB for each cluster.  Each slice also
+carries an \texttt{isDockClearZone} flag used for docking exclusion
+(Section~\ref{ssec:dock_exclusion}).
+
+\subsubsection{Touchdown point injection}
+After the mesh-derived hull cache is transformed to planet-local
+coordinates (\texttt{UpdateHullCacheP}), the vessel's touchdown vertices
+are appended as an additional slice.  This ensures that deployed landing
+gear - whose geometry is typically driven by animation rather than
+static mesh data - physically interacts with base and scatter
+colliders.
+
+\subsubsection{Animation support}
+When the vessel has active animations,
+\texttt{ApplyAnimationToHullCache()} replays every animation component's
+transform (rotation, translation, scale) onto the cached hull vertices
+before the planet-local transform.  This keeps the collision hull
+synchronised with visual animations such as gear deployment, cargo bay
+doors, and solar panel articulation.
+
+
+\subsection{Primary: GJK/EPA convex hull collision}
+\label{ssec:gjk_epa}
+
+\subsubsection{GJK intersection test}
+\label{ssec:gjk}
+The Gilbert-Johnson-Keerthi (GJK) algorithm~\cite{gjk1988} determines
+whether two convex point sets overlap by iteratively building a simplex
+in the \emph{Minkowski difference} $A \ominus B = \{\vec{a} - \vec{b}
+\mid \vec{a} \in A,\, \vec{b} \in B\}$.  Two shapes intersect if and
+only if the origin lies inside their Minkowski difference.
+
+\paragraph{Support function.}
+The core primitive is the \emph{support function}, which returns the
+point in a convex set farthest along a given direction:
+\begin{equation*}
+S_A(\vec{d}) = \arg\max_{\vec{a}\in A}\; \vec{a}\cdot\vec{d}
+\end{equation*}
+A Minkowski-difference support point is then
+\begin{equation*}
+S(\vec{d}) = S_A(\vec{d}) - S_B(-\vec{d})
+\end{equation*}
+The implementation stores both the difference point $\vec{p} = S(\vec{d})$
+and the original witness points $\vec{p}_A = S_A(\vec{d})$,
+$\vec{p}_B = S_B(-\vec{d})$ for later contact-point reconstruction
+in the EPA phase.
+
+\paragraph{Simplex evolution.}
+Starting from an initial support point, the algorithm iteratively
+adds new support points in the direction of the origin and evolves the
+simplex through four stages: point $\to$ line $\to$ triangle $\to$
+tetrahedron.  At each stage, the simplex is reduced to the
+lowest-dimensional face closest to the origin, and a new search
+direction is computed.
+
+\begin{itemize}
+\item If the tetrahedron encloses the origin, the shapes \emph{intersect}
+  and the simplex is passed to the EPA for depth computation.
+\item If a new support point does not pass the origin
+  ($S(\vec{d}) \cdot \vec{d} \le 0$), the shapes are \emph{separated}.
+\item The algorithm is capped at 64 iterations to prevent degenerate
+  infinite loops.
+\end{itemize}
+
+\subsubsection{EPA penetration depth}
+\label{ssec:epa}
+When GJK confirms intersection, the Expanding Polytope Algorithm
+determines the minimum penetration depth and contact normal.  Starting
+from the GJK simplex (a tetrahedron enclosing the origin), the EPA
+maintains a convex polytope whose faces are tracked as a list of
+triangular facets.
+
+\begin{enumerate}
+\item The closest face to the origin is identified.  Its outward
+  normal $\hat{\vec{n}}$ and signed distance
+  $d = \hat{\vec{n}} \cdot \vec{p}_{\mathrm{face}}$ define the
+  candidate penetration vector.
+\item A new Minkowski support point is obtained along $\hat{\vec{n}}$.
+\item If the new support point does not extend the polytope beyond
+  the closest face by more than 0.01\,m (convergence threshold), the
+  penetration depth $d$ and normal $\hat{\vec{n}}$ are final.
+\item Otherwise, all faces visible from the new support point are
+  removed, their horizon edges are identified, and new faces are
+  constructed from the horizon edges to the support point.
+\item The process repeats for up to 64 iterations.
+\end{enumerate}
+
+\paragraph{Contact point reconstruction.}
+The contact point on shape~$A$ is computed via barycentric interpolation
+of the witness points ($\vec{p}_A$) stored in the three vertices of the
+closest polytope face:
+\begin{equation*}
+\vec{c}_A = u\,\vec{p}_{A,0} + v\,\vec{p}_{A,1} + w\,\vec{p}_{A,2}
+\end{equation*}
+where $(u, v, w)$ are the barycentric coordinates of the origin's
+projection onto the closest face.  This point is initially in
+planet-local space and is subsequently transformed to vessel-local
+coordinates for impulse computation.
+
+
+\subsubsection{Convex-Convex collision path}
+When both vessels are convex colliders, the algorithm proceeds as follows:
+
+\begin{enumerate}
+\item Both vessels' hull caches are transformed to planet-local space.
+\item For every pair of hull slices $(s_A, s_B)$ from the two vessels,
+  an AABB overlap test is performed.  Non-overlapping pairs are skipped.
+\item If a docking approach is detected
+  (Section~\ref{ssec:dock_exclusion}), slices marked as dock clear
+  zones are excluded.
+\item Each overlapping pair is tested with \texttt{GJK\_Intersect}.
+  On intersection, \texttt{EPA\_Penetration} computes the depth, normal,
+  and contact point.
+\item The deepest penetration across all slice pairs is recorded as the
+  collision result.
+\end{enumerate}
+
+
+\subsubsection{Convex-Concave collision path}
+\label{ssec:convex_concave}
+When exactly one vessel is a convex collider, the concave vessel's raw
+triangle mesh is used directly.  For each triangle in every mesh group
+of the concave vessel:
+
+\begin{enumerate}
+\item The triangle's three vertices are transformed to planet-local
+  space via the concave vessel's rotation matrix and position offset.
+\item The triangle's AABB is checked against the convex vessel's global
+  hull AABB; non-overlapping triangles are skipped.
+\item For each hull slice of the convex vessel, a per-slice AABB check
+  is performed.
+\item On overlap, GJK tests the convex hull slice against the three
+  triangle vertices (treated as a degenerate convex shape).  On
+  intersection, EPA computes the penetration depth and contact point.
+\item Docking exclusion zones are respected: if a docking approach is
+  active and the convex vessel's slice is a dock clear zone, triangles
+  near the concave vessel's dock ports (within 3\,m) are skipped.
+\end{enumerate}
+
+The deepest penetration across all triangle-slice pairs is recorded.
+The collision normal is oriented consistently from vessel~$B$ toward
+vessel~$A$ regardless of which vessel is convex.
+
+
+\subsection{Fallback: Point-to-triangle intersection (concave-concave)}
+\label{ssec:narrowphase_legacy}
+When both vessels have \texttt{bIsConvexCollider = false}, the system
+falls back to a direct point-to-triangle test using the same hull point
+cloud (Section~\ref{ssec:hullcloud}) but without convex wrapping.
+This path is symmetric: hull points of $A$ are tested against meshes
+of~$B$, and vice versa.
+
+\subsubsection{Coordinate transformation}
+The cached hull vertices from vessel~$A$ are transformed into the local
+mesh space of vessel~$B$ using the composite rotation matrix
+$\mat{R} = \mat{R}_{\mathrm{planet}}^{-1}\,\mat{R}_{\mathrm{vessel}}$.
+The inverse transformation is also applied (hull of $B$ tested against
+meshes of~$A$) for symmetric detection.
+
+\subsubsection{AABB culling}
+Before any per-triangle test, an Axis-Aligned Bounding Box (AABB) overlap
+check is performed at two levels:
+
+\begin{enumerate}
+\item \textbf{Mesh group AABB.} The AABB of each mesh group in the target
+      vessel is compared against the AABB of the incoming hull point cloud.
+      Non-overlapping groups are skipped entirely.
+\item \textbf{Per-triangle AABB.} Each triangle's bounding box is tested
+against individual hull points. A small tolerance of 0.1\,m is added
+to both AABBs to account for numerical precision loss in the 
+coordinate transformations between vessel-local and mesh-local spaces.
+Without this tolerance, edge-case contacts (vertices exactly on AABB
+faces etc.) would be incorrectly culled due to floating-point rounding.
+\end{enumerate}
+
+\subsubsection{Point-in-triangle test via barycentric coordinates}
+\label{sssec:barycentric}
+For each triangle with vertices $\vec{p}_0$, $\vec{p}_1$, $\vec{p}_2$
+and a candidate hull point $\vec{q}$, define the edge vectors
+\begin{equation*}
+\vec{e}_1 = \vec{p}_1 - \vec{p}_0, \qquad
+\vec{e}_2 = \vec{p}_2 - \vec{p}_0
+\end{equation*}
+and the triangle face normal
+\begin{equation*}
+\hat{\vec{n}} = \frac{\vec{e}_1 \times \vec{e}_2}{|\vec{e}_1 \times \vec{e}_2|}
+\end{equation*}
+The signed distance from the point to the triangle plane is
+\begin{equation}
+d = (\vec{q} - \vec{p}_0) \cdot \hat{\vec{n}}
+\label{eq:signed_dist}
+\end{equation}
+The signed distance determines the detection path:
+\begin{itemize}
+\item $d \in [-2.0,\, 0.05]$\,m: the point is within the contact window
+  and proceeds to the barycentric test.
+\item $d > 0.05$\,m: the point is beyond the triangle surface.  If the
+  relative velocity is approaching ($\vec{v}_{\mathrm{rel}} \cdot
+  \hat{\vec{n}} < -0.01$), the point may have tunneled through during
+  this frame, and a CCD ray-triangle sweep test is performed
+  (Section~\ref{sssec:ccd}).
+\item $d < -2.0$\,m: the point is too deep to be a valid contact event
+  and is rejected.
+\end{itemize}
+
+The barycentric coordinates $(u, v, w)$ of the projected point are computed
+via the Gram matrix of the edge vectors:
+\begin{equation}
+\begin{aligned}
+d_{00} &= \vec{e}_1 \cdot \vec{e}_1, \quad
+d_{01} = \vec{e}_1 \cdot \vec{e}_2, \quad
+d_{11} = \vec{e}_2 \cdot \vec{e}_2 \\[4pt]
+d_{20} &= (\vec{q} - \vec{p}_0) \cdot \vec{e}_1, \quad
+d_{21} = (\vec{q} - \vec{p}_0) \cdot \vec{e}_2 \\[4pt]
+D &= d_{00}\,d_{11} - d_{01}^{\,2}
+\end{aligned}
+\label{eq:gram}
+\end{equation}
+The barycentric weights are then
+\begin{equation}
+v = \frac{d_{11}\,d_{20} - d_{01}\,d_{21}}{D}, \qquad
+w = \frac{d_{00}\,d_{21} - d_{01}\,d_{20}}{D}, \qquad
+u = 1 - v - w
+\label{eq:bary}
+\end{equation}
+A hit is registered when $u \ge -0.05$, $v \ge -0.05$, $w \ge -0.05$.
+The small negative tolerance ($-0.05 \approx 5$\% of triangle edge length for
+typical meshes) accommodates floating-point imprecision and slight
+coordinate misalignment from the dual-direction testing.
+The system tracks the deepest penetration depth $-d$ across all tested
+point-triangle pairs and records the corresponding surface normal and
+contact location.
+
+
+\subsubsection{Continuous collision detection (CCD) via ray sweep}
+\label{sssec:ccd}
+When a hull point's signed distance $d > 0.05$\,m, it has passed beyond
+the triangle surface.  For thin geometry (e.g.\ wing cross-sections), this
+can occur when a hull point tunnels completely through a surface between
+frames.  To detect such through-penetrations, a M\"oller-Trumbore
+ray-triangle intersection test~\cite{moller1997} is performed along the
+hull point's swept path.
+
+The ray is defined as:
+\begin{equation*}
+\vec{O} = \vec{q} - \vec{v}_{\mathrm{rel}}^{\,\mathrm{local}} \cdot \Delta t, \qquad
+\vec{D} = \vec{v}_{\mathrm{rel}}^{\,\mathrm{local}} \cdot \Delta t
+\end{equation*}
+where $\vec{O}$ is the hull point's estimated start-of-frame position in
+mesh-local space, and $\vec{D}$ is the displacement during the frame.
+The test is only performed when the velocity is approaching the surface
+($v_{\hat{n}} = \vec{v}_{\mathrm{rel}} \cdot \hat{\vec{n}} < -0.01$).
+
+The M\"oller-Trumbore algorithm computes:
+\begin{equation*}
+\vec{h} = \vec{D} \times \vec{e}_2, \quad
+a = \vec{e}_1 \cdot \vec{h}
+\end{equation*}
+If $|a| < 10^{-8}$ the ray is parallel to the triangle and no intersection
+is possible.  Otherwise the barycentric coordinates and parametric distance
+are:
+\begin{equation*}
+f = 1/a, \quad
+\vec{s} = \vec{O} - \vec{p}_0, \quad
+u_r = f\,(\vec{s} \cdot \vec{h})
+\end{equation*}
+\begin{equation*}
+\vec{q}_r = \vec{s} \times \vec{e}_1, \quad
+v_r = f\,(\vec{D} \cdot \vec{q}_r), \quad
+t_r = f\,(\vec{e}_2 \cdot \vec{q}_r)
+\end{equation*}
+A through-penetration is confirmed when $u_r \in [-0.05, 1.05]$,
+$v_r \in [-0.05, 1.05]$, $u_r + v_r \le 1.10$, and $t_r \in [0, 1]$.
+The barycentric tolerances match those used in the static test;
+the parametric range $t_r \in [0,1]$ ensures the intersection occurred
+during the current frame.
+
+
+\subsection{Docking exclusion zones}
+\label{ssec:dock_exclusion}
+When two vessels are on a docking approach, collision detection must be
+suppressed near the docking ports to allow the docking mechanism to
+engage without triggering a collision response.
+
+\subsubsection{Docking approach detection}
+A docking approach is declared when any pair of dock ports
+$(i \in A,\; j \in B)$ satisfies both:
+\begin{itemize}
+\item \textbf{Proximity}: $|\vec{p}_{d,A}^i - \vec{p}_{d,B}^j| < 5.0$\,m,
+  where $\vec{p}_{d}$ is the dock port's reference position in global
+  coordinates.
+\item \textbf{Alignment}: $\vec{d}_{A}^i \cdot \vec{d}_{B}^j < -0.8$,
+  where $\vec{d}$ is the dock port's approach direction.  A dot product
+  below $-0.8$ indicates the ports face each other within $\sim\!37°$.
+\end{itemize}
+
+\subsubsection{Exclusion mechanisms}
+When a docking approach is active, two exclusion mechanisms apply:
+
+\begin{enumerate}
+\item \textbf{Hull slice exclusion (convex paths).}
+  Each \texttt{HullGroupSlice} carries an \texttt{isDockClearZone} flag.
+  During a docking approach, slices marked as dock clear zones are
+  skipped entirely in the convex-convex path.  In the convex-concave
+  path, clear-zone slices are skipped for triangles whose vertices are
+  within 3\,m of any dock port on the concave vessel.
+
+\item \textbf{Per-point exclusion (concave fallback path).}
+  In the point-to-triangle fallback, each hull point is transformed to
+  planet-local space and checked against all dock port positions of the
+  opposing vessel.  Points within 2\,m of any dock port are excluded
+  from collision testing.
+\end{enumerate}
+
+
+\subsection{Collision response - rigid-body impulse solver}
+\label{ssec:response}
+
+\subsubsection{Contact velocity}
+Once the deepest penetration point and surface normal $\hat{\vec{n}}$
+are known, the contact-point velocity for each vessel is computed
+including both linear and angular contributions:
+\begin{equation}
+\vec{v}_A^c = \vec{v}_A + \vec{r}_A \times \vec{\omega}_A, \qquad
+\vec{v}_B^c = \vec{v}_B + \vec{r}_B \times \vec{\omega}_B
+\label{eq:contact_vel}
+\end{equation}
+where $\vec{r}_A$ and $\vec{r}_B$ are the moment arms from each vessel's
+centre of mass to the contact point.  Note that Orbiter uses a
+left-handed coordinate convention where $\vec{v} = \vec{r} \times
+\vec{\omega}$, which is reflected in the cross product ordering
+throughout the impulse computation.
+
+The relative contact velocity is
+\begin{equation*}
+\vec{v}_{\mathrm{rel}}^c = \vec{v}_A^c - \vec{v}_B^c
+\end{equation*}
+and the component along the collision normal is
+\begin{equation*}
+v_n = \vec{v}_{\mathrm{rel}}^c \cdot \hat{\vec{n}}
+\end{equation*}
+If $v_n > 0$ the bodies are already separating and no impulse is applied.
+If $|v_n| > 500\,\text{m/s}$ a hypervelocity impact is declared and
+both vessels are destroyed.
+
+\subsubsection{Normal impulse magnitude}
+The impulse magnitude $j$ along the collision normal is computed as
+\begin{equation}
+j = \frac{-(1+e)\,v_n}
+     {\dfrac{1}{m_A} + \dfrac{1}{m_B}
+      + \bigl[(\mat{I}_A^{-1}(\hat{\vec{n}} \times \vec{r}_A)) \times \vec{r}_A
+        + (\mat{I}_B^{-1}(\hat{\vec{n}} \times \vec{r}_B)) \times \vec{r}_B\bigr]
+        \cdot \hat{\vec{n}}}
+\label{eq:impulse}
+\end{equation}
+where $e$ is the coefficient of restitution, $m_A$, $m_B$ are the vessel
+masses, and $\mat{I}_A^{-1}$, $\mat{I}_B^{-1}$ are the inverse inertia
+tensors expressed in the global frame.
+
+For vessel-to-vessel collisions, $e = 1.0$ (perfectly elastic restitution).
+Energy dissipation in vessel-to-vessel interactions is provided by
+tangential friction (Section~\ref{sssec:friction}), angular damping
+(Section~\ref{sssec:angdamp}), and the angular velocity cap
+(Section~\ref{sssec:omegacap}) rather than through the restitution
+coefficient.
+
+The denominator in Eq.~\ref{eq:impulse} can be decomposed for clarity.
+Define the \emph{angular effect} term:
+\begin{equation}
+\alpha = \bigl[(\mat{I}_A^{-1}\,\vec{c}_A) \times \vec{r}_A
+         + (\mat{I}_B^{-1}\,\vec{c}_B) \times \vec{r}_B\bigr]
+         \cdot \hat{\vec{n}}
+\label{eq:angular_effect}
+\end{equation}
+where $\vec{c}_A = \hat{\vec{n}} \times \vec{r}_A$ and
+$\vec{c}_B = \hat{\vec{n}} \times \vec{r}_B$.
+Then Eq.~\ref{eq:impulse} simplifies to
+\begin{equation}
+j = \frac{-(1+e)\,v_n}{\dfrac{1}{m_A} + \dfrac{1}{m_B} + \alpha}
+\label{eq:impulse_simple}
+\end{equation}
+
+The measured penetration depth is clamped to a maximum of 2.0\,m before
+being used for positional correction, to prevent catastrophic
+overcorrection when large interpenetrations occur due to low framerates or
+high-speed impacts.
+
+\subsubsection{Applying the normal impulse}
+The velocity and angular velocity changes are
+\begin{equation}
+\begin{aligned}
+\Delta\vec{v}_A &= +\frac{j\,\hat{\vec{n}}}{m_A}, &\qquad
+\Delta\vec{v}_B &= -\frac{j\,\hat{\vec{n}}}{m_B} \\[4pt]
+\Delta\vec{\omega}_A &= +\mat{I}_A^{-1}\,\vec{c}_A\;j, &\qquad
+\Delta\vec{\omega}_B &= -\mat{I}_B^{-1}\,\vec{c}_B\;j
+\end{aligned}
+\label{eq:apply_impulse}
+\end{equation}
+
+\subsubsection{Tangential friction}
+\label{sssec:friction}
+The tangential component of the relative contact velocity is
+\begin{equation*}
+\vec{v}_t = \vec{v}_{\mathrm{rel}}^c - v_n\,\hat{\vec{n}}
+\end{equation*}
+A friction impulse is computed using the same impulse denominator structure
+as the normal case but along the tangent direction
+$\hat{\vec{t}} = \vec{v}_t / |\vec{v}_t|$:
+\begin{equation}
+j_t = \min\!\bigl(|\vec{v}_t|\,m_{\mathrm{eff}}^t,\;\mu\,j\bigr)
+\label{eq:friction}
+\end{equation}
+where $\mu$ is the Coulomb friction coefficient (0.6 for vessel-to-vessel)
+and $m_{\mathrm{eff}}^t$ is the effective mass in the tangential direction,
+computed analogously to the normal case.
+The friction impulse is capped by $\mu\,j$ (Coulomb's law) to prevent
+the tangential correction from reversing the sliding direction.
+
+For vessel-to-base collisions, wheel brakes are modelled by scaling $\mu$
+from a base value of 0.8 up to 2.8 at full brake application:
+\begin{equation*}
+\mu = 0.8 + 2.0\,b
+\end{equation*}
+where $b \in [0,1]$ is the average of left and right wheel brake levels.
+
+\subsubsection{Angular damping (vessel-to-vessel)}
+\label{sssec:angdamp}
+For vessel-to-vessel collisions, angular damping is applied only during
+sustained/resting contact (closing speed $< 0.5\,\text{m/s}$), and only
+damps the spin component around the contact normal to avoid killing
+legitimate tumble from oblique impacts:
+\begin{equation*}
+\omega_{\mathrm{damp}} = (\vec{\omega}_{\mathrm{rel}} \cdot \hat{\vec{n}}) \cdot \hat{\vec{n}} \cdot \min(0.3, 3\,\Delta t)
+\end{equation*}
+This is subtracted from vessel~$A$'s angular velocity and added to vessel~$B$'s,
+equalising only the ``rolling'' spin around the contact normal.
+
+\subsubsection{Angular velocity cap}
+\label{sssec:omegacap}
+To prevent numerical explosions where single-point contact generates
+unbounded angular acceleration, the angular velocity gain from any single
+collision is capped:
+\begin{equation*}
+|\vec{\omega}_{\mathrm{post}}| \le |\vec{\omega}_{\mathrm{pre}}| + \omega_{\max}
+\end{equation*}
+where $\omega_{\max} = 10.0\,\text{rad/s}$.  If the post-impulse angular
+velocity magnitude would exceed this limit, the angular velocity change
+$\Delta\vec{\omega}$ is rescaled to exactly reach the cap while preserving
+its direction.  This flat cap is intentionally generous to permit
+legitimate angular momentum transfer from oblique impacts while guarding
+against pure numerical instabilities.
+
+\subsubsection{Positional correction}
+After all impulses are applied, a direct positional correction
+pushes the interpenetrating bodies apart:
+\begin{equation}
+\begin{aligned}
+\Delta\vec{p}_A &= +\hat{\vec{n}}\,(d_{\mathrm{pen}} \cdot 1.01 + \delta_v) \cdot
+                    \frac{m_B}{m_A + m_B} \\[4pt]
+\Delta\vec{p}_B &= -\hat{\vec{n}}\,(d_{\mathrm{pen}} \cdot 1.01 + \delta_v) \cdot
+                    \frac{m_A}{m_A + m_B}
+\end{aligned}
+\label{eq:pos_correction}
+\end{equation}
+where $d_{\mathrm{pen}}$ is the measured penetration depth and
+$\delta_v = \min(v_{\mathrm{close}}\,\Delta t / 2,\; d_{\mathrm{pen}} / 2)$
+is a velocity-proportional margin clamped to half the penetration depth
+to prevent overshoot at low framerates.
+The 1\% over-correction ($\times 1.01$) prevents persistent
+frame-to-frame interpenetration in resting contact scenarios.
+
+
+\subsection{Vessel-to-base collisions}
+\label{ssec:vessel_base}
+Vessel-to-base collisions follow the same point-to-triangle
+algorithm described in Section~\ref{ssec:narrowphase_legacy}, using the
+vessel's hull point cloud tested against base structure meshes.
+The base is treated as an immovable object, so the impulse solver
+simplifies: $m_B \to \infty$ and $\mat{I}_B^{-1} = \mat{0}$.
+The normal impulse reduces to
+\begin{equation*}
+j_n = -(1 + e)\,v_n
+\end{equation*}
+with $e = 0.1$ for impacts exceeding 0.5\,m/s and $e = 0$ for softer
+contacts to prevent resting-state jitter.
+
+Angular damping is applied when a vessel is nearly at rest on a surface
+($|v_n| < 0.5\,\text{m/s}$ and $d_{\mathrm{pen}} > 0.005\,\text{m}$):
+the angular velocity relative to the planet's surface rotation is reduced
+by 20\% per frame. This compensates for the single-contact-point
+approximation and prevents tipping oscillations.
+The 0.5\,m/s velocity threshold distinguishes ""resting" from "impacting"
+states, as below this speed, contacts are treated as static friction
+scenarios requiring stabilization; above it, normal restitution physics
+apply. The 0.005\,m penetration requirement ensures damping only activates
+when meaningful surface contact exists, preventing false activation during
+grazing trajectories. The 20\% damping rate balances fast convergence to
+rest (achieved in $\sim$10 frames) versus smooth, artifact-free motion
+during slow rolling.
+
+
+\subsection{Base configuration - the COLLISION marker}
+\label{ssec:cfg_collision}
+Base configuration files (\texttt{.cfg}) can optionally flag individual
+mesh entries for collision detection using the \texttt{COLLISION} keyword.
+If a mesh block does not contain this marker, no collision check is
+performed against it (preserving legacy behaviour).
+
+\begin{lstlisting}[language=OSFS]
+HANGAR
+  POS 0 0 0
+  ROT 90
+  SCALE 12 8 244
+  TEX1 concrete1 0.4 0.4
+  TEX3 concrete1 0.5 8
+  COLLISION
+END
+\end{lstlisting}
+
+The \texttt{COLLISION} keyword can appear anywhere within the mesh block
+between its header and the closing \texttt{END} statement.
+Multiple mesh entries in the same base configuration may independently
+use or omit the marker.
+
+
+\subsection{Diagnostic logging}
+\label{ssec:debug}
+The collision system includes a compile-time diagnostic mode activated
+by defining \texttt{VESSEL\_COLLISION\_DEBUG} before compiling
+\texttt{Vessel.cpp}.
+When enabled, each vessel-to-vessel collision event writes detailed
+diagnostic data to the Orbiter log file, including:
+\begin{itemize}
+\item Collision normal, penetration depth, and coefficient of restitution
+\item Contact-point lever arms for both vessels
+\item Impulse magnitude, effective masses, and angular effect terms
+\item Pre- and post-impulse kinetic energy (linear + rotational)
+\item Pre- and post-impulse momentum vectors
+\item Energy gain/loss percentage and momentum conservation error
+\item Friction impulse parameters (tangential velocity, friction coefficient)
+\item Position correction magnitude and velocity margin
+\end{itemize}
+A \texttt{WARNING: ENERGY GAIN} message is emitted whenever the
+post-impulse kinetic energy exceeds the pre-impulse value, indicating
+a potential physics violation for further investigation.
+
+\end{document}

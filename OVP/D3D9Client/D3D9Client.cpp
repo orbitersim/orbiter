@@ -19,6 +19,12 @@
 #include "D3D9Surface.h"
 #include "D3D9TextMgr.h"
 #include "D3D9Frame.h"
+#include "D3D9Effect.h"
+#include "Mesh.h"
+#include "Scene.h"
+#include "CelSphere.h"
+#include "VPlanet.h"
+#include "Scatterer.h"
 #include "D3D9Pad.h"
 #include "CSphereMgr.h"
 #include "Scene.h"
@@ -2726,6 +2732,8 @@ bool D3D9Client::clbkFilterElevation(OBJHANDLE hPlanet, int ilat, int ilng, int 
 	_TRACE;
 	return FilterElevationPhysics(hPlanet, lvl, ilat, ilng, elev_res, elev);
 }
+
+
 void D3D9Client::clbkImGuiNewFrame()
 {
 	_TRACE;

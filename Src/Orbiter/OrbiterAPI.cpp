@@ -2659,3 +2659,42 @@ DLLEXPORT void sscan_state (char *str, AnimState &s)
 	s.action = (AnimState::Action)(a+1);
 	s.pos = p;
 }
+
+// ======================================================================
+// Rock Scatter API
+// ======================================================================
+
+#include "Planet.h"
+#include "Scatterer.h"
+
+DLLEXPORT const ScattererCfg* oapiGetScattererCfg(OBJHANDLE hPlanet) {
+	if (!hPlanet) return NULL;
+	Body *b = (Body*)hPlanet;
+	if (b->Type() != OBJTP_PLANET) return NULL;
+	Planet *p = (Planet*)hPlanet;
+	Scatterer *rs = p->GetScatterer();
+	if (!rs) return NULL;
+	return &rs->GetConfig();
+}
+
+DLLEXPORT const ScatterInstance* oapiGetScatterTiles(OBJHANDLE hPlanet, int lvl, int ilat, int ilng, int* nScatter) {
+	if (!hPlanet || !nScatter) { if (nScatter) *nScatter = 0; return NULL; }
+	Body *b = (Body*)hPlanet;
+	if (b->Type() != OBJTP_PLANET) { *nScatter = 0; return NULL; }
+	Planet *p = (Planet*)hPlanet;
+	Scatterer *rs = p->GetScatterer();
+	if (!rs) { *nScatter = 0; return NULL; }
+	const auto &rocks = rs->GetScatterForTile(lvl, ilat, ilng);
+	*nScatter = (int)rocks.size();
+	return rocks.empty() ? NULL : rocks.data();
+}
+
+DLLEXPORT double oapiGetScatterElevationModifier(OBJHANDLE hPlanet, double lng, double lat) {
+	if (!hPlanet) return 0.0;
+	Body *b = (Body*)hPlanet;
+	if (b->Type() != OBJTP_PLANET) return 0.0;
+	Planet *p = (Planet*)hPlanet;
+	Scatterer *rs = p->GetScatterer();
+	if (!rs) return 0.0;
+	return rs->GetElevationModifier(lng, lat);
+}

@@ -475,6 +475,17 @@ void OptionsPage_Visual::UpdateControls(HWND hPage)
 	sprintf(cbuf, "%d", Cfg()->CfgVisualPrm.AmbientLevel);
 	SetWindowText(GetDlgItem(hPage, IDC_OPT_VIS_AMBIENT), cbuf);
 
+	SendDlgItemMessage(hPage, IDC_OPT_VIS_SURFACESCATTER, BM_SETCHECK,
+		Cfg()->CfgVisualPrm.bSurfaceScatter ? BST_CHECKED : BST_UNCHECKED, 0);
+	SendDlgItemMessage(hPage, IDC_OPT_VIS_SCATTERDENSITY, TBM_SETPOS, TRUE,
+		(LPARAM)(int)(Cfg()->CfgVisualPrm.fScatterDensityMult * 100.0f));
+	sprintf(cbuf, "%d", (int)(Cfg()->CfgVisualPrm.fScatterDensityMult * 100.0f));
+	SetWindowText(GetDlgItem(hPage, IDC_OPT_VIS_SCATTERDENSITY_TXT), cbuf);
+	SendDlgItemMessage(hPage, IDC_OPT_VIS_SCATTERDIST, TBM_SETPOS, TRUE,
+		(LPARAM)(int)Cfg()->CfgVisualPrm.fScatterMaxDist);
+	sprintf(cbuf, "%d", (int)Cfg()->CfgVisualPrm.fScatterMaxDist);
+	SetWindowText(GetDlgItem(hPage, IDC_OPT_VIS_SCATTERDIST_TXT), cbuf);
+
 	VisualsChanged(hPage);
 }
 
@@ -510,6 +521,10 @@ void OptionsPage_Visual::UpdateConfig(HWND hPage)
 	GetWindowText(GetDlgItem(hPage, IDC_OPT_VIS_AMBIENT), cbuf, 255);
 	if (!sscanf(cbuf, "%lu", &i)) i = 15; else if (i > 255) i = 255;
 	Cfg()->SetAmbientLevel(i);
+
+	Cfg()->CfgVisualPrm.bSurfaceScatter = (SendDlgItemMessage(hPage, IDC_OPT_VIS_SURFACESCATTER, BM_GETCHECK, 0, 0) == BST_CHECKED);
+	Cfg()->CfgVisualPrm.fScatterDensityMult = (float)SendDlgItemMessage(hPage, IDC_OPT_VIS_SCATTERDENSITY, TBM_GETPOS, 0, 0) / 100.0f;
+	Cfg()->CfgVisualPrm.fScatterMaxDist = (float)SendDlgItemMessage(hPage, IDC_OPT_VIS_SCATTERDIST, TBM_GETPOS, 0, 0);
 }
 
 // ----------------------------------------------------------------------
@@ -520,6 +535,17 @@ BOOL OptionsPage_Visual::OnInitDialog(HWND hPage, WPARAM wParam, LPARAM lParam)
 	SendDlgItemMessage(hPage, IDC_OPT_VIS_ELEVMODE, CB_RESETCONTENT, 0, 0);
 	SendDlgItemMessage(hPage, IDC_OPT_VIS_ELEVMODE, CB_ADDSTRING, 0, (LPARAM)"linear interpolation");
 	SendDlgItemMessage(hPage, IDC_OPT_VIS_ELEVMODE, CB_ADDSTRING, 0, (LPARAM)"cubic interpolation");
+
+	// Rock density multiplier trackbar: 5% to 100%
+	SendDlgItemMessage(hPage, IDC_OPT_VIS_SCATTERDENSITY, TBM_SETRANGEMIN, FALSE, 5);
+	SendDlgItemMessage(hPage, IDC_OPT_VIS_SCATTERDENSITY, TBM_SETRANGEMAX, FALSE, 100);
+	SendDlgItemMessage(hPage, IDC_OPT_VIS_SCATTERDENSITY, TBM_SETTICFREQ, 25, 0);
+
+	// Render distance trackbar: 10m to 20000m
+	SendDlgItemMessage(hPage, IDC_OPT_VIS_SCATTERDIST, TBM_SETRANGEMIN, FALSE, 10);
+	SendDlgItemMessage(hPage, IDC_OPT_VIS_SCATTERDIST, TBM_SETRANGEMAX, FALSE, 20000);
+	SendDlgItemMessage(hPage, IDC_OPT_VIS_SCATTERDIST, TBM_SETTICFREQ, 2000, 0);
+
 	return TRUE;
 }
 
@@ -689,20 +715,85 @@ BOOL OptionsPage_Visual::OnCommand(HWND hPage, WORD ctrlId, WORD notification, H
 				return FALSE;
 			}
 			break;
+		case IDC_OPT_VIS_SURFACESCATTER:
+			if (notification == BN_CLICKED)
+			{
+				bool check = (SendDlgItemMessage( hPage, IDC_OPT_VIS_SURFACESCATTER, BM_GETCHECK, 0, 0 ) == BST_CHECKED);
+				Cfg()->CfgVisualPrm.bSurfaceScatter = check;
+				VisualsChanged( hPage );
+				return FALSE;
+			}
+			break;
+		case IDC_OPT_VIS_SCATTERDENSITY_TXT:
+			if (notification == EN_CHANGE)
+			{
+				char cbuf[16];
+				int val;
+				GetWindowText(GetDlgItem(hPage, IDC_OPT_VIS_SCATTERDENSITY_TXT), cbuf, 16);
+				if (sscanf(cbuf, "%d", &val) == 1) {
+					if (val < 5) val = 5;
+					if (val > 100) val = 100;
+					Cfg()->CfgVisualPrm.fScatterDensityMult = (float)val / 100.0f;
+					SendDlgItemMessage(hPage, IDC_OPT_VIS_SCATTERDENSITY, TBM_SETPOS, TRUE, (LPARAM)val);
+				}
+				return FALSE;
+			}
+			break;
+		case IDC_OPT_VIS_SCATTERDIST_TXT:
+			if (notification == EN_CHANGE)
+			{
+				char cbuf[16];
+				int val;
+				GetWindowText(GetDlgItem(hPage, IDC_OPT_VIS_SCATTERDIST_TXT), cbuf, 16);
+				if (sscanf(cbuf, "%d", &val) == 1) {
+					if (val < 10) val = 10;
+					if (val > 20000) val = 20000;
+					Cfg()->CfgVisualPrm.fScatterMaxDist = (float)val;
+					SendDlgItemMessage(hPage, IDC_OPT_VIS_SCATTERDIST, TBM_SETPOS, TRUE, (LPARAM)val);
+				}
+				return FALSE;
+			}
+			break;
+
 	}
 	return TRUE;
 }
 
 //-----------------------------------------------------------------------------
 
+BOOL OptionsPage_Visual::OnHScroll(HWND hPage, WPARAM wParam, LPARAM lParam)
+{
+	char cbuf[32];
+	if ((HWND)lParam == GetDlgItem(hPage, IDC_OPT_VIS_SCATTERDENSITY)) {
+		int pos = (int)SendDlgItemMessage(hPage, IDC_OPT_VIS_SCATTERDENSITY, TBM_GETPOS, 0, 0);
+		Cfg()->CfgVisualPrm.fScatterDensityMult = (float)pos / 100.0f;
+		sprintf(cbuf, "%d", pos);
+		SetWindowText(GetDlgItem(hPage, IDC_OPT_VIS_SCATTERDENSITY_TXT), cbuf);
+		return FALSE;
+	}
+	if ((HWND)lParam == GetDlgItem(hPage, IDC_OPT_VIS_SCATTERDIST)) {
+		int pos = (int)SendDlgItemMessage(hPage, IDC_OPT_VIS_SCATTERDIST, TBM_GETPOS, 0, 0);
+		Cfg()->CfgVisualPrm.fScatterMaxDist = (float)pos;
+		sprintf(cbuf, "%d", pos);
+		SetWindowText(GetDlgItem(hPage, IDC_OPT_VIS_SCATTERDIST_TXT), cbuf);
+		return FALSE;
+	}
+	return FALSE;
+}
+
 void OptionsPage_Visual::VisualsChanged(HWND hPage)
 {
+	BOOL bScatterEnabled = (SendDlgItemMessage(hPage, IDC_OPT_VIS_SURFACESCATTER, BM_GETCHECK, 0, 0) == BST_CHECKED);
 	EnableWindow(GetDlgItem(hPage, IDC_OPT_VIS_CSHADOW),
 		SendDlgItemMessage(hPage, IDC_OPT_VIS_CLOUD, BM_GETCHECK, 0, 0) == BST_CHECKED);
 	EnableWindow(GetDlgItem(hPage, IDC_OPT_VIS_RIPPLE),
 		SendDlgItemMessage(hPage, IDC_OPT_VIS_REFWATER, BM_GETCHECK, 0, 0) == BST_CHECKED);
 	EnableWindow( GetDlgItem( hPage, IDC_OPT_VIS_ELEVMODE ), SendDlgItemMessage( hPage, IDC_OPT_VIS_ELEV, BM_GETCHECK, 0, 0 ) == BST_CHECKED );
 	EnableWindow( GetDlgItem( hPage, IDC_OPT_VIS_LTLEVEL ), SendDlgItemMessage( hPage, IDC_OPT_VIS_LIGHTS, BM_GETCHECK, 0, 0 ) == BST_CHECKED );
+	EnableWindow( GetDlgItem( hPage, IDC_OPT_VIS_SCATTERDENSITY ), bScatterEnabled );
+	EnableWindow( GetDlgItem( hPage, IDC_OPT_VIS_SCATTERDENSITY_TXT ), bScatterEnabled );
+	EnableWindow( GetDlgItem( hPage, IDC_OPT_VIS_SCATTERDIST ), bScatterEnabled );
+	EnableWindow( GetDlgItem( hPage, IDC_OPT_VIS_SCATTERDIST_TXT ), bScatterEnabled );
 	return;
 }
 
@@ -748,6 +839,12 @@ void OptionsPage_Physics::UpdateControls(HWND hPage)
 		Cfg()->CfgPhysicsPrm.bDistributedMass ? BST_CHECKED : BST_UNCHECKED, 0);
 	SendDlgItemMessage(hPage, IDC_OPT_PHYS_WIND, BM_SETCHECK,
 		Cfg()->CfgPhysicsPrm.bAtmWind ? BST_CHECKED : BST_UNCHECKED, 0);
+	SendDlgItemMessage(hPage, IDC_OPT_PHYS_BASECOLLISION, BM_SETCHECK,
+		Cfg()->CfgPhysicsPrm.bBaseCollision ? BST_CHECKED : BST_UNCHECKED, 0);
+	SendDlgItemMessage(hPage, IDC_OPT_PHYS_SCATTERCOLLISION, BM_SETCHECK,
+		Cfg()->CfgPhysicsPrm.bScatterCollision ? BST_CHECKED : BST_UNCHECKED, 0);
+	SendDlgItemMessage(hPage, IDC_OPT_PHYS_VESSELCOLLISION, BM_SETCHECK,
+		Cfg()->CfgPhysicsPrm.bVesselCollision ? BST_CHECKED : BST_UNCHECKED, 0);
 }
 
 // ----------------------------------------------------------------------
@@ -758,6 +855,9 @@ void OptionsPage_Physics::UpdateConfig(HWND hPage)
 	Cfg()->CfgPhysicsPrm.bNonsphericalGrav = (SendDlgItemMessage(hPage, IDC_OPT_PHYS_COMPLEXGRAV, BM_GETCHECK, 0, 0) == BST_CHECKED);
 	Cfg()->CfgPhysicsPrm.bRadiationPressure = (SendDlgItemMessage(hPage, IDC_OPT_PHYS_RPRESSURE, BM_GETCHECK, 0, 0) == BST_CHECKED);
 	Cfg()->CfgPhysicsPrm.bAtmWind = (SendDlgItemMessage(hPage, IDC_OPT_PHYS_WIND, BM_GETCHECK, 0, 0) == BST_CHECKED);
+	Cfg()->CfgPhysicsPrm.bBaseCollision = (SendDlgItemMessage(hPage, IDC_OPT_PHYS_BASECOLLISION, BM_GETCHECK, 0, 0) == BST_CHECKED);
+	Cfg()->CfgPhysicsPrm.bScatterCollision = (SendDlgItemMessage(hPage, IDC_OPT_PHYS_SCATTERCOLLISION, BM_GETCHECK, 0, 0) == BST_CHECKED);
+	Cfg()->CfgPhysicsPrm.bVesselCollision = (SendDlgItemMessage(hPage, IDC_OPT_PHYS_VESSELCOLLISION, BM_GETCHECK, 0, 0) == BST_CHECKED);
 }
 
 // ----------------------------------------------------------------------
@@ -803,6 +903,30 @@ BOOL OptionsPage_Physics::OnCommand( HWND hPage, WORD ctrlId, WORD notification,
 			{
 				bool check = (SendDlgItemMessage( hPage, IDC_OPT_PHYS_WIND, BM_GETCHECK, 0, 0 ) == BST_CHECKED);
 				Cfg()->CfgPhysicsPrm.bAtmWind = check;
+				return FALSE;
+			}
+			break;
+		case IDC_OPT_PHYS_BASECOLLISION:
+			if (notification == BN_CLICKED)
+			{
+				bool check = (SendDlgItemMessage( hPage, IDC_OPT_PHYS_BASECOLLISION, BM_GETCHECK, 0, 0 ) == BST_CHECKED);
+				Cfg()->CfgPhysicsPrm.bBaseCollision = check;
+				return FALSE;
+			}
+			break;
+		case IDC_OPT_PHYS_SCATTERCOLLISION:
+			if (notification == BN_CLICKED)
+			{
+				bool check = (SendDlgItemMessage( hPage, IDC_OPT_PHYS_SCATTERCOLLISION, BM_GETCHECK, 0, 0 ) == BST_CHECKED);
+				Cfg()->CfgPhysicsPrm.bScatterCollision = check;
+				return FALSE;
+			}
+			break;
+		case IDC_OPT_PHYS_VESSELCOLLISION:
+			if (notification == BN_CLICKED)
+			{
+				bool check = (SendDlgItemMessage(hPage, IDC_OPT_PHYS_VESSELCOLLISION, BM_GETCHECK, 0, 0) == BST_CHECKED);
+				Cfg()->CfgPhysicsPrm.bVesselCollision = check;
 				return FALSE;
 			}
 			break;

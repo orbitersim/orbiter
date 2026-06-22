@@ -88,10 +88,11 @@ Base::Base (char *fname, Planet *_planet, double _lng, double _lat)
 		}
 	}
 
-	genmsh_os = genmsh_us = 0;
+	genmsh_os = genmsh_us = genmsh_col = 0;
 	objmsh_os = objmsh_us = 0;
 	objmsh_sh = 0; sh_elev = 0;
-	nobjmsh_os = nobjmsh_us = nobjmsh_sh = 0;
+	objmsh_col = 0;
+	nobjmsh_os = nobjmsh_us = nobjmsh_sh = nobjmsh_col = 0;
 	objmsh_valid = false;
 
 	if (FindLine (ifs, "BEGIN_OBJECTLIST")) {
@@ -193,6 +194,7 @@ Base::~Base ()
 	if (objmsh_os) { delete []objmsh_os; objmsh_os = NULL; }
 	if (objmsh_us) { delete []objmsh_us; objmsh_us = NULL; }
 	if (objmsh_sh) { delete []objmsh_sh; objmsh_sh = NULL; }
+	if (objmsh_col) { delete []objmsh_col; objmsh_col = NULL; }
 	if (sh_elev) { delete []sh_elev; sh_elev = NULL; }
 }
 
@@ -405,6 +407,13 @@ void Base::ExportShadowGeometry (Mesh ***mesh_shadow, double **elev, DWORD *nmes
 	*nmesh_shadow = nobjmsh_sh;
 }
 
+void Base::ExportCollisionMeshes (Mesh ***mesh_col, DWORD *nmesh_col) const
+{
+	ScanObjectMeshes();
+	*mesh_col = objmsh_col;
+	*nmesh_col = nobjmsh_col;
+}
+
 void Base::ScanObjectMeshes () const
 {
 	if (objmsh_valid) return; // done already
@@ -412,9 +421,9 @@ void Base::ScanObjectMeshes () const
 	DWORD i, j, k, ng, spec, nvtx, nidx;
 	LONGLONG texid;
 	bool undersh, groundsh;
-	GroupSpec *grp_os = 0, *grp_us = 0; // mesh groups for the meshes compiled from generic primitives (over and under shadows)
-	DWORD ngrp_os = 0, ngrp_us = 0;
-	nobjmsh_os = nobjmsh_us = nobjmsh_sh = 0;
+	GroupSpec *grp_os = 0, *grp_us = 0, *grp_col = 0; // mesh groups for the meshes compiled from generic primitives (over and under shadows)
+	DWORD ngrp_os = 0, ngrp_us = 0, ngrp_col = 0;
+	nobjmsh_os = nobjmsh_us = nobjmsh_sh = nobjmsh_col = 0;
 	bool bshadow = g_pOrbiter->Cfg()->CfgVisualPrm.bShadows;
 
 	for (i = 0; i < nobj; i++) {
@@ -451,15 +460,46 @@ void Base::ScanObjectMeshes () const
 				}
 			}
 		}
+		if ((spec & OBJSPEC_COLLISION) && (spec & OBJSPEC_EXPORTVERTEX)) {
+			ng = bo->nGroup();
+			for (j = 0; j < ng; j++) {
+				if (bo->GetGroupSpec (j, nvtx, nidx, texid, undersh, groundsh)) {
+					DWORD texidx = GetGenericTextureIdx (texid);
+					for (k = 0; k < ngrp_col; k++) {
+						if (grp_col[k].TexIdx == texidx && (grp_col[k].UsrFlag & 0x1) != groundsh) {
+							grp_col[k].nVtx += nvtx;
+							grp_col[k].nIdx += nidx;
+							break;
+						}
+					}
+					if (k == ngrp_col) {
+						GroupSpec *tmp = new GroupSpec[ngrp_col+1]; TRACENEW
+						if (ngrp_col) {
+							memcpy (tmp, grp_col, ngrp_col*sizeof(GroupSpec));
+							delete []grp_col;
+						}
+						grp_col = tmp;
+						grp_col[ngrp_col].nVtx = nvtx;
+						grp_col[ngrp_col].nIdx = nidx;
+						grp_col[ngrp_col].TexIdx = texidx;
+						grp_col[ngrp_col].UsrFlag = (groundsh ? 0:1);
+						ngrp_col++;
+					}
+				}
+			}
+		}
 		if (spec & OBJSPEC_EXPORTMESH) {
 			if (spec & OBJSPEC_UNDERSHADOW) nobjmsh_us++;
 			else                            nobjmsh_os++;
 		}
+		if ((spec & OBJSPEC_COLLISION) && (spec & OBJSPEC_EXPORTMESH)) nobjmsh_col++;
 		if (bshadow && (spec & OBJSPEC_EXPORTSHADOWMESH)) nobjmsh_sh++;
 	}
-	for (i = 0; i < 2; i++) {
-		DWORD &ngrp = (i==0 ? ngrp_us : ngrp_os);
-		GroupSpec *&grp = (i==0 ? grp_us : grp_os);
+
+	for (i = 0; i < 3; i++) {
+		DWORD &ngrp = (i==0 ? ngrp_us : (i==1 ? ngrp_os : ngrp_col));
+		if (!ngrp) continue;
+		GroupSpec *&grp = (i==0 ? grp_us : (i==1 ? grp_os : grp_col));
 		for (j = 0; j < ngrp; j++) {
 			grp[j].Vtx = new NTVERTEX[grp[j].nVtx]; TRACENEW
 			grp[j].Idx = new WORD[grp[j].nIdx]; TRACENEW
@@ -469,9 +509,11 @@ void Base::ScanObjectMeshes () const
 	}
 	if (ngrp_os) nobjmsh_os++;
 	if (ngrp_us) nobjmsh_us++;
+	if (ngrp_col) nobjmsh_col++;
 	if (nobjmsh_os) { objmsh_os = new Mesh*[nobjmsh_os]; nobjmsh_os = 0; TRACENEW }
 	if (nobjmsh_us) { objmsh_us = new Mesh*[nobjmsh_us]; nobjmsh_us = 0; TRACENEW }
 	if (nobjmsh_sh) { objmsh_sh = new Mesh*[nobjmsh_sh]; sh_elev = new double[nobjmsh_sh]; nobjmsh_sh = 0; TRACENEW }
+	if (nobjmsh_col) { objmsh_col = new Mesh*[nobjmsh_col]; nobjmsh_col = 0; TRACENEW }
 
 	for (i = 0; i < nobj; i++) {
 		BaseObject *bo = obj[i];
@@ -491,9 +533,26 @@ void Base::ScanObjectMeshes () const
 				grp[k].nIdx += nidx;
 			}
 		}
+		if ((spec & OBJSPEC_COLLISION) && (spec & OBJSPEC_EXPORTVERTEX)) {
+			ng = bo->nGroup();
+			for (j = 0; j < ng; j++) {
+				bo->GetGroupSpec (j, nvtx, nidx, texid, undersh, groundsh);
+				DWORD texidx = GetGenericTextureIdx (texid);
+				for (k = 0; k < ngrp_col; k++) {
+					if (grp_col[k].TexIdx == texidx && (grp_col[k].UsrFlag & 0x1) != groundsh) break;
+				}
+				bo->ExportGroup (j, grp_col[k].Vtx+grp_col[k].nVtx, grp_col[k].Idx+grp_col[k].nIdx, grp_col[k].nVtx);
+				grp_col[k].nVtx += nvtx;
+				grp_col[k].nIdx += nidx;
+			}
+		}
 		if (spec & OBJSPEC_EXPORTMESH) {
 			if (spec & OBJSPEC_UNDERSHADOW) objmsh_us[nobjmsh_us++] = bo->ExportMesh();
 			else                            objmsh_os[nobjmsh_os++] = bo->ExportMesh();
+		}
+		if ((spec & OBJSPEC_COLLISION) && (spec & OBJSPEC_EXPORTMESH)) {
+			Mesh *col_msh = bo->ExportMesh();
+			if (col_msh) objmsh_col[nobjmsh_col++] = col_msh;
 		}
 		if (bshadow && (spec & OBJSPEC_EXPORTSHADOWMESH)) {
 			Mesh *shmsh = bo->ExportShadowMesh (sh_elev[nobjmsh_sh]);
@@ -501,34 +560,33 @@ void Base::ScanObjectMeshes () const
 		}
 	}
 
-	for (i = 0; i < 2; i++) {
-		DWORD &ngrp = (i==0 ? ngrp_us : ngrp_os);
-		if (ngrp) {
-			GroupSpec *&grp = (i==0 ? grp_us : grp_os);
-			Mesh *mesh = new Mesh; TRACENEW
-			if (i==0) genmsh_us = mesh;
-			else      genmsh_os = mesh;
-			for (j = 0; j < ngrp; j++) {
-				DWORD texidx = grp[j].TexIdx;
-				int tidx = (texidx != (DWORD)-1 ? mesh->AddTexture (generic_dtex[texidx]) : SPEC_DEFAULT);
-				// note: shallow copy - don't delete vertex and index arrays!
-				int gidx = mesh->AddGroup (grp[j].Vtx, grp[j].nVtx, grp[j].Idx, grp[j].nIdx, SPEC_DEFAULT, tidx);
-				mesh->GetGroup(gidx)->UsrFlag = grp[j].UsrFlag;
-				// add night texture
-				if (texidx != (DWORD)-1 && generic_ntex[texidx]) {
-					tidx = mesh->AddTexture (generic_ntex[texidx]);
-					mesh->GetGroup(gidx)->TexIdxEx[0] = tidx;
-				}
+	for (i = 0; i < 3; i++) {
+		DWORD &ngrp = (i==0 ? ngrp_us : (i==1 ? ngrp_os : ngrp_col));
+		if (!ngrp) continue;
+		GroupSpec *&grp = (i==0 ? grp_us : (i==1 ? grp_os : grp_col));
+		Mesh *mesh = new Mesh; TRACENEW
+		if (i==0) genmsh_us = mesh;
+		else if (i==1) genmsh_os = mesh;
+		else genmsh_col = mesh;
+		
+		for (j = 0; j < ngrp; j++) {
+			DWORD texidx = grp[j].TexIdx;
+			int tidx = (texidx != (DWORD)-1 ? mesh->AddTexture (generic_dtex[texidx]) : SPEC_DEFAULT);
+			int gidx = mesh->AddGroup (grp[j].Vtx, grp[j].nVtx, grp[j].Idx, grp[j].nIdx, SPEC_DEFAULT, tidx);
+			mesh->GetGroup(gidx)->UsrFlag = grp[j].UsrFlag;
+			if (texidx != (DWORD)-1 && generic_ntex[texidx]) {
+				tidx = mesh->AddTexture (generic_ntex[texidx]);
+				mesh->GetGroup(gidx)->TexIdxEx[0] = tidx;
 			}
-			delete []grp;
-			grp = NULL;
-			if (i==0) objmsh_us[nobjmsh_us++] = mesh;
-			else      objmsh_os[nobjmsh_os++] = mesh;
 		}
+		delete []grp;
+		grp = NULL;
+		if (i==0) objmsh_us[nobjmsh_us++] = mesh;
+		else if (i==1) objmsh_os[nobjmsh_os++] = mesh;
+		else objmsh_col[nobjmsh_col++] = mesh;
 	}
 	objmsh_valid = true;
 }
-
 void Base::Update (bool force)
 {
 	s1->R.Set (rrot);

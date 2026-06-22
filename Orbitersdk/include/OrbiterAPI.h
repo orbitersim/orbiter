@@ -7702,4 +7702,35 @@ void calldummy () { dummy(); }
 DLLCLBK char *ModuleDate () { return (char*)__DATE__; }
 #endif
 
+// ======================================================================
+// Scattererer API
+// ======================================================================
+
+struct ScattererCfg {
+	bool bEnabled;           // Master enable
+	float fDrawDist;         // Max draw distance in metres (default 500)
+	float fDensity;          // Rocks per square metre      (default 0.01)
+	UINT uSeed;              // Base seed (0 = derive from planet name hash)
+	float fSizeSmall[2];     // Min / max scale for small rocks   {0.1, 0.5}
+	float fSizeMedium[2];    // Min / max scale for medium rocks  {0.5, 2.0}
+	float fSizeLarge[2];     // Min / max scale for large rocks   {2.0, 8.0}
+	float fRatioSmall;       // Proportion of small  rocks (0.70)
+	float fRatioMedium;      // Proportion of medium rocks (0.25)
+	float fRatioLarge;       // Proportion of large  rocks (0.05)
+	char sMeshPrefix[256];   // Optional custom mesh prefix for procedural loading
+};
+
+struct ScatterInstance {
+	VECTOR3 localPos;        // Position on unit sphere (geocentric direction)
+	float elevation;         // Surface elevation at the point (metres)
+	float scale;             // Size multiplier
+	float rotY;              // Y-axis rotation in radians
+	uint8_t sizeClass;       // 0 = small, 1 = medium, 2 = large
+	uint8_t meshIndex;       // Index of the specific mesh
+};
+
+OAPIFUNC const ScattererCfg* oapiGetScattererCfg(OBJHANDLE hPlanet);
+OAPIFUNC const ScatterInstance* oapiGetScatterTiles(OBJHANDLE hPlanet, int lvl, int ilat, int ilng, int* nScatter);
+OAPIFUNC double oapiGetScatterElevationModifier(OBJHANDLE hPlanet, double lng, double lat);
+
 #endif // !__ORBITERAPI_H

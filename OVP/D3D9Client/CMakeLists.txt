@@ -49,6 +49,7 @@ set(SourceFiles
 	OapiExtension.cpp
 	Particle.cpp
 	RingMgr.cpp
+	Scatterer.cpp
 	RunwayLights.cpp
 	Scene.cpp
 	Spherepatch.cpp
@@ -100,6 +101,7 @@ set(IncludeFiles
 	Qtree.h
 	resource.h
 	RingMgr.h
+	Scatterer.h
 	RunwayLights.h
 	Scene.h
 	Spherepatch.h

@@ -23,6 +23,7 @@
 
 #include <array>
 #include <fstream>
+#include <vector>
 
 #include "Vesselbase.h"
 #include "Log.h"
@@ -197,6 +198,13 @@ struct FRecord_att {      // flight recorder attitude sample
 	const CelestialBody *ref; // attitude reference object
 	//double att[3];            // Euler angles
 	Quaternion q;             // orientation
+};
+
+struct BaseCollisionResult {
+    bool hit;
+    VECTOR3 normal;
+    double depth;
+    VECTOR3 contactPtLocal;
 };
 
 // =======================================================================
@@ -435,6 +443,8 @@ public:
 			ts->level_permanent = level;
 			if (ts->tank && ts->tank->mass)
 				ts->level = std::max(0.0, std::min(1.0, ts->level+dlevel));
+			else
+				ts->level = 0.0;
 		}
 	}
 	// set the permanent level for a thruster (0-1)
@@ -446,6 +456,8 @@ public:
 			ts->level_permanent = std::max(0.0, std::min(1.0, ts->level_permanent));
 			if (ts->tank && ts->tank->mass)
 				ts->level = std::max(0.0, std::min(1.0, ts->level+dlevel));
+			else
+				ts->level = 0.0;
 		}
 	}
 
@@ -455,6 +467,8 @@ public:
 		ts->level_permanent = level;
 		if (ts->tank && ts->tank->mass)
 			ts->level = std::max(0.0, std::min(1.0, ts->level+dlevel));
+		else
+			ts->level = 0.0;
 
 	}
 	// set permanent thruster level during playback
@@ -1696,6 +1710,23 @@ private:
 	int forcevecbuf;   // length of vector list
 	mutable int nforcevec;     // number of vectors to render
 
+	int nforcevec_col; // number of collision vectors
+	Vector col_forcevec[10];
+	Vector col_forcepos[10];
+	double collisionCooldownT; // simulation time until which orbit stabilisation is suppressed after collision
+
+	// Debug visualization data for vessel-to-vessel collisions
+	struct CollisionDebugVis {
+		bool active;           // true if a collision was detected this frame
+		VECTOR3 contactPt;     // contact point in vessel-local frame
+		VECTOR3 normal;        // collision normal in vessel-local frame (points outward)
+		double depth;          // penetration depth
+		VECTOR3 impulseDir;    // impulse direction in vessel-local frame
+		double impulseMag;     // impulse magnitude
+		VECTOR3 leverArm;      // lever arm from CoM to contact in vessel-local frame
+		double showTime;       // simulation time until which this debug data should be rendered
+	} mutable m_colDebug;
+
 	char *classname;   // vessel class name
 	char *onlinehelp;  // string for online help support (or NULL if none)
 
@@ -1708,6 +1739,41 @@ private:
 	} **meshlist;
 	UINT nmesh;        // number of meshes
 	DWORD_PTR mesh_crc;    // visual state checksum
+
+	bool bIsConvexCollider; // If true, uses GJK Convex Hull. If false, uses Point-vs-Triangle mesh collision.
+
+public:
+	// Hull vertex cache for rock collision (vessel-local coords)
+	struct HullVertex {
+		VECTOR3 pos;
+		UINT meshIdx;
+		DWORD groupIdx;
+		DWORD clusterIdx;
+	};
+	struct HullGroupSlice {
+		size_t startIdx;
+		size_t count;
+		Vector minP, maxP;
+		bool isDockClearZone;
+	};
+protected:
+	std::vector<HullVertex> m_hullCacheStatic; // original untransformed vertices
+	std::vector<HullGroupSlice> m_hullGroupSlices; // groups of vertices by submesh
+	std::vector<VECTOR3> m_hullCache;   // cached hull vertices in vessel-local frame (animated)
+	std::vector<WORD> m_convexHullIdx;  // quickhull triangle indices (3 per face) for visualization
+	mutable std::vector<VECTOR3> m_clearZoneCache; // cache for clear zone bounding boxes (min/max pairs)
+	UINT m_hullCacheMeshCount;          // nmesh when cache was last built
+	std::vector<VECTOR3> m_hullCacheP;  // hull points in planet-local frame
+	Vector m_hullMinP, m_hullMaxP;      // AABB of hull points in planet-local frame
+	bool m_hullCachePValid;             // true if m_hullCacheP is valid for current frame
+	bool m_hullVisualValid;             // true if m_convexHullIdx is valid for current animation state
+	void RebuildHullCache();            // (re)build m_hullCacheStatic from meshlist
+	void RebuildConvexHullVisual();     // rebuild m_convexHullIdx from m_hullCache
+	void ApplyAnimationToHullCache();   // animate m_hullCacheStatic to m_hullCache
+	void UpdateHullCacheP();            // update m_hullCacheP from m_hullCache
+	void CheckBaseCollisions(class Planet *pp);
+	void ResolveCollisionWith(Vessel *v);
+	bool CheckMeshCollision(const class Mesh *m, const Matrix &M_mesh2planet, const VECTOR3 &vPosPlanet, const Vector &vRelPlanet, BaseCollisionResult &res, const std::vector<Vector>* dockPtsP = nullptr);
 
 	UINT exhaust_id;   // next exhaust id to attach
 

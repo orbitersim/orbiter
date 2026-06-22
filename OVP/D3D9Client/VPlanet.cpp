@@ -1,3 +1,5 @@
+#include "D3D9Client.h"
+extern class D3D9Client* g_client;
 // ==============================================================
 // VPlanet.cpp
 // Part of the ORBITER VISUALISATION PROJECT (OVP)
@@ -36,6 +38,7 @@
 #include "VectorHelpers.h"
 #include "OapiExtension.h"
 #include "IProcess.h"
+#include "Scatterer.h"
 #include <filesystem>
 
 using namespace oapi;
@@ -366,6 +369,8 @@ vPlanet::vPlanet (OBJHANDLE _hObj, const Scene *scene) :
 	pSunColor(), pRaySkyView(), pMieSkyView(), pLandViewRay(), pLandViewMie(), pAmbientSky(), pLandViewAtn(), ShaderName("Auto\0")
 {
 	memset(&MicroCfg, 0, sizeof(MicroCfg));
+
+	scatterer = NULL;
 	vRefPoint = _V(1,0,0);
 	atm_mode = 0;
 	iConfig = 0;
@@ -509,6 +514,8 @@ vPlanet::vPlanet (OBJHANDLE _hObj, const Scene *scene) :
 
 	ParseConfig(oapiGetObjectFileName(hObj));
 
+	// Scatterer is created lazily on first Render() to ensure D3D is fully ready
+
 	UpdateScatter();
 
 	char msg[256]; char path[MAX_PATH];
@@ -560,6 +567,7 @@ vPlanet::~vPlanet ()
 	if (hazemgr2) delete hazemgr2;
 	if (ringmgr)  delete ringmgr;
 	if (mesh)     delete mesh;
+	if (scatterer) delete scatterer;
 
 	SAFE_RELEASE(pSunColor);
 	SAFE_RELEASE(pRaySkyView);
@@ -615,6 +623,9 @@ bool vPlanet::ParseConfig(const char* fname)
 				>> albedo.y
 				>> albedo.z;
 		}
+
+		// Rock scatter config parsing has been moved to the core engine (Planet.cpp).
+		// The D3D9 client accesses it via oapiGetScattererCfg().
 	}
 	return true;
 }
@@ -1059,12 +1070,27 @@ bool vPlanet::Render(LPDIRECT3DDEVICE9 dev)
 			RenderSphere (dev);
 		}
 
-		if (nbase) RenderBaseStructures (dev);
+		// Render procedural rocks - only if the core engine has rock config for this planet
+		if (*(bool*)g_client->GetConfigParam(CFGPRM_SURFACESCATTER)) {
+			const ::ScattererCfg *pRockCfg = oapiGetScattererCfg(hObj);
+			if (pRockCfg && pRockCfg->bEnabled) {
+				if (!scatterer) scatterer = new Scatterer(this, dev);
+				scatterer->Render(dev);
+			}
+		}
 
-		if (prm.bCloud && (prm.cloudvis & 2))
+		if (nbase) {
+			RenderBaseStructures (dev);
+		}
+
+		if (prm.bCloud && (prm.cloudvis & 2)) {
 			RenderCloudLayer (dev, D3DCULL_CCW);	  // render clouds from above
+		}
 
-		if (hazemgr) hazemgr->Render (dev, mWorld, true); // haze across planet disc
+		if (hazemgr) {
+			hazemgr->Render (dev, mWorld, true); // haze across planet disc
+		}
+		
 		if (ringmgr) {
 			ringmgr->Render (dev, mWorld, true);
 			dev->SetRenderState(D3DRS_CULLMODE, D3DCULL_CCW);
@@ -1177,7 +1203,9 @@ void vPlanet::RenderSphere (LPDIRECT3DDEVICE9 dev)
 		dev->SetRenderState(D3DRS_CULLMODE, D3DCULL_CCW);
 		if (prm.bFog) D3D9Effect::FX->SetFloat(D3D9Effect::eFogDensity, fogfactor/dist_scale);
 		surfmgr->SetAmbientColor(prm.AmbColor);
+
 		surfmgr->Render (dev, mWorld, dist_scale, patchres, 0.0, prm.bFog); // surface
+
 		if (prm.bFog) D3D9Effect::FX->SetFloat(D3D9Effect::eFogDensity, fogfactor);
 	}
 
@@ -1247,6 +1275,11 @@ void vPlanet::RenderBaseShadows(LPDIRECT3DDEVICE9 dev, float depth)
 	if (scn->GetRenderFlags() & 0x20) {
 		if (bObjectShadow) {
 			for (DWORD i = 0; i < nbase; i++) if (vbase[i]) vbase[i]->RenderGroundShadow(dev, depth);
+			
+			if (*(bool*)g_client->GetConfigParam(CFGPRM_SURFACESCATTER) && Config->bScatterShadows) {
+				if (scatterer) scatterer->RenderShadows(dev, depth);
+			}
+			
 			// reset device parameters
 			dev->SetRenderState(D3DRS_STENCILENABLE, FALSE);
 		}

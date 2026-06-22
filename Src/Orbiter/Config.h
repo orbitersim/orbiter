@@ -35,7 +35,7 @@
 #define PROP_SY8        9
 
 #define SURF_MAX_PATCHLEVEL 14
-#define SURF_MAX_PATCHLEVEL2 21
+#define SURF_MAX_PATCHLEVEL2 24
 
 class Mesh;
 class PlanetarySystem;
@@ -62,6 +62,9 @@ struct CFG_PHYSICSPRM {
 	bool   bNonsphericalGrav;	// take into account nonspherical planet shapes for gravity calculations
 	bool   bRadiationPressure;	// take into account radiation pressure effects
 	bool   bAtmWind;            // nonzero wind speeds
+	bool   bBaseCollision;      // surface base collision
+	bool   bScatterCollision;      // surface rock collision
+	bool   bVesselCollision;    // vessel-to-vessel collision
 	bool   bOrbitStabilise;		// use Encke orbit stabilisation at high time accelerations
 	double Stabilise_PLimit;	// perturbation limit for stabilisation
 	double Stabilise_SLimit;	// step size limit for stabilisation
@@ -107,6 +110,9 @@ struct CFG_VISUALPRM {
 	bool   bFog;				// enable distance fog?
 	bool   bSpecular;			// enable specular reflection effects?
 	bool   bReentryFlames;		// render reentry flames?
+	bool   bSurfaceScatter;		// render surface surface scatter?
+	float  fScatterDensityMult;	// global multiplier for surface rock density
+	float  fScatterMaxDist;		// maximum draw distance for surface rocks [m]
 	bool   bParticleStreams;	// render particle streams? (exhaust, contrails, etc.)
 	bool   bLocalLight;			// enable local light sources?
 	DWORD  MaxLight;			// max number of light sources

@@ -585,4 +585,20 @@ Missing entries in keymap.cfg are substituted by their default values. To revert
 %\end{table}
 
 
+\subsection{Planetary base configuration}
+Planetary bases are defined in configuration files located in the \texttt{Config\textbackslash Bases} subdirectory (or a subfolder thereof). These files define the location of the base and the objects (buildings, pads, etc.) it contains.\\
+Objects are typically defined using the \texttt{MESH} entry:
+
+\begin{lstlisting}[language=OSFS]
+MESH
+	FILE <mesh_name>
+	POS <x> <y> <z>
+	ROT <angle>
+	[COLLISION]
+END
+\end{lstlisting}
+
+\noindent
+The \texttt{COLLISION} keyword is a new addition that enables mesh-accurate collision detection for the object. When present, vessels can physically impact the mesh, and the collision will be resolved using the rigid-body physics engine. If \texttt{COLLISION} is omitted, the object remains "ghost-like" and vessels can fly through it without interaction. This is useful for performance optimization or for objects that should not have physical presence (e.g. purely visual effects or underground structures).
+
 \end{document}

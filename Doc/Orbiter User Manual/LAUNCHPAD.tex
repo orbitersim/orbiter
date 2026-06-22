@@ -62,9 +62,9 @@ After exiting a simulation session, click the \textit{Save current} button to sa
 Click the \textit{Clear quicksaves} button to delete all scenarios stored in the Quicksave folder.
 
 
-\subsection{Options tab}
-\label{ssec:options_tab}
-The \textit{Options} tab contains various pages to customise the simulation behaviour, including realism and difficulty settings, background star rendering, instrument display settings and the focus behaviour for dialog boxes.
+\subsection{Settings tab}
+\label{ssec:settings_tab}
+The \textit{Settings} tab (formerly \textit{Options} and \textit{Visual effects}) contains various pages to customise the simulation behaviour, including realism and difficulty settings, visual effects, background star rendering, instrument display settings and the focus behaviour for dialog boxes.
 
 \begin{figure}[H]
 	\centering
@@ -97,6 +97,8 @@ Note that some advanced rendering options can also be found in the \textit{Extra
 \end{figure}
 
 \item \textbf{Horizon haze:} Render an intensity-graded ("glowing") horizon layer for planets with atmospheres.
+
+\item \textbf{Surface scatterers:} Enable the rendering of procedural surface objects such as rocks and foliage. These objects can be configured to support physical collisions (see \textit{Physics settings} below).
 
 \begin{figure}[H]
 	\centering
@@ -180,6 +182,16 @@ Note that some advanced rendering options can also be found in the \textit{Extra
 \item \textbf{Radiation pressure:} Enables solar radiation pressure on vessels. Solar sails require this feature to be enabled.
 \item \textbf{Gravity-gradient torque:} If this option is enabled, vessels can experience an angular moment in the presence of a gravitational field gradient. This will be noticeable in particular in low orbits and can lead to attitude oscillations around the equilibrium or attitude-locked orbits. For background and technical implementation details please refer to "Distributed Vessel Mass" in Orbiter Technical Reference.
 \item \textbf{Atmospheric wind effects:} Enables wind effects on vessels flying inside atmospheres.
+\end{itemize}
+
+\textbf{Collisions}
+
+Orbiter's collision system uses the GJK/EPA convex hull algorithm as its primary detection method, with a point-to-triangle fallback for non-convex vessel pairs. The collision response uses a Newtonian rigid-body impulse solver. Docking exclusion zones automatically suppress collision near docking ports during approach. For technical details, refer to "Mesh-to-mesh collision detection and response" in the Orbiter Technical Reference.
+
+\begin{itemize}
+\item \textbf{Vessel-to-Vessel:} Enables collision detection and resolution between spacecraft. When both vessels use convex colliders (the default), detection uses the GJK/EPA algorithm on clustered convex sub-hulls for high performance. A point-to-triangle fallback is available for non-convex meshes.
+\item \textbf{Vessel-to-Base:} Enables collision detection between vessels and planetary surface objects (buildings, pads, etc.) defined in base configuration files. Only base meshes marked with the \texttt{COLLISION} keyword are tested.
+\item \textbf{Vessel-to-Scatter:} Enables collision detection between vessels and procedurally generated surface scatterers such as rocks and foliage.
 \end{itemize}
 
 \subsubsection{Instruments \& panels}

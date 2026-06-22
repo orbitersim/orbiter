@@ -14,6 +14,7 @@
 #include "Astro.h"
 #include "Element.h"
 #include "Planet.h"
+#include "Scatterer.h"
 #include "elevmgr.h"
 #include "Base.h"
 #include "Camera.h"
@@ -32,6 +33,49 @@ extern Camera *g_camera;
 extern char DBG_MSG[256];
 
 int patchidx[9] = {0, 1, 2, 3, 5, 13, 37, 137, 501};
+#include <unordered_map>
+#include <string>
+
+static std::unordered_map<std::string, std::string> g_scattererGroups;
+static bool g_scattererLoaded = false;
+
+static void LoadScattererGroups() {
+    if (g_scattererLoaded) return;
+    g_scattererLoaded = true;
+
+    char *path = g_pOrbiter->ConfigPath("Scatterer");
+    std::ifstream ifs(path);
+    if (!ifs) return;
+
+    char line[256];
+    char currentMesh[256] = "";
+    while (ifs.getline(line, 256)) {
+        char *p = trim_string(line);
+        if (p[0] == ';' || p[0] == '\0') continue;
+
+        if (!_strnicmp(p, "BEGIN_GROUP", 11)) {
+            currentMesh[0] = '\0';
+        } else if (!_strnicmp(p, "END_GROUP", 9)) {
+            currentMesh[0] = '\0';
+        } else if (!_strnicmp(p, "Mesh", 4)) {
+            char *val = strchr(p, '=');
+            if (val) {
+                strcpy_s(currentMesh, sizeof(currentMesh), trim_string(val+1));
+            }
+        } else if (!_strnicmp(p, "Bodies", 6)) {
+            char *val = strchr(p, '=');
+            if (val) {
+                char *bodyList = trim_string(val+1);
+                char *token = strtok(bodyList, ", \t\r\n");
+                while (token) {
+                    g_scattererGroups[token] = currentMesh;
+                    token = strtok(NULL, ", \t\r\n");
+                }
+            }
+        }
+    }
+}
+
 // index to the first texture of a given surface patch level
 
 void InterpretEphemeris (double *data, int format, Vector *pos, Vector *vel);
@@ -186,6 +230,8 @@ Planet::Planet (double _mass, double _mean_radius)
 	bHasRings = false;
 	labelLegend = NULL;
 	nLabelLegend = 0;
+	m_scatterer = NULL;
+	memset(&ScatterCfg, 0, sizeof(ScattererCfg));
 	Setup ();
 }
 
@@ -215,6 +261,8 @@ Planet::Planet (char *fname)
 	maxelev = 0.0;
 	labelLegend  = NULL;
 	nLabelLegend = 0;
+	m_scatterer = NULL;
+	memset(&ScatterCfg, 0, sizeof(ScattererCfg));
 	ifstream ifs (g_pOrbiter->ConfigPath (fname));
 	if (!ifs) return;
 
@@ -413,6 +461,49 @@ Planet::Planet (char *fname)
 		if (label_version > 1)
 		ScanLabelLegend();
 
+	// Scatterer config
+	{
+		char rsBuf[256];
+		ScatterCfg.bEnabled = false; // explicit default: OFF
+
+		LoadScattererGroups();
+		auto it = g_scattererGroups.find(name);
+		if (it != g_scattererGroups.end()) {
+			ScatterCfg.bEnabled = true;
+			strcpy_s(ScatterCfg.sMeshPrefix, sizeof(ScatterCfg.sMeshPrefix), it->second.c_str());
+		}
+
+		// Check both key names used in configs (local override)
+		bool foundKey = GetItemBool(ifs, "SurfaceScatter", ScatterCfg.bEnabled);
+		if (!foundKey)
+			foundKey = GetItemBool(ifs, "Scatterer", ScatterCfg.bEnabled);
+
+		if (ScatterCfg.bEnabled) {
+			ScatterCfg.fDrawDist     = 20000.0f;
+			ScatterCfg.fDensity      = 0.01f;
+			ScatterCfg.fSizeSmall[0] = 0.1f;  ScatterCfg.fSizeSmall[1]  = 0.5f;
+			ScatterCfg.fSizeMedium[0]= 0.5f;  ScatterCfg.fSizeMedium[1] = 2.0f;
+			ScatterCfg.fSizeLarge[0] = 2.0f;  ScatterCfg.fSizeLarge[1]  = 8.0f;
+			ScatterCfg.fRatioSmall   = 0.70f;
+			ScatterCfg.fRatioMedium  = 0.25f;
+			ScatterCfg.fRatioLarge   = 0.05f;
+
+			double dval;
+			if (GetItemReal(ifs, "ScatterDrawDist", dval)) ScatterCfg.fDrawDist = (float)dval;
+			if (GetItemReal(ifs, "ScatterDensity", dval)) ScatterCfg.fDensity = (float)dval;
+			int ival;
+			if (GetItemInt(ifs, "ScatterSeed", ival)) ScatterCfg.uSeed = (UINT)ival;
+			
+			// Only override mesh prefix if it's explicitly set in this file
+			if (GetItemString(ifs, "ScatterMeshPrefix", rsBuf) ||
+				GetItemString(ifs, "ScatterMesh", rsBuf)) {
+				strncpy_s(ScatterCfg.sMeshPrefix, sizeof(ScatterCfg.sMeshPrefix), rsBuf, _TRUNCATE);
+			} else if (ScatterCfg.sMeshPrefix[0] == '\0') {
+				strcpy_s(ScatterCfg.sMeshPrefix, sizeof(ScatterCfg.sMeshPrefix), "LunarRock");
+			}
+		}
+	}
+
 	Setup();
 }
 
@@ -456,6 +547,7 @@ Planet::~Planet ()
 	g_pOrbiter->UpdateDeallocationProgress();
 
 	delete emgr;
+	delete m_scatterer;
 }
 
 void Planet::ScanBases (char *path)
@@ -668,6 +760,11 @@ void Planet::Setup ()
 		emgr = new ElevationManager(this);
 	for (DWORD i = 0; i < nbase; i++)
 		baselist[i]->Setup();
+
+	// Create surface scatter system if enabled
+	if (ScatterCfg.bEnabled && !m_scatterer) {
+		m_scatterer = new Scatterer(this);
+	}
 }
 
 const void *Planet::GetParam (DWORD paramtype) const

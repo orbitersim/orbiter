@@ -16,8 +16,11 @@
 #include "SuperVessel.h"
 #include "Log.h"
 
+#include "Orbiter.h"
+
 using namespace std;
 
+extern Orbiter *g_pOrbiter;
 extern TimeData td;
 extern bool g_bForceUpdate;
 extern char DBG_MSG[256];

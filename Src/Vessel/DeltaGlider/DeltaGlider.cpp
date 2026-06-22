@@ -857,7 +857,10 @@ double DeltaGlider::GetThrusterFlowRate(THRUSTER_HANDLE th)
     double level  = GetThrusterLevel(th); // throttle level
     double isp    = GetThrusterIsp0(th);
     double thrust = GetThrusterMax0(th);
-    double flow   = thrust*level/isp;
+    double flow = 0.0;
+    if (isp > 0.0) {
+        flow = thrust*level/isp;
+    }
     
     return flow;
 }

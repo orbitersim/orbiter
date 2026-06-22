@@ -1020,3 +1020,45 @@ void D3D9Effect::RenderArrow(OBJHANDLE hObj, const VECTOR3 *ofs, const VECTOR3 *
     HR(FX->End()); 
 }
 
+
+// ===========================================================================================
+// This is a special rendering routine used to render solid cubes
+//
+void D3D9Effect::RenderSolidCube(const LPD3DXMATRIX pW, float size, const LPD3DXCOLOR pColor)
+{
+	static D3DVECTOR cube[36] = {
+		// Front
+		{-0.5, -0.5, -0.5}, {-0.5, 0.5, -0.5}, {0.5, 0.5, -0.5},
+		{-0.5, -0.5, -0.5}, {0.5, 0.5, -0.5}, {0.5, -0.5, -0.5},
+		// Back
+		{0.5, -0.5, 0.5}, {0.5, 0.5, 0.5}, {-0.5, 0.5, 0.5},
+		{0.5, -0.5, 0.5}, {-0.5, 0.5, 0.5}, {-0.5, -0.5, 0.5},
+		// Top
+		{-0.5, 0.5, -0.5}, {-0.5, 0.5, 0.5}, {0.5, 0.5, 0.5},
+		{-0.5, 0.5, -0.5}, {0.5, 0.5, 0.5}, {0.5, 0.5, -0.5},
+		// Bottom
+		{-0.5, -0.5, 0.5}, {-0.5, -0.5, -0.5}, {0.5, -0.5, -0.5},
+		{-0.5, -0.5, 0.5}, {0.5, -0.5, -0.5}, {0.5, -0.5, 0.5},
+		// Left
+		{-0.5, -0.5, 0.5}, {-0.5, 0.5, 0.5}, {-0.5, 0.5, -0.5},
+		{-0.5, -0.5, 0.5}, {-0.5, 0.5, -0.5}, {-0.5, -0.5, -0.5},
+		// Right
+		{0.5, -0.5, -0.5}, {0.5, 0.5, -0.5}, {0.5, 0.5, 0.5},
+		{0.5, -0.5, -0.5}, {0.5, 0.5, 0.5}, {0.5, -0.5, 0.5}
+	};
+
+	D3DXMATRIX W;
+	D3DXMatrixScaling(&W, size, size, size);
+	D3DXMatrixMultiply(&W, &W, pW);
+
+	UINT numPasses = 0;
+	HR(pDev->SetVertexDeclaration(pPositionDecl));
+	HR(FX->SetTechnique(eArrowTech));
+	HR(FX->SetValue(eColor, pColor, sizeof(D3DXCOLOR)));
+	HR(FX->SetMatrix(eW, &W));
+	HR(FX->Begin(&numPasses, D3DXFX_DONOTSAVESTATE));
+	HR(FX->BeginPass(0));
+	HR(pDev->DrawPrimitiveUP(D3DPT_TRIANGLELIST, 12, &cube, sizeof(D3DVECTOR)));
+	HR(FX->EndPass());
+	HR(FX->End());
+}

@@ -813,12 +813,239 @@ bool vVessel::Render(LPDIRECT3DDEVICE9 dev, bool internalpass)
 	if (scn->GetRenderPass() == RENDERPASS_MAINSCENE) {
 		if (DebugControls::IsActive()) {
 			if (flags&DBG_FLAGS_SELVISONLY && this != DebugControls::GetVisual()) return true;
-			if (flags&DBG_FLAGS_BOXES && !internalpass) {
+			if ((flags&DBG_FLAGS_BOXES || Config->bShowVesselColliders) && !internalpass) {
 				D3DXMATRIX id;
 				D3D9Effect::RenderBoundingBox(&mWorld, D3DXMatrixIdentity(&id), &BBox.min, &BBox.max, ptr(D3DXVECTOR4(1, 0, 0, 0.75f)));
+
+				if (vessel->IsConvexCollider()) {
+					DWORD nPts = 0;
+					const VECTOR3 *pts = vessel->GetCollisionPointCloud(nPts);
+					DWORD nIdx = 0;
+					const WORD *idx = vessel->GetCollisionHullIndices(nIdx);
+					
+					if (pts && nPts > 0 && idx && nIdx > 0) {
+						std::vector<D3DXVECTOR3> dbgVtx(nPts);
+						for (DWORD i = 0; i < nPts; i++) {
+							dbgVtx[i] = D3DXVECTOR3((float)pts[i].x, (float)pts[i].y, (float)pts[i].z);
+						}
+						
+						std::vector<WORD> dbgIdx;
+						dbgIdx.reserve(nIdx * 2);
+						for (DWORD i = 0; i < nIdx; i += 3) {
+							dbgIdx.push_back(idx[i]); dbgIdx.push_back(idx[i+1]);
+							dbgIdx.push_back(idx[i+1]); dbgIdx.push_back(idx[i+2]);
+							dbgIdx.push_back(idx[i+2]); dbgIdx.push_back(idx[i]);
+						}
+						
+						D3D9Effect::RenderLines(dbgVtx.data(), dbgIdx.data(), dbgVtx.size(), dbgIdx.size(), &mWorld, D3DCOLOR_RGBA(50, 255, 50, 100));
+					}
+				} else {
+					// Draw the physical collision meshes as green wireframes
+					for (UINT i = 0; i < vessel->GetMeshCount(); i++) {
+						MESHHANDLE hMesh = vessel->GetMeshTemplate(i);
+						if (!hMesh) continue;
+						VECTOR3 meshOfs;
+						vessel->GetMeshOffset(i, meshOfs);
+						
+						DWORD nGrp = oapiMeshGroupCount(hMesh);
+						for (DWORD g = 0; g < nGrp; g++) {
+							MESHGROUPEX* grp = oapiMeshGroupEx(hMesh, g);
+							if (!grp || !grp->Vtx || !grp->Idx) continue;
+							
+							std::vector<D3DXVECTOR3> dbgVtx;
+							std::vector<WORD> dbgIdx;
+							
+							for (DWORD v = 0; v < grp->nVtx; v++) {
+								dbgVtx.push_back(D3DXVECTOR3(
+									(float)(grp->Vtx[v].x + meshOfs.x),
+									(float)(grp->Vtx[v].y + meshOfs.y),
+									(float)(grp->Vtx[v].z + meshOfs.z)
+								));
+							}
+							
+							for (DWORD idx = 0; idx < grp->nIdx; idx += 3) {
+								WORD i0 = grp->Idx[idx];
+								WORD i1 = grp->Idx[idx+1];
+								WORD i2 = grp->Idx[idx+2];
+								
+								dbgIdx.push_back(i0); dbgIdx.push_back(i1);
+								dbgIdx.push_back(i1); dbgIdx.push_back(i2);
+								dbgIdx.push_back(i2); dbgIdx.push_back(i0);
+							}
+							
+							if (!dbgVtx.empty() && !dbgIdx.empty()) {
+								D3D9Effect::RenderLines(dbgVtx.data(), dbgIdx.data(), dbgVtx.size(), dbgIdx.size(), &mWorld, D3DCOLOR_RGBA(50, 255, 50, 100));
+							}
+						}
+					}
+				}
+
+				// Draw clear zones
+				DWORD nBoxes = 0;
+				const VECTOR3* clearZones = vessel->GetCollisionClearZones(nBoxes);
+				if (clearZones && nBoxes > 0) {
+					D3DXMATRIX id;
+					D3DXMatrixIdentity(&id);
+					for (DWORD i = 0; i < nBoxes; i++) {
+						D3DXVECTOR4 bmin((float)clearZones[i*2].x, (float)clearZones[i*2].y, (float)clearZones[i*2].z, 1.0f);
+						D3DXVECTOR4 bmax((float)clearZones[i*2+1].x, (float)clearZones[i*2+1].y, (float)clearZones[i*2+1].z, 1.0f);
+						D3D9Effect::RenderBoundingBox(&mWorld, &id, &bmin, &bmax, ptr(D3DXVECTOR4(0, 1, 1, 0.75f))); // Cyan box
+					}
+				}
+
+				VECTOR3 cPt, cNorm, cImp, cArm;
+				double cDepth, cImpMag;
+				if (vessel->GetCollisionDebugData(cPt, cNorm, cImp, cArm, cDepth, cImpMag)) {
+					// Draw contact point as small cube
+					D3DXMATRIX ptW;
+					D3DXMatrixTranslation(&ptW, (float)cPt.x, (float)cPt.y, (float)cPt.z);
+					D3DXMatrixMultiply(&ptW, &ptW, &mWorld);
+					D3D9Effect::RenderSolidCube(&ptW, 0.5f, ptr(D3DXCOLOR(1, 0, 0, 1)));
+					
+					// Draw collision normal as an arrow (Red)
+					if (length(cNorm) > 1e-6) {
+						VECTOR3 nNorm = unit(cNorm);
+						VECTOR3 rNorm = _V(0,1,0); if (fabs(nNorm.y) > 0.99) rNorm = _V(1,0,0);
+						rNorm = unit(crossp(nNorm, rNorm));
+						D3D9Effect::RenderArrow(vessel->GetHandle(), &cPt, &nNorm, &rNorm, 0.5f, ptr(D3DXCOLOR(1, 0, 0, 1)));
+					}
+					
+					// Draw impulse direction as an arrow (Blue)
+					if (length(cImp) > 1e-6) {
+						VECTOR3 nImp = unit(cImp);
+						VECTOR3 rImp = _V(0,1,0); if (fabs(nImp.y) > 0.99) rImp = _V(1,0,0);
+						rImp = unit(crossp(nImp, rImp));
+						D3D9Effect::RenderArrow(vessel->GetHandle(), &cPt, &nImp, &rImp, 0.5f, ptr(D3DXCOLOR(0, 0, 1, 1)));
+					}
+					
+					// Draw lever arm from CoM as an arrow (Green)
+					if (length(cArm) > 1e-6) {
+						VECTOR3 zro = _V(0,0,0);
+						VECTOR3 nArm = unit(cArm);
+						VECTOR3 rArm = _V(0,1,0); if (fabs(nArm.y) > 0.99) rArm = _V(1,0,0);
+						rArm = unit(crossp(nArm, rArm));
+						D3D9Effect::RenderArrow(vessel->GetHandle(), &zro, &nArm, &rArm, min(0.5f, (float)length(cArm)), ptr(D3DXCOLOR(0, 1, 0, 1)));
+					}
+				}
 			}
 
 			RenderLightCone(&mWorld);
+		} else {
+			if (Config->bShowVesselColliders && !internalpass) {
+				D3DXMATRIX id;
+				D3D9Effect::RenderBoundingBox(&mWorld, D3DXMatrixIdentity(&id), &BBox.min, &BBox.max, ptr(D3DXVECTOR4(1, 0, 0, 0.75f)));
+
+				if (vessel->IsConvexCollider()) {
+					DWORD nPts = 0;
+					const VECTOR3 *pts = vessel->GetCollisionPointCloud(nPts);
+					DWORD nIdx = 0;
+					const WORD *idx = vessel->GetCollisionHullIndices(nIdx);
+					
+					if (pts && nPts > 0 && idx && nIdx > 0) {
+						std::vector<D3DXVECTOR3> dbgVtx(nPts);
+						for (DWORD i = 0; i < nPts; i++) {
+							dbgVtx[i] = D3DXVECTOR3((float)pts[i].x, (float)pts[i].y, (float)pts[i].z);
+						}
+						
+						std::vector<WORD> dbgIdx;
+						dbgIdx.reserve(nIdx * 2);
+						for (DWORD i = 0; i < nIdx; i += 3) {
+							dbgIdx.push_back(idx[i]); dbgIdx.push_back(idx[i+1]);
+							dbgIdx.push_back(idx[i+1]); dbgIdx.push_back(idx[i+2]);
+							dbgIdx.push_back(idx[i+2]); dbgIdx.push_back(idx[i]);
+						}
+						
+						D3D9Effect::RenderLines(dbgVtx.data(), dbgIdx.data(), dbgVtx.size(), dbgIdx.size(), &mWorld, D3DCOLOR_RGBA(50, 255, 50, 100));
+					}
+				} else {
+					// Draw the physical collision meshes as green wireframes
+					for (UINT i = 0; i < vessel->GetMeshCount(); i++) {
+						MESHHANDLE hMesh = vessel->GetMeshTemplate(i);
+						if (!hMesh) continue;
+						VECTOR3 meshOfs;
+						vessel->GetMeshOffset(i, meshOfs);
+						
+						DWORD nGrp = oapiMeshGroupCount(hMesh);
+						for (DWORD g = 0; g < nGrp; g++) {
+							MESHGROUPEX* grp = oapiMeshGroupEx(hMesh, g);
+							if (!grp || !grp->Vtx || !grp->Idx) continue;
+							
+							std::vector<D3DXVECTOR3> dbgVtx;
+							std::vector<WORD> dbgIdx;
+							
+							for (DWORD v = 0; v < grp->nVtx; v++) {
+								dbgVtx.push_back(D3DXVECTOR3(
+									(float)(grp->Vtx[v].x + meshOfs.x),
+									(float)(grp->Vtx[v].y + meshOfs.y),
+									(float)(grp->Vtx[v].z + meshOfs.z)
+								));
+							}
+							
+							for (DWORD idx = 0; idx < grp->nIdx; idx += 3) {
+								WORD i0 = grp->Idx[idx];
+								WORD i1 = grp->Idx[idx+1];
+								WORD i2 = grp->Idx[idx+2];
+								
+								dbgIdx.push_back(i0); dbgIdx.push_back(i1);
+								dbgIdx.push_back(i1); dbgIdx.push_back(i2);
+								dbgIdx.push_back(i2); dbgIdx.push_back(i0);
+							}
+							
+							if (!dbgVtx.empty() && !dbgIdx.empty()) {
+								D3D9Effect::RenderLines(dbgVtx.data(), dbgIdx.data(), dbgVtx.size(), dbgIdx.size(), &mWorld, D3DCOLOR_RGBA(50, 255, 50, 100));
+							}
+						}
+					}
+				}
+
+				// Draw clear zones
+				DWORD nBoxes = 0;
+				const VECTOR3* clearZones = vessel->GetCollisionClearZones(nBoxes);
+				if (clearZones && nBoxes > 0) {
+					D3DXMATRIX id;
+					D3DXMatrixIdentity(&id);
+					for (DWORD i = 0; i < nBoxes; i++) {
+						D3DXVECTOR4 bmin((float)clearZones[i*2].x, (float)clearZones[i*2].y, (float)clearZones[i*2].z, 1.0f);
+						D3DXVECTOR4 bmax((float)clearZones[i*2+1].x, (float)clearZones[i*2+1].y, (float)clearZones[i*2+1].z, 1.0f);
+						D3D9Effect::RenderBoundingBox(&mWorld, &id, &bmin, &bmax, ptr(D3DXVECTOR4(0, 1, 1, 0.75f))); // Cyan box
+					}
+				}
+
+				VECTOR3 cPt, cNorm, cImp, cArm;
+				double cDepth, cImpMag;
+				if (vessel->GetCollisionDebugData(cPt, cNorm, cImp, cArm, cDepth, cImpMag)) {
+					// Draw contact point as small cube
+					D3DXMATRIX ptW;
+					D3DXMatrixTranslation(&ptW, (float)cPt.x, (float)cPt.y, (float)cPt.z);
+					D3DXMatrixMultiply(&ptW, &ptW, &mWorld);
+					D3D9Effect::RenderSolidCube(&ptW, 0.5f, ptr(D3DXCOLOR(1, 0, 0, 1)));
+					
+					// Draw collision normal as an arrow (Red)
+					if (length(cNorm) > 1e-6) {
+						VECTOR3 nNorm = unit(cNorm);
+						VECTOR3 rNorm = _V(0,1,0); if (fabs(nNorm.y) > 0.99) rNorm = _V(1,0,0);
+						rNorm = unit(crossp(nNorm, rNorm));
+						D3D9Effect::RenderArrow(vessel->GetHandle(), &cPt, &nNorm, &rNorm, 0.5f, ptr(D3DXCOLOR(1, 0, 0, 1)));
+					}
+					
+					// Draw impulse direction as an arrow (Blue)
+					if (length(cImp) > 1e-6) {
+						VECTOR3 nImp = unit(cImp);
+						VECTOR3 rImp = _V(0,1,0); if (fabs(nImp.y) > 0.99) rImp = _V(1,0,0);
+						rImp = unit(crossp(nImp, rImp));
+						D3D9Effect::RenderArrow(vessel->GetHandle(), &cPt, &nImp, &rImp, 0.5f, ptr(D3DXCOLOR(0, 0, 1, 1)));
+					}
+					
+					// Draw lever arm from CoM as an arrow (Green)
+					if (length(cArm) > 1e-6) {
+						VECTOR3 zro = _V(0,0,0);
+						VECTOR3 nArm = unit(cArm);
+						VECTOR3 rArm = _V(0,1,0); if (fabs(nArm.y) > 0.99) rArm = _V(1,0,0);
+						rArm = unit(crossp(nArm, rArm));
+						D3D9Effect::RenderArrow(vessel->GetHandle(), &zro, &nArm, &rArm, min(0.5f, (float)length(cArm)), ptr(D3DXCOLOR(0, 1, 0, 1)));
+					}
+				}
+			}
 		}
 	}
 

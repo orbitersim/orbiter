@@ -230,7 +230,7 @@ Here is a checklist of the steps involved in the docking operation:
 \begin{itemize}
 \item For precise attitude control with the keyboard, use the RCS thrusters in low power mode (\Ctrl + Numpad key).
 \item Rotational alignment is not currently enforced, but may be in future versions.
-\item Currently no collision tests are performed, so you might fly straight through the station if you miss the docking approach.
+\item Collision detection is now performed between vessels using their surface meshes. If you fail to dock and impact the station, the collision will be resolved according to rigid-body physics, potentially damaging your vessel or knocking both objects out of their current state.
 \end{itemize}
 
 \noindent

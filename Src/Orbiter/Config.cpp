@@ -45,6 +45,9 @@ CFG_PHYSICSPRM CfgPhysicsPrm_default = {
 	false,		// bNonsphericalGrav (no nonspherical gravity effects)
 	false,		// bRadiationPressure (no radiation pressure effects)
 	false,      // bAtmWind (enable wind effects)
+	false,      // bBaseCollision (no surface base collision)
+	false,      // bScatterCollision (no surface rock collision)
+	false,      // bVesselCollision (no vessel collision)
 	true,		// bOrbitStabilise (use Encke orbit stabilisation)
 	0.05,		// Stabilise_PLimit (perturbation limit for stabilisation)
 	0.01,		// Stabilise_SLimit (step size limit for stabilisation)
@@ -90,6 +93,9 @@ CFG_VISUALPRM CfgVisualPrm_default = {
 	true,		// bFog (enable distance fog effects)
 	true,		// bSpecular (enable specular reflections from objects)
 	true,		// bReentryFlames (enable reentry flame effects)
+	true,		// bSurfaceScatter (render surface surface scatter)
+	0.25f,		// fScatterDensityMult (global multiplier for surface rock density)
+	20000.0f,	// fScatterMaxDist (maximum draw distance for surface rocks)
 	true,		// bParticleStreams (enable particle streams)
 	false,		// bLocalLight (disable local light sources)
 	32,			// MaxLight (max number of light sources, 0=max supported by device)
@@ -588,6 +594,9 @@ bool Config::Load(const char *fname)
 	GetBool (ifs, "NonsphericalGravitySources", CfgPhysicsPrm.bNonsphericalGrav);
 	GetBool (ifs, "RadiationPressure", CfgPhysicsPrm.bRadiationPressure);
 	GetBool (ifs, "AtmosphericWind", CfgPhysicsPrm.bAtmWind);
+	GetBool (ifs, "BaseCollision", CfgPhysicsPrm.bBaseCollision);
+	GetBool (ifs, "ScatterCollision", CfgPhysicsPrm.bScatterCollision);
+	GetBool (ifs, "VesselCollision", CfgPhysicsPrm.bVesselCollision);
 	GetBool (ifs, "StabiliseOrbits", CfgPhysicsPrm.bOrbitStabilise);
 	GetReal (ifs, "StabilisePLimit", CfgPhysicsPrm.Stabilise_PLimit);
 	GetReal (ifs, "StabiliseSLimit", CfgPhysicsPrm.Stabilise_SLimit);
@@ -642,6 +651,9 @@ bool Config::Load(const char *fname)
 	GetBool (ifs, "EnableDistanceFog", CfgVisualPrm.bFog);
 	GetBool (ifs, "EnableSpecularReflection", CfgVisualPrm.bSpecular);
 	GetBool (ifs, "EnableReentryFlames", CfgVisualPrm.bReentryFlames);
+	GetBool (ifs, "EnableSurfaceScatter", CfgVisualPrm.bSurfaceScatter);
+	GetReal (ifs, "ScatterDensityMult", d); if (d >= 0) CfgVisualPrm.fScatterDensityMult = (float)d;
+	GetReal (ifs, "ScatterMaxDist", d); if (d >= 0) CfgVisualPrm.fScatterMaxDist = (float)d;
 	GetBool (ifs, "EnableParticleStreams", CfgVisualPrm.bParticleStreams);
 	GetBool (ifs, "EnableLocalLights", CfgVisualPrm.bLocalLight);
 	if (GetInt (ifs, "MaxLights", i))
@@ -896,6 +908,12 @@ const void *Config::GetParam (DWORD paramtype) const
 		return (void*)&CfgVisHelpPrm.flagPlanetarium;
 	case CFGPRM_SURFMARKERFLAG:
 		return (void*)&CfgVisHelpPrm.flagMarkers;
+	case CFGPRM_SURFACESCATTER:
+		return (void*)&CfgVisualPrm.bSurfaceScatter;
+	case CFGPRM_SCATTERMAXDIST:
+		return (void*)&CfgVisualPrm.fScatterMaxDist;
+	case CFGPRM_SCATTERDENSITYMULT:
+		return (void*)&CfgVisualPrm.fScatterDensityMult;
 	case CFGPRM_STARRENDERPRM:
 		return (void*)&CfgVisualPrm.StarPrm;
 	case CFGPRM_AMBIENTLEVEL:
@@ -1039,6 +1057,12 @@ BOOL Config::Write (const char *fname) const
 			ofs << "EnableSpecularReflection = " << BoolStr (CfgVisualPrm.bSpecular) << '\n';
 		if (CfgVisualPrm.bReentryFlames != CfgVisualPrm_default.bReentryFlames || bEchoAll)
 			ofs << "EnableReentryFlames = " << BoolStr (CfgVisualPrm.bReentryFlames) << '\n';
+		if (CfgVisualPrm.bSurfaceScatter != CfgVisualPrm_default.bSurfaceScatter || bEchoAll)
+			ofs << "EnableSurfaceScatter = " << BoolStr (CfgVisualPrm.bSurfaceScatter) << '\n';
+		if (CfgVisualPrm.fScatterDensityMult != CfgVisualPrm_default.fScatterDensityMult || bEchoAll)
+			ofs << "ScatterDensityMult = " << CfgVisualPrm.fScatterDensityMult << '\n';
+		if (CfgVisualPrm.fScatterMaxDist != CfgVisualPrm_default.fScatterMaxDist || bEchoAll)
+			ofs << "ScatterMaxDist = " << CfgVisualPrm.fScatterMaxDist << '\n';
 		if (CfgVisualPrm.bParticleStreams != CfgVisualPrm_default.bParticleStreams || bEchoAll)
 			ofs << "EnableParticleStreams = " << BoolStr (CfgVisualPrm.bParticleStreams) << '\n';
 		if (CfgVisualPrm.bLocalLight != CfgVisualPrm_default.bLocalLight || bEchoAll)
@@ -1153,6 +1177,12 @@ BOOL Config::Write (const char *fname) const
 			ofs << "RadiationPressure = " << BoolStr (CfgPhysicsPrm.bRadiationPressure) << '\n';
 		if (CfgPhysicsPrm.bAtmWind != CfgPhysicsPrm_default.bAtmWind || bEchoAll)
 			ofs << "AtmosphericWind = " << BoolStr (CfgPhysicsPrm.bAtmWind) << '\n';
+		if (CfgPhysicsPrm.bBaseCollision != CfgPhysicsPrm_default.bBaseCollision || bEchoAll)
+			ofs << "BaseCollision = " << BoolStr (CfgPhysicsPrm.bBaseCollision) << '\n';
+		if (CfgPhysicsPrm.bScatterCollision != CfgPhysicsPrm_default.bScatterCollision || bEchoAll)
+			ofs << "ScatterCollision = " << BoolStr (CfgPhysicsPrm.bScatterCollision) << '\n';
+		if (CfgPhysicsPrm.bVesselCollision != CfgPhysicsPrm_default.bVesselCollision || bEchoAll)
+			ofs << "VesselCollision = " << BoolStr (CfgPhysicsPrm.bVesselCollision) << '\n';
 		if (CfgPhysicsPrm.bOrbitStabilise != CfgPhysicsPrm_default.bOrbitStabilise || bEchoAll)
 			ofs << "StabiliseOrbits = " << BoolStr (CfgPhysicsPrm.bOrbitStabilise) << '\n';
 		if (CfgPhysicsPrm.Stabilise_PLimit != CfgPhysicsPrm_default.Stabilise_PLimit || bEchoAll)

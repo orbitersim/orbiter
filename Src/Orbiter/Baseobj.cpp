@@ -31,6 +31,7 @@ BaseObject::BaseObject (const Base *_base): base(_base)
 	scale.x = scale.y = scale.z = 1.0;
 	rot = 0.0;
 	elev = yofs = 0.0;
+	bCollision = false;
 }
 
 BaseObject *BaseObject::Create (const Base *_base, istream &is)
@@ -124,6 +125,8 @@ int BaseObject::Read (istream &is)
 			} else {
 				rot *= RAD;
 			}
+		} else if (!_stricmp (label, "COLLISION")) {
+			bCollision = true;
 		} else {
 			r = ParseLine (label, value);
 			if (!res) res = r;
@@ -209,6 +212,8 @@ int MeshObject::ParseLine (const char *label, const char *value)
 		fname = _strdup (value);
 	} else if (!_stricmp (label, "WRAPTOSURFACE")) {
 		specs |= OBJSPEC_WRAPTOSURFACE;
+	} else if (!_stricmp (label, "COLLISION")) {
+		specs |= OBJSPEC_COLLISION;
 	} else if (!_stricmp (label, "SHADOW")) {
 		specs |= OBJSPEC_RENDERSHADOW /*| OBJSPEC_EXPORTSHADOWMESH*/;
 		// removed OBJSPEC_EXPORTSHADOWMESH to avoid accumulated shadow meshes with excessive
@@ -305,6 +310,11 @@ Mesh* MeshObject::ExportMesh ()
 {
 	if (specs & OBJSPEC_EXPORTMESH) return mesh;
 	else                            return NULL;
+}
+
+Mesh* MeshObject::GetCollisionMesh ()
+{
+	return mesh;
 }
 
 Mesh *MeshObject::ExportShadowMesh (double &shelev)

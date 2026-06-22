@@ -161,6 +161,68 @@ int _matherr(struct _exception *except )
 	return 0;
 }
 
+// =======================================================================
+// Global crash handler - logs crash address and module to Orbiter.log
+// =======================================================================
+static LONG WINAPI OrbiterCrashHandler(EXCEPTION_POINTERS *pExceptionInfo)
+{
+	DWORD code = pExceptionInfo->ExceptionRecord->ExceptionCode;
+	void *addr = pExceptionInfo->ExceptionRecord->ExceptionAddress;
+	
+	char buf[1024];
+	sprintf(buf, "*** UNHANDLED EXCEPTION: code=0x%08X, address=0x%p", code, addr);
+	oapiWriteLog(buf);
+	
+	// Try to find which module the crash address belongs to
+	HMODULE hMod = NULL;
+	if (GetModuleHandleEx(GET_MODULE_HANDLE_EX_FLAG_FROM_ADDRESS | GET_MODULE_HANDLE_EX_FLAG_UNCHANGED_REFCOUNT,
+	                      (LPCTSTR)addr, &hMod)) {
+		char modName[MAX_PATH];
+		if (GetModuleFileName(hMod, modName, MAX_PATH)) {
+			sprintf(buf, "*** CRASH MODULE: %s", modName);
+			oapiWriteLog(buf);
+		}
+		// Calculate offset within module
+		sprintf(buf, "*** CRASH OFFSET: 0x%p (module base: 0x%p, offset: 0x%X)",
+		        addr, hMod, (DWORD)((BYTE*)addr - (BYTE*)hMod));
+		oapiWriteLog(buf);
+	}
+	
+	// Log access violation details
+	if (code == 0xC0000005 && pExceptionInfo->ExceptionRecord->NumberParameters >= 2) {
+		ULONG_PTR rw = pExceptionInfo->ExceptionRecord->ExceptionInformation[0];
+		ULONG_PTR target = pExceptionInfo->ExceptionRecord->ExceptionInformation[1];
+		sprintf(buf, "*** ACCESS VIOLATION: %s address 0x%p",
+		        rw == 0 ? "reading" : rw == 1 ? "writing" : "executing",
+		        (void*)target);
+		oapiWriteLog(buf);
+	}
+	
+	// Log stack registers
+	CONTEXT *ctx = pExceptionInfo->ContextRecord;
+	if (ctx) {
+#if defined(_WIN64)
+		sprintf(buf, "*** REGISTERS: RIP=0x%016llX RSP=0x%016llX RBP=0x%016llX RAX=0x%016llX",
+		        ctx->Rip, ctx->Rsp, ctx->Rbp, ctx->Rax);
+		oapiWriteLog(buf);
+		sprintf(buf, "*** REGISTERS: RBX=0x%016llX RCX=0x%016llX RDX=0x%016llX RSI=0x%016llX RDI=0x%016llX",
+		        ctx->Rbx, ctx->Rcx, ctx->Rdx, ctx->Rsi, ctx->Rdi);
+#else
+		sprintf(buf, "*** REGISTERS: EIP=0x%08X ESP=0x%08X EBP=0x%08X EAX=0x%08X",
+		        ctx->Eip, ctx->Esp, ctx->Ebp, ctx->Eax);
+		oapiWriteLog(buf);
+		sprintf(buf, "*** REGISTERS: EBX=0x%08X ECX=0x%08X EDX=0x%08X ESI=0x%08X EDI=0x%08X",
+		        ctx->Ebx, ctx->Ecx, ctx->Edx, ctx->Esi, ctx->Edi);
+#endif
+		oapiWriteLog(buf);
+	}
+	
+	// Flush the log
+	LogOut("*** END CRASH REPORT ***");
+	
+	return EXCEPTION_CONTINUE_SEARCH;
+}
+
 
 // =======================================================================
 // WinMain()
@@ -169,6 +231,8 @@ int _matherr(struct _exception *except )
 
 INT WINAPI WinMain (HINSTANCE hInstance, HINSTANCE, LPSTR strCmdLine, INT nCmdShow)
 {
+	SetUnhandledExceptionFilter(OrbiterCrashHandler);
+
 #ifdef _CRTDBG_MAP_ALLOC
 	_CrtSetDbgFlag(_CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF);
 #endif
@@ -985,13 +1049,19 @@ void Orbiter::BroadcastGlobalInit ()
 HRESULT Orbiter::Render3DEnvironment (bool hidedialogs)
 {
 	if (gclient) {
-		if(!hidedialogs)
-			pDlgMgr->ImGuiNewFrame();
-		gclient->clbkRenderScene ();
-		Output2DData ();
-		if(!hidedialogs)
-			gclient->clbkImGuiRenderDrawData();
-		gclient->clbkDisplayFrame ();
+		__try {
+			if(!hidedialogs)
+				pDlgMgr->ImGuiNewFrame();
+			gclient->clbkRenderScene ();
+			Output2DData ();
+			if(!hidedialogs)
+				gclient->clbkImGuiRenderDrawData();
+			gclient->clbkDisplayFrame ();
+		} __except(EXCEPTION_EXECUTE_HANDLER) {
+			char buf[256];
+			sprintf(buf, "CRASH in Render3DEnvironment: exception code 0x%08X", GetExceptionCode());
+			LOGOUT(buf);
+		}
 	}
 	// Mark frame boundary for when using the profiler
 	FrameMark;

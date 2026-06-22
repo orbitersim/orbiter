@@ -36,13 +36,14 @@ extern D3D9Client *g_client;
 
 namespace DebugControls {
 
-DWORD dwGFX, dwCmd, nMesh, nGroup, sMesh, sGroup, debugFlags, dspMode, camMode, SelColor, sEmitter;
+DWORD dwGFX, dwCol, dwCmd, nMesh, nGroup, sMesh, sGroup, debugFlags, dspMode, camMode, SelColor, sEmitter;
 double camSpeed;
 float cpr, cpg, cpb, cpa;
 double resbias = 4.0;
 char visual[64];
 int  origwidth;
 GFXDialog *gfxDlg;
+class ColDialog *colDlg;
 HWND hDlg = NULL;
 HWND hDataWnd = NULL;
 vObject *vObj = NULL;
@@ -61,6 +62,7 @@ char SaveFileName[255];
 void UpdateMaterialDisplay(bool bSetup=false);
 
 void OpenGFXDlgClbk(void *context);
+void OpenColDlgClbk(void *context);
 
 class GFXDialog: public ImGuiDialog
 {
@@ -86,6 +88,30 @@ public:
 		if(ImGui::Button("Recrete Sun/Glares")) {
 			g_client->GetScene()->CreateSunGlare();
 		}
+		ImGui::PopItemWidth();
+	}
+};
+
+class ColDialog: public ImGuiDialog
+{
+public:
+	ColDialog():ImGuiDialog("Collider Visualization") {}
+	void OnDraw() override {
+		ImGui::PushItemWidth(150.0);
+		ImGui::SeparatorText("Physics Colliders");
+		
+		bool rock = Config->bShowScatterColliders == 1;
+		if (ImGui::Checkbox("Show Scatter Colliders", &rock))
+			Config->bShowScatterColliders = rock ? 1 : 0;
+			
+		bool base = Config->bShowBaseColliders == 1;
+		if (ImGui::Checkbox("Show Base Colliders", &base))
+			Config->bShowBaseColliders = base ? 1 : 0;
+			
+		bool vessel = Config->bShowVesselColliders == 1;
+		if (ImGui::Checkbox("Show Vessel Colliders", &vessel))
+			Config->bShowVesselColliders = vessel ? 1 : 0;
+			
 		ImGui::PopItemWidth();
 	}
 };
@@ -210,6 +236,9 @@ void Create()
 	gfxDlg = new GFXDialog();
 	dwGFX = oapiRegisterCustomCmd((char*)"D3D9 Graphics Controls", (char*)"This dialog allows to control various graphics options", OpenGFXDlgClbk, gfxDlg);
 
+	colDlg = new ColDialog();
+	dwCol = oapiRegisterCustomCmd((char*)"D3D9 Collider Visuals", (char*)"This dialog allows toggling physics collider visualizations", OpenColDlgClbk, colDlg);
+
 	resbias = 4.0 + Config->LODBias;
   
 	memset(&OpenTex, 0, sizeof(OPENFILENAME));
@@ -301,10 +330,15 @@ void Release()
 	oapiCloseDialog(gfxDlg);
 	delete gfxDlg;
 	gfxDlg = NULL;
+	oapiCloseDialog(colDlg);
+	delete colDlg;
+	colDlg = NULL;
 	if (dwCmd) oapiUnregisterCustomCmd(dwCmd);
 	if (dwGFX) oapiUnregisterCustomCmd(dwGFX);
+	if (dwCol) oapiUnregisterCustomCmd(dwCol);
 	dwCmd = NULL;
 	dwGFX = NULL;
+	dwCol = NULL;
 }
 
 // =============================================================================================
@@ -2098,7 +2132,10 @@ void OpenGFXDlgClbk(void *context)
 	oapiOpenDialog(gfx);
 }
 
-} //namespace
+void OpenColDlgClbk(void *context)
+{
+	ColDialog *col = (ColDialog *)context;
+	oapiOpenDialog(col);
+}
 
-
-
+} // namespace

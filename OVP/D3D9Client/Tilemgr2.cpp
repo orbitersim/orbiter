@@ -24,7 +24,7 @@
 // Externals
 static TEXCRDRANGE2 fullrange = {0,1,0,1};
 
-int SURF_MAX_PATCHLEVEL2 = 18; // move this somewhere else
+int SURF_MAX_PATCHLEVEL2 = 24; // TODO: move this somewhere else
 
 
 bool FileExists(const char* path)

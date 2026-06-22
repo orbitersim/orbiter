@@ -66,6 +66,7 @@ set(common_src
 	Celbody.cpp
 	Planet.cpp
 	Rigidbody.cpp
+	Scatterer.cpp
 	Star.cpp
 # Vessel classes
 	FlightRecorder.cpp

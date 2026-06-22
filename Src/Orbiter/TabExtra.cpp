@@ -67,7 +67,8 @@ void orbiter::ExtraTab::GetConfig (const Config *cfg)
 	RegisterExtraParam(new ExtraStabilisation(this), ht); TRACENEW
 	ht = RegisterExtraParam(new ExtraInstruments(this), NULL); TRACENEW
 	RegisterExtraParam(new ExtraMfdConfig(this), ht); TRACENEW
-	RegisterExtraParam(new ExtraVesselConfig(this), NULL); TRACENEW
+	ht = RegisterExtraParam(new ExtraVesselConfig(this), NULL); TRACENEW
+
 	RegisterExtraParam(new ExtraPlanetConfig(this), NULL); TRACENEW
 	ht = RegisterExtraParam(new ExtraDebug(this), NULL); TRACENEW
 	RegisterExtraParam(new ExtraShutdown(this), ht); TRACENEW
@@ -1029,6 +1030,7 @@ char *ExtraVesselConfig::Description ()
 {
 	return (char*)"Configure spacecraft parameters";
 }
+
 
 //=============================================================================
 // Root item for planet configurations (sub-items to be added by modules)

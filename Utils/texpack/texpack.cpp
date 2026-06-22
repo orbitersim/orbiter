@@ -82,6 +82,8 @@ MemTree::MemTree(const char *rootpath, const char *layer)
 		strcpy(ext, "elv");
 	else if (!stricmp(layer, "Label"))
 		strcpy(ext, "lab");
+	else if (!stricmp(layer, "Rock"))
+		strcpy(ext, "dds");
 	else ext[0] = '\0';
 }
 
@@ -311,6 +313,8 @@ TreeTOC::TreeTOC(const char *_root, const char *_layer, const MemTree *tree): mt
 		strcpy(ext, "elv");
 	else if (!stricmp(layer, "Label"))
 		strcpy(ext, "lab");
+	else if (!stricmp(layer, "Rock"))
+		strcpy(ext, "dds");
 	else ext[0] = '\0';
 
 	header.magic[0] = 'T';
@@ -354,6 +358,8 @@ TreeTOC::TreeTOC(const char *_root, const char *_layer): mtree(0)
 		strcpy(ext, "elv");
 	else if (!stricmp(layer, "Label"))
 		strcpy(ext, "lab");
+	else if (!stricmp(layer, "Rock"))
+		strcpy(ext, "dds");
 	else ext[0] = '\0';
 
 	header.magic[0] = 'T';
@@ -616,6 +622,7 @@ int main(int narg, char *arg[])
 		std::cerr << "  Elev_mod pack elevation modification tiles" << std::endl;
 		std::cerr << "  Cloud    pack cloud tiles" << std::endl;
 		std::cerr << "  Label    pack surface label tiles" << std::endl;
+		std::cerr << "  Rock     pack rock density map tiles" << std::endl;
 		std::cerr << "\n<Flags>:" << std::endl;
 		std::cerr << "  -e   : unpack compressed archive into individual tiles" << std::endl;
 		std::cerr << "  -L<x>: pack/unpack tiles up to maximum level <x>" << std::endl;

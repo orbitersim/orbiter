@@ -333,10 +333,32 @@ def get_valid_vs_instance():
         if version.startswith("15."): return "Visual Studio 15 2017", path
     return None, None
 
+import shlex
+
 def buildAndInstall(targetDirectory):
     os.environ.pop("CC", None)
     os.environ.pop("CXX", None)
     os.environ.pop("CMAKE_GENERATOR", None)
+
+    printHeader("CMake Configuration Options")
+    change_cmake_args = input(f"{Colors.HEADER}Do you want to configure custom CMake arguments? [y/N]: {Colors.RESET}").strip().lower()
+    
+    custom_args = []
+    override_defaults = False
+    
+    if change_cmake_args in ['y', 'yes']:
+        printInfo("You can provide additional CMake configuration arguments (e.g., -DCMAKE_BUILD_TYPE=Debug).")
+        custom_args_input = input(f"{Colors.INFO}Enter custom CMake arguments: {Colors.RESET}").strip()
+        
+        if custom_args_input:
+            custom_args = shlex.split(custom_args_input)
+            printInfo("\nBy default, the script sets the Generator, Architecture (-A Win32), Install Prefix, and HTML Help paths.")
+            override_choice = input(f"{Colors.HEADER}Do you want your arguments to REPLACE these default arguments? [y/N]: {Colors.RESET}").strip().lower()
+            if override_choice in ['y', 'yes']:
+                override_defaults = True
+                printWarning("Default configuration arguments will be replaced.")
+            else:
+                printSuccess("Custom arguments will be appended to the defaults.")
 
     printHeader("Configuring CMake build")
     buildDirectory = "build"
@@ -358,24 +380,49 @@ def buildAndInstall(targetDirectory):
             dx_dir += '\\'
         os.environ["DXSDK_DIR"] = dx_dir
     
+    # Detect HTML Help Compiler (hhc.exe) for documentation builds
+    hhc_path = shutil.which("hhc.exe")
+    if not hhc_path:
+        # Check common installation paths
+        for candidate in [
+            r"C:\Program Files (x86)\HTML Help Workshop\hhc.exe",
+            r"C:\Program Files\HTML Help Workshop\hhc.exe",
+        ]:
+            if os.path.exists(candidate):
+                hhc_path = candidate
+                break
+    
+    make_doc = "ON" if hhc_path else "OFF"
+    if not hhc_path:
+        printWarning("HTML Help Compiler (hhc.exe) not found. Documentation targets will be skipped.")
+
     cmakeConfigCommand = [
         "cmake",
         "-B", buildDirectory,
         "-S", ".",
-        "-A", "Win32",
-        "-DCMAKE_INSTALL_PREFIX=install",
-        "-DCMAKE_POLICY_VERSION_MINIMUM=3.5",
-        f"-DHTML_HELP_INCLUDE_PATH={htmlHelpIncludePath}",
-        f"-DHTML_HELP_LIBRARY={htmlHelpLibraryPath}",
-        "-DHTML_HELP_COMPILER=hhc.exe"
     ]
     
-    if generator:
-        cmakeConfigCommand.insert(1, generator)
-        cmakeConfigCommand.insert(1, "-G")
+    if not override_defaults:
+        if generator:
+            cmakeConfigCommand.insert(1, generator)
+            cmakeConfigCommand.insert(1, "-G")
+            
+        if instance_path and generator:
+            cmakeConfigCommand.append(f"-DCMAKE_GENERATOR_INSTANCE={instance_path}")
+            
+        cmakeConfigCommand.extend([
+            "-A", "Win32",
+            "-DCMAKE_INSTALL_PREFIX=install",
+            "-DCMAKE_POLICY_VERSION_MINIMUM=3.5",
+            f"-DHTML_HELP_INCLUDE_PATH={htmlHelpIncludePath}",
+            f"-DHTML_HELP_LIBRARY={htmlHelpLibraryPath}",
+            f"-DORBITER_MAKE_DOC={make_doc}",
+        ])
         
-    if instance_path and generator:
-        cmakeConfigCommand.append(f"-DCMAKE_GENERATOR_INSTANCE={instance_path}")
+        if hhc_path:
+            cmakeConfigCommand.append(f"-DHTML_HELP_COMPILER={hhc_path}")
+            
+    cmakeConfigCommand.extend(custom_args)
     
     runCommand(cmakeConfigCommand, workingDirectory=targetDirectory, quiet=True)
 

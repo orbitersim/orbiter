@@ -5,6 +5,13 @@
 
 \subsection{New features}
 $\blacktriangleright$ Added option PlanetTexDir to Orbiter.cfg to redirect planetary texture directories\\
+$\blacktriangleright$ \textbf{Collision and Physics Engine:}\\
+$\circ$ \textbf{GJK/EPA convex hull collisions (primary):} Implemented a high-performance collision detection system based on the Gilbert--Johnson--Keerthi (GJK) algorithm for intersection testing and the Expanding Polytope Algorithm (EPA) for penetration depth computation. Vessel meshes are densely sampled and spatially clustered into convex sub-hulls, enabling fast and accurate collision detection between vessels, and between vessels and planetary surface objects. This is the default collision path for all vessels.\\
+$\circ$ \textbf{Point-to-triangle fallback:} A point-to-triangle intersection path using M\"oller-Trumbore ray-triangle tests is retained as a fallback for non-convex vessel pairs, supporting both static barycentric containment and continuous collision detection (CCD) for through-penetration on thin geometry.\\
+$\circ$ \textbf{Scatterer System:} A new procedural scatterer system (foliage and rocks) has been added, supporting physical collisions with vessels.\\
+$\circ$ \textbf{Rigid-body dynamics:} Collisions are resolved using a Newtonian rigid-body impulse solver, calculating both normal and tangential (friction) impulses for realistic physics interactions.\\
+$\circ$ \textbf{Docking exclusion zones:} Collision detection is automatically suppressed near docking ports during approach to allow the docking mechanism to engage without triggering false collisions.\\
+$\circ$ \textbf{Base Configuration:} Added support for the \texttt{COLLISION} marker in base \texttt{.cfg} files to enable/disable collision detection on a per-mesh basis.\\
 \begin{sloppypar}% for large words
 $\blacktriangleright$ D3D9Client:\\
 $\circ$ D3D9Client with full development history added\\

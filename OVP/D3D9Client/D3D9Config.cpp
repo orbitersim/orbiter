@@ -98,6 +98,13 @@ void D3D9Config::Reset ()
 	bIrradiance			= 1;
 	bAtmoQuality		= 1;
 	NoPlanetAA			= 0;
+	bScatterShadows		= 1;
+	bShowScatterColliders  = 0;
+	bShowBaseColliders  = 0;
+	bShowVesselColliders= 0;
+	fScatterDistSmall      = 0.25f;
+	fScatterDistMedium     = 0.5f;
+	fScatterDistLarge      = 1.0f;
 	
 	GFXIntensity = 0.5;
 	GFXDistance = 0.8;
@@ -199,6 +206,13 @@ bool D3D9Config::ReadParams ()
 	if (oapiReadItem_int   (hFile, (char*)"DebugBreak", i))					DebugBreak = max(0, min(1, i));
 	if (oapiReadItem_int   (hFile, (char*)"ShaderCacheUse", i))				ShaderCacheUse = max(0, min(1, i));
 	if (oapiReadItem_int   (hFile, (char*)"NoPlanetAA", i))					NoPlanetAA = max(0, min(1, i));
+	if (oapiReadItem_int   (hFile, (char*)"ScatterShadows", i))		bScatterShadows = max(0, min(1, i));
+	if (oapiReadItem_int   (hFile, (char*)"ShowScatterColliders", i))  bShowScatterColliders = max(0, min(1, i));
+	if (oapiReadItem_int   (hFile, (char*)"ShowBaseColliders", i))  bShowBaseColliders = max(0, min(1, i));
+	if (oapiReadItem_int   (hFile, (char*)"ShowVesselColliders", i))bShowVesselColliders = max(0, min(1, i));
+	if (oapiReadItem_float (hFile, (char*)"ScatterDistSmall", d))		fScatterDistSmall = (float)max(0.0, min(1.0, d));
+	if (oapiReadItem_float (hFile, (char*)"ScatterDistMedium", d))	fScatterDistMedium = (float)max(0.0, min(1.0, d));
+	if (oapiReadItem_float (hFile, (char*)"ScatterDistLarge", d))		fScatterDistLarge = (float)max(0.0, min(1.0, d));
 	if (oapiReadItem_float (hFile, (char*)"OrbitalShadowMult", d))			    OrbitalShadowMult = max(0.5, min(10.0, d));
 
 	if (oapiReadItem_float (hFile, (char*)"GFXIntensity", d))					GFXIntensity = max(0.0, min(1.0, d));
@@ -290,6 +304,13 @@ void D3D9Config::WriteParams ()
 	oapiWriteItem_int	(hFile, (char*)"DebugBreak", DebugBreak);
 	oapiWriteItem_int	(hFile, (char*)"ShaderCacheUse", ShaderCacheUse);
 	oapiWriteItem_int	(hFile, (char*)"NoPlanetAA", NoPlanetAA);
+	oapiWriteItem_int   (hFile, (char*)"ScatterShadows", bScatterShadows);
+	oapiWriteItem_int   (hFile, (char*)"ShowScatterColliders", bShowScatterColliders);
+	oapiWriteItem_int   (hFile, (char*)"ShowBaseColliders", bShowBaseColliders);
+	oapiWriteItem_int   (hFile, (char*)"ShowVesselColliders", bShowVesselColliders);
+	oapiWriteItem_float (hFile, (char*)"ScatterDistSmall", fScatterDistSmall);
+	oapiWriteItem_float (hFile, (char*)"ScatterDistMedium", fScatterDistMedium);
+	oapiWriteItem_float (hFile, (char*)"ScatterDistLarge", fScatterDistLarge);
 
 	oapiWriteItem_float (hFile, (char*)"OrbitalShadowMult", OrbitalShadowMult);
 	oapiWriteItem_float (hFile, (char*)"GFXIntensity", GFXIntensity);

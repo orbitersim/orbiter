@@ -1517,7 +1517,7 @@ void Scene::RenderMainScene()
 	int shadow_lod = -1;
 	float bouble_rad = 10.0f;		// Terrain shadow mapping coverage
 
-	if (Config->ShadowMapMode >= 1 && Config->TerrainShadowing == 2) {
+	if (Config->ShadowMapMode >= 1 && Config->TerrainShadowing == 2 && vFocus->IsActive()) {
 
 		SmapRenderList.clear();
 		SmapRenderList.push_back(vFocus);
@@ -1784,7 +1784,7 @@ void Scene::RenderMainScene()
 
 	// Render the vessels inside the shadows
 	//
-	if (Config->ShadowMapMode >= 1) {
+	if (Config->ShadowMapMode >= 1 && vFocus->IsActive()) {
 
 		D3DXVECTOR3 ld = sunLight.Dir;
 		D3DXVECTOR3 pos = vFocus->GetBoundingSpherePosDX();
@@ -2142,10 +2142,10 @@ void Scene::RenderMainScene()
 		switch (sel) {
 		case 1:		case 2:		case 3:		case 4:
 		case 5:
-			VisualizeCubeMap(vFocus->GetEnvMap(ENVMAP_MAIN), sel - 1);
+			if (vFocus->IsActive()) VisualizeCubeMap(vFocus->GetEnvMap(ENVMAP_MAIN), sel - 1);
 			break;
 		case 6:
-			VisualizeCubeMap(vFocus->GetIrradEnv(), 0);
+			if (vFocus->IsActive()) VisualizeCubeMap(vFocus->GetIrradEnv(), 0);
 			break;
 		case 7:
 			VisualizeCubeMap(pIrradTemp, 0);
@@ -2158,7 +2158,7 @@ void Scene::RenderMainScene()
 			}
 			break;
 		case 9:
-			if (vFocus->GetIrradianceMap()) {
+			if (vFocus->IsActive() && vFocus->GetIrradianceMap()) {
 				pSketch = GetPooledSketchpad(SKETCHPAD_2D_OVERLAY);
 				pSketch->CopyRectNative(vFocus->GetIrradianceMap(), NULL, 0, 0);
 				pSketch->EndDrawing();
@@ -2467,6 +2467,7 @@ D3DXCOLOR Scene::GetSunDiffColor()
 //
 int Scene::RenderShadowMap(D3DXVECTOR3 &pos, D3DXVECTOR3 &ld, float rad, bool bInternal, bool bListExists)
 {
+	smap.pShadowMap = NULL;
 	rad *= 1.02f;
 
 	smap.pos = pos;
@@ -2497,7 +2498,9 @@ int Scene::RenderShadowMap(D3DXVECTOR3 &pos, D3DXVECTOR3 &ld, float rad, bool bI
 		}
 
 		// Compute shadow lod
-		rsmax = viewh * rad / (tanap * D3DXVec3Length(&pos));
+		float dist = D3DXVec3Length(&pos);
+		if (dist < 1.0f) dist = 1.0f;
+		rsmax = viewh * rad / (tanap * dist);
 	}
 
 
@@ -2513,10 +2516,14 @@ int Scene::RenderShadowMap(D3DXVECTOR3 &pos, D3DXVECTOR3 &ld, float rad, bool bI
 
 			// Compute shadow lod
 			D3DXVECTOR3 bspos = vV->GetBoundingSpherePosDX();
-			float rs = viewh * rad / (tanap * D3DXVec3Length(&bspos));
+			float dist = D3DXVec3Length(&bspos);
+			if (dist < 1.0f) dist = 1.0f;
+			float rs = viewh * rad / (tanap * dist);
 			if (rs > rsmax) rsmax = rs;
 		}
 	}
+
+	if (mnd > mxd || rsmax <= 0.0f) return -1;
 
 	smap.depth = (mxd - mnd) + 10.0f;
 

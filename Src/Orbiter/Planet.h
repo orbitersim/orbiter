@@ -21,9 +21,12 @@
 #include "Nav.h"
 #include "GraphicsAPI.h"
 #include "Orbiter.h"
+#include "OrbiterAPI.h"
 #include <functional>
 #include <filesystem>
 namespace fs = std::filesystem;
+
+class Scatterer;
 
 #define FILETYPE_MARKER 1
 
@@ -90,6 +93,9 @@ public:
 	void Setup ();
 
 	int Type() const { return OBJTP_PLANET; }
+
+	ScattererCfg ScatterCfg;
+	Scatterer *GetScatterer() const { return m_scatterer; }
 
 	const void *GetParam (DWORD paramtype) const;
 
@@ -301,6 +307,8 @@ private:
 	TileManager2<CloudTile> *cmgr2;   // cloud layer manager
 	ElevationManager *emgr;           // elevation manager
 	double elev_res;                  // target elevation resolution [m]
+
+	Scatterer *m_scatterer;       // core surface scatter system (owned)
 };
 
 #endif // !__PLANET_H
