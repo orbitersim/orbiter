@@ -3145,10 +3145,6 @@ void Scene::ExitGDIResources ()
 	oapiReleaseFont(pAxisFont);
 	oapiReleaseFont(pLabelFont);
 	oapiReleaseFont(pDebugFont);
-
-	for (int i = 0; i < 4; ++i) {
-		gc->clbkReleaseFont(label_font[i]);
-	}
 	
 	// Only delete the cache. The label_font are just weak refs!
 	for(auto &[size, font] : labelFontCache) {
@@ -3705,7 +3701,7 @@ void Scene::RenderCustomCameraView(CAMREC *cCur)
 	RenderSecondaryScene(List, Lights, 0xFF);
 
 	// Render surface labels
-	if(/*cCur->dwFlags & CUSTOMCAM_SURFACE_LABELS*/ true)
+	if(cCur->dwFlags & CUSTOMCAM_SURFACE_LABELS)
 	{
 		RenderLabelsForCustomCamera();
 	}
