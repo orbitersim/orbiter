@@ -3133,10 +3133,8 @@ void Scene::InitGDIResources ()
 	pDebugFont = oapiCreateFont(Config->DebugFontSize, true, dbgfnt, FONT_NORMAL, 0);
 
 	for (int i = 0; i < 4; ++i) {
-		label_font[i] = CreateLabelFont(FONT_SIZES[i]);
-		label_font_scaled[i] = NULL;
+		label_font[i] = GetOrCreateLabelFont(FONT_SIZES[i]);
 	}
-	labelScaleCached = 0.0f;
 	//@todo: different pens for different fonts?
 }
 
@@ -3150,7 +3148,11 @@ void Scene::ExitGDIResources ()
 
 	for (int i = 0; i < 4; ++i) {
 		gc->clbkReleaseFont(label_font[i]);
-		if (label_font_scaled[i]) gc->clbkReleaseFont(label_font_scaled[i]);
+	}
+	
+	// Only delete the cache. The label_font are just weak refs!
+	for(auto &[size, font] : labelFontCache) {
+		gc->clbkReleaseFont(font);
 	}
 }
 
@@ -3602,9 +3604,16 @@ void Scene::CustomCameraOnOff(CAMERAHANDLE hCamera, bool bOn)
 
 // ===========================================================================================
 //
-Font* Scene::CreateLabelFont(int size)
+Font* Scene::GetOrCreateLabelFont(int size)
 {
-	return gc->clbkCreateFont(size, true, "Arial", FONT_BOLD);
+	auto it = labelFontCache.find(size);
+	if(it == labelFontCache.end())
+	{
+		Font* newFont = gc->clbkCreateFont(size, true, "Arial", FONT_BOLD);
+		it = labelFontCache.emplace(size, newFont).first;
+	}
+
+	return it->second;
 }
 
 // ===========================================================================================
@@ -3626,21 +3635,19 @@ void Scene::RenderLabelsForCustomCamera()
 
 	const float labelScale = Camera.labelScale;
 
-	if (labelScale != labelScaleCached) {
-		for (int i = 0; i < 4; ++i) {
-			if (label_font_scaled[i]) gc->clbkReleaseFont(label_font_scaled[i]);
-			label_font_scaled[i] = CreateLabelFont((int)(FONT_SIZES[i] * labelScale));
-		}
-		labelScaleCached = labelScale;
-	}
-
+	// Set-up pen before calling Label rendering logic. Otherwise the marks were not visible
 	skp->QuickPen(RGB(255, 255, 255), labelScale);
 
+	Font* fonts[4];
+	for (int i = 0; i < 4; i++) {
+		// Retrieve cached fonts or create them new. This prevents recreating fonts when having different custom cameras at the cost of O(log n) access
+		fonts[i] = GetOrCreateLabelFont((int)(FONT_SIZES[i] * labelScale));
+	}
+
 	int fontidx = -1;
-	planet->RenderLabels(pDevice, skp, label_font_scaled, &fontidx);
+	planet->RenderLabels(pDevice, skp, fonts, &fontidx);
 
 	skp->EndDrawing();
-
 }
 
 // ===========================================================================================
