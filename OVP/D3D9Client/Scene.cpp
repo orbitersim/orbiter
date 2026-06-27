@@ -51,6 +51,8 @@ D3DXHANDLE Scene::eTex0 = 0;
 
 D3DXVECTOR4 IKernel[IKernelSize];
 
+static const int FONT_SIZES[4] = { 12, 16, 20, 26 };
+
 bool sort_vessels(const vVessel *a, const vVessel *b)
 {
 	return a->CameraTgtDist() < b->CameraTgtDist();
@@ -3130,10 +3132,11 @@ void Scene::InitGDIResources ()
 	pLabelFont = oapiCreateFont(15, false, "Arial", FONT_NORMAL, 0);
 	pDebugFont = oapiCreateFont(Config->DebugFontSize, true, dbgfnt, FONT_NORMAL, 0);
 
-	const int fsize[4] = { 12, 16, 20, 26 };
 	for (int i = 0; i < 4; ++i) {
-		label_font[i] = gc->clbkCreateFont(fsize[i], true, "Arial", FONT_BOLD);
+		label_font[i] = CreateLabelFont(FONT_SIZES[i]);
+		label_font_scaled[i] = NULL;
 	}
+	labelScaleCached = 0.0f;
 	//@todo: different pens for different fonts?
 }
 
@@ -3147,6 +3150,7 @@ void Scene::ExitGDIResources ()
 
 	for (int i = 0; i < 4; ++i) {
 		gc->clbkReleaseFont(label_font[i]);
+		if (label_font_scaled[i]) gc->clbkReleaseFont(label_font_scaled[i]);
 	}
 }
 
@@ -3598,6 +3602,13 @@ void Scene::CustomCameraOnOff(CAMERAHANDLE hCamera, bool bOn)
 
 // ===========================================================================================
 //
+Font* Scene::CreateLabelFont(int size)
+{
+	return gc->clbkCreateFont(size, true, "Arial", FONT_BOLD);
+}
+
+// ===========================================================================================
+//
 void Scene::RenderLabelsForCustomCamera()
 {
 	if(!surfLabelsActive)
@@ -3613,8 +3624,20 @@ void Scene::RenderLabelsForCustomCamera()
 	if(!skp)
 		return;
 
+	const float labelScale = Camera.labelScale;
+
+	if (labelScale != labelScaleCached) {
+		for (int i = 0; i < 4; ++i) {
+			if (label_font_scaled[i]) gc->clbkReleaseFont(label_font_scaled[i]);
+			label_font_scaled[i] = CreateLabelFont((int)(FONT_SIZES[i] * labelScale));
+		}
+		labelScaleCached = labelScale;
+	}
+
+	skp->QuickPen(RGB(255, 255, 255), labelScale);
+
 	int fontidx = -1;
-	planet->RenderLabels(pDevice, skp, label_font, &fontidx);
+	planet->RenderLabels(pDevice, skp, label_font_scaled, &fontidx);
 
 	skp->EndDrawing();
 
@@ -3659,7 +3682,7 @@ void Scene::RenderCustomCameraView(CAMREC *cCur)
 	// Copy target surface dimensions. This is needed so the surface label render path can correctly compute the projection
 	Camera.viewportW = w;
 	Camera.viewportH = h;
-	Camera.labelScale = max(1.0f, min(2.0f, (float)h / (float)viewH));
+	Camera.labelScale = max(1.0f, (float)h / (float)viewH) * 1.5f;
 	
 	VOBJREC *pv = NULL;
 	std::set<vVessel*> List;

@@ -293,7 +293,7 @@ void TileLabel::Render (D3D9Pad *skp, oapi::Font **labelfont, int *fontidx)
 				skp->SetFont(labelfont[idx]);
 				*fontidx = idx;
 			}
-			scale = symscale[idx];
+			scale = max(1, int(symscale[idx] * labelScale));
 			sp = mul(Rpl, renderlabel[i]->pos) + Ppl - *Pcam;
 			dir = unit(sp);
 			if (pScene->CameraDirection2Viewport(dir, x, y)) {

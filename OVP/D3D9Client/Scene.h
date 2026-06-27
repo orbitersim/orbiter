@@ -445,6 +445,7 @@ private:
 	void FreePooledSketchpads();      ///< Release pooled Sketchpad instances
 
 	void RenderLabelsForCustomCamera();
+	Font* CreateLabelFont(int size);
 
 
 
@@ -470,6 +471,8 @@ private:
 	// GDI resources ====================================================================
 	//
 	oapi::Font *label_font[4];
+	oapi::Font *label_font_scaled[4];
+	float labelScaleCached;
 
 	std::list<vVessel *> RenderList;
 	std::list<vVessel *> SmapRenderList;
