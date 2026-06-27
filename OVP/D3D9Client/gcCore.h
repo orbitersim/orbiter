@@ -95,6 +95,7 @@ static class gcCore2 *pCoreInterface = NULL;
 /// \defgroup dwFlags for gcSetupCustomCamera() API function
 ///@{
 #define CUSTOMCAM_DEFAULTS				0x00FF
+#define CUSTOMCAM_SURFACE_LABELS        0x0100
 ///@}
 
 /// \defgroup Polyline Polyline object creation and update flags

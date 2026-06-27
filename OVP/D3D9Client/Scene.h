@@ -148,6 +148,13 @@ public:
 
 		double		alt_near;
 		double		lng, lat, elev;
+
+		// Pixel viewport associated with the current camera.
+		// Uses main scene viewport when zero
+		DWORD viewportW;
+		DWORD viewportH;
+		// Scale for 2D Labels
+		float labelScale;
 	};
 
 	// Screen space sun visual parameters ==================================================
@@ -436,6 +443,8 @@ private:
 	void ExitGDIResources();
 
 	void FreePooledSketchpads();      ///< Release pooled Sketchpad instances
+
+	void RenderLabelsForCustomCamera();
 
 
 

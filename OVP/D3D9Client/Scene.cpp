@@ -120,6 +120,7 @@ Scene::Scene(D3D9Client *_gc, DWORD w, DWORD h)
 
 	SetCameraAperture(float(RAD*50.0), float(viewH)/float(viewW));
 	SetCameraFrustumLimits(2.5f, 5e6f); // initial limits
+	Camera.labelScale = 1.0f;
 
 	m_celSphere = new D3D9CelestialSphere(gc, this);
 	Lights = new D3D9Light[MAX_SCENE_LIGHTS];
@@ -3597,6 +3598,30 @@ void Scene::CustomCameraOnOff(CAMERAHANDLE hCamera, bool bOn)
 
 // ===========================================================================================
 //
+void Scene::RenderLabelsForCustomCamera()
+{
+	if(!surfLabelsActive)
+		return;
+	
+	vPlanet *planet = GetCameraProxyVisual();
+
+	if(!planet)
+		return;
+
+	D3D9Pad *skp = GetPooledSketchpad(SKETCHPAD_LABELS);
+
+	if(!skp)
+		return;
+
+	int fontidx = -1;
+	planet->RenderLabels(pDevice, skp, label_font, &fontidx);
+
+	skp->EndDrawing();
+
+}
+
+// ===========================================================================================
+//
 void Scene::RenderCustomCameraView(CAMREC *cCur)
 {
 	VESSEL *pVes = oapiGetVesselInterface(cCur->hVessel);
@@ -3631,6 +3656,10 @@ void Scene::RenderCustomCameraView(CAMREC *cCur)
 	SetCameraFrustumLimits(0.1, 2e7);
 	SetupInternalCamera(&mEnv, &gpos, cCur->dAperture, double(h)/double(w));
 
+	// Copy target surface dimensions. This is needed so the surface label render path can correctly compute the projection
+	Camera.viewportW = w;
+	Camera.viewportH = h;
+	Camera.labelScale = max(1.0f, min(2.0f, (float)h / (float)viewH));
 	
 	VOBJREC *pv = NULL;
 	std::set<vVessel*> List;
@@ -3643,6 +3672,12 @@ void Scene::RenderCustomCameraView(CAMREC *cCur)
 	gc->PushRenderTarget(pSrf, pDSs, RENDERPASS_CUSTOMCAM);
 
 	RenderSecondaryScene(List, Lights, 0xFF);
+
+	// Render surface labels
+	if(/*cCur->dwFlags & CUSTOMCAM_SURFACE_LABELS*/ true)
+	{
+		RenderLabelsForCustomCamera();
+	}
 
 	gc->PopRenderTargets();
 
@@ -3768,11 +3803,19 @@ bool Scene::CameraDirection2Viewport(const VECTOR3 &dir, int &x, int &y)
 	D3DXVECTOR3 idir = D3DXVECTOR3( -float(dir.x), -float(dir.y), -float(dir.z) );
 	D3DMAT_VectorMatrixMultiply(&homog, &idir, &Camera.mProjView);
 	if (homog.x >= -1.0f && homog.y <= 1.0f && homog.z >= 0.0) {
+		const DWORD width = Camera.viewportW != 0 ? Camera.viewportW : viewW;
+		const DWORD height = Camera.viewportH != 0 ? Camera.viewportH : viewH;
+
+		if(width == 0 || height == 0)
+		{
+			return false;
+		}
+
 		if (std::hypot(homog.x, homog.y) < 1e-6) {
-			x = viewW / 2, y = viewH / 2;
+			x = width / 2, y = height / 2;
 		} else {
-			x = (int)(viewW*0.5f*(1.0f + homog.x));
-			y = (int)(viewH*0.5f*(1.0f - homog.y));
+			x = (int)(width*0.5f*(1.0f + homog.x));
+			y = (int)(height*0.5f*(1.0f - homog.y));
 		}
 		return true;
 	}

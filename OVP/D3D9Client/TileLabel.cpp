@@ -279,6 +279,8 @@ void TileLabel::Render (D3D9Pad *skp, oapi::Font **labelfont, int *fontidx)
 	MATRIX3 Rpl;
 	oapiGetRotationMatrix(hPlanet, &Rpl);            // planet rotation matrix
 	VECTOR3 campos = tmul(Rpl, *Pcam - Ppl);         // camera pos in planet frame
+	
+	const float labelScale = pScene->GetCamera()->labelScale;
 
 	Tick();
 
