@@ -106,6 +106,7 @@ public:
 		bool		bActive;
 		__gcRenderProc pRenderProc;
 		void*		pUser;
+		float       fSurfLabelScale;
 	};
 
 	std::set<CAMREC*> CustomCams;
@@ -325,6 +326,7 @@ public:
 	int				DeleteCustomCamera(CAMERAHANDLE hCamera);
 	void			DeleteAllCustomCameras();
 	void			CustomCameraOnOff(CAMERAHANDLE hCamera, bool bOn);
+	void 			SetCustomCameraSurfaceLabelScale(CAMERAHANDLE hCamera, float scale);
 	void			RenderCustomCameraView(CAMREC *cCur);
 
 

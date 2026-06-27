@@ -426,6 +426,13 @@ public:
 	gc_interface void CustomCameraOverlay(CAMERAHANDLE hCam, __gcRenderProc clbk, void* pUser);
 
 	/**
+	 * \brief Sets the scale at which the surface labels are to be rendered for this camera. Can be used to adapt it to the real screen size of the target surface
+	 * \param hCam camera handle to modify the surface label scale
+	 * \param scale scale factor to apply
+	 */
+	gc_interface void SetCustomCameraSurfaceLabelScale(CAMERAHANDLE hCam, float scale);
+
+	/**
 	* \brief Create a new custom camera that can be used to render views into a surfaces and textures
 	* \param hCam camera handle to modify an existing camera or, NULL
 	* \param hVessel handle to a vessel where the camera is attached to.

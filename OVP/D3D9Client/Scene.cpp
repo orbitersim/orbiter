@@ -3590,6 +3590,7 @@ CAMERAHANDLE Scene::SetupCustomCamera(CAMERAHANDLE hCamera, OBJHANDLE hVessel, M
 	pv->vPosition = pos;
 	pv->hVessel = hVessel;
 	pv->iError = 0;
+	pv->fSurfLabelScale = 1.0f;
 
 	return (CAMERAHANDLE)pv;
 }
@@ -3689,7 +3690,7 @@ void Scene::RenderCustomCameraView(CAMREC *cCur)
 	// Copy target surface dimensions. This is needed so the surface label render path can correctly compute the projection
 	Camera.viewportW = w;
 	Camera.viewportH = h;
-	Camera.labelScale = max(1.0f, (float)h / (float)viewH) * 1.5f;
+	Camera.labelScale = cCur->fSurfLabelScale;
 	
 	VOBJREC *pv = NULL;
 	std::set<vVessel*> List;
@@ -3713,6 +3714,23 @@ void Scene::RenderCustomCameraView(CAMREC *cCur)
 
 	PopPass();
 	PopCamera();
+}
+
+void Scene::SetCustomCameraSurfaceLabelScale(CAMERAHANDLE hCamera, float scale)
+{
+	if(!hCamera) {
+		return;
+	}
+
+	if(scale <= 0.0f || !std::isfinite(scale)) {
+		return;
+	}
+
+	CAMREC* camera = CAMERA(hCamera);
+
+	camera->fSurfLabelScale = std::clamp(scale, 0.25f, 8.0f);
+
+	return;
 }
 
 
