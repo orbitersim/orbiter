@@ -510,7 +510,7 @@ void Atlantis::VLiftCoeff (double aoa, double M, double Re, double *cl, double *
     static const double CL[nabsc] = {0.1, 0.17, 0.2, 0.2, 0.17, 0.1, 0, -0.11, -0.65, -1.25, -1.3, -0.65, -0.02, 0.6355, 1.25, 1.3, 0.7, 0.13, 0, -0.16, -0.26, -0.29, -0.24, -0.1, 0.1};
     static const double CM[nabsc] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0.002, 0.004, 0.0025, 0.0012, 0, -0.0012, -0.0007, 0, 0, 0, 0, 0, 0, 0, 0, 0};
 	// lift and moment coefficients from -180 to 180 in 15 degree steps.
-	// This uses a documented lift slope of 0.0437/deg, everything else is rather ad-hoc
+	// This uses a documented Cl_max of ~1.3 at  ~ 35 deg, everything else is rather ad-hoc
 
 	aoa += PI;
 	int idx = max (0, min (23, (int)(aoa*istep)));
