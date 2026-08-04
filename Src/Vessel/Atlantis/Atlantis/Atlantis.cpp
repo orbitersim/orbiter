@@ -244,7 +244,7 @@ Atlantis::Atlantis (OBJHANDLE hObj, int fmodel)
 	ph_oms  = CreatePropellantResource (ORBITER_MAX_PROPELLANT_MASS); // OMS propellant
 	SetDefaultPropellantResource (ph_oms); // display OMS tank level in generic HUD
 
-	// Orbiter engines
+	// Orbiter engines	
 	CreateSSME(); // main thrusters
 	CreateOMS();  // OMS thrusters (activated only after tank separation)
 	CreateRCS();  // Reaction control system (activated only after tank separation)
@@ -262,7 +262,7 @@ Atlantis::Atlantis (OBJHANDLE hObj, int fmodel)
 	center_arm      = false;
 	arm_moved       = arm_scheduled = false;
 	bManualSeparate = false;
-	ofs_sts_sat     = _V(0,0,0);
+	ofs_sts_sat     = _V(0,0,0);      
 	do_eva          = false;
 	do_plat         = false;
 	do_cargostatic  = false;
@@ -397,7 +397,7 @@ void Atlantis::CreateRCS()
 	AddExhaust (th_att_rot[1], eh, ew1, _V( 3.43, 3.20,-12.70), _V(0, 1,0), tex_rcs);//R2U
 	AddExhaust (th_att_rot[1], eh, ew1, _V( 3.43, 3.20,-13.10), _V(0, 1,0), tex_rcs);//R1U
 
-	AddExhaust (th_att_rot[2], eh, ew1, _V(-0.4 , 1.10, 18.3 ), _V(0, 1,0), tex_rcs);//F1U
+	AddExhaust (th_att_rot[2], eh, ew1, _V(-0.4 , 1.10, 18.3 ), _V(0, 1,0), tex_rcs);//F1U	
 	AddExhaust (th_att_rot[2], eh, ew1, _V( 0.0 , 1.15 ,18.3 ), _V(0, 1,0), tex_rcs);//F3U
 	AddExhaust (th_att_rot[2], eh, ew1, _V( 0.4 , 1.10, 18.3 ), _V(0, 1,0), tex_rcs);//F2U
 
@@ -476,7 +476,6 @@ void Atlantis::CreateRCS()
 	AddExhaust (th_att_lin[1], eh, ew1, _V( 0.4 , 0.7 , 19.2 ), _V(0, 0.0499, 0.9988), tex_rcs);//F2F
 }
 
-
 // --------------------------------------------------------------
 // Initialise airfoils, aerodynamic control surfaces and drag elements
 // --------------------------------------------------------------
@@ -495,32 +494,6 @@ void Atlantis::CreateAirfoils ()
 	CreateVariableDragElement (&gear_proc, 2, _V(0,-3,0));      // landing gear drag
 	CreateVariableDragElement (&rdoor_drag, 7, _V(2.9,0,10));   // right cargo door drag
 	CreateVariableDragElement (&ldoor_drag, 7, _V(-2.9,0,10));  // right cargo door drag
-}
-
-static double GetMachScale (double M)
-{
-	static const int nsteps = 25;
-	static const double machTable[nsteps+1] = {
-		1.0, 1.0, 1.0, 1.0, 1.0,
-		1.0, 0.8, 0.6, 0.4, 0.4,
-		0.4, 0.4, 0.4, 0.4, 0.4,
-		0.4, 0.4, 0.4, 0.4, 0.4,
-		0.4, 0.4, 0.4, 0.4, 0.4,
-		0.4
-	};
-
-	if (M <= 0.0) return machTable[0];
-	if (M >= 5.0) return machTable[nsteps];
-
-	int idx = max (0, min (nsteps, (int)(M/0.2)));
-	return machTable[idx];
-}
-
-static void ApplyMachScale (double M, double *cl)
-{
-	if (M > 0.0) {
-		*cl *= GetMachScale (M);
-	}
 }
 
 // --------------------------------------------------------------
@@ -544,9 +517,6 @@ void Atlantis::VLiftCoeff (double aoa, double M, double Re, double *cl, double *
 	double d = aoa*istep - idx;
 	*cl = CL[idx] + (CL[idx+1]-CL[idx])*d;
 	*cm = CM[idx] + (CM[idx+1]-CM[idx])*d;
-
-	// Apply a Mach lookup table so lift changes in 0.2-Mach steps.
-	ApplyMachScale (M, cl);
 	*cd = 0.055 + oapiGetInducedDrag (*cl, 2.266, 0.6);
 }
 
@@ -568,8 +538,6 @@ void Atlantis::HLiftCoeff (double beta, double M, double Re, double *cl, double 
 	double d = beta*istep - idx;
 	*cl = CL[idx] + (CL[idx+1]-CL[idx])*d;
 	*cm = 0.0;
-
-	ApplyMachScale (M, cl);
 	*cd = 0.02 + oapiGetInducedDrag (*cl, 1.5, 0.6);
 }
 
@@ -951,7 +919,7 @@ void Atlantis::ToggleGrapple (void)
 
 		VECTOR3 gpos, grms, pos, dir, rot;
 		Local2Global (arm_tip[0], grms);  // global position of RMS tip
-
+		
 		// Search the complete vessel list for a grappling candidate.
 		// Not very scalable ...
 		for (DWORD i = 0; i < oapiGetVesselCount(); i++) {
@@ -1292,7 +1260,7 @@ void Atlantis::Jettison ()
 	case 3:               // nothing to do
 		break;
 	case 1:               // abandon boosters
-		SeparateBoosters (oapiGetSimTime()-t0);
+		SeparateBoosters (oapiGetSimTime()-t0); 
 		break;
 	case 2:               // abandon tank
 		SeparateTank();
@@ -1440,7 +1408,7 @@ void Atlantis::RedrawPanel_MFDButton (SURFHANDLE surf, int mfd)
 void Atlantis::clbkSetClassCaps (FILEHANDLE cfg)
 {
 	// *********************** physical parameters *********************************
-
+	
 	SetSize (19.6);
 	SetEmptyMass (ORBITER_EMPTY_MASS);
 	SetPMI (_V(78.2,82.1,10.7));
@@ -1963,8 +1931,8 @@ void Atlantis::RegisterVC_CdrMFD ()
     const double powerButtonRadius = 0.0075; // radius of power button on each MFD
 	oapiVCRegisterArea (AID_CDR1_PWR, PANEL_REDRAW_NEVER, PANEL_MOUSE_LBDOWN|PANEL_MOUSE_ONREPLAY);
 	oapiVCRegisterArea (AID_CDR2_PWR, PANEL_REDRAW_NEVER, PANEL_MOUSE_LBDOWN|PANEL_MOUSE_ONREPLAY);
-    oapiVCSetAreaClickmode_Spherical(AID_CDR1_PWR, _V(-0.950, 2.060, 15.060), powerButtonRadius);
-    oapiVCSetAreaClickmode_Spherical(AID_CDR2_PWR, _V(-0.680, 2.060, 15.060), powerButtonRadius);
+    oapiVCSetAreaClickmode_Spherical(AID_CDR1_PWR, _V(-0.950, 2.060, 15.060), powerButtonRadius);  
+    oapiVCSetAreaClickmode_Spherical(AID_CDR2_PWR, _V(-0.680, 2.060, 15.060), powerButtonRadius);  
 
 	// register+activate MFD brightness buttons
 	oapiVCRegisterArea (AID_CDR1_BRT, PANEL_REDRAW_NEVER, PANEL_MOUSE_LBDOWN|PANEL_MOUSE_LBPRESSED|PANEL_MOUSE_ONREPLAY);
@@ -1987,8 +1955,8 @@ void Atlantis::RegisterVC_PltMFD ()
     const double powerButtonRadius = 0.0075; // radius of power button on each MFD
 	oapiVCRegisterArea (AID_PLT1_PWR, PANEL_REDRAW_NEVER, PANEL_MOUSE_LBDOWN|PANEL_MOUSE_ONREPLAY);
 	oapiVCRegisterArea (AID_PLT2_PWR, PANEL_REDRAW_NEVER, PANEL_MOUSE_LBDOWN|PANEL_MOUSE_ONREPLAY);
-    oapiVCSetAreaClickmode_Spherical(AID_PLT1_PWR, _V( 0.450, 2.060, 15.060), powerButtonRadius);
-    oapiVCSetAreaClickmode_Spherical(AID_PLT2_PWR, _V( 0.720, 2.060, 15.060), powerButtonRadius);
+    oapiVCSetAreaClickmode_Spherical(AID_PLT1_PWR, _V( 0.450, 2.060, 15.060), powerButtonRadius);  
+    oapiVCSetAreaClickmode_Spherical(AID_PLT2_PWR, _V( 0.720, 2.060, 15.060), powerButtonRadius);  
 
 	// register+activate MFD brightness buttons
 	oapiVCRegisterArea (AID_PLT1_BRT, PANEL_REDRAW_NEVER, PANEL_MOUSE_LBDOWN|PANEL_MOUSE_LBPRESSED|PANEL_MOUSE_ONREPLAY);
@@ -2017,11 +1985,11 @@ void Atlantis::RegisterVC_CntMFD ()
 	oapiVCRegisterArea (AID_MFD3_PWR, PANEL_REDRAW_NEVER, PANEL_MOUSE_LBDOWN|PANEL_MOUSE_ONREPLAY);
 	oapiVCRegisterArea (AID_MFD4_PWR, PANEL_REDRAW_NEVER, PANEL_MOUSE_LBDOWN|PANEL_MOUSE_ONREPLAY);
 	oapiVCRegisterArea (AID_MFD5_PWR, PANEL_REDRAW_NEVER, PANEL_MOUSE_LBDOWN|PANEL_MOUSE_ONREPLAY);
-    oapiVCSetAreaClickmode_Spherical(AID_MFD1_PWR, _V(-0.383, 2.153, 15.090), powerButtonRadius);
-    oapiVCSetAreaClickmode_Spherical(AID_MFD2_PWR, _V(-0.383, 1.922, 15.023), powerButtonRadius);
-    oapiVCSetAreaClickmode_Spherical(AID_MFD3_PWR, _V(-0.114, 2.037, 15.058), powerButtonRadius);
-    oapiVCSetAreaClickmode_Spherical(AID_MFD4_PWR, _V( 0.155, 2.153, 15.090), powerButtonRadius);
-    oapiVCSetAreaClickmode_Spherical(AID_MFD5_PWR, _V( 0.155, 1.922, 15.023), powerButtonRadius);
+    oapiVCSetAreaClickmode_Spherical(AID_MFD1_PWR, _V(-0.383, 2.153, 15.090), powerButtonRadius);  
+    oapiVCSetAreaClickmode_Spherical(AID_MFD2_PWR, _V(-0.383, 1.922, 15.023), powerButtonRadius);  
+    oapiVCSetAreaClickmode_Spherical(AID_MFD3_PWR, _V(-0.114, 2.037, 15.058), powerButtonRadius);  
+    oapiVCSetAreaClickmode_Spherical(AID_MFD4_PWR, _V( 0.155, 2.153, 15.090), powerButtonRadius);  
+    oapiVCSetAreaClickmode_Spherical(AID_MFD5_PWR, _V( 0.155, 1.922, 15.023), powerButtonRadius);  
 
 	// register+activate MFD brightness buttons
 	oapiVCRegisterArea (AID_MFD1_BRT, PANEL_REDRAW_NEVER, PANEL_MOUSE_LBDOWN|PANEL_MOUSE_LBPRESSED|PANEL_MOUSE_ONREPLAY);
@@ -2172,7 +2140,7 @@ bool Atlantis::clbkVCMouseEvent (int id, int event, VECTOR3 &p)
 	case AID_MFD1_BUTTONS:
 	case AID_MFD2_BUTTONS:
 	case AID_MFD3_BUTTONS:
-	case AID_MFD4_BUTTONS:
+	case AID_MFD4_BUTTONS: 
 	case AID_MFD5_BUTTONS:
 	case AID_MFDA_BUTTONS: {
 		int mfd = id-AID_CDR1_BUTTONS+MFD_LEFT;
@@ -2200,13 +2168,13 @@ bool Atlantis::clbkVCMouseEvent (int id, int event, VECTOR3 &p)
     case AID_MFD1_PWR:
     case AID_MFD2_PWR:
     case AID_MFD3_PWR:
-	case AID_MFD4_PWR:
+	case AID_MFD4_PWR: 
 	case AID_MFD5_PWR:
 	case AID_MFDA_PWR: {
         int mfd = id - AID_CDR1_PWR+MFD_LEFT;
         oapiSendMFDKey(mfd, OAPI_KEY_ESCAPE);
         } return true;
-
+              
 	// handle MFD brightness buttons
 	case AID_CDR1_BRT:
 	case AID_CDR2_BRT:
@@ -2214,8 +2182,8 @@ bool Atlantis::clbkVCMouseEvent (int id, int event, VECTOR3 &p)
 	case AID_PLT2_BRT:
 	case AID_MFD1_BRT:
 	case AID_MFD2_BRT:
-	case AID_MFD3_BRT:
-	case AID_MFD4_BRT:
+	case AID_MFD3_BRT: 
+	case AID_MFD4_BRT: 
 	case AID_MFD5_BRT:
 	case AID_MFDA_BRT: {
 		static double t0, brt0;
@@ -2262,7 +2230,7 @@ bool Atlantis::clbkVCRedrawEvent (int id, int event, SURFHANDLE surf)
 	case AID_MFD1_BUTTONS:
 	case AID_MFD2_BUTTONS:
 	case AID_MFD3_BUTTONS:
-	case AID_MFD4_BUTTONS:
+	case AID_MFD4_BUTTONS: 
 	case AID_MFD5_BUTTONS:
 	case AID_MFDA_BUTTONS: {
 		int mfd = id-AID_CDR1_BUTTONS+MFD_LEFT;
@@ -2320,7 +2288,7 @@ int Atlantis::clbkConsumeBufferedKey (DWORD key, bool down, char *kstate)
 		case OAPI_KEY_E:
 			if (status != 3) return 1; // Allow MMU only after orbiter has detached from MT
 			return 1;
-		}
+		}	
 	} else if (KEYMOD_CONTROL (kstate)) {
 		switch (key) {
 		case OAPI_KEY_SPACE: // open RMS control dialog
@@ -2347,7 +2315,7 @@ int Atlantis::clbkConsumeBufferedKey (DWORD key, bool down, char *kstate)
 		case OAPI_KEY_8:
 			ToggleGrapple();
 			return 1;
-		case OAPI_KEY_9:
+		case OAPI_KEY_9: 
 			center_arm = true;
 			return 1;
 		case OAPI_KEY_E:
