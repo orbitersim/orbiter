@@ -106,6 +106,7 @@ public:
 		bool		bActive;
 		__gcRenderProc pRenderProc;
 		void*		pUser;
+		float       fSurfLabelScale;
 	};
 
 	std::set<CAMREC*> CustomCams;
@@ -148,6 +149,13 @@ public:
 
 		double		alt_near;
 		double		lng, lat, elev;
+
+		// Pixel viewport associated with the current camera.
+		// Uses main scene viewport when zero
+		DWORD viewportW;
+		DWORD viewportH;
+		// Scale for 2D Labels
+		float labelScale;
 	};
 
 	// Screen space sun visual parameters ==================================================
@@ -318,6 +326,7 @@ public:
 	int				DeleteCustomCamera(CAMERAHANDLE hCamera);
 	void			DeleteAllCustomCameras();
 	void			CustomCameraOnOff(CAMERAHANDLE hCamera, bool bOn);
+	void 			SetCustomCameraSurfaceLabelScale(CAMERAHANDLE hCamera, float scale);
 	void			RenderCustomCameraView(CAMREC *cCur);
 
 
@@ -437,6 +446,9 @@ private:
 
 	void FreePooledSketchpads();      ///< Release pooled Sketchpad instances
 
+	void RenderLabelsForCustomCamera();
+	Font* GetOrCreateLabelFont(int size);
+
 
 
 	// Scene variables ================================================================
@@ -461,6 +473,7 @@ private:
 	// GDI resources ====================================================================
 	//
 	oapi::Font *label_font[4];
+	std::map<int, oapi::Font*> labelFontCache;
 
 	std::list<vVessel *> RenderList;
 	std::list<vVessel *> SmapRenderList;

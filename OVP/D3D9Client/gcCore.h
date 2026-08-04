@@ -95,6 +95,7 @@ static class gcCore2 *pCoreInterface = NULL;
 /// \defgroup dwFlags for gcSetupCustomCamera() API function
 ///@{
 #define CUSTOMCAM_DEFAULTS				0x00FF
+#define CUSTOMCAM_SURFACE_LABELS        0x0100
 ///@}
 
 /// \defgroup Polyline Polyline object creation and update flags
@@ -423,6 +424,13 @@ public:
 	* \param clbk pointer to a function to be called after each frame.
 	*/
 	gc_interface void CustomCameraOverlay(CAMERAHANDLE hCam, __gcRenderProc clbk, void* pUser);
+
+	/**
+	 * \brief Sets the scale at which the surface labels are to be rendered for this camera. Can be used to adapt it to the real screen size of the target surface
+	 * \param hCam camera handle to modify the surface label scale
+	 * \param scale scale factor to apply
+	 */
+	gc_interface void SetCustomCameraSurfaceLabelScale(CAMERAHANDLE hCam, float scale);
 
 	/**
 	* \brief Create a new custom camera that can be used to render views into a surfaces and textures
