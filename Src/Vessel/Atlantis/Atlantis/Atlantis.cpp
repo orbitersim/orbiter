@@ -511,7 +511,7 @@ void Atlantis::VLiftCoeff (double aoa, double M, double Re, double *cl, double *
     static const double CLMachHigh[nabsc] = {-0, 0.15, 0.25, 0.29, 0.25, 0.15, -0, -0.15, -0.25, -0.3, -0.25, -0.15, 0, 0.15, 0.25, 0.3, 0.25, 0.15, 0, -0.15, -0.25, -0.29, -0.25, -0.15, 0};
     static const double CMMachHigh[nabsc] = {-0, -0, -0, -0, -0, -0, -0, -0, -0, 0.0007, 0.0012, -0, 0, 0, -0.0012, -0.0007, 0, 0, 0, 0, 0, 0, 0, 0, 0};
 
-	const double mach_blend = max (0.0, min (1.0, (M - 1.0) * 0.5));
+	const double mach_blend = max (0.0, min (1.0, (M - 1.0) * 0.25));
 	// lift and moment coefficients from -180 to 180 in 15 degree steps.
 	// This uses a documented Cl_max of ~1.3 at  ~ 35 deg, everything else is rather ad-hoc
 
