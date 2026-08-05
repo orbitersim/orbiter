@@ -46,7 +46,6 @@ DLLCLBK void gcBindCoreMethod(void** ppFnc, const char* name)
 	if (strcmp(name,"DeleteCustomCamera")==0) *ppFnc = &gcCore2::DeleteCustomCamera;
 	if (strcmp(name,"CustomCameraOnOff")==0) *ppFnc = &gcCore2::CustomCameraOnOff;
 	if (strcmp(name,"CustomCameraOverlay")==0) *ppFnc = &gcCore2::CustomCameraOverlay;
-	if (strcmp(name,"SetCustomCameraSurfaceLabelScale")==0) *ppFnc = &gcCore2::SetCustomCameraSurfaceLabelScale;
 	if (strcmp(name,"SetupCustomCamera")==0) *ppFnc = &gcCore2::SetupCustomCamera;
 	if (strcmp(name,"SketchpadVersion")==0) *ppFnc = &gcCore2::SketchpadVersion;
 	if (strcmp(name,"CreatePoly")==0) *ppFnc = &gcCore2::CreatePoly;
@@ -221,16 +220,6 @@ int gcCore::DeleteCustomCamera(CAMERAHANDLE hCam)
 	return pScene ? pScene->DeleteCustomCamera(hCam) : 0;
 }
 
-// ===============================================================================================
-//
-void gcCore::SetCustomCameraSurfaceLabelScale(CAMERAHANDLE hCam, float scale)
-{
-	Scene* pScene = g_client->GetScene();
-
-	if(pScene) {
-		pScene->SetCustomCameraSurfaceLabelScale(hCam, scale);
-	}
-}
 
 
 

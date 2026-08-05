@@ -99,13 +99,7 @@ public:
     {
         VESSEL *pVessel = GetVessel();
         if (pVessel)
-        {
-            const char *pName = pVessel->GetName();
-            if (pName)
-                m_csCachedVesselName = pName;
-            else if (m_csCachedVesselName.empty())
-                m_csCachedVesselName = "<unknown>";
-        }
+            m_csCachedVesselName = pVessel->GetName();
         else
         {
             if (m_csCachedVesselName.empty())
@@ -118,13 +112,7 @@ public:
     {
         VESSEL *pVessel = GetVessel();
         if (pVessel)
-        {
-            const char *pClassName = pVessel->GetClassName();
-            if (pClassName)
-                m_csCachedVesselClass = pClassName;
-            else if (m_csCachedVesselClass.empty())
-                m_csCachedVesselClass = "<unknown>";
-        }
+            m_csCachedVesselClass = pVessel->GetClassName();
         else
         {
             if (m_csCachedVesselClass.empty())

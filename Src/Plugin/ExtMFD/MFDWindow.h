@@ -32,7 +32,6 @@ public:
 	float aspect_ratio = 382.0/366.0;
 
 private:
-	int m_windowId;
 	int BW, BH;       // button width and height
 	int fnth;         // button font height
 	bool vstick;      // stick to vessel

@@ -51,8 +51,6 @@ D3DXHANDLE Scene::eTex0 = 0;
 
 D3DXVECTOR4 IKernel[IKernelSize];
 
-static const int FONT_SIZES[4] = { 12, 16, 20, 26 };
-
 bool sort_vessels(const vVessel *a, const vVessel *b)
 {
 	return a->CameraTgtDist() < b->CameraTgtDist();
@@ -122,7 +120,6 @@ Scene::Scene(D3D9Client *_gc, DWORD w, DWORD h)
 
 	SetCameraAperture(float(RAD*50.0), float(viewH)/float(viewW));
 	SetCameraFrustumLimits(2.5f, 5e6f); // initial limits
-	Camera.labelScale = 1.0f;
 
 	m_celSphere = new D3D9CelestialSphere(gc, this);
 	Lights = new D3D9Light[MAX_SCENE_LIGHTS];
@@ -3132,8 +3129,9 @@ void Scene::InitGDIResources ()
 	pLabelFont = oapiCreateFont(15, false, "Arial", FONT_NORMAL, 0);
 	pDebugFont = oapiCreateFont(Config->DebugFontSize, true, dbgfnt, FONT_NORMAL, 0);
 
+	const int fsize[4] = { 12, 16, 20, 26 };
 	for (int i = 0; i < 4; ++i) {
-		label_font[i] = GetOrCreateLabelFont(FONT_SIZES[i]);
+		label_font[i] = gc->clbkCreateFont(fsize[i], true, "Arial", FONT_BOLD);
 	}
 	//@todo: different pens for different fonts?
 }
@@ -3145,10 +3143,9 @@ void Scene::ExitGDIResources ()
 	oapiReleaseFont(pAxisFont);
 	oapiReleaseFont(pLabelFont);
 	oapiReleaseFont(pDebugFont);
-	
-	// Only delete the cache. The label_font are just weak refs!
-	for(auto &[size, font] : labelFontCache) {
-		gc->clbkReleaseFont(font);
+
+	for (int i = 0; i < 4; ++i) {
+		gc->clbkReleaseFont(label_font[i]);
 	}
 }
 
@@ -3586,7 +3583,6 @@ CAMERAHANDLE Scene::SetupCustomCamera(CAMERAHANDLE hCamera, OBJHANDLE hVessel, M
 	pv->vPosition = pos;
 	pv->hVessel = hVessel;
 	pv->iError = 0;
-	pv->fSurfLabelScale = 1.0f;
 
 	return (CAMERAHANDLE)pv;
 }
@@ -3597,54 +3593,6 @@ void Scene::CustomCameraOnOff(CAMERAHANDLE hCamera, bool bOn)
 {
 	if (!hCamera) return;
 	CAMERA(hCamera)->bActive = bOn;
-}
-
-// ===========================================================================================
-//
-Font* Scene::GetOrCreateLabelFont(int size)
-{
-	auto it = labelFontCache.find(size);
-	if(it == labelFontCache.end())
-	{
-		Font* newFont = gc->clbkCreateFont(size, true, "Arial", FONT_BOLD);
-		it = labelFontCache.emplace(size, newFont).first;
-	}
-
-	return it->second;
-}
-
-// ===========================================================================================
-//
-void Scene::RenderLabelsForCustomCamera()
-{
-	if(!surfLabelsActive)
-		return;
-	
-	vPlanet *planet = GetCameraProxyVisual();
-
-	if(!planet)
-		return;
-
-	D3D9Pad *skp = GetPooledSketchpad(SKETCHPAD_LABELS);
-
-	if(!skp)
-		return;
-
-	const float labelScale = Camera.labelScale;
-
-	// Set-up pen before calling Label rendering logic. Otherwise the marks were not visible
-	skp->QuickPen(RGB(255, 255, 255), labelScale);
-
-	Font* fonts[4];
-	for (int i = 0; i < 4; i++) {
-		// Retrieve cached fonts or create them new. This prevents recreating fonts when having different custom cameras at the cost of O(log n) access
-		fonts[i] = GetOrCreateLabelFont((int)(FONT_SIZES[i] * labelScale));
-	}
-
-	int fontidx = -1;
-	planet->RenderLabels(pDevice, skp, fonts, &fontidx);
-
-	skp->EndDrawing();
 }
 
 // ===========================================================================================
@@ -3683,10 +3631,6 @@ void Scene::RenderCustomCameraView(CAMREC *cCur)
 	SetCameraFrustumLimits(0.1, 2e7);
 	SetupInternalCamera(&mEnv, &gpos, cCur->dAperture, double(h)/double(w));
 
-	// Copy target surface dimensions. This is needed so the surface label render path can correctly compute the projection
-	Camera.viewportW = w;
-	Camera.viewportH = h;
-	Camera.labelScale = cCur->fSurfLabelScale;
 	
 	VOBJREC *pv = NULL;
 	std::set<vVessel*> List;
@@ -3700,33 +3644,10 @@ void Scene::RenderCustomCameraView(CAMREC *cCur)
 
 	RenderSecondaryScene(List, Lights, 0xFF);
 
-	// Render surface labels
-	if(cCur->dwFlags & CUSTOMCAM_SURFACE_LABELS)
-	{
-		RenderLabelsForCustomCamera();
-	}
-
 	gc->PopRenderTargets();
 
 	PopPass();
 	PopCamera();
-}
-
-void Scene::SetCustomCameraSurfaceLabelScale(CAMERAHANDLE hCamera, float scale)
-{
-	if(!hCamera) {
-		return;
-	}
-
-	if(scale <= 0.0f || !std::isfinite(scale)) {
-		return;
-	}
-
-	CAMREC* camera = CAMERA(hCamera);
-
-	camera->fSurfLabelScale = std::clamp(scale, 0.25f, 8.0f);
-
-	return;
 }
 
 
@@ -3847,19 +3768,11 @@ bool Scene::CameraDirection2Viewport(const VECTOR3 &dir, int &x, int &y)
 	D3DXVECTOR3 idir = D3DXVECTOR3( -float(dir.x), -float(dir.y), -float(dir.z) );
 	D3DMAT_VectorMatrixMultiply(&homog, &idir, &Camera.mProjView);
 	if (homog.x >= -1.0f && homog.y <= 1.0f && homog.z >= 0.0) {
-		const DWORD width = Camera.viewportW != 0 ? Camera.viewportW : viewW;
-		const DWORD height = Camera.viewportH != 0 ? Camera.viewportH : viewH;
-
-		if(width == 0 || height == 0)
-		{
-			return false;
-		}
-
 		if (std::hypot(homog.x, homog.y) < 1e-6) {
-			x = width / 2, y = height / 2;
+			x = viewW / 2, y = viewH / 2;
 		} else {
-			x = (int)(width*0.5f*(1.0f + homog.x));
-			y = (int)(height*0.5f*(1.0f - homog.y));
+			x = (int)(viewW*0.5f*(1.0f + homog.x));
+			y = (int)(viewH*0.5f*(1.0f - homog.y));
 		}
 		return true;
 	}
