@@ -505,16 +505,17 @@ void Atlantis::VLiftCoeff (double aoa, double M, double Re, double *cl, double *
 {
 	static const double step = RAD*15.0;
 	static const double istep = 1.0/step;
-    static const int nabsc = 25;
+    static const int nabsc = 25; // number of data points in the table
     static const double CLMachLow[nabsc] = {0.1, 0.17, 0.2, 0.2, 0.17, 0.1, 0, -0.11, -0.65, -1.25, -1.3, -0.65, -0.02, 0.6355, 1.25, 1.3, 0.7, 0.13, 0, -0.16, -0.26, -0.29, -0.24, -0.1, 0.1};
     static const double CMMachLow[nabsc] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0.002, 0.004, 0.0025, 0.0012, 0, -0.0012, -0.0007, 0, 0, 0, 0, 0, 0, 0, 0, 0};
     static const double CLMachHigh[nabsc] = {-0, 0.15, 0.25, 0.29, 0.25, 0.15, -0, -0.15, -0.25, -0.3, -0.25, -0.15, 0, 0.15, 0.25, 0.3, 0.25, 0.15, 0, -0.15, -0.25, -0.29, -0.25, -0.15, 0};
     static const double CMMachHigh[nabsc] = {-0, -0, -0, -0, -0, -0, -0, -0, -0, 0.0007, 0.0012, -0, 0, 0, -0.0012, -0.0007, 0, 0, 0, 0, 0, 0, 0, 0, 0};
 
-	const double mach_blend = max (0.0, min (1.0, (M - 1.0) * 0.5));
+	const double mach_blend = max (0.0, min (1.0, (M - 1.0) * 0.25));
+
+
 	// lift and moment coefficients from -180 to 180 in 15 degree steps.
 	// This uses a documented Cl_max of ~1.3 at  ~ 35 deg, everything else is rather ad-hoc
-
 	aoa += PI;
 	int idx = max (0, min (23, (int)(aoa*istep)));
 	double d = aoa*istep - idx;
@@ -522,9 +523,14 @@ void Atlantis::VLiftCoeff (double aoa, double M, double Re, double *cl, double *
 	double cm_low = CMMachLow[idx] + (CMMachLow[idx+1]-CMMachLow[idx])*d;
 	double cl_high = CLMachHigh[idx] + (CLMachHigh[idx+1]-CLMachHigh[idx])*d;
 	double cm_high = CMMachHigh[idx] + (CMMachHigh[idx+1]-CMMachHigh[idx])*d;
+    double cd_prof_low = 0.055; // profile drag coefficient at low Mach
+    double cd_prof_high = 1.95; // profile drag coefficient at high Mach
+
+    oapiDebugString(string(aoa));
+
 	*cl = cl_low + (cl_high-cl_low)*mach_blend;
 	*cm = cm_low + (cm_high-cm_low)*mach_blend;
-	*cd = 0.055 + oapiGetInducedDrag (*cl, 2.266, 0.6);
+	*cd = cd_prof_low + (cd_prof_high-cd_prof_low)*mach_blend + oapiGetInducedDrag (*cl, 2.266, 0.6);
 }
 
 // --------------------------------------------------------------
