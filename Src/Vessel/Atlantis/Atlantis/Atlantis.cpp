@@ -1728,9 +1728,10 @@ void Atlantis::clbkPreStep (double simt, double simdt, double mjd)
 			do_eva = false;
 		};
 
-		if (GetDynPressure() > 1000.0) {
+		if (GetDynPressure() > 1000.0 && GetMachNumber() < 1.0) {
 			// 1000Pa ~ 20psf, see Mission Profile, https://science.ksc.nasa.gov/shuttle/technology/sts-newsref/mission_profile.html
-			EnableRCS(RCS_NONE);
+			// Below Mach 1, RCS is not needed for attitude control.
+            EnableRCS(RCS_NONE);
 			SetADCtrlMode(7);
 			// note: in reality, control doesn't switch from RCS to control surfaces completely in one go,
 			// but at different stages for different components
