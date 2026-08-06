@@ -484,15 +484,16 @@ void Atlantis::CreateAirfoils ()
 	CreateAirfoil (LIFT_VERTICAL,   _V(0,0,-0.2), VLiftCoeff, 20, 270, 2.266);
 	CreateAirfoil (LIFT_HORIZONTAL, _V(0,0,-4), HLiftCoeff, 20,  50, 1.5);
 
-	CreateControlSurface (AIRCTRL_ELEVATOR, 10.0, 1.5, _V( 0, 0,  -15), AIRCTRL_AXIS_XPOS, anim_elev);
-	CreateControlSurface (AIRCTRL_RUDDER,   4.0, 1.5, _V( 0, 3,  -16), AIRCTRL_AXIS_YPOS, anim_rudder);
-	CreateControlSurface (AIRCTRL_AILERON,  6.0, 1.5, _V( 7,-0.5,-15), AIRCTRL_AXIS_XPOS, anim_raileron);
-	CreateControlSurface (AIRCTRL_AILERON,  6.0, 1.5, _V(-7,-0.5,-15), AIRCTRL_AXIS_XNEG, anim_laileron);
+	CreateControlSurface (AIRCTRL_ELEVATOR, 8.0, 1.5, _V( 0, 0,  -15), AIRCTRL_AXIS_XPOS, anim_elev);
+	CreateControlSurface (AIRCTRL_RUDDER,   3.0, 1.5, _V( 0, 3,  -16), AIRCTRL_AXIS_YPOS, anim_rudder);
+	CreateControlSurface (AIRCTRL_AILERON,  4.0, 1.5, _V( 7,-0.5,-15), AIRCTRL_AXIS_XPOS, anim_raileron);
+	CreateControlSurface (AIRCTRL_AILERON,  4.0, 1.5, _V(-7,-0.5,-15), AIRCTRL_AXIS_XNEG, anim_laileron);
+	CreateControlSurface (AIRCTRL_FLAP, 18.0, 1.5, _V( 0, 0,  -15), AIRCTRL_AXIS_XPOS);
 
 	CreateVariableDragElement (&spdb_proc, 5, _V(0, 7.5, -14)); // speedbrake drag
 	CreateVariableDragElement (&gear_proc, 2, _V(0,-3,0));      // landing gear drag
 	CreateVariableDragElement (&rdoor_drag, 7, _V(2.9,0,10));   // right cargo door drag
-	CreateVariableDragElement (&ldoor_drag, 7, _V(-2.9,0,10));  // right cargo door drag
+	CreateVariableDragElement (&ldoor_drag, 7, _V(-2.9,0,10));  // left cargo door drag
 }
 
 // --------------------------------------------------------------
@@ -508,7 +509,7 @@ void Atlantis::VLiftCoeff (double aoa, double M, double Re, double *cl, double *
     static const int nabsc = 25; // number of data points in the table
     static const double CLMachLow[nabsc] = {0.1, 0.17, 0.2, 0.2, 0.17, 0.1, 0, -0.11, -0.65, -1.25, -1.3, -0.65, -0.02, 0.6355, 1.25, 1.3, 0.7, 0.13, 0, -0.16, -0.26, -0.29, -0.24, -0.1, 0.1};
     static const double CMMachLow[nabsc] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0.002, 0.004, 0.0025, 0.0012, 0, -0.0012, -0.0007, 0, 0, 0, 0, 0, 0, 0, 0, 0};
-    static const double CLMachHigh[nabsc] = {-0, 0.5, 0.9, 1.3, 1.5, 1.4, -0, -1.4, -1.5, -1.3, -0.9, -0.5, 0, 0.5, 1, 1.4, 1.5, 1.3, 0, -1.3, -1.5, -1.4, -1, -0.5, 0};
+    static const double CLMachHigh[nabsc] = {-0, 0.4, 0.8, 1.2, 1.4, 1.3, -0, -1.3, -1.4, -1.2, -0.8, -0.4, 0, 0.4, 0.8, 1.2, 1.4, 1.3, 0, -1.3, -1.4, -1.2, -0.8, -0.4, 0};
     static const double CMMachHigh[nabsc] = {-0, -0, -0, -0, -0, -0, -0, -0, -0, 0.0007, 0.0012, -0, 0, 0, -0.0012, -0.0007, 0, 0, 0, 0, 0, 0, 0, 0, 0};
 
 	const double mach_blend = max (0.0, min (1.0, (M - 1.0) * 0.125));
@@ -523,8 +524,8 @@ void Atlantis::VLiftCoeff (double aoa, double M, double Re, double *cl, double *
 	double cm_low = CMMachLow[idx] + (CMMachLow[idx+1]-CMMachLow[idx])*d;
 	double cl_high = CLMachHigh[idx] + (CLMachHigh[idx+1]-CLMachHigh[idx])*d;
 	double cm_high = CMMachHigh[idx] + (CMMachHigh[idx+1]-CMMachHigh[idx])*d;
-    double cd_prof_low = 0.055 + 0.002 * pow(sin(aoa), 2);  // profile drag coefficient at low Mach
-    double cd_prof_high = 0.25 + 1.2 * pow(sin(aoa), 2); // profile drag coefficient at high Mach
+    double cd_prof_low = 0.055 + 0.01 * pow(sin(aoa), 2);  // profile drag coefficient at low Mach
+    double cd_prof_high = 0.15 + 1.2* pow(sin(aoa), 2); // profile drag coefficient at high Mach
 
 	*cl = cl_low + (cl_high-cl_low)*mach_blend;
 	*cm = cm_low + (cm_high-cm_low)*mach_blend;
@@ -1840,6 +1841,15 @@ void Atlantis::clbkPreStep (double simt, double simdt, double mjd)
 
     // Set elevons with trim positions
     SetControlSurfaceLevel(AIRCTRL_ELEVATOR, GetControlSurfaceLevel(AIRCTRL_ELEVATORTRIM));
+
+    // Set flaps to trim position if Mach number is above 5
+    if (GetMachNumber() > 5.0) {
+        SetControlSurfaceLevel(AIRCTRL_FLAP, GetControlSurfaceLevel(AIRCTRL_ELEVATORTRIM));
+    }
+    // Otherwise, set flaps to neutral position
+    else {
+        SetControlSurfaceLevel(AIRCTRL_FLAP, 0.0);
+    }
 }
 
 // --------------------------------------------------------------
