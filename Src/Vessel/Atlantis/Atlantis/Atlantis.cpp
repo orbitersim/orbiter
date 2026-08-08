@@ -1743,19 +1743,25 @@ void Atlantis::clbkPreStep (double simt, double simdt, double mjd)
 		break;
 	case 4: // reentry
         // vars
-        double beta_angle = GetSlipAngle(); // slip angle in radians
-        double yaw_rate_tgt = -beta_angle * 0.01; // target yaw rate is proportional to slip angle
+        double mach = GetMachNumber();
+        double alpha = GetAOA(); // angle of attack in radians
+        double beta = GetSlipAngle(); // slip angle in radians
+        double yaw_rate_tgt = beta * 0.01; // target yaw rate is proportional to slip angle
         VECTOR3 avel;
         GetAngularVel(avel);
+        double pitch_rate_curr = avel.x;
+        double pitch_rate_error = 0 - pitch_rate_curr;
         double yaw_rate_curr = -avel.y;
         double yaw_rate_error = yaw_rate_tgt - yaw_rate_curr;
 
-        //sprintf(oapiDebugString(), "Yaw Rate: %0.3f", yaw_rate_curr * 57.296);
+        sprintf(oapiDebugString(), "Pitch Rate: %0.3f", pitch_rate_curr * 57.296);
 
         // Set body flap to trim position and elevons to neutral trim, if Mach number is above 5
         if (GetMachNumber() > 5.0) {
             SetControlSurfaceLevel(AIRCTRL_FLAP, GetControlSurfaceLevel(AIRCTRL_ELEVATORTRIM));
             SetControlSurfaceLevel(AIRCTRL_ELEVATOR, 0.0);
+            SetThrusterGroupLevel(THGROUP_ATT_PITCHUP, clamp(+pitch_rate_error * 15, 0.0, 1.0));
+            SetThrusterGroupLevel(THGROUP_ATT_PITCHDOWN, clamp(-pitch_rate_error * 15, 0.0, 1.0));
         }
         // Otherwise, set flaps to neutral position and trim elevons to trim position
         else {
