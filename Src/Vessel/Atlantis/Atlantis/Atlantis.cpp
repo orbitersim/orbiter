@@ -22,12 +22,15 @@
 #include "DrawAPI.h"
 #include <stdio.h>
 #include <fstream>
+#include <algorithm> // Required for std::clamp
 
 #define IMGUI_DEFINE_MATH_OPERATORS
 #include "imgui.h"
 #include "IconsFontAwesome6.h"
 
 using std::min;
+using std::max;
+using std::clamp;
 using std::max;
 
 #ifdef _DEBUG
@@ -488,7 +491,7 @@ void Atlantis::CreateAirfoils ()
 	CreateControlSurface (AIRCTRL_RUDDER,   3.0, 1.5, _V( 0, 3,  -16), AIRCTRL_AXIS_YPOS, anim_rudder);
 	CreateControlSurface (AIRCTRL_AILERON,  4.0, 1.5, _V( 7,-0.5,-15), AIRCTRL_AXIS_XPOS, anim_raileron);
 	CreateControlSurface (AIRCTRL_AILERON,  4.0, 1.5, _V(-7,-0.5,-15), AIRCTRL_AXIS_XNEG, anim_laileron);
-	CreateControlSurface (AIRCTRL_FLAP, 18.0, 1.5, _V( 0, 0,  -15), AIRCTRL_AXIS_XPOS);
+	CreateControlSurface (AIRCTRL_FLAP,    20.0, 1.5, _V( 0, 0,  -16), AIRCTRL_AXIS_XPOS);
 
 	CreateVariableDragElement (&spdb_proc, 5, _V(0, 7.5, -14)); // speedbrake drag
 	CreateVariableDragElement (&gear_proc, 2, _V(0,-3,0));      // landing gear drag
@@ -1739,6 +1742,33 @@ void Atlantis::clbkPreStep (double simt, double simdt, double mjd)
 		}
 		break;
 	case 4: // reentry
+        // Set body flap to trim position and elevons to neutral trim, if Mach number is above 5
+        if (GetMachNumber() > 5.0) {
+            SetControlSurfaceLevel(AIRCTRL_FLAP, GetControlSurfaceLevel(AIRCTRL_ELEVATORTRIM));
+            SetControlSurfaceLevel(AIRCTRL_ELEVATOR, 0.0);
+        }
+        // Otherwise, set flaps to neutral position and trim elevons to trim position
+        else {
+            SetControlSurfaceLevel(AIRCTRL_FLAP, 0.0);
+            SetControlSurfaceLevel(AIRCTRL_ELEVATOR, GetControlSurfaceLevel(AIRCTRL_ELEVATORTRIM));
+        }
+        // Set rudder and thrusters to counter slip angle, if Mach number is above 1
+        if (GetMachNumber() > 1.0) {
+            double slip_angle = GetSlipAngle(); // slip angle in radians
+            double yaw_rate_tgt = -slip_angle * 0.01; // target yaw rate is proportional to slip angle
+			VECTOR3 avel;
+			GetAngularVel(avel);
+			double yaw_rate_curr = -avel.y;
+            double yaw_rate_error = yaw_rate_tgt - yaw_rate_curr;
+
+            //sprintf(oapiDebugString(), "Yaw Rate: %0.3f", yaw_rate_curr * 57.296);
+
+            //SetControlSurfaceLevel(AIRCTRL_RUDDER, clamp(-yaw_rate_error * 2.0, -1.0, 1.0));
+            SetThrusterGroupLevel(THGROUP_ATT_YAWLEFT, clamp(-yaw_rate_error * 5, 0.0, 1.0));
+            SetThrusterGroupLevel(THGROUP_ATT_YAWRIGHT, clamp(+yaw_rate_error * 5, 0.0, 1.0));
+
+
+        }
 		break;
 	}
 
@@ -1838,18 +1868,6 @@ void Atlantis::clbkPreStep (double simt, double simdt, double mjd)
 		arm_scheduled = false;
 		arm_moved = true;
 	}
-
-    // Set elevons with trim positions
-    SetControlSurfaceLevel(AIRCTRL_ELEVATOR, GetControlSurfaceLevel(AIRCTRL_ELEVATORTRIM));
-
-    // Set flaps to trim position if Mach number is above 5
-    if (GetMachNumber() > 5.0) {
-        SetControlSurfaceLevel(AIRCTRL_FLAP, GetControlSurfaceLevel(AIRCTRL_ELEVATORTRIM));
-    }
-    // Otherwise, set flaps to neutral position
-    else {
-        SetControlSurfaceLevel(AIRCTRL_FLAP, 0.0);
-    }
 }
 
 // --------------------------------------------------------------
