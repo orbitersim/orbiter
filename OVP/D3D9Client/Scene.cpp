@@ -22,6 +22,7 @@
 #include "DebugControls.h"
 #include "IProcess.h"
 #include "VectorHelpers.h"
+#include <algorithm>
 #include <sstream>
 #include <vector>
 
