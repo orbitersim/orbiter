@@ -1732,8 +1732,9 @@ void Atlantis::clbkPreStep (double simt, double simdt, double mjd)
 			do_eva = false;
 		};
 
-        // Enable RCS and control surfaces when altitude is below 100 km, set trim to 0.5
-		if (GetAltitude(ALTMODE_GROUND) < 100000) {
+        // When altitude is below Entry Interface altitude, 121.92 km/400000 ft
+        // Enable RCS and control surfaces and set trim to 0.5
+		if (GetAltitude(ALTMODE_GROUND) < 121920) {
 			EnableRCS(RCS_ROT);
 			SetADCtrlMode(7);
             SetControlSurfaceLevel(AIRCTRL_ELEVATORTRIM, 0.5);
@@ -1745,15 +1746,16 @@ void Atlantis::clbkPreStep (double simt, double simdt, double mjd)
         double mach = GetMachNumber();
         double alpha = GetAOA(); // angle of attack in radians
         double beta = GetSlipAngle(); // slip angle in radians
-        double yaw_rate_tgt = -beta * 0.1; // target yaw rate is proportional to slip angle
+        double yaw_rate_tgt = -0.2 * beta; // target yaw rate is proportional to slip angle
         VECTOR3 avel;
         GetAngularVel(avel);
         double pitch_rate_curr = avel.x;
         double pitch_rate_error = 0 - pitch_rate_curr;
         double yaw_rate_curr = -avel.y;
         double yaw_rate_error = yaw_rate_tgt - yaw_rate_curr;
+        double yaw_p_term = 5.0; // proportional gain for yaw control
 
-        sprintf(oapiDebugString(), "Yaw Rate Error: %0.3f", yaw_rate_error * 57.296);
+        sprintf(oapiDebugString(), "Beta: %+0.3f", beta * 57.296);
 
         // Set body flap to trim position and elevons to neutral trim, if Mach number is above 5
         if (GetMachNumber() > 5.0) {
@@ -1769,8 +1771,8 @@ void Atlantis::clbkPreStep (double simt, double simdt, double mjd)
         }
         // Set rudder and thrusters to counter slip angle, if Mach number is above 1
         if (GetMachNumber() > 1.0) {
-            SetThrusterGroupLevel(THGROUP_ATT_YAWLEFT, clamp(-yaw_rate_error * 5, 0.0, 1.0));
-            SetThrusterGroupLevel(THGROUP_ATT_YAWRIGHT, clamp(+yaw_rate_error * 5, 0.0, 1.0));
+            SetThrusterGroupLevel(THGROUP_ATT_YAWLEFT, clamp(-yaw_rate_error * yaw_p_term, 0.0, 1.0));
+            SetThrusterGroupLevel(THGROUP_ATT_YAWRIGHT, clamp(+yaw_rate_error * yaw_p_term, 0.0, 1.0));
 
 
         }
