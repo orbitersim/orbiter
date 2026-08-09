@@ -1637,9 +1637,12 @@ void Atlantis::clbkPostCreation ()
 		}
 	}
 	EnableSSME (status < 3);
-	EnableRCS (status == 3 ? RCS_ROT : RCS_NONE);
+	EnableRCS (status >= 3 ? RCS_ROT : RCS_NONE);
 	EnableOMS (status == 3);
 	SetADCtrlMode (status < 4 ? 0 : 7);
+	if (status >= 4) {
+		SetControlSurfaceLevel (AIRCTRL_ELEVATORTRIM, 0.5);
+	}
 
 	UpdateMesh ();
 }
