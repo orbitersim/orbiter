@@ -1732,9 +1732,11 @@ void Atlantis::clbkPreStep (double simt, double simdt, double mjd)
 			do_eva = false;
 		};
 
-		if (GetDynPressure() > 10.0) {
+        // Enable RCS and control surfaces when altitude is below 100 km, set trim to 0.5
+		if (GetAltitude(ALTMODE_GROUND) < 100000) {
 			EnableRCS(RCS_ROT);
 			SetADCtrlMode(7);
+            SetControlSurfaceLevel(AIRCTRL_ELEVATORTRIM, 0.5);
 			status = 4;
 		}
 		break;
