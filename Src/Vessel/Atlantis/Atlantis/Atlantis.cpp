@@ -1746,7 +1746,7 @@ void Atlantis::clbkPreStep (double simt, double simdt, double mjd)
         double mach = GetMachNumber();
         double alpha = GetAOA(); // angle of attack in radians
         double beta = GetSlipAngle(); // slip angle in radians
-        double yaw_rate_tgt = beta * 0.01; // target yaw rate is proportional to slip angle
+        double yaw_rate_tgt = -beta * 0.1; // target yaw rate is proportional to slip angle
         VECTOR3 avel;
         GetAngularVel(avel);
         double pitch_rate_curr = avel.x;
