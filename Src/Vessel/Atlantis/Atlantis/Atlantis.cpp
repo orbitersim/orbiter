@@ -1732,12 +1732,9 @@ void Atlantis::clbkPreStep (double simt, double simdt, double mjd)
 			do_eva = false;
 		};
 
-		if (GetDynPressure() > 1000.0) {
-			// 1000Pa ~ 20psf, see Mission Profile, https://science.ksc.nasa.gov/shuttle/technology/sts-newsref/mission_profile.html
-            // EnableRCS(RCS_NONE);
+		if (GetDynPressure() > 10.0) {
+			EnableRCS(RCS_ROT);
 			SetADCtrlMode(7);
-			// note: in reality, control doesn't switch from RCS to control surfaces completely in one go,
-			// but at different stages for different components
 			status = 4;
 		}
 		break;
@@ -1754,7 +1751,7 @@ void Atlantis::clbkPreStep (double simt, double simdt, double mjd)
         double yaw_rate_curr = -avel.y;
         double yaw_rate_error = yaw_rate_tgt - yaw_rate_curr;
 
-        sprintf(oapiDebugString(), "Pitch Rate: %0.3f", pitch_rate_curr * 57.296);
+        sprintf(oapiDebugString(), "Yaw Rate Error: %0.3f", yaw_rate_error * 57.296);
 
         // Set body flap to trim position and elevons to neutral trim, if Mach number is above 5
         if (GetMachNumber() > 5.0) {
