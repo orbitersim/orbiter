@@ -108,9 +108,9 @@ char *FloatStr (double f, int precision = 4);
 // Formats floating point value f with given precision, using 'k', 'M' and 'G'
 // suffix as required.
 
-char *SciStr (double f, int precision = 4, char prefix = '\0');
-// Formats floating point value f with given precision, using "*10^x" suffix
-// notation as required
+char *SciStr (double f, int precision = 4);
+// Formats floating point value f with given precision, using scientific
+// notation above 10000
 
 char *DistStr (double d, int precision = 4);
 // as FloatStr, but uses 'AU' (astronomical units) instead of 'G'
