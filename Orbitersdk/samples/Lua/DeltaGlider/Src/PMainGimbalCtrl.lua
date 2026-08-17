@@ -88,11 +88,11 @@ function PMainGimbalCtrl:RedrawVC (hMesh, surf)
 		if state ~= 0 then
 			local R = mat.rotm(VC_GIMBAL_PSWITCH_axis,tilt[state+1])
 			for j=1, nvtx_per_switch do
-				local v = vec.sub(vtx[ofs+j].pos, ref)
-				local vr = mat.mul(R,v)
-				vtx[ofs+j].pos = vec.add(vr, ref)
+				local v = vtx[ofs+j].pos - ref
+				local vr = R * v
+				vtx[ofs+j].pos = vr + ref
 				local n = vtx[ofs+j].normal
-				local nr = mat.mul(R,n)
+				local nr = R * n
 				vtx[ofs+j].normal = nr
 			end
 		end

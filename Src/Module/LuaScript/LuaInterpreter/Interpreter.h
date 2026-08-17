@@ -55,6 +55,8 @@ class gcCore;
 #else
 #define INTERPRETERLIB DLLIMPORT
 #endif
+#define VEC3_META "vec3"
+#define MAT3_META "mat3"
 
 class VESSEL;
 class MFD2;
@@ -83,7 +85,7 @@ typedef struct  {
 // Nonmember functions
 
 // converts the vector at stack position 'idx' into a VECTOR3
-INTERPRETERLIB VECTOR3 lua_tovector (lua_State *L, int idx);
+INTERPRETERLIB VECTOR3 *lua_tovector (lua_State *L, int idx, VECTOR3 *tmp);
 
 // ======================================================================
 // class Interpreter
@@ -231,6 +233,23 @@ public:
 
 	static int lua_pushnumberref(lua_State* L);
 
+	static void *luaL_tryudata (lua_State *L, int ud, const char *tname);
+
+	// pushes vector 'vec' into a table on top of the stack
+	static void lua_pushvector (lua_State *L, const VECTOR3 &vec);
+
+	// returns 1 if stack entry idx is a vector, 0 otherwise
+	static int lua_isvector (lua_State *L, int idx);
+
+	// pushes matrix 'mat' into a table on top of the stack
+	static void lua_pushmatrix (lua_State *L, const MATRIX3 &mat);
+
+	// converts the matrix at stack position 'idx' into a MATRIX3
+	static MATRIX3 *lua_tomatrix (lua_State *L, int idx, MATRIX3 *tmp);
+
+	// returns 1 if stack entry idx is a matrix, 0 otherwise
+	static int lua_ismatrix (lua_State *L, int idx);
+
 
 	void term_setverbosity (int level) { term_verbose = level; }
 
@@ -276,21 +295,6 @@ protected:
 	// This also handles vector and nil entries.
 	static const char *lua_tostringex (lua_State *L, int idx, char *cbuf = 0);
 
-	// pushes vector 'vec' into a table on top of the stack
-	static void lua_pushvector (lua_State *L, const VECTOR3 &vec);
-
-	// returns 1 if stack entry idx is a vector, 0 otherwise
-	static int lua_isvector (lua_State *L, int idx);
-
-	// pushes matrix 'mat' into a table on top of the stack
-	static void lua_pushmatrix (lua_State *L, const MATRIX3 &mat);
-
-	// converts the matrix at stack position 'idx' into a MATRIX3
-	static MATRIX3 lua_tomatrix (lua_State *L, int idx);
-
-	// returns 1 if stack entry idx is a matrix, 0 otherwise
-	static int lua_ismatrix (lua_State *L, int idx);
-
 	static COLOUR4 lua_torgba (lua_State *L, int idx);
 	static void lua_pushrgba(lua_State* L, const COLOUR4&);
 
@@ -315,22 +319,22 @@ protected:
 	static bool lua_toboolean_safe (lua_State *L, int idx, const char *funcname);
 	static const char *lua_tostring_safe (lua_State *L, int idx, const char *funcname);
 	static void *lua_tolightuserdata_safe (lua_State *L, int idx, const char *funcname);
-	static VECTOR3 lua_tovector_safe (lua_State *L, int idx, const char *funcname);
-	static MATRIX3 lua_tomatrix_safe (lua_State *L, int idx, const char *funcname);
+	static VECTOR3 *lua_tovector_safe (lua_State *L, int idx, const char *funcname, VECTOR3 *tmp);
+	static MATRIX3 *lua_tomatrix_safe (lua_State *L, int idx, const char *funcname, MATRIX3 *tmp);
 	static double lua_field_tonumber_safe (lua_State *L, int idx, const char *fieldname, const char *funcname);
 	static void *lua_field_tolightuserdata_safe (lua_State *L, int idx, const char *fieldname, const char *funcname);
-	static VECTOR3 lua_field_tovector_safe (lua_State *L, int idx, const char *fieldname, const char *funcname);
+	static VECTOR3 *lua_field_tovector_safe (lua_State *L, int idx, const char *fieldname, const char *funcname, VECTOR3 *tmp);
 
 	static int luamtd_tointeger_safe (lua_State *L, int idx, const char *funcname);
 	static double luamtd_tonumber_safe (lua_State *L, int idx, const char *funcname);
 	static bool luamtd_toboolean_safe (lua_State *L, int idx, const char *funcname);
 	static const char *luamtd_tostring_safe (lua_State *L, int idx, const char *funcname);
 	static void *luamtd_tolightuserdata_safe (lua_State *L, int idx, const char *funcname);
-	static VECTOR3 luamtd_tovector_safe (lua_State *L, int idx, const char *funcname);
-	static MATRIX3 luamtd_tomatrix_safe (lua_State *L, int idx, const char *funcname);
+	static VECTOR3 *luamtd_tovector_safe (lua_State *L, int idx, const char *funcname, VECTOR3 *tmp);
+	static MATRIX3 *luamtd_tomatrix_safe (lua_State *L, int idx, const char *funcname, MATRIX3 *tmp);
 	static double luamtd_field_tonumber_safe (lua_State *L, int idx, const char *fieldname, const char *funcname);
 	static void *luamtd_field_tolightuserdata_safe (lua_State *L, int idx, const char *fieldname, const char *funcname);
-	static VECTOR3 luamtd_field_tovector_safe (lua_State *L, int idx, const char *fieldname, const char *funcname);
+	static VECTOR3 *luamtd_field_tovector_safe (lua_State *L, int idx, const char *fieldname, const char *funcname, VECTOR3 *tmp);
 
 
 	// pops an MFD2 interface from the stack
@@ -343,16 +347,16 @@ protected:
 	static oapi::Sketchpad *lua_tosketchpad (lua_State *L, int idx=-1);
 
 
-	static void *luaL_tryudata (lua_State *L, int ud, const char *tname);
-
 	// global functions
 	static int help (lua_State *L);
 	static int help_api (lua_State *L);
 
 	// vector library functions
+	virtual void LoadVecMatAPI ();
 	static int vec_set (lua_State *L);
 	static int vec_add (lua_State *L);
 	static int vec_sub (lua_State *L);
+	static int vec_unm (lua_State *L);
 	static int vec_mul (lua_State *L);
 	static int vec_div (lua_State *L);
 	static int vec_dotp (lua_State *L);
@@ -361,10 +365,12 @@ protected:
 	static int vec_dist (lua_State *L);
 	static int vec_unit (lua_State *L);
 	static int mat_identity (lua_State *L);
+	static int mat_set (lua_State *L);
 	static int mat_mul (lua_State *L);
 	static int mat_tmul (lua_State *L);
 	static int mat_mmul (lua_State *L);
 	static int mat_rotm (lua_State *L);
+	static int mat_mul_dispatch(lua_State *L);
 
 	// bit manipulations
 	static int bit_anyset(lua_State* L);
@@ -1170,11 +1176,11 @@ private:
 	static bool lua_toboolean_safe (lua_State *L, int idx, int prmno, const char *funcname);
 	static const char *lua_tostring_safe (lua_State *L, int idx, int prmno, const char *funcname);
 	static void *lua_tolightuserdata_safe (lua_State *L, int idx, int prmno, const char *funcname);
-	static VECTOR3 lua_tovector_safe (lua_State *L, int idx, int prmno, const char *funcname);
-	static MATRIX3 lua_tomatrix_safe (lua_State *L, int idx, int prmno, const char *funcname);
+	static VECTOR3 *lua_tovector_safe (lua_State *L, int idx, int prmno, const char *funcname, VECTOR3 *tmp);
+	static MATRIX3 *lua_tomatrix_safe (lua_State *L, int idx, int prmno, const char *funcname, MATRIX3 *tmp);
 	static double lua_field_tonumber_safe (lua_State *L, int idx, int prmno, const char *fieldname, const char *funcname);
 	static void *lua_field_tolightuserdata_safe (lua_State *L, int idx, int prmno, const char *fieldname, const char *funcname);
-	static VECTOR3 lua_field_tovector_safe (lua_State *L, int idx, int prmno, const char *fieldname, const char *funcname);
+	static VECTOR3 *lua_field_tovector_safe (lua_State *L, int idx, int prmno, const char *fieldname, const char *funcname, VECTOR3 *tmp);
 	static int AssertPrmType(lua_State *L, int idx, int prmno, int tp, const char *funcname, const char *fieldname=0);
 
 	// Touchdown Vertex ------------------------------------------------------

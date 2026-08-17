@@ -180,7 +180,7 @@ function clbk_new()
 	arm_tip[2] = _V(-2.26, 2.71, -6.5)
 
 	sat_attach = vi:create_attachment(false, ofs_sts_sat, _V(0, 1, 0), _V(0, 0, 1), "X")
-	rms_attach = vi:create_attachment(false, arm_tip[0], vec.sub(arm_tip[1], arm_tip[0]), vec.sub(arm_tip[2], arm_tip[0]), "G", true)
+	rms_attach = vi:create_attachment(false, arm_tip[0], arm_tip[1] - arm_tip[0], arm_tip[2] - arm_tip[0], "G", true)
 
 	-- Entry particle stream
 	rps = {
@@ -1343,7 +1343,7 @@ function clbk_loadstateex(scn, vs2)
 				vs2:set(vs)
 			end
 		else
-			local rad = vec.length(vs.rpos)
+			local rad = vs.rpos:length()
 			local alt = rad - oapi.get_size(vs.rbody)
 			launchelev = math.max(0.0, alt - 18.962)
 		end
@@ -1672,7 +1672,7 @@ function clbk_prestep(simt, simdt, mjd)
 	end
 
 	if arm_moved then
-		vi:set_attachmentparams(rms_attach, arm_tip[0], vec.sub(arm_tip[1], arm_tip[0]), vec.sub(arm_tip[2], arm_tip[0]))
+		vi:set_attachmentparams(rms_attach, arm_tip[0], arm_tip[1] - arm_tip[0], arm_tip[2] - arm_tip[0])
 		arm_moved = false
 	end
 	if arm_scheduled then
@@ -1737,7 +1737,7 @@ function clbk_visualcreated(_vis, refcount)
 	vis = _vis
 
 	-- make sure the RMS attachment point is in sync with the animation state of the visual
-	vi:set_attachmentparams(rms_attach, arm_tip[0], vec.sub(arm_tip[1], arm_tip[0]), vec.sub(arm_tip[2], arm_tip[0]))
+	vi:set_attachmentparams(rms_attach, arm_tip[0], arm_tip[1] - arm_tip[0], arm_tip[2] - arm_tip[0])
 end
 
 ----------------------------------------------------------------
