@@ -26,21 +26,19 @@ public:
 	LuaConsole (HINSTANCE hDLL);
 	~LuaConsole ();
 
-	void clbkSimulationStart (RenderMode mode);
-	void clbkSimulationEnd ();
-	void clbkPreStep (double simt, double simdt, double mjd);
+	void clbkSimulationStart (RenderMode mode) override;
+	void clbkSimulationEnd () override;
+	void clbkPreStep (double simt, double simdt, double mjd) override;
 
-	HWND Open ();
+	void Open ();
 	void Close ();
 
 	void AddLine(const char *str, LineType type = LineType::LUA_OUT);
 	void Clear();
 
 private:
-	static unsigned int WINAPI InterpreterThreadProc (LPVOID context);
 	static void OpenDlgClbk (void *context); // called when user requests console window
 	Interpreter *CreateInterpreter ();
-	HANDLE hThread;    // interpreter thread handle
 	bool termInterp;
 
 	Interpreter *interp; // interpreter instance
