@@ -440,7 +440,6 @@ protected:
 	static int oapi_VC_set_neighbours(lua_State* L);
 	static int oapi_VC_registerHUD(lua_State* L);
 	static int oapi_VC_registermfd(lua_State* L);
-	static int oapi_cockpit_mode(lua_State* L);
 	static int oapi_render_hud(lua_State* L);
 	static int oapi_get_hudintensity(lua_State* L);
 	static int oapi_set_hudintensity(lua_State* L);
@@ -541,6 +540,17 @@ protected:
 	static int oapi_get_cameraglobaldir (lua_State *L);
 	static int oapi_move_groundcamera (lua_State *L);
 	static int oapi_set_cameracockpitdir (lua_State *L);
+	static int oapi_cockpit_mode(lua_State* L);
+	static int oapi_get_camerainternal (lua_State *L);
+	static int oapi_get_cameramode (lua_State *L);
+	static int oapi_camera_proxygbody (lua_State *L);
+	static int oapi_camera_rotationmatrix (lua_State *L);
+	static int oapi_camera_targetdist (lua_State *L);
+	static int oapi_camera_azimuth (lua_State *L);
+	static int oapi_camera_polar (lua_State *L);
+	static int oapi_camera_scaledist (lua_State *L);
+	static int oapi_camera_rotazimuth (lua_State *L);
+	static int oapi_camera_rotpolar (lua_State *L);
 
 	// Custom camera
 	static int oapi_delete_customcamera (lua_State *L);
@@ -1145,6 +1155,9 @@ protected:
 	static int xrsound_get_playposition(lua_State *L);
 	static int xrsound_collect(lua_State *L);
 
+	// Interpolators
+	void LoadInterpolatorAPI ();
+	
 private:
 	HANDLE hExecMutex; // flow control synchronisation
 	HANDLE hWaitMutex;
