@@ -9,6 +9,7 @@ file(GLOB_RECURSE includes
 	LIST_DIRECTORIES false
 	include/*
 )
+
 foreach(fname ${includes})
 	list(APPEND input
 		${CMAKE_CURRENT_SOURCE_DIR}/${fname}

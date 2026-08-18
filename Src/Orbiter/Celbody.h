@@ -26,6 +26,7 @@ typedef void   (*OPLANET_AtmPrm)(double alt, ATMPARAM *prm);
 class CelestialBody: public RigidBody {
 friend class CELBODY;
 friend class CELBODY2;
+friend class CELBODY3;
 
 public:
 	CelestialBody (double _mass, double _size);
@@ -165,6 +166,10 @@ protected:
 	// external module.
 	// Returns false if not supported by module
 
+	int ExternRotation(double mjd, double *ret) const;
+	// Try to obtain rotation data at mjd from external module
+	// return value contains satisfied requests 3x3 element matrix
+
 	int ExternState (double *res);
 	// Try to obtain current ephemeris data (true and barycentric) from external
 	// module. This tries first FastEphemeris, then Ephemeris. Return value
@@ -184,6 +189,7 @@ protected:
 	void RegisterModule (char *dllname);
 	void ClearModule ();
 	CELBODY *module;         // pointer to module interface class, if available
+	CELBODY3 *module3;       // specific CELBODY3 version of module pointer
 
 	bool bFixedElements;
 	// Set this to true if the object's elements never change
@@ -210,6 +216,7 @@ private:
 	double mjd_rel;          // date to which lan_rel refers
 	double prec_T;           // precession period [days], or 0 if infinite
 	double prec_omega;       // precession angular velocity [rad/day]
+	bool rot_extern;         // rotation model defined in external model (if true, use clbkRotation defined in external module rather than Orbiter's UpdateRotation and UpdatePrecession)
 
 	double eps_ecl;          // obliquity of axis against ecliptic normal
 	double lan_ecl;          // longitude of ascending node: angle between x-axis and ascending node of equator

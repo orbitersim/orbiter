@@ -1,0 +1,38 @@
+BEGIN_HEADER
+InitialState on
+ColourIdx 4
+END_HEADER
+
+BEGIN_DATA
++165.70	+38.90	:	Akitu Sulcus			
++162.10	+18.00	:	Anshar Sulcus			
++125.30	-39.40	:	Apsu Sulci			
++356.10	+52.40	:	Aquarius Sulcus			
++10.20	-21.10	:	Arbela Sulcus			
++77.10	-72.30	:	Bubastis Sulci			
++160.10	+37.90	:	Byblus Sulcus			
++342.50	-46.90	:	Dardanus Sulcus			
++356.20	+83.50	:	Dukug Sulcus			
++159.70	+58.20	:	Elam Sulci			
++180.80	-7.30	:	Erech Sulcus			
++41.30	-11.70	:	Harpagia Sulcus			
++126.90	-9.70	:	Hursag Sulcus			
++143.40	-6.40	:	Kishar Sulcus			
++196.80	-10.90	:	Lagash Sulcus			
++111.30	+3.80	:	Larsa Sulcus			
++154.30	+29.80	:	Mashu Sulcus			
++352.10	-7.00	:	Mysia Sulci			
++306.90	+23.50	:	Nineveh Sulcus			
++175.00	+36.90	:	Nippur Sulcus			
++43.60	+49.50	:	Nun Sulci			
++191.00	+65.50	:	Philae Sulcus			
++150.50	+44.10	:	Philus Sulcus			
++336.50	+12.40	:	Phrygia Sulcus			
++127.80	-19.30	:	Shuruppak Sulcus			
++341.50	+32.70	:	Sicyon Sulcus			
++170.70	-15.40	:	Sippar Sulcus			
++151.50	+3.40	:	Tiamat Sulcus			
++110.00	+4.10	:	Umma Sulcus			
++182.50	+49.80	:	Ur Sulcus			
++199.70	+0.80	:	Uruk Sulcus			
++288.90	+43.80	:	Xibalba Sulcus			

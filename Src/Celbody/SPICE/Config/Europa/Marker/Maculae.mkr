@@ -1,0 +1,12 @@
+BEGIN_HEADER
+InitialState on
+ColourIdx 5
+END_HEADER
+
+BEGIN_DATA
++193.20	-53.60	:	Boeotia Macula
++134.30	-1.60	:	Castalia Macula
++168.70	-62.50	:	Cyclades Macula
++178.80	-46.70	:	Thera Macula
++187.90	-45.90	:	Thrace Macula
++213.00	+31.70	:	[Tyre Macula]

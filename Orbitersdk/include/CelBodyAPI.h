@@ -16,8 +16,8 @@
 
 /**
  * \file CelBodyAPI.h
- * \brief Contains interface classes for celestial bodies: \ref CELBODY and
- *   \ref CELBODY2.
+ * \brief Contains interface classes for celestial bodies: \ref CELBODY,
+ *   \ref CELBODY2, and \ref CELBODY3.
  */
 
 #ifndef __CELBODYAPI_H
@@ -228,7 +228,7 @@ public:
 
 	/**
 	* \brief Return version number
-	* \return Version number (1 for CELBODY, 2 for CELBODY2)
+	* \return Version number (1 for CELBODY, 2 for CELBODY2, 3 for CELBODY3)
 	*/
 	inline int Version() const { return version; }
 
@@ -622,6 +622,61 @@ public:
 
 protected:
 	CELBODY2 *cbody; ///< associated celestial body instance
+};
+
+
+// ======================================================================
+/**
+* \class CELBODY3
+* \brief Extension to CELBODY2 class.
+* \details This class introduces extended rotation model API methods. It contains an
+*   \ref ATMOSPHERE class instance (just like CELBODY2) which handles all atmosphere data requests.
+*   The atmosphere class can be either defined directly in the celestial body's
+*   plugin module, or it can be loaded from an external module. This latter option
+*   allows to replace atmospheric models easily, without having to re-implement
+*   other parts of the code, such as the ephemeris calculations.
+* \sa CELBODY, CELBODY2, ATMOSPHERE
+*/
+// ======================================================================
+class OAPIFUNC CELBODY3: public CELBODY2 {
+	friend class ATMOSPHERE;
+public:
+	/**
+	* \brief Constructor. Creates a CELBODY3 instance for a celestial body.
+	* \param hCBody body handle
+	*/
+	CELBODY3(OBJHANDLE hCBody);
+
+	/**
+	 * \brief Destructor. Destroys the CELBODY3 instance.
+	 * \default Calls the FreeAtmosphere method, to delete the atmosphere instance
+	 *   and unload any external atmosphere modules.
+	 */
+	virtual ~CELBODY3();
+
+	/**
+	* \brief Returns the handle of the associated object.
+	*/
+	inline OBJHANDLE GetHandle() const { return hBody; }
+
+	/**
+	* \brief Called by Orbiter to update the body's rotation
+	* \param mjd MJD of the requested rotation data
+	* \param rot pointer to rotation matrix 3x3
+	* \par Default action:
+	*  None, returning 0
+	* \note TBD
+	*/
+	virtual int clbkRotation(double mjd, double* rotMat);
+
+	/**
+	* \brief Returns \e true or \e false depending on whether the module supports module-defined rotation.
+	* \return If your module supports rotation calculation (that is, if it defines the
+	*  clbkRotation method) return \e true. Otherwise return \e false.
+	* \par Default action:
+	*  Returns \e false.
+	*/
+	virtual bool bRotation() const;
 };
 
 #endif // !__CELBODYAPI_H

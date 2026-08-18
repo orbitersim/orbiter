@@ -1,0 +1,16 @@
+BEGIN_HEADER
+InitialState on
+ColourIdx 4
+END_HEADER
+
+BEGIN_DATA
++236.20	-47.60	:	Bactria Regio			
++239.50	-1.60	:	Bosphorus Regio			
++169.20	+34.80	:	Bulicame Regio			
++273.80	+57.50	:	Chalybes Regio			
++155.00	+1.60	:	Colchis Regio			
++191.00	-69.80	:	Illyrikon Regio			
++68.10	-62.30	:	Lerna Regio			
++300.60	+8.60	:	Media Regio			
++194.60	-36.10	:	Mycenae Regio			
++304.90	-39.70	:	Tarsus Regio			
