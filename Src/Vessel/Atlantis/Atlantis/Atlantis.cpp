@@ -515,7 +515,7 @@ void Atlantis::VLiftCoeff (double aoa, double M, double Re, double *cl, double *
     static const int nabsc = 25; // number of data points in the table
     static const double CLMachLow[nabsc] = {0.1, 0.17, 0.2, 0.2, 0.17, 0.1, 0, -0.11, -0.65, -1.15, -1.25, -0.5, 0.05, 0.55, 1.25, 1.15, 0.65, 0.13, 0, -0.16, -0.26, -0.29, -0.24, -0.1, 0.1};
     static const double CMMachLow[nabsc] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0.002, 0.004, 0.0025, 0.0012, 0, -0.0012, -0.0007, 0, 0, 0, 0, 0, 0, 0, 0, 0};
-    static const double CLMachHigh[nabsc] = {0.05, 0.45, 0.85, 1.25, 1.45, 1.35, 0.05, -1.25, -1.35, -1.15, -0.75, -0.35, 0.05, 0.45, 0.85, 1.25, 1.45, 1.35, 0.05, -1.25, -1.35, -1.15, -0.75, -0.35, 0.05};
+    static const double CLMachHigh[nabsc] = {0.05, 0.35, 0.65, 0.95, 1.25, 1.15, 0.05, -1.1, -1.2, -0.95, -0.6, -0.25, 0.05, 0.35, 0.7, 1.05, 1.3, 1.2, 0.05, -1.05, -1.15, -0.85, -0.55, -0.25, 0.05};
     static const double CMMachHigh[nabsc] = {-0, -0, -0, -0, -0, -0, -0, -0, -0, 0.0007, 0.0012, -0, 0, 0, -0.0012, -0.0007, 0, 0, 0, 0, 0, 0, 0, 0, 0};
 
 	const double mach_blend = max (0.0, min (1.0, (M - 1.0) * 0.125));
