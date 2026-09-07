@@ -515,7 +515,7 @@ void Atlantis::VLiftCoeff (double aoa, double M, double Re, double *cl, double *
     static const int nabsc = 25; // number of data points in the table
     static const double CLMachLow[nabsc] = {0.1, 0.17, 0.2, 0.2, 0.17, 0.1, 0, -0.11, -0.65, -1.15, -1.25, -0.5, 0.05, 0.55, 1.25, 1.15, 0.65, 0.13, 0, -0.16, -0.26, -0.29, -0.24, -0.1, 0.1};
     static const double CMMachLow[nabsc] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0.002, 0.004, 0.0025, 0.0012, 0, -0.0012, -0.0007, 0, 0, 0, 0, 0, 0, 0, 0, 0};
-    static const double CLMachHigh[nabsc] = {0.05, 0.35, 0.65, 0.95, 1.25, 1.15, 0.05, -1.1, -1.2, -0.95, -0.6, -0.25, 0.05, 0.35, 0.7, 1.05, 1.3, 1.2, 0.05, -1.05, -1.15, -0.85, -0.55, -0.25, 0.05};
+    static const double CLMachHigh[nabsc] = {0, 0.15, 0.4, 0.65, 0.75, 0.65, 0, -0.7, -0.8, -0.7, -0.4, -0.15, 0, 0.15, 0.4, 0.7, 0.8, 0.7, 0, -0.65, -0.75, -0.65, -0.4, -0.15, 0};
     static const double CMMachHigh[nabsc] = {-0, -0, -0, -0, -0, -0, -0, -0, -0, 0.0007, 0.0012, -0, 0, 0, -0.0012, -0.0007, 0, 0, 0, 0, 0, 0, 0, 0, 0};
 
 	const double mach_blend = max (0.0, min (1.0, (M - 1.0) * 0.125));
@@ -531,7 +531,7 @@ void Atlantis::VLiftCoeff (double aoa, double M, double Re, double *cl, double *
 	double cl_high = CLMachHigh[idx] + (CLMachHigh[idx+1]-CLMachHigh[idx])*d;
 	double cm_high = CMMachHigh[idx] + (CMMachHigh[idx+1]-CMMachHigh[idx])*d;
     double cd_prof_low = 0.055 + 0.01 * pow(sin(aoa), 2);  // profile drag coefficient at low Mach
-    double cd_prof_high = 0.15 + 1.2 * pow(sin(aoa), 2); // profile drag coefficient at high Mach
+    double cd_prof_high = 0.1 + 1.5 * abs(pow(sin(aoa), 3)); // profile drag coefficient at high Mach
 
 	*cl = cl_low + (cl_high-cl_low)*mach_blend;
 	*cm = cm_low + (cm_high-cm_low)*mach_blend;
@@ -1703,6 +1703,20 @@ void Atlantis::clbkPreStep (double simt, double simdt, double mjd)
     double mach = GetMachNumber();
     double alpha = GetAOA(); // angle of attack in radians
     double beta = GetSlipAngle(); // slip angle in radians
+
+    VECTOR3 lift_vector;
+    VECTOR3 drag_vector;
+
+    // Fetch the current force vectors (in Newtons) acting on the vessel
+    GetLiftVector(lift_vector);
+    GetDragVector(drag_vector);
+
+    double lift_force = length(lift_vector);
+    double drag_force = length(drag_vector);
+
+    // Calculate L/D ratio (handle division by zero if there is no atmosphere/drag)
+    double lift_drag_ratio = (drag_force > 0.0) ? (lift_force / drag_force) : 0.0;
+
     VECTOR3 avel;
     GetAngularVel(avel);
 
@@ -2065,10 +2079,11 @@ void Atlantis::clbkPreStep (double simt, double simdt, double mjd)
         // sprintf(oapiDebugString(), "Roll: %+0.3f", roll_curr * 57.296);
         // sprintf(oapiDebugString(), "Roll Target: %+0.3f", roll_tgt * 57.296);
         // sprintf(oapiDebugString(), "Roll Rate Error: %+0.3f", roll_rate_error * 57.296);
-        sprintf(oapiDebugString(), "Pitch Mode: %d", pitch_mode);
+        // sprintf(oapiDebugString(), "Pitch Mode: %d", pitch_mode);
         // sprintf(oapiDebugString(), "Yaw Rate: %+0.3f", yaw_rate_curr * 57.296);
         // sprintf(oapiDebugString(), "Elev Error: %+0.3f", elev_error);
         // sprintf(oapiDebugString(), "Pitch Cmd: %+0.3f", pitch_cmd);
+        sprintf(oapiDebugString(), "L/D: %0.3f", lift_drag_ratio);
 		break;
 	}
 
