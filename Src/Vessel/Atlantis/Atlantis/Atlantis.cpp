@@ -2083,7 +2083,7 @@ void Atlantis::clbkPreStep (double simt, double simdt, double mjd)
         // sprintf(oapiDebugString(), "Roll Rate Error: %+0.3f", roll_rate_error * 57.296);
         // sprintf(oapiDebugString(), "Pitch Mode: %d", pitch_mode);
         // sprintf(oapiDebugString(), "Yaw Rate: %+0.3f", yaw_rate_curr * 57.296);
-        sprintf(oapiDebugString(), "Pitch Error: %+0.3f", pitch_error * 57.296);
+        // sprintf(oapiDebugString(), "Pitch Error: %+0.3f", pitch_error * 57.296);
         // sprintf(oapiDebugString(), "Pitch Cmd: %+0.3f", pitch_cmd);
         // sprintf(oapiDebugString(), "L/D: %0.3f", lift_drag_ratio);
 		break;
