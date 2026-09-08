@@ -451,7 +451,7 @@ private:
     bool dap_entry_enabled; // flag for DAP entry enabled
     // Pitch control
     int pitch_mode; // 0=off, 1=arm, 2=on
-
+    bool pitch_hold_latched = false; // flag for latched pitch hold mode
     double pitch_cmd;
 
     double pitch_curr;

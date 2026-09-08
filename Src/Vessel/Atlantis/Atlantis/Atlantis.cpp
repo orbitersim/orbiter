@@ -1838,17 +1838,19 @@ void Atlantis::clbkPreStep (double simt, double simdt, double mjd)
                 // PITCH MODE SHIFTING: 0 = manual, 1 = pitch rate null, 2 = pitch hold
                 if (abs(pitch_cmd) > cmd_null_zone || abs(elev_error) > cmd_null_zone) {
                     pitch_mode = 0; // manual pitch control mode
+                    pitch_hold_latched = false; // reset pitch hold latched flag
                 }
                 else {
                     if (abs(pitch_rate_curr) > rate_null_hold_xfr_val && pitch_mode == 0) {
                         pitch_mode = 1; // pitch rate null mode
                     }
-                    if (abs(pitch_rate_curr) <= rate_null_hold_xfr_val) {
+                    if (abs(pitch_rate_curr) <= rate_null_hold_xfr_val && pitch_hold_latched == false) {
                         pitch_tgt = pitch_curr; // set current pitch as pitch target
                         pitch_tgt = clamp(pitch_tgt, -40 * RAD, +40 * RAD);   // Limit pitch to ±40°
                         aoa_tgt = aoa_curr; // set current AOA as AOA target
                         aoa_tgt = clamp(aoa_tgt, 0 * RAD, 40 * RAD);    // Limit AOA to 0-40°
                         pitch_mode = 2; // pitch hold mode
+                        pitch_hold_latched = true; // latch pitch hold mode
                     }
                 }
 
@@ -1927,7 +1929,7 @@ void Atlantis::clbkPreStep (double simt, double simdt, double mjd)
                         // Pitch trim: elevons and body flap
                         elev_tgt = pitch_rate_error * 5.0 + elev_trim_tgt;
                         elev_tgt = clamp(elev_tgt, -1.0, +1.0);
-                        elev_trim_tgt = pitch_error * 3.0 - spdb_proc * 0.2 + gear_proc * 0.1;
+                        elev_trim_tgt = - spdb_proc * 0.2 + gear_proc * 0.1;
                         elev_trim_tgt = clamp(elev_trim_tgt, -0.5, 0.5); // Allow half negative/positive trim for low AOA
                         SetControlSurfaceLevel(AIRCTRL_ELEVATOR, elev_tgt); // Use elevons for pitch trim at low AOA
                         SetControlSurfaceLevel(AIRCTRL_FLAP, 0.0); // body flap zeroed at low AOA
@@ -2081,9 +2083,9 @@ void Atlantis::clbkPreStep (double simt, double simdt, double mjd)
         // sprintf(oapiDebugString(), "Roll Rate Error: %+0.3f", roll_rate_error * 57.296);
         // sprintf(oapiDebugString(), "Pitch Mode: %d", pitch_mode);
         // sprintf(oapiDebugString(), "Yaw Rate: %+0.3f", yaw_rate_curr * 57.296);
-        // sprintf(oapiDebugString(), "Elev Error: %+0.3f", elev_error);
+        sprintf(oapiDebugString(), "Pitch Error: %+0.3f", pitch_error * 57.296);
         // sprintf(oapiDebugString(), "Pitch Cmd: %+0.3f", pitch_cmd);
-        sprintf(oapiDebugString(), "L/D: %0.3f", lift_drag_ratio);
+        // sprintf(oapiDebugString(), "L/D: %0.3f", lift_drag_ratio);
 		break;
 	}
 
