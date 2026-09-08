@@ -1929,7 +1929,7 @@ void Atlantis::clbkPreStep (double simt, double simdt, double mjd)
                         // Pitch trim: elevons and body flap
                         elev_tgt = pitch_rate_error * 5.0 + elev_trim_tgt;
                         elev_tgt = clamp(elev_tgt, -1.0, +1.0);
-                        elev_trim_tgt = - spdb_proc * 0.2 + gear_proc * 0.1;
+                        elev_trim_tgt = -spdb_proc * 0.2 + gear_proc * 0.1;
                         elev_trim_tgt = clamp(elev_trim_tgt, -0.5, 0.5); // Allow half negative/positive trim for low AOA
                         SetControlSurfaceLevel(AIRCTRL_ELEVATOR, elev_tgt); // Use elevons for pitch trim at low AOA
                         SetControlSurfaceLevel(AIRCTRL_FLAP, 0.0); // body flap zeroed at low AOA
