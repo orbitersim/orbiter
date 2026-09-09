@@ -530,7 +530,7 @@ void Atlantis::VLiftCoeff (double aoa, double M, double Re, double *cl, double *
 	double cm_low = CMMachLow[idx] + (CMMachLow[idx+1]-CMMachLow[idx])*d;
 	double cl_high = CLMachHigh[idx] + (CLMachHigh[idx+1]-CLMachHigh[idx])*d;
 	double cm_high = CMMachHigh[idx] + (CMMachHigh[idx+1]-CMMachHigh[idx])*d;
-    double cd_prof_low = 0.055 + 0.01 * pow(sin(aoa), 2);  // profile drag coefficient at low Mach
+    double cd_prof_low = 0.040 + 0.01 * pow(sin(aoa), 2);  // profile drag coefficient at low Mach
     double cd_prof_high = 0.1 + 1.5 * abs(pow(sin(aoa), 3)); // profile drag coefficient at high Mach
 
 	*cl = cl_low + (cl_high-cl_low)*mach_blend;
