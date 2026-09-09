@@ -22,12 +22,15 @@
 #include "DrawAPI.h"
 #include <stdio.h>
 #include <fstream>
+#include <algorithm> // Required for std::clamp
 
 #define IMGUI_DEFINE_MATH_OPERATORS
 #include "imgui.h"
 #include "IconsFontAwesome6.h"
 
 using std::min;
+using std::max;
+using std::clamp;
 using std::max;
 
 #ifdef _DEBUG
@@ -244,7 +247,7 @@ Atlantis::Atlantis (OBJHANDLE hObj, int fmodel)
 	ph_oms  = CreatePropellantResource (ORBITER_MAX_PROPELLANT_MASS); // OMS propellant
 	SetDefaultPropellantResource (ph_oms); // display OMS tank level in generic HUD
 
-	// Orbiter engines	
+	// Orbiter engines
 	CreateSSME(); // main thrusters
 	CreateOMS();  // OMS thrusters (activated only after tank separation)
 	CreateRCS();  // Reaction control system (activated only after tank separation)
@@ -262,7 +265,10 @@ Atlantis::Atlantis (OBJHANDLE hObj, int fmodel)
 	center_arm      = false;
 	arm_moved       = arm_scheduled = false;
 	bManualSeparate = false;
-	ofs_sts_sat     = _V(0,0,0);      
+	dap_entry_enabled     = true;
+	pitch_cmd         = 0.0;
+	roll_cmd= 0.0;
+	ofs_sts_sat     = _V(0,0,0);
 	do_eva          = false;
 	do_plat         = false;
 	do_cargostatic  = false;
@@ -397,7 +403,7 @@ void Atlantis::CreateRCS()
 	AddExhaust (th_att_rot[1], eh, ew1, _V( 3.43, 3.20,-12.70), _V(0, 1,0), tex_rcs);//R2U
 	AddExhaust (th_att_rot[1], eh, ew1, _V( 3.43, 3.20,-13.10), _V(0, 1,0), tex_rcs);//R1U
 
-	AddExhaust (th_att_rot[2], eh, ew1, _V(-0.4 , 1.10, 18.3 ), _V(0, 1,0), tex_rcs);//F1U	
+	AddExhaust (th_att_rot[2], eh, ew1, _V(-0.4 , 1.10, 18.3 ), _V(0, 1,0), tex_rcs);//F1U
 	AddExhaust (th_att_rot[2], eh, ew1, _V( 0.0 , 1.15 ,18.3 ), _V(0, 1,0), tex_rcs);//F3U
 	AddExhaust (th_att_rot[2], eh, ew1, _V( 0.4 , 1.10, 18.3 ), _V(0, 1,0), tex_rcs);//F2U
 
@@ -481,18 +487,19 @@ void Atlantis::CreateRCS()
 // --------------------------------------------------------------
 void Atlantis::CreateAirfoils ()
 {
-	CreateAirfoil (LIFT_VERTICAL,   _V(0,0,-0.5), VLiftCoeff, 20, 270, 2.266);
+	CreateAirfoil (LIFT_VERTICAL,   _V(0,0,-0.2), VLiftCoeff, 20, 270, 2.266);
 	CreateAirfoil (LIFT_HORIZONTAL, _V(0,0,-4), HLiftCoeff, 20,  50, 1.5);
 
-	CreateControlSurface (AIRCTRL_ELEVATOR, 5.0, 1.5, _V( 0, 0,  -15), AIRCTRL_AXIS_XPOS, anim_elev);
-	CreateControlSurface (AIRCTRL_RUDDER,   2.0, 1.5, _V( 0, 3,  -16), AIRCTRL_AXIS_YPOS, anim_rudder);
-	CreateControlSurface (AIRCTRL_AILERON,  3.0, 1.5, _V( 7,-0.5,-15), AIRCTRL_AXIS_XPOS, anim_raileron);
-	CreateControlSurface (AIRCTRL_AILERON,  3.0, 1.5, _V(-7,-0.5,-15), AIRCTRL_AXIS_XNEG, anim_laileron);
+	CreateControlSurface (AIRCTRL_ELEVATOR, 8.0, 1.5, _V( 0, 0,  -15), AIRCTRL_AXIS_XPOS, anim_elev);
+	CreateControlSurface (AIRCTRL_RUDDER,   3.0, 1.5, _V( 0, 3,  -16), AIRCTRL_AXIS_YPOS, anim_rudder);
+	CreateControlSurface (AIRCTRL_AILERON,  4.0, 1.5, _V( 7,-0.5,-15), AIRCTRL_AXIS_XPOS, anim_raileron);
+	CreateControlSurface (AIRCTRL_AILERON,  4.0, 1.5, _V(-7,-0.5,-15), AIRCTRL_AXIS_XNEG, anim_laileron);
+	CreateControlSurface (AIRCTRL_FLAP,    16.0, 1.5, _V( 0, 0,  -18), AIRCTRL_AXIS_XPOS, anim_flap);
 
 	CreateVariableDragElement (&spdb_proc, 5, _V(0, 7.5, -14)); // speedbrake drag
 	CreateVariableDragElement (&gear_proc, 2, _V(0,-3,0));      // landing gear drag
 	CreateVariableDragElement (&rdoor_drag, 7, _V(2.9,0,10));   // right cargo door drag
-	CreateVariableDragElement (&ldoor_drag, 7, _V(-2.9,0,10));  // right cargo door drag
+	CreateVariableDragElement (&ldoor_drag, 7, _V(-2.9,0,10));  // left cargo door drag
 }
 
 // --------------------------------------------------------------
@@ -505,18 +512,30 @@ void Atlantis::VLiftCoeff (double aoa, double M, double Re, double *cl, double *
 {
 	static const double step = RAD*15.0;
 	static const double istep = 1.0/step;
-	static const int nabsc = 25;
-	static const double CL[nabsc] = {0.1, 0.17, 0.2, 0.2, 0.17, 0.1, 0, -0.11, -0.24, -0.38,  -0.5,  -0.5, -0.02, 0.6355,    0.63,   0.46, 0.28, 0.13, 0.0, -0.16, -0.26, -0.29, -0.24, -0.1, 0.1};
-	static const double CM[nabsc] = {  0,    0,   0,   0,    0,   0, 0,     0,    0,0.002,0.004, 0.0025,0.0012,      0,-0.0012,-0.0007,    0,    0,   0,     0,     0,     0,     0,    0,   0};
-	// lift and moment coefficients from -180 to 180 in 15 degree steps.
-	// This uses a documented lift slope of 0.0437/deg, everything else is rather ad-hoc
+    static const int nabsc = 25; // number of data points in the table
+    static const double CLMachLow[nabsc] = {0, 0.25, 0.3, 0.25, 0.2, 0.1, 0, -0.2, -0.65, -1.1, -1.2, -0.5, 0, 0.5, 1.2, 1.1, 0.65, 0.2, 0, -0.1, -0.2, -0.25, -0.3, -0.25, 0};
+    static const double CMMachLow[nabsc] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0.002, 0.004, 0.0025, 0.0012, 0, -0.0012, -0.0007, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+    static const double CLMachHigh[nabsc] = {0, 0.15, 0.4, 0.65, 0.75, 0.65, 0, -0.7, -0.8, -0.7, -0.4, -0.15, 0, 0.15, 0.4, 0.7, 0.8, 0.7, 0, -0.65, -0.75, -0.65, -0.4, -0.15, 0};
+    static const double CMMachHigh[nabsc] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0.002, 0.004, 0.0025, 0.0012, 0, -0.0012, -0.0007, 0, 0, 0, 0, 0, 0, 0, 0, 0};
 
+	const double mach_blend = max (0.0, min (1.0, (M - 1.0) * 0.125));
+
+
+	// lift and moment coefficients from -180 to 180 in 15 degree steps.
+	// This uses a documented Cl_max of ~1.3 at  ~ 35 deg, everything else is rather ad-hoc
 	aoa += PI;
 	int idx = max (0, min (23, (int)(aoa*istep)));
 	double d = aoa*istep - idx;
-	*cl = CL[idx] + (CL[idx+1]-CL[idx])*d;
-	*cm = CM[idx] + (CM[idx+1]-CM[idx])*d;
-	*cd = 0.055 + oapiGetInducedDrag (*cl, 2.266, 0.6);
+	double cl_low = CLMachLow[idx] + (CLMachLow[idx+1]-CLMachLow[idx])*d;
+	double cm_low = CMMachLow[idx] + (CMMachLow[idx+1]-CMMachLow[idx])*d;
+	double cl_high = CLMachHigh[idx] + (CLMachHigh[idx+1]-CLMachHigh[idx])*d;
+	double cm_high = CMMachHigh[idx] + (CMMachHigh[idx+1]-CMMachHigh[idx])*d;
+    double cd_prof_low = 0.040 + 0.01 * pow(sin(aoa), 2);  // profile drag coefficient at low Mach
+    double cd_prof_high = 0.1 + 1.5 * abs(pow(sin(aoa), 3)); // profile drag coefficient at high Mach
+
+	*cl = cl_low + (cl_high-cl_low)*mach_blend;
+	*cm = cm_low + (cm_high-cm_low)*mach_blend;
+	*cd = cd_prof_low + (cd_prof_high-cd_prof_low)*mach_blend + oapiGetInducedDrag (*cl, 2.266, 0.6);
 }
 
 // --------------------------------------------------------------
@@ -807,6 +826,15 @@ void Atlantis::DefineAnimations (void)
 	ssme_anim[2] = new MGROUP_ROTATE (midx, &SSMET_Grp, 1, _V(0.0,  2.7, -12.5), _V(-1,0,0), max_gimbal);
 	AddAnimationComponent (anim_ssme, 0, 1, ssme_anim[2]);
 
+	// ***** 10. Body flap animation *****
+	// The body flap is stored as mesh group 1 in Atlantis.msh.
+	// Place the pivot on the flap's forward-edge hinge line from the mesh data.
+	static UINT BodyFlapGrp[1] = {1};
+	static MGROUP_ROTATE BodyFlap (midx, BodyFlapGrp, 1,
+		_V(2.9231,-2.02882,-12.3775), _V(1,0,0), (float)(20.0*RAD));
+	anim_flap = CreateAnimation (0.5);
+	AddAnimationComponent (anim_flap, 0, 1, &BodyFlap);
+
 	// ======================================================
 	// VC animation definitions
 	// ======================================================
@@ -918,7 +946,7 @@ void Atlantis::ToggleGrapple (void)
 
 		VECTOR3 gpos, grms, pos, dir, rot;
 		Local2Global (arm_tip[0], grms);  // global position of RMS tip
-		
+
 		// Search the complete vessel list for a grappling candidate.
 		// Not very scalable ...
 		for (DWORD i = 0; i < oapiGetVesselCount(); i++) {
@@ -1086,10 +1114,10 @@ void Atlantis::AutoGimbal (const VECTOR3 &tgt_rate)
 	static const double b_pitch = 1e0;
 	static const double a_yaw = 1e-1;
 	static const double b_yaw = 3e-2;
-	static const double a_roll_srb = 1e-1;
-	static const double b_roll_srb = 3e-2;
-	static const double a_roll_ssme = 8e-2;
-	static const double b_roll_ssme = 5e-2;
+	static const double a_bank_srb = 1e-1;
+	static const double b_bank_srb = 3e-2;
+	static const double a_bank_ssme = 8e-2;
+	static const double b_bank_ssme = 5e-2;
 
 	VECTOR3 avel, aacc;
 	GetAngularVel(avel);
@@ -1103,8 +1131,8 @@ void Atlantis::AutoGimbal (const VECTOR3 &tgt_rate)
 
 	bool srb_gimbal = status < 2 && pET;
 	double roll_gimbal_max = (srb_gimbal ? roll_gimbal_max_srb : roll_gimbal_max_ssme);
-	double a_roll = (srb_gimbal ? a_roll_srb : a_roll_ssme);
-	double b_roll = (srb_gimbal ? b_roll_srb : b_roll_ssme);
+	double a_bank = (srb_gimbal ? a_bank_srb : a_bank_ssme);
+	double b_bank = (srb_gimbal ? b_bank_srb : b_bank_ssme);
 
 	// Pitch gimbal settings
 	maxdg = dt*0.3; // max gimbal speed [rad/s]
@@ -1117,7 +1145,7 @@ void Atlantis::AutoGimbal (const VECTOR3 &tgt_rate)
 	gimbal_pos.y = min (yaw_gimbal_max, max(-yaw_gimbal_max, gimbal_pos.y+dgimbal));
 
 	// Roll gimbal settings
-	dgimbal = a_roll*(avel.z-tgt_rate.z) + b_roll*aacc.z;
+	dgimbal = a_bank*(avel.z-tgt_rate.z) + b_bank*aacc.z;
 	gimbal_pos.z = min (roll_gimbal_max, max(-roll_gimbal_max, gimbal_pos.z+dgimbal));
 
 	// Set SRB gimbals
@@ -1141,8 +1169,8 @@ void Atlantis::AutoRCS (const VECTOR3 &tgt_rate)
 	const double b_pitch = 2;
 	const double a_yaw = 2e-1;
 	const double b_yaw = 6e-2;
-	const double a_roll = 2e-1;
-	const double b_roll = 6e-2;
+	const double a_bank = 2e-1;
+	const double b_bank = 6e-2;
 
 	VECTOR3 avel, aacc;
 	GetAngularVel(avel);
@@ -1171,7 +1199,7 @@ void Atlantis::AutoRCS (const VECTOR3 &tgt_rate)
 	}
 
 	// Roll RCS settings
-	drcs = a_roll*(tgt_rate.z-avel.z) - b_roll*aacc.z;
+	drcs = a_bank*(tgt_rate.z-avel.z) - b_bank*aacc.z;
 	if (drcs > 0.0) {
 		SetThrusterGroupLevel(THGROUP_ATT_BANKRIGHT, min(drcs, 1.0));
 		SetThrusterGroupLevel(THGROUP_ATT_BANKLEFT, 0);
@@ -1259,7 +1287,7 @@ void Atlantis::Jettison ()
 	case 3:               // nothing to do
 		break;
 	case 1:               // abandon boosters
-		SeparateBoosters (oapiGetSimTime()-t0); 
+		SeparateBoosters (oapiGetSimTime()-t0);
 		break;
 	case 2:               // abandon tank
 		SeparateTank();
@@ -1407,7 +1435,7 @@ void Atlantis::RedrawPanel_MFDButton (SURFHANDLE surf, int mfd)
 void Atlantis::clbkSetClassCaps (FILEHANDLE cfg)
 {
 	// *********************** physical parameters *********************************
-	
+
 	SetSize (19.6);
 	SetEmptyMass (ORBITER_EMPTY_MASS);
 	SetPMI (_V(78.2,82.1,10.7));
@@ -1442,6 +1470,7 @@ void Atlantis::clbkLoadStateEx (FILEHANDLE scn, void *vs)
 	double sts_sat_x = 0.0;
 	double sts_sat_y = 0.0;
 	double sts_sat_z = 0.0;
+	dap_entry_enabled = true;
 	spdb_status = AnimState::CLOSED; spdb_proc = 0.0;
 
 	while (oapiReadScenario_nextline (scn, line)) {
@@ -1470,6 +1499,14 @@ void Atlantis::clbkLoadStateEx (FILEHANDLE scn, void *vs)
 			sscanf (line+16, "%lf%lf%lf", &cargo_static_ofs.x, &cargo_static_ofs.y, &cargo_static_ofs.z);
 		} else if (!_strnicmp (line, "ARM_STATUS", 10)) {
 			sscanf (line+10, "%lf%lf%lf%lf%lf%lf", &arm_sy, &arm_sp, &arm_ep, &arm_wp, &arm_wy, &arm_wr);
+		} else if (!_strnicmp (line, "SAS_ENABLED", 11)) {
+			int enabled = 1;
+			sscanf (line+11, "%d", &enabled);
+			dap_entry_enabled = (enabled != 0);
+		} else if (!_strnicmp (line, "TRIM", 4)) {
+			double trim;
+			sscanf (line+4, "%lf", &trim);
+			SetControlSurfaceLevel (AIRCTRL_ELEVATORTRIM, trim);
         } else {
 			if      (plop->ParseScenarioLine (line)) continue;  // offer the line to bay door operations
 			else if (ascap->ParseScenarioLine (line)) continue; // offer to ascent autopilot
@@ -1544,6 +1581,8 @@ void Atlantis::clbkSaveState (FILEHANDLE scn)
 
 	sprintf (cbuf, "%0.4f %0.4f %0.4f %0.4f %0.4f %0.4f", arm_sy, arm_sp, arm_ep, arm_wp, arm_wy, arm_wr);
 	oapiWriteScenario_string (scn, (char*)"ARM_STATUS", cbuf);
+	oapiWriteScenario_int (scn, (char*)"SAS_ENABLED", dap_entry_enabled ? 1 : 0);
+	oapiWriteScenario_float (scn, (char*)"TRIM", GetControlSurfaceLevel (AIRCTRL_ELEVATORTRIM));
 
 	oapiWriteScenario_float (scn, (char*)"SAT_OFS_X", ofs_sts_sat.x);
 	oapiWriteScenario_float (scn, (char*)"SAT_OFS_Y", ofs_sts_sat.y);
@@ -1621,9 +1660,15 @@ void Atlantis::clbkPostCreation ()
 		}
 	}
 	EnableSSME (status < 3);
-	EnableRCS (status == 3 ? RCS_ROT : RCS_NONE);
+	EnableRCS (status >= 3 ? RCS_ROT : RCS_NONE);
 	EnableOMS (status == 3);
 	SetADCtrlMode (status < 4 ? 0 : 7);
+
+    // set target AOA and bank for reentry
+    if (status >= 4) {
+        aoa_tgt = GetAOA();
+        roll_tgt = GetBank();
+    }
 
 	UpdateMesh ();
 }
@@ -1646,8 +1691,38 @@ void Atlantis::clbkPreStep (double simt, double simdt, double mjd)
 {
 	ascap->Update (simt);
 
+	if (!dap_entry_enabled || status < 4) {
+		pitch_cmd = 0.0;
+		roll_cmd = 0.0;
+	}
+
 	//double met = (status == 0 ? 0.0 : simt-t0);
 	double met = ascap->GetMET (simt);
+
+    // reentry vars
+    double mach = GetMachNumber();
+    double alpha = GetAOA(); // angle of attack in radians
+    double beta = GetSlipAngle(); // slip angle in radians
+
+    VECTOR3 lift_vector;
+    VECTOR3 drag_vector;
+
+    // Fetch the current force vectors (in Newtons) acting on the vessel
+    GetLiftVector(lift_vector);
+    GetDragVector(drag_vector);
+
+    double lift_force = length(lift_vector);
+    double drag_force = length(drag_vector);
+
+    // Calculate L/D ratio (handle division by zero if there is no atmosphere/drag)
+    double lift_drag_ratio = (drag_force > 0.0) ? (lift_force / drag_force) : 0.0;
+
+    VECTOR3 avel;
+    GetAngularVel(avel);
+
+    VECTOR3 ofs;
+    GetHorizonAirspeedVector(ofs);
+    double vert_spd = ofs.y;
 
 	engine_light_level = GetThrusterGroupLevel (THGROUP_MAIN);
 
@@ -1666,9 +1741,23 @@ void Atlantis::clbkPreStep (double simt, double simdt, double mjd)
 		if (!man_yaw) man_yaw = -GetManualControlLevel (THGROUP_ATT_YAWRIGHT, MANCTRL_ROTMODE, MANCTRL_ANYDEVICE);
 		if (man_yaw)   tgt_rate.y = man_yaw*0.07;
 
-		double man_roll  =-GetManualControlLevel (THGROUP_ATT_BANKLEFT, MANCTRL_ROTMODE, MANCTRL_ANYDEVICE);
-		if (!man_roll) man_roll = GetManualControlLevel (THGROUP_ATT_BANKRIGHT, MANCTRL_ROTMODE, MANCTRL_ANYDEVICE);
-		if (man_roll)  tgt_rate.z = man_roll*0.07;
+		double man_bank  =-GetManualControlLevel (THGROUP_ATT_BANKLEFT, MANCTRL_ROTMODE, MANCTRL_ANYDEVICE);
+		if (!man_bank) man_bank = GetManualControlLevel (THGROUP_ATT_BANKRIGHT, MANCTRL_ROTMODE, MANCTRL_ANYDEVICE);
+		if (man_bank)  tgt_rate.z = man_bank*0.07;
+	}
+
+    // During reentry, disable forward thrusters
+	if (status == 4) {
+		for (DWORD i = 0; i < GetThrusterCount(); ++i) {
+			THRUSTER_HANDLE th = GetThrusterHandleByIndex(i);
+			if (!th) continue;
+			VECTOR3 ref;
+			GetThrusterRef(th, ref);
+			if (ref.z > 0.0) {
+				SetThrusterLevel(th, 0.0);
+				SetThrusterResource(th, NULL);
+			}
+		}
 	}
 
 	switch (status) {
@@ -1716,16 +1805,287 @@ void Atlantis::clbkPreStep (double simt, double simdt, double mjd)
 			do_eva = false;
 		};
 
-		if (GetDynPressure() > 1000.0) {
-			// 1000Pa ~ 20psf, see Mission Profile, https://science.ksc.nasa.gov/shuttle/technology/sts-newsref/mission_profile.html
-			EnableRCS(RCS_NONE);
+        // When altitude is below Entry Interface altitude, 121.92 km/400000 ft
+        // Vertical speed is below -10 m/s
+        // Enable RCS and control surfaces
+		if (GetAltitude(ALTMODE_GROUND) < 121920 && vert_spd < -10) {
+			EnableRCS(RCS_ROT);
 			SetADCtrlMode(7);
-			// note: in reality, control doesn't switch from RCS to control surfaces completely in one go,
-			// but at different stages for different components
+            aoa_curr = GetAOA();
+            aoa_tgt = aoa_curr;
 			status = 4;
 		}
 		break;
 	case 4: // reentry
+        // Active reentry autopilot: Mach > 0.1 and DAP entry mode enabled
+        if (GetMachNumber() > 0.1 && GetAltitude(ALTMODE_GROUND) >= 100) {
+            if (dap_entry_enabled) {
+                // === RCS AND CONTROL SURFACE AUTOPILOT ===
+                // === PITCH AXIS CONTROL ===
+                pitch_rate_curr = avel.x;
+                pitch_rate_error = pitch_rate_tgt - pitch_rate_curr;
+                pitch_curr = GetPitch();
+                pitch_error = pitch_tgt - pitch_curr;
+
+                aoa_curr = GetAOA();
+                aoa_error = aoa_tgt - aoa_curr;
+
+                elev_curr = GetControlSurfaceLevel(AIRCTRL_ELEVATOR);
+                elev_error = elev_tgt - elev_curr;
+                elev_trim_curr = GetControlSurfaceLevel(AIRCTRL_ELEVATORTRIM);
+                elev_trim_error = elev_trim_tgt - elev_trim_curr;
+
+                // PITCH MODE SHIFTING: 0 = manual, 1 = pitch rate null, 2 = pitch hold
+                if (abs(pitch_cmd) > cmd_null_zone || abs(elev_error) > cmd_null_zone) {
+                    pitch_mode = 0; // manual pitch control mode
+                    pitch_hold_latched = false; // reset pitch hold latched flag
+                }
+                else {
+                    if (abs(pitch_rate_curr) > rate_null_hold_xfr_val && pitch_mode == 0) {
+                        pitch_mode = 1; // pitch rate null mode
+                    }
+                    if (abs(pitch_rate_curr) <= rate_null_hold_xfr_val && pitch_hold_latched == false) {
+                        pitch_tgt = pitch_curr; // set current pitch as pitch target
+                        pitch_tgt = clamp(pitch_tgt, -40 * RAD, +40 * RAD);   // Limit pitch to ±40°
+                        aoa_tgt = aoa_curr; // set current AOA as AOA target
+                        aoa_tgt = clamp(aoa_tgt, 0 * RAD, 40 * RAD);    // Limit AOA to 0-40°
+                        pitch_mode = 2; // pitch hold mode
+                        pitch_hold_latched = true; // latch pitch hold mode
+                    }
+                }
+
+                if (pitch_mode == 0) { // manual pitch control mode
+                    // Disable automated commands
+                    SetThrusterGroupLevel(THGROUP_ATT_PITCHUP, 0.0);
+                    SetThrusterGroupLevel(THGROUP_ATT_PITCHDOWN, 0.0);
+
+                    elev_tgt = 0.0;
+
+                    if (GetMachNumber() > 5.0) {
+                        SetControlSurfaceLevel(AIRCTRL_ELEVATOR, elev_tgt);
+                        SetControlSurfaceLevel(AIRCTRL_FLAP, elev_trim_tgt);
+                        SetControlSurfaceLevel(AIRCTRL_ELEVATORTRIM, elev_trim_tgt); // Sync trim UI with body flap
+                    }
+                    else {
+                        elev_tgt += elev_trim_tgt; // Add trim to elevon deflection at low AOA
+                        elev_tgt = clamp(elev_tgt, -1.0, +1.0);
+                        SetControlSurfaceLevel(AIRCTRL_ELEVATOR, elev_tgt); // Use elevons for pitch trim at low AOA
+                        SetControlSurfaceLevel(AIRCTRL_FLAP, 0.0); // body flap zeroed at low AOA
+                        SetControlSurfaceLevel(AIRCTRL_ELEVATORTRIM, elev_trim_tgt); // Sync trim UI with actual trim deflection
+                    }
+                }
+                if (pitch_mode == 1) { // pitch rate null mode
+                    pitch_rate_tgt = 0.0;
+
+                    if (GetDynPressure() < pitch_rcs_dynp_cutoff) {
+                        // Pitch RCS control: counter pitch rate error
+                        SetThrusterGroupLevel(THGROUP_ATT_PITCHUP,   clamp(+pitch_rate_error * 50, 0.0, 1.0));
+                        SetThrusterGroupLevel(THGROUP_ATT_PITCHDOWN, clamp(-pitch_rate_error * 50, 0.0, 1.0));
+                    }
+                    // Pitch trim: elevons and body flap
+                    elev_tgt = pitch_rate_error * 0.5;
+                    elev_tgt = clamp(elev_tgt, -1.0, +1.0);
+                    if (aoa_curr > 20 * RAD) {
+                        elev_trim_tgt = aoa_tgt * 0.7; // Body flap deflection proportional to AOA target
+                        elev_trim_tgt = clamp(elev_trim_tgt, 0.0, 1.0);
+                    }
+                    else {
+                        elev_trim_tgt = -spdb_proc * 0.25 + gear_proc * 0.1;
+                        elev_trim_tgt = clamp(elev_trim_tgt, -0.5, 0.5); // Allow half negative/positive trim for low AOA
+                    }
+
+                    if (GetMachNumber() > 5.0) {
+                        SetControlSurfaceLevel(AIRCTRL_ELEVATOR, elev_tgt);
+                        SetControlSurfaceLevel(AIRCTRL_FLAP, elev_trim_tgt);
+                        SetControlSurfaceLevel(AIRCTRL_ELEVATORTRIM, elev_trim_tgt); // Sync trim UI with body flap
+                    }
+                    else {
+                        elev_tgt += elev_trim_tgt; // Add trim to elevon deflection at low AOA
+                        elev_tgt = clamp(elev_tgt, -1.0, +1.0);
+                        SetControlSurfaceLevel(AIRCTRL_ELEVATOR, elev_tgt); // Use elevons for pitch trim at low AOA
+                        SetControlSurfaceLevel(AIRCTRL_FLAP, 0.0); // body flap zeroed at low AOA
+                        SetControlSurfaceLevel(AIRCTRL_ELEVATORTRIM, elev_trim_tgt); // Sync trim UI with actual trim deflection
+                    }
+                }
+                if (pitch_mode == 2) { // pitch/AOA hold mode
+                    pitch_tgt = clamp(pitch_tgt, -40 * RAD, +40 * RAD);   // Limit pitch to ±40°
+                    aoa_tgt = clamp(aoa_tgt, 0 * RAD, 40 * RAD);    // Limit AOA to 0-40°
+
+                    if (aoa_curr > 20 * RAD || abs(roll_curr) > 60 * RAD) { // If AOA target is above 20° or roll is above 60°, use AOA error for pitch rate target
+                        pitch_rate_tgt = 1.0 * aoa_error; // Target rate proportional to error
+
+                        // Pitch trim: elevons and body flap
+                        elev_tgt = pitch_rate_error * 0.5;
+                        elev_tgt = clamp(elev_tgt, -1.0, +1.0);
+                        elev_trim_tgt = aoa_tgt * 0.7; // Body flap deflection proportional to target
+                        elev_trim_tgt = clamp(elev_trim_tgt, 0.0, 1.0);
+                        SetControlSurfaceLevel(AIRCTRL_ELEVATOR, elev_tgt);
+                        SetControlSurfaceLevel(AIRCTRL_FLAP, elev_trim_tgt);
+                        SetControlSurfaceLevel(AIRCTRL_ELEVATORTRIM, elev_trim_tgt); // Sync trim UI with body flap
+                    }
+                    else { // If AOA target is below 20°, use pitch error for pitch rate target
+                        pitch_rate_tgt = 1.0 * pitch_error; // Target rate proportional to error
+
+                        // Pitch trim: elevons and body flap
+                        elev_tgt = pitch_rate_error * 5.0 + elev_trim_tgt;
+                        elev_tgt = clamp(elev_tgt, -1.0, +1.0);
+                        elev_trim_tgt = -spdb_proc * 0.2 + gear_proc * 0.1;
+                        elev_trim_tgt = clamp(elev_trim_tgt, -0.5, 0.5); // Allow half negative/positive trim for low AOA
+                        SetControlSurfaceLevel(AIRCTRL_ELEVATOR, elev_tgt); // Use elevons for pitch trim at low AOA
+                        SetControlSurfaceLevel(AIRCTRL_FLAP, 0.0); // body flap zeroed at low AOA
+                        SetControlSurfaceLevel(AIRCTRL_ELEVATORTRIM, elev_trim_tgt); // Sync trim UI with actual trim deflection
+                    }
+
+                    pitch_rate_tgt = clamp(pitch_rate_tgt, -10 * RAD, +10 * RAD); // Limit pitch rate to ±10 deg/s
+                    pitch_rate_error = pitch_rate_tgt - pitch_rate_curr;
+
+                    if (GetDynPressure() < pitch_rcs_dynp_cutoff) {
+                        // Pitch RCS control: counter pitch rate error
+                        SetThrusterGroupLevel(THGROUP_ATT_PITCHUP,   clamp(+pitch_rate_error * 50, 0.0, 1.0));
+                        SetThrusterGroupLevel(THGROUP_ATT_PITCHDOWN, clamp(-pitch_rate_error * 50, 0.0, 1.0));
+                    }
+                }
+                // === ROLL AXIS CONTROL ===
+                roll_curr = -GetBank(); // GetBank() returns negative for right bank, positive for left bank
+                roll_error = roll_tgt - roll_curr;
+                roll_rate_curr = avel.z;
+                roll_rate_error = roll_rate_tgt - roll_rate_curr;
+                aileron_curr = GetControlSurfaceLevel(AIRCTRL_AILERON);
+                aileron_error = aileron_tgt - aileron_curr;
+
+                // ROLL MODE SHIFTING: 0 = manual, 1 = roll rate null, 2 = roll hold
+                if (abs(roll_cmd) > cmd_null_zone || abs(aileron_error) > cmd_null_zone) {
+                    roll_mode = 0; // manual roll control mode
+                }
+                else {
+                    if (abs(roll_rate_curr) > rate_null_hold_xfr_val && roll_mode == 0) {
+                        roll_mode = 1; // roll rate null mode
+                    }
+                    if (abs(roll_rate_curr) <= rate_null_hold_xfr_val && roll_mode != 2) {
+                        roll_tgt = roll_curr; // hold current roll
+                        roll_tgt = clamp(roll_tgt, -80 * RAD, +80 * RAD);   // Limit roll to ±80°
+                        roll_mode = 2; // roll hold mode
+                    }
+                }
+
+                if (roll_mode == 0) { // manual roll control mode
+                    // Disable automated commands
+                    SetThrusterGroupLevel(THGROUP_ATT_BANKRIGHT, 0.0);
+                    SetThrusterGroupLevel(THGROUP_ATT_BANKLEFT, 0.0);
+                    aileron_tgt = 0.0;
+                    SetControlSurfaceLevel(AIRCTRL_AILERON, aileron_tgt);
+                }
+                if (roll_mode == 1) { // roll rate null mode
+                    roll_rate_tgt = 0.0;
+
+                    if (GetDynPressure() < roll_rcs_dynp_cutoff) {
+                        // Roll RCS control: counter roll rate error
+                        SetThrusterGroupLevel(THGROUP_ATT_BANKRIGHT, clamp(+roll_rate_error * 50, 0.0, 1.0));
+                        SetThrusterGroupLevel(THGROUP_ATT_BANKLEFT,  clamp(-roll_rate_error * 50, 0.0, 1.0));
+                    }
+                    else {
+                        // Roll control surfaces: elevons
+                        aileron_tgt = roll_rate_error * 5.0;
+                        aileron_tgt = clamp(aileron_tgt, -1.0, +1.0);
+                        SetControlSurfaceLevel(AIRCTRL_AILERON, aileron_tgt);
+                    }
+                }
+                if (roll_mode == 2) { // roll hold mode
+                    roll_tgt = clamp(roll_tgt, -80 * RAD, +80 * RAD);   // Limit roll to ±80°
+
+                    roll_rate_tgt = 1.0 * roll_error;  // Target rate proportional to error
+                    roll_rate_tgt = clamp(roll_rate_tgt, -5 * RAD, +5 * RAD); // Limit roll rate to ±5 deg/s
+
+                    if (GetDynPressure() < roll_rcs_dynp_cutoff) {
+                        // Roll RCS control: counter roll rate error
+                        SetThrusterGroupLevel(THGROUP_ATT_BANKRIGHT, clamp(+roll_rate_error * 50, 0.0, 1.0));
+                        SetThrusterGroupLevel(THGROUP_ATT_BANKLEFT,  clamp(-roll_rate_error * 50, 0.0, 1.0));
+                    }
+                    else {
+                        // Roll control surfaces: elevons
+                        aileron_tgt = roll_rate_error * 5.0;
+                        aileron_tgt = clamp(aileron_tgt, -1.0, +1.0);
+                        SetControlSurfaceLevel(AIRCTRL_AILERON, aileron_tgt);
+                    }
+                }
+
+                // === YAW AXIS CONTROL ===
+                yaw_rate_curr = -avel.y;
+                yaw_rate_tgt = -1.0 * (beta + 3.0 * (yaw_rate_curr - aoa_curr * roll_rate_curr));
+                yaw_rate_tgt = clamp(yaw_rate_tgt, -10 * RAD, +10 * RAD); // Limit yaw rate to ±10 deg/s
+                yaw_rate_error = yaw_rate_tgt - yaw_rate_curr;
+
+                // Use rudder for yaw control below Mach 5.0
+                if (GetMachNumber() < 5.0) {
+                    SetControlSurfaceLevel(AIRCTRL_RUDDER, clamp(yaw_rate_error * 5.0, -1.0, +1.0));
+                }
+                else {
+                    SetControlSurfaceLevel(AIRCTRL_RUDDER, 0.0);
+                }
+
+                // Yaw RCS control above Mach 1.0, otherwise disable RCS yaw control
+                if (GetMachNumber() > 1.0) {
+                    // Yaw RCS control: drive slip angle to zero
+                    SetThrusterGroupLevel(THGROUP_ATT_YAWLEFT,  clamp(-yaw_rate_error * 20.0, 0.0, 1.0));
+                    SetThrusterGroupLevel(THGROUP_ATT_YAWRIGHT, clamp(+yaw_rate_error * 20.0, 0.0, 1.0));
+                }
+                else {
+                    SetThrusterGroupLevel(THGROUP_ATT_YAWLEFT,  0.0);
+                    SetThrusterGroupLevel(THGROUP_ATT_YAWRIGHT, 0.0);
+                    EnableRCS(RCS_NONE);
+                }
+            }
+            // Passive reentry: no autopilot active
+            else {
+                // Disable all automated RCS thruster commands
+                SetThrusterGroupLevel(THGROUP_ATT_PITCHUP, 0.0);
+                SetThrusterGroupLevel(THGROUP_ATT_PITCHDOWN, 0.0);
+                SetThrusterGroupLevel(THGROUP_ATT_YAWLEFT, 0.0);
+                SetThrusterGroupLevel(THGROUP_ATT_YAWRIGHT, 0.0);
+                SetThrusterGroupLevel(THGROUP_ATT_BANKRIGHT, 0.0);
+                SetThrusterGroupLevel(THGROUP_ATT_BANKLEFT, 0.0);
+
+                // Trim
+                if (mach > 5.0) {
+                    SetControlSurfaceLevel(AIRCTRL_ELEVATOR, 0.0);
+                    SetControlSurfaceLevel(AIRCTRL_FLAP, GetControlSurfaceLevel(AIRCTRL_ELEVATORTRIM));
+                }
+                else {
+                    SetControlSurfaceLevel(AIRCTRL_ELEVATOR, GetControlSurfaceLevel(AIRCTRL_ELEVATORTRIM));
+                    SetControlSurfaceLevel(AIRCTRL_FLAP, 0.0);
+                }
+            }
+        }
+        else { // Mach < 0.1 or alt < 100 m
+            // Disable RCS
+            EnableRCS(RCS_NONE);
+            SetThrusterGroupLevel(THGROUP_ATT_PITCHUP, 0.0);
+            SetThrusterGroupLevel(THGROUP_ATT_PITCHDOWN, 0.0);
+            SetThrusterGroupLevel(THGROUP_ATT_YAWLEFT, 0.0);
+            SetThrusterGroupLevel(THGROUP_ATT_YAWRIGHT, 0.0);
+            SetThrusterGroupLevel(THGROUP_ATT_BANKRIGHT, 0.0);
+            SetThrusterGroupLevel(THGROUP_ATT_BANKLEFT, 0.0);
+            // Neutral control surfaces
+            SetControlSurfaceLevel(AIRCTRL_FLAP, 0.0);
+            SetControlSurfaceLevel(AIRCTRL_ELEVATOR, 0.0);
+            SetControlSurfaceLevel(AIRCTRL_ELEVATORTRIM, 0.0);
+            SetControlSurfaceLevel(AIRCTRL_AILERON, 0.0);
+
+            // Disable DAP entry mode when Mach < 0.1
+            dap_entry_enabled = false;
+        }
+
+        // sprintf(oapiDebugString(), "AOA Target: %+0.3f", aoa_tgt * 57.296);
+        // sprintf(oapiDebugString(), "Beta: %+0.3f", beta * 57.296);
+        // sprintf(oapiDebugString(), "Roll Rate: %+0.3f", roll_rate_curr * 57.296);
+        // sprintf(oapiDebugString(), "Roll: %+0.3f", roll_curr * 57.296);
+        // sprintf(oapiDebugString(), "Roll Target: %+0.3f", roll_tgt * 57.296);
+        // sprintf(oapiDebugString(), "Roll Rate Error: %+0.3f", roll_rate_error * 57.296);
+        // sprintf(oapiDebugString(), "Pitch Mode: %d", pitch_mode);
+        // sprintf(oapiDebugString(), "Yaw Rate: %+0.3f", yaw_rate_curr * 57.296);
+        // sprintf(oapiDebugString(), "Pitch Error: %+0.3f", pitch_error * 57.296);
+        // sprintf(oapiDebugString(), "Pitch Cmd: %+0.3f", pitch_cmd);
+        // sprintf(oapiDebugString(), "L/D: %0.3f", lift_drag_ratio);
 		break;
 	}
 
@@ -1911,7 +2271,7 @@ void Atlantis::clbkMFDMode (int mfd, int mode)
 // --------------------------------------------------------------
 bool Atlantis::clbkLoadGenericCockpit ()
 {
-	SetCameraOffset (_V(-0.67,2.55,14.4));
+	SetCameraOffset (_V(-0.67,2.55,14.55));
 	SetCameraDefaultDirection (_V(0,0,1));
 	return true;
 }
@@ -1930,8 +2290,8 @@ void Atlantis::RegisterVC_CdrMFD ()
     const double powerButtonRadius = 0.0075; // radius of power button on each MFD
 	oapiVCRegisterArea (AID_CDR1_PWR, PANEL_REDRAW_NEVER, PANEL_MOUSE_LBDOWN|PANEL_MOUSE_ONREPLAY);
 	oapiVCRegisterArea (AID_CDR2_PWR, PANEL_REDRAW_NEVER, PANEL_MOUSE_LBDOWN|PANEL_MOUSE_ONREPLAY);
-    oapiVCSetAreaClickmode_Spherical(AID_CDR1_PWR, _V(-0.950, 2.060, 15.060), powerButtonRadius);  
-    oapiVCSetAreaClickmode_Spherical(AID_CDR2_PWR, _V(-0.680, 2.060, 15.060), powerButtonRadius);  
+    oapiVCSetAreaClickmode_Spherical(AID_CDR1_PWR, _V(-0.950, 2.060, 15.060), powerButtonRadius);
+    oapiVCSetAreaClickmode_Spherical(AID_CDR2_PWR, _V(-0.680, 2.060, 15.060), powerButtonRadius);
 
 	// register+activate MFD brightness buttons
 	oapiVCRegisterArea (AID_CDR1_BRT, PANEL_REDRAW_NEVER, PANEL_MOUSE_LBDOWN|PANEL_MOUSE_LBPRESSED|PANEL_MOUSE_ONREPLAY);
@@ -1954,8 +2314,8 @@ void Atlantis::RegisterVC_PltMFD ()
     const double powerButtonRadius = 0.0075; // radius of power button on each MFD
 	oapiVCRegisterArea (AID_PLT1_PWR, PANEL_REDRAW_NEVER, PANEL_MOUSE_LBDOWN|PANEL_MOUSE_ONREPLAY);
 	oapiVCRegisterArea (AID_PLT2_PWR, PANEL_REDRAW_NEVER, PANEL_MOUSE_LBDOWN|PANEL_MOUSE_ONREPLAY);
-    oapiVCSetAreaClickmode_Spherical(AID_PLT1_PWR, _V( 0.450, 2.060, 15.060), powerButtonRadius);  
-    oapiVCSetAreaClickmode_Spherical(AID_PLT2_PWR, _V( 0.720, 2.060, 15.060), powerButtonRadius);  
+    oapiVCSetAreaClickmode_Spherical(AID_PLT1_PWR, _V( 0.450, 2.060, 15.060), powerButtonRadius);
+    oapiVCSetAreaClickmode_Spherical(AID_PLT2_PWR, _V( 0.720, 2.060, 15.060), powerButtonRadius);
 
 	// register+activate MFD brightness buttons
 	oapiVCRegisterArea (AID_PLT1_BRT, PANEL_REDRAW_NEVER, PANEL_MOUSE_LBDOWN|PANEL_MOUSE_LBPRESSED|PANEL_MOUSE_ONREPLAY);
@@ -1984,11 +2344,11 @@ void Atlantis::RegisterVC_CntMFD ()
 	oapiVCRegisterArea (AID_MFD3_PWR, PANEL_REDRAW_NEVER, PANEL_MOUSE_LBDOWN|PANEL_MOUSE_ONREPLAY);
 	oapiVCRegisterArea (AID_MFD4_PWR, PANEL_REDRAW_NEVER, PANEL_MOUSE_LBDOWN|PANEL_MOUSE_ONREPLAY);
 	oapiVCRegisterArea (AID_MFD5_PWR, PANEL_REDRAW_NEVER, PANEL_MOUSE_LBDOWN|PANEL_MOUSE_ONREPLAY);
-    oapiVCSetAreaClickmode_Spherical(AID_MFD1_PWR, _V(-0.383, 2.153, 15.090), powerButtonRadius);  
-    oapiVCSetAreaClickmode_Spherical(AID_MFD2_PWR, _V(-0.383, 1.922, 15.023), powerButtonRadius);  
-    oapiVCSetAreaClickmode_Spherical(AID_MFD3_PWR, _V(-0.114, 2.037, 15.058), powerButtonRadius);  
-    oapiVCSetAreaClickmode_Spherical(AID_MFD4_PWR, _V( 0.155, 2.153, 15.090), powerButtonRadius);  
-    oapiVCSetAreaClickmode_Spherical(AID_MFD5_PWR, _V( 0.155, 1.922, 15.023), powerButtonRadius);  
+    oapiVCSetAreaClickmode_Spherical(AID_MFD1_PWR, _V(-0.383, 2.153, 15.090), powerButtonRadius);
+    oapiVCSetAreaClickmode_Spherical(AID_MFD2_PWR, _V(-0.383, 1.922, 15.023), powerButtonRadius);
+    oapiVCSetAreaClickmode_Spherical(AID_MFD3_PWR, _V(-0.114, 2.037, 15.058), powerButtonRadius);
+    oapiVCSetAreaClickmode_Spherical(AID_MFD4_PWR, _V( 0.155, 2.153, 15.090), powerButtonRadius);
+    oapiVCSetAreaClickmode_Spherical(AID_MFD5_PWR, _V( 0.155, 1.922, 15.023), powerButtonRadius);
 
 	// register+activate MFD brightness buttons
 	oapiVCRegisterArea (AID_MFD1_BRT, PANEL_REDRAW_NEVER, PANEL_MOUSE_LBDOWN|PANEL_MOUSE_LBPRESSED|PANEL_MOUSE_ONREPLAY);
@@ -2033,7 +2393,7 @@ bool Atlantis::clbkLoadVC (int id)
 		mesh_vc,            // nmesh
 		GRP_VirtualHUD_VC,  // ngroup
 		{0,0,0},            // hudcnt (to be filled)
-		0.176558            // size
+		0.185               // size
 	};
 	//static VCMFDSPEC mfds = {
 	//	mesh_vc, 0
@@ -2073,10 +2433,10 @@ bool Atlantis::clbkLoadVC (int id)
 
 	switch (id) {
 	case 0: // commander position
-		SetCameraOffset (_V(-0.67,2.55,14.4));
+		SetCameraOffset (_V(-0.67,2.58,14.65));
 		SetCameraDefaultDirection (_V(0,0,1));
 		SetCameraMovement (_V(0,0,0.3), 0, 0, _V(-0.3,0,0), 75*RAD, -5*RAD, _V(0.3,0,0), -20*RAD, -27*RAD);
-		huds.hudcnt = _V(-0.671257, 2.523535, 14.969);
+		huds.hudcnt = _V(-0.671257, 2.523535, 15.0);
 		oapiVCSetNeighbours (-1, 1, -1, 2);
 
 		RegisterVC_CdrMFD (); // activate commander MFD controls
@@ -2085,10 +2445,10 @@ bool Atlantis::clbkLoadVC (int id)
 		ok = true;
 		break;
 	case 1: // pilot position
-		SetCameraOffset (_V(0.67,2.55,14.4));
+		SetCameraOffset (_V(0.67,2.58,14.65));
 		SetCameraDefaultDirection (_V(0,0,1));
 		SetCameraMovement (_V(0,0,0.3), 0, 0, _V(-0.3,0,0), 20*RAD, -27*RAD, _V(0.3,0,0), -75*RAD, -5*RAD);
-		huds.hudcnt = _V(0.671257, 2.523535, 14.969);
+		huds.hudcnt = _V(0.671257, 2.523535, 15.0);
 		oapiVCSetNeighbours (0, -1, -1, 2);
 
 		RegisterVC_PltMFD (); // activate pilot MFD controls
@@ -2139,7 +2499,7 @@ bool Atlantis::clbkVCMouseEvent (int id, int event, VECTOR3 &p)
 	case AID_MFD1_BUTTONS:
 	case AID_MFD2_BUTTONS:
 	case AID_MFD3_BUTTONS:
-	case AID_MFD4_BUTTONS: 
+	case AID_MFD4_BUTTONS:
 	case AID_MFD5_BUTTONS:
 	case AID_MFDA_BUTTONS: {
 		int mfd = id-AID_CDR1_BUTTONS+MFD_LEFT;
@@ -2167,13 +2527,13 @@ bool Atlantis::clbkVCMouseEvent (int id, int event, VECTOR3 &p)
     case AID_MFD1_PWR:
     case AID_MFD2_PWR:
     case AID_MFD3_PWR:
-	case AID_MFD4_PWR: 
+	case AID_MFD4_PWR:
 	case AID_MFD5_PWR:
 	case AID_MFDA_PWR: {
         int mfd = id - AID_CDR1_PWR+MFD_LEFT;
         oapiSendMFDKey(mfd, OAPI_KEY_ESCAPE);
         } return true;
-              
+
 	// handle MFD brightness buttons
 	case AID_CDR1_BRT:
 	case AID_CDR2_BRT:
@@ -2181,8 +2541,8 @@ bool Atlantis::clbkVCMouseEvent (int id, int event, VECTOR3 &p)
 	case AID_PLT2_BRT:
 	case AID_MFD1_BRT:
 	case AID_MFD2_BRT:
-	case AID_MFD3_BRT: 
-	case AID_MFD4_BRT: 
+	case AID_MFD3_BRT:
+	case AID_MFD4_BRT:
 	case AID_MFD5_BRT:
 	case AID_MFDA_BRT: {
 		static double t0, brt0;
@@ -2229,7 +2589,7 @@ bool Atlantis::clbkVCRedrawEvent (int id, int event, SURFHANDLE surf)
 	case AID_MFD1_BUTTONS:
 	case AID_MFD2_BUTTONS:
 	case AID_MFD3_BUTTONS:
-	case AID_MFD4_BUTTONS: 
+	case AID_MFD4_BUTTONS:
 	case AID_MFD5_BUTTONS:
 	case AID_MFDA_BUTTONS: {
 		int mfd = id-AID_CDR1_BUTTONS+MFD_LEFT;
@@ -2271,14 +2631,81 @@ bool Atlantis::clbkDrawHUD (int mode, const HUDPAINTSPEC *hps, oapi::Sketchpad *
 			break;
 		}
 	}
+
+    // show DAP/CSS status when reentry DAP mode is active
+	if (status >= 4 && dap_entry_enabled) {
+		skp->SetTextAlign (oapi::Sketchpad::CENTER, oapi::Sketchpad::BASELINE);
+		skp->Text (cx-120, cy+150, "CSS", 3);
+	}
+
+	// show speedbrake position indicator in the lower-right HUD area
+	{
+		const bool bVC = (oapiCockpitMode() == COCKPIT_VIRTUAL);
+		const int span = bVC ? 40 : 100;
+		const int x0 = bVC ? (cx + (int)(0.20 * hps->W)) : (hps->W - 118);
+		const int x1 = x0 + span;
+		const int y  = bVC ? (cy + (int)(0.30 * hps->H)) : (hps->H - 26);
+		const double cur = clamp (spdb_proc, 0.0, 1.0);
+		const double cmd = clamp (spdb_proc, 0.0, 1.0);
+		const int xcur = x0 + (int)((x1 - x0) * cur);
+		const int xcmd = x0 + (int)((x1 - x0) * cmd);
+
+		skp->Line (x0, y, x1, y);
+		for (int i = 0; i < 5; ++i) {
+			const int x = x0 + (int)((x1 - x0) * i / 4.0);
+			skp->Line (x, y-2, x, y+2);
+		}
+
+		oapi::IVECTOR2 tri[3];
+		tri[0].x = xcur; tri[0].y = y;
+		tri[1].x = xcur-4; tri[1].y = y-6;
+		tri[2].x = xcur+4; tri[2].y = y-6;
+		skp->Polygon (tri, 3);
+
+		oapi::IVECTOR2 tricmd[3];
+		tricmd[0].x = xcmd; tricmd[0].y = y;
+		tricmd[1].x = xcmd-4; tricmd[1].y = y+6;
+		tricmd[2].x = xcmd+4; tricmd[2].y = y+6;
+		skp->Polygon (tricmd, 3);
+	}
 	return true;
 }
 
 // --------------------------------------------------------------
-// Keyboard interface handler (buffered key events)
-// --------------------------------------------------------------
 int Atlantis::clbkConsumeBufferedKey (DWORD key, bool down, char *kstate)
 {
+	// === DAP ENTRY MODE NUMPAD CONTROL ===
+	// When in reentry phase (status >= 4), consume numpad keys for DAP attitude control
+	if (status >= 4) {
+		// Handle Numpad 5 toggle outside the dap_entry_enabled check so it can be toggled anytime
+		if (key == OAPI_KEY_NUMPAD5 && down) {
+			dap_entry_enabled = !dap_entry_enabled;
+			return 1;  // KEY CONSUMED
+		}
+
+		// All other numpad keys only work when DAP is active
+		if (dap_entry_enabled) {
+			switch (key) {
+			case OAPI_KEY_NUMPAD2:
+				// Numpad 2: pitch up (increase AOA)
+				pitch_cmd = down ? +1.0 : 0.0;
+				return 1;  // KEY CONSUMED
+			case OAPI_KEY_NUMPAD8:
+				// Numpad 8: pitch down (decrease AOA)
+				pitch_cmd = down ? -1.0 : 0.0;
+				return 1;  // KEY CONSUMED
+			case OAPI_KEY_NUMPAD6:
+				// Numpad 6: roll right
+				roll_cmd = down ? +1.0 : 0.0;
+				return 1;  // KEY CONSUMED
+			case OAPI_KEY_NUMPAD4:
+				// Numpad 4: roll left
+				roll_cmd = down ? -1.0 : 0.0;
+				return 1;  // KEY CONSUMED
+			}
+		}
+	}
+
 	if (!down) return 0; // only process keydown events
 
 	if (KEYMOD_SHIFT (kstate)) {
@@ -2287,7 +2714,10 @@ int Atlantis::clbkConsumeBufferedKey (DWORD key, bool down, char *kstate)
 		case OAPI_KEY_E:
 			if (status != 3) return 1; // Allow MMU only after orbiter has detached from MT
 			return 1;
-		}	
+		case OAPI_KEY_S:
+			dap_entry_enabled = !dap_entry_enabled;
+			return 1;
+		}
 	} else if (KEYMOD_CONTROL (kstate)) {
 		switch (key) {
 		case OAPI_KEY_SPACE: // open RMS control dialog
@@ -2314,7 +2744,7 @@ int Atlantis::clbkConsumeBufferedKey (DWORD key, bool down, char *kstate)
 		case OAPI_KEY_8:
 			ToggleGrapple();
 			return 1;
-		case OAPI_KEY_9: 
+		case OAPI_KEY_9:
 			center_arm = true;
 			return 1;
 		case OAPI_KEY_E:

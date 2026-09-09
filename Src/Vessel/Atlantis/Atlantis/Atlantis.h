@@ -414,6 +414,7 @@ private:
 	UINT anim_raileron;						   // handle for right aileron animation
 	UINT anim_rudder;						   // handle for rudder animation
 	UINT anim_spdb;                            // handle for speed brake animation
+	UINT anim_flap;                            // handle for body-flap animation
 	UINT anim_ssme;                            // handle for SSME pitch gimbal animation
 	UINT mesh_orbiter;                         // index for orbiter mesh
 	UINT mesh_cockpit;                         // index for cockpit mesh for external view
@@ -436,6 +437,64 @@ private:
 	MGROUP_TRANSFORM *sat_anim, *sat_ref;
 
 	bool bManualSeparate; // flag for user-induced booster or tank separation
+
+    // Reentry control parameters
+
+    // Digital autopilot
+    // DAP constants
+    const double cmd_null_zone = 0.05; // command null zone for DAP control
+    const double rate_null_hold_xfr_val = 0.05; // switchover value for rate control
+
+    const double pitch_rcs_dynp_cutoff = 1000.0; // dynamic pressure cutoff for pitch RCS control
+    const double roll_rcs_dynp_cutoff = 2000.0; // dynamic pressure cutoff for roll RCS control
+
+    bool dap_entry_enabled; // flag for DAP entry enabled
+    // Pitch control
+    int pitch_mode; // 0=off, 1=arm, 2=on
+    bool pitch_hold_latched = false; // flag for latched pitch hold mode
+    double pitch_cmd;
+
+    double pitch_curr;
+    double pitch_tgt;
+    double pitch_error;
+
+    double aoa_curr;
+    double aoa_tgt;
+    double aoa_error;
+
+    double pitch_rate_curr;
+    double pitch_rate_tgt;
+    double pitch_rate_error;
+
+    // Yaw control
+    double yaw_rate_curr;
+    double yaw_rate_tgt;
+    double yaw_rate_error;
+
+    // Roll control
+    int roll_mode; // 0=off, 1=arm, 2=on
+
+    double roll_cmd;
+    double roll_curr;
+    double roll_tgt;
+    double roll_error;
+
+    double roll_rate_curr;
+    double roll_rate_tgt;
+    double roll_rate_error;
+
+    // Aero surfaces
+    double elev_trim_curr;
+    double elev_trim_tgt;
+    double elev_trim_error;
+    double elev_curr;
+    double elev_tgt;
+    double elev_error;
+    double aileron_curr;
+    double aileron_tgt;
+    double aileron_error;
+
+    // Miscellaneous
 	bool reset_sat;
 	OBJHANDLE hMMU, hSAT;
 	bool render_cockpit;

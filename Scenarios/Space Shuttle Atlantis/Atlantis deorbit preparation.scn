@@ -1,16 +1,13 @@
 BEGIN_HYPERDESC
-<h1>Atlantis reentry scenario 2</h1>
-<p>Partway through entry, the Orbiter is rolled to point the lift vector to the right to curve the trajectory towards the Cape.
-
-As your trajectory moves, you will eventually need to S-turn a few times to avoid overshooting and ending up too far from the runway to glide to it.
-You also should keep AOA above 30 degrees, as per real life structural/thermal limits. 
-Thus, to avoid lift making you skip out of the atmosphere, you need to bank from side to side to limit the vertical lift component.
+<h1>Atlantis deorbit preparation</h1>
+<p>
+A little more than an orbit away from landing. Prepare to deorbit.
 </p>
 END_HYPERDESC
 
 BEGIN_ENVIRONMENT
   System Sol
-  Date MJD 52261.8513346111
+  Date MJD 52261.7968108103
 END_ENVIRONMENT
 
 BEGIN_FOCUS
@@ -24,12 +21,16 @@ BEGIN_CAMERA
 END_CAMERA
 
 BEGIN_HUD
-  TYPE Surface
+  TYPE Orbit
+  REF Earth
 END_HUD
 
 BEGIN_MFD Left
-  TYPE Surface
-  SPDMODE 1
+  TYPE Orbit
+  PROJ Ship
+  FRAME Ecliptic
+  ALT
+  REF Earth
 END_MFD
 
 BEGIN_MFD Right
@@ -43,8 +44,8 @@ END_MFD
 BEGIN_SHIPS
 ISS:ISS
   STATUS Orbiting Earth
-  RPOS 4156249.500 -5253988.463 677492.418
-  RVEL -5883.2635 -4357.0485 2369.6653
+  RPOS -1464639.565 -6250499.274 2047876.310
+  RVEL -7372.8373 2004.3579 862.9139
   AROT 30.000 0.000 50.000
   IDS 0:588 20 1:578 20 2:568 20
   XPDR 466
@@ -68,18 +69,15 @@ GL-01:DeltaGlider
 END
 STS-101:Atlantis
   STATUS Orbiting Earth
-  RPOS -1667675.737 6093828.218 -1396691.893
-  RVEL 7466.8736 1537.7468 -1894.8293
-  AROT 166.758 -34.638 -76.828
-  VROT -0.0057 -0.0585 0.0001
-  AFCMODE 7
-  PRPLEVEL 0:0.081213
-  THLEVEL 5:0.001488 6:0.001488 11:0.006345 12:0.006345
+  RPOS 2491365.323 5683990.672 -2091498.002
+  RVEL 7070.1382 -3266.5670 -455.5557
+  AROT 17.888 -86.080 -92.167
+  PRPLEVEL 0:0.828401
   NAVFREQ 94 524
-  CONFIGURATION 4
+  CONFIGURATION 3
   GEAR 0 0.0000
   ARM_STATUS 0.5000 0.0000 0.0000 0.5000 0.5000 0.5000
-  TRIM 0.449863
+  TRIM 0.0
   SAT_OFS_X 0.0
   SAT_OFS_Y 0.0
   SAT_OFS_Z 0.0
@@ -99,7 +97,7 @@ GL-02:DeltaGlider
   HOVERHOLD 0 1 0.0000e+00 0.0000e+00
   GEAR 1.0000 0.0000
   HUDMode 2
-  COMPARTMENT_TEMP 246.74 231.86 253.05 232.58 253.01 232.57 267.26 604.15 286.87 236.47 236.08 240.43 204.38
+  COMPARTMENT_TEMP 234.45 216.11 199.03 218.01 222.80 218.01 249.58 565.39 266.94 236.47 236.07 240.38 195.81
   COOLANT_STATE 0 0.500 287.000
   AAP 0:0 0:0 0:0
 END
