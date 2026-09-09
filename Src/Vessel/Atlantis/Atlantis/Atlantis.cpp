@@ -513,10 +513,10 @@ void Atlantis::VLiftCoeff (double aoa, double M, double Re, double *cl, double *
 	static const double step = RAD*15.0;
 	static const double istep = 1.0/step;
     static const int nabsc = 25; // number of data points in the table
-    static const double CLMachLow[nabsc] = {0.1, 0.17, 0.2, 0.2, 0.17, 0.1, 0, -0.11, -0.65, -1.15, -1.25, -0.5, 0.05, 0.55, 1.25, 1.15, 0.65, 0.13, 0, -0.16, -0.26, -0.29, -0.24, -0.1, 0.1};
+    static const double CLMachLow[nabsc] = {0, 0.2, 0.29, 0.34, 0.31, 0.21, -0, -0.25, -0.6, -1.2, -1.3, -0.55, 0, 0.55, 1.3, 1.2, 0.6, 0.25, 0, -0.21, -0.31, -0.34, -0.29, -0.2, 0};
     static const double CMMachLow[nabsc] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0.002, 0.004, 0.0025, 0.0012, 0, -0.0012, -0.0007, 0, 0, 0, 0, 0, 0, 0, 0, 0};
     static const double CLMachHigh[nabsc] = {0, 0.15, 0.4, 0.65, 0.75, 0.65, 0, -0.7, -0.8, -0.7, -0.4, -0.15, 0, 0.15, 0.4, 0.7, 0.8, 0.7, 0, -0.65, -0.75, -0.65, -0.4, -0.15, 0};
-    static const double CMMachHigh[nabsc] = {-0, -0, -0, -0, -0, -0, -0, -0, -0, 0.0007, 0.0012, -0, 0, 0, -0.0012, -0.0007, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+    static const double CMMachHigh[nabsc] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0.002, 0.004, 0.0025, 0.0012, 0, -0.0012, -0.0007, 0, 0, 0, 0, 0, 0, 0, 0, 0};
 
 	const double mach_blend = max (0.0, min (1.0, (M - 1.0) * 0.125));
 
