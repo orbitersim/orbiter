@@ -498,7 +498,7 @@ void Atlantis::CreateAirfoils ()
 	CreateControlSurface (AIRCTRL_AILERON,  4.0, 0.7, _V(-7,-0.5,-15), AIRCTRL_AXIS_XNEG, anim_laileron);
 	CreateControlSurface (AIRCTRL_FLAP,    16.0, 1.2, _V( 0, 0,  -18), AIRCTRL_AXIS_XPOS, anim_flap);
 
-	CreateVariableDragElement (&spdb_proc, 5, _V(0, 7.5, -14)); // speedbrake drag
+	CreateVariableDragElement (&spdb_proc, 7, _V(0, 7.5, -14)); // speedbrake drag
 	CreateVariableDragElement (&gear_proc, 2, _V(0,-3,0));      // landing gear drag
 	CreateVariableDragElement (&rdoor_drag, 7, _V(2.9,0,10));   // right cargo door drag
 	CreateVariableDragElement (&ldoor_drag, 7, _V(-2.9,0,10));  // left cargo door drag
@@ -1378,6 +1378,7 @@ void Atlantis::RevertLandingGear ()
 
 void Atlantis::OperateSpeedbrake (AnimState::Action action)
 {
+	// Toggle control commands the brake to a fully open or closed position.
 	spdbrk_tgt = (action == AnimState::OPENING || action == AnimState::OPEN) ? 1.0 : 0.0;
 	spdb_status = action;
 	RecordEvent ("SPEEDBRAKE", action == AnimState::CLOSING ? "CLOSE" : "OPEN");
@@ -1385,6 +1386,7 @@ void Atlantis::OperateSpeedbrake (AnimState::Action action)
 
 void Atlantis::RevertSpeedbrake (void)
 {
+	// Use the actual position so a partially deployed brake toggles to an endpoint.
 	OperateSpeedbrake (spdb_proc >= 0.5 ? AnimState::CLOSING : AnimState::OPENING);
 }
 
@@ -1700,11 +1702,15 @@ void Atlantis::clbkPreStep (double simt, double simdt, double mjd)
 		roll_cmd = 0.0;
 	}
 
-	if (status >= 4 && spdbrk_cmd != 0.0) {
-		spdb_proc = clamp (spdb_proc + spdbrk_cmd * 0.1 * simdt, 0.0, 1.0);
-		spdbrk_tgt = spdb_proc;
-		spdb_status = spdb_proc <= 0.0 ? AnimState::CLOSED :
-			spdb_proc >= 1.0 ? AnimState::OPEN : AnimState::STOPPED;
+	// Keypad input slews the command; the physical brake follows at actuator speed.
+	if (status >= 4 && (spdbrk_cmd != 0.0 || spdb_status == AnimState::STOPPED)) {
+		if (spdbrk_cmd != 0.0)
+			spdbrk_tgt = clamp (spdbrk_tgt + spdbrk_cmd * 0.25 * simdt, 0.0, 1.0);
+		spdb_proc += clamp (spdbrk_tgt - spdb_proc,
+			-SPEEDBRAKE_OPERATING_SPEED * simdt, SPEEDBRAKE_OPERATING_SPEED * simdt);
+		spdb_status = spdb_proc == spdbrk_tgt ?
+			(spdb_proc <= 0.0 ? AnimState::CLOSED :
+			spdb_proc >= 1.0 ? AnimState::OPEN : AnimState::STOPPED) : AnimState::STOPPED;
 		SetAnimation (anim_spdb, spdb_proc);
 	}
 
@@ -1728,6 +1734,15 @@ void Atlantis::clbkPreStep (double simt, double simdt, double mjd)
 
     // Calculate L/D ratio (handle division by zero if there is no atmosphere/drag)
     double lift_drag_ratio = (drag_force > 0.0) ? (lift_force / drag_force) : 0.0;
+
+	// Keep the speedbrake stowed at hypersonic speeds.
+	if (status >= 4 && mach > 10.0) {
+		spdbrk_cmd = 0.0;
+		spdbrk_tgt = 0.0;
+		spdb_proc = 0.0;
+		spdb_status = AnimState::CLOSED;
+		SetAnimation (anim_spdb, spdb_proc);
+	}
 
     VECTOR3 avel;
     GetAngularVel(avel);
@@ -1906,7 +1921,7 @@ void Atlantis::clbkPreStep (double simt, double simdt, double mjd)
                         elev_trim_tgt = clamp(elev_trim_tgt, 0.0, 1.0);
                     }
                     else {
-                        elev_trim_tgt = -spdb_proc * 0.25 + gear_proc * 0.1;
+                        elev_trim_tgt = -spdb_proc * 0.5 + gear_proc * 0.1;
                         elev_trim_tgt = clamp(elev_trim_tgt, -0.5, 0.5); // Allow half negative/positive trim for low AOA
                     }
 
@@ -1945,7 +1960,7 @@ void Atlantis::clbkPreStep (double simt, double simdt, double mjd)
                         // Pitch trim: elevons and body flap
                         elev_tgt = pitch_rate_error * 5.0 + elev_trim_tgt;
                         elev_tgt = clamp(elev_tgt, -1.0, +1.0);
-                        elev_trim_tgt = -spdb_proc * 0.2 + gear_proc * 0.1;
+                        elev_trim_tgt = -spdb_proc * 0.5 + gear_proc * 0.1;
                         elev_trim_tgt = clamp(elev_trim_tgt, -0.5, 0.5); // Allow half negative/positive trim for low AOA
                         SetControlSurfaceLevel(AIRCTRL_ELEVATOR, elev_tgt); // Use elevons for pitch trim at low AOA
                         SetControlSurfaceLevel(AIRCTRL_FLAP, 0.0); // body flap zeroed at low AOA
@@ -2125,6 +2140,7 @@ void Atlantis::clbkPreStep (double simt, double simdt, double mjd)
 
 	// ***** Animate speedbrake *****
 
+	// Run the normal full-travel animation when keypad control is inactive.
 	if (spdbrk_cmd == 0.0 && spdb_status >= AnimState::CLOSING) {
 		double da = simdt * SPEEDBRAKE_OPERATING_SPEED;
 		if (spdb_status == AnimState::CLOSING) { // retract brake
@@ -2701,6 +2717,7 @@ int Atlantis::clbkConsumeBufferedKey (DWORD key, bool down, char *kstate)
 			return 1;  // KEY CONSUMED
 		}
 		if (key == OAPI_KEY_SUBTRACT || key == OAPI_KEY_ADD) {
+			// Keypad '-' opens and '+' closes the command at 0.25 per second.
 			spdbrk_cmd = key == OAPI_KEY_SUBTRACT ? (down ? +1.0 : 0.0) : (down ? -1.0 : 0.0);
 			return 1;  // KEY CONSUMED
 		}
