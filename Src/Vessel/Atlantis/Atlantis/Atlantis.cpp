@@ -2669,7 +2669,7 @@ bool Atlantis::clbkDrawHUD (int mode, const HUDPAINTSPEC *hps, oapi::Sketchpad *
 	}
 
     // show DAP/CSS status when reentry DAP mode is active
-	if (status >= 4) {
+	if (status >= 4 && dap_entry_enabled) {
 		skp->SetTextAlign (oapi::Sketchpad::CENTER, oapi::Sketchpad::BASELINE);
 		skp->Text (cx, cssY, "CSS", 3);
 	}
