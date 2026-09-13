@@ -268,6 +268,7 @@ Atlantis::Atlantis (OBJHANDLE hObj, int fmodel)
 	bManualSeparate = false;
 	dap_entry_enabled     = true;
 	pitch_cmd         = 0.0;
+	spdbrk_cmd        = 0.0;
 	roll_cmd= 0.0;
 	ofs_sts_sat     = _V(0,0,0);
 	do_eva          = false;
@@ -1384,8 +1385,7 @@ void Atlantis::OperateSpeedbrake (AnimState::Action action)
 
 void Atlantis::RevertSpeedbrake (void)
 {
-	OperateSpeedbrake (spdb_status == AnimState::CLOSED || spdb_status == AnimState::CLOSING ?
-		AnimState::OPENING : AnimState::CLOSING);
+	OperateSpeedbrake (spdb_proc >= 0.5 ? AnimState::CLOSING : AnimState::OPENING);
 }
 
 void Atlantis::SetAnimationArm (UINT anim, double state)
@@ -1698,6 +1698,14 @@ void Atlantis::clbkPreStep (double simt, double simdt, double mjd)
 	if (!dap_entry_enabled || status < 4) {
 		pitch_cmd = 0.0;
 		roll_cmd = 0.0;
+	}
+
+	if (status >= 4 && spdbrk_cmd != 0.0) {
+		spdb_proc = clamp (spdb_proc + spdbrk_cmd * 0.1 * simdt, 0.0, 1.0);
+		spdbrk_tgt = spdb_proc;
+		spdb_status = spdb_proc <= 0.0 ? AnimState::CLOSED :
+			spdb_proc >= 1.0 ? AnimState::OPEN : AnimState::STOPPED;
+		SetAnimation (anim_spdb, spdb_proc);
 	}
 
 	//double met = (status == 0 ? 0.0 : simt-t0);
@@ -2117,7 +2125,7 @@ void Atlantis::clbkPreStep (double simt, double simdt, double mjd)
 
 	// ***** Animate speedbrake *****
 
-	if (spdb_status >= AnimState::CLOSING) {
+	if (spdbrk_cmd == 0.0 && spdb_status >= AnimState::CLOSING) {
 		double da = simdt * SPEEDBRAKE_OPERATING_SPEED;
 		if (spdb_status == AnimState::CLOSING) { // retract brake
 			if (spdb_proc > 0.0) spdb_proc = max (0.0, spdb_proc-da);
@@ -2690,6 +2698,10 @@ int Atlantis::clbkConsumeBufferedKey (DWORD key, bool down, char *kstate)
 		// Handle Numpad 5 toggle outside the dap_entry_enabled check so it can be toggled anytime
 		if (key == OAPI_KEY_NUMPAD5 && down) {
 			dap_entry_enabled = !dap_entry_enabled;
+			return 1;  // KEY CONSUMED
+		}
+		if (key == OAPI_KEY_SUBTRACT || key == OAPI_KEY_ADD) {
+			spdbrk_cmd = key == OAPI_KEY_SUBTRACT ? (down ? +1.0 : 0.0) : (down ? -1.0 : 0.0);
 			return 1;  // KEY CONSUMED
 		}
 
