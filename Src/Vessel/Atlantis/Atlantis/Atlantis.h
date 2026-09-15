@@ -339,6 +339,7 @@ public:
 	void clbkPreStep (double simt, double simdt, double mjd);
 	bool clbkPlaybackEvent (double simt, double event_t, const char *event_type, const char *event);
 	int  clbkConsumeBufferedKey (DWORD key, bool down, char *kstate);
+	int  clbkConsumeDirectKey (char *kstate);
 	void clbkVisualCreated (VISHANDLE vis, int refcount);
 	void clbkVisualDestroyed (VISHANDLE vis, int refcount);
 	void clbkAnimate (double simt);

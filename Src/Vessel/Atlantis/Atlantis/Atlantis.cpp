@@ -2794,6 +2794,18 @@ int Atlantis::clbkConsumeBufferedKey (DWORD key, bool down, char *kstate)
 	return 0;
 }
 
+int Atlantis::clbkConsumeDirectKey (char *kstate)
+{
+	if (status >= 4) {
+		// Prevent Orbiter's default main/retro thrust controls during reentry.
+		if (KEYDOWN (kstate, OAPI_KEY_ADD))
+			RESETKEY (kstate, OAPI_KEY_ADD);
+		if (KEYDOWN (kstate, OAPI_KEY_SUBTRACT))
+			RESETKEY (kstate, OAPI_KEY_SUBTRACT);
+	}
+	return 0;
+}
+
 // ==============================================================
 // API callback interface
 // ==============================================================
