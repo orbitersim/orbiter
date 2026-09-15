@@ -1846,7 +1846,7 @@ void Atlantis::clbkPreStep (double simt, double simdt, double mjd)
 		break;
 	case 4: // reentry
         // Active reentry autopilot: Mach > 0.1 and DAP entry mode enabled
-        if (GetMachNumber() > 0.1 && GetAltitude(ALTMODE_GROUND) >= 100) {
+        if (GetMachNumber() > 0.1 && GetAltitude(ALTMODE_GROUND) >= 10) {
             if (dap_entry_enabled) {
                 // === RCS AND CONTROL SURFACE AUTOPILOT ===
                 // === PITCH AXIS CONTROL ===
