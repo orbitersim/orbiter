@@ -11,6 +11,46 @@
 #include "VesselXRSoundEngine.h"
 #include "ModuleXRSoundEngine.h"
 
+namespace
+{
+// These SEH guards were inline in XRSoundDLL::clbkPreStep. The VS 2026 Debug
+// build reports C2712 there because that function also owns a debug STL
+// iterator requiring destruction. Keep the guards in these helpers without
+// changing their behavior: false makes clbkPreStep write the original error
+// message, then continue the update.
+// TODO: Investigate the CTD that prompted the catch-all handlers and whether
+// they can be removed. Continuing after an access violation may leave Orbiter
+// in an invalid state; changing that policy is outside this build fix.
+bool PreStepVesselWithSEH(OBJHANDLE hVessel, VesselXRSoundEngine *pEngine,
+    double simt, double simdt, double mjd)
+{
+    __try
+    {
+        _ASSERTE(oapiIsVessel(hVessel));
+        _ASSERTE(pEngine);
+        pEngine->clbkPreStep(simt, simdt, mjd);
+        return true;
+    }
+    __except(EXCEPTION_EXECUTE_HANDLER)
+    {
+        return false;
+    }
+}
+
+bool UpdateIrrKlangWithSEH()
+{
+    __try
+    {
+        XRSoundEngine::UpdateIrrKlangEngine();
+        return true;
+    }
+    __except(EXCEPTION_EXECUTE_HANDLER)
+    {
+        return false;
+    }
+}
+}
+
 // Exported DLL method; invoked only by our static XRSound.lib to obtain an XRSoundEngine object for a given vessel.
 // Added in API version 1.0
 DLLCLBK XRSoundEngine *GetXRSoundEngineInstance(OBJHANDLE hVessel)
@@ -378,14 +418,8 @@ void XRSoundDLL::clbkPreStep(double simtDoNotUse, double simdt, double mjd)
         for (auto it = m_allVesselsMap.begin(); it != m_allVesselsMap.end(); it++)
         {
             const OBJHANDLE hVessel = it->first;
-            __try
-            {
-                _ASSERTE(oapiIsVessel(hVessel));    // should still be a valid vessel, since UpdateAllVesselsMap() removes invalid (i.e., now-deleted) vessels
-                VesselXRSoundEngine *pEngine = it->second;
-                _ASSERTE(pEngine);
-                pEngine->clbkPreStep(simt, simdt, mjd);
-            }
-            __except(EXCEPTION_EXECUTE_HANDLER)
+            // The vessel should still be valid: UpdateAllVesselsMap removes deleted vessels.
+            if (!PreStepVesselWithSEH(hVessel, it->second, simt, simdt, mjd))
             {
                 char csMsg[256];
                 snprintf(csMsg, 256, "XRSoundDLL::clbkPreStep ERROR: Access Violation in VesselXRSoundEngine::clbkPreStep for vessel %s", oapiIsVessel(hVessel) ? oapiGetVesselInterface(hVessel)->GetName() : "<invalid>");
@@ -400,11 +434,7 @@ void XRSoundDLL::clbkPreStep(double simtDoNotUse, double simdt, double mjd)
     const double systemUptime = GetSystemUptime();
     if (systemUptime >= m_nextIrrKlangUpdateRealtime)
     {
-        __try
-        {
-            XRSoundEngine::UpdateIrrKlangEngine();
-        }
-        __except(EXCEPTION_EXECUTE_HANDLER)
+        if (!UpdateIrrKlangWithSEH())
         {
             WriteLog("XRSoundDLL::clbkPreStep ERROR: Access Violation in XRSoundEngine::UpdateIrrKlangEngine");
         }
@@ -457,4 +487,3 @@ void XRSoundDLL::WriteLog(const char *pMsg)
 {
     GetGlobalConfig().WriteLog(pMsg);
 }
-
