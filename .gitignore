@@ -34,3 +34,4 @@ Extern/irrKlang
 Doc/**/*.log
 Doc/**/*.pdf
 Doc/**/*.gz
+/install
