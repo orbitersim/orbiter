@@ -15,7 +15,7 @@ target_link_libraries(LuaConsole
 	${ORBITER_LIB}
 	${ORBITER_SDK_LIB}
 	lua::lib
-	${LUAINTERPRETER_LIB}
+	LuaInterpreter
 	imgui
 )
 

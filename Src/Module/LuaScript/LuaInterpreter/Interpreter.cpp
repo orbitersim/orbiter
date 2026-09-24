@@ -136,6 +136,12 @@ void Interpreter::Initialise ()
 	LoadStartupScript (); // load default initialisation script
 }
 
+#ifndef XRSOUND
+void Interpreter::LoadXRSoundAPI ()
+{
+}
+#endif
+
 int Interpreter::Status () const
 {
 	return status;

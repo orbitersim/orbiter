@@ -1120,11 +1120,13 @@ protected:
 
 	friend int OpenHelp (void *context);
 
+	// Keep this virtual slot in every build so Interpreter has the same layout for SDK consumers.
+	virtual void LoadXRSoundAPI ();
+
 #ifdef XRSOUND
 	// -------------------------------------------
 	// XRSound
 	// -------------------------------------------
-	virtual void LoadXRSoundAPI ();
 	static int lua_isxrsound(lua_State *L, int idx);
 	static XRSound *lua_toxrsound(lua_State *L, int idx);
 	static int xrsound_create_instance(lua_State *L);

@@ -6,6 +6,11 @@ CMakeSettings.json
 out/**
 !/Sound/XRSound/XRSound/**/*.vcxproj.user
 **/*.bak
+*.log
+/keymap.cfg
+
+# developer-specific bat files in the root
+/*.bat
 
 # .NET-specific directories
 bin/
