@@ -790,9 +790,6 @@ public:
 			if (g_camera->IsExternal()) {
 				ImGui::SameLine();
 				ImGui::TextColored(white, "   Dst %s", DistStr (g_camera->Distance())+1);
-			} else {
-				ImGui::SameLine();
-				ImGui::TextColored(ImVec4(0,0,0,0), "   Dst %s", DistStr (g_camera->Distance())+1);
 			}
 
 			if(prm.FPS == 1)
