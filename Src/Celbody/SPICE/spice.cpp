@@ -441,10 +441,20 @@ void SpiceBody::clbkInit(FILEHANDLE cfg)
 
 	if (failed_c())
 	{
+		char errorString[256];
+		sprintf_s(errorString, 256, "spice.dll, ERROR in failed_c() during init for %s: ", body_name);
+
 		char errMsg[1024];
 		getmsg_c("long", sizeof(errMsg), errMsg);
+
+		size_t errorStringLength = strlen(errorString);
+		memmove(errMsg + errorStringLength, errMsg, strlen(errMsg) + 1);
+		memcpy(errMsg, errorString, errorStringLength);
+
+
 		show_error(errMsg);
 		reset_c();
+		exit(1);
 		return;
 	}
 
