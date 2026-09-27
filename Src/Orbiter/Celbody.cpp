@@ -36,7 +36,6 @@ CelestialBody::CelestialBody (double _mass, double _size)
 	el = new Elements; TRACENEW
 	ClearModule();
 	usePinesGravity = false;
-	rot_extern = false;
 }
 
 CelestialBody::CelestialBody (char *fname)
@@ -186,8 +185,7 @@ void CelestialBody::DefaultParam ()
 	elframe           = ELFRAME_ECLIPTIC; // reference frame for elements
 	bInitFromElements = false;
 	hMod              = 0;
-	module            = NULL;
-	module3           = NULL;
+	module            = 0;
 	bFixedElements = false;
 }
 
@@ -474,29 +472,12 @@ void CelestialBody::Update (bool force)
 	}
 #endif
 
-	double rotMat[9];
-	if(ExternRotation(td.MJD1, rotMat)){
-		// Use externally defined rotation code to calculate the complete compete planetary rotation matrix and apply it.
-		// It the above call returns 0, fall down to statement below.
-		s1->R.m11 = rotMat[0];
-		s1->R.m12 = rotMat[1];
-		s1->R.m13 = rotMat[2];
-		s1->R.m21 = rotMat[3];
-		s1->R.m22 = rotMat[4];
-		s1->R.m23 = rotMat[5];
-		s1->R.m31 = rotMat[6];
-		s1->R.m22 = rotMat[7];
-		s1->R.m33 = rotMat[8];
-	}
-	else
-	{
-		// If planet supports precession, update precession parameters
-		// (should not be necessary at each frame)
-		if (prec_T) UpdatePrecession ();
+	// If planet supports precession, update precession parameters
+	// (should not be necessary at each frame)
+	if (prec_T) UpdatePrecession ();
 
-		// Update rotation parameters
-		UpdateRotation ();
-	}
+	// Update rotation parameters
+	UpdateRotation ();
 
 	RigidBody::Update (force);   // dynamic update
 
@@ -568,14 +549,8 @@ void CelestialBody::GetRotation (double t, Matrix &rot) const
 
 int CelestialBody::ExternEphemeris (double mjd, int req, double *res) const
 {
-	if (module3) {
-		return module3->clbkEphemeris(mjd, req, res); // newer interface (CELBODY3)
-	}
-
-	if (module) {
-		return module->clbkEphemeris(mjd, req, res); // new interface
-	}
-
+	if (module)
+		return module->clbkEphemeris (mjd, req, res); // new interface
 	if (modIntf.oplanetEphemeris) {                   // OBSOLETE!
 		int format;
 		modIntf.oplanetEphemeris (mjd, res, format);
@@ -586,27 +561,14 @@ int CelestialBody::ExternEphemeris (double mjd, int req, double *res) const
 
 int CelestialBody::ExternFastEphemeris (double simt, int req, double *res) const
 {
-	if (module3) {
-		return module3->clbkFastEphemeris(simt, req, res); // newer interface (CELBODY3)
-	}
-
 	if (module) {
 		return module->clbkFastEphemeris (simt, req, res); // new interface
 	}
 
-	if (modIntf.oplanetFastEphemeris) {                    // OBSOLETE!
+	if (modIntf.oplanetFastEphemeris) {
 		int format;
 		modIntf.oplanetFastEphemeris (simt, res, format);
 		return EPHEM_TRUEPOS | EPHEM_TRUEVEL | EPHEM_POLAR;
-	}
-	return 0;
-}
-
-int CelestialBody::ExternRotation(double mjd, double *rot) const
-{
-	if(module3 && rot_extern){
-		module3->clbkRotation(mjd, rot);
-		return 1;
 	}
 	return 0;
 }
@@ -753,7 +715,6 @@ void CelestialBody::RegisterModule (char *dllname)
 {
 	char cbuf[256];
 	module = 0;                              // reset new interface
-	module3 = 0;
 	memset (&modIntf, 0, sizeof (modIntf));  // reset old interface
 	sprintf (cbuf, "Modules\\Celbody\\%s.dll", dllname); // try new module location
 	hMod = LoadLibrary (cbuf);
@@ -765,18 +726,10 @@ void CelestialBody::RegisterModule (char *dllname)
 
 	// Check if the module provides instance initialisation
 	typedef CELBODY* (*INITPROC)(OBJHANDLE);
-	typedef CELBODY3* (*INITPROC3)(OBJHANDLE);
 	INITPROC init_proc = (INITPROC)GetProcAddress (hMod, "InitInstance");
-	INITPROC3 init_proc3 = (INITPROC3)GetProcAddress(hMod, "InitInstance");
-
 	if (init_proc) { // load interface class
 
-		module = init_proc((OBJHANDLE)this);
-
-		if (init_proc3) { // kinda horrible code...clean up before merge
-			module3 = init_proc3((OBJHANDLE)this);
-			module = 0;
-		}
+		module = init_proc ((OBJHANDLE)this);
 
 	} else {         // check for old-style interface
 		string funcname;
@@ -798,17 +751,6 @@ void CelestialBody::RegisterModule (char *dllname)
 void CelestialBody::ClearModule ()
 {
 	if (hMod) {
-
-		if (module3) { // new interface
-			typedef void (*EXITPROC)(CELBODY*);
-			EXITPROC exit_proc = (EXITPROC)GetProcAddress(hMod, "ExitInstance");
-			if (exit_proc) { // allow module to clean up
-				exit_proc(module3);
-			} else {         // no cleanup - we delete the interface class here
-				delete module3;
-			}
-			module3 = 0;
-		}
 		if (module) { // new interface
 			typedef void (*EXITPROC)(CELBODY*);
 			EXITPROC exit_proc = (EXITPROC)GetProcAddress (hMod, "ExitInstance");
@@ -1028,25 +970,6 @@ double CELBODY2::SidRotPeriod () const
 	return ((CelestialBody*)hBody)->rot_T;
 }
 
-// =======================================================================
-// class CELBODY3: API interface class
-
-CELBODY3::CELBODY3(OBJHANDLE hCBody) : CELBODY2(hCBody)
-{
-	version++;
-}
-
-CELBODY3::~CELBODY3()
-{
-	CELBODY2::~CELBODY2();
-}
-
-int CELBODY3::clbkRotation(double mjd, double *rotMat)
-{return 0;}
-
-bool CELBODY3::bRotation() const
-{return false;}
-
 
 // =======================================================================
 // class ATMOSPHERE: API interface class
@@ -1069,6 +992,4 @@ bool ATMOSPHERE::clbkParams (const PRM_IN *prm_in, PRM_OUT *prm_out)
 {
 	return false;
 }
-
-
 

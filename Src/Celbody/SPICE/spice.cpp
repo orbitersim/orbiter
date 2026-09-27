@@ -80,7 +80,7 @@ bool get_id(char* name, int* id)
 	return found == SPICETRUE;
 }
 
-class SpiceBody : public CELBODY3
+class SpiceBody : public CELBODY2
 {
 public:
 	SpiceBody(OBJHANDLE hCBody);
@@ -89,8 +89,6 @@ public:
 	int clbkEphemeris(double mjd, int req, double* ret);
 	int clbkFastEphemeris(double simt, int req, double* ret);
 	bool clbkAtmParam(double alt, ATMPARAM* prm);
-	int clbkRotation(double mjd, double* rotMat);
-	bool bRotation() const;
 
 	inline bool LegacyAtmosphereInterface() const
 	{
@@ -138,7 +136,7 @@ void SpiceBody::show_error(char* s)
 	error = true;
 }
 
-SpiceBody::SpiceBody(OBJHANDLE hCBody) : CELBODY3(hCBody)
+SpiceBody::SpiceBody(OBJHANDLE hCBody) : CELBODY2(hCBody)
 {
 	// add constructor code here
 	version = 2;
@@ -159,13 +157,6 @@ bool SpiceBody::bEphemeris() const
 	// class supports ephemeris calculation
 	return !error;
 }
-
-bool SpiceBody::bRotation() const
-{
-	// class supports ephemeris calculation
-	return !error;
-}
-
 
 void trimspaces(string& str)
 {
@@ -736,28 +727,6 @@ double SpiceBody::calc_gm(double* state1, double* state2, double dt)
 	r1 = (r1 + r2) / 2.0;
 	g = sqrt(g) / dt * r1 * r1;
 	return g;
-}
-
-int SpiceBody::clbkRotation(double mjd, double* rotMat) {
-
-	double t = ((mjd - 51544.5) * 86400.0);
-	double rotMatDouble[3][3];
-
-	pxform_c(body_name, "ECLIPJ2000", t, rotMatDouble);
-
-	rotMat[0] = rotMatDouble[0][0];
-	rotMat[1] = rotMatDouble[0][1];
-	rotMat[2] = rotMatDouble[0][2];
-
-	rotMat[3] = rotMatDouble[1][0];
-	rotMat[4] = rotMatDouble[1][1];
-	rotMat[5] = rotMatDouble[1][2];
-
-	rotMat[6] = rotMatDouble[2][0];
-	rotMat[7] = rotMatDouble[2][1];
-	rotMat[8] = rotMatDouble[2][2];
-
-	return 1;
 }
 
 DLLCLBK void InitModule(HINSTANCE hModule)
