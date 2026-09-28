@@ -45,5 +45,9 @@ install(DIRECTORY html include
 
 # Copy Prebuild PDFs ------------------------------------------------------
 
+if(WIN32) # Windows: upstream
 install(FILES doc/BuildingSamples.pdf DESTINATION ${ORBITER_INSTALL_SDK_DIR}/doc)
+else() # Linux port
+install(FILES doc/BuildingSamplesLinux.pdf DESTINATION ${ORBITER_INSTALL_SDK_DIR}/doc RENAME "BuildingSamples (Linux).pdf")
+endif() # WIN32
 

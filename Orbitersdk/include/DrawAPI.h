@@ -23,12 +23,21 @@
 #include <assert.h>
 #include <xmmintrin.h>
 
+#ifndef __linux__
 #if defined(_MSC_VER) && (_MSC_VER < 1920 ) // Microsoft Visual Studio Version 2017 and lower
 #include <algorithm>
 #endif
+#else // __linux__
+// g++ needs <algorithm> for std::max/min as well
+#include <algorithm>
+#endif // __linux__
 
 #ifdef D3D9CLIENT_EXPORTS
+#ifndef __linux__
 #include "d3dx9.h"
+#else // __linux__
+#include "D3DXMath.h" // d3dx9.h
+#endif // __linux__
 #endif
 
 /// \brief Poly object handle
@@ -41,11 +50,23 @@ namespace oapi {
 	 * \brief Integer-valued 2-D vector type.
 	 * \note This structure is designed to be compatible with the Windows POINT type.
 	 */
+#ifdef __linux__
+	// LONG: Windows long is 32-bit, LP64 long is 64-bit; this keeps the POINT layout
+#endif // __linux__
 	union IVECTOR2 {
+#ifndef __linux__
 		long data[2];  ///< vector data array
+#else // __linux__
+		LONG data[2];  ///< vector data array
+#endif // __linux__
 		struct {
+#ifndef __linux__
 			long x;    ///< vector x coordinate
 			long y;    ///< vector y coordinate
+#else // __linux__
+			LONG x;    ///< vector x coordinate
+			LONG y;    ///< vector y coordinate
+#endif // __linux__
 		};
 	};
 
@@ -184,6 +205,18 @@ namespace oapi {
 
 
 
+#ifdef __linux__
+	// not upstream: POD twins of FVECTOR3/4 for FMATRIX4 rows (g++ bans ctor members in anonymous structs)
+	struct FVECTOR3_T { float x, y, z; };
+	union alignas(16) FVECTOR4_T {
+		float data[4];
+		struct { float x, y, z, w; };
+		struct { float r, g, b, a; };
+		FVECTOR3_T xyz;
+		FVECTOR3_T rgb;
+	};
+
+#endif // __linux__
 	/**
 	* \brief 32-bit floating point 3D vector type.
 	* \note This structure is compatible with the D3DXVECTOR3 type.
@@ -214,6 +247,20 @@ namespace oapi {
 			z = float(v.z);
 		}
 
+#ifdef __linux__
+		FVECTOR3(const FVECTOR3_T& v) // not upstream: FMATRIX4 row view
+		{
+			x = v.x;
+			y = v.y;
+			z = v.z;
+		}
+
+		inline operator FVECTOR3_T() const // not upstream: FMATRIX4 row view
+		{
+			return { x, y, z };
+		}
+
+#endif // __linux__
 #ifdef D3D9CLIENT_EXPORTS
 		FVECTOR3(const D3DXVECTOR3 &v)
 		{
@@ -359,7 +406,11 @@ namespace oapi {
 	* \brief 32-bit floating point 4D vector type.
 	* \note This structure is compatible with the D3DXVECTOR4 type.
 	*/
+#ifndef __linux__
 	typedef union __declspec(align(16)) FVECTOR4
+#else // __linux__
+	typedef union alignas(16) FVECTOR4
+#endif // __linux__
 	{
 		DWORD dword_abgr() const
 		{
@@ -452,6 +503,23 @@ namespace oapi {
 			w = _w;
 		}
 
+#ifdef __linux__
+		FVECTOR4(const FVECTOR4_T& v) // not upstream: FMATRIX4 row view
+		{
+			x = v.x;
+			y = v.y;
+			z = v.z;
+			w = v.w;
+		}
+
+		inline operator FVECTOR4_T() const // not upstream: FMATRIX4 row view
+		{
+			FVECTOR4_T v;
+			v.x = x; v.y = y; v.z = z; v.w = w;
+			return v;
+		}
+
+#endif // __linux__
 		FVECTOR4(float _x, float _y, float _z, float _w)
 		{
 			x = float(_x);
@@ -608,7 +676,11 @@ namespace oapi {
 	* \brief Float-valued 4x4 matrix.
 	* \note This structure is compatible with the D3DXMATRIX.
 	*/
+#ifndef __linux__
 	typedef union __declspec(align(16)) FMATRIX4
+#else // __linux__
+	typedef union alignas(16) FMATRIX4
+#endif // __linux__
 	{
 		FMATRIX4() {
 			m11 = m12 = m13, m14 = m21 = m22 = m23 = m24 = m31 = m32 = m33 = m34 = m41 = m42 = m43 = m44 = 0;
@@ -632,11 +704,19 @@ namespace oapi {
 #ifdef D3D9CLIENT_EXPORTS
 		FMATRIX4(const D3DXMATRIX& m)
 		{
+#ifndef __linux__
 			memcpy_s(data, sizeof(FMATRIX4), &m, sizeof(m));
+#else // __linux__
+			memcpy(data, &m, sizeof(m));
+#endif // __linux__
 		}
 		FMATRIX4(const LPD3DXMATRIX m)
 		{
+#ifndef __linux__
 			memcpy_s(data, sizeof(FMATRIX4), m, sizeof(FMATRIX4));
+#else // __linux__
+			memcpy(data, m, sizeof(FMATRIX4));
+#endif // __linux__
 		}
 		inline operator LPD3DXMATRIX()
 		{
@@ -665,7 +745,11 @@ namespace oapi {
 		}
 
 		float data[16];
+#ifndef __linux__
 		struct { FVECTOR4 _x, _y, _z, _p; };
+#else // __linux__
+		struct { FVECTOR4_T _x, _y, _z, _p; }; // FVECTOR4_T: see above
+#endif // __linux__
 		struct { float m11, m12, m13, m14, m21, m22, m23, m24, m31, m32, m33, m34, m41, m42, m43, m44; };
 	} FMATRIX4;
 
@@ -909,7 +993,11 @@ public:
 	 * \return GDI font handle
 	 * \note Non-GDI clients should not overload this method.
 	 */
+#ifndef __linux__
 	virtual HFONT GetGDIFont () const { return 0; }
+#else // __linux__
+	virtual QFont *GetGDIFont () const { return 0; }
+#endif // __linux__
 };
 
 
@@ -1350,7 +1438,11 @@ public:
 	 * \brief Obsolete function. Will return NULL.
 	 * \return NULL
 	 */
+#ifndef __linux__
 	virtual HDC GetDC() { return NULL; }
+#else // __linux__
+	virtual QPainter *GetDC() { return NULL; }
+#endif // __linux__
 
 	/**
 	 * \brief Draw a text string using WCHAR.

@@ -18,10 +18,18 @@ add_library(Orbitersdk STATIC
 	${implot_SOURCE_DIR}/implot_demo.cpp
 )
 
+if(WIN32) # Windows: upstream
 set_target_properties(Orbitersdk
 	PROPERTIES
 	FOLDER Core
 )
+else() # Linux port
+set_target_properties(Orbitersdk
+	PROPERTIES
+	FOLDER Core
+	POSITION_INDEPENDENT_CODE ON # linked into .so modules
+)
+endif() # WIN32
 
 target_include_directories(Orbitersdk
 	PUBLIC ${imgui_SOURCE_DIR}

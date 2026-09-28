@@ -376,6 +376,9 @@ protected:
 */
 // ======================================================================
 
+#ifdef __linux__
+class ATMOSPHERE; // g++ needs the name declared before the friend declaration uses it as a type
+#endif // __linux__
 class OAPIFUNC CELBODY2: public CELBODY {
 	friend class ATMOSPHERE;
 
@@ -522,7 +525,11 @@ protected:
 
 	OBJHANDLE hBody;      ///< handle for the associated celestial body
 	ATMOSPHERE *atm;      ///< pointer to atmosphere object
+#ifndef __linux__
 	HINSTANCE hAtmModule; ///< library handle for external atmosphere module
+#else // __linux__
+	void *hAtmModule; ///< library handle for external atmosphere module
+#endif // __linux__
 };
 
 

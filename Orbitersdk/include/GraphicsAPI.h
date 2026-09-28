@@ -13,11 +13,15 @@
 
 #include "Orbitersdk.h"
 #include <stdio.h>
+#ifndef __linux__
 #include <windows.h>
 
 #ifndef _WIN32
 typedef void *HDC;
 #endif
+#else // __linux__
+// windows.h and the non-Windows HDC stub left out: OrbiterPlatform.h (via OrbiterAPI.h) supplies the types
+#endif // __linux__
 
 /// \defgroup cfgprm Configuration parameter identifiers
 /// Used by GraphicsClient::GetConfigParam()
@@ -365,7 +369,11 @@ struct FogParam {
 };
 
 class Orbiter;
+#ifndef __linux__
 struct IWICImagingFactory;
+#else // __linux__
+// IWICImagingFactory left out: image files go through QImage
+#endif // __linux__
 
 namespace oapi {
 
@@ -412,7 +420,11 @@ public:
 	 * with the Orbiter core via the oapiRegisterGraphicsClient function.
 	 * \param hInstance module instance handle (as passed to InitModule)
 	 */
+#ifndef __linux__
 	GraphicsClient (HINSTANCE hInstance);
+#else // __linux__
+	GraphicsClient (void *hInstance);
+#endif // __linux__
 
 	/**
 	 * \brief Destroy the graphics object.
@@ -788,7 +800,11 @@ public:
 	/**
 	 * \brief Returns the handle of the main render window.
 	 */
+#ifndef __linux__
 	HWND GetRenderWindow () const { return hRenderWnd; }
+#else // __linux__
+	QWindow *GetRenderWindow () const { return hRenderWnd; }
+#endif // __linux__
 
 	/**
 	 * \brief Render window message handler
@@ -806,7 +822,11 @@ public:
 	 *   messages, and passes everything else to the Orbiter core message
 	 *   handler.
 	 */
+#ifndef __linux__
 	virtual LRESULT RenderWndProc (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
+#else // __linux__
+	virtual bool RenderWndProc (QWindow *hWnd, QEvent *event); // returns true if the event was handled
+#endif // __linux__
 
 	/**
 	 * \brief Message handler for 'video' tab in Orbiter Launchpad dialog
@@ -821,7 +841,11 @@ public:
 	 * \return The return value depends on the message type and the action taken.
 	 * \default Do nothing, return FALSE.
 	 */
+#ifndef __linux__
 	virtual INT_PTR LaunchpadVideoWndProc (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
+#else // __linux__
+	virtual void LaunchpadVideoWndProc (QWidget *hWnd); // called once the video tab is built; connect its controls here
+#endif // __linux__
 
 	/**
 	 * \brief Structure containing default video options, as stored in
@@ -864,7 +888,11 @@ public:
 	 *   render modes, where the dialog contents may need to be blitted manually
 	 *   into the render surface.
 	 */
+#ifndef __linux__
 	DWORD GetPopupList (const HWND **hPopupWnd) const;
+#else // __linux__
+	DWORD GetPopupList (QWidget *const **hPopupWnd) const;
+#endif // __linux__
 
 	/**
 	 * \brief Fullscreen mode flag
@@ -1111,7 +1139,11 @@ public:
 	 * \note The reference counter for the new surface is set to 1.
 	 * \sa clbkIncrSurfaceRef, clbkReleaseSurface
 	 */
+#ifndef __linux__
 	virtual SURFHANDLE clbkCreateSurface (HBITMAP hBmp);
+#else // __linux__
+	virtual SURFHANDLE clbkCreateSurface (QImage *hBmp);
+#endif // __linux__
 
 	/**
 	 * \brief Increment the reference counter of a surface.
@@ -1323,7 +1355,11 @@ public:
 	 * \note The source bitmap area is stretched as required to fit the area of
 	 *   the target surface.
 	 */
+#ifndef __linux__
 	virtual bool clbkCopyBitmap (SURFHANDLE pdds, HBITMAP hbm, int x, int y, int dx, int dy);
+#else // __linux__
+	virtual bool clbkCopyBitmap (SURFHANDLE pdds, QImage *hbm, int x, int y, int dx, int dy);
+#endif // __linux__
 	// @}
 
 
@@ -1425,7 +1461,11 @@ public:
 	 * \note Clients which can obtain a Windows GDI handle for a surface should
 	 *   overload this method.
 	 */
+#ifndef __linux__
 	virtual HDC clbkGetSurfaceDC (SURFHANDLE surf) { return NULL; }
+#else // __linux__
+	virtual QPainter *clbkGetSurfaceDC (SURFHANDLE surf) { return NULL; }
+#endif // __linux__
 
 	/**
 	 * \brief Release a Windows graphics device interface
@@ -1435,7 +1475,11 @@ public:
 	 * \note Clients which can obtain a Windows GDI handle for a surface should
 	 *   overload this method to release an existing GDI.
 	 */
+#ifndef __linux__
 	virtual void clbkReleaseSurfaceDC (SURFHANDLE surf, HDC hDC) {}
+#else // __linux__
+	virtual void clbkReleaseSurfaceDC (SURFHANDLE surf, QPainter *hDC) {}
+#endif // __linux__
 	// @}
 
 	/**
@@ -1519,7 +1563,11 @@ protected:
 	 * \note Derived classes should perform any required per-session
 	 *   initialisation of the 3D render environment here.
 	 */
+#ifndef __linux__
 	virtual HWND clbkCreateRenderWindow ();
+#else // __linux__
+	virtual QWindow *clbkCreateRenderWindow ();
+#endif // __linux__
 
 	/**
 	 * \brief Simulation startup finalisation
@@ -1720,7 +1768,11 @@ protected:
 	 *   LoadResource, LockResource, SizeofResource)
 	 * \sa ReadImageFromFile, WriteImageDataToFile
 	 */
+#ifndef __linux__
 	HBITMAP ReadImageFromMemory (BYTE *pBuf, DWORD nBuf, UINT w, UINT h);
+#else // __linux__
+	QImage *ReadImageFromMemory (BYTE *pBuf, DWORD nBuf, UINT w, UINT h);
+#endif // __linux__
 
 	/**
 	 * \brief Read an image from a file into a bitmap
@@ -1731,17 +1783,29 @@ protected:
 	 * \note This function can read different image formats (bmp, jpg, png, tif)
 	 * \sa ReadImageFromMemory, WriteImageDataToFile
 	 */
+#ifndef __linux__
 	HBITMAP ReadImageFromFile (const char *fname, UINT w=0, UINT h=0);
+#else // __linux__
+	QImage *ReadImageFromFile (const char *fname, UINT w=0, UINT h=0);
+#endif // __linux__
 
 	/**
 	 * \brief Returns the graphics module instance handle
 	 */
+#ifndef __linux__
 	inline HINSTANCE ModuleInstance () const { return hModule; }
+#else // __linux__
+	inline void *ModuleInstance () const { return hModule; }
+#endif // __linux__
 
 	/**
 	 * \brief Returns the orbiter core instance handle
 	 */
+#ifndef __linux__
 	inline HINSTANCE OrbiterInstance () const { return hOrbiterInst; }
+#else // __linux__
+	inline void *OrbiterInstance () const { return hOrbiterInst; }
+#endif // __linux__
 
 	/**
 	 * \brief Returns the window handle of the 'video' tab of the Orbiter
@@ -1750,7 +1814,11 @@ protected:
 	 * If clbkUseLanuchpadVideoTab() is overloaded to return false, this
 	 * function will return NULL.
 	 */
+#ifndef __linux__
 	HWND LaunchpadVideoTab() const { return hVid; }
+#else // __linux__
+	QWidget *LaunchpadVideoTab() const { return hVid; }
+#endif // __linux__
 
 	// ==================================================================
 	// Functions for the celestial sphere
@@ -1824,7 +1892,11 @@ public:
 	DWORD GetSurfaceMarkerLegend (OBJHANDLE hObj, const LABELTYPE **lspec) const;
 	// @}
 
+#ifndef __linux__
 	HWND hVid;              ///< Window handle of Launchpad video tab, if available
+#else // __linux__
+	QWidget *hVid;          ///< Window handle of Launchpad video tab, if available
+#endif // __linux__
 
 protected:
 	SURFHANDLE surfBltTgt;  ///< target surface for a blitting group (-1=none, NULL=main window render surface)
@@ -1841,13 +1913,26 @@ private:
 	 * \return Render window handle
 	 * \note This is called after clbkCreateRenderWindow returns.
 	 */
+#ifndef __linux__
 	HWND InitRenderWnd (HWND hWnd);
+#else // __linux__
+	QWindow *InitRenderWnd (QWindow *hWnd);
+#endif // __linux__
 
+#ifndef __linux__
 	HWND hRenderWnd;        // render window handle
 	HINSTANCE hOrbiterInst; // orbiter core instance handle
+#else // __linux__
+	QWindow *hRenderWnd;    // render window handle
+	void *hOrbiterInst;     // orbiter core instance handle
+#endif // __linux__
 	VIDEODATA VideoData;    // the standard video options from config
 
+#ifndef __linux__
 	IWICImagingFactory *m_pIWICFactory; // Windows Image Component factory instance
+#else // __linux__
+	// m_pIWICFactory left out: image files go through QImage
+#endif // __linux__
 };
 
 

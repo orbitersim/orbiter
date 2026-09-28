@@ -3,7 +3,18 @@
 
 #include "DlgCtrl.h"
 #include "DlgCtrlLocal.h"
+#ifdef __linux__
+#include "OrbiterResource.h"
+#include <QApplication>
+#include <QMouseEvent>
+#include <QPainter>
+#include <QScrollBar>
+#include <QTimer>
+#endif // __linux__
 #include <stdio.h>
+#ifdef __linux__
+#include <string.h>
+#endif // __linux__
 #include <algorithm>
 
 using std::min;
@@ -11,9 +22,15 @@ using std::max;
 
 GDIRES g_GDI;
 
+#ifndef __linux__
 static UINT g_timer = 0;
 static HINSTANCE hInstModule = NULL;
+#else // __linux__
+static QWidget *CreateGauge (const RESCONTROL*, QWidget *parent) { return new GaugeCtrl (parent); }
+static QWidget *CreateSwitch (const RESCONTROL*, QWidget *parent) { return new SwitchCtrl (parent); }
+#endif // __linux__
 
+#ifndef __linux__
 static const DWORD LongPtrSize = sizeof(LONG_PTR);
 static const DWORD WINOFS_POS = 0;
 static const DWORD WINOFS_RMIN = LongPtrSize;
@@ -30,8 +47,18 @@ void oapiRegisterCustomControls (HINSTANCE hInst)
 	g_GDI.hPen2 = CreatePen (PS_SOLID, 1, GetSysColor (COLOR_3DSHADOW));
 	g_GDI.hBrush1 = CreateSolidBrush (0x0000ff);
 	g_GDI.hBrush2 = CreateSolidBrush (GetSysColor (COLOR_3DFACE));
+#else // __linux__
+void oapiRegisterCustomControls (void *hInst)
+{
+	QPalette pal = QApplication::palette();
+	g_GDI.hPen1 = QColor (0x40, 0x40, 0x40);
+	g_GDI.hPen2 = pal.color (QPalette::Dark);    // COLOR_3DSHADOW
+	g_GDI.hBrush1 = QColor (0xff, 0x00, 0x00);
+	g_GDI.hBrush2 = pal.color (QPalette::Button); // COLOR_3DFACE
+#endif // __linux__
 
 	// Register window class for level indicator
+#ifndef __linux__
 	wndClass.style = CS_HREDRAW | CS_VREDRAW;
 	wndClass.lpfnWndProc   = MsgProc_Gauge;
 	wndClass.cbClsExtra    = 0;
@@ -43,24 +70,44 @@ void oapiRegisterCustomControls (HINSTANCE hInst)
 	wndClass.lpszMenuName  = NULL;
 	wndClass.lpszClassName = "OrbiterCtrl_Gauge";
 	RegisterClass (&wndClass);
+#else // __linux__
+	oapiRegisterResControl (hInst, "OrbiterCtrl_Gauge", CreateGauge);
+#endif // __linux__
 
 	// Register window class for switch
+#ifndef __linux__
 	wndClass.lpfnWndProc   = MsgProc_Switch;
 	wndClass.cbWndExtra    = 8;
 	wndClass.hbrBackground = g_GDI.hBrush2; //(HBRUSH)GetStockObject (NULL_BRUSH);
 	wndClass.lpszClassName = "OrbiterCtrl_Switch";
 	RegisterClass (&wndClass);
+#else // __linux__
+	oapiRegisterResControl (hInst, "OrbiterCtrl_Switch", CreateSwitch);
+#endif // __linux__
 
 	// Register window class for property list
 	RegisterPropertyList (hInst);
 }
 
+#ifndef __linux__
 void oapiUnregisterCustomControls (HINSTANCE hInst)
+#else // __linux__
+void oapiUnregisterCustomControls (void *hInst)
+#endif // __linux__
 {
+#ifndef __linux__
 	UnregisterClass ("OrbiterCtrl_Gauge", hInst);
 	UnregisterClass ("OrbiterCtrl_Switch", hInst);
+#else // __linux__
+	oapiUnregisterResControl (hInst, "OrbiterCtrl_Gauge");
+	oapiUnregisterResControl (hInst, "OrbiterCtrl_Switch");
+#endif // __linux__
 	UnregisterPropertyList (hInst);
+#ifdef __linux__
+}
+#endif // __linux__
 
+#ifndef __linux__
 	DeleteObject (g_GDI.hPen1);
 	DeleteObject (g_GDI.hPen2);
 	DeleteObject (g_GDI.hBrush1);
@@ -111,7 +158,16 @@ LRESULT FAR PASCAL MsgProc_Gauge (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lP
 			LineTo(hDC, x0 += 2 * dd, y0);
 			LineTo(hDC, x0 -= dd, y0 += dd);
 		}
+#else // __linux__
+// GDI Rectangle (l,t,r,b): outline and fill cover [l,r-1] x [t,b-1]
+void GdiRectangle (QPainter &p, int l, int t, int r, int b)
+{
+	if (p.pen().style() == Qt::NoPen) p.fillRect (l, t, r-l-1, b-t-1, p.brush());
+	else p.drawRect (l, t, r-l-1, b-t-1);
+}
+#endif // __linux__
 
+#ifndef __linux__
 		SelectObject (hDC, GetStockObject (NULL_PEN));
 		SelectObject (hDC, (flag & 0x40) ? g_GDI.hBrush1 : GetStockObject (enabled ? BLACK_BRUSH : GRAY_BRUSH));
 		if (rmax > rmin) {
@@ -130,10 +186,52 @@ LRESULT FAR PASCAL MsgProc_Gauge (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lP
 				break;
 			}
 		}
+#else // __linux__
+GaugeCtrl::GaugeCtrl (QWidget *parent): QWidget (parent)
+{
+	QPalette pal = palette();
+	pal.setColor (QPalette::Window, QColor (0xc0, 0xc0, 0xc0)); // LTGRAY_BRUSH class background
+	setPalette (pal);
+	setAutoFillBackground (true);
+	timer = new QTimer (this);
+	connect (timer, &QTimer::timeout, this, &GaugeCtrl::OnTimer);
+}
 
+void GaugeCtrl::paintEvent (QPaintEvent*)
+{
+	QPainter p (this);
+	int bw, gw, x0, y0, dd;
+	int rr = width(), rb = height();
+	bool horz  = ((flag & 2) == 0);
+	bool enabled = isEnabled();
+#endif // __linux__
+
+#ifndef __linux__
 		EndPaint (hWnd, &ps);
 		} return 0;
+#else // __linux__
+	p.setPen (g_GDI.hPen1);
+	p.setBrush (enabled ? QBrush (Qt::white) : QBrush (Qt::NoBrush));
+	if (horz) {
+		bw = rb; dd = bw / 4; gw = rr - 2 * bw;
+		GdiRectangle (p, 0, 0, bw, bw);
+		GdiRectangle (p, rr - bw, 0, rr, bw);
+		x0 = dd, y0 = bw / 2;
+		p.drawPolyline (QPolygon ({QPoint (x0, y0), QPoint (x0 + dd, y0 - dd), QPoint (x0 + dd, y0 + dd), QPoint (x0, y0)}));
+		x0 = rr - dd - 1, y0 = bw / 2;
+		p.drawPolyline (QPolygon ({QPoint (x0, y0), QPoint (x0 - dd, y0 - dd), QPoint (x0 - dd, y0 + dd), QPoint (x0, y0)}));
+	} else {
+		bw = rr; dd = bw / 4;  gw = rb - 2 * bw;
+		GdiRectangle (p, 0, 0, bw, bw);
+		GdiRectangle (p, 0, rb - bw, bw, rb);
+		x0 = bw / 2, y0 = dd;
+		p.drawPolyline (QPolygon ({QPoint (x0, y0), QPoint (x0 + dd, y0 + dd), QPoint (x0 - dd, y0 + dd), QPoint (x0, y0)}));
+		x0 = bw / 2, y0 = rb - dd - 1;
+		p.drawPolyline (QPolygon ({QPoint (x0, y0), QPoint (x0 - dd, y0 - dd), QPoint (x0 + dd, y0 - dd), QPoint (x0, y0)}));
+	}
+#endif // __linux__
 
+#ifndef __linux__
 	case WM_LBUTTONDOWN: {
 		int x = LOWORD (lParam);
 		int y = HIWORD (lParam);
@@ -164,13 +262,53 @@ LRESULT FAR PASCAL MsgProc_Gauge (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lP
 			} else {
 				flag |= 12;                       // flag for slider area pressed
 			}
+#else // __linux__
+	p.setPen (Qt::NoPen);
+	p.setBrush ((flag & 0x40) ? QBrush (g_GDI.hBrush1) : QBrush (enabled ? QColor (Qt::black) : QColor (0x80, 0x80, 0x80)));
+	if (rmax > rmin) {
+		switch (flag & 3) { // direction flag
+		case 0: // left to right
+			GdiRectangle (p, bw, 0, bw+(gw*(pos-rmin))/(rmax-rmin) + 1, bw + 1);
+			break;
+		case 1: // right to left
+			GdiRectangle (p, bw+gw-(gw*(pos-rmin))/(rmax-rmin), 0, bw+gw + 1, bw + 1);
+			break;
+		case 2: // top to bottom
+			GdiRectangle (p, 0, bw, bw + 1, bw+(gw*(pos-rmin))/(rmax-rmin) + 1);
+			break;
+		case 3: // bottom to top
+			GdiRectangle (p, 0, bw+gw-(gw*(pos-rmin))/(rmax-rmin), bw + 1, bw+gw + 1);
+			break;
+#endif // __linux__
 		}
+#ifndef __linux__
 		hPrevCapt = SetCapture (hWnd);
 		SetWindowLongPtr (hWnd, WINOFS_FLAG, flag);
 		if ((flag & 12) == 12) {
 			DragSlider (hWnd, x, y);
 			SendMessage (GetParent (hWnd), WM_HSCROLL, MAKEWPARAM (SB_THUMBTRACK, GetWindowLongPtr (hWnd, WINOFS_POS)), LPARAM (hWnd));
+#else // __linux__
+	}
+}
+
+void GaugeCtrl::mousePressEvent (QMouseEvent *event)
+{
+	if (event->button() != Qt::LeftButton) return;
+	int x = (int)event->position().x();
+	int y = (int)event->position().y();
+	int bw, gw;
+	bool horz = ((flag & 2) == 0);
+	if (horz) {
+		bw = height(); gw = width() - 2*bw;
+		if (x < bw) {
+			flag |= 4;                        // flag for left button pressed
+			flag |= ((flag & 1) ? 0x20:0x10); // flag for inc/dec button pressed
+		} else if (x >= gw+bw) {
+			flag |= 8;                        // flag for right button pressed
+			flag |= ((flag & 1) ? 0x10:0x20); // flag for inc/dec button pressed
+#endif // __linux__
 		} else {
+#ifndef __linux__
 			int rmin = GetWindowLongPtr (hWnd, WINOFS_RMIN);
 			int rmax = GetWindowLongPtr (hWnd, WINOFS_RMAX);
 			g_timer = SetTimer (hWnd, 1, min(1000, max(1,3000/(rmax-rmin))), NULL);
@@ -184,7 +322,11 @@ LRESULT FAR PASCAL MsgProc_Gauge (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lP
 		if (g_timer) {
 			KillTimer (hWnd, 1);
 			g_timer = 0;
+#else // __linux__
+			flag |= 12;                       // flag for slider area pressed
+#endif // __linux__
 		}
+#ifndef __linux__
 		DWORD flag = GetWindowLongPtr (hWnd, WINOFS_FLAG);
 		flag &= 0xFFFFFFC3; // clear mouse selection state
 		SetWindowLongPtr (hWnd, WINOFS_FLAG, flag);
@@ -195,9 +337,35 @@ LRESULT FAR PASCAL MsgProc_Gauge (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lP
 		if ((flag & 12) == 12) {
 			DragSlider (hWnd, (short)LOWORD(lParam), (short)HIWORD(lParam));
 			SendMessage (GetParent (hWnd), WM_HSCROLL, MAKEWPARAM (SB_THUMBTRACK, GetWindowLongPtr (hWnd, WINOFS_POS)), (LPARAM)hWnd);
+#else // __linux__
+	} else {
+		bw = width(); gw = height() - 2*bw;
+		if (y < bw) {
+			flag |= 4;                        // flag for top button pressed
+			flag |= ((flag & 1) ? 0x20:0x10); // flag for inc/dec button pressed
+		} else if (y >= gw+bw) {
+			flag |= 8;                        // flag for bottom button pressed
+			flag |= ((flag & 1) ? 0x10:0x20); // flag for inc/dec button pressed
+		} else {
+			flag |= 12;                       // flag for slider area pressed
+#endif // __linux__
 		}
+#ifndef __linux__
 		} return 0;
+#else // __linux__
+	}
+	// Qt keeps the mouse grabbed by this widget until the release (SetCapture)
+	if ((flag & 12) == 12) {
+		DragSlider (x, y);
+		emit scrolled (GAUGE_THUMBTRACK, pos);
+	} else {
+		timer->start (min (1000, max (1, 3000/max (1, rmax-rmin))));
+		OnTimer();
+	}
+}
+#endif // __linux__
 
+#ifndef __linux__
 	case WM_ENABLE:
 		InvalidateRect(hWnd, 0, TRUE);
 		return TRUE;
@@ -224,45 +392,130 @@ LRESULT FAR PASCAL MsgProc_Gauge (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lP
 			break;
 		}
 		return 0;
-	}
-	return DefWindowProc (hWnd, uMsg, wParam, lParam);
+#else // __linux__
+void GaugeCtrl::mouseReleaseEvent (QMouseEvent*)
+{
+	timer->stop();
+	flag &= 0xFFFFFFC3; // clear mouse selection state
 }
 
-void DragSlider (HWND hWnd, int x, int y)
+void GaugeCtrl::mouseMoveEvent (QMouseEvent *event)
 {
+	if ((flag & 12) == 12) {
+		DragSlider ((int)event->position().x(), (int)event->position().y());
+		emit scrolled (GAUGE_THUMBTRACK, pos);
+#endif // __linux__
+	}
+#ifndef __linux__
+	return DefWindowProc (hWnd, uMsg, wParam, lParam);
+#endif // !__linux__
+}
+
+#ifndef __linux__
+void DragSlider (HWND hWnd, int x, int y)
+#else // __linux__
+void GaugeCtrl::changeEvent (QEvent *event)
+{
+	if (event->type() == QEvent::EnabledChange) update();
+	QWidget::changeEvent (event);
+}
+
+void GaugeCtrl::OnTimer ()
+#endif // __linux__
+{
+#ifndef __linux__
 	RECT r;
 	DWORD bw, gw;
 	int pos;
 	DWORD flag = GetWindowLongPtr (hWnd, WINOFS_FLAG);
 	GetClientRect (hWnd, &r);
+#else // __linux__
+	switch ((flag >> 4) & 3) {
+	case 1: // decrease
+		if (pos > rmin) --pos;
+		update();
+		emit scrolled (GAUGE_LINEDEC, pos);
+		break;
+	case 2: // increase
+		if (pos < rmax) ++pos;
+		update();
+		emit scrolled (GAUGE_LINEINC, pos);
+		break;
+	}
+}
+#endif // __linux__
 
+#ifdef __linux__
+void GaugeCtrl::DragSlider (int x, int y)
+{
+	int bw, gw, p;
+#endif // __linux__
 	bool horz = ((flag & 2) == 0);
 	if (horz) {
+#ifndef __linux__
 		bw = r.bottom; gw = r.right - 2*bw;
 		pos = x-(int)bw;
+#else // __linux__
+		bw = height(); gw = width() - 2*bw;
+		p = x-bw;
+#endif // __linux__
 	} else {
+#ifndef __linux__
 		bw = r.right; gw = r.bottom - 2*bw;
 		pos = y-(int)bw;
+#else // __linux__
+		bw = width(); gw = height() - 2*bw;
+		p = y-bw;
+#endif // __linux__
 	}
+#ifndef __linux__
 	if (pos < 0) pos = 0; else if (pos >= (int)gw) pos = (int)gw;
 	if (flag & 1) pos = gw-pos;
+#else // __linux__
+	if (gw <= 0) return;
+	if (p < 0) p = 0; else if (p >= gw) p = gw;
+	if (flag & 1) p = gw-p;
+#endif // __linux__
 
+#ifndef __linux__
 	int rmin = GetWindowLongPtr (hWnd, WINOFS_RMIN);
 	int rmax = GetWindowLongPtr (hWnd, WINOFS_RMAX);
+#endif // !__linux__
 	if (rmax > rmin) {
+#ifndef __linux__
 		SetWindowLongPtr (hWnd, WINOFS_POS, (pos*(rmax-rmin))/gw+rmin);
 		InvalidateRect (hWnd, NULL, TRUE);
+#else // __linux__
+		pos = (p*(rmax-rmin))/gw+rmin;
+		update();
+#endif // __linux__
 	}
 }
 
+#ifndef __linux__
 void oapiSetGaugeParams (HWND hCtrl, GAUGEPARAM *gp, bool redraw)
+#else // __linux__
+void oapiSetGaugeParams (QWidget *hCtrl, GAUGEPARAM *gp, bool redraw)
+#endif // __linux__
 {
+#ifndef __linux__
 	SetWindowLongPtr (hCtrl, WINOFS_RMIN, gp->rangemin);
 	SetWindowLongPtr (hCtrl, WINOFS_RMAX, gp->rangemax);
+#else // __linux__
+	GaugeCtrl *g = qobject_cast<GaugeCtrl*> (hCtrl);
+	if (!g) return;
+	g->rmin = gp->rangemin;
+	g->rmax = gp->rangemax;
+#endif // __linux__
 
+#ifndef __linux__
 	int pos = (int)GetWindowLongPtr (hCtrl, WINOFS_POS);
 	if      (pos < gp->rangemin) SetWindowLongPtr (hCtrl, WINOFS_POS, gp->rangemin);
 	else if (pos > gp->rangemax) SetWindowLongPtr (hCtrl, WINOFS_POS, gp->rangemax);
+#else // __linux__
+	if      (g->pos < gp->rangemin) g->pos = gp->rangemin;
+	else if (g->pos > gp->rangemax) g->pos = gp->rangemax;
+#endif // __linux__
 
 	DWORD flag = 0;
 	switch (gp->base) {
@@ -275,57 +528,131 @@ void oapiSetGaugeParams (HWND hCtrl, GAUGEPARAM *gp, bool redraw)
 	case GAUGEPARAM::BLACK:                break;
 	case GAUGEPARAM::RED:    flag |= 0x40; break;
 	}
+#ifndef __linux__
 	SetWindowLongPtr (hCtrl, WINOFS_FLAG, flag);
+#else // __linux__
+	g->flag = flag;
+#endif // __linux__
 
+#ifndef __linux__
 	if (redraw) InvalidateRect (hCtrl, NULL, TRUE);
+#else // __linux__
+	if (redraw) g->update();
+#endif // __linux__
 }
 
+#ifndef __linux__
 void oapiSetGaugeRange (HWND hCtrl, int rmin, int rmax, bool redraw)
+#else // __linux__
+void oapiSetGaugeRange (QWidget *hCtrl, int rmin, int rmax, bool redraw)
+#endif // __linux__
 {
+#ifndef __linux__
 	SetWindowLongPtr (hCtrl, WINOFS_RMIN, rmin);
 	SetWindowLongPtr (hCtrl, WINOFS_RMAX, rmax);
+#else // __linux__
+	GaugeCtrl *g = qobject_cast<GaugeCtrl*> (hCtrl);
+	if (!g) return;
+	g->rmin = rmin;
+	g->rmax = rmax;
+#endif // __linux__
 
+#ifndef __linux__
 	int pos = (int)GetWindowLongPtr (hCtrl, WINOFS_POS);
 	if      (pos < rmin) SetWindowLongPtr (hCtrl, WINOFS_POS, rmin);
 	else if (pos > rmax) SetWindowLongPtr (hCtrl, WINOFS_POS, rmax);
+#else // __linux__
+	if      (g->pos < rmin) g->pos = rmin;
+	else if (g->pos > rmax) g->pos = rmax;
+#endif // __linux__
 
+#ifndef __linux__
 	if (redraw) InvalidateRect (hCtrl, NULL, TRUE);
+#else // __linux__
+	if (redraw) g->update();
+#endif // __linux__
 }
 
+#ifndef __linux__
 int oapiSetGaugePos (HWND hCtrl, int pos, bool redraw)
+#else // __linux__
+int oapiSetGaugePos (QWidget *hCtrl, int pos, bool redraw)
+#endif // __linux__
 {
+#ifndef __linux__
 	int rmin = GetWindowLongPtr(hCtrl, WINOFS_RMIN);
 	int rmax = GetWindowLongPtr(hCtrl, WINOFS_RMAX);
 	if      (pos < rmin) pos = rmin;
 	else if (pos > rmax) pos = rmax;
+#else // __linux__
+	GaugeCtrl *g = qobject_cast<GaugeCtrl*> (hCtrl);
+	if (!g) return pos;
+	if      (pos < g->rmin) pos = g->rmin;
+	else if (pos > g->rmax) pos = g->rmax;
+#endif // __linux__
 
+#ifndef __linux__
 	int oldPos = GetWindowLongPtr(hCtrl, WINOFS_POS);
 	if (pos != oldPos) {
 		SetWindowLongPtr(hCtrl, WINOFS_POS, pos);
 		if (redraw) InvalidateRect(hCtrl, NULL, TRUE);
+#else // __linux__
+	if (pos != g->pos) {
+		g->pos = pos;
+		if (redraw) g->update();
+#endif // __linux__
 	}
 
 	return pos;
 }
 
+#ifndef __linux__
 int oapiIncGaugePos (HWND hCtrl, int dpos, bool redraw)
+#else // __linux__
+int oapiIncGaugePos (QWidget *hCtrl, int dpos, bool redraw)
+#endif // __linux__
 {
+#ifndef __linux__
 	int rmin = GetWindowLongPtr (hCtrl, WINOFS_RMIN);
 	int rmax = GetWindowLongPtr (hCtrl, WINOFS_RMAX);
 	int pos  = GetWindowLongPtr (hCtrl, WINOFS_POS) + dpos;
+#else // __linux__
+	GaugeCtrl *g = qobject_cast<GaugeCtrl*> (hCtrl);
+	if (!g) return 0;
+	int pos  = g->pos + dpos;
+#endif // __linux__
 
+#ifndef __linux__
 	if      (pos < rmin) pos = rmin;
 	else if (pos > rmax) pos = rmax;
+#else // __linux__
+	if      (pos < g->rmin) pos = g->rmin;
+	else if (pos > g->rmax) pos = g->rmax;
+#endif // __linux__
 
+#ifndef __linux__
 	SetWindowLongPtr (hCtrl, WINOFS_POS, pos);
 	if (redraw) InvalidateRect (hCtrl, NULL, TRUE);
+#else // __linux__
+	g->pos = pos;
+	if (redraw) g->update();
+#endif // __linux__
 
 	return pos;
 }
 
+#ifndef __linux__
 int oapiGetGaugePos (HWND hCtrl)
+#else // __linux__
+int oapiGetGaugePos (QWidget *hCtrl)
+#endif // __linux__
 {
+#ifndef __linux__
 	return GetWindowLongPtr (hCtrl, WINOFS_POS);
+#else // __linux__
+	GaugeCtrl *g = qobject_cast<GaugeCtrl*> (hCtrl);
+	return (g ? g->pos : 0);
+#endif // __linux__
 }
 
 // ==================================================================================
@@ -449,7 +776,11 @@ void PropertyGroup::Expand (bool expand)
 int PropertyList::titleh = 20;
 int PropertyList::itemh = 18;
 int PropertyList::gaph = 6;
+#ifndef __linux__
 HBITMAP PropertyList::hBmpArrows = NULL;
+#else // __linux__
+QImage *PropertyList::hBmpArrows = NULL;
+#endif // __linux__
 
 PropertyList::PropertyList ()
 {
@@ -461,6 +792,9 @@ PropertyList::PropertyList ()
 	hFontItem = NULL;
 	hPenLine = NULL;
 	hBrushTitle = NULL;
+#ifdef __linux__
+	hItem = NULL;
+#endif // __linux__
 }
 
 PropertyList::~PropertyList ()
@@ -470,23 +804,44 @@ PropertyList::~PropertyList ()
 			delete pg[i];
 		delete []pg;
 	}
+#ifndef __linux__
 	if (hFontTitle) DeleteObject (hFontTitle);
 	if (hFontItem) DeleteObject (hFontItem);
 	if (hPenLine) DeleteObject (hPenLine);
 	if (hBrushTitle) DeleteObject (hBrushTitle);
+#else // __linux__
+	if (hFontTitle) delete hFontTitle;
+	if (hFontItem) delete hFontItem;
+	if (hPenLine) delete hPenLine;
+	if (hBrushTitle) delete hBrushTitle;
+	if (hItem) hItem->plist = NULL;
+#endif // __linux__
 }
 
+#ifndef __linux__
 void PropertyList::OnInitDialog (HWND hWnd, int nIDDlgItem)
+#else // __linux__
+void PropertyList::OnInitDialog (QWidget *hWnd, int nIDDlgItem)
+#endif // __linux__
 {
 	hDlg = hWnd;
 	dlgid = nIDDlgItem;
+#ifndef __linux__
 	hItem = GetDlgItem (hDlg, dlgid);
 	SetWindowLongPtr (hItem, GWLP_USERDATA, (LONG_PTR)this);
 	RECT cr;
 	GetClientRect (hItem, &cr);
 	winw = cr.right;
 	winh = cr.bottom;
+#else // __linux__
+	hItem = qobject_cast<PropertyListCtrl*> (oapiResDlgItem (hDlg, dlgid));
+	if (!hItem) return;
+	hItem->plist = this;
+	winw = hItem->viewport()->width();
+	winh = hItem->viewport()->height();
+#endif // __linux__
 	if (!valx0) valx0 = winw/2;
+#ifndef __linux__
 	hFontTitle = CreateFont (15, 0, 0, 0, FW_BOLD, FALSE, FALSE, FALSE, ANSI_CHARSET,
 		OUT_DEFAULT_PRECIS, CLIP_DEFAULT_PRECIS, DEFAULT_QUALITY, FF_SWISS,
 		"Arial");
@@ -508,8 +863,35 @@ void PropertyList::OnPaint (HWND hWnd)
 	HFONT hOldFont;
 	HPEN hOldPen;
 	HBRUSH hOldBrush;
+#else // __linux__
+	hFontTitle = new QFont ("Arial");
+	hFontTitle->setPixelSize (13); // 15 pixel cell height
+	hFontTitle->setBold (true);
+	hFontItem = new QFont ("Arial");
+	hFontItem->setPixelSize (13);
+	hPenLine = new QPen (QColor (0xD0, 0xD0, 0xD0));
+	hBrushTitle = new QBrush (QColor (0xE0, 0xE0, 0xFF));
+	hItem->verticalScrollBar()->setRange (0, 0);
+	hItem->verticalScrollBar()->setValue (0);
+}
+
+// TextOut counterpart: text cell at (x,y) top left, background filled (OPAQUE mode)
+static void TextOut (QPainter &p, int x, int y, const char *str)
+{
+	QFontMetrics fm (p.font());
+	QString s = QString::fromLatin1 (str);
+	p.fillRect (x, y, fm.horizontalAdvance (s), fm.height(), p.background());
+	p.drawText (x, y + fm.ascent(), s);
+}
+
+void GdiRectangle (QPainter &p, int l, int t, int r, int b);
+
+void PropertyList::OnPaint (QWidget *hWnd)
+{
+#endif // __linux__
 	int i, j, y;
 
+#ifndef __linux__
 	if (!GetUpdateRect (hWnd, &rupd, FALSE)) return;
 	hDC = BeginPaint (hWnd, &ps);
 	
@@ -518,46 +900,84 @@ void PropertyList::OnPaint (HWND hWnd)
 	hOldBrush = (HBRUSH)SelectObject (hDC, hBrushTitle);
 	HDC hDCmem = CreateCompatibleDC (hDC);
 	SelectObject (hDCmem, hBmpArrows);
+#else // __linux__
+	QPainter p (hWnd);
+	p.setFont (*hFontItem);
+	p.setPen (*hPenLine);
+	p.setBrush (*hBrushTitle);
+#endif // __linux__
 
 	y = -yofs;
 	for (i = 0; i < npg; i++) {
 		bool expanded = pg[i]->IsExpanded();
 		const char *title = pg[i]->GetTitle();
 		if (title) {
+#ifndef __linux__
 			Rectangle (hDC, 18, y, winw-4, y+titleh-2);
 			SelectObject (hDC, hFontTitle);
 			SetTextColor (hDC, 0xB00000);
 			SetBkColor (hDC, 0xFFE0E0);
 			TextOut (hDC, 20, y+1, title, strlen(title));
 			BitBlt (hDC, 2, y+2, 14, 14, hDCmem, 28+(expanded ? 0:14), 0, SRCCOPY);
+#else // __linux__
+			GdiRectangle (p, 18, y, winw-4, y+titleh-2);
+			p.setFont (*hFontTitle);
+			p.setPen (QColor (0x00, 0x00, 0xB0));
+			p.setBackground (QColor (0xE0, 0xE0, 0xFF));
+			TextOut (p, 20, y+1, title);
+			if (hBmpArrows) p.drawImage (QPoint (2, y+2), *hBmpArrows, QRect (28+(expanded ? 0:14), 0, 14, 14));
+#endif // __linux__
 			y += titleh;
+#ifndef __linux__
 			SetTextColor (hDC, 0x000000);
 			SelectObject (hDC, hFontItem);
 			SetBkColor (hDC, 0xFFFFFF);
+#else // __linux__
+			p.setPen (QColor (0x00, 0x00, 0x00));
+			p.setFont (*hFontItem);
+			p.setBackground (QColor (0xFF, 0xFF, 0xFF));
+#endif // __linux__
 		}
 		if (expanded) {
 			for (j = 0; j < pg[i]->ItemCount(); j++) {
 				const char *item = pg[i]->GetItem (j)->GetLabel();
 				if (item)
+#ifndef __linux__
 					TextOut (hDC, 20, y, item, strlen(item));
+#else // __linux__
+					TextOut (p, 20, y, item);
+#endif // __linux__
 				const char *value = pg[i]->GetItem (j)->GetValue();
 				if (value)
+#ifndef __linux__
 					TextOut (hDC, valx0, y, value, strlen(value));
+#else // __linux__
+					TextOut (p, valx0, y, value);
+#endif // __linux__
 				if (j < pg[i]->ItemCount()-1) {
+#ifndef __linux__
 					MoveToEx (hDC, 20, y+itemh-2, NULL);
 					LineTo (hDC, winw-4, y+itemh-2);
+#else // __linux__
+					p.save();
+					p.setPen (*hPenLine);
+					p.drawLine (20, y+itemh-2, winw-5, y+itemh-2);
+					p.restore();
+#endif // __linux__
 				}
 				y += itemh;
 			}
 			y += gaph;
 		}
 	}
+#ifndef __linux__
 
 	DeleteDC (hDCmem);
 	SelectObject (hDC, hOldFont);
 	SelectObject (hDC, hOldPen);
 	SelectObject (hDC, hOldBrush);
 	EndPaint (hWnd, &ps);
+#endif // !__linux__
 }
 
 void PropertyList::OnSize (int w, int h)
@@ -567,8 +987,12 @@ void PropertyList::OnSize (int w, int h)
 	SetListHeight (listh, true);
 }
 
+#ifdef __linux__
+// scroll bar moved to line p (the scroll bar handles line/page/thumb requests itself)
+#endif // __linux__
 void PropertyList::OnVScroll (unsigned int cmd, int p)
 {
+#ifndef __linux__
 	int pmin, pmax, pos, dpos = 0;
 	pos = GetScrollPos (hItem, SB_VERT);
 	GetScrollRange (hItem, SB_VERT, &pmin, &pmax);
@@ -605,6 +1029,10 @@ void PropertyList::OnVScroll (unsigned int cmd, int p)
 			UpdateWindow (hItem);
 		}
 	}
+#else // __linux__
+	yofs = p * itemh;
+	hItem->viewport()->update();
+#endif // __linux__
 }
 
 void PropertyList::OnLButtonDown (int x, int y)
@@ -625,30 +1053,55 @@ void PropertyList::OnLButtonDown (int x, int y)
 
 void PropertyList::VScrollTo (int pos)
 {
+#ifndef __linux__
 	int oldpos = yofs/itemh;
+#endif // !__linux__
 	yofs = pos * itemh;
+#ifndef __linux__
 	ScrollWindow (hItem, 0, (oldpos-pos)*itemh, NULL, NULL);
 	SetScrollPos (hItem, SB_VERT, pos, TRUE);
 	UpdateWindow (hItem);
+#else // __linux__
+	hItem->verticalScrollBar()->setValue (pos);
+	hItem->viewport()->update();
+#endif // __linux__
 }
 
 void PropertyList::Move (int x, int y, int w, int h)
 {
+#ifndef __linux__
 	MoveWindow (hItem, x, y, w, h, TRUE);
+#else // __linux__
+	hItem->setGeometry (x, y, w, h);
+#endif // __linux__
 }
 
 void PropertyList::Redraw ()
 {
+#ifndef __linux__
 	InvalidateRect (hItem, NULL, TRUE);
+#else // __linux__
+	if (hItem) hItem->viewport()->update();
+#endif // __linux__
 }
 
+#ifdef __linux__
+// repaints the rows whose label or value changed (the paint draws them from the item strings)
+#endif // __linux__
 void PropertyList::Update ()
 {
+#ifndef __linux__
 	HDC hDC = NULL;
 	HFONT hOldFont = NULL;
+#else // __linux__
+	if (!hItem) return;
+	QFontMetrics fm (*hFontItem);
+#endif // __linux__
 
 	int i, j, y = -yofs;
+#ifndef __linux__
 	SIZE ext;
+#endif // !__linux__
 
 	for (i = 0; i < npg; i++) {
 		y += titleh;
@@ -657,16 +1110,19 @@ void PropertyList::Update ()
 				PropertyItem *item = pg[i]->GetItem (j);
 				if (item->label_dirty || item->value_dirty) {
 					if (y >= -itemh && y < listh) {
+#ifndef __linux__
 						if (!hDC) {
 							hDC = GetDC (hItem);
 							hOldFont = (HFONT)SelectObject (hDC, hFontItem);
 							SelectObject (hDC, GetStockObject (WHITE_PEN));
 							SelectObject (hDC, GetStockObject (WHITE_BRUSH));
 						}
+#endif // !__linux__
 						if (item->label_dirty) {
 							const char *label = item->GetLabel();
 							int oldw = item->labelw;
 							if (oldw < 0) oldw = winw;
+#ifndef __linux__
 							if (label) {
 								int n = strlen(label);
 								TextOut (hDC, 20, y, label, n);
@@ -678,12 +1134,17 @@ void PropertyList::Update ()
 							if (item->labelw < oldw) {
 								Rectangle (hDC, 20+item->labelw, y, valx0-1, y+itemh-2);
 							}
+#else // __linux__
+							item->labelw = (label ? fm.horizontalAdvance (QString::fromLatin1 (label)) : 0);
+							hItem->viewport()->update (20, y, max (oldw, item->labelw), itemh-2);
+#endif // __linux__
 							item->label_dirty = false;
 						}
 						if (item->value_dirty) {
 							const char *value = item->GetValue();
 							int oldw = item->valuew;
 							if (oldw < 0) oldw = winw;
+#ifndef __linux__
 							if (value) {
 								int n = strlen(value);
 								TextOut (hDC, valx0, y, value, n);
@@ -695,6 +1156,10 @@ void PropertyList::Update ()
 							if (item->valuew < oldw) {
 								Rectangle (hDC, valx0+item->valuew, y, winw, y+itemh-2);
 							}
+#else // __linux__
+							item->valuew = (value ? fm.horizontalAdvance (QString::fromLatin1 (value)) : 0);
+							hItem->viewport()->update (valx0, y, max (oldw, item->valuew), itemh-2);
+#endif // __linux__
 							item->value_dirty = false;
 						}
 					}
@@ -704,10 +1169,12 @@ void PropertyList::Update ()
 			y += gaph;
 		}
 	}
+#ifndef __linux__
 	if (hDC) {
 		if (hOldFont) SelectObject (hDC, hOldFont);
 		ReleaseDC (hItem, hDC);
 	}
+#endif // !__linux__
 }
 
 void PropertyList::SetColWidth (int col, int w)
@@ -816,6 +1283,7 @@ void PropertyList::SetListHeight (int h, bool force)
 	int rmax = 0;
 	if (listh > winh)
 		rmax = (listh-winh+itemh-1)/itemh;
+#ifndef __linux__
 	int pos = GetScrollPos (hItem, SB_VERT);
 	SCROLLINFO si;
 	si.cbSize = sizeof(SCROLLINFO);
@@ -824,8 +1292,55 @@ void PropertyList::SetListHeight (int h, bool force)
 	si.nMin = 0;
 	si.nMax = winh/itemh-1+rmax;
 	SetScrollInfo (hItem, SB_VERT, &si, TRUE);
+#else // __linux__
+	if (!hItem) return;
+	QScrollBar *sb = hItem->verticalScrollBar();
+	int pos = sb->value();
+	sb->setPageStep (winh/itemh);
+	sb->setSingleStep (1);
+	sb->setRange (0, rmax);
+#endif // __linux__
 
+#ifndef __linux__
 	int pos2 = GetScrollPos (hItem, SB_VERT);
+#else // __linux__
+	int pos2 = sb->value();
+#endif // __linux__
 	if (pos2 != pos)
 		VScrollTo (pos2);
+#ifdef __linux__
+}
+
+// ==================================================================================
+
+PropertyListCtrl::PropertyListCtrl (QWidget *parent): QAbstractScrollArea (parent)
+{
+	QPalette pal = viewport()->palette();
+	pal.setColor (QPalette::Window, Qt::white); // WHITE_BRUSH class background
+	viewport()->setPalette (pal);
+	viewport()->setAutoFillBackground (true);
+	setFrameStyle (QFrame::NoFrame);
+}
+
+void PropertyListCtrl::paintEvent (QPaintEvent*)
+{
+	if (plist) plist->OnPaint (viewport());
+}
+
+void PropertyListCtrl::resizeEvent (QResizeEvent *event)
+{
+	QAbstractScrollArea::resizeEvent (event);
+	if (plist) plist->OnSize (viewport()->width(), viewport()->height());
+}
+
+void PropertyListCtrl::mousePressEvent (QMouseEvent *event)
+{
+	if (plist && event->button() == Qt::LeftButton)
+		plist->OnLButtonDown ((int)event->position().x(), (int)event->position().y());
+}
+
+void PropertyListCtrl::scrollContentsBy (int, int)
+{
+	if (plist) plist->OnVScroll (0, verticalScrollBar()->value());
+#endif // __linux__
 }
