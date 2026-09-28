@@ -1,5 +1,8 @@
 #include "ZTreeMgr.h"
 #include "zlib.h"
+#ifdef __linux__
+#include <cstring> // came with windows.h: memcmp/strlen/strcpy
+#endif // __linux__
 
 // =======================================================================
 // File header for compressed tree files
@@ -37,7 +40,11 @@ bool TreeFileHeader::fread(FILE *f)
 		return false;
 	::fread(&flags, sizeof(DWORD), 1, f);
 	::fread(&dataOfs, sizeof(DWORD), 1, f);
+#ifndef __linux__
 	::fread(&dataLength, sizeof(__int64), 1, f);
+#else // __linux__
+	::fread(&dataLength, sizeof(int64_t), 1, f);
+#endif // __linux__
 	::fread(&nodeCount, sizeof(DWORD), 1, f);
 	::fread(&rootPos1, sizeof(DWORD), 1, f);
 	::fread(&rootPos2, sizeof(DWORD), 1, f);
@@ -115,8 +122,13 @@ ZTreeMgr::~ZTreeMgr()
 bool ZTreeMgr::OpenArchive()
 {
 	const char *name[6] = { "Surf", "Mask", "Elev", "Elev_mod", "Label", "Cloud" };
+#ifndef __linux__
 	char fname[256];
 	sprintf (fname, "%s\\Archive\\%s.tree", path, name[layer]);
+#else // __linux__
+	char fname[1024]; // was 256: Linux paths aren't capped at MAX_PATH
+	sprintf (fname, "%s/Archive/%s.tree", path, name[layer]);
+#endif // __linux__
 	treef = fopen(fname, "rb");
 	if (!treef) return false;
 
@@ -131,7 +143,11 @@ bool ZTreeMgr::OpenArchive()
 	rootPos3 = tfh.rootPos3;
 	for (int i = 0; i < 2; i++)
 		rootPos4[i] = tfh.rootPos4[i];
+#ifndef __linux__
 	dofs = (__int64)tfh.dataOfs;
+#else // __linux__
+	dofs = (int64_t)tfh.dataOfs;
+#endif // __linux__
 
 	if (!toc.fread(tfh.nodeCount, treef)) {
 		fclose(treef);
@@ -171,7 +187,11 @@ DWORD ZTreeMgr::ReadData(DWORD idx, BYTE **outp) const
 	if (!esize) // node doesn't have data, but has descendants with data
 		return 0;
 
+#ifndef __linux__
 	if (_fseeki64(treef, toc[idx].pos+dofs, SEEK_SET))
+#else // __linux__
+	if (fseeko(treef, toc[idx].pos+dofs, SEEK_SET))
+#endif // __linux__
 		return 0;
 
 	DWORD zsize = NodeSizeDeflated(idx);
@@ -195,7 +215,11 @@ DWORD ZTreeMgr::ReadData(DWORD idx, BYTE **outp) const
 
 DWORD ZTreeMgr::Inflate(const BYTE *inp, DWORD ninp, BYTE *outp, DWORD noutp) const
 {
+#ifndef __linux__
 	DWORD ndata = noutp;
+#else // __linux__
+	uLongf ndata = noutp; // zlib's uLongf is 64-bit on Linux, 32-bit (= DWORD) on Windows
+#endif // __linux__
 	if (uncompress (outp, &ndata, inp, ninp) != Z_OK)
 		return 0;
 	return ndata;

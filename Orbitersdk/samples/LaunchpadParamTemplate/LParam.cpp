@@ -14,11 +14,23 @@
 // be used as a starting point for real applications.
 // ==============================================================
 
+#ifndef __linux__
 #define STRICT 1
+#else // __linux__
+// STRICT left out: windows.h handle type-checking switch
+#endif // __linux__
 #define ORBITER_MODULE
+#ifndef __linux__
 #include "orbitersdk.h"
+#else // __linux__
+#include "Orbitersdk.h"
+#include "OrbiterResource.h"
+#endif // __linux__
 #include "resource.h"
 #include <stdio.h>
+#ifdef __linux__
+#include <QDialog>
+#endif // __linux__
 
 // ==============================================================
 // Some global parameters
@@ -31,7 +43,11 @@ class MyRootItem;
 class MyItem;
 
 struct {
+#ifndef __linux__
 	HINSTANCE hInst;
+#else // __linux__
+	void *hInst;
+#endif // __linux__
 	MyRootItem *root_item;
 	MyItem *sub_item;
 	double my_param;
@@ -61,9 +77,17 @@ public:
 	MyItem();
 	char *Name() { return "My sub-item"; }
 	char *Description() { return "This item is an example from the Orbiter SDK. It doesn't do anything useful, but provides a source example for developers on how to write Launchpad plugins."; }
+#ifndef __linux__
 	bool clbkOpen (HWND hLaunchpad);
+#else // __linux__
+	bool clbkOpen (QWidget *hLaunchpad);
+#endif // __linux__
 	int clbkWriteConfig ();
+#ifndef __linux__
 	static INT_PTR CALLBACK DlgProc (HWND, UINT, WPARAM, LPARAM);
+#else // __linux__
+	static void DlgProc (QWidget*, void*);
+#endif // __linux__
 };
 
 MyItem::MyItem (): LaunchpadItem ()
@@ -76,10 +100,23 @@ MyItem::MyItem (): LaunchpadItem ()
 	oapiCloseFile (hFile, FILE_IN);
 }
 
+#ifndef __linux__
 bool MyItem::clbkOpen (HWND hLaunchpad)
+#else // __linux__
+bool MyItem::clbkOpen (QWidget *hLaunchpad)
+#endif // __linux__
 {
 	// respond to user double-clicking the item in the list
+#ifndef __linux__
 	DialogBox (gParams.hInst, MAKEINTRESOURCE (IDD_MYPARAM), hLaunchpad, DlgProc);
+#else // __linux__
+	QDialog *dlg = qobject_cast<QDialog*> (oapiCreateResDialog (gParams.hInst, IDD_MYPARAM, hLaunchpad)); // DialogBox
+	if (dlg) {
+		DlgProc (dlg, NULL);
+		dlg->exec();
+		delete dlg;
+	}
+#endif // __linux__
 	return true;
 }
 
@@ -92,14 +129,23 @@ int MyItem::clbkWriteConfig ()
 	return 0;
 }
 
+#ifndef __linux__
 INT_PTR CALLBACK MyItem::DlgProc (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
+#else // __linux__
+void MyItem::DlgProc (QWidget *hWnd, void *context)
+#endif // __linux__
 {
 	// the dialog message handler
 	char cbuf[32];
 
+#ifndef __linux__
 	switch (uMsg) {
 	case WM_INITDIALOG: // display the current value
+#else // __linux__
+	// WM_INITDIALOG: display the current value
+#endif // __linux__
 		sprintf (cbuf, "%f", gParams.my_param);
+#ifndef __linux__
 		SetWindowText (GetDlgItem (hWnd, IDC_EDIT1), cbuf);
 		return TRUE;
 	case WM_COMMAND:
@@ -117,13 +163,35 @@ INT_PTR CALLBACK MyItem::DlgProc (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lP
 		break;
 	}
 	return 0;
+#else // __linux__
+		oapiSetDlgItemText (hWnd, IDC_EDIT1, cbuf);
+	// WM_COMMAND
+	oapiConnectDlgCommands (hWnd, [hWnd](int id, int code, QWidget *hCtrl) {
+		char cbuf[32];
+		switch (id) {
+		case IDOK:    // store the value
+			oapiGetDlgItemText (hWnd, IDC_EDIT1, cbuf, 32);
+			if (sscanf (cbuf, "%lf", &gParams.my_param) != 1)
+				gParams.my_param = 0;
+			qobject_cast<QDialog*> (hWnd)->done (0); // EndDialog
+			return;
+		case IDCANCEL:
+			qobject_cast<QDialog*> (hWnd)->done (0); // EndDialog
+			return;
+		}
+	});
+#endif // __linux__
 }
 
 // ==============================================================
 // The DLL entry point
 // ==============================================================
 
+#ifndef __linux__
 DLLCLBK void InitModule (HINSTANCE hDLL)
+#else // __linux__
+DLLCLBK void InitModule (void *hDLL)
+#endif // __linux__
 {
 	gParams.hInst = hDLL;
 	gParams.my_param = 0;
@@ -141,7 +209,11 @@ DLLCLBK void InitModule (HINSTANCE hDLL)
 // The DLL exit point
 // ==============================================================
 
+#ifndef __linux__
 DLLCLBK void ExitModule (HINSTANCE hDLL)
+#else // __linux__
+DLLCLBK void ExitModule (void *hDLL)
+#endif // __linux__
 {
 	// Unregister the launchpad items
 	oapiUnregisterLaunchpadItem (gParams.sub_item);

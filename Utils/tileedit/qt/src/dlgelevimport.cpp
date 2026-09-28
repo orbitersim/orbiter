@@ -1,4 +1,7 @@
 #include "dlgelevimport.h"
+#ifdef __linux__
+#include "fitdialog.h"
+#endif // __linux__
 #include "ui_dlgElevImport.h"
 #include "tileedit.h"
 #include "tileblock.h"
@@ -12,6 +15,9 @@ DlgElevImport::DlgElevImport(tileedit *parent)
 	, ui(new Ui::DlgElevImport)
 {
 	ui->setupUi(this);
+#ifdef __linux__
+	FitDialog(this); // not upstream: group boxes grow to fit this style and font
+#endif // __linux__
 
 	connect(ui->pushOpenFileDialog, SIGNAL(clicked()), this, SLOT(onOpenFileDialog()));
 	connect(ui->pushOpenMetaFileDialog, SIGNAL(clicked()), this, SLOT(onOpenMetaFileDialog()));
@@ -59,7 +65,11 @@ void DlgElevImport::onOpenMetaFileDialog()
 
 void DlgElevImport::onMetaFileChanged(const QString &name)
 {
+#ifndef __linux__
 	m_haveMeta = scanMetaFile(name.toLatin1(), m_metaInfo);
+#else // __linux__
+	m_haveMeta = scanMetaFile(name.toLocal8Bit(), m_metaInfo); // file name bytes: Latin-1 (ANSI) -> local 8-bit (UTF-8)
+#endif // __linux__
 	if (m_haveMeta) {
 		ui->labelLvl->setText(QString::number(m_metaInfo.lvl));
 		ui->spinIlat0->setValue(m_metaInfo.ilat0);
@@ -187,7 +197,11 @@ void DlgElevImport::accept()
 		return;
 	}
 	ElevTileBlock *eblock = ElevTileBlock::Load(m_metaInfo.lvl, m_metaInfo.ilat0, m_metaInfo.ilat1, m_metaInfo.ilng0, m_metaInfo.ilng1);
+#ifndef __linux__
 	if (!elvread_png(ui->editPath->text().toLatin1(), m_metaInfo, eblock->getData())) {
+#else // __linux__
+	if (!elvread_png(ui->editPath->text().toLocal8Bit(), m_metaInfo, eblock->getData())) {
+#endif // __linux__
 		QMessageBox mbox(QMessageBox::Warning, tr("tileedit: Warning"), tr("Error reading PNG file"), QMessageBox::Close);
 		mbox.exec();
 		return;

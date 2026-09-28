@@ -3,7 +3,11 @@
 #include "ddsread.h"
 #include <iostream>
 #include <algorithm>
+#ifndef __linux__
 #include <direct.h>
+#else // __linux__
+#include <sys/stat.h> // direct.h mkdir -> POSIX mkdir
+#endif // __linux__
 #include <dxt_io.h>
 
 int Tile::s_openMode = 0x3;
@@ -14,13 +18,29 @@ std::string Tile::s_root;
 
 void ensureLayerDir(const char *rootDir, const char *layer, int lvl, int ilat)
 {
+#ifndef __linux__
 	char path[256];
+#else // __linux__
+	char path[1024]; // was 256: callers pass 1024-byte roots and Linux paths aren't capped at MAX_PATH
+#endif // __linux__
 	sprintf(path, "%s/%s", rootDir, layer);
+#ifndef __linux__
 	mkdir(path);
+#else // __linux__
+	mkdir(path, 0777);
+#endif // __linux__
 	sprintf(path, "%s/%s/%02d", rootDir, layer, lvl);
+#ifndef __linux__
 	mkdir(path);
+#else // __linux__
+	mkdir(path, 0777);
+#endif // __linux__
 	sprintf(path, "%s/%s/%02d/%06d", rootDir, layer, lvl, ilat);
+#ifndef __linux__
 	mkdir(path);
+#else // __linux__
+	mkdir(path, 0777);
+#endif // __linux__
 }
 
 
@@ -32,7 +52,11 @@ Tile::Tile(int lvl, int ilat, int ilng)
     m_ilat = m_subilat = ilat;
     m_ilng = m_subilng = ilng;
 
+#ifndef __linux__
     int sz = 1 << min(lvl+6, 9);
+#else // __linux__
+    int sz = 1 << std::min(lvl+6, 9);
+#endif // __linux__
     lat_subrange = std::make_pair(0, sz);
     lng_subrange = std::make_pair(0, sz);
 }
@@ -85,7 +109,11 @@ void Tile::ensureTmpLayerDir()
 {
 	char cbuf[1024];
 	sprintf(cbuf, "%s/tileedit.tmp", s_root.c_str());
+#ifndef __linux__
 	mkdir(cbuf);
+#else // __linux__
+	mkdir(cbuf, 0777);
+#endif // __linux__
 	::ensureLayerDir(cbuf, Layer().c_str(), m_lvl, m_ilat);
 }
 

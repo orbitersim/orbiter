@@ -44,7 +44,11 @@
 void ExtractBlock_Intrinsics( const byte *inPtr, int width, byte *colorBlock ) 
 {
         __m128i t0, t1, t2, t3;
+#ifndef __linux__
 	register int w = width << 2;  // width*4
+#else // __linux__
+	int w = width << 2;  // width*4; 'register' dropped: removed in C++17
+#endif // __linux__
 
         t0 = _mm_load_si128 ( (__m128i*) inPtr );
         _mm_store_si128 ( (__m128i*) &colorBlock[0], t0 );   // copy first row, 16bytes

@@ -4,6 +4,10 @@
 #include "Mesh.h"
 #include "Vecmat.h"
 #include <stdio.h>
+#ifdef __linux__
+#include <string.h>
+#include <strings.h>
+#endif // __linux__
 #include "D3dmath.h"
 
 using namespace std;
@@ -52,7 +56,11 @@ Mesh::Mesh ()
 	GrpSetup = false;
 }
 
+#ifndef __linux__
 Mesh::Mesh (D3DVERTEX *vtx, DWORD nvtx, WORD *idx, DWORD nidx, DWORD matidx, DWORD texidx)
+#else // __linux__
+Mesh::Mesh (NTVERTEX *vtx, DWORD nvtx, WORD *idx, DWORD nidx, DWORD matidx, DWORD texidx)
+#endif // __linux__
 {
 	nGrp = nMtrl = nTex = 0;
 	GrpVis   = 0;
@@ -78,8 +86,13 @@ void Mesh::Set (const Mesh &mesh)
 		Grp = new GroupSpec[nGrp];
 		memcpy (Grp, mesh.Grp, nGrp*sizeof(GroupSpec));
 		for (i = 0; i < nGrp; i++) {
+#ifndef __linux__
 			Grp[i].Vtx = new D3DVERTEX[Grp[i].nVtx];
 			memcpy (Grp[i].Vtx, mesh.Grp[i].Vtx, Grp[i].nVtx*sizeof(D3DVERTEX));
+#else // __linux__
+			Grp[i].Vtx = new NTVERTEX[Grp[i].nVtx];
+			memcpy (Grp[i].Vtx, mesh.Grp[i].Vtx, Grp[i].nVtx*sizeof(NTVERTEX));
+#endif // __linux__
 			Grp[i].Idx = new WORD[Grp[i].nIdx];
 			memcpy (Grp[i].Idx, mesh.Grp[i].Idx, Grp[i].nIdx*sizeof(WORD)); 
 			if (mesh.Grp[i].Label) {
@@ -95,8 +108,13 @@ void Mesh::Set (const Mesh &mesh)
 		}
 	}
 	if (nMtrl = mesh.nMtrl) {
+#ifndef __linux__
 		Mtrl = new D3DMATERIAL7[nMtrl];
 		memcpy (Mtrl, mesh.Mtrl, nMtrl*sizeof(D3DMATERIAL7));
+#else // __linux__
+		Mtrl = new MATERIAL[nMtrl];
+		memcpy (Mtrl, mesh.Mtrl, nMtrl*sizeof(MATERIAL));
+#endif // __linux__
 		Matname = new char*[nMtrl];
 		for (i = 0; i < nMtrl; i++) {
 			Matname[i] = new char[strlen(mesh.Matname[i])+1];
@@ -111,10 +129,17 @@ void Mesh::Set (const Mesh &mesh)
 		}
 	}
 	if (GrpSetup = mesh.GrpSetup) {
+#ifndef __linux__
 		GrpCnt = new D3DVECTOR[nGrp];
 		memcpy (GrpCnt, mesh.GrpCnt, nGrp*sizeof(D3DVECTOR));
 		GrpRad = new D3DVALUE[nGrp];
 		memcpy (GrpRad, mesh.GrpRad, nGrp*sizeof(D3DVALUE));
+#else // __linux__
+		GrpCnt = new oapi::FVECTOR3[nGrp];
+		memcpy (GrpCnt, mesh.GrpCnt, nGrp*sizeof(oapi::FVECTOR3));
+		GrpRad = new float[nGrp];
+		memcpy (GrpRad, mesh.GrpRad, nGrp*sizeof(float));
+#endif // __linux__
 		GrpVis = new DWORD[nGrp];
 		memcpy (GrpVis, mesh.GrpVis, nGrp*sizeof(DWORD));
 	} else {
@@ -130,18 +155,31 @@ Mesh::~Mesh ()
 void Mesh::Setup ()
 {
 	DWORD g, i;
+#ifndef __linux__
 	D3DVALUE x, y, z, dx, dy, dz, d2, d2max;
+#else // __linux__
+	float x, y, z, dx, dy, dz, d2, d2max;
+#endif // __linux__
 
 	if (GrpVis) { // allocated already
 		delete []GrpCnt;
 		delete []GrpRad;
 		delete []GrpVis;
 	}
+#ifndef __linux__
 	GrpCnt  = new D3DVECTOR[nGrp];
 	GrpRad  = new D3DVALUE[nGrp];
+#else // __linux__
+	GrpCnt  = new oapi::FVECTOR3[nGrp];
+	GrpRad  = new float[nGrp];
+#endif // __linux__
 	GrpVis  = new DWORD[nGrp];
 	for (g = 0; g < nGrp; g++) {
+#ifndef __linux__
 		D3DVALUE invtx = (D3DVALUE)(1.0/Grp[g].nVtx);
+#else // __linux__
+		float invtx = (float)(1.0/Grp[g].nVtx);
+#endif // __linux__
 		x = y = z = 0.0f;
 		for (i = 0; i < Grp[g].nVtx; i++) {
 			x += Grp[g].Vtx[i].x;
@@ -168,7 +206,11 @@ void Mesh::Setup ()
 	GrpSetup = true;
 }
 
+#ifndef __linux__
 bool Mesh::GetGroup (DWORD grp, D3DVERTEX *&vtx, DWORD &nvtx, WORD *&idx, DWORD &nidx)
+#else // __linux__
+bool Mesh::GetGroup (DWORD grp, NTVERTEX *&vtx, DWORD &nvtx, WORD *&idx, DWORD &nidx)
+#endif // __linux__
 {
 	if (grp < nGrp) {
 		vtx = Grp[grp].Vtx;  nvtx = Grp[grp].nVtx;
@@ -179,8 +221,13 @@ bool Mesh::GetGroup (DWORD grp, D3DVERTEX *&vtx, DWORD &nvtx, WORD *&idx, DWORD 
 	}
 }
 
+#ifndef __linux__
 int Mesh::AddGroup (D3DVERTEX *vtx, DWORD nvtx, WORD *idx, DWORD nidx,
 	DWORD mtrl_idx, DWORD tex_idx, WORD zbias)
+#else // __linux__
+int Mesh::AddGroup (NTVERTEX *vtx, DWORD nvtx, WORD *idx, DWORD nidx,
+	DWORD mtrl_idx, DWORD tex_idx, WORD zbias)
+#endif // __linux__
 {
 	GroupSpec *tmp_Grp = new GroupSpec[nGrp+1];
 	memcpy (tmp_Grp, Grp, sizeof(GroupSpec)*nGrp);
@@ -224,22 +271,40 @@ bool Mesh::DeleteGroup (DWORD grp)
 void Mesh::AddMesh (Mesh &mesh)
 {
 	for (DWORD i = 0; i < mesh.nGroup(); i++) {
+#ifndef __linux__
 		D3DVERTEX *vtx, *vtx2;
+#else // __linux__
+		NTVERTEX *vtx, *vtx2;
+#endif // __linux__
 		WORD *idx, *idx2;
 		DWORD nvtx, nidx;
 		mesh.GetGroup (i, vtx, nvtx, idx, nidx);
 		// need to copy the vertex and index lists
+#ifndef __linux__
 		vtx2 = new D3DVERTEX[nvtx];  memcpy (vtx2, vtx, nvtx*sizeof(D3DVERTEX));
+#else // __linux__
+		vtx2 = new NTVERTEX[nvtx];  memcpy (vtx2, vtx, nvtx*sizeof(NTVERTEX));
+#endif // __linux__
 		idx2 = new WORD[nidx];       memcpy (idx2, idx, nidx*sizeof(WORD));
 		AddGroup (vtx2, nvtx, idx2, nidx);
 	}
 }
 
+#ifndef __linux__
 int Mesh::AddMaterial (D3DMATERIAL7 &mtrl)
+#else // __linux__
+int Mesh::AddMaterial (MATERIAL &mtrl)
+#endif // __linux__
 {
+#ifndef __linux__
 	D3DMATERIAL7 *tmp_Mtrl = new D3DMATERIAL7[nMtrl+1];
 	memcpy (tmp_Mtrl, Mtrl, sizeof(D3DMATERIAL7)*nMtrl);
 	memcpy (tmp_Mtrl+nMtrl, &mtrl, sizeof(D3DMATERIAL7));
+#else // __linux__
+	MATERIAL *tmp_Mtrl = new MATERIAL[nMtrl+1];
+	memcpy (tmp_Mtrl, Mtrl, sizeof(MATERIAL)*nMtrl);
+	memcpy (tmp_Mtrl+nMtrl, &mtrl, sizeof(MATERIAL));
+#endif // __linux__
 	if (nMtrl) delete []Mtrl;
 	Mtrl = tmp_Mtrl;
 	return nMtrl++;
@@ -279,22 +344,38 @@ void Mesh::Clear ()
 	GrpSetup = false;
 }
 
+#ifndef __linux__
 void Mesh::ScaleGroup (DWORD grp, D3DVALUE sx, D3DVALUE sy, D3DVALUE sz)
+#else // __linux__
+void Mesh::ScaleGroup (DWORD grp, float sx, float sy, float sz)
+#endif // __linux__
 {
 	int i, nv = Grp[grp].nVtx;
+#ifndef __linux__
 	D3DVERTEX *vtx = Grp[grp].Vtx;
+#else // __linux__
+	NTVERTEX *vtx = Grp[grp].Vtx;
+#endif // __linux__
 	for (i = 0; i < nv; i++) {
 		vtx[i].x *= sx;
 		vtx[i].y *= sy;
 		vtx[i].z *= sz;
 	}
 	if (sx == sy && sx == sz) return; // no change in normals
+#ifndef __linux__
 	D3DVALUE snx = sy*sz, sny = sx*sz, snz = sx*sy;
+#else // __linux__
+	float snx = sy*sz, sny = sx*sz, snz = sx*sy;
+#endif // __linux__
 	for (i = 0; i < nv; i++) {
 		vtx[i].nx *= snx;
 		vtx[i].ny *= sny;
 		vtx[i].nz *= snz;
+#ifndef __linux__
 		D3DVALUE ilen = (D3DVALUE)(1.0/sqrt (vtx[i].nx*vtx[i].nx + vtx[i].ny*vtx[i].ny + vtx[i].nz*vtx[i].nz));
+#else // __linux__
+		float ilen = (float)(1.0/sqrt (vtx[i].nx*vtx[i].nx + vtx[i].ny*vtx[i].ny + vtx[i].nz*vtx[i].nz));
+#endif // __linux__
 		vtx[i].nx *= ilen;
 		vtx[i].ny *= ilen;
 		vtx[i].nz *= ilen;
@@ -302,16 +383,28 @@ void Mesh::ScaleGroup (DWORD grp, D3DVALUE sx, D3DVALUE sy, D3DVALUE sz)
 	GrpSetup = false;
 }
 
+#ifndef __linux__
 void Mesh::Scale (D3DVALUE sx, D3DVALUE sy, D3DVALUE sz)
+#else // __linux__
+void Mesh::Scale (float sx, float sy, float sz)
+#endif // __linux__
 {
 	for (DWORD grp = 0; grp < nGrp; grp++)
 		ScaleGroup (grp, sx, sy, sz);
 }
 
+#ifndef __linux__
 void Mesh::TranslateGroup (DWORD grp, D3DVALUE dx, D3DVALUE dy, D3DVALUE dz)
+#else // __linux__
+void Mesh::TranslateGroup (DWORD grp, float dx, float dy, float dz)
+#endif // __linux__
 {
 	int i, nv = Grp[grp].nVtx;
+#ifndef __linux__
 	D3DVERTEX *vtx = Grp[grp].Vtx;
+#else // __linux__
+	NTVERTEX *vtx = Grp[grp].Vtx;
+#endif // __linux__
 	for (i = 0; i < nv; i++) {
 		vtx[i].x += dx;
 		vtx[i].y += dy;
@@ -320,44 +413,81 @@ void Mesh::TranslateGroup (DWORD grp, D3DVALUE dx, D3DVALUE dy, D3DVALUE dz)
 	GrpSetup = false;
 }
 
+#ifndef __linux__
 void Mesh::Translate (D3DVALUE dx, D3DVALUE dy, D3DVALUE dz)
+#else // __linux__
+void Mesh::Translate (float dx, float dy, float dz)
+#endif // __linux__
 {
 	for (DWORD grp = 0; grp < nGrp; grp++)
 		TranslateGroup (grp, dx, dy, dz);
 }
 
+#ifndef __linux__
 void Mesh::RotateGroup (DWORD grp, RotAxis axis, D3DVALUE angle)
+#else // __linux__
+void Mesh::RotateGroup (DWORD grp, RotAxis axis, float angle)
+#endif // __linux__
 {
 	int i, nv = Grp[grp].nVtx;
+#ifndef __linux__
 	D3DVERTEX *vtx = Grp[grp].Vtx;
 	D3DVALUE cosa = (D3DVALUE)cos(angle), sina = (D3DVALUE)sin(angle);
+#else // __linux__
+	NTVERTEX *vtx = Grp[grp].Vtx;
+	float cosa = (float)cos(angle), sina = (float)sin(angle);
+#endif // __linux__
 	switch (axis) {
 	case ROTATE_X:
 		for (i = 0; i < nv; i++) {
+#ifndef __linux__
 			D3DVALUE y = vtx[i].y, z = vtx[i].z;
+#else // __linux__
+			float y = vtx[i].y, z = vtx[i].z;
+#endif // __linux__
 			vtx[i].y = cosa*y - sina*z;
 			vtx[i].z = sina*y + cosa*z;
+#ifndef __linux__
 			D3DVALUE ny = vtx[i].ny, nz = vtx[i].nz;
+#else // __linux__
+			float ny = vtx[i].ny, nz = vtx[i].nz;
+#endif // __linux__
 			vtx[i].ny = cosa*ny - sina*nz;
 			vtx[i].nz = sina*ny + cosa*nz;
 		}
 		break;
 	case ROTATE_Y:
 		for (i = 0; i < nv; i++) {
+#ifndef __linux__
 			D3DVALUE x = vtx[i].x, z = vtx[i].z;
+#else // __linux__
+			float x = vtx[i].x, z = vtx[i].z;
+#endif // __linux__
 			vtx[i].x = cosa*x - sina*z;
 			vtx[i].z = sina*x + cosa*z;
+#ifndef __linux__
 			D3DVALUE nx = vtx[i].nx, nz = vtx[i].nz;
+#else // __linux__
+			float nx = vtx[i].nx, nz = vtx[i].nz;
+#endif // __linux__
 			vtx[i].nx = cosa*nx - sina*nz;
 			vtx[i].nz = sina*nx + cosa*nz;
 		}
 		break;
 	case ROTATE_Z:
 		for (i = 0; i < nv; i++) {
+#ifndef __linux__
 			D3DVALUE x = vtx[i].x, y = vtx[i].y;
+#else // __linux__
+			float x = vtx[i].x, y = vtx[i].y;
+#endif // __linux__
 			vtx[i].x = cosa*x - sina*y;
 			vtx[i].y = sina*x + cosa*y;
+#ifndef __linux__
 			D3DVALUE nx = vtx[i].nx, ny = vtx[i].ny;
+#else // __linux__
+			float nx = vtx[i].nx, ny = vtx[i].ny;
+#endif // __linux__
 			vtx[i].nx = cosa*nx - sina*ny;
 			vtx[i].ny = sina*nx + cosa*ny;
 		}
@@ -366,7 +496,11 @@ void Mesh::RotateGroup (DWORD grp, RotAxis axis, D3DVALUE angle)
 	GrpSetup = false;
 }
 
+#ifndef __linux__
 void Mesh::Rotate (RotAxis axis, D3DVALUE angle)
+#else // __linux__
+void Mesh::Rotate (RotAxis axis, float angle)
+#endif // __linux__
 {
 	for (DWORD grp = 0; grp < nGrp; grp++)
 		RotateGroup (grp, axis, angle);
@@ -376,7 +510,11 @@ void Mesh::MirrorGroup (DWORD grp, MirrorDir dir)
 {
 	DWORD i, nv = Grp[grp].nVtx, ni = Grp[grp].nIdx;
 	WORD *idx = Grp[grp].Idx;
+#ifndef __linux__
 	D3DVERTEX *vtx = Grp[grp].Vtx;
+#else // __linux__
+	NTVERTEX *vtx = Grp[grp].Vtx;
+#endif // __linux__
 
 	switch (dir) {
 	case MIRROR_X:
@@ -412,17 +550,29 @@ void Mesh::Mirror (MirrorDir dir)
 		MirrorGroup (grp, dir);
 }
 
+#ifndef __linux__
 void Mesh::TexScaleGroup (DWORD grp, D3DVALUE su, D3DVALUE sv)
+#else // __linux__
+void Mesh::TexScaleGroup (DWORD grp, float su, float sv)
+#endif // __linux__
 {
 	int i, nv = Grp[grp].nVtx;
+#ifndef __linux__
 	D3DVERTEX *vtx = Grp[grp].Vtx;
+#else // __linux__
+	NTVERTEX *vtx = Grp[grp].Vtx;
+#endif // __linux__
 	for (i = 0; i < nv; i++) {
 		vtx[i].tu *= su;
 		vtx[i].tv *= sv;
 	}
 }
 
+#ifndef __linux__
 void Mesh::TexScale (D3DVALUE su, D3DVALUE sv)
+#else // __linux__
+void Mesh::TexScale (float su, float sv)
+#endif // __linux__
 {
 	for (DWORD grp = 0; grp < nGrp; grp++)
 		TexScaleGroup (grp, su, sv);
@@ -433,7 +583,11 @@ void Mesh::CalcNormals (DWORD grp, bool missingonly)
 	const float eps = 1e-8f;
 	int i, nv = Grp[grp].nVtx, nt = Grp[grp].nIdx/3;
 	WORD *idx = Grp[grp].Idx;
+#ifndef __linux__
 	D3DVERTEX *vtx = Grp[grp].Vtx;
+#else // __linux__
+	NTVERTEX *vtx = Grp[grp].Vtx;
+#endif // __linux__
 	bool *calcNml = new bool[nv];
 	if (missingonly) {
 		for (i = 0; i < nv; i++) {
@@ -454,35 +608,66 @@ void Mesh::CalcNormals (DWORD grp, bool missingonly)
 		DWORD i0 = idx[i*3], i1 = idx[i*3+1], i2 = idx[i*3+2];
 		if (!calcNml[i0] && !calcNml[i1] && !calcNml[i2])
 			continue; // nothing to do for this triangle
+#ifndef __linux__
 		D3DVECTOR V01 = { vtx[i1].x - vtx[i0].x, vtx[i1].y - vtx[i0].y, vtx[i1].z - vtx[i0].z };
 		D3DVECTOR V02 = { vtx[i2].x - vtx[i0].x, vtx[i2].y - vtx[i0].y, vtx[i2].z - vtx[i0].z };
 		D3DVECTOR V12 = { vtx[i2].x - vtx[i1].x, vtx[i2].y - vtx[i1].y, vtx[i2].z - vtx[i1].z };
 		D3DVECTOR nm = D3DMath_CrossProduct (V01, V02);
 		D3DVALUE len = D3DMath_Length (nm);
+#else // __linux__
+		oapi::FVECTOR3 V01 = { vtx[i1].x - vtx[i0].x, vtx[i1].y - vtx[i0].y, vtx[i1].z - vtx[i0].z };
+		oapi::FVECTOR3 V02 = { vtx[i2].x - vtx[i0].x, vtx[i2].y - vtx[i0].y, vtx[i2].z - vtx[i0].z };
+		oapi::FVECTOR3 V12 = { vtx[i2].x - vtx[i1].x, vtx[i2].y - vtx[i1].y, vtx[i2].z - vtx[i1].z };
+		oapi::FVECTOR3 nm = D3DMath_CrossProduct (V01, V02);
+		float len = D3DMath_Length (nm);
+#endif // __linux__
 
 		if (len >= eps) {
 			nm.x /= len, nm.y /= len, nm.z /= len;
+#ifndef __linux__
 			D3DVALUE d01 = D3DMath_Length(V01);
 			D3DVALUE d02 = D3DMath_Length(V02);
 			D3DVALUE d12 = D3DMath_Length(V12);
+#else // __linux__
+			float d01 = D3DMath_Length(V01);
+			float d02 = D3DMath_Length(V02);
+			float d12 = D3DMath_Length(V12);
+#endif // __linux__
 			if (calcNml[i0]) {
+#ifndef __linux__
 				D3DVALUE a0 = acos((d01 * d01 + d02 * d02 - d12 * d12) / (2.0f * d01 * d02));
+#else // __linux__
+				float a0 = acos((d01 * d01 + d02 * d02 - d12 * d12) / (2.0f * d01 * d02));
+#endif // __linux__
 				vtx[i0].nx += nm.x * a0, vtx[i0].ny += nm.y * a0, vtx[i0].nz += nm.z * a0;
 			}
 			if (calcNml[i1]) {
+#ifndef __linux__
 				D3DVALUE a1 = acos((d01 * d01 + d12 * d12 - d02 * d02) / (2.0f * d01 * d12));
+#else // __linux__
+				float a1 = acos((d01 * d01 + d12 * d12 - d02 * d02) / (2.0f * d01 * d12));
+#endif // __linux__
 				vtx[i1].nx += nm.x * a1, vtx[i1].ny += nm.y * a1, vtx[i1].nz += nm.z * a1;
 			}
 			if (calcNml[i2]) {
+#ifndef __linux__
 				D3DVALUE a2 = acos((d02 * d02 + d12 * d12 - d01 * d01) / (2.0f * d02 * d12));
+#else // __linux__
+				float a2 = acos((d02 * d02 + d12 * d12 - d01 * d01) / (2.0f * d02 * d12));
+#endif // __linux__
 				vtx[i2].nx += nm.x * a2, vtx[i2].ny += nm.y * a2, vtx[i2].nz += nm.z * a2;
 			}
 		}
 	}
 	for (i = 0; i < nv; i++)
 		if (calcNml[i]) {
+#ifndef __linux__
 			D3DVECTOR nm = { vtx[i].nx, vtx[i].ny, vtx[i].nz };
 			D3DVALUE len = D3DMath_Length( nm );
+#else // __linux__
+			oapi::FVECTOR3 nm = { vtx[i].nx, vtx[i].ny, vtx[i].nz };
+			float len = D3DMath_Length( nm );
+#endif // __linux__
 			vtx[i].nx /= len, vtx[i].ny /= len, vtx[i].nz /= len;
 		}
 	delete []calcNml;
@@ -493,16 +678,29 @@ void Mesh::CalcTexCoords (DWORD grp)
 	// quick hack. not globally usable
 
 	int i, nv = Grp[grp].nVtx;
+#ifndef __linux__
 	D3DVERTEX *vtx = Grp[grp].Vtx;
+#else // __linux__
+	NTVERTEX *vtx = Grp[grp].Vtx;
+#endif // __linux__
 	double ipi = 1.0/Pi, i2pi = 0.5/Pi;
 
 	for (i = 0; i < nv; i++) {
+#ifndef __linux__
 		D3DVECTOR pos = {vtx[i].x, vtx[i].y, vtx[i].z};
+#else // __linux__
+		oapi::FVECTOR3 pos = {vtx[i].x, vtx[i].y, vtx[i].z};
+#endif // __linux__
 		D3DMath_Normalise (pos);
 		double tht = acos (pos.y);
 		double phi = atan2 (pos.z, pos.x);
+#ifndef __linux__
 		vtx[i].tu = (D3DVALUE)(phi >= 0.0 ? phi*i2pi : (phi+Pi2)*i2pi);
 		vtx[i].tv = (D3DVALUE)(tht*ipi);
+#else // __linux__
+		vtx[i].tu = (float)(phi >= 0.0 ? phi*i2pi : (phi+Pi2)*i2pi);
+		vtx[i].tv = (float)(tht*ipi);
+#endif // __linux__
 	}
 }
 
@@ -512,7 +710,11 @@ void Mesh::ZeroThreshold (float eps, int which)
 	for (grp = 0; grp < nGrp; grp++) {
 		GroupSpec &G = Grp[grp];
 		for (i = 0; i < G.nVtx; i++) {
+#ifndef __linux__
 			D3DVERTEX &vtx = G.Vtx[i];
+#else // __linux__
+			NTVERTEX &vtx = G.Vtx[i];
+#endif // __linux__
 			if (which & 1) {
 				if (fabs (vtx.x) < eps) vtx.x = 0.0f;
 				if (fabs (vtx.y) < eps) vtx.y = 0.0f;
@@ -541,7 +743,11 @@ void Mesh::CheckGroup (DWORD grp, DWORD &nd_removed)
 		if (nd_used[i]) nused++;
 	nd_removed = nv-nused;
 	if (nused < nv) {
+#ifndef __linux__
 		D3DVERTEX *tmp = new D3DVERTEX[nused];
+#else // __linux__
+		NTVERTEX *tmp = new NTVERTEX[nused];
+#endif // __linux__
 		for (i = j = 0; i < nv; i++) {
 			if (nd_used[i]) {
 				tmp[j++] = Grp[grp].Vtx[i];
@@ -618,7 +824,11 @@ istream &operator>> (istream &is, Mesh &mesh)
 	char cbuf[256], label[256], comment[256];
 	int i, j, g, ngrp, nvtx, ntri, nidx, nmtrl, mtrl_idx, ntex, tex_idx, flag, res;
 	WORD zbias;
+#ifndef __linux__
 	D3DMATERIAL7 mtrl;
+#else // __linux__
+	MATERIAL mtrl;
+#endif // __linux__
 	bool term;
 
 	mesh.Clear();
@@ -628,10 +838,18 @@ istream &operator>> (istream &is, Mesh &mesh)
 
 	for (;;) {
 		if (!is.getline (cbuf, 256)) return is;
+#ifndef __linux__
 		if (!_strnicmp (cbuf, "GROUPS", 6)) {
+#else // __linux__
+		if (!strncasecmp (cbuf, "GROUPS", 6)) {
+#endif // __linux__
 			if (sscanf (cbuf+6, "%d", &ngrp) != 1) return is;
 			break;
+#ifndef __linux__
 		} else if (!_strnicmp (cbuf, "STATICMESH", 10)) {
+#else // __linux__
+		} else if (!strncasecmp (cbuf, "STATICMESH", 10)) {
+#endif // __linux__
 			// staticmesh = true;
 		}
 	}
@@ -639,7 +857,11 @@ istream &operator>> (istream &is, Mesh &mesh)
 	for (g = 0, term = false; g < ngrp && !term; g++) {
 
 		// set defaults
+#ifndef __linux__
 		D3DVERTEX *vtx;
+#else // __linux__
+		NTVERTEX *vtx;
+#endif // __linux__
 		WORD *idx;
 		mtrl_idx = SPEC_INHERIT;
 		tex_idx  = SPEC_INHERIT;
@@ -652,32 +874,69 @@ istream &operator>> (istream &is, Mesh &mesh)
 
 		for (;;) {
 			if (!is.getline (cbuf, 256)) { term = true; break; }
+#ifndef __linux__
 			if (!_strnicmp (cbuf, "MATERIAL", 8)) {       // read material index
+#else // __linux__
+			if (!strncasecmp (cbuf, "MATERIAL", 8)) {       // read material index
+#endif // __linux__
 				sscanf (cbuf+8, "%d", &mtrl_idx);
 				mtrl_idx--;
+#ifndef __linux__
 			} else if (!_strnicmp (cbuf, "TEXTURE", 7)) { // read texture index
+#else // __linux__
+			} else if (!strncasecmp (cbuf, "TEXTURE", 7)) { // read texture index
+#endif // __linux__
 				sscanf (cbuf+7, "%d", &tex_idx);
 				tex_idx--;
+#ifndef __linux__
 			} else if (!_strnicmp (cbuf, "ZBIAS", 5)) {   // read z-bias
+#else // __linux__
+			} else if (!strncasecmp (cbuf, "ZBIAS", 5)) {   // read z-bias
+#endif // __linux__
 				sscanf (cbuf+5, "%hd", &zbias);
+#ifndef __linux__
 			} else if (!_strnicmp (cbuf, "TEXWRAP", 7)) { // read wrap flags
+#else // __linux__
+			} else if (!strncasecmp (cbuf, "TEXWRAP", 7)) { // read wrap flags
+#endif // __linux__
 				char uvstr[10] = "";
 				sscanf (cbuf+7, "%9s", uvstr);
 				if (uvstr[0] == 'U' || uvstr[1] == 'U') flag |= 0x01;
 				if (uvstr[0] == 'V' || uvstr[1] == 'V') flag |= 0x02;
+#ifndef __linux__
 			} else if (!_strnicmp (cbuf, "NONORMAL", 8)) {
+#else // __linux__
+			} else if (!strncasecmp (cbuf, "NONORMAL", 8)) {
+#endif // __linux__
 				bnormal = false; calcnml = true;
+#ifndef __linux__
 			} else if (!_strnicmp (cbuf, "LABEL", 5)) {
+#else // __linux__
+			} else if (!strncasecmp (cbuf, "LABEL", 5)) {
+#endif // __linux__
 				strncpy (label, trim_string(cbuf+5), 255);
+#ifndef __linux__
 			} else if (!_strnicmp (cbuf, "GEOM", 4)) {    // read geometry
+#else // __linux__
+			} else if (!strncasecmp (cbuf, "GEOM", 4)) {    // read geometry
+#endif // __linux__
 				if (sscanf (cbuf+4, "%d%d", &nvtx, &ntri) != 2) break; // parse error - skip group
 				for (i = 4; cbuf[i]; i++)           // read comment (preceeded by ';')
 					if (cbuf[i] == ';') { strcpy (comment, cbuf+i+1); break; }
 				nidx = ntri*3;
+#ifndef __linux__
 				vtx = new D3DVERTEX[nvtx];
 				ZeroMemory (vtx, sizeof (D3DVERTEX)*nvtx);
+#else // __linux__
+				vtx = new NTVERTEX[nvtx];
+				memset (vtx, 0, sizeof (NTVERTEX)*nvtx);
+#endif // __linux__
 				for (i = 0; i < nvtx; i++) {
+#ifndef __linux__
 					D3DVERTEX &v = vtx[i];
+#else // __linux__
+					NTVERTEX &v = vtx[i];
+#endif // __linux__
 					if (!is.getline (cbuf, 256)) {
 						delete []vtx;
 						nvtx = 0;
@@ -693,7 +952,11 @@ istream &operator>> (istream &is, Mesh &mesh)
 					}
 				}
 				idx = new WORD[nidx];
+#ifndef __linux__
 				ZeroMemory (idx, sizeof (WORD)*nidx);
+#else // __linux__
+				memset (idx, 0, sizeof (WORD)*nidx);
+#endif // __linux__
 				for (i = j = 0; i < ntri; i++) {
 					if (!is.getline (cbuf, 256)) {
 						delete []vtx;
@@ -730,7 +993,11 @@ istream &operator>> (istream &is, Mesh &mesh)
 		}
 		for (i = 0; i < nmtrl; i++) {
 			char mnm[256];
+#ifndef __linux__
 			ZeroMemory (&mtrl, sizeof (D3DMATERIAL7));
+#else // __linux__
+			memset (&mtrl, 0, sizeof (MATERIAL));
+#endif // __linux__
 			is.getline (cbuf, 256);
 			sscanf (cbuf+8, "%s", mnm);
 			mesh.Matname[i] = new char[strlen(mnm)+1];

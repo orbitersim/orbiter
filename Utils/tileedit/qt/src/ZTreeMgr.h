@@ -7,13 +7,22 @@
 #define __ZTREEMGR_H
 
 #include <iostream>
+#ifndef __linux__
 #include <windows.h>
+#else // __linux__
+#include <cstdint>
+#include "OrbiterPlatform.h" // windows.h left out: BYTE/DWORD; __int64 -> int64_t
+#endif // __linux__
 
 // =======================================================================
 // Tree node structure
 
 struct TreeNode {
+#ifndef __linux__
 	__int64 pos;  // file position of node data
+#else // __linux__
+	int64_t pos;  // file position of node data
+#endif // __linux__
 	DWORD size;   // data block size [bytes]
 	DWORD child[4]; // array index positions of the children ((DWORD)-1=no child)
 
@@ -32,15 +41,24 @@ class TreeFileHeader {
 
 public:
 	TreeFileHeader();
+#ifndef __linux__
 	size_t TreeFileHeader::fwrite(FILE *f);
 	bool TreeFileHeader::fread(FILE *f);
+#else // __linux__
+	size_t fwrite(FILE *f); // g++ rejects the extra TreeFileHeader:: qualification
+	bool fread(FILE *f);
+#endif // __linux__
 
 private:
 	BYTE magic[4];      // file ID and version
 	DWORD size;         // header size [bytes]
 	DWORD flags;        // bit flags
 	DWORD dataOfs;      // file offset of start of data block (header + TOC)
+#ifndef __linux__
 	__int64 dataLength; // total length of compressed data block
+#else // __linux__
+	int64_t dataLength; // total length of compressed data block
+#endif // __linux__
 	DWORD nodeCount;    // total number of tree nodes
 	DWORD rootPos1;     // index of level-1 tile ((DWORD)-1 for not present)
 	DWORD rootPos2;     // index of level-2 tile ((DWORD)-1 for not present)
@@ -71,7 +89,11 @@ private:
 	TreeNode *tree;    // array containing all tree node entries
 	DWORD ntree;       // number of entries
 	DWORD ntreebuf;    // array size
+#ifndef __linux__
 	__int64 totlength; // total data size (deflated)
+#else // __linux__
+	int64_t totlength; // total data size (deflated)
+#endif // __linux__
 };
 
 // =======================================================================
@@ -111,7 +133,11 @@ private:
 	DWORD rootPos2;    // index of level-2 tile ((DWORD)-1 for not present)
 	DWORD rootPos3;    // index of level-3 tile ((DWORD)-1 for not present)
 	DWORD rootPos4[2]; // index of the level-4 tiles (quadtree roots; (DWORD)-1 for not present)
+#ifndef __linux__
 	__int64 dofs;
+#else // __linux__
+	int64_t dofs;
+#endif // __linux__
 };
 
 #endif // !__ZTREEMGR_H

@@ -11,6 +11,7 @@ add_subdirectory(texpack)
 #add_subdirectory(tileedit/qt)
 
 # We do this as an external project to invoke x64 toolchain
+if(WIN32) # Windows: upstream
 ExternalProject_Add(plsplit
 	PREFIX ${CMAKE_CURRENT_BINARY_DIR}/plsplit
 	BINARY_DIR ${CMAKE_CURRENT_BINARY_DIR}/plsplit
@@ -29,9 +30,14 @@ if (EXISTS ${CMAKE_CURRENT_BINARY_DIR}/plsplit/plsplit.exe)
 		DESTINATION ${ORBITER_INSTALL_UTILS_DIR}
 	)
 endif()
+else() # Linux port
+# ExternalProject left out: the Linux toolchain is 64-bit already; the install moved into plsplit/CMakeLists.txt
+add_subdirectory(plsplit)
+endif() # WIN32
 
 # tileedit is another 64-bit project. This also requires
 # Qt5 so will only be built if that is available
+if(WIN32) # Windows: upstream
 ExternalProject_Add(tileedit_proj
 	PREFIX ${CMAKE_CURRENT_BINARY_DIR}/tileedit/qt
 	BINARY_DIR ${CMAKE_CURRENT_BINARY_DIR}/tileedit/qt
@@ -49,3 +55,7 @@ if (EXISTS ${CMAKE_CURRENT_BINARY_DIR}/tileedit/qt/src/tmp)
 		DESTINATION ${ORBITER_INSTALL_UTILS_DIR}
 	)
 endif()
+else() # Linux port
+# ExternalProject left out as for plsplit; tileedit uses Qt 6 like the rest of the port
+add_subdirectory(tileedit/qt)
+endif() # WIN32

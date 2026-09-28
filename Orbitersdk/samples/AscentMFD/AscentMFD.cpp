@@ -9,12 +9,26 @@
 // Reference implementation of generic user-defined MFD mode
 // ==============================================================
 
+#ifndef __linux__
 #define STRICT
+#else // __linux__
+// STRICT left out: windows.h handle type-checking switch
+#endif // __linux__
 #define ORBITER_MODULE
+#ifndef __linux__
 #include <windows.h>
+#else // __linux__
+// windows.h left out: OrbiterPlatform.h has the Windows types the SDK uses
+#endif // __linux__
 #include <stdio.h>
 #include <math.h>
+#ifndef __linux__
 #include "orbitersdk.h"
+#else // __linux__
+#include <cstring>
+#include <strings.h>
+#include "Orbitersdk.h"
+#endif // __linux__
 #include "AscentMFD.h"
 
 // ==============================================================
@@ -40,7 +54,11 @@ static struct {  // global data storage
 // ==============================================================
 // API interface
 
+#ifndef __linux__
 DLLCLBK void InitModule (HINSTANCE hDLL)
+#else // __linux__
+DLLCLBK void InitModule (void *hDLL)
+#endif // __linux__
 {
 	static char *name = "Ascent profile";
 	MFDMODESPECEX spec;
@@ -60,7 +78,11 @@ DLLCLBK void InitModule (HINSTANCE hDLL)
 	g_AscentMFD.mode = oapiRegisterMFDMode (spec);
 }
 
+#ifndef __linux__
 DLLCLBK void ExitModule (HINSTANCE hDLL)
+#else // __linux__
+DLLCLBK void ExitModule (void *hDLL)
+#endif // __linux__
 {
 	oapiUnregisterMFDMode (g_AscentMFD.mode);
 	delete []g_Data.time;
@@ -227,7 +249,11 @@ int AscentMFD::ButtonMenu (const MFDBUTTONMENU **menu) const
 	return 4;
 }
 
+#ifndef __linux__
 void AscentMFD::Update (HDC hDC)
+#else // __linux__
+void AscentMFD::Update (QPainter *hDC)
+#endif // __linux__
 {
 	Title (hDC, "Ascent profile");
 
@@ -327,13 +353,29 @@ void AscentMFD::ReadStatus (FILEHANDLE scn)
 {
     char *line;
 	while (oapiReadScenario_nextline (scn, line)) {
+#ifndef __linux__
 		if (!_strnicmp (line, "PAGE", 4))
+#else // __linux__
+		if (!strncasecmp (line, "PAGE", 4))
+#endif // __linux__
 			sscanf (line+4, "%d", &page);
+#ifndef __linux__
 		else if (!_strnicmp (line, "ALTRANGE", 8))
+#else // __linux__
+		else if (!strncasecmp (line, "ALTRANGE", 8))
+#endif // __linux__
 			SetAltRange (line+9);
+#ifndef __linux__
 		else if (!_strnicmp (line, "VRADRANGE", 9))
+#else // __linux__
+		else if (!strncasecmp (line, "VRADRANGE", 9))
+#endif // __linux__
 			SetVradRange (line+10);
+#ifndef __linux__
 		else if (!_strnicmp (line, "VTANRANGE", 9))
+#else // __linux__
+		else if (!strncasecmp (line, "VTANRANGE", 9))
+#endif // __linux__
 			SetVtanRange (line+10);
 	}
 }

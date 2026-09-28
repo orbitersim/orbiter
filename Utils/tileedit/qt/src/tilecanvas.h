@@ -1,7 +1,11 @@
 #ifndef TILECANVAS_H
 #define TILECANVAS_H
 
+#ifndef __linux__
 #include <windows.h>
+#else // __linux__
+// windows.h left out: the types come with tile.h
+#endif // __linux__
 #include "QWidget"
 #include "QBoxLayout"
 #include "QPen"
@@ -33,7 +37,11 @@ public:
 	const Image &getImage() const { return m_img; }
     void resizeEvent(QResizeEvent *event);
     void paintEvent(QPaintEvent *event);
+#ifndef __linux__
     void enterEvent(QEvent *event);
+#else // __linux__
+    void enterEvent(QEnterEvent *event); // Qt 6 signature (was QEvent)
+#endif // __linux__
     void leaveEvent(QEvent *event);
     void mouseMoveEvent(QMouseEvent *event);
 	void mousePressEvent(QMouseEvent *event);

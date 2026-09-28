@@ -12,7 +12,11 @@ public:
 	bool ConsumeButton (int bt, int event);
 	char *ButtonLabel (int bt);
 	int  ButtonMenu (const MFDBUTTONMENU **menu) const;
+#ifndef __linux__
 	void Update (HDC hDC);
+#else // __linux__
+	void Update (QPainter *hDC);
+#endif // __linux__
 	bool SetAltRange (char *rstr);
 	bool SetVradRange (char *rstr);
 	bool SetVtanRange (char *rstr);

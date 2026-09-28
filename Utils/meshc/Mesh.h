@@ -9,9 +9,17 @@
 #ifndef __MESH_H
 #define __MESH_H
 
+#ifndef __linux__
 #include <d3d.h>
 #include <d3dtypes.h>
+#else // __linux__
+// d3d.h/d3dtypes.h left out: the Direct3D 7 data types become the SDK's own (NTVERTEX, MATERIAL, FVECTOR3, float)
+#endif // __linux__
 #include <iostream>
+#ifdef __linux__
+#include "OrbiterAPI.h"
+#include "DrawAPI.h"
+#endif // __linux__
 
 typedef char Str256[256];
 
@@ -41,7 +49,11 @@ public:
 // mesh group descriptor
 
 typedef struct {	
+#ifndef __linux__
 	D3DVERTEX *Vtx;
+#else // __linux__
+	NTVERTEX *Vtx;
+#endif // __linux__
 	WORD      *Idx;
 	DWORD     nVtx;
 	DWORD     nIdx;
@@ -60,8 +72,13 @@ public:
 	Mesh ();
 	// Create an empty mesh
 
+#ifndef __linux__
 	Mesh (D3DVERTEX *vtx, DWORD nvtx, WORD *idx, DWORD nidx,
 		DWORD matidx = SPEC_DEFAULT, DWORD texidx = SPEC_DEFAULT);
+#else // __linux__
+	Mesh (NTVERTEX *vtx, DWORD nvtx, WORD *idx, DWORD nidx,
+		DWORD matidx = SPEC_DEFAULT, DWORD texidx = SPEC_DEFAULT);
+#endif // __linux__
 	// Create a single-group mesh
 
 	Mesh (const Mesh &mesh);
@@ -84,12 +101,21 @@ public:
 	inline DWORD nTexture() const { return nTex; }
 	// Number of textures
 
+#ifndef __linux__
 	bool GetGroup (DWORD grp, D3DVERTEX *&vtx, DWORD &nvtx, WORD *&idx, DWORD &nidx);
+#else // __linux__
+	bool GetGroup (DWORD grp, NTVERTEX *&vtx, DWORD &nvtx, WORD *&idx, DWORD &nidx);
+#endif // __linux__
 	// Return pointer to vertex and index list for group grp
 	// Return value is false if grp index is out of range
 
+#ifndef __linux__
 	int AddGroup (D3DVERTEX *vtx, DWORD nvtx, WORD *idx, DWORD nidx,
 		DWORD mtrl_idx = -1, DWORD tex_idx = -1, WORD zbias = 0);
+#else // __linux__
+	int AddGroup (NTVERTEX *vtx, DWORD nvtx, WORD *idx, DWORD nidx,
+		DWORD mtrl_idx = -1, DWORD tex_idx = -1, WORD zbias = 0);
+#endif // __linux__
 	// Add new group to the mesh and return its group index
 	// The lists are handled by the mesh and should not be released by
 	// the calling program
@@ -103,28 +129,52 @@ public:
 	// Merge "mesh" into "this", by adding all groups of "mesh"
 	// Currently this does not use the materials and textures of "mesh"
 
+#ifndef __linux__
 	int AddMaterial (D3DMATERIAL7 &mtrl);
+#else // __linux__
+	int AddMaterial (MATERIAL &mtrl);
+#endif // __linux__
 	// Add new material to the mesh and return its list index
 
+#ifndef __linux__
 	void ScaleGroup (DWORD grp, D3DVALUE sx, D3DVALUE sy, D3DVALUE sz);
 	void Scale (D3DVALUE sx, D3DVALUE sy, D3DVALUE sz);
+#else // __linux__
+	void ScaleGroup (DWORD grp, float sx, float sy, float sz);
+	void Scale (float sx, float sy, float sz);
+#endif // __linux__
 	// scale an individual group or the whole mesh
 
+#ifndef __linux__
 	void TranslateGroup (DWORD grp, D3DVALUE dx, D3DVALUE dy, D3DVALUE dz);
 	void Translate (D3DVALUE dx, D3DVALUE dy, D3DVALUE dz);
+#else // __linux__
+	void TranslateGroup (DWORD grp, float dx, float dy, float dz);
+	void Translate (float dx, float dy, float dz);
+#endif // __linux__
 	// translate an individual group or the whole mesh
 
 	enum RotAxis { ROTATE_X, ROTATE_Y, ROTATE_Z };
+#ifndef __linux__
 	void RotateGroup (DWORD grp, RotAxis axis, D3DVALUE angle);
 	void Rotate (RotAxis axis, D3DVALUE angle);
+#else // __linux__
+	void RotateGroup (DWORD grp, RotAxis axis, float angle);
+	void Rotate (RotAxis axis, float angle);
+#endif // __linux__
 	// rotate the mesh 'angle' rad around a coordiate axis
 
 	enum MirrorDir { MIRROR_X, MIRROR_Y, MIRROR_Z };
 	void MirrorGroup (DWORD grp, MirrorDir dir);
 	void Mirror (MirrorDir dir);
 
+#ifndef __linux__
 	void TexScaleGroup (DWORD grp, D3DVALUE su, D3DVALUE sv);
 	void TexScale (D3DVALUE su, D3DVALUE sv);
+#else // __linux__
+	void TexScaleGroup (DWORD grp, float su, float sv);
+	void TexScale (float su, float sv);
+#endif // __linux__
 	// scale the texture coordinates of an individual group or the whole mesh
 
 	void CalcNormals (DWORD grp, bool missingonly);
@@ -145,9 +195,13 @@ public:
 
 	void Clear ();
 
+#ifndef __linux__
 	DWORD Render (LPDIRECT3DDEVICE7 dev);
 	// render the mesh using device dev
 	// return value is the number of rendered groups
+#else // __linux__
+	// Render (LPDIRECT3DDEVICE7) left out: Direct3D 7 render path, a mesh compiler renders nothing
+#endif // __linux__
 
 	friend std::istream &operator>> (std::istream &is, Mesh &mesh);
 	// read mesh from file
@@ -166,14 +220,28 @@ private:
 	GroupSpec *Grp;     // list of group specs	
 
 	DWORD nMtrl;        // number of materials
+#ifndef __linux__
 	D3DMATERIAL7 *Mtrl; // list of materials used by the mesh
+#else // __linux__
+	MATERIAL *Mtrl;     // list of materials used by the mesh
+#endif // __linux__
 
+#ifndef __linux__
 	DWORD nTex;                // number of textures
 	LPDIRECTDRAWSURFACE7 *Tex; // list of textures used by the mesh
+#else // __linux__
+	DWORD nTex;         // number of textures
+	SURFHANDLE *Tex;    // list of textures used by the mesh
+#endif // __linux__
 
 	bool GrpSetup;      // true if the following arrays are allocated
+#ifndef __linux__
 	D3DVECTOR *GrpCnt;  // list of barycentres for each group (local coords)
 	D3DVALUE *GrpRad;   // list of max. radii for each group
+#else // __linux__
+	oapi::FVECTOR3 *GrpCnt; // list of barycentres for each group (local coords)
+	float *GrpRad;      // list of max. radii for each group
+#endif // __linux__
 	DWORD *GrpVis;      // visibility flags for each group
 };
 

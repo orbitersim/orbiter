@@ -4,7 +4,15 @@
 #include <iostream>
 #include <fstream>
 #include <stdio.h>
+#ifdef __linux__
+#include <string.h>
+#include <strings.h>
+#endif // __linux__
 #include <time.h>
+#ifdef __linux__
+#include <unistd.h>
+#include "../ToolTerminal.h"
+#endif // __linux__
 #include "Mesh.h"
 
 using namespace std;
@@ -100,9 +108,17 @@ static void outC(const Param& param, const Mesh& mesh)
 	int grp = 0;
 	bool havelabel = false;
 	while (ifs.getline(cbuf, 256)) {
+#ifndef __linux__
 		if (!_strnicmp(cbuf, "GEOM", 4))
+#else // __linux__
+		if (!strncasecmp(cbuf, "GEOM", 4))
+#endif // __linux__
 			grp++;
+#ifndef __linux__
 		else if (!_strnicmp(cbuf, "LABEL", 5)) {
+#else // __linux__
+		else if (!strncasecmp(cbuf, "LABEL", 5)) {
+#endif // __linux__
 			if (!havelabel) {
 				ofs << "\n// Named mesh groups:\n";
 				havelabel = true;
@@ -144,9 +160,17 @@ static void outLua(const Param& param, const Mesh& mesh)
 	int grp = 0;
 	bool havelabel = false;
 	while (ifs.getline(cbuf, 256)) {
+#ifndef __linux__
 		if (!_strnicmp(cbuf, "GEOM", 4))
+#else // __linux__
+		if (!strncasecmp(cbuf, "GEOM", 4))
+#endif // __linux__
 			grp++;
+#ifndef __linux__
 		else if (!_strnicmp(cbuf, "LABEL", 5)) {
+#else // __linux__
+		else if (!strncasecmp(cbuf, "LABEL", 5)) {
+#endif // __linux__
 			if (!havelabel) {
 				ofs << "\n-- Named mesh groups:\n";
 				havelabel = true;
@@ -164,6 +188,9 @@ int main (int argc, char *argv[])
 	Mesh mesh;
 	Param param;
 
+#ifdef __linux__
+	OpenToolTerminal (argc, argv); // /SUBSYSTEM:CONSOLE: a console window of its own
+#endif // __linux__
 	cout << "+-----------------------------------------------------------------------+\n";
 	cout << "|                   meshc: Mesh compiler for ORBITER                    |\n";
 	cout << "|        Build: " << __DATE__ << "      (c) 2001-2026 Martin Schweiger         |\n";
@@ -193,7 +220,11 @@ int main (int argc, char *argv[])
 	if (!strcmp(param.outname, "-")) strcpy(param.outname, "meshres.h");
 
 	char pwd[1024];
+#ifndef __linux__
 	_fullpath(pwd, ".\\", 1024);
+#else // __linux__
+	if (!getcwd(pwd, 1024)) pwd[0] = '\0'; // _fullpath(".\\") counterpart
+#endif // __linux__
 	cout << "Current directory is " << pwd << endl;
 
 	cout << "Reading mesh from " << param.meshname << endl;

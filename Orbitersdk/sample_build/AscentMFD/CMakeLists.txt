@@ -13,9 +13,14 @@ set(Headers
 	AscentMFD.h
 	resource.h
 )
+if(WIN32) # Windows: upstream
 set(Other
 	AscentMFD.rc
 )
+else() # Linux port
+set(Other
+)
+endif() # WIN32
 	
 source_group(APIHeaders FILES ${APIHeaders})
 source_group(Headers FILES ${Headers})
@@ -28,13 +33,25 @@ add_library(${PRJ} SHARED
     ${APIHeaders}
 	${Other}
 )
+if(NOT WIN32) # Linux port
+orbiter_rc_resources(${PRJ} AscentMFD.rc)
+endif() # NOT WIN32
 
 target_link_libraries(${PRJ} debug ${DebugLib})
 target_link_libraries(${PRJ} optimized ${ReleaseLib})
 
+if(WIN32) # Windows: upstream
 set_target_properties(${PRJ}
 	PROPERTIES
 	RUNTIME_OUTPUT_DIRECTORY_DEBUG ${PLUGIN_DIR}
 	RUNTIME_OUTPUT_DIRECTORY_RELEASE ${PLUGIN_DIR}
 	FOLDER MFD
 )
+else() # Linux port
+set_target_properties(${PRJ}
+	PROPERTIES
+	LIBRARY_OUTPUT_DIRECTORY_DEBUG ${PLUGIN_DIR}
+	LIBRARY_OUTPUT_DIRECTORY_RELEASE ${PLUGIN_DIR}
+	FOLDER MFD
+)
+endif() # WIN32

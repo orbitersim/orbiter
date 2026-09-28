@@ -13,10 +13,19 @@
 // point for your own MFD developments.
 // ==============================================================
 
+#ifndef __linux__
 #define STRICT
+#else // __linux__
+// STRICT left out: windows.h handle type-checking switch
+#endif // __linux__
 #define ORBITER_MODULE
+#ifndef __linux__
 #include "windows.h"
 #include "orbitersdk.h"
+#else // __linux__
+// windows.h left out: OrbiterPlatform.h has the Windows types the SDK uses
+#include "Orbitersdk.h"
+#endif // __linux__
 #include "MFDTemplate.h"
 
 // ==============================================================
@@ -27,7 +36,11 @@ int g_MFDmode; // identifier for new MFD mode
 // ==============================================================
 // API interface
 
+#ifndef __linux__
 DLLCLBK void InitModule (HINSTANCE hDLL)
+#else // __linux__
+DLLCLBK void InitModule (void *hDLL)
+#endif // __linux__
 {
 	static char *name = "MFD Template";   // MFD mode name
 	MFDMODESPECEX spec;
@@ -40,7 +53,11 @@ DLLCLBK void InitModule (HINSTANCE hDLL)
 	g_MFDmode = oapiRegisterMFDMode (spec);
 }
 
+#ifndef __linux__
 DLLCLBK void ExitModule (HINSTANCE hDLL)
+#else // __linux__
+DLLCLBK void ExitModule (void *hDLL)
+#endif // __linux__
 {
 	// Unregister the custom MFD mode when the module is unloaded
 	oapiUnregisterMFDMode (g_MFDmode);

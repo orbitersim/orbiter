@@ -1,4 +1,9 @@
+#ifndef __linux__
 #include <windows.h>
+#else // __linux__
+#include "OrbiterPlatform.h" // windows.h left out: DWORD/WORD/BYTE
+#include <cstring>
+#endif // __linux__
 #include <iostream>
 #include "ddsread.h"
 

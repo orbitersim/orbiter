@@ -14,6 +14,9 @@
 #include "QResizeEvent"
 #include "QMessageBox"
 #include "QSettings"
+#ifdef __linux__
+#include "QFileInfo"
+#endif // __linux__
 
 static std::vector<std::pair<int, int> > paintStencil1 = { {0,0} };
 static std::vector<std::pair<int, int> > paintStencil2 = { {0,0}, {1,0}, {0,1}, {1,1} };
@@ -28,10 +31,16 @@ tileedit::tileedit(QWidget *parent)
     : QMainWindow(parent)
     , ui(new Ui::tileedit)
 {
+#ifndef __linux__
 	char path[1024], drive[16], dir[1024], name[1024], ext[1024];
 	GetModuleFileNameA(NULL, path, 1024);
 	_splitpath(path, drive, dir, name, ext);
 	sprintf(path, "%s%s%s.ini", drive, dir, name);
+#else // __linux__
+	// GetModuleFileNameA/_splitpath -> <exe dir>/<exe name>.ini from Qt's application path
+	QFileInfo exe(QCoreApplication::applicationFilePath());
+	QString path = exe.absolutePath() + "/" + exe.completeBaseName() + ".ini";
+#endif // __linux__
 	m_settings = new QSettings(path, QSettings::IniFormat);
 
 	m_elevDisplayParam.cmName = (CmapName)m_settings->value("elevdisp/cmap", CMAP_GREY).toInt();
@@ -90,10 +99,18 @@ tileedit::tileedit(QWidget *parent)
     connect(ui->spinLatidx, SIGNAL(valueChanged(int)), this, SLOT(onLatidxChanged(int)));
     connect(ui->spinLngidx, SIGNAL(valueChanged(int)), this, SLOT(onLngidxChanged(int)));
 
+#ifndef __linux__
 	connect(ui->bgrpAction, SIGNAL(buttonClicked(int)), this, SLOT(onActionButtonClicked(int)));
+#else // __linux__
+	connect(ui->bgrpAction, SIGNAL(idClicked(int)), this, SLOT(onActionButtonClicked(int))); // Qt 6: buttonClicked(int) -> idClicked(int)
+#endif // __linux__
 	ui->bgrpAction->setId(ui->btnActionNavigate, 0);
 	ui->bgrpAction->setId(ui->btnActionElevEdit, 1);
+#ifndef __linux__
 	connect(ui->bgrpEdit, SIGNAL(buttonClicked(int)), this, SLOT(onEditButtonClicked(int)));
+#else // __linux__
+	connect(ui->bgrpEdit, SIGNAL(idClicked(int)), this, SLOT(onEditButtonClicked(int)));
+#endif // __linux__
 	ui->bgrpEdit->setId(ui->btnElevPaint, 0);
 	ui->bgrpEdit->setId(ui->btnElevRandom, 1);
 	ui->bgrpEdit->setId(ui->btnElevErase, 2);
@@ -248,8 +265,13 @@ void tileedit::setBlockSize(int bsize)
 		m_blocksize = bsize;
 
 		// reload current tile
+#ifndef __linux__
 		m_ilat = max(0, min(m_ilat, nLat(m_lvl) - bsize));
 		m_ilng = max(0, min(m_ilng, nLng(m_lvl) - bsize));
+#else // __linux__
+		m_ilat = std::max(0, std::min(m_ilat, nLat(m_lvl) - bsize));
+		m_ilng = std::max(0, std::min(m_ilng, nLng(m_lvl) - bsize));
+#endif // __linux__
 		if (Tile::root().size())
 			setTile(m_lvl, m_ilat, m_ilng);
 
@@ -342,8 +364,13 @@ void tileedit::onElevConfigDestroyed(int r)
 
 void tileedit::loadTile(int lvl, int ilat, int ilng)
 {
+#ifndef __linux__
 	int ilat1 = min(nLat(lvl), ilat + m_blocksize);
 	int ilng1 = min(nLng(lvl), ilng + m_blocksize);
+#else // __linux__
+	int ilat1 = std::min(nLat(lvl), ilat + m_blocksize);
+	int ilng1 = std::min(nLng(lvl), ilng + m_blocksize);
+#endif // __linux__
 
     if (m_sTileBlock)
         delete m_sTileBlock;
@@ -566,8 +593,13 @@ void tileedit::OnMouseMovedInCanvas(int canvasIdx, QMouseEvent *event)
 	const TileBlock *tileblock = canvas->tileBlock();
 	const Image &img = canvas->getImage();
 
+#ifndef __linux__
 	int x = event->x();
 	int y = event->y();
+#else // __linux__
+	int x = event->position().toPoint().x();
+	int y = event->position().toPoint().y();
+#endif // __linux__
 	int cw = canvas->rect().width();
 	int ch = canvas->rect().height();
 
@@ -645,7 +677,11 @@ void tileedit::OnMouseMovedInCanvas(int canvasIdx, QMouseEvent *event)
 
 	if (m_actionMode == ACTION_ELEVEDIT && m_eTileBlock) {
 		if (m_mouseDown)
+#ifndef __linux__
 			editElevation(canvasIdx, event->x(), event->y());
+#else // __linux__
+			editElevation(canvasIdx, event->position().toPoint().x(), event->position().toPoint().y());
+#endif // __linux__
 		for (int i = 0; i < 3; i++) {
 			int toolrad;
 			switch (m_elevEditMode) {
@@ -699,7 +735,11 @@ void tileedit::OnMousePressedInCanvas(int canvasIdx, QMouseEvent *event)
 			double std = ui->dspinElevRandomStd->value();
 			m_rndn = new std::normal_distribution<double>(mean, std);
 		}
+#ifndef __linux__
 		editElevation(canvasIdx, event->x(), event->y());
+#else // __linux__
+		editElevation(canvasIdx, event->position().toPoint().x(), event->position().toPoint().y());
+#endif // __linux__
 	}
 	m_mouseDown = true;
 }
@@ -735,7 +775,11 @@ void tileedit::editElevation(int canvasIdx, int x, int y)
 				ui->spinElevPaintSize->value() :
 				ui->spinElevRandomSize->value()
 				);
+#ifndef __linux__
 			sz = min(sz, 5);
+#else // __linux__
+			sz = std::min(sz, 5);
+#endif // __linux__
 			int mode = (m_elevEditMode == ELEVEDIT_PAINT ?
 				ui->comboElevPaintMode->currentIndex() :
 				ui->comboElevRandomMode->currentIndex()
@@ -805,7 +849,11 @@ void tileedit::editElevation(int canvasIdx, int x, int y)
 	case ELEVEDIT_ERASE:
 		{
 			int sz = ui->spinElevEraseSize->value();
+#ifndef __linux__
 			sz = min(sz, 5);
+#else // __linux__
+			sz = std::min(sz, 5);
+#endif // __linux__
 			std::vector<std::pair<int, int>> *stencil = paintStencil[sz - 1];
 			ElevData &edata = m_eTileBlock->getData();
 			ElevData &edataBase = m_eTileBlock->getBaseData();
@@ -905,7 +953,11 @@ void tileedit::setTile(int lvl, int ilat, int ilng)
 	ui->labelLngmax->setText(cbuf);
 }
 
+#ifndef __linux__
 void tileedit::setupTreeManagers(std::string &root)
+#else // __linux__
+void tileedit::setupTreeManagers(const std::string &root)
+#endif // __linux__
 {
 	releaseTreeManagers();
 

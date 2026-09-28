@@ -1,4 +1,10 @@
+#ifndef __linux__
 #include <windows.h>
+#else // __linux__
+#include "OrbiterPlatform.h" // windows.h left out: UINT8/INT16/BYTE
+#include <climits>
+#include <cstring>
+#endif // __linux__
 #include <vector>
 #include <algorithm>
 #define _USE_MATH_DEFINES
@@ -451,7 +457,11 @@ void elvwrite_png(const char *fname, const ElevData &edata, double vmin, double 
 		for (int iw = 0; iw < w; iw++) {
 			double v = edata.data[iw + ih*w];
 			double vmap = (v - vmin)*scale;
+#ifndef __linux__
 			vmap = max(0.0, min(v16max, vmap));
+#else // __linux__
+			vmap = std::max(0.0, std::min(v16max, vmap));
+#endif // __linux__
 			buf[idx++] = (unsigned short)vmap;
 		}
 	}

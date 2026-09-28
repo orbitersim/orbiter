@@ -7,6 +7,9 @@
 #include <math.h>
 #include <memory.h>
 #include <ostream>
+#ifdef __linux__
+#include "OrbiterAPI.h" // not upstream: Mesh.h and D3dmath.h bring it in; it defines RAD, DEG, normangle, posangle too
+#endif // __linux__
 
 // =======================================================================
 // Some useful constants
@@ -18,8 +21,12 @@ const double Pi2   = 2.0*Pi;
 const double Pi05  = 0.5*Pi;
 const double Pi15  = 1.5*Pi;
 const double Pi025 = 0.25*Pi;
+#ifndef __linux__
 const double RAD   = Pi/180.0;
 const double DEG   = 180.0/Pi;
+#else // __linux__
+// RAD, DEG: OrbiterAPI.h (same values)
+#endif // __linux__
 
 #pragma optimize ("", on)
 
@@ -33,18 +40,26 @@ inline double Deg (double rad) { return DEG*rad; }
 int irand (int range);
 
 // Normalise argument to range -Pi <= a < Pi
+#ifndef __linux__
 inline double normangle (double angle)
 {
 	double a = fmod (angle, Pi2);
 	return (a >= Pi ? a-Pi2 : a < -Pi ? a+Pi2 : a);
 }
+#else // __linux__
+// normangle: OrbiterAPI.h (same code)
+#endif // __linux__
 
 // Normalise argument to range 0 <= a < 2Pi
+#ifndef __linux__
 inline double posangle (double angle)
 {
 	double a = fmod (angle, Pi2);
 	return (a >= 0.0 ? a : a+Pi2);
 }
+#else // __linux__
+// posangle: OrbiterAPI.h (same code)
+#endif // __linux__
 
 char *trim_string (char *cbuf);
 

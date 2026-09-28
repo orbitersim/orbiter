@@ -28,9 +28,18 @@ target_link_libraries(${PRJ} optimized ${ReleaseLib} Atlantis_SRB)
 
 #target_include_directories(${PRJ} PUBLIC ${INCLUDE_DIR} ${IncludeDirs})
 
+if(WIN32) # Windows: upstream
 set_target_properties(${PRJ}
 	PROPERTIES
 	RUNTIME_OUTPUT_DIRECTORY_DEBUG ${MODULE_DIR}
 	RUNTIME_OUTPUT_DIRECTORY_RELEASE ${MODULE_DIR}
 	FOLDER Atlantis
 )
+else() # Linux port
+set_target_properties(${PRJ}
+	PROPERTIES
+	LIBRARY_OUTPUT_DIRECTORY_DEBUG ${MODULE_DIR}
+	LIBRARY_OUTPUT_DIRECTORY_RELEASE ${MODULE_DIR}
+	FOLDER Atlantis
+)
+endif() # WIN32

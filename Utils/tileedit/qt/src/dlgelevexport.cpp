@@ -1,4 +1,7 @@
 #include "dlgelevexport.h"
+#ifdef __linux__
+#include "fitdialog.h"
+#endif // __linux__
 #include "ui_dlgElevExport.h"
 #include "tileedit.h"
 #include "tileblock.h"
@@ -14,6 +17,9 @@ DlgElevExport::DlgElevExport(tileedit *parent)
 	, ui(new Ui::DlgElevExport)
 {
 	ui->setupUi(this);
+#ifdef __linux__
+	FitDialog(this); // not upstream: group boxes grow to fit this style and font
+#endif // __linux__
 
 	connect(ui->pushOpenFileDialog, SIGNAL(clicked()), this, SLOT(onOpenFileDialog()));
 	connect(ui->radioCurrentTiles, SIGNAL(clicked()), this, SLOT(onSelectCurrentTiles()));
@@ -251,6 +257,9 @@ DlgElevExportColorbar::DlgElevExportColorbar(QWidget *parent)
 {
 	m_paintDataRange = false;
 	m_vmin = m_vmax = m_dmin = m_dmax = 0.0;
+#ifdef __linux__
+	setMinimumHeight(20); // not upstream: on Windows the bar took the group box's spare height; FitDialog sizes the box to its content
+#endif // __linux__
 }
 
 void DlgElevExportColorbar::setColorRange(double vmin, double vmax)
@@ -298,8 +307,13 @@ void DlgElevExportColorbar::paintEvent(QPaintEvent *event)
 			painter.drawRect(r);
 			painter.setBrush(Qt::NoBrush);
 		}
+#ifndef __linux__
 		double smin = min(m_dmin, m_vmin);
 		double smax = max(m_dmax, m_vmax);
+#else // __linux__
+		double smin = std::min(m_dmin, m_vmin);
+		double smax = std::max(m_dmax, m_vmax);
+#endif // __linux__
 		if (m_dmin < m_vmin) {
 			r.setLeft((int)((m_vmin - smin) / (smax - smin) * w));
 		}
@@ -311,8 +325,13 @@ void DlgElevExportColorbar::paintEvent(QPaintEvent *event)
 	painter.drawRect(r);
 
 	if (m_paintDataRange) {
+#ifndef __linux__
 		int xmin = max(0, min(w, (int)(w * (m_dmin - m_vmin) / (m_vmax - m_vmin))));
 		int xmax = max(0, min(w, (int)(w * (m_dmax - m_vmin) / (m_vmax - m_vmin))));
+#else // __linux__
+		int xmin = std::max(0, std::min(w, (int)(w * (m_dmin - m_vmin) / (m_vmax - m_vmin))));
+		int xmax = std::max(0, std::min(w, (int)(w * (m_dmax - m_vmin) / (m_vmax - m_vmin))));
+#endif // __linux__
 		painter.setPen(QColor(255, 0, 0));
 		painter.drawRect(xmin, 0, xmax - xmin, h);
 	}

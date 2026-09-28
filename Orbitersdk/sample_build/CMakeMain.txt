@@ -6,7 +6,12 @@ cmake_minimum_required(VERSION 3.19)
 # Set the project name
 project (OrbiterSamples VERSION 21.7.24)
 
+if(WIN32) # Windows: upstream
 set(CMAKE_CXX_STANDARD 17)
+else() # Linux port
+# not upstream: C++20 per the port plan (upstream uses 17)
+set(CMAKE_CXX_STANDARD 20)
+endif() # WIN32
 set(CMAKE_CXX_STANDARD_REQUIRED OFF)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
@@ -30,7 +35,16 @@ else()
 	set(ARCH "x86")
 endif()
 
+if(WIN32) # Windows: upstream
 add_compile_options(/MP)
+else() # Linux port
+# /MP left out: make and Ninja already compile in parallel
+
+# not upstream: Visual Studio always builds a configuration, make and Ninja default to none
+if(NOT CMAKE_BUILD_TYPE AND NOT CMAKE_CONFIGURATION_TYPES)
+	set(CMAKE_BUILD_TYPE Release)
+endif()
+endif() # WIN32
 
 # Define directories and file paths for some common binaries
 set(ROOT_DIR ${CMAKE_SOURCE_DIR})
@@ -44,6 +58,7 @@ set(INCLUDE_DIR ${SDK_DIR}/include)
 set(ORBITER_TOOL_MESHC ${SDK_DIR}/Utils/meshc)
 
 # Default Link Libraries 
+if(WIN32) # Windows: upstream
 set(DebugLib 
 	#Orbiterd 
 	#Orbitersdkd 
@@ -57,7 +72,24 @@ set(DebugLib
 	Lua/LuaInterpreter
 	UxTheme
 )
+else() # Linux port
+set(DebugLib 
+	#Orbiterd 
+	#Orbitersdkd 
+	#DlgCtrld
+	#Lua/luad 
+	#Lua/LuaInterpreterd
+	# Orbiter left out: no import library on ELF, modules bind the exe's exported symbols when loaded
+	Orbitersdk
+	DlgCtrl
+	${ROOT_DIR}/lua.so # not upstream: the SDK has no lua link library, lua.so sits in the Orbiter folder
+	${SDK_DIR}/lib/Lua/LuaInterpreter.so # not upstream: by path, the name has no lib prefix
+	# UxTheme left out: Windows visual styles library
+	Qt6::Widgets # not upstream: module dialogs and drawing are Qt (the SDK's HWND/HDC are QWidget/QPainter)
+)
+endif() # WIN32
 
+if(WIN32) # Windows: upstream
 set(ReleaseLib 
 	Orbiter 
 	Orbitersdk 
@@ -66,6 +98,17 @@ set(ReleaseLib
 	Lua/LuaInterpreter
 	UxTheme
 )
+else() # Linux port
+set(ReleaseLib 
+	# Orbiter left out: no import library on ELF, modules bind the exe's exported symbols when loaded
+	Orbitersdk 
+	DlgCtrl
+	${ROOT_DIR}/lua.so # not upstream: the SDK has no lua link library, lua.so sits in the Orbiter folder
+	${SDK_DIR}/lib/Lua/LuaInterpreter.so # not upstream: by path, the name has no lib prefix
+	# UxTheme left out: Windows visual styles library
+	Qt6::Widgets # not upstream: module dialogs and drawing are Qt (the SDK's HWND/HDC are QWidget/QPainter)
+)
+endif() # WIN32
 
 set(APIHeaders
     ${INCLUDE_DIR}/OrbiterAPI.h
@@ -85,6 +128,23 @@ set(IncludeDirs
 
 link_directories(${SDK_DIR}/lib)
 include_directories(${INCLUDE_DIR} ${IncludeDirs})
+if(NOT WIN32) # Linux port
+
+# not upstream: Qt, module naming, symbol visibility and library lookup as in the Orbiter build
+find_package(Qt6 REQUIRED COMPONENTS Widgets)
+set(CMAKE_AUTOMOC ON)
+set(CMAKE_SHARED_LIBRARY_PREFIX "")
+set(CMAKE_CXX_VISIBILITY_PRESET hidden)
+set(CMAKE_C_VISIBILITY_PRESET hidden)
+set(CMAKE_VISIBILITY_INLINES_HIDDEN ON)
+set(CMAKE_BUILD_WITH_INSTALL_RPATH true)
+set(CMAKE_INSTALL_RPATH "$ORIGIN" "$ORIGIN/.." "$ORIGIN/../..")
+# not upstream: meshc writes the meshres*.h headers into the build folder
+set(CMAKE_INCLUDE_CURRENT_DIR ON)
+# not upstream: .rc scripts compile to C++ resource tables (cmake/rcresources.cmake)
+set(ORBITER_SOURCE_SDK_INCLUDE_DIR ${INCLUDE_DIR})
+include(rcresources)
+endif() # NOT WIN32
 
 
 # Add Projects

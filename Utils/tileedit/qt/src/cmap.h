@@ -1,7 +1,11 @@
 #ifndef CMAP_H
 #define CMAP_H
 
+#ifndef __linux__
 #include <windows.h>
+#else // __linux__
+#include "OrbiterPlatform.h" // windows.h left out: DWORD
+#endif // __linux__
 
 enum CmapName {
 	CMAP_GREY,

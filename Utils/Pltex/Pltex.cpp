@@ -44,20 +44,72 @@
 
 #include <iostream>
 #include <iomanip>
+#ifdef __linux__
+#include <algorithm> // windows.h min/max -> std::min/max
+#include <vector>
+#endif // __linux__
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#ifndef __linux__
 #include <io.h>
 #include <conio.h>
+#else // __linux__
+#include <strings.h>
+#include <stdarg.h>
+#include <sys/stat.h> // io.h: _open/_filelength/_close -> open/fstat/close
+#include <termios.h>  // conio.h: _kbhit/_getch -> termios
+#endif // __linux__
 #include <fcntl.h>
+#ifndef __linux__
 #include <process.h>
 #include <direct.h>
 #include <windows.h>
+#else // __linux__
+#include <spawn.h>    // process.h: _spawnl -> posix_spawn
+#include <sys/wait.h>
+#include <unistd.h>   // direct.h: _getcwd -> getcwd
+#include "OrbiterPlatform.h" // windows.h left out: BYTE/WORD/DWORD/LONG
+#include "../ToolTerminal.h"
+#endif // __linux__
 #include <math.h>
+#ifndef __linux__
 #include <ddraw.h>
+#else // __linux__
+// ddraw.h left out: DDSURFACEDESC2 below, as laid out in a .dds file
+#endif // __linux__
 
 using namespace std;
 
+#ifdef __linux__
+// not upstream: wingdi.h BMP file structures (the file header is 2-byte packed as in wingdi.h)
+#pragma pack(push, 2)
+struct BITMAPFILEHEADER { WORD bfType; DWORD bfSize; WORD bfReserved1; WORD bfReserved2; DWORD bfOffBits; };
+#pragma pack(pop)
+struct BITMAPINFOHEADER { DWORD biSize; LONG biWidth; LONG biHeight; WORD biPlanes; WORD biBitCount; DWORD biCompression; DWORD biSizeImage; LONG biXPelsPerMeter; LONG biYPelsPerMeter; DWORD biClrUsed; DWORD biClrImportant; };
+struct RGBQUAD { BYTE rgbBlue; BYTE rgbGreen; BYTE rgbRed; BYTE rgbReserved; };
+struct BITMAPINFO { BITMAPINFOHEADER bmiHeader; RGBQUAD bmiColors[1]; };
+const DWORD BI_RGB = 0;
+
+// not upstream: ddraw.h DDSURFACEDESC2 as laid out in a .dds file (124 bytes, lpSurface 32-bit as in the x86 build)
+#pragma pack(push, 1)
+struct DDSURFACEDESC2 {
+	DWORD dwSize, dwFlags, dwHeight, dwWidth;
+	DWORD dwLinearSize;                                 // union with lPitch
+	DWORD dwDepth, dwMipMapCount, dwAlphaBitDepth, dwReserved;
+	DWORD lpSurface;
+	DWORD ddckCKDestOverlay[2], ddckCKDestBlt[2], ddckCKSrcOverlay[2], ddckCKSrcBlt[2];
+	struct { DWORD dwSize, dwFlags, dwFourCC, dwRGBBitCount, dwRBitMask, dwGBitMask, dwBBitMask, dwRGBAlphaBitMask; } ddpfPixelFormat;
+	DWORD ddsCaps[4];
+	DWORD dwTextureStage;
+};
+#pragma pack(pop)
+#define DDSD_MIPMAPCOUNT 0x00020000l
+#define DDSD_LINEARSIZE  0x00080000l
+#define MAKEFOURCC(a, b, c, d) ((DWORD)(BYTE)(a) | ((DWORD)(BYTE)(b) << 8) | ((DWORD)(BYTE)(c) << 16) | ((DWORD)(BYTE)(d) << 24))
+static_assert (sizeof(BITMAPFILEHEADER) == 14 && sizeof(BITMAPINFOHEADER) == 40 && sizeof(DDSURFACEDESC2) == 124, "file layout");
+
+#endif // __linux__
 static const int patchidx[9] = {0, 1, 2, 3, 5, 13, 37, 137, 501};
 // index to the first texture of a given surface patch level
 
@@ -92,6 +144,9 @@ struct LMASKFILEHEADER { // file header for contents file at level 1-8
 	BYTE maxres;         //    max. resolution level
 };
 #pragma pack(pop)
+#ifdef __linux__
+static_assert (sizeof(TILEFILESPEC) == 32 && sizeof(LMASKFILEHEADER) == 22, "file layout"); // not upstream: layout check
+#endif // __linux__
 
 struct PATCHDATA {
 	int which;
@@ -202,9 +257,53 @@ void InitProgress (int ntot, int len);
 void SetProgress (int p);
 void IncProgress ();
 
+#ifdef __linux__
+extern char **environ;
+
+// not upstream: process.h _spawnl (_P_WAIT, ...) counterpart; returns the exit code, -1 if the program could not run
+static int spawnl_wait (const char *path, const char *arg0, ...)
+{
+	vector<char*> argv;
+	va_list ap;
+	va_start (ap, arg0);
+	for (const char *a = arg0; a; a = va_arg (ap, const char*)) argv.push_back ((char*)a);
+	va_end (ap);
+	argv.push_back (0);
+	pid_t pid;
+	int status;
+	if (posix_spawn (&pid, path, 0, 0, argv.data(), environ) || waitpid (pid, &status, 0) < 0) return -1;
+	return WIFEXITED(status) ? WEXITSTATUS(status) : -1;
+}
+
+// not upstream: io.h _filelength counterpart
+static long filelength (int fh)
+{
+	struct stat st;
+	return fstat (fh, &st) ? -1 : (long)st.st_size;
+}
+
+// not upstream: conio.h "while (_kbhit()) _getch(); while (!_kbhit());" counterpart: drop typed-ahead keys, wait for a key
+static void waitkey ()
+{
+	termios t0, t1;
+	if (tcgetattr (STDIN_FILENO, &t0)) return; // stdin is not a terminal: no key to wait for
+	t1 = t0;
+	t1.c_lflag &= ~(ICANON | ECHO);
+	tcsetattr (STDIN_FILENO, TCSANOW, &t1);
+	tcflush (STDIN_FILENO, TCIFLUSH);
+	char c;
+	if (read (STDIN_FILENO, &c, 1) < 0) c = 0;
+	tcsetattr (STDIN_FILENO, TCSANOW, &t0);
+}
+
+#endif // __linux__
 
 const double eps = 1e-10;
+#ifndef __linux__
 const char *dxtex = ".\\dxtex.exe";
+#else // __linux__
+const char *dxtex = "./dxtex"; // DxTex.exe -> dxtex (Utils/plsplit/dxtex.cpp), run from the working folder as upstream
+#endif // __linux__
 char g_cwd[256];
 char fname[256] = "\0";
 char aname[256] = "\0";
@@ -227,8 +326,14 @@ int main (int argc, char *argv[])
 	int i;
 	char task;
 
+#ifndef __linux__
 	if (!_getcwd (g_cwd, 256)) FatalError ("Cannot get working directory");
 	strcat (g_cwd, "\\");
+#else // __linux__
+	OpenToolTerminal (argc, argv); // /SUBSYSTEM:CONSOLE: a console window of its own
+	if (!getcwd (g_cwd, 256)) FatalError ("Cannot get working directory");
+	strcat (g_cwd, "/");
+#endif // __linux__
 
 	for (i = 1; i < argc; i++) {
 		if (argv[i][0] != '-') FatalError ("Command line parsing error");
@@ -263,27 +368,50 @@ int main (int argc, char *argv[])
 		cout << "(Q) Quit\n";
 		cout << "\n>> [G|L|C|M|Q]: ";
 		cin >> task;
+#ifdef __linux__
+		if (!cin) return 1; // end of input: the menu would repeat forever (a Windows console never ends)
+#endif // __linux__
 		cout << endl << endl;
 		switch (toupper(task)) {
 		case 'G':
 			CreateGlobalSurface();
+#ifndef __linux__
 			MessageBeep (-1);
+#else // __linux__
+			cout << '\a' << flush; // MessageBeep: terminal bell
+#endif // __linux__
 			return 0;
 		case 'L':
 			CreateLocalArea();
+#ifndef __linux__
 			MessageBeep (-1);
+#else // __linux__
+			cout << '\a' << flush; // MessageBeep: terminal bell
+#endif // __linux__
 			return 0;
 		case 'C':
 			CreateCloudMap();
+#ifndef __linux__
 			MessageBeep (-1);
+#else // __linux__
+			cout << '\a' << flush; // MessageBeep: terminal bell
+#endif // __linux__
 			return 0;
 		case 'M':
 			MergeTextures();
+#ifndef __linux__
 			MessageBeep (-1);
+#else // __linux__
+			cout << '\a' << flush; // MessageBeep: terminal bell
+#endif // __linux__
 			return 0;
 		case 'S': // undocumented
 			SortTextures (0);
+#ifndef __linux__
 			MessageBeep (-1);
+#else // __linux__
+			cout << '\a' << flush; // MessageBeep: terminal bell
+#endif // __linux__
 			return 0;
 		case 'Q':
 			return 0;
@@ -322,7 +450,11 @@ void CreateGlobalSurface ()
 		cout << "bitmap should be approximately 2:1 for best results.\n\n";
 		cout << ">> Surface map file name (.bmp): ";
 		cin >> fname;
+#ifndef __linux__
 		if (!_stricmp (fname+(strlen(fname)-4), ".bmp"))
+#else // __linux__
+		if (!strcasecmp (fname+(strlen(fname)-4), ".bmp"))
+#endif // __linux__
 			fname[strlen(fname)-4] = '\0';
 		cout << endl;
 	}
@@ -360,7 +492,11 @@ void CreateGlobalSurface ()
 		cout << "and black for diffuse reflection areas (land).\n\n";
 		cout << ">> Mask map file name (.bmp): ";
 		cin >> aname;
+#ifndef __linux__
 		if (!_stricmp (aname+(strlen(aname)-4), ".bmp"))
+#else // __linux__
+		if (!strcasecmp (aname+(strlen(aname)-4), ".bmp"))
+#endif // __linux__
 			aname[strlen(aname)-4] = '\0';
 		cout << endl;
 
@@ -407,7 +543,11 @@ void CreateGlobalSurface ()
 		cout << "(but not necessarily white) in lit areas.\n\n";
 		cout << ">> City light map file name: (.bmp): ";
 		cin >> lname;
+#ifndef __linux__
 		if (!_stricmp (lname+(strlen(lname)-4), ".bmp"))
+#else // __linux__
+		if (!strcasecmp (lname+(strlen(lname)-4), ".bmp"))
+#endif // __linux__
 			lname[strlen(lname)-4] = '\0';
 		cout << endl;
 
@@ -795,7 +935,11 @@ void CreateGlobalSurface ()
 	}
 	cout << "\nTo use the new surface in Orbiter:\n";
 	cout << "Rename all output files by replacing '" << fname << "' with the\n";
+#ifndef __linux__
 	cout << "planet name, and move them to the Orbiter\\Textures2 folder" << endl;
+#else // __linux__
+	cout << "planet name, and move them to the Orbiter/Textures2 folder" << endl;
+#endif // __linux__
 }
 
 void CreateLocalArea ()
@@ -832,7 +976,11 @@ void CreateLocalArea ()
 		cout << "horizontal axis, and latitude linear along the vertical axis.\n\n";
 		cout << ">> Surface map file name (.bmp): ";
 		cin >> fname;
+#ifndef __linux__
 		if (!_stricmp (fname+(strlen(fname)-4), ".bmp"))
+#else // __linux__
+		if (!strcasecmp (fname+(strlen(fname)-4), ".bmp"))
+#endif // __linux__
 			fname[strlen(fname)-4] = '\0';
 		cout << endl;
 	}
@@ -884,7 +1032,11 @@ void CreateLocalArea ()
 		cout << "and black for diffuse reflection areas (land).\n\n";
 		cout << ">> Mask map file name (.bmp): ";
 		cin >> aname;
+#ifndef __linux__
 		if (!_stricmp (aname+(strlen(aname)-4), ".bmp"))
+#else // __linux__
+		if (!strcasecmp (aname+(strlen(aname)-4), ".bmp"))
+#endif // __linux__
 			aname[strlen(aname)-4] = '\0';
 		cout << endl;
 
@@ -954,7 +1106,11 @@ void CreateLocalArea ()
 		cout << "(but not necessarily white) in lit areas.\n\n";
 		cout << ">> City light map file name: (.bmp): ";
 		cin >> lname;
+#ifndef __linux__
 		if (!_stricmp (lname+(strlen(lname)-4), ".bmp"))
+#else // __linux__
+		if (!strcasecmp (lname+(strlen(lname)-4), ".bmp"))
+#endif // __linux__
 			lname[strlen(lname)-4] = '\0';
 		cout << endl;
 
@@ -1175,7 +1331,11 @@ void CreateLocalArea ()
 	if (mixed)
 		cout << "* rename " << fname << "_tile_lmask.tex to <planet>_tile_lmask.tex\n";
 	cout << "(where <planet> is the name of the planet), and move both files to\n";
+#ifndef __linux__
 	cout << "the Orbiter\\Textures2 folder" << endl;
+#else // __linux__
+	cout << "the Orbiter/Textures2 folder" << endl;
+#endif // __linux__
 	
 }
 
@@ -1386,7 +1546,11 @@ void MergeTextures ()
 	cout << "definition.\n\n\n";
 
 	cout << "Enter the base name for the first set of texture files. This is the\n";
+#ifndef __linux__
 	cout << "set that will be updated. Example: \"Textures2\\Earth\".\n";
+#else // __linux__
+	cout << "set that will be updated. Example: \"Textures2/Earth\".\n";
+#endif // __linux__
 	cout << "The following files must exist:\n";
 	cout << "  <basename1>_tile.bin       (tile descriptor file)\n";
 	cout << "  <basename1>_tile.tex       (surface texture file)\n";
@@ -1490,7 +1654,11 @@ void MergeTextures ()
 	cout << "* rename merge_tile.bin to <planet>_tile.bin\n";
 	cout << "* rename merge_tile.tex to <planet>_tile.tex\n";
 	cout << "(where <planet> is the name of the planet), and overwrite the original\n";
+#ifndef __linux__
 	cout << "files in the Orbiter\\Textures2 folder." << endl;
+#else // __linux__
+	cout << "files in the Orbiter/Textures2 folder." << endl;
+#endif // __linux__
 
 }
 
@@ -1577,7 +1745,11 @@ void CreateCloudMap ()
 	cout << "2:1 for best results.\n\n";
 	cout << ">> Cloud colour map file name (.bmp): ";
 	cin >> fname;
+#ifndef __linux__
 	if (!_stricmp (fname+(strlen(fname)-4), ".bmp"))
+#else // __linux__
+	if (!strcasecmp (fname+(strlen(fname)-4), ".bmp"))
+#endif // __linux__
 		fname[strlen(fname)-4] = '\0';
 	cout << endl;
 
@@ -1612,7 +1784,11 @@ void CreateCloudMap ()
 		cout << "pixels are fully opaque, black pixels are fully transparent.\n\n";
 		cout << ">> Opacity map file name (.bmp): ";
 		cin >> aname;
+#ifndef __linux__
 		if (!_stricmp (aname+(strlen(aname)-4), ".bmp"))
+#else // __linux__
+		if (!strcasecmp (aname+(strlen(aname)-4), ".bmp"))
+#endif // __linux__
 			aname[strlen(aname)-4] = '\0';
 		cout << endl;
 	}
@@ -1871,7 +2047,11 @@ void CreateCloudMap ()
 
 	cout << endl << "Cloud map written to " << fname << ".tex" << endl;
 	cout << "\nTo use the new cloud map in Orbiter:\n";
+#ifndef __linux__
 	cout << "Rename to <planet>_cloud.tex and move to Orbiter\\Textures2 folder" << endl;
+#else // __linux__
+	cout << "Rename to <planet>_cloud.tex and move to Orbiter/Textures2 folder" << endl;
+#endif // __linux__
 }
 
 void SetOutputHeader (BITMAPFILEHEADER &bmfh, BITMAPINFOHEADER &bmih, LONG w, LONG h)
@@ -2268,16 +2448,30 @@ DWORD CatDDS (FILE *texf, RGB *img, Alpha *aimg, LONG imgw, LONG imgh, bool forc
 		}
 		fclose (bmpf);
 
+#ifndef __linux__
 		res = _spawnl (_P_WAIT, dxtex, dxtex, bmpname, "-a", abmpname, mipmap ? "-m" : "", binary_alpha ? "DXT1" : "DXT5", ddsname, NULL);
+#else // __linux__
+		res = spawnl_wait (dxtex, dxtex, bmpname, "-a", abmpname, mipmap ? "-m" : "", binary_alpha ? "DXT1" : "DXT5", ddsname, NULL);
+#endif // __linux__
 	} else {
+#ifndef __linux__
 		res = _spawnl (_P_WAIT, dxtex, dxtex, bmpname, mipmap ? "-m" : "", "DXT1", ddsname, NULL);
+#else // __linux__
+		res = spawnl_wait (dxtex, dxtex, bmpname, mipmap ? "-m" : "", "DXT1", ddsname, NULL);
+#endif // __linux__
 	}
 	if (res != 0) FatalError ("Executing dxtex failed.");
 
 	// get file size
+#ifndef __linux__
     if ((fh = _open (ddsname, _O_RDONLY)) == -1) FatalError ("Could not open DDS file");
     ddssize = _filelength (fh);
 	_close (fh);
+#else // __linux__
+    if ((fh = open (ddsname, O_RDONLY)) == -1) FatalError ("Could not open DDS file");
+    ddssize = filelength (fh);
+	close (fh);
+#endif // __linux__
 	
 	if (force || !aimg || !selective_alpha || (bopaque && btransparent)) {
 		FILE *ddsf = fopen (ddsname, "rb");
@@ -2416,15 +2610,29 @@ WORD CatMaskDDS (FILE *texf, RGB *img, Alpha *aimg, LONG imgw, LONG imgh)
 
 	// now convert to DXT1 texture
 	if (balpha)
+#ifndef __linux__
 		res = _spawnl (_P_WAIT, dxtex, dxtex, bmpname, "-a", abmpname, "DXT1", ddsname, NULL);
+#else // __linux__
+		res = spawnl_wait (dxtex, dxtex, bmpname, "-a", abmpname, "DXT1", ddsname, NULL);
+#endif // __linux__
 	else
+#ifndef __linux__
 		res = _spawnl (_P_WAIT, dxtex, dxtex, bmpname, "DXT1", ddsname, NULL);
+#else // __linux__
+		res = spawnl_wait (dxtex, dxtex, bmpname, "DXT1", ddsname, NULL);
+#endif // __linux__
 	if (res != 0) FatalError ("Executing dxtex failed.");
 
 	// get file size
+#ifndef __linux__
     if ((fh = _open (ddsname, _O_RDONLY)) == -1) FatalError ("Could not open DDS file");
     ddssize = _filelength (fh);
 	_close (fh);
+#else // __linux__
+    if ((fh = open (ddsname, O_RDONLY)) == -1) FatalError ("Could not open DDS file");
+    ddssize = filelength (fh);
+	close (fh);
+#endif // __linux__
 	
 	// append to texture file
 	FILE *ddsf = fopen (ddsname, "rb");
@@ -2728,8 +2936,12 @@ void FatalError (const char *msg)
 {
 	cerr << endl << "pltex ERROR: " << msg << endl;
 	cerr << "Press a key to terminate." << endl;
+#ifndef __linux__
 	while (_kbhit()) _getch();
 	while (!_kbhit());
+#else // __linux__
+	waitkey (); // _kbhit/_getch loops
+#endif // __linux__
 	exit (1);
 }
 
