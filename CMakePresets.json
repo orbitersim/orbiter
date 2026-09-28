@@ -27,58 +27,18 @@
       }
     },
     {
-      "name": "linux-winegcc-base",
+      "name": "linux-gcc-base",
       "inherits": "ninja-base",
       "hidden": true,
       "cacheVariables": {
-        "CMAKE_C_COMPILER": "winegcc",
-        "CMAKE_CXX_COMPILER": "wineg++",
-        "ORBITER_MAKE_DOC": false,
-        "ORBITER_BUILD_D3D9CLIENT": false
+        "CMAKE_C_COMPILER": "gcc",
+        "CMAKE_CXX_COMPILER": "g++",
+        "ORBITER_MAKE_DOC": false
       },
       "condition": {
         "type": "equals",
         "lhs": "${hostSystemName}",
         "rhs": "Linux"
-      },
-      "vendor": {
-        "microsoft.com/VisualStudioSettings/CMake/1.0": {
-          "hostOS": [
-            "Linux"
-          ]
-        },
-        "microsoft.com/VisualStudioRemoteSettings/CMake/1.0": {
-          "sourceDir": "$env{HOME}/.vs/$ms{projectDirName}"
-        }
-      }
-    },
-    {
-      "name": "linux-x64-debug",
-      "displayName": "x64 Debug",
-      "inherits": "linux-winegcc-base",
-      "architecture": {
-        "value": "x64",
-        "strategy": "external"
-      },
-      "cacheVariables": {
-        "CMAKE_BUILD_TYPE": "Debug"
-      }
-    },
-    {
-      "name": "linux-x64-release",
-      "displayName": "x64 Release",
-      "inherits": "linux-winegcc-base",
-      "cacheVariables": {
-        "CMAKE_BUILD_TYPE": "Release"
-      }
-    },
-    {
-      "name": "linux-x64-asan",
-      "displayName": "x64 ASan",
-      "inherits": "linux-x64-release",
-      "cacheVariables": {
-        "ORBITER_ENABLE_ASAN": true,
-        "CMAKE_BUILD_TYPE": "RelWithDebInfo"
       }
     },
     {
@@ -138,6 +98,40 @@
       "cacheVariables": {
         "CMAKE_BUILD_TYPE": "Release"
       }
+    },
+    {
+      "name": "linux-x64-debug",
+      "displayName": "x64 Debug",
+      "inherits": "linux-gcc-base",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Debug"
+      }
+    },
+    {
+      "name": "linux-x64-release",
+      "displayName": "x64 Release",
+      "inherits": "linux-gcc-base",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Release"
+      }
+    },
+    {
+      "name": "linux-x64-asan",
+      "displayName": "x64 ASan",
+      "inherits": "linux-x64-release",
+      "cacheVariables": {
+        "ORBITER_SANITIZER": true,
+        "CMAKE_BUILD_TYPE": "RelWithDebInfo"
+      }
+    },
+    {
+      "name": "linux-x64-tracy",
+      "displayName": "x64 Tracy Profiler",
+      "inherits": "linux-x64-release",
+      "cacheVariables": {
+        "ORBITER_TRACY_PROFILER": true,
+        "CMAKE_BUILD_TYPE": "Release"
+      }
     }
   ],
   "buildPresets": [
@@ -180,6 +174,11 @@
       "name": "linux-x64-asan",
       "displayName": "x64 ASan",
       "configurePreset": "linux-x64-asan"
+    },
+    {
+      "name": "linux-x64-tracy",
+      "displayName": "x64 Tracy Profiler",
+      "configurePreset": "linux-x64-tracy"
     }
   ],
   "testPresets": [

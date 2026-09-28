@@ -1,4 +1,5 @@
 function(enable_sanitizer SANITIZER)
+if(WIN32) # Windows: upstream
   if(NOT MSVC)
     add_compile_options(-fsanitize=${SANITIZER} -fno-omit-frame-pointer)
     add_link_options(-fsanitize=${SANITIZER})
@@ -53,5 +54,10 @@ function(enable_sanitizer SANITIZER)
   else()
     message(FATAL_ERROR "MSVC does not support sanitizer ${SANITIZER}")
   endif()
+else() # Linux port
+  add_compile_options(-fsanitize=${SANITIZER} -fno-omit-frame-pointer)
+  add_link_options(-fsanitize=${SANITIZER})
+  # MSVC branches (CRT debug heap, clang_rt.asan DLL and llvm-symbolizer.exe copies) left out: GCC links libasan itself
+endif() # WIN32
   message(STATUS "Enabled sanitize=${SANITIZER}")
 endfunction()

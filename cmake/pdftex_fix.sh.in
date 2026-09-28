@@ -1,0 +1,4 @@
+#!/bin/sh
+# not upstream: pdftex_fix.bat.in for Linux, pdflatex fails on doxygen's refman.tex although the PDF gets written
+"@PDFLATEX_COMPILER@" "$@"
+exit 0

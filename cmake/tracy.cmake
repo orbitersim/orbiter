@@ -2,6 +2,7 @@
 # Licensed under the MIT License
 
 # Tracy profiler integration (https://github.com/wolfpld/tracy)
+if(WIN32) # Windows: upstream
 #
 # The profiler is split in 2 parts:
 #    - client code that needs to be added to the process to profile
@@ -44,6 +45,10 @@
 # - start the profiler (in Utils) and connect to the Orbiter process
 # - have fun
 
+else() # Linux port
+# TracyClient is a shared library so every module can profile; Tracy.hpp stays on the include path even when disabled
+# Modules opt in with ${TRACY_CLIENT_INCLUDE} and ${TRACY_CLIENT}; the server is built as the "profiler" project
+endif() # WIN32
 
 if(ORBITER_TRACY_PROFILER)
 	set(TRACY_ENABLE ON)
@@ -74,8 +79,13 @@ if(ORBITER_TRACY_PROFILER)
 	# To be used in CMakeLists.txt. 
 	set(TRACY_CLIENT TracyClient)
 
+if(WIN32) # Windows: upstream
 	# Copy the DLL alongside the main Orbiter binary.
 	install(TARGETS TracyClient RUNTIME DESTINATION ${ORBITER_INSTALL_ROOT_DIR})
+else() # Linux port
+	# Copy the shared library alongside the main Orbiter binary.
+	install(TARGETS TracyClient LIBRARY DESTINATION ${ORBITER_INSTALL_ROOT_DIR})
+endif() # WIN32
 
 	# The root CMakeLists.txt file of the repo only handles the client side.
 	# The server is inside the profiler subdirectory.

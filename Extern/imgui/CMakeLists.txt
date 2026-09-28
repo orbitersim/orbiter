@@ -14,6 +14,12 @@ FetchContent_MakeAvailable(imgui)
 install(FILES ${imgui_SOURCE_DIR}/misc/fonts/Roboto-Medium.ttf fa-solid-900.ttf ${imgui_SOURCE_DIR}/misc/fonts/Cousine-Regular.ttf Lekton-Bold.ttf architext.regular.ttf
 	DESTINATION ${ORBITER_INSTALL_ROOT_DIR}/Fonts
 )
+if(NOT WIN32) # Linux port
+# not upstream: the same fonts in the build tree, so Orbiter run from there finds them
+file(COPY ${imgui_SOURCE_DIR}/misc/fonts/Roboto-Medium.ttf fa-solid-900.ttf ${imgui_SOURCE_DIR}/misc/fonts/Cousine-Regular.ttf Lekton-Bold.ttf architext.regular.ttf
+	DESTINATION ${ORBITER_BINARY_ROOT_DIR}/Fonts
+)
+endif() # NOT WIN32
 
 install(FILES ${imgui_SOURCE_DIR}/imgui.h ${imgui_SOURCE_DIR}/imconfig.h
 	DESTINATION ${ORBITER_INSTALL_SDK_DIR}/include

@@ -6,12 +6,21 @@ cmake_minimum_required(VERSION 3.19)
 # Set the project name
 project (Orbiter VERSION 21.7.24)
 
+if(WIN32) # Windows: upstream
 set(CMAKE_CXX_STANDARD 17)
+else() # Linux port
+# not upstream: C++20 per the port plan (upstream uses 17)
+set(CMAKE_CXX_STANDARD 20)
+endif() # WIN32
 set(CMAKE_CXX_STANDARD_REQUIRED OFF)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
+if(WIN32) # Windows: upstream
 #Add /permissive if using C++20 or higher
 #add_compile_options(/permissive)
+else() # Linux port
+# upstream's /permissive note is MSVC-only
+endif() # WIN32
 
 # Some functions to simplify debugging CMake scripts
 include(CMakePrintHelpers)
@@ -32,6 +41,7 @@ set(CMAKE_MODULE_PATH
 	${CMAKE_MODULE_PATH}
 )
 
+if(WIN32) # Windows: upstream
 if(MSVC AND NOT CMAKE_SIZEOF_VOID_P EQUAL 8)
 	set(BUILD64 0)
 	set(ARCH "x86")
@@ -40,11 +50,20 @@ else()
 	set(BUILD64 1)
 	set(ARCH "x64")
 endif()
+else() # Linux port
+# 32-bit MSVC branch left out: the Linux build is x86_64 only
+set(BUILD64 1)
+set(ARCH "x64")
+endif() # WIN32
 
+if(WIN32) # Windows: upstream
 # This is important for building using vs generator (jarmonik)
 if (NOT ${CMAKE_GENERATOR} STREQUAL "Ninja")
 	add_compile_options(/MP)
 endif()
+else() # Linux port
+# /MP left out: Ninja and make already compile in parallel
+endif() # WIN32
 
 # Define directories and file paths for some common binaries
 set(OVP_DIR "${CMAKE_SOURCE_DIR}/OVP")
@@ -69,6 +88,10 @@ set(ORBITER_BINARY_TEXTURES2_DIR ${ORBITER_BINARY_ROOT_DIR}/Textures2)
 set(ORBITER_BINARY_HTML_DIR ${ORBITER_BINARY_ROOT_DIR}/Html)
 set(ORBITER_BINARY_DOC_DIR ${ORBITER_BINARY_ROOT_DIR}/Doc)
 set(ORBITER_BINARY_SDK_DIR ${ORBITER_BINARY_ROOT_DIR}/Orbitersdk)
+if(NOT WIN32) # Linux port
+# not upstream: Orbiter scans Modules/Startup at launch, so the folder exists before any module lands in it
+file(MAKE_DIRECTORY ${ORBITER_BINARY_STARTUP_DIR} ${ORBITER_BINARY_PLUGIN_DIR})
+endif() # NOT WIN32
 
 set(ORBITER_INSTALL_ROOT_DIR "Orbiter") # This path is relative to CMAKE_INSTALL_PREFIX
 set(ORBITER_INSTALL_MESH_DIR ${ORBITER_INSTALL_ROOT_DIR}/Meshes)
@@ -83,24 +106,49 @@ set(ORBITER_INSTALL_UTILS_DIR ${ORBITER_INSTALL_ROOT_DIR}/Utils)
 set(ORBITER_INSTALL_SDK_DIR ${ORBITER_INSTALL_ROOT_DIR}/Orbitersdk)
 
 set(ORBITER_SDK_LIB $<TARGET_FILE:Orbitersdk>)
+if(WIN32) # Windows: upstream
 set(ORBITER_DLGCTRL_LIB $<TARGET_FILE:DlgCtrl>)
 set(LUAINTERPRETER_LIB $<TARGET_LINKER_FILE:LuaInterpreter>)
+else() # Linux port
+# not upstream: by target name (a path to a prefix-less .so links as -l<name>; the target also carries Qt)
+set(ORBITER_DLGCTRL_LIB DlgCtrl)
+set(LUAINTERPRETER_LIB LuaInterpreter)
+endif() # WIN32
 
 set(EXTERN_DIR "${CMAKE_SOURCE_DIR}/Extern")
 
+if(WIN32) # Windows: upstream
 set(HTMLHELP_DIR "${EXTERN_DIR}/Htmlhelp")
 set(HTMLHELP_INCLUDE_DIR ${HTMLHELP_DIR}/include)
 set(HTMLHELP_LIB_DIR ${HTMLHELP_DIR}/lib-${ARCH})
 set(HTMLHELP_LIB ${HTMLHELP_LIB_DIR}/Htmlhelp.Lib)
+else() # Linux port
+# HTMLHELP_* left out: CHM help is replaced by opening the Html pages
+endif() # WIN32
 
 set(ORBITER_TOOL_MESHC "$<TARGET_FILE:meshc>")
+if(WIN32) # Windows: upstream
 set(ldoc $<TARGET_FILE:lua::exe> ${ORBITER_BINARY_ROOT_DIR}/packages/LDoc/ldoc.lua -v --multimodule)
+else() # Linux port
+# packages/ldoc: CopyLDoc writes lower case, upstream's LDoc only resolves on a case-insensitive disk
+# LUA_PATH/LUA_CPATH: Windows Lua also searches its own folder ('!' in its default paths), where CopyLDoc puts Penlight and lfs
+set(ldoc ${CMAKE_COMMAND} -E env "LUA_PATH='${ORBITER_BINARY_ROOT_DIR}/?.lua$<SEMICOLON>${ORBITER_BINARY_ROOT_DIR}/?/init.lua$<SEMICOLON>$<SEMICOLON>'"
+	"LUA_CPATH='${ORBITER_BINARY_ROOT_DIR}/?.so$<SEMICOLON>$<SEMICOLON>'" $<TARGET_FILE:lua::exe> ${ORBITER_BINARY_ROOT_DIR}/packages/ldoc/ldoc.lua -v --multimodule)
+endif() # WIN32
 
+if(WIN32) # Windows: upstream
 find_package(OpenGL QUIET)
 find_package(HTMLHelp)
+else() # Linux port
+# OpenGL lookup left out: graphics are Vulkan only
+# HTMLHelp and MFC lookups left out: Windows-only
+endif() # WIN32
 find_package(LATEX)
+if(WIN32) # Windows: upstream
 find_package(MFC)
+endif() # WIN32
 
+if(WIN32) # Windows: upstream
 # We don't query Qt with find_package because we need the 64-bit version here
 set(Qt5_x64_DIR
 	"Qt5_x64_DIR_NOTFOUND"
@@ -108,15 +156,34 @@ set(Qt5_x64_DIR
 	PATH
 	"Qt5-x64 installation path."
 )
+else() # Linux port
+# Qt6 replaces the Qt5_x64 lookup and also carries the Launchpad and dialogs
+find_package(Qt6 REQUIRED COMPONENTS Core Gui Widgets DBus)
+endif() # WIN32
 
+if(WIN32) # Windows: upstream
 if(MSVC)
   add_compile_options(/we4311 /DNOMINMAX)
   add_link_options("/NODEFAULTLIB:\"LIBCMTD\"")
 else()
   set(CMAKE_BUILD_WITH_INSTALL_RPATH true)
 endif()
+else() # Linux port
+# /we4311 left out: g++ already rejects pointer-to-smaller-int casts; NOMINMAX has no counterpart
+set(CMAKE_BUILD_WITH_INSTALL_RPATH true)
+# Windows finds DLLs next to the exe and in Modules (Orbiter adds it to PATH); $ORIGIN/.. reaches Modules from Modules/<sub>, $ORIGIN/../.. the exe folder
+set(CMAKE_INSTALL_RPATH "$ORIGIN" "$ORIGIN/.." "$ORIGIN/../..")
+# DLL naming: modules are <name>.so, as upstream loads <name>.dll
+set(CMAKE_SHARED_LIBRARY_PREFIX "")
+set(CMAKE_SHARED_MODULE_PREFIX "")
+endif() # WIN32
 
 # Copy data and binary assets from source to binary tree to provide a working Orbiter environment
+if(NOT WIN32) # Linux port
+# copy_directory_if_different: skips re-copying 228 MB of textures on every build
+# BinAssets copy left out: msvcr71/msvcp71.dll are the Windows runtime for old add-ons
+endif() # NOT WIN32
+if(WIN32) # Windows: upstream
 add_custom_target(CopyData ALL
 	COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_SOURCE_DIR}/BinAssets/ ${CMAKE_BINARY_DIR}
 	COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_SOURCE_DIR}/Scenarios/ ${CMAKE_BINARY_DIR}/Scenarios
@@ -128,11 +195,24 @@ add_custom_target(CopyData ALL
 	COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_SOURCE_DIR}/Flights/ ${CMAKE_BINARY_DIR}/Flights
 	COMMAND ${CMAKE_COMMAND} -E make_directory ${ORBITER_BINARY_SDK_DIR}/lib/Lua
 )
+else() # Linux port
+add_custom_target(CopyData ALL
+	COMMAND ${CMAKE_COMMAND} -E copy_directory_if_different ${CMAKE_SOURCE_DIR}/Scenarios/ ${CMAKE_BINARY_DIR}/Scenarios
+	COMMAND ${CMAKE_COMMAND} -E copy_directory_if_different ${CMAKE_SOURCE_DIR}/Textures/ ${ORBITER_BINARY_TEXTURES_DIR}
+	COMMAND ${CMAKE_COMMAND} -E copy_directory_if_different ${CMAKE_SOURCE_DIR}/Meshes/ ${CMAKE_BINARY_DIR}/Meshes
+	COMMAND ${CMAKE_COMMAND} -E copy_directory_if_different ${CMAKE_SOURCE_DIR}/Script/ ${CMAKE_BINARY_DIR}/Script
+	COMMAND ${CMAKE_COMMAND} -E copy_directory_if_different ${CMAKE_SOURCE_DIR}/Config/ ${CMAKE_BINARY_DIR}/Config
+	COMMAND ${CMAKE_COMMAND} -E copy_directory_if_different ${CMAKE_SOURCE_DIR}/GravityModels/ ${CMAKE_BINARY_DIR}/GravityModels
+	COMMAND ${CMAKE_COMMAND} -E copy_directory_if_different ${CMAKE_SOURCE_DIR}/Flights/ ${CMAKE_BINARY_DIR}/Flights
+	COMMAND ${CMAKE_COMMAND} -E make_directory ${ORBITER_BINARY_SDK_DIR}/lib/Lua
+)
+endif() # WIN32
 set_target_properties(CopyData
 	PROPERTIES
 	FOLDER Data
 )
 
+if(WIN32) # Windows: upstream
 # =====================================================================================
 # work around Html Help compiler bug returning error code
 
@@ -140,29 +220,53 @@ set(HHC_CMD ${CMAKE_CURRENT_BINARY_DIR}/cmake/hhc_fix.bat)
 file(TO_NATIVE_PATH "${HTML_HELP_COMPILER}" HHC_PATH_W)
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/cmake/hhc_fix.bat.in ${HHC_CMD})
 
+else() # Linux port
+# hhc_fix.bat left out: hhc.py below always exits 0
+# not upstream: the Html Help compiler is cmake/hhc.py; its .chm is a zip of the project's pages, which Orbiter's help viewer reads
+find_package(Python3 REQUIRED COMPONENTS Interpreter)
+set(HHC_CMD ${Python3_EXECUTABLE} ${CMAKE_SOURCE_DIR}/cmake/hhc.py)
+endif() # WIN32
 
 # =====================================================================================
 # work around pdftex returning an error because of doxygen bug
 
+if(WIN32) # Windows: upstream
 set(PDFTEX_CMD ${CMAKE_CURRENT_BINARY_DIR}/cmake/pdftex_fix.bat)
 file(TO_NATIVE_PATH "${PDFLATEX_COMPILER}" PDFTEX_PATH_W)
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/cmake/pdftex_fix.bat.in ${PDFTEX_CMD})
 
 
 # =====================================================================================
+else() # Linux port
+set(PDFTEX_CMD ${CMAKE_CURRENT_BINARY_DIR}/cmake/pdftex_fix.sh) # pdftex_fix.bat as a shell script
+configure_file(${CMAKE_CURRENT_SOURCE_DIR}/cmake/pdftex_fix.sh.in ${PDFTEX_CMD} @ONLY)
+endif() # WIN32
 
 set(OrbiterTgt Orbiter)
+if(WIN32) # Windows: upstream
 set(ORBITER_LIB $<TARGET_LINKER_FILE:Orbiter>)
+else() # Linux port
+set(ORBITER_LIB "") # no import library on ELF: modules bind the exe's exported oapi* symbols at dlopen
+endif() # WIN32
 
 # =====================================================================================
 # Configure Orbiter.cfg for externally installed planet textures
 
+if(WIN32) # Windows: upstream
 set(ORBITER_PLANET_TEXTURE_INSTALL_DIR
 	${ORBITER_BINARY_ROOT_DIR}/Textures
 	CACHE
 	PATH
 	"Planet texture installation directory (e.g. C:/Orbiter2016/Textures)"
 )
+else() # Linux port
+set(ORBITER_PLANET_TEXTURE_INSTALL_DIR
+	${ORBITER_BINARY_ROOT_DIR}/Textures
+	CACHE
+	PATH
+	"Planet texture installation directory (e.g. ~/Orbiter2016/Textures)"
+)
+endif() # WIN32
 
 if(DEFINED ENV{ORBITER_PLANET_TEXTURE_INSTALL_DIR})
   set(ORBITER_PLANET_TEXTURE_INSTALL_DIR $ENV{ORBITER_PLANET_TEXTURE_INSTALL_DIR})
@@ -182,11 +286,19 @@ endif()
 # =====================================================================================
 # Find required and optional build tools
 
+if(WIN32) # Windows: upstream
 option(
 	ORBITER_BUILD_D3D9CLIENT
 	"Build the D3D9 graphics client"
 	ON
 )
+else() # Linux port
+option(
+	ORBITER_BUILD_VULKANCLIENT
+	"Build the Vulkan graphics client"
+	ON
+)
+endif() # WIN32
 
 option(
 	ORBITER_BUILD_XRSOUND
@@ -199,6 +311,14 @@ option(ORBITER_MAKE_DOC
 	OFF
 )
 
+if(NOT WIN32) # Linux port
+# not upstream: the help files need only Python here, so they come with every build
+option(ORBITER_MAKE_HELP
+	"Create the help files (.chm)"
+	ON
+)
+
+endif() # NOT WIN32
 option(ORBITER_MAKE_TESTS
 	"Build unit tests"
 	ON
@@ -216,10 +336,19 @@ option(ORBITER_TRACY_PROFILER
 
 include(cmake/tracy.cmake)
 
+if(NOT WIN32) # Linux port
+# PipeWire replaces the irrKlang library
+endif() # NOT WIN32
 if(ORBITER_BUILD_XRSOUND)
+if(WIN32) # Windows: upstream
 	set(IRRKLANG_DIR "" CACHE PATH "Path to the irrKlang library")
+else() # Linux port
+	find_package(PkgConfig REQUIRED)
+	pkg_check_modules(PIPEWIRE REQUIRED IMPORTED_TARGET libpipewire-0.3)
+endif() # WIN32
 endif()
 
+if(WIN32) # Windows: upstream
 if(ORBITER_BUILD_D3D9CLIENT)
 	find_package(DXSDK REQUIRED)
 	set(DXSDK_DIR
@@ -232,16 +361,34 @@ if(ORBITER_BUILD_D3D9CLIENT)
 		message(FATAL_ERROR "DirectX SDK not found. The D3D9 graphics client will not be built.")
 	endif()
 endif()
+else() # Linux port
+# Vulkan 1.4 and glslangValidator replace the DirectX SDK (June 2010)
+if(ORBITER_BUILD_VULKANCLIENT)
+	find_package(Vulkan 1.4 REQUIRED COMPONENTS glslangValidator)
+endif()
+endif() # WIN32
 
 if (ORBITER_MAKE_DOC)
 	find_package(Doxygen REQUIRED)
 endif()
 
+if(NOT WIN32) # Linux port
+# not upstream: .rc scripts compile to C++ resource tables
+include(cmake/rcresources.cmake)
+
+endif() # NOT WIN32
 # Enable Address SANitizer
 include(cmake/sanitizer.cmake)
+if(WIN32) # Windows: upstream
 if (ORBITER_SANITIZER AND MSVC)
 	enable_sanitizer(${ORBITER_SANITIZER})
 endif()
+else() # Linux port
+# the option is ON/OFF, so the sanitizer name is passed here
+if (ORBITER_SANITIZER)
+	enable_sanitizer(address)
+endif()
+endif() # WIN32
 
 
 # Given a source directory (srcdir) and a target root directory (tgtroot),
@@ -264,9 +411,16 @@ endfunction()
 
 
 # Installation
+if(WIN32) # Windows: upstream
 install(DIRECTORY Scenarios Textures Meshes Config GravityModels Script Flights BinAssets/
 	DESTINATION ${ORBITER_INSTALL_ROOT_DIR}
 )
+else() # Linux port
+# BinAssets left out: it only holds msvcr71/msvcp71.dll, the Windows runtime for old add-ons
+install(DIRECTORY Scenarios Textures Meshes Config GravityModels Script Flights
+	DESTINATION ${ORBITER_INSTALL_ROOT_DIR}
+)
+endif() # WIN32
 
 set(CMAKE_MODULE_PATH
 	${ORBITER_BINARY_ROOT_DIR}
@@ -280,9 +434,16 @@ INSTALL(FILES ${CMAKE_INSTALL_SYSTEM_RUNTIME_LIBS}
 )
 
 # readme and license
+if(WIN32) # Windows: upstream
 INSTALL(FILES readme.txt
 	DESTINATION ${ORBITER_INSTALL_ROOT_DIR}
 )
+else() # Linux port
+INSTALL(FILES readme_linux.txt
+	DESTINATION ${ORBITER_INSTALL_ROOT_DIR}
+	RENAME readme.txt
+)
+endif() # WIN32
 INSTALL(FILES LICENSE
 	DESTINATION ${ORBITER_INSTALL_ROOT_DIR}
 )
@@ -290,6 +451,12 @@ INSTALL(FILES LICENSE
 
 # Sub-projects
 add_subdirectory(Extern)
+if(NOT WIN32) # Linux port
+# only DLLEXPORT/DLLCLBK/OAPIFUNC symbols leave the exe or a module, as with Windows DLLs
+set(CMAKE_CXX_VISIBILITY_PRESET hidden)
+set(CMAKE_C_VISIBILITY_PRESET hidden)
+set(CMAKE_VISIBILITY_INLINES_HIDDEN ON)
+endif() # NOT WIN32
 add_subdirectory(Src)
 add_subdirectory(Utils)
 add_subdirectory(Orbitersdk)
@@ -307,23 +474,42 @@ endif()
 configure_file(${CMAKE_SOURCE_DIR}/cmake/CPackOptions.cmake.in
 	${CMAKE_BINARY_DIR}/OrbiterCPackOptions.cmake)
 
+if(WIN32) # Windows: upstream
 set(CPACK_GENERATOR "WIX;ZIP")
+else() # Linux port
+# TGZ replaces the WIX installer and ZIP
+set(CPACK_GENERATOR "TGZ")
+endif() # WIN32
 set(CPACK_PACKAGE_NAME OpenOrbiter)
 set(CPACK_PACKAGE_VENDOR Orbitersim)
+if(WIN32) # Windows: upstream
 set(CPACK_PACKAGE_DESCRIPTION "Orbiter is an Open-source spaceflight simulator for Windows PCs.")
+else() # Linux port
+set(CPACK_PACKAGE_DESCRIPTION "Orbiter is an Open-source spaceflight simulator for Linux PCs.")
+endif() # WIN32
 set(CPACK_PACKAGE_HOMEPAGE_URL http://orbit.medphys.ucl.ac.uk)
 set(CPACK_PACKAGE_EXECUTABLES Orbiter;OpenOrbiter)
+if(NOT WIN32) # Linux port
+# not upstream: the OpenOrbiter shortcut is a launcher script next to Orbiter (a tarball has no start menu)
+install(PROGRAMS cmake/OpenOrbiter.sh DESTINATION ${ORBITER_INSTALL_ROOT_DIR} RENAME OpenOrbiter)
+# not upstream: deps.list, what OpenOrbiter checks and offers to install, taken from the installed programs (the RuntimeLibraries counterpart)
+install(CODE "execute_process(COMMAND bash \"${ORBITER_SOURCE_ROOT_DIR}/cmake/deps_list.sh\" \"\$ENV{DESTDIR}\${CMAKE_INSTALL_PREFIX}/${ORBITER_INSTALL_ROOT_DIR}\")")
+endif() # NOT WIN32
 set(CPACK_COMPONENTS_GROUPING ALL_COMPONENTS_IN_ONE)
 set(CPACK_COMPONENT_Unspecified_DISPLAY_NAME "Orbiter Core Components")
 set(CPACK_COMPONENT_Unspecified_REQUIRED TRUE)
 set(CPACK_COMPONENT_RuntimeLibraries_DESCRIPTION "System libraries used by Orbiter. Install if Orbiter fails to launch.")
 set(CPACK_RESOURCE_FILE_LICENSE ${ORBITER_SOURCE_ROOT_DIR}/cmake/LICENSE.rtf)
 set(CPACK_RESOURCE_FILE_README ${ORBITER_SOURCE_ROOT_DIR}/README.md)
+if(WIN32) # Windows: upstream
 set(CPACK_WIX_UI_BANNER ${ORBITER_SOURCE_ROOT_DIR}/cmake/install_banner.bmp)
 set(CPACK_WIX_UI_DIALOG ${ORBITER_SOURCE_ROOT_DIR}/cmake/install_bkg.bmp)
 set(CPACK_WIX_PRODUCT_ICON ${ORBITER_SOURCE_ROOT_DIR}/cmake/orbiter_install.ico)
 set(CPACK_WIX_UPGRADE_GUID AB3F6483-A1A4-4ECD-ADAE-D33DF3A5AADA)
 set(CPACK_WIX_COMPONENT_INSTALL)
+else() # Linux port
+# CPACK_WIX_* (banner, dialog, icon, upgrade GUID) left out: no WIX installer on Linux
+endif() # WIN32
 set(CPACK_PROJECT_CONFIG_FILE "${CMAKE_BINARY_DIR}/OrbiterCPackOptions.cmake")
 
 include(OrbiterCPackOptions)

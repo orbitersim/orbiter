@@ -1,3 +1,4 @@
+if(WIN32) # Windows: upstream
 if("${CPACK_GENERATOR}" STREQUAL "ZIP")
 
 	set(CPACK_INCLUDE_TOPLEVEL_DIRECTORY OFF)
@@ -9,3 +10,14 @@ elseif("${CPACK_GENERATOR}" STREQUAL "WIX")
 	set(CPACK_ERROR_ON_ABSOLUTE_INSTALL_DESTINATION OFF)
 
 endif()
+else() # Linux port
+if("${CPACK_GENERATOR}" STREQUAL "TGZ")
+
+	set(CPACK_INCLUDE_TOPLEVEL_DIRECTORY OFF)
+	set(CPACK_ERROR_ON_ABSOLUTE_INSTALL_DESTINATION OFF)
+
+endif()
+endif() # WIN32
+if(NOT WIN32) # Linux port
+# WIX branch left out: no WIX installer on Linux
+endif() # NOT WIN32

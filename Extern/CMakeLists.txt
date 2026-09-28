@@ -14,7 +14,13 @@ install(TARGETS lfs	DESTINATION ${ORBITER_BINARY_ROOT_DIR})
 install(TARGETS lfs DESTINATION ${ORBITER_INSTALL_SDK_DIR}/Utils/)
 target_include_directories(lfs PUBLIC Lua)
 target_link_libraries(lfs lua)
+if(WIN32) # Windows: upstream
 SET_TARGET_PROPERTIES(lfs PROPERTIES LINK_FLAGS "/DEF:\"${CMAKE_CURRENT_SOURCE_DIR}/luafilesystem/src/lfs.def\"")
+else() # Linux port
+# /DEF:lfs.def left out: ELF exports luaopen_lfs by default
+# lfs.so without the lib prefix, so Lua's require "lfs" finds it like lfs.dll
+set_target_properties(lfs PROPERTIES PREFIX "")
+endif() # WIN32
 
 install(TARGETS lfs	DESTINATION ${ORBITER_BINARY_ROOT_DIR})
 
