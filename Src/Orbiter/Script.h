@@ -17,11 +17,19 @@ public:
 	lua_State *GetLua (INTERPRETERHANDLE hInterp);
 
 protected:
+#ifndef __linux__
 	HINSTANCE LoadInterpreterLib();
+#else // __linux__
+	void *LoadInterpreterLib(); // HINSTANCE -> dlopen handle
+#endif // __linux__
 	
 private:
 	Orbiter *orbiter;
+#ifndef __linux__
 	HINSTANCE hLib;
+#else // __linux__
+	void *hLib;
+#endif // __linux__
 };
 
 #endif // !__INTERPRETER_H

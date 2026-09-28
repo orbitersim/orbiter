@@ -1,7 +1,9 @@
 // Copyright (c) Martin Schweiger
 // Licensed under the MIT License
 
+#ifndef __linux__
 #define STRICT 1
+#endif // !__linux__
 #define OAPI_IMPLEMENTATION
 
 #include "Orbiter.h"
@@ -25,6 +27,11 @@
 #include "MenuInfoBar.h"
 #include <zlib.h>
 #include "DrawAPI.h"
+#ifdef __linux__
+#include <QImage>
+#include <QCoreApplication>
+#include <QThread>
+#endif // __linux__
 
 #include "Orbitersdk.h"
 
@@ -50,7 +57,11 @@ DLLEXPORT void FormatValue (char *cbuf, int n, double f, int precision)
 	strncpy (cbuf, s, n);
 }
 
+#ifndef __linux__
 DLLEXPORT HINSTANCE oapiGetOrbiterInstance ()
+#else // __linux__
+DLLEXPORT void *oapiGetOrbiterInstance ()
+#endif // __linux__
 {
 	return g_pOrbiter->GetInstance();
 }
@@ -1379,7 +1390,11 @@ DLLEXPORT VISHANDLE *oapiObjectVisualPtr (OBJHANDLE hObject)
 
 DLLEXPORT MESHHANDLE oapiLoadMesh (const char *fname)
 {
+#ifndef __linux__
 	ifstream ifs(g_pOrbiter->MeshPath(fname));
+#else // __linux__
+	ifstream ifs(oapiResolvePath(g_pOrbiter->MeshPath(fname)));
+#endif // __linux__
 	Mesh *mesh = new Mesh; TRACENEW
 	ifs >> *mesh;
 	return (MESHHANDLE)mesh;
@@ -1585,8 +1600,12 @@ DLLEXPORT int oapiSetMaterial (DEVMESHHANDLE hMesh, DWORD matidx, const MATERIAL
 
 DLLEXPORT DWORD oapiAddMaterial (MESHHANDLE hMesh, MATERIAL *mat)
 {
+#ifndef __linux__
 	D3DMATERIAL7 *m = (D3DMATERIAL7*)mat;
 	return ((Mesh*)hMesh)->AddMaterial (*m);
+#else // __linux__
+	return ((Mesh*)hMesh)->AddMaterial (*mat);
+#endif // __linux__
 }
 
 DLLEXPORT bool oapiDeleteMaterial (MESHHANDLE hMesh, DWORD idx)
@@ -1774,7 +1793,11 @@ DLLEXPORT void oapiVCRegisterHUD (const VCHUDSPEC *spec)
 		g_pane->RegisterVCHUD (spec);
 }
 
+#ifndef __linux__
 DLLEXPORT void oapiRegisterPanelBackground (HBITMAP hBmp, DWORD flag, DWORD ck)
+#else // __linux__
+DLLEXPORT void oapiRegisterPanelBackground (QImage *hBmp, DWORD flag, DWORD ck)
+#endif // __linux__
 {
 	g_pane->RegisterPanelBackground (hBmp, flag, ck);
 }
@@ -1957,16 +1980,28 @@ DLLEXPORT void oapiReleaseBrush (oapi::Brush *brush)
 	if (gc) gc->clbkReleaseBrush (brush);
 }
 
+#ifndef __linux__
 DLLEXPORT HDC oapiGetDC (SURFHANDLE surf)
+#else // __linux__
+DLLEXPORT QPainter *oapiGetDC (SURFHANDLE surf)
+#endif // __linux__
 {
 	oapi::GraphicsClient *gc = g_pOrbiter->GetGraphicsClient();
+#ifndef __linux__
 	HDC hDC = NULL;
+#else // __linux__
+	QPainter *hDC = NULL;
+#endif // __linux__
 	if (gc && surf)
 		hDC = gc->clbkGetSurfaceDC (surf);
 	return hDC;
 }
 
+#ifndef __linux__
 DLLEXPORT void oapiReleaseDC (SURFHANDLE surf, HDC hDC)
+#else // __linux__
+DLLEXPORT void oapiReleaseDC (SURFHANDLE surf, QPainter *hDC)
+#endif // __linux__
 {
 	oapi::GraphicsClient *gc = g_pOrbiter->GetGraphicsClient();
 	if (gc && surf && hDC)
@@ -1996,12 +2031,20 @@ DLLEXPORT SURFHANDLE oapiCreateSurfaceEx (int width, int height, DWORD attrib)
 	return surf;
 }
 
+#ifndef __linux__
 DLLEXPORT SURFHANDLE oapiCreateSurface (HBITMAP hBmp, bool release_bmp)
+#else // __linux__
+DLLEXPORT SURFHANDLE oapiCreateSurface (QImage *hBmp, bool release_bmp)
+#endif // __linux__
 {
 	oapi::GraphicsClient *gc = g_pOrbiter->GetGraphicsClient();
 	SURFHANDLE surf = NULL;
 	if (gc) surf = gc->clbkCreateSurface (hBmp);
+#ifndef __linux__
 	if (release_bmp) DeleteObject ((HGDIOBJ)hBmp);
+#else // __linux__
+	if (release_bmp) delete hBmp; // DeleteObject
+#endif // __linux__
 	return surf;
 }
 
@@ -2036,7 +2079,11 @@ DLLEXPORT void oapiClearSurfaceColourKey (SURFHANDLE surf)
 	if (!surf) return;
 	oapi::GraphicsClient *gc = g_pOrbiter->GetGraphicsClient();
 	//if (gc) gc->clbClearSurfaceColourKey (surf); // TODO
+#ifndef __linux__
 	((LPDIRECTDRAWSURFACE7)surf)->SetColorKey (DDCKEY_SRCBLT, 0);
+#else // __linux__
+	if (gc) gc->clbkSetSurfaceColourKey (surf, SURF_NO_CK); // DirectDraw SetColorKey (DDCKEY_SRCBLT, NULL) removed the key
+#endif // __linux__
 }
 
 DLLEXPORT DWORD oapiGetColour (DWORD red, DWORD green, DWORD blue)
@@ -2126,7 +2173,11 @@ DLLEXPORT bool oapiAcceptDelayedKey (char key, double interval)
 
 DLLEXPORT LAUNCHPADITEM_HANDLE oapiRegisterLaunchpadItem (LaunchpadItem *item, LAUNCHPADITEM_HANDLE parent)
 {
+#ifndef __linux__
 	return (LAUNCHPADITEM_HANDLE)g_pOrbiter->Launchpad()->RegisterExtraParam (item, (HTREEITEM)parent);
+#else // __linux__
+	return (LAUNCHPADITEM_HANDLE)g_pOrbiter->Launchpad()->RegisterExtraParam (item, (QTreeWidgetItem*)parent);
+#endif // __linux__
 }
 
 DLLEXPORT bool oapiUnregisterLaunchpadItem (LaunchpadItem *item)
@@ -2136,7 +2187,11 @@ DLLEXPORT bool oapiUnregisterLaunchpadItem (LaunchpadItem *item)
 
 DLLEXPORT LAUNCHPADITEM_HANDLE oapiFindLaunchpadItem (const char *name, LAUNCHPADITEM_HANDLE parent)
 {
+#ifndef __linux__
 	return g_pOrbiter->Launchpad()->FindExtraParam (name, (HTREEITEM)parent);
+#else // __linux__
+	return g_pOrbiter->Launchpad()->FindExtraParam (name, (QTreeWidgetItem*)parent);
+#endif // __linux__
 }
 
 DLLEXPORT DWORD oapiRegisterCustomCmd (char *label, char *desc, CustomFunc func, void *context)
@@ -2159,12 +2214,20 @@ DLLEXPORT void oapiUnregisterCustomMenuCmd (int cmdId)
 	return g_pOrbiter->UnregisterMenuCmd (cmdId);
 }
 
+#ifndef __linux__
 DLLEXPORT HWND oapiOpenDialog (HINSTANCE hDLLInst, int resourceId, DLGPROC msgProc, void *context)
+#else // __linux__
+DLLEXPORT QWidget *oapiOpenDialog (void *hDLLInst, int resourceId, DLGINIT msgProc, void *context)
+#endif // __linux__
 {
 	return g_pOrbiter->OpenDialog (hDLLInst, resourceId, msgProc, context);
 }
 
+#ifndef __linux__
 DLLEXPORT HWND oapiOpenDialogEx (HINSTANCE hDLLInst, int resourceId, DLGPROC msgProc, DWORD flag, void *context)
+#else // __linux__
+DLLEXPORT QWidget *oapiOpenDialogEx (void *hDLLInst, int resourceId, DLGINIT msgProc, DWORD flag, void *context)
+#endif // __linux__
 {
 	return g_pOrbiter->OpenDialogEx (hDLLInst, resourceId, msgProc, flag, context);
 }
@@ -2175,12 +2238,20 @@ DLLEXPORT void oapiOpenDialog(ImGuiDialog *e)
 	e->Activate();
 }
 
+#ifndef __linux__
 DLLEXPORT HWND oapiFindDialog (HINSTANCE hDLLInst, int resourceId)
+#else // __linux__
+DLLEXPORT QWidget *oapiFindDialog (void *hDLLInst, int resourceId)
+#endif // __linux__
 {
 	return g_pOrbiter->IsDialog (hDLLInst, resourceId);
 }
 
+#ifndef __linux__
 DLLEXPORT void oapiCloseDialog (HWND hDlg)
+#else // __linux__
+DLLEXPORT void oapiCloseDialog (QWidget *hDlg)
+#endif // __linux__
 {
 	g_pOrbiter->CloseDialog (hDlg);
 }
@@ -2192,39 +2263,63 @@ DLLEXPORT void oapiCloseDialog(ImGuiDialog *e)
 		dmgr->DelEntry(e);
 }
 
+#ifndef __linux__
 DLLEXPORT void *oapiGetDialogContext (HWND hDlg)
+#else // __linux__
+DLLEXPORT void *oapiGetDialogContext (QWidget *hDlg)
+#endif // __linux__
 {
 	DialogManager *dlgmgr = g_pOrbiter->DlgMgr();
 	return (dlgmgr ? dlgmgr->GetDialogContext (hDlg) : NULL);
 }
 
+#ifndef __linux__
 DLLEXPORT bool oapiRegisterWindow (HINSTANCE hDLLInst, HWND hWnd, DWORD flag)
+#else // __linux__
+DLLEXPORT bool oapiRegisterWindow (void *hDLLInst, QWidget *hWnd, DWORD flag)
+#endif // __linux__
 {
 	return g_pOrbiter->RegisterWindow (hDLLInst, hWnd, flag); 
 }
 
+#ifndef __linux__
 DLLEXPORT bool oapiAddTitleButton (DWORD msgid, HBITMAP hBmp, DWORD flag)
+#else // __linux__
+DLLEXPORT bool oapiAddTitleButton (DWORD msgid, QImage *hBmp, DWORD flag)
+#endif // __linux__
 {
 	DialogManager *dlgmgr = g_pOrbiter->DlgMgr();
 	return (dlgmgr ? dlgmgr->AddTitleButton (msgid, hBmp, flag) : false);
 }
 
+#ifndef __linux__
 DLLEXPORT DWORD oapiGetTitleButtonState (HWND hDlg, DWORD msgid)
+#else // __linux__
+DLLEXPORT DWORD oapiGetTitleButtonState (QWidget *hDlg, DWORD msgid)
+#endif // __linux__
 {
 	DialogManager *dlgmgr = g_pOrbiter->DlgMgr();
 	return (dlgmgr ? dlgmgr->GetTitleButtonState (hDlg, msgid) : 0);
 }
 
+#ifndef __linux__
 DLLEXPORT bool oapiSetTitleButtonState (HWND hDlg, DWORD msgid, DWORD state)
+#else // __linux__
+DLLEXPORT bool oapiSetTitleButtonState (QWidget *hDlg, DWORD msgid, DWORD state)
+#endif // __linux__
 {
 	DialogManager *dlgmgr = g_pOrbiter->DlgMgr();
 	return (dlgmgr ? dlgmgr->SetTitleButtonState (hDlg, msgid, state) : false);
 }
 
+#ifndef __linux__
 DLLEXPORT INT_PTR oapiDefDialogProc (HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
 	return OrbiterDefDialogProc (hDlg, uMsg, wParam, lParam);
 }
+#else // __linux__
+// oapiDefDialogProc left out: on Qt, oapiOpenDialog wires the default dialog behaviour itself
+#endif // __linux__
 
 DLLEXPORT bool oapiOpenHelp (HELPCONTEXT *hcontext)
 {
@@ -2286,11 +2381,23 @@ DLLEXPORT FILEHANDLE oapiOpenFile (const char *fname, FileAccessMode mode, PathR
 		break;
 	}
 
+#ifdef __linux__
+	std::string rp = oapiResolvePath (cbuf); // '\' separators and case as on disk
+
+#endif // __linux__
 	switch (mode) {
 	case FILE_IN:
+#ifndef __linux__
 		return (FILEHANDLE)(new ifstream (cbuf));
+#else // __linux__
+		return (FILEHANDLE)(new ifstream (rp));
+#endif // __linux__
 	case FILE_IN_ZEROONFAIL: {
+#ifndef __linux__
 		ifstream *ifs = new ifstream (cbuf);
+#else // __linux__
+		ifstream *ifs = new ifstream (rp);
+#endif // __linux__
 		if (ifs->fail()) {
 			delete ifs;
 			ifs = 0;
@@ -2298,9 +2405,17 @@ DLLEXPORT FILEHANDLE oapiOpenFile (const char *fname, FileAccessMode mode, PathR
 		return (FILEHANDLE)ifs;
 		}
 	case FILE_OUT:
+#ifndef __linux__
 		TRACENEW; return (FILEHANDLE)(new ofstream (cbuf));
+#else // __linux__
+		TRACENEW; return (FILEHANDLE)(new ofstream (rp));
+#endif // __linux__
 	case FILE_APP:
+#ifndef __linux__
 		TRACENEW; return (FILEHANDLE)(new ofstream (cbuf, ios::app));
+#else // __linux__
+		TRACENEW; return (FILEHANDLE)(new ofstream (rp, ios::app));
+#endif // __linux__
 	}
 	return 0;
 }
@@ -2339,6 +2454,9 @@ DLLEXPORT void oapiWriteLog (char *line)
 
 DLLEXPORT void oapiExitOrbiter(int code)
 {
+#ifdef __linux__
+	if (QThread::currentThread() != QCoreApplication::instance()->thread()) { fflush(NULL); _Exit(code); } // not upstream: ExitProcess stops the other threads first, exit() here would run the destructors under the running main thread
+#endif // __linux__
 	exit(code);
 }
 
@@ -2394,7 +2512,11 @@ DLLEXPORT bool oapiReadScenario_nextline (FILEHANDLE file, char *&line)
 	char *cbuf = readline(ifs);
 	if (!cbuf) return false;
 	line = trim_string (cbuf);
+#ifndef __linux__
 	if (!_stricmp (line, "END")) return false;
+#else // __linux__
+	if (!strcasecmp (line, "END")) return false;
+#endif // __linux__
 	return true;
 }
 
@@ -2571,19 +2693,35 @@ DLLEXPORT DWORD oapiDeflate (const BYTE *inp, DWORD ninp, BYTE *outp, DWORD nout
 
 DLLEXPORT DWORD oapiInflate (const BYTE *inp, DWORD ninp, BYTE *outp, DWORD noutp)
 {
+#ifndef __linux__
 	DWORD ndata = noutp;
+#else // __linux__
+	uLongf ndata = noutp; // uLongf is 64-bit on Linux
+#endif // __linux__
 	if (uncompress (outp, &ndata, inp, ninp) != Z_OK)
 		return 0;
+#ifndef __linux__
 	return ndata;
+#else // __linux__
+	return (DWORD)ndata;
+#endif // __linux__
 }
 
 // ------------------------------------------------------------------------------
 // Undocumented interface functions
 // ------------------------------------------------------------------------------
 
+#ifndef __linux__
 DLLEXPORT void InitLib (HINSTANCE hModule)
+#else // __linux__
+DLLEXPORT void InitLib (void *hModule)
+#endif // __linux__
 {
+#ifndef __linux__
 	typedef void (*OPC_DLLInit)(HINSTANCE hDLL);
+#else // __linux__
+	typedef void (*OPC_DLLInit)(void *hDLL);
+#endif // __linux__
 	OPC_DLLInit DLLInit;
 	char cbuf[256], mname[256], *mp;
 	int i, len;
@@ -2591,16 +2729,28 @@ DLLEXPORT void InitLib (HINSTANCE hModule)
 	if (td.SimT0 < 1) {
 		// don't write during simulation, since unnecessary file access
 		// can cause time waste
+#ifndef __linux__
 		GetModuleFileName (hModule, mname, 256);
+#else // __linux__
+		strncpy (mname, ModuleFileName (hModule), 255); mname[255] = '\0'; // GetModuleFileName
+#endif // __linux__
 		for (i = 0, mp = mname; mname[i]; i++)
+#ifndef __linux__
 			if (mname[i] == '\\') mp = mname+i+1;
+#else // __linux__
+			if (mname[i] == '/') mp = mname+i+1;
+#endif // __linux__
 		sprintf (cbuf, "Module %s ", mp);
 		if ((len = strlen(cbuf)) < 30) {
 			for (i = len; i < 30; i++) cbuf[i] = '.';
 			cbuf[i] = '\0';
 		}
 
+#ifndef __linux__
 		char *(*mdate)() = (char*(*)())GetProcAddress (hModule, "ModuleDate");
+#else // __linux__
+		char *(*mdate)() = (char*(*)())ModuleProc (hModule, "ModuleDate");
+#endif // __linux__
 		if (mdate) {
 			int Date2Int (char *date);
 			sprintf (cbuf+strlen(cbuf), " [Build %06d", Date2Int(mdate()));
@@ -2608,7 +2758,11 @@ DLLEXPORT void InitLib (HINSTANCE hModule)
 			strcat (cbuf, " [Build ******");
 		}
 
+#ifndef __linux__
 		int (*fversion)() = (int(*)())GetProcAddress (hModule, "GetModuleVersion");
+#else // __linux__
+		int (*fversion)() = (int(*)())ModuleProc (hModule, "GetModuleVersion");
+#endif // __linux__
 		if (fversion) {
 			sprintf (cbuf+strlen(cbuf), ", API %06d]", fversion());
 		} else {
@@ -2618,17 +2772,35 @@ DLLEXPORT void InitLib (HINSTANCE hModule)
 		LOGOUT (cbuf);
 	}
 
+#ifndef __linux__
 	DLLInit = (OPC_DLLInit)GetProcAddress (hModule, "InitModule");
 	if (!DLLInit) DLLInit = (OPC_DLLInit)GetProcAddress (hModule, "opcDLLInit");
+#else // __linux__
+	DLLInit = (OPC_DLLInit)ModuleProc (hModule, "InitModule");
+	if (!DLLInit) DLLInit = (OPC_DLLInit)ModuleProc (hModule, "opcDLLInit");
+#endif // __linux__
 	if (DLLInit) (*DLLInit)(hModule);
 }
 
+#ifndef __linux__
 DLLEXPORT void ExitLib (HINSTANCE hModule)
+#else // __linux__
+DLLEXPORT void ExitLib (void *hModule)
+#endif // __linux__
 {
+#ifndef __linux__
 	typedef void (*OPC_DLLExit)(HINSTANCE hDLL);
+#else // __linux__
+	typedef void (*OPC_DLLExit)(void *hDLL);
+#endif // __linux__
 	OPC_DLLExit DLLExit;
+#ifndef __linux__
 	DLLExit = (OPC_DLLExit)GetProcAddress (hModule, "ExitModule");
 	if (!DLLExit) DLLExit = (OPC_DLLExit)GetProcAddress (hModule, "opcDLLExit");
+#else // __linux__
+	DLLExit = (OPC_DLLExit)ModuleProc (hModule, "ExitModule");
+	if (!DLLExit) DLLExit = (OPC_DLLExit)ModuleProc (hModule, "opcDLLExit");
+#endif // __linux__
 	if (DLLExit) (*DLLExit)(hModule);
 }
 
@@ -2639,7 +2811,11 @@ DLLEXPORT int Date2Int (char *date)
 	int day, month, year, v;
 	sscanf (date, "%s%d%d", ms, &day, &year);
 	for (month = 0; month < 12; month++)
+#ifndef __linux__
 		if (!_strnicmp (ms, mstr[month], 3)) break;
+#else // __linux__
+		if (!strncasecmp (ms, mstr[month], 3)) break;
+#endif // __linux__
 	v = (year%100)*10000 + (month+1)*100 + day;
 	return v;
 }

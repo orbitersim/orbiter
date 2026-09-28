@@ -1,7 +1,11 @@
 // Copyright (c) Martin Schweiger
 // Licensed under the MIT License
 
+#ifndef __linux__
 #include <d3d.h>
+#else // __linux__
+// d3d.h left out: Direct3D 7 data types become float, DWORD, oapi::FVECTOR3, NTVERTEX and MATERIAL
+#endif // __linux__
 #include <stdio.h>
 #include <iostream>
 #include <fstream>
@@ -43,37 +47,101 @@ BaseObject *BaseObject::Create (const Base *_base, istream &is)
 		if (!is.getline (cbuf, 256)) return 0;
 		trim_string (cbuf);
 		if ((tok = strtok (cbuf, " \t")) == NULL) continue;
+#ifndef __linux__
 		if      (!_stricmp (tok, "END_OBJECTLIST"))
+#else // __linux__
+		if      (!strcasecmp (tok, "END_OBJECTLIST"))
+#endif // __linux__
 			return 0;
+#ifndef __linux__
 		else if (!_stricmp (tok, "MESH")) {
+#else // __linux__
+		else if (!strcasecmp (tok, "MESH")) {
+#endif // __linux__
 			bo = new MeshObject (_base); TRACENEW
+#ifndef __linux__
 		} else if (!_stricmp (tok, "BLOCK")) {
+#else // __linux__
+		} else if (!strcasecmp (tok, "BLOCK")) {
+#endif // __linux__
 			bo = new Block (_base); TRACENEW
+#ifndef __linux__
 		} else if (!_stricmp (tok, "HANGAR")) {
+#else // __linux__
+		} else if (!strcasecmp (tok, "HANGAR")) {
+#endif // __linux__
 			bo = new Hangar (_base); TRACENEW
+#ifndef __linux__
 		} else if (!_stricmp (tok, "HANGAR2")) {
+#else // __linux__
+		} else if (!strcasecmp (tok, "HANGAR2")) {
+#endif // __linux__
 			bo = new Hangar2 (_base); TRACENEW
+#ifndef __linux__
 		} else if (!_stricmp (tok, "HANGAR3")) {
+#else // __linux__
+		} else if (!strcasecmp (tok, "HANGAR3")) {
+#endif // __linux__
 			bo = new Hangar3 (_base); TRACENEW
+#ifndef __linux__
 		} else if (!_stricmp (tok, "TANK")) {
+#else // __linux__
+		} else if (!strcasecmp (tok, "TANK")) {
+#endif // __linux__
 			bo = new Tank (_base); TRACENEW
+#ifndef __linux__
 		} else if (!_stricmp (tok, "LPAD1")) {
+#else // __linux__
+		} else if (!strcasecmp (tok, "LPAD1")) {
+#endif // __linux__
 			bo = new Lpad01 (_base); TRACENEW
+#ifndef __linux__
 		} else if (!_stricmp (tok, "LPAD2")) {
+#else // __linux__
+		} else if (!strcasecmp (tok, "LPAD2")) {
+#endif // __linux__
 			bo = new Lpad02 (_base); TRACENEW
+#ifndef __linux__
 		} else if (!_stricmp (tok, "LPAD2A")) {
+#else // __linux__
+		} else if (!strcasecmp (tok, "LPAD2A")) {
+#endif // __linux__
 			bo = new Lpad02a (_base); TRACENEW
+#ifndef __linux__
 		} else if (!_stricmp (tok, "RUNWAY")) {
+#else // __linux__
+		} else if (!strcasecmp (tok, "RUNWAY")) {
+#endif // __linux__
 			bo = new Runway (_base); TRACENEW
+#ifndef __linux__
 		} else if (!_stricmp (tok, "RUNWAYLIGHTS")) {
+#else // __linux__
+		} else if (!strcasecmp (tok, "RUNWAYLIGHTS")) {
+#endif // __linux__
 			bo = new RunwayLights (_base); TRACENEW
+#ifndef __linux__
 		} else if (!_stricmp (tok, "BEACONARRAY")) {
+#else // __linux__
+		} else if (!strcasecmp (tok, "BEACONARRAY")) {
+#endif // __linux__
 			bo = new BeaconArray (_base); TRACENEW
+#ifndef __linux__
 		} else if (!_stricmp (tok, "TRAIN1")) {
+#else // __linux__
+		} else if (!strcasecmp (tok, "TRAIN1")) {
+#endif // __linux__
 			bo = new Train1 (_base); TRACENEW
+#ifndef __linux__
 		} else if (!_stricmp (tok, "TRAIN2")) {
+#else // __linux__
+		} else if (!strcasecmp (tok, "TRAIN2")) {
+#endif // __linux__
 			bo = new Train2 (_base); TRACENEW
+#ifndef __linux__
 		} else if (!_stricmp (tok, "SOLARPLANT")) {
+#else // __linux__
+		} else if (!strcasecmp (tok, "SOLARPLANT")) {
+#endif // __linux__
 			bo = new SolarPlant (_base); TRACENEW
 		} else {
 			LOGOUT ("BaseObject: Parse error");
@@ -102,12 +170,20 @@ int BaseObject::Read (istream &is)
 			continue; // empty line
 		sscanf (cp, "%s", label);
 		value = trim_string(cp+strlen(label));
+#ifndef __linux__
 		if (!_stricmp (label, "POS")) {
+#else // __linux__
+		if (!strcasecmp (label, "POS")) {
+#endif // __linux__
 			if (sscanf (value, "%lf%lf%lf", &relpos.x, &relpos.y, &relpos.z) != 3) {
 				ParseError("POS: expected 3 scalar values");
 				res = 2;
 			}
+#ifndef __linux__
 		} else if (!_stricmp (label, "SCALE")) {
+#else // __linux__
+		} else if (!strcasecmp (label, "SCALE")) {
+#endif // __linux__
 			int nv = sscanf (value, "%lf%lf%lf", &scale.x, &scale.y, &scale.z);
 			if (nv < 3) {
 				if (nv == 1) {
@@ -117,7 +193,11 @@ int BaseObject::Read (istream &is)
 					res = 2;
 				}
 			}
+#ifndef __linux__
 		} else if (!_stricmp (label, "ROT")) {
+#else // __linux__
+		} else if (!strcasecmp (label, "ROT")) {
+#endif // __linux__
 			if (sscanf (value, "%lf", &rot) != 1) {
 				ParseError("ROT: expected a scalar value");
 				res = 2;
@@ -128,7 +208,11 @@ int BaseObject::Read (istream &is)
 			r = ParseLine (label, value);
 			if (!res) res = r;
 		}
+#ifndef __linux__
 	} while (_stricmp (label, "END"));
+#else // __linux__
+	} while (strcasecmp (label, "END"));
+#endif // __linux__
 	return res;
 }
 
@@ -143,12 +227,20 @@ void BaseObject::Setup ()
 	relpos.y += yofs;
 }
 
+#ifndef __linux__
 D3DVALUE BaseObject::ElevCorrection (D3DVALUE px, D3DVALUE pz)
+#else // __linux__
+float BaseObject::ElevCorrection (float px, float pz)
+#endif // __linux__
 {
 	double r = base->RefPlanet()->Size();
 	double r2 = r*r;
 	double d2 = px*px + pz*pz;
+#ifndef __linux__
 	return D3DVAL(r - sqrt (r2+d2));
+#else // __linux__
+	return (float)(r - sqrt (r2+d2));
+#endif // __linux__
 }
 
 void BaseObject::MapToCurvature (NTVERTEX *vtx, int nvtx)
@@ -177,7 +269,11 @@ void BaseObject::MapToAltitude (NTVERTEX *vtx, int nvtx)
 void BaseObject::ParseError (const char *msg) const
 {
 	char errmsg[256];
+#ifndef __linux__
 	_snprintf (errmsg, 255, "Parse error from base definition file for %s: %s", base->Name(), msg);
+#else // __linux__
+	snprintf (errmsg, 255, "Parse error from base definition file for %s: %s", base->Name(), msg);
+#endif // __linux__
 	LOGOUT_ERR(errmsg);
 }
 
@@ -205,25 +301,59 @@ MeshObject::~MeshObject ()
 int MeshObject::ParseLine (const char *label, const char *value)
 {
 	int res = 0;
+#ifndef __linux__
 	if (!_stricmp (label, "FILE")) {
 		fname = _strdup (value);
 	} else if (!_stricmp (label, "WRAPTOSURFACE")) {
+#else // __linux__
+	if (!strcasecmp (label, "FILE")) {
+		fname = strdup (value);
+	} else if (!strcasecmp (label, "WRAPTOSURFACE")) {
+#endif // __linux__
 		specs |= OBJSPEC_WRAPTOSURFACE;
+#ifndef __linux__
 	} else if (!_stricmp (label, "SHADOW")) {
+#else // __linux__
+	} else if (!strcasecmp (label, "SHADOW")) {
+#endif // __linux__
 		specs |= OBJSPEC_RENDERSHADOW /*| OBJSPEC_EXPORTSHADOWMESH*/;
 		// removed OBJSPEC_EXPORTSHADOWMESH to avoid accumulated shadow meshes with excessive
 		// vertex numbers (vertex buffers are limited to 64000 vertices)
+#ifndef __linux__
 	} else if (!_stricmp (label, "OWNSHADOW")) {
+#else // __linux__
+	} else if (!strcasecmp (label, "OWNSHADOW")) {
+#endif // __linux__
 		specs |= OBJSPEC_OWNSHADOW;
+#ifndef __linux__
 	} else if (!_stricmp (label, "UNDERSHADOWS")) {
+#else // __linux__
+	} else if (!strcasecmp (label, "UNDERSHADOWS")) {
+#endif // __linux__
 		undersh = true;
+#ifndef __linux__
 	} else if (!_stricmp (label, "PRELOAD")) {
+#else // __linux__
+	} else if (!strcasecmp (label, "PRELOAD")) {
+#endif // __linux__
 		preload = true;
+#ifndef __linux__
 	} else if (!_stricmp (label, "LPAD")) {
+#else // __linux__
+	} else if (!strcasecmp (label, "LPAD")) {
+#endif // __linux__
 		specs |= OBJSPEC_LPAD;
+#ifndef __linux__
 	} else if (!_stricmp (label, "OWNMATERIAL")) {
+#else // __linux__
+	} else if (!strcasecmp (label, "OWNMATERIAL")) {
+#endif // __linux__
 		ownmat = true;
+#ifndef __linux__
 	} else if (!_stricmp (label, "TEX")) {
+#else // __linux__
+	} else if (!strcasecmp (label, "TEX")) {
+#endif // __linux__
 		texid = NameToId (value);
 	}
 	return res;
@@ -369,6 +499,7 @@ void MeshObject::UpdateShadow (Vector &fromsun, double azim)
 	az = (float)fromsun.z;
 }
 
+#ifndef __linux__
 void MeshObject::Render (LPDIRECT3DDEVICE7 dev, bool day)
 {
 }
@@ -376,6 +507,9 @@ void MeshObject::Render (LPDIRECT3DDEVICE7 dev, bool day)
 void MeshObject::RenderShadow (LPDIRECT3DDEVICE7 dev)
 {
 }
+#else // __linux__
+// MeshObject::Render/RenderShadow (LPDIRECT3DDEVICE7) left out: Direct3D 7 inline render path
+#endif // __linux__
 
 // ==============================================================================
 // class Block (simple buildings etc.)
@@ -398,8 +532,13 @@ Block::~Block ()
 int Block::ParseLine (const char *label, const char *value)
 {
 	int res = 0;
+#ifndef __linux__
 	if (!_strnicmp (label, "TEX", 3)) {
 		D3DVALUE su, sv;
+#else // __linux__
+	if (!strncasecmp (label, "TEX", 3)) {
+		float su, sv;
+#endif // __linux__
 		int i;
 		char name[32];
 		if (sscanf (label+3, "%d", &i) != 1 || i < 1 || i > 3) {
@@ -421,11 +560,19 @@ void Block::Activate ()
 {
 	if (dyndata) return;  // active already
 	dyndata = new struct DYNDATA; TRACENEW
+#ifndef __linux__
 	dyndata->databuf = new D3DVALUE[13]; TRACENEW
 	D3DVALUE dx = 0.5f*scale.x, dy = scale.y, dz = 0.5f*scale.z;
 	D3DVALUE srot = (D3DVALUE)sin(rot), crot = (D3DVALUE)cos(rot);
 	D3DVALUE dxcrot = dx*crot, dxsrot = dx*srot;
 	D3DVALUE dzsrot = dz*srot, dzcrot = dz*crot;
+#else // __linux__
+	dyndata->databuf = new float[13]; TRACENEW
+	float dx = 0.5f*scale.x, dy = scale.y, dz = 0.5f*scale.z;
+	float srot = (float)sin(rot), crot = (float)cos(rot);
+	float dxcrot = dx*crot, dxsrot = dx*srot;
+	float dzsrot = dz*srot, dzcrot = dz*crot;
+#endif // __linux__
 	dyndata->databuf[0] =  dxcrot + dzsrot + relpos.x;
 	dyndata->databuf[1] = -dxcrot + dzsrot + relpos.x;
 	dyndata->databuf[2] = -dxcrot - dzsrot + relpos.x;
@@ -471,7 +618,11 @@ void Block::ExportGroup (int grp, NTVERTEX *vtx, WORD *idx, DWORD &idx_ofs)
 	static WORD sidx[12] = {0,1,2,2,3,0,4,5,6,6,7,4};
 	DWORD i;
 	WORD iofs = (WORD)idx_ofs;
+#ifndef __linux__
 	D3DVALUE *db = dyndata->databuf;
+#else // __linux__
+	float *db = dyndata->databuf;
+#endif // __linux__
 
 	switch (grp) {
 	case 0:
@@ -547,7 +698,11 @@ void Block::ExportGroup (int grp, NTVERTEX *vtx, WORD *idx, DWORD &idx_ofs)
 Mesh *Block::ExportShadowMesh (double &shelev)
 {
 	static WORD sidx[30] = {0,1,4, 4,1,5, 1,2,5, 5,2,6, 2,3,6, 6,3,7, 3,0,7, 7,0,4, 4,5,6, 6,7,4};
+#ifndef __linux__
 	D3DVALUE *db = dyndata->databuf;
+#else // __linux__
+	float *db = dyndata->databuf;
+#endif // __linux__
 	DWORD i, nvtx = 8, nidx = 30;
 	NTVERTEX *vtx = new NTVERTEX[nvtx]; TRACENEW
 	WORD *idx = new WORD[nidx]; TRACENEW
@@ -581,11 +736,19 @@ void Block::ExportShadow (VERTEX_XYZ *vtx, WORD *idx)
 
 void Block::UpdateShadow (Vector &fromsun, double az)
 {
+#ifndef __linux__
 	D3DVALUE dx0 = pos.y*(D3DVALUE)fromsun.x;
 	D3DVALUE dx1 = (pos.y+scale.y)*(D3DVALUE)fromsun.x;
 	D3DVALUE dz0 = pos.y*(D3DVALUE)fromsun.z;
 	D3DVALUE dz1 = (pos.y+scale.y)*(D3DVALUE)fromsun.z;
 	D3DVERTEX *gv0 = dyndata->gv0;
+#else // __linux__
+	float dx0 = pos.y*(float)fromsun.x;
+	float dx1 = (pos.y+scale.y)*(float)fromsun.x;
+	float dz0 = pos.y*(float)fromsun.z;
+	float dz1 = (pos.y+scale.y)*(float)fromsun.z;
+	NTVERTEX *gv0 = dyndata->gv0;
+#endif // __linux__
 	VERTEX_XYZ *vptr = dyndata->shvtx;
 	az -= rot;
 	if (az < -Pi) az += Pi2;
@@ -647,8 +810,13 @@ Hangar::~Hangar ()
 int Hangar::ParseLine (const char *label, const char *value)
 {
 	int res = 0;
+#ifndef __linux__
 	if (!_strnicmp (label, "TEX", 3)) {
 		D3DVALUE su, sv;
+#else // __linux__
+	if (!strncasecmp (label, "TEX", 3)) {
+		float su, sv;
+#endif // __linux__
 		int i;
 		char name[32];
 		if (sscanf (label+3, "%d", &i) != 1 || i < 1 || i > 3) {
@@ -672,6 +840,7 @@ void Hangar::Activate ()
 	dyndata = new struct DYNDATA; TRACENEW
 	dyndata->Vtx = new NTVERTEX[44]; TRACENEW
 	NTVERTEX *Vtx = dyndata->Vtx;
+#ifndef __linux__
 	D3DVALUE dx = 0.5f*scale.x, dy = scale.y, dz = 0.5f*scale.z;
 	D3DVALUE dy1 = 0.5f*dy; // side wall height
 	D3DVALUE dy2 = dy-dy1;  // roof height
@@ -681,6 +850,17 @@ void Hangar::Activate ()
 	D3DVALUE dxcrot1 = 0.72f*dxcrot, dxcrot2 = 0.28f*dxcrot;
 	D3DVALUE dxsrot1 = 0.72f*dxsrot, dxsrot2 = 0.28f*dxsrot;
 	D3DVALUE tufac = tuscale[0]*dz/dx;
+#else // __linux__
+	float dx = 0.5f*scale.x, dy = scale.y, dz = 0.5f*scale.z;
+	float dy1 = 0.5f*dy; // side wall height
+	float dy2 = dy-dy1;  // roof height
+	float srot = (float)sin(rot), crot = (float)cos(rot);
+	float dxcrot = dx*crot, dxsrot = dx*srot;
+	float dzsrot = dz*srot, dzcrot = dz*crot;
+	float dxcrot1 = 0.72f*dxcrot, dxcrot2 = 0.28f*dxcrot;
+	float dxsrot1 = 0.72f*dxsrot, dxsrot2 = 0.28f*dxsrot;
+	float tufac = tuscale[0]*dz/dx;
+#endif // __linux__
 
 	Vtx[0].x  = Vtx[7].x  = Vtx[17].x = Vtx[18].x = Vtx[29].x =  dxcrot  + dzsrot + relpos.x;
 	Vtx[1].x  = Vtx[2].x  = Vtx[20].x = Vtx[23].x = Vtx[39].x = -dxcrot  + dzsrot + relpos.x;
@@ -849,10 +1029,18 @@ void Hangar::ExportShadow (VERTEX_XYZ *vtx, WORD *idx)
 void Hangar::UpdateShadow (Vector &fromsun, double az)
 {
 	static VECTOR2D proj[16];
+#ifndef __linux__
 	D3DVALUE dx = (D3DVALUE)fromsun.x, dz = (D3DVALUE)fromsun.z;
+#else // __linux__
+	float dx = (float)fromsun.x, dz = (float)fromsun.z;
+#endif // __linux__
 	DWORD i, nCH;
 	WORD *CHidx;
+#ifndef __linux__
 	D3DVERTEX *Vtx = dyndata->Vtx;
+#else // __linux__
+	NTVERTEX *Vtx = dyndata->Vtx;
+#endif // __linux__
 	VERTEX_XYZ *vptr = dyndata->shvtx;
 
 	// project bounding vertices onto y=0
@@ -891,13 +1079,22 @@ Hangar2::~Hangar2 ()
 int Hangar2::ParseLine (const char *label, const char *value)
 {
 	int res = 0;
+#ifndef __linux__
 	if (!_stricmp (label, "ROOFH")) {
+#else // __linux__
+	if (!strcasecmp (label, "ROOFH")) {
+#endif // __linux__
 		if (sscanf (value, "%f", &roofh) != 1) {
 			ParseError("Hangar2: ROOFH: Expected scalar value");
 			res = 2;
 		}
+#ifndef __linux__
 	} else if (!_strnicmp (label, "TEX", 3)) {
 		D3DVALUE su, sv;
+#else // __linux__
+	} else if (!strncasecmp (label, "TEX", 3)) {
+		float su, sv;
+#endif // __linux__
 		int i;
 		char name[32];
 		if (sscanf (label+3, "%d", &i) != 1 || i < 1 || i > 3) {
@@ -992,10 +1189,18 @@ void Hangar2::ExportShadow (VERTEX_XYZ *vtx, WORD *idx)
 void Hangar2::UpdateShadow (Vector &fromsun, double az)
 {
 	static VECTOR2D proj[10];
+#ifndef __linux__
 	D3DVALUE dx = (D3DVALUE)fromsun.x, dz = (D3DVALUE)fromsun.z;
+#else // __linux__
+	float dx = (float)fromsun.x, dz = (float)fromsun.z;
+#endif // __linux__
 	DWORD i, nCH;
 	WORD *CHidx;
+#ifndef __linux__
 	D3DVERTEX *Vtx = dyndata->Vtx;
+#else // __linux__
+	NTVERTEX *Vtx = dyndata->Vtx;
+#endif // __linux__
 	VERTEX_XYZ *vptr = dyndata->shvtx;
 
 	// project bounding vertices onto y=0
@@ -1018,6 +1223,7 @@ void Hangar2::Activate ()
     dyndata = new struct DYNDATA; TRACENEW
     dyndata->Vtx = new NTVERTEX[26]; TRACENEW
     NTVERTEX *Vtx = dyndata->Vtx;
+#ifndef __linux__
     D3DVALUE dx = 0.5f*scale.x, dy = scale.y, dz = 0.5f*scale.z;
     D3DVALUE dy2 = (roofh < 0.0 || roofh > dy ? 0.5f*dy : roofh); // roof height
     D3DVALUE dy1 = dy - dy2; // side wall height
@@ -1025,6 +1231,15 @@ void Hangar2::Activate ()
     D3DVALUE dxcrot = dx*crot, dxsrot = dx*srot;
     D3DVALUE dzsrot = dz*srot, dzcrot = dz*crot;
     D3DVALUE tufac = tuscale[0]*dz/dx;
+#else // __linux__
+    float dx = 0.5f*scale.x, dy = scale.y, dz = 0.5f*scale.z;
+    float dy2 = (roofh < 0.0 || roofh > dy ? 0.5f*dy : roofh); // roof height
+    float dy1 = dy - dy2; // side wall height
+    float srot = (float)sin(rot), crot = (float)cos(rot);
+    float dxcrot = dx*crot, dxsrot = dx*srot;
+    float dzsrot = dz*srot, dzcrot = dz*crot;
+    float tufac = tuscale[0]*dz/dx;
+#endif // __linux__
 
     Vtx[0].x = Vtx[4].x = Vtx[11].x = Vtx[12].x = Vtx[19].x =  dxcrot + dzsrot + relpos.x;
     Vtx[1].x = Vtx[2].x = Vtx[15].x = Vtx[16].x = Vtx[23].x = -dxcrot + dzsrot + relpos.x;
@@ -1102,8 +1317,13 @@ Hangar3::~Hangar3 ()
 int Hangar3::ParseLine (const char *label, const char *value)
 {
 	int res = 0;
+#ifndef __linux__
 	if (!_strnicmp (label, "TEX", 3)) {
 		D3DVALUE su, sv;
+#else // __linux__
+	if (!strncasecmp (label, "TEX", 3)) {
+		float su, sv;
+#endif // __linux__
 		int i;
 		char name[32];
 		if (sscanf (label+3, "%d", &i) != 1 || i < 1 || i > 3) {
@@ -1200,10 +1420,18 @@ void Hangar3::ExportShadow (VERTEX_XYZ *vtx, WORD *idx)
 void Hangar3::UpdateShadow (Vector &fromsun, double az)
 {
 	static VECTOR2D proj[14];
+#ifndef __linux__
 	D3DVALUE dx = (D3DVALUE)fromsun.x, dz = (D3DVALUE)fromsun.z;
+#else // __linux__
+	float dx = (float)fromsun.x, dz = (float)fromsun.z;
+#endif // __linux__
 	DWORD i, nCH;
 	WORD *CHidx;
+#ifndef __linux__
 	D3DVERTEX *Vtx = dyndata->Vtx;
+#else // __linux__
+	NTVERTEX *Vtx = dyndata->Vtx;
+#endif // __linux__
 	VERTEX_XYZ *vptr = dyndata->shvtx;
 
 	// project bounding vertices onto y=0
@@ -1222,11 +1450,16 @@ void Hangar3::UpdateShadow (Vector &fromsun, double az)
 
 void Hangar3::Activate ()
 {
+#ifndef __linux__
     static D3DVALUE recess = 2.0f; // should be configurable
+#else // __linux__
+    static float recess = 2.0f; // should be configurable
+#endif // __linux__
     if (dyndata) return; // active already
     dyndata = new struct DYNDATA; TRACENEW
     dyndata->Vtx = new NTVERTEX[40]; TRACENEW
     NTVERTEX *Vtx = dyndata->Vtx;
+#ifndef __linux__
     D3DVALUE dx = 0.5f*scale.x, dy = scale.y, dz = 0.5f*scale.z;
     D3DVALUE h1 = 0.543f*dy, h2 = 0.884f*dy, h3 = dy;
     D3DVALUE srot = (D3DVALUE)sin(rot), crot = (D3DVALUE)cos(rot);
@@ -1235,6 +1468,16 @@ void Hangar3::Activate ()
     D3DVALUE dxcrot1 = 0.707f*dxcrot, dxcrot2 = 0.366f*dxcrot;
     D3DVALUE dxsrot1 = 0.707f*dxsrot, dxsrot2 = 0.366f*dxsrot;
     D3DVALUE dzcrot1 = (dz-recess)*crot, dzsrot1 = (dz-recess)*srot;
+#else // __linux__
+    float dx = 0.5f*scale.x, dy = scale.y, dz = 0.5f*scale.z;
+    float h1 = 0.543f*dy, h2 = 0.884f*dy, h3 = dy;
+    float srot = (float)sin(rot), crot = (float)cos(rot);
+    float dxcrot = dx*crot, dxsrot = dx*srot;
+    float dzsrot = dz*srot, dzcrot = dz*crot;
+    float dxcrot1 = 0.707f*dxcrot, dxcrot2 = 0.366f*dxcrot;
+    float dxsrot1 = 0.707f*dxsrot, dxsrot2 = 0.366f*dxsrot;
+    float dzcrot1 = (dz-recess)*crot, dzsrot1 = (dz-recess)*srot;
+#endif // __linux__
     Vtx[ 0].x = Vtx[26].x =  dxcrot  + dzsrot + relpos.x;
     Vtx[ 1].x = Vtx[27].x =  dxcrot1 + dzsrot + relpos.x;
     Vtx[ 2].x = Vtx[28].x =  dxcrot2 + dzsrot + relpos.x;
@@ -1337,14 +1580,23 @@ Tank::Tank (const Base *_base): BaseObject (_base)
 int Tank::ParseLine (const char *label, const char *value)
 {
 	int res = 0;
+#ifndef __linux__
 	if (!_stricmp (label, "NSTEP")) {
+#else // __linux__
+	if (!strcasecmp (label, "NSTEP")) {
+#endif // __linux__
 		if (sscanf (value, "%d", &nstep) != 1) {
 			ParseError("Tank: NSTEP: Expected integer value");
 			res = 2;
 		}
 		if (nstep < 3) nstep = 3;
+#ifndef __linux__
 	} else if (!_strnicmp (label, "TEX", 3)) {
 		D3DVALUE su, sv;
+#else // __linux__
+	} else if (!strncasecmp (label, "TEX", 3)) {
+		float su, sv;
+#endif // __linux__
 		int i;
 		char name[32];
 		if (sscanf (label+3, "%d", &i) != 1 || i < 1 || i > 2) {
@@ -1368,16 +1620,30 @@ void Tank::Activate ()
 	dyndata = new struct DYNDATA; TRACENEW
 	dyndata->Vtx = new NTVERTEX[nstep*3+3]; TRACENEW
 	NTVERTEX *Vtx = dyndata->Vtx;
+#ifndef __linux__
 	D3DVALUE dx, dz, dnx, dnz, fac, ifac = 1.0f/(D3DVALUE)nstep;
 	D3DVALUE srot = (D3DVALUE)sin(rot), crot = (D3DVALUE)cos(rot);
+#else // __linux__
+	float dx, dz, dnx, dnz, fac, ifac = 1.0f/(float)nstep;
+	float srot = (float)sin(rot), crot = (float)cos(rot);
+#endif // __linux__
 	DWORD i, ofs1 = nstep+1, ofs2 = 2*nstep+2;
 	double alpha;
 
 	for (i = 0; i < nstep; i++) {
+#ifndef __linux__
 		fac = (D3DVALUE)i*ifac;
+#else // __linux__
+		fac = (float)i*ifac;
+#endif // __linux__
 		alpha = Pi2*fac;
+#ifndef __linux__
 		dx = (dnx = (D3DVALUE)cos(alpha)) * scale.x;
 		dz = (dnz = (D3DVALUE)sin(alpha)) * scale.z;
+#else // __linux__
+		dx = (dnx = (float)cos(alpha)) * scale.x;
+		dz = (dnz = (float)sin(alpha)) * scale.z;
+#endif // __linux__
 		Vtx[i].x = Vtx[ofs1+i].x = Vtx[ofs2+i].x = crot*dx - srot*dz + relpos.x;
 		Vtx[i].z = Vtx[ofs1+i].z = Vtx[ofs2+i].z = srot*dx + crot*dz + relpos.z;
 		Vtx[i].y = relpos.y;
@@ -1513,10 +1779,18 @@ void Tank::UpdateShadow (Vector &fromsun, double az)
 {
 	static DWORD nproj = 24;
 	static VECTOR2D *proj = new VECTOR2D[24];
+#ifndef __linux__
 	D3DVALUE dx = (D3DVALUE)fromsun.x, dz = (D3DVALUE)fromsun.z;
+#else // __linux__
+	float dx = (float)fromsun.x, dz = (float)fromsun.z;
+#endif // __linux__
 	DWORD i, nCH;
 	WORD *CHidx;
+#ifndef __linux__
 	D3DVERTEX *Vtx = dyndata->Vtx;
+#else // __linux__
+	NTVERTEX *Vtx = dyndata->Vtx;
+#endif // __linux__
 	VERTEX_XYZ *vptr = dyndata->shvtx;
 
 	if (nstep*2 > nproj) {
@@ -1621,9 +1895,17 @@ Lpad01::Lpad01 (const Base *_base): Lpad (_base)
 int Lpad01::ParseLine (const char *label, const char *value)
 {
 	int res = 0;
+#ifndef __linux__
 	if (!_stricmp (label, "TEX")) {
+#else // __linux__
+	if (!strcasecmp (label, "TEX")) {
+#endif // __linux__
 		texid = NameToId (value);
+#ifndef __linux__
 	} else if (!_stricmp (label, "NAV")) {
+#else // __linux__
+	} else if (!strcasecmp (label, "NAV")) {
+#endif // __linux__
 		if (sscanf (value, "%f", &ILSfreq) != 1) {
 			ParseError ("Lpad1: NAV: expected scalar value");
 			res = 2;
@@ -1648,7 +1930,11 @@ bool Lpad01::GetGroupSpec (int grp, DWORD &nvtx, DWORD &nidx, LONGLONG &_texid,
 void Lpad01::ExportGroup (int grp, NTVERTEX *vtx, WORD *idx, DWORD &idx_ofs)
 {
 	if (grp == 0) {
+#ifndef __linux__
 		D3DVALUE cosr = scale.x*(D3DVALUE)cos(rot), sinr = scale.x*(D3DVALUE)sin(rot);
+#else // __linux__
+		float cosr = scale.x*(float)cos(rot), sinr = scale.x*(float)sin(rot);
+#endif // __linux__
 		DWORD i;
 		WORD iofs = (WORD)idx_ofs;
 		NTVERTEX *src = Vtx;
@@ -1720,9 +2006,17 @@ Lpad02::Lpad02 (const Base *_base): Lpad (_base)
 int Lpad02::ParseLine (const char *label, const char *value)
 {
 	int res = 0;
+#ifndef __linux__
 	if (!_stricmp (label, "TEX")) {
+#else // __linux__
+	if (!strcasecmp (label, "TEX")) {
+#endif // __linux__
 		texid = NameToId (value);
+#ifndef __linux__
 	} else if (!_stricmp (label, "NAV")) {
+#else // __linux__
+	} else if (!strcasecmp (label, "NAV")) {
+#endif // __linux__
 		if (sscanf (value, "%f", &ILSfreq) != 1) {
 			ParseError ("Lpad2: NAV: expected scalar value");
 			res = 2;
@@ -1747,7 +2041,11 @@ bool Lpad02::GetGroupSpec (int grp, DWORD &nvtx, DWORD &nidx, LONGLONG &_texid,
 void Lpad02::ExportGroup (int grp, NTVERTEX *vtx, WORD *idx, DWORD &idx_ofs)
 {
 	if (grp == 0) {
+#ifndef __linux__
 		D3DVALUE cosr = scale.x*(D3DVALUE)cos(rot), sinr = scale.x*(D3DVALUE)sin(rot);
+#else // __linux__
+		float cosr = scale.x*(float)cos(rot), sinr = scale.x*(float)sin(rot);
+#endif // __linux__
 		DWORD i;
 		WORD iofs = (WORD)idx_ofs;
 		NTVERTEX *src = Vtx;
@@ -1838,9 +2136,17 @@ Lpad02a::Lpad02a (const Base *_base): Lpad (_base)
 int Lpad02a::ParseLine (const char *label, const char *value)
 {
 	int res = 0;
+#ifndef __linux__
 	if (!_stricmp (label, "TEX")) {
+#else // __linux__
+	if (!strcasecmp (label, "TEX")) {
+#endif // __linux__
 		texid = NameToId (value);
+#ifndef __linux__
 	} else if (!_stricmp (label, "NAV")) {
+#else // __linux__
+	} else if (!strcasecmp (label, "NAV")) {
+#endif // __linux__
 		if (sscanf (value, "%f", &ILSfreq) != 1) {
 			ParseError ("Lpad2a: NAV: expected scalar value");
 			res = 2;
@@ -1865,7 +2171,11 @@ bool Lpad02a::GetGroupSpec (int grp, DWORD &nvtx, DWORD &nidx, LONGLONG &_texid,
 void Lpad02a::ExportGroup (int grp, NTVERTEX *vtx, WORD *idx, DWORD &idx_ofs)
 {
 	if (grp == 0) {
+#ifndef __linux__
 		D3DVALUE cosr = scale.x*(D3DVALUE)cos(rot), sinr = scale.x*(D3DVALUE)sin(rot);
+#else // __linux__
+		float cosr = scale.x*(float)cos(rot), sinr = scale.x*(float)sin(rot);
+#endif // __linux__
 		DWORD i;
 		WORD iofs = (WORD)idx_ofs;
 		NTVERTEX *src = Vtx;
@@ -1967,18 +2277,38 @@ int Runway::Read (istream &is)
 		if (!is.getline (cbuf, 256)) return 1; // premature end of file
 		cp = trim_string (cbuf);
 		sscanf (cp, "%s", label);
+#ifndef __linux__
 		if (!_stricmp (label, "END1"))
+#else // __linux__
+		if (!strcasecmp (label, "END1"))
+#endif // __linux__
 			sscanf (cp+4, "%f%f%f", &end1.x, &end1.y, &end1.z);
+#ifndef __linux__
 		else if (!_stricmp (label, "END2"))
+#else // __linux__
+		else if (!strcasecmp (label, "END2"))
+#endif // __linux__
 			sscanf (cp+4, "%f%f%f", &end2.x, &end2.y, &end2.z);
+#ifndef __linux__
 		else if (!_stricmp (label, "WIDTH")) {
+#else // __linux__
+		else if (!strcasecmp (label, "WIDTH")) {
+#endif // __linux__
 			sscanf (cp+5, "%f", &width);
 			width *= 0.5f;
+#ifndef __linux__
 		} else if (!_strnicmp (label, "ILS", 3)) {
+#else // __linux__
+		} else if (!strncasecmp (label, "ILS", 3)) {
+#endif // __linux__
 			float freq;
 			sscanf (cp+3, "%d%f", &i, &freq);
 			ILSfreq[i-1] = freq;
+#ifndef __linux__
 		} else if (!_stricmp (label, "NRWSEG")) {
+#else // __linux__
+		} else if (!strcasecmp (label, "NRWSEG")) {
+#endif // __linux__
 			if (nrwseg) {
 				delete []rwseg;
 				rwseg = NULL;
@@ -1995,8 +2325,13 @@ int Runway::Read (istream &is)
 					rwseg[k].tv1    = 10.0f;
 				}
 			}
+#ifndef __linux__
 		} else if (!_strnicmp (label, "RWSEG", 5)) {
 			D3DVALUE seglen, tu0, tu1, tv0, tv1;
+#else // __linux__
+		} else if (!strncasecmp (label, "RWSEG", 5)) {
+			float seglen, tu0, tu1, tv0, tv1;
+#endif // __linux__
 			DWORD subseg;
 			sscanf (cp+5, "%d%d%f%f%f%f%f", &i, &subseg, &seglen, &tu0, &tu1, &tv0, &tv1);
 			if (--i >= 0 && i < (int)nrwseg) {
@@ -2007,11 +2342,19 @@ int Runway::Read (istream &is)
 				rwseg[i].tv0    = tv0;
 				rwseg[i].tv1    = tv1;
 			}
+#ifndef __linux__
 		} else if (!_stricmp (label, "RWTEX")) {
+#else // __linux__
+		} else if (!strcasecmp (label, "RWTEX")) {
+#endif // __linux__
 			sscanf (cp+5, "%s", label);
 			texid[0] = NameToId (label);
 		}
+#ifndef __linux__
 	} while (_stricmp (label, "END"));
+#else // __linux__
+	} while (strcasecmp (label, "END"));
+#endif // __linux__
 	return 0;
 }
 
@@ -2033,6 +2376,7 @@ void Runway::Activate ()
 	dyndata->RwVtx = new NTVERTEX[dyndata->nRwVtx]; TRACENEW
 	dyndata->RwIdx = new WORD[dyndata->nRwIdx]; TRACENEW
 
+#ifndef __linux__
 	D3DVALUE x, z, step;
 	D3DVALUE dx = end2.x - end1.x;
 	D3DVALUE dz = end2.z - end1.z;
@@ -2040,6 +2384,15 @@ void Runway::Activate ()
 	D3DVALUE dwx = (width/len) * dz;
 	D3DVALUE dwz = (width/len) * dx;
 	D3DVALUE s0, x0, z0, ddx, ddz;
+#else // __linux__
+	float x, z, step;
+	float dx = end2.x - end1.x;
+	float dz = end2.z - end1.z;
+	float len = (float)(std::hypot (dx, dz));
+	float dwx = (width/len) * dz;
+	float dwz = (width/len) * dx;
+	float s0, x0, z0, ddx, ddz;
+#endif // __linux__
 
 	for (i = k = m = 0, s0 = 0.0f; i < nrwseg; i++) {
 		x0 = dx*s0 + end1.x;
@@ -2056,7 +2409,11 @@ void Runway::Activate ()
 			dyndata->RwIdx[m++] = ofs+1;
 		}
 		for (j = 0; j <= rwseg[i].subseg; j++) {
+#ifndef __linux__
 			step = D3DVAL(j)/D3DVAL(rwseg[i].subseg);
+#else // __linux__
+			step = (float)(j)/(float)(rwseg[i].subseg);
+#endif // __linux__
 			x = x0 + step*ddx;
 			z = z0 + step*ddz;
 			dyndata->RwVtx[k].x = x + dwx;
@@ -2122,26 +2479,54 @@ int RunwayLights::Read (istream &is)
 		if (!is.getline (cbuf, 256)) return 1; // premature end of file
 		cp = trim_string (cbuf);
 		sscanf (cp, "%s", label);
+#ifndef __linux__
 		if (!_stricmp (label, "END1"))
+#else // __linux__
+		if (!strcasecmp (label, "END1"))
+#endif // __linux__
 			sscanf (cp+4, "%f%f%f", &end1.x, &end1.y, &end1.z);
+#ifndef __linux__
 		else if (!_stricmp (label, "END2"))
+#else // __linux__
+		else if (!strcasecmp (label, "END2"))
+#endif // __linux__
 			sscanf (cp+4, "%f%f%f", &end2.x, &end2.y, &end2.z);
+#ifndef __linux__
 		else if (!_stricmp (label, "COUNT1"))
+#else // __linux__
+		else if (!strcasecmp (label, "COUNT1"))
+#endif // __linux__
 			sscanf (cp+6, "%d", &count1);
+#ifndef __linux__
 		else if (!_stricmp (label, "WIDTH")) {
+#else // __linux__
+		else if (!strcasecmp (label, "WIDTH")) {
+#endif // __linux__
 			sscanf (cp+5, "%f", &width);
 			width *= 0.5f;
+#ifndef __linux__
 		} else if (!_stricmp (label, "PAPI")) {
+#else // __linux__
+		} else if (!strcasecmp (label, "PAPI")) {
+#endif // __linux__
 			if (!papi) { papi = new struct PAPIDATA; TRACENEW }
 			sscanf (cp+4, "%f%f%f", &papi->apprangle, &papi->aperture, &papi->ofs);
 			papi->apprangle *= (float)RAD;
 			papi->aperture *= (float)RAD;
+#ifndef __linux__
 		} else if (!_stricmp (label, "VASI")) {
+#else // __linux__
+		} else if (!strcasecmp (label, "VASI")) {
+#endif // __linux__
 			if (!vasi) { vasi = new struct VASIDATA; TRACENEW }
 			sscanf (cp+4, "%f%f%f", &vasi->apprangle, &vasi->lightsep, &vasi->ofs);
 			vasi->apprangle *= (float)RAD;
 		}
+#ifndef __linux__
 	} while (_stricmp (label, "END"));
+#else // __linux__
+	} while (strcasecmp (label, "END"));
+#endif // __linux__
 	return 0;
 }
 
@@ -2158,9 +2543,13 @@ void RunwayLights::Setup ()
 	end2.x = vtx[1].x, end2.y = vtx[1].y, end2.z = vtx[1].z;
 }
 
+#ifndef __linux__
 void RunwayLights::Render (LPDIRECT3DDEVICE7 dev, bool day)
 {
 }
+#else // __linux__
+// RunwayLights::Render (LPDIRECT3DDEVICE7) left out: Direct3D 7 inline render path
+#endif // __linux__
 
 void RunwayLights::VertexArray (DWORD count, const Vector &cpos, const Vector &pos, const Vector &ofs, double size, POSTEXVERTEX *&Vtx)
 {
@@ -2448,23 +2837,51 @@ int BeaconArray::Read (istream &is)
 		if (!is.getline (cbuf, 256)) return 1; // premature end of file
 		cp = trim_string (cbuf);
 		sscanf (cp, "%s", label);
+#ifndef __linux__
 		if (!_stricmp (label, "END1"))
+#else // __linux__
+		if (!strcasecmp (label, "END1"))
+#endif // __linux__
 			sscanf (cp+4, "%f%f%f", &end1.x, &end1.y, &end1.z);
+#ifndef __linux__
 		else if (!_stricmp (label, "END2"))
+#else // __linux__
+		else if (!strcasecmp (label, "END2"))
+#endif // __linux__
 			sscanf (cp+4, "%f%f%f", &end2.x, &end2.y, &end2.z);
+#ifndef __linux__
 		else if (!_stricmp (label, "COUNT"))
+#else // __linux__
+		else if (!strcasecmp (label, "COUNT"))
+#endif // __linux__
 			sscanf (cp+5, "%d", &count);
+#ifndef __linux__
 		else if (!_stricmp (label, "SIZE"))
+#else // __linux__
+		else if (!strcasecmp (label, "SIZE"))
+#endif // __linux__
 			sscanf (cp+4, "%lf", &size);
+#ifndef __linux__
 		else if (!_stricmp (label, "COL"))
+#else // __linux__
+		else if (!strcasecmp (label, "COL"))
+#endif // __linux__
 			sscanf (cp+3, "%f%f%f", &col_r, &col_g, &col_b);
+#ifndef __linux__
 	} while (_stricmp (label, "END"));
+#else // __linux__
+	} while (strcasecmp (label, "END"));
+#endif // __linux__
 	return 0;
 }
 
+#ifndef __linux__
 void BeaconArray::Render (LPDIRECT3DDEVICE7 dev, bool day)
 {
 }
+#else // __linux__
+// BeaconArray::Render (LPDIRECT3DDEVICE7) left out: Direct3D 7 inline render path
+#endif // __linux__
 
 void BeaconArray::Update ()
 {
@@ -2542,7 +2959,11 @@ void BeaconArray::Activate ()
 		Idx[ii++] = idx+2;
 		Idx[ii++] = idx;
 	}
+#ifndef __linux__
 	lightmat = new D3DMATERIAL7; TRACENEW
+#else // __linux__
+	lightmat = new MATERIAL; TRACENEW
+#endif // __linux__
 	lightmat->emissive.r = col_r;
 	lightmat->emissive.g = col_g;
 	lightmat->emissive.b = col_b;
@@ -2574,14 +2995,22 @@ Train::Train (const Base *_base): BaseObject (_base)
 	slowzone = 100.0f;
 }
 
+#ifndef __linux__
 void Train::Init (const D3DVECTOR &_end1, const D3DVECTOR &_end2)
+#else // __linux__
+void Train::Init (const oapi::FVECTOR3 &_end1, const oapi::FVECTOR3 &_end2)
+#endif // __linux__
 {
 	end1 = _end1;
 	end2 = _end2;
 	dir.x = end2.x - end1.x;
 	dir.y = end2.y - end1.y;
 	dir.z = end2.z - end1.z;
+#ifndef __linux__
 	length = (D3DVALUE)sqrt (dir.x*dir.x + dir.y*dir.y + dir.z*dir.z);
+#else // __linux__
+	length = (float)sqrt (dir.x*dir.x + dir.y*dir.y + dir.z*dir.z);
+#endif // __linux__
 	dir.x /= length;
 	dir.y /= length;
 	dir.z /= length;
@@ -2599,16 +3028,32 @@ void Train::Setup ()
 	end2.y += base->RefPlanet()->Elevation (lng, lat)-base->Elevation();
 }
 
+#ifndef __linux__
 void Train::SetCabin (DWORD nvtx, const NTVERTEX *ref, NTVERTEX *res, const D3DVECTOR &pos, const D3DVECTOR &ofs)
+#else // __linux__
+void Train::SetCabin (DWORD nvtx, const NTVERTEX *ref, NTVERTEX *res, const oapi::FVECTOR3 &pos, const oapi::FVECTOR3 &ofs)
+#endif // __linux__
 {
 	// rotation matrix
+#ifndef __linux__
 	D3DVALUE sinth, costh, cosph, sinph, vx, vy, vz;
 	costh = (D3DVALUE)cos (asin (sinth = (end2.y-end1.y)/length));
+#else // __linux__
+	float sinth, costh, cosph, sinph, vx, vy, vz;
+	costh = (float)cos (asin (sinth = (end2.y-end1.y)/length));
+#endif // __linux__
 	double ph = atan2 (end2.x-end1.x, end2.z-end1.z);
+#ifndef __linux__
 	cosph = (D3DVALUE)cos(ph), sinph = (D3DVALUE)sin(ph);
 	D3DVALUE r11 =  cosph, r12 = -sinph*sinth, r13 = sinph*costh;
 	D3DVALUE r21 =  0.0,   r22 =  costh,       r23 = sinth;
 	D3DVALUE r31 = -sinph, r32 = -cosph*sinth, r33 = cosph*costh;
+#else // __linux__
+	cosph = (float)cos(ph), sinph = (float)sin(ph);
+	float r11 =  cosph, r12 = -sinph*sinth, r13 = sinph*costh;
+	float r21 =  0.0,   r22 =  costh,       r23 = sinth;
+	float r31 = -sinph, r32 = -cosph*sinth, r33 = cosph*costh;
+#endif // __linux__
 
 	for (DWORD i = 0; i < nvtx; i++) {
 		const NTVERTEX &vtx = ref[i];
@@ -2621,10 +3066,18 @@ void Train::SetCabin (DWORD nvtx, const NTVERTEX *ref, NTVERTEX *res, const D3DV
 	}
 }
 
+#ifndef __linux__
 D3DVALUE Train::MoveCabin (D3DVALUE &pos, D3DVALUE &vel, bool &atmin)
+#else // __linux__
+float Train::MoveCabin (float &pos, float &vel, bool &atmin)
+#endif // __linux__
 {
 	atmin = false;
+#ifndef __linux__
 	D3DVALUE ds = vel*(D3DVALUE)td.SimDT;
+#else // __linux__
+	float ds = vel*(float)td.SimDT;
+#endif // __linux__
 	if ((pos += ds) < slowzone) {
 		if (pos < minpos) ds -= pos-minpos, pos = minpos, vel = 1.0, atmin = true;
 		else vel = ((pos-minpos)*speedfac+1.0f) * (vel > 0.0 ? 1.0f:-1.0f);
@@ -2713,19 +3166,43 @@ int Train1::Read (istream &is)
 		if (!is.getline (cbuf, 256)) return 1; // premature end of file
 		cp = trim_string (cbuf);
 		sscanf (cp, "%s", label);
+#ifndef __linux__
 		if (!_stricmp (label, "END1"))
+#else // __linux__
+		if (!strcasecmp (label, "END1"))
+#endif // __linux__
 			sscanf (cp+4, "%f%f%f", &end1.x, &end1.y, &end1.z);
+#ifndef __linux__
 		else if (!_stricmp (label, "END2"))
+#else // __linux__
+		else if (!strcasecmp (label, "END2"))
+#endif // __linux__
 			sscanf (cp+4, "%f%f%f", &end2.x, &end2.y, &end2.z);
+#ifndef __linux__
 		else if (!_stricmp (label, "MAXSPEED"))
+#else // __linux__
+		else if (!strcasecmp (label, "MAXSPEED"))
+#endif // __linux__
 			sscanf (cp+8, "%f", &maxspeed);
+#ifndef __linux__
 		else if (!_stricmp (label, "SLOWZONE"))
+#else // __linux__
+		else if (!strcasecmp (label, "SLOWZONE"))
+#endif // __linux__
 			sscanf (cp+8, "%f", &slowzone);
+#ifndef __linux__
 		else if (!_stricmp (label, "TEX")) {
+#else // __linux__
+		else if (!strcasecmp (label, "TEX")) {
+#endif // __linux__
 			sscanf (cp+3, "%s%f", label, &tuscale_track);
 			texid = NameToId (label);
 		}
+#ifndef __linux__
 	} while (_stricmp (label, "END"));
+#else // __linux__
+	} while (strcasecmp (label, "END"));
+#endif // __linux__
 
 	Init (end1, end2);
 	return 0;
@@ -2743,13 +3220,25 @@ void Train1::Activate ()
 	NTVERTEX *Vtx = dyndata->Vtx;
 
 	// rotation matrix
+#ifndef __linux__
 	D3DVALUE sinth, costh, cosph, sinph;
 	costh = (D3DVALUE)cos (asin (sinth = (end2.y-end1.y)/length));
+#else // __linux__
+	float sinth, costh, cosph, sinph;
+	costh = (float)cos (asin (sinth = (end2.y-end1.y)/length));
+#endif // __linux__
 	double ph = atan2 (end2.x-end1.x, end2.z-end1.z);
+#ifndef __linux__
 	cosph = (D3DVALUE)cos(ph), sinph = (D3DVALUE)sin(ph);
 	D3DVALUE r11 =  cosph, r12 = -sinph*sinth, r13 = sinph*costh;
 	D3DVALUE r21 =  0.0,   r22 =  costh,       r23 = sinth;
 	D3DVALUE r31 = -sinph, r32 = -cosph*sinth, r33 = cosph*costh;
+#else // __linux__
+	cosph = (float)cos(ph), sinph = (float)sin(ph);
+	float r11 =  cosph, r12 = -sinph*sinth, r13 = sinph*costh;
+	float r21 =  0.0,   r22 =  costh,       r23 = sinth;
+	float r31 = -sinph, r32 = -cosph*sinth, r33 = cosph*costh;
+#endif // __linux__
 
 	// cabin vertices
 	for (i = 0; i < 30; i++) {
@@ -2766,7 +3255,11 @@ void Train1::Activate ()
 	for (i = 0; i < 8; i++) {
 		NTVERTEX &src = mrail1[i];
 		NTVERTEX &tgt = Vtx[30+i];
+#ifndef __linux__
 		D3DVALUE vz = (i%2 ? length : 0.0f);
+#else // __linux__
+		float vz = (i%2 ? length : 0.0f);
+#endif // __linux__
 		tgt.x  = src.x*r11 + src.y*r12 + vz*r13 + end1.x;
 		tgt.y  = src.x*r21 + src.y*r22 + vz*r23 + end1.y;
 		tgt.z  = src.x*r31 + src.y*r32 + vz*r33 + end1.z;
@@ -2781,7 +3274,11 @@ void Train1::Activate ()
 	base->GetGenericTexture (texid, (SURFHANDLE&)dyndata->tex, dummy);
 
 	cpos = minpos, cvel = 1.0;
+#ifndef __linux__
 	D3DVECTOR ofs; ofs.x = ofs.y = 0; ofs.z = minpos;
+#else // __linux__
+	oapi::FVECTOR3 ofs; ofs.x = ofs.y = 0; ofs.z = minpos;
+#endif // __linux__
 	SetCabin (30, cabin1, Vtx, end1, ofs);
 }
 
@@ -2861,10 +3358,19 @@ void Train1::Update ()
 	DWORD i;
 	// update cabin position
 	bool reset;
+#ifndef __linux__
 	D3DVALUE shift = MoveCabin (cpos, cvel, reset);
 	D3DVALUE dx = shift*dir.x, dy = shift*dir.y, dz = shift*dir.z;
+#else // __linux__
+	float shift = MoveCabin (cpos, cvel, reset);
+	float dx = shift*dir.x, dy = shift*dir.y, dz = shift*dir.z;
+#endif // __linux__
 	if (reset && ++dyndata->tick > 10000) {
+#ifndef __linux__
 		D3DVECTOR ofs; ofs.x = ofs.y = 0.0f; ofs.z = minpos;
+#else // __linux__
+		oapi::FVECTOR3 ofs; ofs.x = ofs.y = 0.0f; ofs.z = minpos;
+#endif // __linux__
 		SetCabin (30, cabin1, cabinvtx, end1, ofs);
 		dyndata->tick = 0;
 	} else {
@@ -2883,7 +3389,11 @@ void Train1::UpdateShadow (Vector &fromsun, double az)
 {
 	static DWORD i, j, nCH, ii[12] = {2,3,4,5,6,7,10,11,12,13,14,15};
 	static VECTOR2D proj[12];
+#ifndef __linux__
 	D3DVALUE dx = (D3DVALUE)fromsun.x, dz = (D3DVALUE)fromsun.z;
+#else // __linux__
+	float dx = (float)fromsun.x, dz = (float)fromsun.z;
+#endif // __linux__
 	WORD *CHidx;
 	NTVERTEX *cvtx = cabinvtx;
 	VERTEX_XYZ *vptr = shvtx;
@@ -2988,21 +3498,49 @@ int Train2::Read (istream &is)
 		if (!is.getline (cbuf, 256)) return 1; // premature end of file
 		cp = trim_string (cbuf);
 		sscanf (cp, "%s", label);
+#ifndef __linux__
 		if (!_stricmp (label, "END1"))
+#else // __linux__
+		if (!strcasecmp (label, "END1"))
+#endif // __linux__
 			sscanf (cp+4, "%f%f%f", &end1.x, &end1.y, &end1.z);
+#ifndef __linux__
 		else if (!_stricmp (label, "END2"))
+#else // __linux__
+		else if (!strcasecmp (label, "END2"))
+#endif // __linux__
 			sscanf (cp+4, "%f%f%f", &end2.x, &end2.y, &end2.z);
+#ifndef __linux__
 		else if (!_stricmp (label, "HEIGHT"))
+#else // __linux__
+		else if (!strcasecmp (label, "HEIGHT"))
+#endif // __linux__
 			sscanf (cp+6, "%f", &height);
+#ifndef __linux__
 		else if (!_stricmp (label, "MAXSPEED"))
+#else // __linux__
+		else if (!strcasecmp (label, "MAXSPEED"))
+#endif // __linux__
 			sscanf (cp+8, "%f", &maxspeed);
+#ifndef __linux__
 		else if (!_stricmp (label, "SLOWZONE"))
+#else // __linux__
+		else if (!strcasecmp (label, "SLOWZONE"))
+#endif // __linux__
 			sscanf (cp+8, "%f", &slowzone);
+#ifndef __linux__
 		else if (!_stricmp (label, "TEX")) {
+#else // __linux__
+		else if (!strcasecmp (label, "TEX")) {
+#endif // __linux__
 			sscanf (cp+3, "%s%f", label, &tuscale_track);
 			texid = NameToId (label);
 		}
+#ifndef __linux__
 	} while (_stricmp (label, "END"));
+#else // __linux__
+	} while (strcasecmp (label, "END"));
+#endif // __linux__
 
 	Init (end1, end2);
 	return 0;
@@ -3021,24 +3559,42 @@ void Train2::Activate ()
 	shvtx = 0;
 	dyndata->tick = rand()%10000;
 
+#ifndef __linux__
 	D3DVALUE dx = (end2.x-end1.x)/(D3DVALUE)ng;
 	D3DVALUE dy = (end2.y-end1.y)/(D3DVALUE)ng;
 	D3DVALUE dz = (end2.z-end1.z)/(D3DVALUE)ng;
+#else // __linux__
+	float dx = (end2.x-end1.x)/(float)ng;
+	float dy = (end2.y-end1.y)/(float)ng;
+	float dz = (end2.z-end1.z)/(float)ng;
+#endif // __linux__
 
 	// rotation matrix
 	double ph = atan2 (end2.x-end1.x, end2.z-end1.z);
+#ifndef __linux__
 	D3DVALUE sinth = (end2.y-end1.y)/length, costh = (D3DVALUE)(cos(asin(sinth)));
 	D3DVALUE cosph = (D3DVALUE)cos(ph), sinph = (D3DVALUE)sin(ph);
 	D3DVALUE r11 =  cosph, r12 = -sinph*sinth, r13 = sinph*costh;
 	D3DVALUE r21 =  0.0f,  r22 =  costh,       r23 = sinth;
 	D3DVALUE r31 = -sinph, r32 = -cosph*sinth, r33 = cosph*costh;
+#else // __linux__
+	float sinth = (end2.y-end1.y)/length, costh = (float)(cos(asin(sinth)));
+	float cosph = (float)cos(ph), sinph = (float)sin(ph);
+	float r11 =  cosph, r12 = -sinph*sinth, r13 = sinph*costh;
+	float r21 =  0.0f,  r22 =  costh,       r23 = sinth;
+	float r31 = -sinph, r32 = -cosph*sinth, r33 = cosph*costh;
+#endif // __linux__
 
 	// first girder
 	for (i = 0; i < 12; i++) {
 		// note we don't tilt girders even if p1.y != p2.y
 		NTVERTEX &src = girder_template[i];
 		NTVERTEX &tgt = dyndata->rail[i];
+#ifndef __linux__
 		D3DVALUE vy = (i%2 ? (i==5 || i==11 ? 0:height+4) : (i==0 || i==6 ? 0:height));
+#else // __linux__
+		float vy = (i%2 ? (i==5 || i==11 ? 0:height+4) : (i==0 || i==6 ? 0:height));
+#endif // __linux__
 		tgt.x  =  src.x*cosph + src.z*sinph + end1.x;
 		tgt.y  =  vy + end1.y;
 		tgt.z  = -src.x*sinph + src.z*cosph + end1.z;
@@ -3060,7 +3616,11 @@ void Train2::Activate ()
 	for (i = 0; i < 8; i++) { // rotate and move to start position
 		NTVERTEX &src = support_template[i];
 		NTVERTEX &tgt = dyndata->rail[(ng+1)*12+i];
+#ifndef __linux__
 		D3DVALUE vz = (i==2 || i==3 || i==6 || i==7 ? length/(D3DVALUE)dyndata->ng : 0.0f);
+#else // __linux__
+		float vz = (i==2 || i==3 || i==6 || i==7 ? length/(float)dyndata->ng : 0.0f);
+#endif // __linux__
 		tgt.x  = src.x*r11 + vz*r13 + end1.x;
 		tgt.y  = src.x*r21 + vz*r23 + end1.y + height;
 		tgt.z  = src.x*r31 + vz*r33 + end1.z;
@@ -3079,7 +3639,11 @@ void Train2::Activate ()
 	}
 
 	// rail shadow
+#ifndef __linux__
 	D3DCOLOR shcol = D3DRGBA(0,0,0,0.3);
+#else // __linux__
+	DWORD shcol = ((DWORD)(0.3*255) << 24); // D3DRGBA(0,0,0,0.3)
+#endif // __linux__
 	for (i = 0; i < (ng+1)*2; i++) {
 		dyndata->rshvtx[i].y = 0.0;
 		//dyndata->rshvtx[i].col = shcol;
@@ -3124,15 +3688,27 @@ void Train2::ExportGroup (int grp, NTVERTEX *vtx, WORD *idx, DWORD &idx_ofs)
 {
 	DWORD i;
 	WORD iofs = (WORD)idx_ofs;
+#ifndef __linux__
 	D3DVECTOR ofs;
+#else // __linux__
+	oapi::FVECTOR3 ofs;
+#endif // __linux__
 
 	// rotation matrix
 	double ph = atan2 (end2.x-end1.x, end2.z-end1.z);
+#ifndef __linux__
 	D3DVALUE sinth = (end2.y-end1.y)/length, costh = (D3DVALUE)(cos(asin(sinth)));
 	D3DVALUE cosph = (D3DVALUE)cos(ph), sinph = (D3DVALUE)sin(ph);
 	D3DVALUE r11 =  cosph, r12 = -sinph*sinth, r13 = sinph*costh;
 	D3DVALUE r21 =  0.0f,  r22 =  costh,       r23 = sinth;
 	D3DVALUE r31 = -sinph, r32 = -cosph*sinth, r33 = cosph*costh;
+#else // __linux__
+	float sinth = (end2.y-end1.y)/length, costh = (float)(cos(asin(sinth)));
+	float cosph = (float)cos(ph), sinph = (float)sin(ph);
+	float r11 =  cosph, r12 = -sinph*sinth, r13 = sinph*costh;
+	float r21 =  0.0f,  r22 =  costh,       r23 = sinth;
+	float r31 = -sinph, r32 = -cosph*sinth, r33 = cosph*costh;
+#endif // __linux__
 
 	switch (grp) {
 	case 0:
@@ -3183,10 +3759,19 @@ void Train2::Update ()
 	// update cabin position
 	bool reset;
 	for (j = 0; j < 2; j++) {
+#ifndef __linux__
 		D3DVALUE shift = MoveCabin (dyndata->cpos[j], dyndata->cvel[j], reset);
 		D3DVALUE dx = shift*dir.x, dy = shift*dir.y, dz = shift*dir.z;
+#else // __linux__
+		float shift = MoveCabin (dyndata->cpos[j], dyndata->cvel[j], reset);
+		float dx = shift*dir.x, dy = shift*dir.y, dz = shift*dir.z;
+#endif // __linux__
 		if (reset && ++dyndata->tick > 10000) {
+#ifndef __linux__
 			D3DVECTOR ofs;
+#else // __linux__
+			oapi::FVECTOR3 ofs;
+#endif // __linux__
 			ofs.x = (j ? -2.5f:2.5f);
 			ofs.y = height-1.0f;
 			ofs.z = minpos;
@@ -3210,12 +3795,21 @@ void Train2::UpdateShadow (Vector &fromsun, double az)
 {
 	static DWORD i, j, nCH, ii[12] = {2,3,4,5,6,7,10,11,12,13,14,15};
 	static VECTOR2D proj[12];
+#ifndef __linux__
 	D3DVALUE dx = (D3DVALUE)fromsun.x, dz = (D3DVALUE)fromsun.z;
+#else // __linux__
+	float dx = (float)fromsun.x, dz = (float)fromsun.z;
+#endif // __linux__
 	WORD *CHidx;
 	NTVERTEX *vtx = cabinvtx[0];
 	VERTEX_XYZ *vptr = shvtx;
+#ifndef __linux__
 	D3DVALUE ddx = cabinvtx[1][0].x - vtx[0].x;
 	D3DVALUE ddz = cabinvtx[1][0].z - vtx[0].z;
+#else // __linux__
+	float ddx = cabinvtx[1][0].x - vtx[0].x;
+	float ddz = cabinvtx[1][0].z - vtx[0].z;
+#endif // __linux__
 
 	// project bounding vertices onto y=0
 	for (i = 0; i < 12; i++) {
@@ -3231,8 +3825,13 @@ void Train2::UpdateShadow (Vector &fromsun, double az)
 	}
 
 	// update rail shadow
+#ifndef __linux__
 	ddx = (end2.x-end1.x)/(D3DVALUE)dyndata->ng;
 	ddz = (end2.z-end1.z)/(D3DVALUE)dyndata->ng;
+#else // __linux__
+	ddx = (end2.x-end1.x)/(float)dyndata->ng;
+	ddz = (end2.z-end1.z)/(float)dyndata->ng;
+#endif // __linux__
 	WORD ng = dyndata->ng;
 	for (i = 0; i < 2; i++) {
 		vptr = dyndata->rshvtx+i;
@@ -3247,6 +3846,7 @@ void Train2::UpdateShadow (Vector &fromsun, double az)
 	}
 }
 
+#ifndef __linux__
 void Train2::Render (LPDIRECT3DDEVICE7 dev, bool day)
 {
 	int i;
@@ -3281,6 +3881,9 @@ void Train2::RenderShadow (LPDIRECT3DDEVICE7 dev)
 	dev->DrawPrimitive (
 		D3DPT_TRIANGLESTRIP, D3DFVF_XYZ /*| D3DFVF_DIFFUSE*/, dyndata->rshvtx, (dyndata->ng+1)*2, NULL);
 }
+#else // __linux__
+// Train2::Render/RenderShadow (LPDIRECT3DDEVICE7) left out: Direct3D 7 inline render path, never called
+#endif // __linux__
 
 // ==============================================================================
 // class SolarPlant (self-aligning solar panel array)
@@ -3312,29 +3915,60 @@ int SolarPlant::Read (istream &is)
 		if (!is.getline (cbuf, 256)) return 1; // premature end of file
 		cp = trim_string (cbuf);
 		sscanf (cp, "%s", label);
+#ifndef __linux__
 		if (!_stricmp (label, "POS"))
+#else // __linux__
+		if (!strcasecmp (label, "POS"))
+#endif // __linux__
 			sscanf (cp+3, "%f%f%f", &pos.x, &pos.y, &pos.z);
+#ifndef __linux__
 		else if (!_stricmp (label, "SCALE"))
+#else // __linux__
+		else if (!strcasecmp (label, "SCALE"))
+#endif // __linux__
 			sscanf (cp+5, "%f", &scale);
+#ifndef __linux__
 		else if (!_stricmp (label, "SPACING"))
+#else // __linux__
+		else if (!strcasecmp (label, "SPACING"))
+#endif // __linux__
 			sscanf (cp+7, "%f%f", &sepx, &sepz);
+#ifndef __linux__
 		else if (!_stricmp (label, "GRID"))
+#else // __linux__
+		else if (!strcasecmp (label, "GRID"))
+#endif // __linux__
 			sscanf (cp+4, "%d%d", &nrow, &ncol);
+#ifndef __linux__
 		else if (!_stricmp (label, "ROT")) {
+#else // __linux__
+		else if (!strcasecmp (label, "ROT")) {
+#endif // __linux__
 			sscanf (cp+3, "%f", &rot);
+#ifndef __linux__
 			rot *= (D3DVALUE)RAD;
 		} else if (!_stricmp (label, "TEX")) {
 			D3DVALUE su, sv;
+#else // __linux__
+			rot *= (float)RAD;
+		} else if (!strcasecmp (label, "TEX")) {
+			float su, sv;
+#endif // __linux__
 			i = sscanf (cp+3, "%s%f%f", label, &su, &sv);
 			texid = NameToId (label);
 			if (i > 1) tuscale = su;
 			if (i > 2) tvscale = sv;
 		}
+#ifndef __linux__
 	} while (_stricmp (label, "END"));
+#else // __linux__
+	} while (strcasecmp (label, "END"));
+#endif // __linux__
 	npanel = nrow*ncol;
 	return 0;
 }
 
+#ifndef __linux__
 void SolarPlant::Render (LPDIRECT3DDEVICE7 dev, bool)
 {
 	int i, j;
@@ -3373,15 +4007,25 @@ void SolarPlant::RenderShadow (LPDIRECT3DDEVICE7 dev)
 		dev->DrawIndexedPrimitive (
 			D3DPT_TRIANGLELIST, D3DFVF_XYZ /*| D3DFVF_DIFFUSE*/, ShVtx, nShVtx, ShIdx, nShIdx, 0);
 }
+#else // __linux__
+// SolarPlant::Render/RenderShadow (LPDIRECT3DDEVICE7) left out: Direct3D 7 inline render path, never called
+#endif // __linux__
 
 void SolarPlant::Activate ()
 {
 	int i, j, idx, idx_ofs, vtx_ofs;
 	DWORD n;
+#ifndef __linux__
 	D3DVALUE x, z;
 	D3DVALUE crot = (D3DVALUE)cos(rot);
 	D3DVALUE srot = (D3DVALUE)sin(rot);
 	ppos = new D3DVECTOR[npanel]; TRACENEW
+#else // __linux__
+	float x, z;
+	float crot = (float)cos(rot);
+	float srot = (float)sin(rot);
+	ppos = new oapi::FVECTOR3[npanel]; TRACENEW
+#endif // __linux__
 	for (i = idx = 0; i < nrow; i++) {
 		x = sepx * (i-0.5f*(nrow-1));
 		for (j = 0; j < ncol; j++) {
@@ -3432,7 +4076,11 @@ void SolarPlant::Activate ()
 	}
 	// the panel stands
 	idx_ofs = npanel*12; vtx_ofs = npanel*8;
+#ifndef __linux__
 	D3DVALUE v1 = 2.89f*scale, v2 = 2.5f*scale, v3 = 1.44f*scale;
+#else // __linux__
+	float v1 = 2.89f*scale, v2 = 2.5f*scale, v3 = 1.44f*scale;
+#endif // __linux__
 	for (i = 0; i < npanel; i++) {
 		Idx[idx_ofs++] = vtx_ofs;
 		Idx[idx_ofs++] = vtx_ofs+1;
@@ -3462,7 +4110,11 @@ void SolarPlant::Activate ()
 		ShVtx = new VERTEX_XYZ[nShVtx = npanel*4]; TRACENEW
 		ShIdx = new WORD[nShIdx = npanel*6]; TRACENEW
 		Vector4 shadowCol = base->ShadowColor();
+#ifndef __linux__
 		D3DCOLOR shcol = D3DRGBA(shadowCol.x, shadowCol.y, shadowCol.z, shadowCol.w);
+#else // __linux__
+		DWORD shcol = ((DWORD)(shadowCol.w*255) << 24) | ((DWORD)(shadowCol.x*255) << 16) | ((DWORD)(shadowCol.y*255) << 8) | (DWORD)(shadowCol.z*255); // D3DRGBA
+#endif // __linux__
 		for (n = 0; n < nShVtx; n++) {
 			ShVtx[n].y = 0.0f;
 			//ShVtx[n].col = shcol;
@@ -3512,15 +4164,30 @@ void SolarPlant::Update ()
 	}
 
 	int i, vtx_ofs = npanel*4;
+#ifndef __linux__
 	D3DVALUE dx = 8.0f*scale, dz = 4.0f*scale;
+#else // __linux__
+	float dx = 8.0f*scale, dz = 4.0f*scale;
+#endif // __linux__
 	double tht = acos (nml.y);         // tilt angle
 	double phi = atan2 (nml.z, nml.x); // rotation angle
+#ifndef __linux__
 	D3DVALUE ctht = (D3DVALUE)cos(tht), stht = (D3DVALUE)sin(tht);
 	D3DVALUE cphi = (D3DVALUE)cos(phi), sphi = (D3DVALUE)sin(phi);
+#else // __linux__
+	float ctht = (float)cos(tht), stht = (float)sin(tht);
+	float cphi = (float)cos(phi), sphi = (float)sin(phi);
+#endif // __linux__
 	// rotation matrix
+#ifndef __linux__
 	D3DVALUE r11 = cphi*ctht, r12 = cphi*stht, r13 = -sphi;
 	D3DVALUE r21 = -stht,     r22 = ctht,      r23 = 0.0f;
 	D3DVALUE r31 = sphi*ctht, r32 = sphi*stht, r33 = cphi;
+#else // __linux__
+	float r11 = cphi*ctht, r12 = cphi*stht, r13 = -sphi;
+	float r21 = -stht,     r22 = ctht,      r23 = 0.0f;
+	float r31 = sphi*ctht, r32 = sphi*stht, r33 = cphi;
+#endif // __linux__
 
 	for (i = 0; i < npanel; i++) { // rotate panels into sun
 		Vtx[i*4].x   = Vtx[vtx_ofs+i*4].x   = ppos[i].x - r11*dx - r13*dz;
@@ -3535,12 +4202,21 @@ void SolarPlant::Update ()
 		Vtx[i*4+3].x = Vtx[vtx_ofs+i*4+3].x = ppos[i].x + r11*dx - r13*dz;
 		Vtx[i*4+3].y = Vtx[vtx_ofs+i*4+3].y = ppos[i].y + r21*dx;
 		Vtx[i*4+3].z = Vtx[vtx_ofs+i*4+3].z = ppos[i].z + r31*dx - r33*dz;
+#ifndef __linux__
 		Vtx[i*4].nx = Vtx[i*4+1].nx = Vtx[i*4+2].nx = Vtx[i*4+3].nx = (D3DVALUE)nml.x;
 		Vtx[i*4].ny = Vtx[i*4+1].ny = Vtx[i*4+2].ny = Vtx[i*4+3].ny = (D3DVALUE)nml.y;
 		Vtx[i*4].nz = Vtx[i*4+1].nz = Vtx[i*4+2].nz = Vtx[i*4+3].nz = (D3DVALUE)nml.z;
 		Vtx[vtx_ofs+i*4].nx = Vtx[vtx_ofs+i*4+1].nx = Vtx[vtx_ofs+i*4+2].nx = Vtx[vtx_ofs+i*4+3].nx = -(D3DVALUE)nml.x;
 		Vtx[vtx_ofs+i*4].ny = Vtx[vtx_ofs+i*4+1].ny = Vtx[vtx_ofs+i*4+2].ny = Vtx[vtx_ofs+i*4+3].ny = -(D3DVALUE)nml.x;
 		Vtx[vtx_ofs+i*4].nz = Vtx[vtx_ofs+i*4+1].nz = Vtx[vtx_ofs+i*4+2].nz = Vtx[vtx_ofs+i*4+3].nz = -(D3DVALUE)nml.x;
+#else // __linux__
+		Vtx[i*4].nx = Vtx[i*4+1].nx = Vtx[i*4+2].nx = Vtx[i*4+3].nx = (float)nml.x;
+		Vtx[i*4].ny = Vtx[i*4+1].ny = Vtx[i*4+2].ny = Vtx[i*4+3].ny = (float)nml.y;
+		Vtx[i*4].nz = Vtx[i*4+1].nz = Vtx[i*4+2].nz = Vtx[i*4+3].nz = (float)nml.z;
+		Vtx[vtx_ofs+i*4].nx = Vtx[vtx_ofs+i*4+1].nx = Vtx[vtx_ofs+i*4+2].nx = Vtx[vtx_ofs+i*4+3].nx = -(float)nml.x;
+		Vtx[vtx_ofs+i*4].ny = Vtx[vtx_ofs+i*4+1].ny = Vtx[vtx_ofs+i*4+2].ny = Vtx[vtx_ofs+i*4+3].ny = -(float)nml.x;
+		Vtx[vtx_ofs+i*4].nz = Vtx[vtx_ofs+i*4+1].nz = Vtx[vtx_ofs+i*4+2].nz = Vtx[vtx_ofs+i*4+3].nz = -(float)nml.x;
+#endif // __linux__
 	}
 	updT = td.SimT1 + 60.0;
 }
@@ -3551,10 +4227,18 @@ void SolarPlant::UpdateShadow (Vector &fromsun, double az)
 	if (have_shadows = (nml.y > 0.2)) {
 		int i, j;
 		double a;
+#ifndef __linux__
 		D3DVALUE anx, anz;
+#else // __linux__
+		float anx, anz;
+#endif // __linux__
 		for (i = 0; i < 4; i++) {
 			a = Vtx[i].y/nml.y;
+#ifndef __linux__
 			anx = (D3DVALUE)(a*nml.x), anz = (D3DVALUE)(a*nml.z);
+#else // __linux__
+			anx = (float)(a*nml.x), anz = (float)(a*nml.z);
+#endif // __linux__
 			for (j = 0; j < npanel; j++) {
 				ShVtx[j*4+i].x = Vtx[j*4+i].x - anx;
 				ShVtx[j*4+i].z = Vtx[j*4+i].z - anz;

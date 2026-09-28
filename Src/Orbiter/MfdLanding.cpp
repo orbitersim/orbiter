@@ -296,8 +296,13 @@ bool Instrument_Landing::ReadParams (ifstream &ifs)
 	for (;;) {
 		if (!ifs.getline (cbuf, 256)) return false;
 		pc = trim_string (cbuf);
+#ifndef __linux__
 		if (!_strnicmp (pc, "END_MFD", 7)) break;
 		if (!_strnicmp (pc, "NAV", 3)) {
+#else // __linux__
+		if (!strncasecmp (pc, "END_MFD", 7)) break;
+		if (!strncasecmp (pc, "NAV", 3)) {
+#endif // __linux__
 			sscanf (pc+3, "%d", &nv);
 		}
 	}

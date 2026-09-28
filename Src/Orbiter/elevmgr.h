@@ -4,8 +4,13 @@
 #ifndef __ELEVMGR_H
 #define __ELEVMGR_H
 
+#ifndef __linux__
 #include "windows.h"
 #include "vecmat.h"
+#else // __linux__
+#include "OrbiterPlatform.h" // windows.h left out: DWORD, INT16
+#include "Vecmat.h"
+#endif // __linux__
 #include "ZTreeMgr.h"
 #include <vector>
 

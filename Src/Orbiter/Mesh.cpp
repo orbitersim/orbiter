@@ -14,7 +14,11 @@ extern Orbiter *g_pOrbiter;
 extern DWORD g_vtxcount;
 extern char DBG_MSG[256];
 
+#ifndef __linux__
 static D3DMATERIAL7 defmat = {{1,1,1,1},{1,1,1,1},{0,0,0,1},{0,0,0,1},0};
+#else // __linux__
+static MATERIAL defmat = {{1,1,1,1},{1,1,1,1},{0,0,0,1},{0,0,0,1},0};
+#endif // __linux__
 
 // =======================================================================
 // Class Triangle
@@ -95,25 +99,41 @@ void Mesh::Set (const Mesh &mesh)
 			memcpy (Grp[i].Vtx, mesh.Grp[i].Vtx, Grp[i].nVtx*sizeof(NTVERTEX));
 			Grp[i].Idx = new WORD[Grp[i].nIdx]; TRACENEW
 			memcpy (Grp[i].Idx, mesh.Grp[i].Idx, Grp[i].nIdx*sizeof(WORD)); 
+#ifndef __linux__
 			if (Grp[i].VtxBuf) {
 				Grp[i].VtxBuf = 0;
 				MakeGroupVertexBuffer (i);
 			}
+#else // __linux__
+			// VtxBuf copy left out: vertex buffers belong to the graphics client
+#endif // __linux__
 		}
 	}
 	if (nMtrl = mesh.nMtrl) {
+#ifndef __linux__
 		Mtrl = new D3DMATERIAL7[nMtrl]; TRACENEW
 		memcpy (Mtrl, mesh.Mtrl, nMtrl*sizeof(D3DMATERIAL7));
+#else // __linux__
+		Mtrl = new MATERIAL[nMtrl]; TRACENEW
+		memcpy (Mtrl, mesh.Mtrl, nMtrl*sizeof(MATERIAL));
+#endif // __linux__
 	}
 	if (nTex = mesh.nTex) {
 		Tex = new SURFHANDLE[nTex]; TRACENEW
 		memcpy (Tex, mesh.Tex, nTex*sizeof(SURFHANDLE));
 	}
 	if (GrpSetup = mesh.GrpSetup) {
+#ifndef __linux__
 		GrpCnt = new D3DVECTOR[nGrp]; TRACENEW
 		memcpy (GrpCnt, mesh.GrpCnt, nGrp*sizeof(D3DVECTOR));
 		GrpRad = new D3DVALUE[nGrp]; TRACENEW
 		memcpy (GrpRad, mesh.GrpRad, nGrp*sizeof(D3DVALUE));
+#else // __linux__
+		GrpCnt = new oapi::FVECTOR3[nGrp]; TRACENEW
+		memcpy (GrpCnt, mesh.GrpCnt, nGrp*sizeof(oapi::FVECTOR3));
+		GrpRad = new float[nGrp]; TRACENEW
+		memcpy (GrpRad, mesh.GrpRad, nGrp*sizeof(float));
+#endif // __linux__
 		GrpVis = new DWORD[nGrp]; TRACENEW
 		memcpy (GrpVis, mesh.GrpVis, nGrp*sizeof(DWORD));
 	} else {
@@ -139,8 +159,13 @@ void Mesh::Setup ()
 		delete []GrpVis;
 		GrpVis = 0;
 	}
+#ifndef __linux__
 	GrpCnt  = new D3DVECTOR[nGrp]; TRACENEW
 	GrpRad  = new D3DVALUE[nGrp]; TRACENEW
+#else // __linux__
+	GrpCnt  = new oapi::FVECTOR3[nGrp]; TRACENEW
+	GrpRad  = new float[nGrp]; TRACENEW
+#endif // __linux__
 	GrpVis  = new DWORD[nGrp]; TRACENEW
 	GrpSetup = true;
 	for (g = 0; g < nGrp; g++) {
@@ -154,8 +179,13 @@ void Mesh::Setup ()
 void Mesh::SetupGroup (DWORD grp)
 {
 	DWORD i;
+#ifndef __linux__
 	D3DVALUE x, y, z, dx, dy, dz, d2, d2max;
 	D3DVALUE invtx = (D3DVALUE)(1.0/Grp[grp].nVtx);
+#else // __linux__
+	float x, y, z, dx, dy, dz, d2, d2max;
+	float invtx = (float)(1.0/Grp[grp].nVtx);
+#endif // __linux__
 	x = y = z = 0.0f;
 	for (i = 0; i < Grp[grp].nVtx; i++) {
 		x += Grp[grp].Vtx[i].x;
@@ -181,13 +211,23 @@ int Mesh::AddGroup (NTVERTEX *vtx, DWORD nvtx, WORD *idx, DWORD nidx,
 {
 	DWORD n;
 	GroupSpec *g, *tmp_Grp = new GroupSpec[nGrp+1]; TRACENEW
+#ifndef __linux__
 	D3DVECTOR *tmp_Cnt = new D3DVECTOR[nGrp+1]; TRACENEW
 	D3DVALUE *tmp_Rad = new D3DVALUE[nGrp+1]; TRACENEW
+#else // __linux__
+	oapi::FVECTOR3 *tmp_Cnt = new oapi::FVECTOR3[nGrp+1]; TRACENEW
+	float *tmp_Rad = new float[nGrp+1]; TRACENEW
+#endif // __linux__
 	DWORD *tmp_Vis = new DWORD[nGrp+1]; TRACENEW
 	if (nGrp) {
 		memcpy (tmp_Grp, Grp, nGrp*sizeof(GroupSpec));
+#ifndef __linux__
 		memcpy (tmp_Cnt, GrpCnt, nGrp*sizeof(D3DVECTOR));
 		memcpy (tmp_Rad, GrpRad, nGrp*sizeof(D3DVALUE));
+#else // __linux__
+		memcpy (tmp_Cnt, GrpCnt, nGrp*sizeof(oapi::FVECTOR3));
+		memcpy (tmp_Rad, GrpRad, nGrp*sizeof(float));
+#endif // __linux__
 		memcpy (tmp_Vis, GrpVis, nGrp*sizeof(DWORD));
 		delete []Grp;
 		Grp = NULL;
@@ -225,7 +265,11 @@ int Mesh::AddGroup (NTVERTEX *vtx, DWORD nvtx, WORD *idx, DWORD nidx,
 	g->zBias = zbias;
 	g->Flags = 0;
 	g->UsrFlag = flag;
+#ifndef __linux__
 	g->VtxBuf = 0;
+#else // __linux__
+	// VtxBuf left out: vertex buffers belong to the graphics client
+#endif // __linux__
 	if (GrpSetup) {
 		SetupGroup (nGrp);
 		if (g->MtrlIdx != SPEC_INHERIT && g->MtrlIdx >= nMtrl)
@@ -271,10 +315,14 @@ bool Mesh::AddGroupBlock (DWORD grp, const NTVERTEX *vtx, DWORD nvtx, const WORD
 	return true;
 }
 
+#ifndef __linux__
 bool Mesh::MakeGroupVertexBuffer (DWORD grp)
 {
 	return false;
 }
+#else // __linux__
+// MakeGroupVertexBuffer left out: it was an empty stub (vertex buffers belong to the graphics client)
+#endif // __linux__
 
 void Mesh::AddMesh (Mesh &mesh)
 {
@@ -298,7 +346,11 @@ bool Mesh::DeleteGroup (DWORD grp)
 	} else if (grp < nGrp && grp > 0) { // delete selected group
 		if (Grp[grp].Vtx) { delete []Grp[grp].Vtx; Grp[grp].Vtx = NULL; }
 		if (Grp[grp].Idx) { delete []Grp[grp].Idx; Grp[grp].Idx = NULL; }
+#ifndef __linux__
 		if (Grp[grp].VtxBuf) Grp[grp].VtxBuf->Release();
+#else // __linux__
+		// VtxBuf release left out: vertex buffers belong to the graphics client
+#endif // __linux__
 
 		// redo group
 		GroupSpec * tmp_Grp = new GroupSpec[nGrp - 1]; TRACENEW
@@ -403,11 +455,21 @@ int Mesh::EditGroup (DWORD grp, GROUPEDITSPEC *ges)
 	return 0;
 }
 
+#ifndef __linux__
 int Mesh::AddMaterial (D3DMATERIAL7 &mtrl)
+#else // __linux__
+int Mesh::AddMaterial (MATERIAL &mtrl)
+#endif // __linux__
 {
+#ifndef __linux__
 	D3DMATERIAL7 *tmp_Mtrl = new D3DMATERIAL7[nMtrl+1]; TRACENEW
 	memcpy (tmp_Mtrl, Mtrl, sizeof(D3DMATERIAL7)*nMtrl);
 	memcpy (tmp_Mtrl+nMtrl, &mtrl, sizeof(D3DMATERIAL7));
+#else // __linux__
+	MATERIAL *tmp_Mtrl = new MATERIAL[nMtrl+1]; TRACENEW
+	memcpy (tmp_Mtrl, Mtrl, sizeof(MATERIAL)*nMtrl);
+	memcpy (tmp_Mtrl+nMtrl, &mtrl, sizeof(MATERIAL));
+#endif // __linux__
 	if (nMtrl) {
 		delete []Mtrl;
 		Mtrl = NULL;
@@ -430,11 +492,23 @@ bool Mesh::DeleteMaterial (DWORD matidx)
 	}
 
 	// remove material from the list
+#ifndef __linux__
 	D3DMATERIAL7 *tmp_Mtrl = 0;
+#else // __linux__
+	MATERIAL *tmp_Mtrl = 0;
+#endif // __linux__
 	if (nMtrl > 1) {
+#ifndef __linux__
 		tmp_Mtrl = new D3DMATERIAL7[nMtrl-1]; TRACENEW
+#else // __linux__
+		tmp_Mtrl = new MATERIAL[nMtrl-1]; TRACENEW
+#endif // __linux__
 		for (i = j = 0; i < nMtrl; i++) {
+#ifndef __linux__
 			if (i != matidx) memcpy (tmp_Mtrl+j++, Mtrl+i, sizeof(D3DMATERIAL7));
+#else // __linux__
+			if (i != matidx) memcpy (tmp_Mtrl+j++, Mtrl+i, sizeof(MATERIAL));
+#endif // __linux__
 		}
 	}
 	delete []Mtrl;
@@ -450,7 +524,11 @@ void Mesh::Clear ()
 		delete []Grp[i].Idx;
 		Grp[i].Vtx = NULL;
 		Grp[i].Idx = NULL;
+#ifndef __linux__
 		if (Grp[i].VtxBuf) Grp[i].VtxBuf->Release();
+#else // __linux__
+		// VtxBuf release left out: vertex buffers belong to the graphics client
+#endif // __linux__
 	}
 	if (nGrp) {
 		delete []Grp;
@@ -478,7 +556,11 @@ void Mesh::Clear ()
 	ReleaseTextures ();
 }
 
+#ifndef __linux__
 void Mesh::ScaleGroup (DWORD grp, D3DVALUE sx, D3DVALUE sy, D3DVALUE sz)
+#else // __linux__
+void Mesh::ScaleGroup (DWORD grp, float sx, float sy, float sz)
+#endif // __linux__
 {
 	int i, nv = Grp[grp].nVtx;
 	NTVERTEX *vtx = Grp[grp].Vtx;
@@ -488,12 +570,20 @@ void Mesh::ScaleGroup (DWORD grp, D3DVALUE sx, D3DVALUE sy, D3DVALUE sz)
 		vtx[i].z *= sz;
 	}
 	if (sx == sy && sx == sz) return; // no change in normals
+#ifndef __linux__
 	D3DVALUE snx = sy*sz, sny = sx*sz, snz = sx*sy;
+#else // __linux__
+	float snx = sy*sz, sny = sx*sz, snz = sx*sy;
+#endif // __linux__
 	for (i = 0; i < nv; i++) {
 		vtx[i].nx *= snx;
 		vtx[i].ny *= sny;
 		vtx[i].nz *= snz;
+#ifndef __linux__
 		D3DVALUE ilen = (D3DVALUE)(1.0/sqrt (vtx[i].nx*vtx[i].nx + vtx[i].ny*vtx[i].ny + vtx[i].nz*vtx[i].nz));
+#else // __linux__
+		float ilen = (float)(1.0/sqrt (vtx[i].nx*vtx[i].nx + vtx[i].ny*vtx[i].ny + vtx[i].nz*vtx[i].nz));
+#endif // __linux__
 		vtx[i].nx *= ilen;
 		vtx[i].ny *= ilen;
 		vtx[i].nz *= ilen;
@@ -501,13 +591,21 @@ void Mesh::ScaleGroup (DWORD grp, D3DVALUE sx, D3DVALUE sy, D3DVALUE sz)
 	if (GrpSetup) SetupGroup (grp);
 }
 
+#ifndef __linux__
 void Mesh::Scale (D3DVALUE sx, D3DVALUE sy, D3DVALUE sz)
+#else // __linux__
+void Mesh::Scale (float sx, float sy, float sz)
+#endif // __linux__
 {
 	for (DWORD grp = 0; grp < nGrp; grp++)
 		ScaleGroup (grp, sx, sy, sz);
 }
 
+#ifndef __linux__
 void Mesh::TranslateGroup (DWORD grp, D3DVALUE dx, D3DVALUE dy, D3DVALUE dz)
+#else // __linux__
+void Mesh::TranslateGroup (DWORD grp, float dx, float dy, float dz)
+#endif // __linux__
 {
 	int i, nv = Grp[grp].nVtx;
 	NTVERTEX *vtx = Grp[grp].Vtx;
@@ -521,65 +619,117 @@ void Mesh::TranslateGroup (DWORD grp, D3DVALUE dx, D3DVALUE dy, D3DVALUE dz)
 		GrpCnt[grp].y += dy;
 		GrpCnt[grp].z += dz;
 	}
+#ifndef __linux__
 	if (Grp[grp].VtxBuf) { // make this more efficient!
 		Grp[grp].VtxBuf->Release();
 		Grp[grp].VtxBuf = 0;
 	}
+#else // __linux__
+	// VtxBuf release left out: vertex buffers belong to the graphics client
+#endif // __linux__
 }
 
+#ifndef __linux__
 void Mesh::Translate (D3DVALUE dx, D3DVALUE dy, D3DVALUE dz)
+#else // __linux__
+void Mesh::Translate (float dx, float dy, float dz)
+#endif // __linux__
 {
 	for (DWORD grp = 0; grp < nGrp; grp++)
 		TranslateGroup (grp, dx, dy, dz);
 }
 
+#ifndef __linux__
 void Mesh::RotateGroup (DWORD grp, RotAxis axis, D3DVALUE angle)
+#else // __linux__
+void Mesh::RotateGroup (DWORD grp, RotAxis axis, float angle)
+#endif // __linux__
 {
 	int i, nv = Grp[grp].nVtx;
 	NTVERTEX *vtx = Grp[grp].Vtx;
+#ifndef __linux__
 	D3DVALUE cosa = (D3DVALUE)cos(angle), sina = (D3DVALUE)sin(angle);
+#else // __linux__
+	float cosa = (float)cos(angle), sina = (float)sin(angle);
+#endif // __linux__
 	switch (axis) {
 	case ROTATE_X:
 		for (i = 0; i < nv; i++) {
+#ifndef __linux__
 			D3DVALUE y = vtx[i].y, z = vtx[i].z;
+#else // __linux__
+			float y = vtx[i].y, z = vtx[i].z;
+#endif // __linux__
 			vtx[i].y = cosa*y - sina*z;
 			vtx[i].z = sina*y + cosa*z;
+#ifndef __linux__
 			D3DVALUE ny = vtx[i].ny, nz = vtx[i].nz;
+#else // __linux__
+			float ny = vtx[i].ny, nz = vtx[i].nz;
+#endif // __linux__
 			vtx[i].ny = cosa*ny - sina*nz;
 			vtx[i].nz = sina*ny + cosa*nz;
 		}
 		if (GrpSetup) {
+#ifndef __linux__
 			D3DVALUE y = GrpCnt[grp].y, z = GrpCnt[grp].z;
+#else // __linux__
+			float y = GrpCnt[grp].y, z = GrpCnt[grp].z;
+#endif // __linux__
 			GrpCnt[grp].y = cosa*y - sina*z;
 			GrpCnt[grp].z = sina*y + cosa*z;
 		}
 		break;
 	case ROTATE_Y:
 		for (i = 0; i < nv; i++) {
+#ifndef __linux__
 			D3DVALUE x = vtx[i].x, z = vtx[i].z;
+#else // __linux__
+			float x = vtx[i].x, z = vtx[i].z;
+#endif // __linux__
 			vtx[i].x = cosa*x - sina*z;
 			vtx[i].z = sina*x + cosa*z;
+#ifndef __linux__
 			D3DVALUE nx = vtx[i].nx, nz = vtx[i].nz;
+#else // __linux__
+			float nx = vtx[i].nx, nz = vtx[i].nz;
+#endif // __linux__
 			vtx[i].nx = cosa*nx - sina*nz;
 			vtx[i].nz = sina*nx + cosa*nz;
 		}
 		if (GrpSetup) {
+#ifndef __linux__
 			D3DVALUE x = GrpCnt[grp].x, z = GrpCnt[grp].z;
+#else // __linux__
+			float x = GrpCnt[grp].x, z = GrpCnt[grp].z;
+#endif // __linux__
 			GrpCnt[grp].x = cosa*x - sina*z;
 			GrpCnt[grp].z = sina*x + cosa*z;
 		}
 		break;
 	case ROTATE_Z:
 		for (i = 0; i < nv; i++) {
+#ifndef __linux__
 			D3DVALUE x = vtx[i].x, y = vtx[i].y;
+#else // __linux__
+			float x = vtx[i].x, y = vtx[i].y;
+#endif // __linux__
 			vtx[i].x = cosa*x - sina*y;
 			vtx[i].y = sina*x + cosa*y;
+#ifndef __linux__
 			D3DVALUE nx = vtx[i].nx, ny = vtx[i].ny;
+#else // __linux__
+			float nx = vtx[i].nx, ny = vtx[i].ny;
+#endif // __linux__
 			vtx[i].nx = cosa*nx - sina*ny;
 			vtx[i].ny = sina*nx + cosa*ny;
 		}
 		if (GrpSetup) {
+#ifndef __linux__
 			D3DVALUE x = GrpCnt[grp].x, y = GrpCnt[grp].y;
+#else // __linux__
+			float x = GrpCnt[grp].x, y = GrpCnt[grp].y;
+#endif // __linux__
 			GrpCnt[grp].x = cosa*x - sina*y;
 			GrpCnt[grp].y = sina*x + cosa*y;
 		}
@@ -587,13 +737,21 @@ void Mesh::RotateGroup (DWORD grp, RotAxis axis, D3DVALUE angle)
 	}
 }
 
+#ifndef __linux__
 void Mesh::Rotate (RotAxis axis, D3DVALUE angle)
+#else // __linux__
+void Mesh::Rotate (RotAxis axis, float angle)
+#endif // __linux__
 {
 	for (DWORD grp = 0; grp < nGrp; grp++)
 		RotateGroup (grp, axis, angle);
 }
 
+#ifndef __linux__
 void Mesh::TransformGroup (DWORD grp, const D3DMATRIX &mat)
+#else // __linux__
+void Mesh::TransformGroup (DWORD grp, const oapi::FMATRIX4 &mat)
+#endif // __linux__
 {
 	int i, nv = Grp[grp].nVtx;
 	NTVERTEX *vtx = Grp[grp].Vtx;
@@ -601,17 +759,30 @@ void Mesh::TransformGroup (DWORD grp, const D3DMATRIX &mat)
 
 	for (i = 0; i < nv; i++) {
 		NTVERTEX &v = vtx[i];
+#ifndef __linux__
 		x = v.x*mat._11 + v.y*mat._21 + v.z* mat._31 + mat._41;
 		y = v.x*mat._12 + v.y*mat._22 + v.z* mat._32 + mat._42;
 		z = v.x*mat._13 + v.y*mat._23 + v.z* mat._33 + mat._43;
 		w = v.x*mat._14 + v.y*mat._24 + v.z* mat._34 + mat._44;
+#else // __linux__
+		x = v.x*mat.m11 + v.y*mat.m21 + v.z* mat.m31 + mat.m41;
+		y = v.x*mat.m12 + v.y*mat.m22 + v.z* mat.m32 + mat.m42;
+		z = v.x*mat.m13 + v.y*mat.m23 + v.z* mat.m33 + mat.m43;
+		w = v.x*mat.m14 + v.y*mat.m24 + v.z* mat.m34 + mat.m44;
+#endif // __linux__
     	v.x = x/w;
 		v.y = y/w;
 		v.z = z/w;
 
+#ifndef __linux__
 		x = v.nx*mat._11 + v.ny*mat._21 + v.nz* mat._31;
 		y = v.nx*mat._12 + v.ny*mat._22 + v.nz* mat._32;
 		z = v.nx*mat._13 + v.ny*mat._23 + v.nz* mat._33;
+#else // __linux__
+		x = v.nx*mat.m11 + v.ny*mat.m21 + v.nz* mat.m31;
+		y = v.nx*mat.m12 + v.ny*mat.m22 + v.nz* mat.m32;
+		z = v.nx*mat.m13 + v.ny*mat.m23 + v.nz* mat.m33;
+#endif // __linux__
 		w = 1.0f/(FLOAT)sqrt (x*x + y*y + z*z);
 		v.nx = x*w;
 		v.ny = y*w;
@@ -620,13 +791,21 @@ void Mesh::TransformGroup (DWORD grp, const D3DMATRIX &mat)
 	if (GrpSetup) SetupGroup (grp);
 }
 
+#ifndef __linux__
 void Mesh::Transform (const D3DMATRIX &mat)
+#else // __linux__
+void Mesh::Transform (const oapi::FMATRIX4 &mat)
+#endif // __linux__
 {
 	for (DWORD grp = 0; grp < nGrp; grp++)
 		TransformGroup (grp, mat);
 }
 
+#ifndef __linux__
 void Mesh::TexScaleGroup (DWORD grp, D3DVALUE su, D3DVALUE sv)
+#else // __linux__
+void Mesh::TexScaleGroup (DWORD grp, float su, float sv)
+#endif // __linux__
 {
 	int i, nv = Grp[grp].nVtx;
 	NTVERTEX *vtx = Grp[grp].Vtx;
@@ -636,7 +815,11 @@ void Mesh::TexScaleGroup (DWORD grp, D3DVALUE su, D3DVALUE sv)
 	}
 }
 
+#ifndef __linux__
 void Mesh::TexScale (D3DVALUE su, D3DVALUE sv)
+#else // __linux__
+void Mesh::TexScale (float su, float sv)
+#endif // __linux__
 {
 	for (DWORD grp = 0; grp < nGrp; grp++)
 		TexScaleGroup (grp, su, sv);
@@ -668,35 +851,66 @@ void Mesh::CalcNormals (DWORD grp, bool missingonly)
 		DWORD i0 = idx[i*3], i1 = idx[i*3+1], i2 = idx[i*3+2];
 		if (!calcNml[i0] && !calcNml[i1] && !calcNml[i2])
 			continue; // nothing to do for this triangle
+#ifndef __linux__
 		D3DVECTOR V01 = { vtx[i1].x - vtx[i0].x, vtx[i1].y - vtx[i0].y, vtx[i1].z - vtx[i0].z };
 		D3DVECTOR V02 = { vtx[i2].x - vtx[i0].x, vtx[i2].y - vtx[i0].y, vtx[i2].z - vtx[i0].z };
 		D3DVECTOR V12 = { vtx[i2].x - vtx[i1].x, vtx[i2].y - vtx[i1].y, vtx[i2].z - vtx[i1].z };
 		D3DVECTOR nm = D3DMath_CrossProduct (V01, V02);
 		D3DVALUE len = D3DMath_Length (nm);
+#else // __linux__
+		oapi::FVECTOR3 V01 = { vtx[i1].x - vtx[i0].x, vtx[i1].y - vtx[i0].y, vtx[i1].z - vtx[i0].z };
+		oapi::FVECTOR3 V02 = { vtx[i2].x - vtx[i0].x, vtx[i2].y - vtx[i0].y, vtx[i2].z - vtx[i0].z };
+		oapi::FVECTOR3 V12 = { vtx[i2].x - vtx[i1].x, vtx[i2].y - vtx[i1].y, vtx[i2].z - vtx[i1].z };
+		oapi::FVECTOR3 nm = D3DMath_CrossProduct (V01, V02);
+		float len = D3DMath_Length (nm);
+#endif // __linux__
 
 		if (len >= eps) {
 			nm.x /= len, nm.y /= len, nm.z /= len;
+#ifndef __linux__
 			D3DVALUE d01 = D3DMath_Length(V01);
 			D3DVALUE d02 = D3DMath_Length(V02);
 			D3DVALUE d12 = D3DMath_Length(V12);
+#else // __linux__
+			float d01 = D3DMath_Length(V01);
+			float d02 = D3DMath_Length(V02);
+			float d12 = D3DMath_Length(V12);
+#endif // __linux__
 			if (calcNml[i0]) {
+#ifndef __linux__
 				D3DVALUE a0 = acos((d01 * d01 + d02 * d02 - d12 * d12) / (2.0f * d01 * d02));
+#else // __linux__
+				float a0 = acos((d01 * d01 + d02 * d02 - d12 * d12) / (2.0f * d01 * d02));
+#endif // __linux__
 				vtx[i0].nx += nm.x * a0, vtx[i0].ny += nm.y * a0, vtx[i0].nz += nm.z * a0;
 			}
 			if (calcNml[i1]) {
+#ifndef __linux__
 				D3DVALUE a1 = acos((d01 * d01 + d12 * d12 - d02 * d02) / (2.0f * d01 * d12));
+#else // __linux__
+				float a1 = acos((d01 * d01 + d12 * d12 - d02 * d02) / (2.0f * d01 * d12));
+#endif // __linux__
 				vtx[i1].nx += nm.x * a1, vtx[i1].ny += nm.y * a1, vtx[i1].nz += nm.z * a1;
 			}
 			if (calcNml[i2]) {
+#ifndef __linux__
 				D3DVALUE a2 = acos((d02 * d02 + d12 * d12 - d01 * d01) / (2.0f * d02 * d12));
+#else // __linux__
+				float a2 = acos((d02 * d02 + d12 * d12 - d01 * d01) / (2.0f * d02 * d12));
+#endif // __linux__
 				vtx[i2].nx += nm.x * a2, vtx[i2].ny += nm.y * a2, vtx[i2].nz += nm.z * a2;
 			}
 		}
 	}
 	for (i = 0; i < nv; i++)
 		if (calcNml[i]) {
+#ifndef __linux__
 			D3DVECTOR nm = { vtx[i].nx, vtx[i].ny, vtx[i].nz };
 			D3DVALUE len = D3DMath_Length(nm);
+#else // __linux__
+			oapi::FVECTOR3 nm = { vtx[i].nx, vtx[i].ny, vtx[i].nz };
+			float len = D3DMath_Length(nm);
+#endif // __linux__
 			vtx[i].nx /= len, vtx[i].ny /= len, vtx[i].nz /= len;
 		}
 	delete []calcNml;
@@ -712,12 +926,21 @@ void Mesh::CalcTexCoords (DWORD grp)
 	double ipi = 1.0/Pi, i2pi = 0.5/Pi;
 
 	for (i = 0; i < nv; i++) {
+#ifndef __linux__
 		D3DVECTOR pos = {vtx[i].x, vtx[i].y, vtx[i].z};
+#else // __linux__
+		oapi::FVECTOR3 pos = {vtx[i].x, vtx[i].y, vtx[i].z};
+#endif // __linux__
 		D3DMath_Normalise (pos);
 		double tht = acos (pos.y);
 		double phi = atan2 (pos.z, pos.x);
+#ifndef __linux__
 		vtx[i].tu = (D3DVALUE)(phi >= 0.0 ? phi*i2pi : (phi+Pi2)*i2pi);
 		vtx[i].tv = (D3DVALUE)(tht*ipi);
+#else // __linux__
+		vtx[i].tu = (float)(phi >= 0.0 ? phi*i2pi : (phi+Pi2)*i2pi);
+		vtx[i].tv = (float)(tht*ipi);
+#endif // __linux__
 	}
 }
 
@@ -798,12 +1021,21 @@ const char* Mesh::GetName() const
 void Mesh::SetName(const char* n)
 {
 	if (n) {
+#ifndef __linux__
 		int len = lstrlen(n) + 1;
+#else // __linux__
+		int len = strlen(n) + 1;
+#endif // __linux__
 		name = new char[len];
+#ifndef __linux__
 		strcpy_s(name, len, n);
+#else // __linux__
+		strcpy(name, n);
+#endif // __linux__
 	}
 }
 
+#ifndef __linux__
 DWORD Mesh::Render (LPDIRECT3DDEVICE7 dev)
 {
 	return 0;
@@ -812,6 +1044,9 @@ DWORD Mesh::Render (LPDIRECT3DDEVICE7 dev)
 void Mesh::RenderGroup (LPDIRECT3DDEVICE7 dev, DWORD grp, bool setstate) const
 {
 }
+#else // __linux__
+// Render/RenderGroup left out: empty Direct3D 7 inline render stubs
+#endif // __linux__
 
 istream &operator>> (istream &is, Mesh &mesh)
 {
@@ -819,20 +1054,36 @@ istream &operator>> (istream &is, Mesh &mesh)
 	int i, j, g, ngrp, nvtx, ntri, nidx, nmtrl, mtrl_idx, ntex, tex_idx, flag, res;
 	DWORD uflag;
 	WORD zbias;
+#ifndef __linux__
 	D3DMATERIAL7 mtrl;
+#else // __linux__
+	MATERIAL mtrl;
+#endif // __linux__
 	bool term, staticmesh = false;
 
 	mesh.Clear();
 
 	if (!is.getline (cbuf, 256)) return is;
+#ifndef __linux__
 	if (strcmp (cbuf, "MSHX1")) return is;
+#else // __linux__
+	if (strcmp (cbuf, "MSHX1") && strcmp (cbuf, "MSHX1\r")) return is; // not upstream: CRLF files keep the '\r' on Linux
+#endif // __linux__
 
 	for (;;) {
 		if (!is.getline (cbuf, 256)) return is;
+#ifndef __linux__
 		if (!_strnicmp (cbuf, "GROUPS", 6)) {
+#else // __linux__
+		if (!strncasecmp (cbuf, "GROUPS", 6)) {
+#endif // __linux__
 			if (sscanf (cbuf+6, "%d", &ngrp) != 1) return is;
 			break;
+#ifndef __linux__
 		} else if (!_strnicmp (cbuf, "STATICMESH", 10)) {
+#else // __linux__
+		} else if (!strncasecmp (cbuf, "STATICMESH", 10)) {
+#endif // __linux__
 			staticmesh = true;
 		}
 	}
@@ -853,36 +1104,82 @@ istream &operator>> (istream &is, Mesh &mesh)
 
 		for (;;) {
 			if (!is.getline (cbuf, 256)) { term = true; break; }
+#ifndef __linux__
 			if (!_strnicmp (cbuf, "MATERIAL", 8)) {       // read material index
+#else // __linux__
+			if (!strncasecmp (cbuf, "MATERIAL", 8)) {       // read material index
+#endif // __linux__
 				sscanf (cbuf+8, "%d", &mtrl_idx);
 				mtrl_idx--;
+#ifndef __linux__
 			} else if (!_strnicmp (cbuf, "TEXTURE", 7)) { // read texture index
+#else // __linux__
+			} else if (!strncasecmp (cbuf, "TEXTURE", 7)) { // read texture index
+#endif // __linux__
 				sscanf (cbuf+7, "%d", &tex_idx);
 				tex_idx--;
+#ifndef __linux__
 			} else if (!_strnicmp (cbuf, "ZBIAS", 5)) {   // read z-bias
+#else // __linux__
+			} else if (!strncasecmp (cbuf, "ZBIAS", 5)) {   // read z-bias
+#endif // __linux__
 				sscanf (cbuf+5, "%hu", &zbias);
+#ifndef __linux__
 			} else if (!_strnicmp (cbuf, "TEXWRAP", 7)) { // read wrap flags
+#else // __linux__
+			} else if (!strncasecmp (cbuf, "TEXWRAP", 7)) { // read wrap flags
+#endif // __linux__
 				char uvstr[10] = "";
 				sscanf (cbuf+7, "%9s", uvstr);
 				if (uvstr[0] == 'U' || uvstr[1] == 'U') flag |= 0x01;
 				if (uvstr[0] == 'V' || uvstr[1] == 'V') flag |= 0x02;
+#ifndef __linux__
 			} else if (!_strnicmp (cbuf, "NONORMAL", 8)) {
+#else // __linux__
+			} else if (!strncasecmp (cbuf, "NONORMAL", 8)) {
+#endif // __linux__
 				bnormal = false; calcnml = true;
+#ifndef __linux__
 			} else if (!_strnicmp (cbuf, "FLAG", 4)) {
 				sscanf (cbuf+4, "%lx", &uflag);
 			} else if (!_strnicmp (cbuf, "FLIP", 4)) {
+#else // __linux__
+			} else if (!strncasecmp (cbuf, "FLAG", 4)) {
+				sscanf (cbuf+4, "%x", &uflag);
+			} else if (!strncasecmp (cbuf, "FLIP", 4)) {
+#endif // __linux__
 				flipidx = true;
+#ifndef __linux__
 			} else if (!_strnicmp (cbuf, "LABEL", 5)) {
+#else // __linux__
+			} else if (!strncasecmp (cbuf, "LABEL", 5)) {
+#endif // __linux__
 				// ignore group labels here
+#ifndef __linux__
 			} else if (!_strnicmp (cbuf, "STATIC", 6)) {
+#else // __linux__
+			} else if (!strncasecmp (cbuf, "STATIC", 6)) {
+#endif // __linux__
 				flag |= 0x04;
+#ifndef __linux__
 			} else if (!_strnicmp (cbuf, "DYNAMIC", 7)) {
+#else // __linux__
+			} else if (!strncasecmp (cbuf, "DYNAMIC", 7)) {
+#endif // __linux__
 				flag ^= 0x04;
+#ifndef __linux__
 			} else if (!_strnicmp (cbuf, "GEOM", 4)) {    // read geometry
+#else // __linux__
+			} else if (!strncasecmp (cbuf, "GEOM", 4)) {    // read geometry
+#endif // __linux__
 				if (sscanf (cbuf+4, "%d%d", &nvtx, &ntri) != 2) break; // parse error - skip group
 				nidx = ntri*3;
 				vtx = new NTVERTEX[nvtx]; TRACENEW
+#ifndef __linux__
 				ZeroMemory (vtx, sizeof (NTVERTEX)*nvtx);
+#else // __linux__
+				memset (vtx, 0, sizeof (NTVERTEX)*nvtx);
+#endif // __linux__
 				for (i = 0; i < nvtx; i++) {
 					NTVERTEX &v = vtx[i];
 					if (!is.getline (cbuf, 256)) {
@@ -910,7 +1207,11 @@ istream &operator>> (istream &is, Mesh &mesh)
 					}
 				}
 				idx = new WORD[nidx]; TRACENEW
+#ifndef __linux__
 				ZeroMemory (idx, sizeof (WORD)*nidx);
+#else // __linux__
+				memset (idx, 0, sizeof (WORD)*nidx);
+#endif // __linux__
 				for (i = j = 0; i < ntri; i++) {
 					if (!is.getline (cbuf, 256)) {
 						delete []vtx;
@@ -936,7 +1237,11 @@ istream &operator>> (istream &is, Mesh &mesh)
 			mesh.Grp[g].Flags = flag;
 			mesh.Grp[g].UsrFlag = uflag;
 			if (calcnml) mesh.CalcNormals (g, true);
+#ifndef __linux__
 			if (flag & 0x04) mesh.MakeGroupVertexBuffer (g);
+#else // __linux__
+			// flag 0x04 (MakeGroupVertexBuffer) left out: vertex buffers belong to the graphics client
+#endif // __linux__
 		}
 	}
 
@@ -949,7 +1254,11 @@ istream &operator>> (istream &is, Mesh &mesh)
 			sscanf (cbuf, "%s", matname[i]);
 		}
 		for (i = 0; i < nmtrl; i++) {
+#ifndef __linux__
 			ZeroMemory (&mtrl, sizeof (D3DMATERIAL7));
+#else // __linux__
+			memset (&mtrl, 0, sizeof (MATERIAL));
+#endif // __linux__
 			is.getline (cbuf, 256);
 			sscanf (cbuf+8, "%255s", mnm);
 			is.getline (cbuf, 256);
@@ -1095,13 +1404,21 @@ const Mesh *MeshManager::LoadMesh (const char *fname, bool *firstload)
 	int i;
 	DWORDLONG crc = Str2Crc (fname);
 	for (i = 0; i < nmlist; i++) {
+#ifndef __linux__
 		if (crc == mlist[i].crc && !_strnicmp (fname, mlist[i].fname, 32)) {
+#else // __linux__
+		if (crc == mlist[i].crc && !strncasecmp (fname, mlist[i].fname, 32)) {
+#endif // __linux__
 			if (firstload) *firstload = false;
 			return mlist[i].mesh; // found it
 		}
 	}
 	// not found, so load from file
+#ifndef __linux__
 	ifstream ifs (g_pOrbiter->MeshPath (fname), ios::in);
+#else // __linux__
+	ifstream ifs (oapiResolvePath(g_pOrbiter->MeshPath (fname)), ios::in);
+#endif // __linux__
 	Mesh *mesh = new Mesh; TRACENEW
 	ifs >> *mesh;
 	if (!mesh->nGroup()) { // load error
@@ -1134,7 +1451,11 @@ const Mesh *MeshManager::LoadMesh (const char *fname, bool *firstload)
 
 bool LoadMesh (const char *meshname, Mesh &mesh)
 {
+#ifndef __linux__
 	ifstream ifs (g_pOrbiter->MeshPath (meshname), ios::in);
+#else // __linux__
+	ifstream ifs (oapiResolvePath(g_pOrbiter->MeshPath (meshname)), ios::in);
+#endif // __linux__
 	ifs >> mesh;
 	if (ifs.good()) {
 		mesh.SetName(meshname);
@@ -1184,11 +1505,19 @@ void CreateSpherePatch (Mesh &mesh, int nlng, int nlat, int ilat, int res, int b
 		for (j = 0; j <= nseg; j++) {
 			lng = (nseg ? minlng + (maxlng-minlng) * (double)j/(double)nseg : 0.0);
 			slng = sin(lng), clng = cos(lng);
+#ifndef __linux__
 			Vtx[n].x = Vtx[n].nx = D3DVAL(clat*clng);
 			Vtx[n].y = Vtx[n].ny = D3DVAL(slat);
 			Vtx[n].z = Vtx[n].nz = D3DVAL(clat*slng);
 			Vtx[n].tu = D3DVAL(nseg ? (c1*j)/nseg+c2 : 0.5); // overlap to avoid seams
 			Vtx[n].tv = D3DVAL((c1*(res-i))/res+c2);
+#else // __linux__
+			Vtx[n].x = Vtx[n].nx = (float)(clat*clng);
+			Vtx[n].y = Vtx[n].ny = (float)(slat);
+			Vtx[n].z = Vtx[n].nz = (float)(clat*slng);
+			Vtx[n].tu = (float)(nseg ? (c1*j)/nseg+c2 : 0.5); // overlap to avoid seams
+			Vtx[n].tv = (float)((c1*(res-i))/res+c2);
+#endif // __linux__
 
 			if (!outside) {
 				Vtx[n].nx = - Vtx[n].nx;

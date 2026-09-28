@@ -12,6 +12,10 @@
 #include "LpadTab.h"
 #include "CustomControls.h"
 
+#ifdef __linux__
+class QTreeWidgetItem;
+
+#endif // __linux__
 namespace orbiter {
 
 	class ModuleTab : public LaunchpadTab {
@@ -20,7 +24,11 @@ namespace orbiter {
 		~ModuleTab();
 
 		void Create();
+#ifndef __linux__
 		BOOL OnInitDialog(HWND hWnd, WPARAM wParam, LPARAM lParam);
+#else // __linux__
+		BOOL OnInitDialog(QWidget *hWnd);
+#endif // __linux__
 
 		void GetConfig(const Config* cfg);
 		void SetConfig(Config* cfg);
@@ -31,10 +39,12 @@ namespace orbiter {
 
 		BOOL OnSize(int w, int h);
 
+#ifndef __linux__
 		BOOL OnNotify(HWND hDlg, int idCtrl, LPNMHDR pnmh);
 
 		BOOL OnMessage(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
 
+#endif // !__linux__
 	protected:
 		void Show();
 
@@ -52,7 +62,11 @@ namespace orbiter {
 		// activate modules listed in config file and tick entries in list
 
 		void ExpandCollapseAll(bool expand);
+#ifndef __linux__
 		HTREEITEM GetCategoryItem(char* cat);
+#else // __linux__
+		QTreeWidgetItem *GetCategoryItem(char* cat);
+#endif // __linux__
 
 	private:
 		SplitterCtrl splitListDesc;  // splitter control for module list(left) and description(right)

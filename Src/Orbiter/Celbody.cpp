@@ -16,6 +16,10 @@
 #include "Log.h"
 #include "Orbitersdk.h"
 #include "PinesGrav.h"
+#ifdef __linux__
+#include "Util.h"
+#include <dlfcn.h>
+#endif // __linux__
 
 using namespace std;
 
@@ -48,7 +52,11 @@ CelestialBody::CelestialBody (char *fname)
 	DefaultParam ();
 	ClearModule ();
 
+#ifndef __linux__
 	ifstream ifs (g_pOrbiter->ConfigPath (fname));
+#else // __linux__
+	ifstream ifs (oapiResolvePath (g_pOrbiter->ConfigPath (fname)));
+#endif // __linux__
 	if (!ifs) {
 		LOGOUT_ERR_FILENOTFOUND_MSG(g_pOrbiter->ConfigPath (fname), "while initialising celestial body");
 		g_pOrbiter->TerminateOnError();
@@ -122,8 +130,13 @@ CelestialBody::CelestialBody (char *fname)
 	}
 
 	if (GetItemBool (ifs, "HasElements", bInitFromElements) && bInitFromElements) {
+#ifndef __linux__
 		if (GetItemString (ifs, "ElReference", cbuf) &&
 			!_stricmp (cbuf, "ParentEquator"))
+#else // __linux__
+		if (GetItemString (ifs, "ElReference", cbuf) &&
+			!strcasecmp (cbuf, "ParentEquator"))
+#endif // __linux__
 			elframe = ELFRAME_PARENTEQU;
 		el = new Elements (fname); TRACENEW
 	}
@@ -716,27 +729,46 @@ void CelestialBody::RegisterModule (char *dllname)
 	char cbuf[256];
 	module = 0;                              // reset new interface
 	memset (&modIntf, 0, sizeof (modIntf));  // reset old interface
+#ifndef __linux__
 	sprintf (cbuf, "Modules\\Celbody\\%s.dll", dllname); // try new module location
 	hMod = LoadLibrary (cbuf);
+#else // __linux__
+	sprintf (cbuf, "Modules/Celbody/%s.so", dllname); // try new module location
+	hMod = dlopen (oapiResolvePath (cbuf).c_str(), RTLD_NOW);
+#endif // __linux__
 	if (!hMod) {
+#ifndef __linux__
 		sprintf (cbuf, "Modules\\%s.dll", dllname);  // try legacy module location
 		hMod = LoadLibrary (cbuf);
+#else // __linux__
+		sprintf (cbuf, "Modules/%s.so", dllname);  // try legacy module location
+		hMod = dlopen (oapiResolvePath (cbuf).c_str(), RTLD_NOW);
+#endif // __linux__
 	}
 	if (!hMod) {
 		// A body whose module cannot be loaded falls back to its config elements, or, if it has none, to a
 		// dynamic integration from a zero relative state; both are wrong silently, so the failure is logged
 		// with the meaning of the two usual causes: a DLL built for the other architecture, and a DLL whose
 		// runtime library (for example an older Visual C++ redistributable) is not installed.
+#ifndef __linux__
 		const DWORD err = GetLastError();
 		const char *hint = (err == ERROR_BAD_EXE_FORMAT) ? ": the DLL was built for a different architecture than this Orbiter" :
 		                   (err == ERROR_MOD_NOT_FOUND)  ? ": the DLL or one of its dependencies, such as a runtime library it was built against, is missing" : "";
 		LOGOUT_WARN("Celestial body %s: ephemeris module %s.dll could not be loaded (Windows error %lu%s); the body falls back to the orbital elements in its config file, if it has any", name.c_str(), dllname, err, hint);
+#else // __linux__
+		const char *err = dlerror(); // GetLastError + hint: dlerror names the missing file or library, a wrong ELF class or an unresolved symbol
+		LOGOUT_WARN("Celestial body %s: ephemeris module %s.so could not be loaded (%s); the body falls back to the orbital elements in its config file, if it has any", name.c_str(), dllname, err ? err : "unknown error");
+#endif // __linux__
 		return;
 	}
 
 	// Check if the module provides instance initialisation
 	typedef CELBODY* (*INITPROC)(OBJHANDLE);
+#ifndef __linux__
 	INITPROC init_proc = (INITPROC)GetProcAddress (hMod, "InitInstance");
+#else // __linux__
+	INITPROC init_proc = (INITPROC)ModuleProc (hMod, "InitInstance");
+#endif // __linux__
 	if (init_proc) { // load interface class
 
 		module = init_proc ((OBJHANDLE)this);
@@ -745,16 +777,32 @@ void CelestialBody::RegisterModule (char *dllname)
 		string funcname;
 
 		funcname = name + "_SetPrecision";
+#ifndef __linux__
 		modIntf.oplanetSetPrecision = (OPLANET_SetPrecision)GetProcAddress (hMod, funcname.c_str());
+#else // __linux__
+		modIntf.oplanetSetPrecision = (OPLANET_SetPrecision)ModuleProc (hMod, funcname.c_str());
+#endif // __linux__
 
 		funcname = name + "_Ephemeris";
+#ifndef __linux__
 		modIntf.oplanetEphemeris = (OPLANET_Ephemeris)GetProcAddress (hMod, funcname.c_str());
+#else // __linux__
+		modIntf.oplanetEphemeris = (OPLANET_Ephemeris)ModuleProc (hMod, funcname.c_str());
+#endif // __linux__
 
 		funcname = name + "_FastEphemeris";
+#ifndef __linux__
 		modIntf.oplanetFastEphemeris = (OPLANET_FastEphemeris)GetProcAddress (hMod, funcname.c_str());
+#else // __linux__
+		modIntf.oplanetFastEphemeris = (OPLANET_FastEphemeris)ModuleProc (hMod, funcname.c_str());
+#endif // __linux__
 
 		funcname = name + "_AtmPrm";
+#ifndef __linux__
 		modIntf.oplanetAtmPrm = (OPLANET_AtmPrm)GetProcAddress (hMod, funcname.c_str());
+#else // __linux__
+		modIntf.oplanetAtmPrm = (OPLANET_AtmPrm)ModuleProc (hMod, funcname.c_str());
+#endif // __linux__
 	}
 }
 
@@ -763,7 +811,11 @@ void CelestialBody::ClearModule ()
 	if (hMod) {
 		if (module) { // new interface
 			typedef void (*EXITPROC)(CELBODY*);
+#ifndef __linux__
 			EXITPROC exit_proc = (EXITPROC)GetProcAddress (hMod, "ExitInstance");
+#else // __linux__
+			EXITPROC exit_proc = (EXITPROC)ModuleProc (hMod, "ExitInstance");
+#endif // __linux__
 			if (exit_proc) { // allow module to clean up
 				exit_proc (module);
 			} else {         // no cleanup - we delete the interface class here
@@ -771,7 +823,11 @@ void CelestialBody::ClearModule ()
 			}
 			module = 0;
 		}
+#ifndef __linux__
 		FreeLibrary (hMod);
+#else // __linux__
+		ModuleFree (hMod); // FreeLibrary
+#endif // __linux__
 		hMod = 0;
 	}
 	memset (&modIntf, 0, sizeof (modIntf)); // old interface
@@ -906,7 +962,11 @@ void CELBODY2::clbkInit (FILEHANDLE cfg)
 		strcat (name, "\\Atmosphere.cfg");
 		FILEHANDLE hFile = oapiOpenFile (name, FILE_IN, CONFIG);
 		if (oapiReadItem_string (hFile, (char*)"MODULE_ATM", fname) || oapiReadItem_string (cfg, (char*)"MODULE_ATM", fname)) {
+#ifndef __linux__
 			if (_stricmp (fname, "[None]"))
+#else // __linux__
+			if (strcasecmp (fname, "[None]"))
+#endif // __linux__
 				LoadAtmosphereModule (fname);
 		}
 		oapiCloseFile (hFile, FILE_IN);
@@ -947,7 +1007,11 @@ bool CELBODY2::LoadAtmosphereModule (const char *fname)
 	oapiGetObjectName (hBody, name, 256);
 	sprintf (path, "Modules\\Celbody\\%s\\Atmosphere", name);
 	if (!(hAtmModule = g_pOrbiter->LoadModule (path, fname))) return false;
+#ifndef __linux__
 	ATMOSPHERE *(*func)(CELBODY2*) = (ATMOSPHERE*(*)(CELBODY2*))GetProcAddress (hAtmModule, "CreateAtmosphere");
+#else // __linux__
+	ATMOSPHERE *(*func)(CELBODY2*) = (ATMOSPHERE*(*)(CELBODY2*))ModuleProc (hAtmModule, "CreateAtmosphere");
+#endif // __linux__
 	if (!func) {
 		g_pOrbiter->UnloadModule (fname);
 		hAtmModule = NULL;
@@ -961,7 +1025,11 @@ bool CELBODY2::FreeAtmosphereModule ()
 {
 	if (!hAtmModule) return false;
 	if (atm) {
+#ifndef __linux__
 		void (*func)(ATMOSPHERE*) = (void(*)(ATMOSPHERE*))GetProcAddress(hAtmModule, "DeleteAtmosphere");
+#else // __linux__
+		void (*func)(ATMOSPHERE*) = (void(*)(ATMOSPHERE*))ModuleProc(hAtmModule, "DeleteAtmosphere");
+#endif // __linux__
 		if (func) {
 			func (atm);
 		} else {

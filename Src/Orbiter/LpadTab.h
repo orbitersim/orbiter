@@ -4,7 +4,11 @@
 #ifndef __LPADTAB_H
 #define __LPADTAB_H
 
+#ifndef __linux__
 #include <windows.h>
+#else // __linux__
+#include "OrbiterPlatform.h"
+#endif // __linux__
 #include "Config.h"
 #include "Launchpad.h"
 
@@ -64,30 +68,59 @@ namespace orbiter {
 		virtual void Hide();
 		virtual void LaunchpadShowing(bool show) {}
 		inline bool IsActive() const { return bActive; }
+#ifndef __linux__
 		inline HWND TabWnd() const { return hTab; }
 		inline HWND LaunchpadWnd() const { return pLp->hDlg; }
 		inline HINSTANCE AppInstance() const { return pLp->hInst; }
+#else // __linux__
+		inline QWidget *TabWnd() const { return hTab; }
+		inline QWidget *LaunchpadWnd() const { return pLp->hDlg; }
+		inline void *AppInstance() const { return pLp->hInst; }
+#endif // __linux__
 
+#ifndef __linux__
 		virtual BOOL OnInitDialog(HWND hWnd, WPARAM wParam, LPARAM lParam) { return FALSE; }
+#else // __linux__
+		virtual BOOL OnInitDialog(QWidget *hWnd) { return FALSE; }
+		// WM_INITDIALOG: the tab connects its controls' signals here
+#endif // __linux__
 
 		virtual BOOL OnSize(int w, int h);
 		// by default, this re-centers the items if RegisterItemPositions has been called
 
+#ifndef __linux__
 		virtual BOOL OnNotify(HWND hDlg, int idCtrl, LPNMHDR pnmh) { return OnMessage(hDlg, WM_NOTIFY, (WPARAM)idCtrl, (LPARAM)pnmh); }
+#else // __linux__
+		virtual BOOL OnMessage(QWidget *hWnd, QEvent *event) { return FALSE; }
+		// events of the tab window other than its size (true if handled)
+#endif // __linux__
 
+#ifndef __linux__
 		virtual BOOL OnMessage(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam) { return FALSE; }
 
 		virtual INT_PTR TabProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
 		// generic message handler
+#else // __linux__
+		virtual bool TabProc(QWidget *hWnd, QEvent *event);
+		// generic event handler
+#endif // __linux__
 
 	protected:
+#ifndef __linux__
 		HWND CreateTab(int resid);
 
 		static INT_PTR CALLBACK TabProcHook(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
+#else // __linux__
+		QWidget *CreateTab(int resid);
+#endif // __linux__
 
 		const LaunchpadDialog* pLp;
 		Config* pCfg;
+#ifndef __linux__
 		HWND hTab;
+#else // __linux__
+		QWidget *hTab;
+#endif // __linux__
 		RECT pos0;  // initial position in Launchpad dialog
 		bool bActive;
 

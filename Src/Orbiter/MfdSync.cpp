@@ -375,15 +375,32 @@ bool Instrument_OSync::ReadParams (ifstream &ifs)
 	for (;;) {
 		if (!ifs.getline (cbuf, 256)) return false;
 		pc = trim_string (cbuf);
+#ifndef __linux__
 		if (!_strnicmp (pc, "END_MFD", 7)) break;
 		if (!_strnicmp (pc, "TARGET", 6)) {
+#else // __linux__
+		if (!strncasecmp (pc, "END_MFD", 7)) break;
+		if (!strncasecmp (pc, "TARGET", 6)) {
+#endif // __linux__
 			strcpy (ctgt, trim_string (pc+6));
+#ifndef __linux__
 		} else if (!_strnicmp (pc, "MODE", 4)) {
+#else // __linux__
+		} else if (!strncasecmp (pc, "MODE", 4)) {
+#endif // __linux__
 			strcpy (cmode, trim_string (pc+4));
+#ifndef __linux__
 		} else if (!_strnicmp (pc, "MANUALREF", 9)) {
+#else // __linux__
+		} else if (!strncasecmp (pc, "MANUALREF", 9)) {
+#endif // __linux__
 			sscanf (pc+9, "%lf", &rlng);
 			rlng *= RAD;
+#ifndef __linux__
 		} else if (!_strnicmp (pc, "LISTLEN", 7)) {
+#else // __linux__
+		} else if (!strncasecmp (pc, "LISTLEN", 7)) {
+#endif // __linux__
 			sscanf (pc+7, "%d", &llen);
 		}
 	}
@@ -393,7 +410,11 @@ bool Instrument_OSync::ReadParams (ifstream &ifs)
 	}
 	if (cmode[0]) {
 		for (i = 0; i < 7; i++)
+#ifndef __linux__
 			if (!_stricmp (cmode, modestr[i])) {
+#else // __linux__
+			if (!strcasecmp (cmode, modestr[i])) {
+#endif // __linux__
 				mode = (Mode)i;
 				break;
 			}

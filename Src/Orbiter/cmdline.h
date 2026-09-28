@@ -4,7 +4,11 @@
 #ifndef __cmdline_h
 #define __cmdline_h
 
+#ifndef __linux__
 #include <windows.h>
+#else // __linux__
+#include "OrbiterPlatform.h" // windows.h left out: UINT, PSTR, PCSTR
+#endif // __linux__
 #include <vector>
 #include <string>
 

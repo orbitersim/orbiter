@@ -15,8 +15,15 @@
 #ifndef __CAMERA_H
 #define __CAMERA_H
 
+#ifndef __linux__
 #include <d3d.h>
+#else // __linux__
+// d3d.h left out: D3DMATRIX -> oapi::FMATRIX4
+#endif // __linux__
 #include <fstream>
+#ifdef __linux__
+#include "DrawAPI.h"
+#endif // __linux__
 #include "Vecmat.h"
 #include "elevmgr.h"
 #include "CamAPI.h"
@@ -270,7 +277,11 @@ public:
 	MATRIX4 ViewMatrix() const;
 	// Return view matrix in full resolution
 
+#ifndef __linux__
 	D3DMATRIX *D3D_ProjViewMatrix ();
+#else // __linux__
+	oapi::FMATRIX4 *D3D_ProjViewMatrix ();
+#endif // __linux__
 	// Return product ProjectionMatrix * ViewMatrix
 
 	void ViewportToGlobalDir (double sx, double sy, Vector &gdir) const;
@@ -387,9 +398,15 @@ private:
 	bool mbdown[2];         // mouse buttons down?
 	int mx, my;             // mouse position
 
+#ifndef __linux__
 	D3DMATRIX view_mat;     // D3D view matrix for current camera state
 	D3DMATRIX proj_mat;     // D3D projection matrix for current camera state
 	D3DMATRIX pv_mat;       // projection * view matrix
+#else // __linux__
+	oapi::FMATRIX4 view_mat;     // D3D view matrix for current camera state
+	oapi::FMATRIX4 proj_mat;     // D3D projection matrix for current camera state
+	oapi::FMATRIX4 pv_mat;       // projection * view matrix
+#endif // __linux__
 	bool pv_mat_valid;      // flag for validity of pv_mat
 
 	mutable std::vector<ElevationTile> etile;

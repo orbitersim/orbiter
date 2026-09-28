@@ -15,6 +15,9 @@
 #include "Log.h"
 #include "DlgMgr.h"
 #include <assert.h>
+#ifdef __linux__
+#include <QImage>
+#endif // __linux__
 
 using namespace std;
 
@@ -29,7 +32,11 @@ static COLORREF infoColor   = RGB (224, 192, 0);
 static COLORREF brightColor = RGB (255, 224, 128);
 
 			   
+#ifndef __linux__
 Pane::Pane (oapi::GraphicsClient *gclient, HWND hwnd, int width, int height, int bpp)
+#else // __linux__
+Pane::Pane (oapi::GraphicsClient *gclient, QWindow *hwnd, int width, int height, int bpp)
+#endif // __linux__
 {
 	// Note: gclient is assumed to be a valid pointer. Nongraphics orbiter
 	// instances should not create a Pane.
@@ -80,8 +87,12 @@ Pane::Pane (oapi::GraphicsClient *gclient, HWND hwnd, int width, int height, int
 	mfdTex_blank = NULL;
 	if (gc) {
 		mfdTex_blank = gc->clbkCreateTexture (2,2);
+#ifndef __linux__
 		static DDBLTFX bltfx = {sizeof(DDBLTFX), 0};
 		bltfx.dwFillColor = 0;
+#else // __linux__
+		// DDBLTFX left out: it was filled but never used
+#endif // __linux__
 		gc->clbkFillSurface (mfdTex_blank, 0);
 	}
 }
@@ -108,12 +119,16 @@ Pane::~Pane ()
 	if (mfdTex_blank) gc->clbkReleaseSurface (mfdTex_blank);
 }
 
+#ifndef __linux__
 void Pane::RestoreDeviceObjects (LPDIRECT3D7 d3d, LPDIRECT3DDEVICE7 dev)
 {
 	if (defpanel) defpanel->RestoreDeviceObjects (d3d, dev);
 	for (int i = 0; i < MAXMFD; i++)
 		if (mfd[i].instr) mfd[i].instr->RestoreDeviceObjects (d3d, dev);
 }
+#else // __linux__
+// RestoreDeviceObjects left out: Direct3D 7 inline render path
+#endif // __linux__
 
 void Pane::FocusChanged (const Vessel *focus)
 {
@@ -788,7 +803,11 @@ void Pane::SetSketchpadDefault (oapi::Sketchpad *skp)
 
 bool Pane::GlobalToScreen (const Vector &glob, int &x, int &y) const
 {
+#ifndef __linux__
 	D3DVECTOR homog;
+#else // __linux__
+	oapi::FVECTOR3 homog;
+#endif // __linux__
 	bool vis = GlobalToHomog (glob, homog);
 	if (vis) {
 		x = (int)(W*0.5*(1.0f+homog.x));
@@ -799,7 +818,11 @@ bool Pane::GlobalToScreen (const Vector &glob, int &x, int &y) const
 
 bool Pane::GlobalToScreen (const Vector &glob, double &x, double &y) const
 {
+#ifndef __linux__
 	D3DVECTOR homog;
+#else // __linux__
+	oapi::FVECTOR3 homog;
+#endif // __linux__
 	bool vis = GlobalToHomog (glob, homog);
 	if (vis) {
 		x = W*0.5*(1.0f+homog.x);
@@ -808,23 +831,43 @@ bool Pane::GlobalToScreen (const Vector &glob, double &x, double &y) const
 	return vis;
 }
 
+#ifndef __linux__
 bool Pane::GlobalToHomog (const Vector &glob, D3DVECTOR &homog) const
+#else // __linux__
+bool Pane::GlobalToHomog (const Vector &glob, oapi::FVECTOR3 &homog) const
+#endif // __linux__
 {
 	//D3DVECTOR gpos = {-(D3DVALUE)glob.x, -(D3DVALUE)glob.y, -(D3DVALUE)glob.z};
+#ifndef __linux__
 	D3DVECTOR gpos = {(D3DVALUE)glob.x, (D3DVALUE)glob.y, (D3DVALUE)glob.z};
 	return (D3DMath_VectorMatrixMultiply (homog, gpos, *g_camera->D3D_ProjViewMatrix()) == S_OK &&
 		homog.x >= -1.0f && homog.x <= 1.0f &&
 		homog.y >= -1.0f && homog.y <= 1.0f &&
 		/* homog.z >=  0.0 && */ homog.z <= g_camera->HomogZlimit());
+#else // __linux__
+	oapi::FVECTOR3 gpos = {(float)glob.x, (float)glob.y, (float)glob.z};
+	return (D3DMath_VectorMatrixMultiply (homog, gpos, *g_camera->D3D_ProjViewMatrix()) == 0 && // S_OK
+		homog.x >= -1.0f && homog.x <= 1.0f &&
+		homog.y >= -1.0f && homog.y <= 1.0f &&
+		/* homog.z >=  0.0 && */ homog.z <= g_camera->HomogZlimit());
+#endif // __linux__
 }
 
 void Pane::ScreenToGlobal (int x, int y, Vector &glob) const
 {
+#ifndef __linux__
 	D3DVECTOR homog, gpos;
+#else // __linux__
+	oapi::FVECTOR3 homog, gpos;
+#endif // __linux__
 	homog.x = (float)(x*2.0/W-1.0);
 	homog.y = (float)(1.0-y*2.0/H);
 	homog.z = 0.0f;
+#ifndef __linux__
 	D3DMATRIX IP;
+#else // __linux__
+	oapi::FMATRIX4 IP;
+#endif // __linux__
 	D3DMath_MatrixInvert (IP, *g_camera->D3D_ProjViewMatrix());
 	D3DMath_VectorMatrixMultiply (gpos, homog, IP);
 	//D3DMath_VectorTMatrixMultiply (gpos, homog, *g_camera->D3D_ProjViewMatrix());
@@ -1170,10 +1213,18 @@ void Pane::RepaintMFDButtons (INT_PTR id, Instrument *instr)
 	}
 }
 
+#ifndef __linux__
 void Pane::RegisterPanelBackground (HBITMAP hBmp, DWORD flag, DWORD ck)
+#else // __linux__
+void Pane::RegisterPanelBackground (QImage *hBmp, DWORD flag, DWORD ck)
+#endif // __linux__
 {
 	if (panel) panel->DefineBackground (hBmp, flag, ck);
+#ifndef __linux__
 	DeleteObject ((HGDIOBJ)hBmp);
+#else // __linux__
+	delete hBmp; // DeleteObject
+#endif // __linux__
 }
 
 void Pane::RegisterPanelBackground (SURFHANDLE hSurf, DWORD flag)
@@ -1200,7 +1251,11 @@ void Pane::SetVCNeighbours (int left, int right, int top, int bottom)
 
 void Pane::InitState (const char *scn)
 {
+#ifndef __linux__
 	ifstream ifs (scn);
+#else // __linux__
+	ifstream ifs (oapiResolvePath (scn));
+#endif // __linux__
 	if (ifs) Read (ifs);
 }
 

@@ -5,8 +5,16 @@
 #include "Panel.h"
 #include "Pane.h"
 #include "Vessel.h"
+#ifndef __linux__
 #include "Texture.h"
+#else // __linux__
+// Texture.h left out: DirectDraw texture manager, nothing used here
+#endif // __linux__
 #include "Log.h"
+#ifdef __linux__
+#include "Util.h"
+#include <QImage>
+#endif // __linux__
 
 using namespace std;
 
@@ -30,10 +38,14 @@ Panel::Panel (int _id, const Pane *_pane, double _scale)
 	surf    = NULL;
 	visible = false;
 	has_ck  = false;
+#ifndef __linux__
 	if (g_pOrbiter->IsFullscreen())
 		cwnd = 0;
 	else
 		cwnd = g_pOrbiter->GetRenderWnd();
+#else // __linux__
+	cwnd = g_pOrbiter->GetRenderWnd(); // also when fullscreen: the window need not sit at the screen origin
+#endif // __linux__
 	narea   = nareabuf = 0;
 	idx_mfocus = aid_mfocus = mstate = 0;
 
@@ -137,19 +149,30 @@ void Panel::MFDMoved ()
 	}
 }
 
+#ifndef __linux__
 void Panel::DefineBackground (HBITMAP hBmp, DWORD flag, DWORD _ck)
+#else // __linux__
+void Panel::DefineBackground (QImage *hBmp, DWORD flag, DWORD _ck)
+#endif // __linux__
 {
 	if (!gc) return;
 
 	//HRESULT res;
+#ifndef __linux__
 	BITMAP bm;
+#endif // !__linux__
 
 	if (surf) gc->clbkReleaseSurface (surf);
 
 	// bitmap size
+#ifndef __linux__
     GetObject (hBmp, sizeof(bm), &bm);
     srcW = bm.bmWidth;
 	srcH = bm.bmHeight;
+#else // __linux__
+    srcW = hBmp->width();
+	srcH = hBmp->height();
+#endif // __linux__
 	tgtW = (int)(scale*srcW);
 	tgtH = (int)(scale*srcH);
 
@@ -357,7 +380,11 @@ void Panel::RegisterMFD (int id, const MFDSPEC &spec)
 	mfd[id].exist = true;
 }
 
+#ifndef __linux__
 void Panel::Point2Screen (long srcX, long srcY, long &tgtX, long &tgtY) const
+#else // __linux__
+void Panel::Point2Screen (LONG srcX, LONG srcY, LONG &tgtX, LONG &tgtY) const
+#endif // __linux__
 {
 	if (scaled) {
 		srcX = (long)(srcX*scale);
@@ -420,10 +447,14 @@ bool Panel::ProcessMouse (UINT event, DWORD state, int x, int y)
 void Panel::GetMouseState (int &idx, int &state, int &mx, int &my) const
 {
 	if (mstate & PANEL_MOUSE_PRESSED) {
+#ifndef __linux__
 		POINT pt;
 		GetCursorPos (&pt);
 		if (cwnd) // need to subtract client window offset
 			ScreenToClient (cwnd, &pt);
+#else // __linux__
+		POINT pt = CursorPos (cwnd); // need to subtract client window offset
+#endif // __linux__
 		pt.x -= X0, pt.y -= Y0;
 		if (scaled) pt.x = (int)(pt.x*iscale), pt.y = (int)(pt.y*iscale);
 		mousex = pt.x - area[idx_mfocus]->pos.left;

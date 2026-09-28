@@ -92,7 +92,11 @@ private:
 	int idx_mfocus;   // index of area currently receiving mouse focus
 	int mstate;       // current mouse state
 	mutable Vector mouse_r;   // mouse position coefficients (area-type dependent)
+#ifndef __linux__
 	HWND cwnd;        // window handle for mouse position offset calculations
+#else // __linux__
+	QWindow *cwnd;    // window handle for mouse position offset calculations
+#endif // __linux__
 
 	struct {          // HUD parameters
 		VCHUDSPEC spec;             // VC HUD specs
@@ -113,6 +117,7 @@ private:
 
 		// mouse click area definition - currently only spherical click areas are supported
 		enum ClickMode { CMODE_NONE, CMODE_SPHERICAL, CMODE_QUAD } cmode;
+#ifndef __linux__
 		union {
 			struct {
 				Vector cnt;   // centre of click area in local vessel coords
@@ -124,6 +129,14 @@ private:
 				float u[4], v[4];       // coefficients for transforming to local quad frame
 			};
 		};
+#else // __linux__
+		// spherical and quad parameters no longer share a union: C++ forbids Vector members in anonymous aggregates
+		Vector cnt;   // centre of click area in local vessel coords
+		double rad;   // radius of click area
+		Vector p[4];            // corner points
+		float a, b, c, d;       // coeffs for equation of plane: ax+by+cz+d = 0
+		float u[4], v[4];       // coefficients for transforming to local quad frame
+#endif // __linux__
 	} **area;
 	int narea, nareabuf;
 };

@@ -48,7 +48,11 @@ Base::Base (char *fname, Planet *_planet, double _lng, double _lat)
 
 	InitDeviceObjects ();
 
+#ifndef __linux__
 	ifstream ifs (g_pOrbiter->ConfigPath(fname));
+#else // __linux__
+	ifstream ifs (oapiResolvePath (g_pOrbiter->ConfigPath(fname)));
+#endif // __linux__
 
 	// read location information from file, if available
 	if (ifs && GetItemString (ifs, "LOCATION", cbuf)) {
@@ -72,7 +76,11 @@ Base::Base (char *fname, Planet *_planet, double _lng, double _lat)
 	if (FindLine (ifs, "BEGIN_NAVBEACON")) {
 		char cbuf[256];
 		for (;;) {
+#ifndef __linux__
 			if (!ifs.getline (cbuf, 256) || !_strnicmp (cbuf, "END_NAVBEACON", 13)) break;
+#else // __linux__
+			if (!ifs.getline (cbuf, 256) || !strncasecmp (cbuf, "END_NAVBEACON", 13)) break;
+#endif // __linux__
 			Nav *nv = ParseNav (cbuf, _planet);
 			if (nv) {
 				_planet->NavMgr().AddNav (nv);
@@ -151,7 +159,11 @@ Base::Base (char *fname, Planet *_planet, double _lng, double _lat)
 		char cbuf[256];
 		int res, texflag, ilng, ilat;
 		for (;;) {
+#ifndef __linux__
 			if (!ifs.getline(cbuf,256) || !_strnicmp (cbuf, "END_SURFTILELIST", 16)) break;
+#else // __linux__
+			if (!ifs.getline(cbuf,256) || !strncasecmp (cbuf, "END_SURFTILELIST", 16)) break;
+#endif // __linux__
 			sscanf (cbuf, "%d%d%d%d", &res, &ilng, &ilat, &texflag);
 			if (ntile == ntilebuf) {
 				SurftileSpec *tmp = new SurftileSpec[ntilebuf+32]; TRACENEW
@@ -200,14 +212,22 @@ void Base::CreateStaticDeviceObjects ()
 {
 	ngenericmesh = 0;
 	ngenerictex  = 0;
+#ifndef __linux__
 	ifstream ifs (g_pOrbiter->ConfigPath ("Base"));
+#else // __linux__
+	ifstream ifs (oapiResolvePath (g_pOrbiter->ConfigPath ("Base")));
+#endif // __linux__
 	if (ifs) {
 		char cbuf[256], **tmp_list;
 		LONGLONG *tmp_id;
 		// load list of generic texture names
 		if (FindLine (ifs, "begin_textures")) {
 			for (;;) {
+#ifndef __linux__
 				if (!ifs.getline (cbuf, 256) || !_strnicmp (cbuf, "end_textures", 12)) break;
+#else // __linux__
+				if (!ifs.getline (cbuf, 256) || !strncasecmp (cbuf, "end_textures", 12)) break;
+#endif // __linux__
 				char *str = trim_string (cbuf);
 				if (*str) {
 					tmp_list = new char*[ngenerictex+1]; TRACENEW
@@ -309,7 +329,11 @@ bool Base::InitSurfaceTiles () const
 	float cphi = (float)cos (lng), sphi = (float)sin (lng);
 	float ctht = (float)cos (lat), stht = (float)sin (lat);
 
+#ifndef __linux__
 	D3DMATRIX R = {(float)rrot.m11, (float)rrot.m12, (float)rrot.m13, 0,
+#else // __linux__
+	oapi::FMATRIX4 R = {(float)rrot.m11, (float)rrot.m12, (float)rrot.m13, 0,
+#endif // __linux__
 		           (float)rrot.m21, (float)rrot.m22, (float)rrot.m23, 0,
 				   (float)rrot.m31, (float)rrot.m32, (float)rrot.m33, 0,
 				   0,               0,               0,               1};
@@ -604,7 +628,11 @@ int Base::OccupyPad (Vessel *vessel, int pad, bool forcepad)
 		return pad;
 	}
 	// pick random free pad
+#ifndef __linux__
 	pd = (rand()*padfree)/(RAND_MAX+1);
+#else // __linux__
+	pd = (int)(((double)rand()*padfree)/((double)RAND_MAX+1.0)); // RAND_MAX is 2^31-1 in glibc (32767 in MSVC): the int expression overflowed
+#endif // __linux__
 	for (i = 0; i < npad; i++) {
 		if (lspec[i].status == 0) {
 			if (!pd--) {
@@ -661,7 +689,11 @@ int Base::RequestLanding (Vessel *vessel, DWORD &padno)
 {
 	if (rand() < RAND_MAX/2) return 2; // keep pending
 	if (!padfree) return 1;     // deny
+#ifndef __linux__
 	int pd = (rand()*padfree)/(RAND_MAX+1);
+#else // __linux__
+	int pd = (int)(((double)rand()*padfree)/((double)RAND_MAX+1.0)); // glibc RAND_MAX: see OccupyPad
+#endif // __linux__
 	for (DWORD i = 0; i < npad; i++) {
 		if (lspec[i].status == 0) {
 			if (!pd--) {

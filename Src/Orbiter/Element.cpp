@@ -5,7 +5,11 @@
 #include "Element.h"
 #include "Config.h"
 #include <fstream>
+#ifndef __linux__
 #include <windows.h>
+#else // __linux__
+// windows.h left out
+#endif // __linux__
 #include <stdio.h>
 
 using namespace std;
@@ -59,7 +63,11 @@ Elements::Elements (const Elements &el)
 Elements::Elements (char *fname)
 {
 	double epoch;
+#ifndef __linux__
 	ifstream ifs (g_pOrbiter->ConfigPath (fname));
+#else // __linux__
+	ifstream ifs (oapiResolvePath (g_pOrbiter->ConfigPath (fname)));
+#endif // __linux__
 	if (!GetItemReal (ifs, "Epoch", epoch))           epoch  = 2000.0;
 	mjd_epoch = Jepoch2MJD (epoch);
 	t_epoch   = (mjd_epoch-td.MJD_ref)*86400.0;

@@ -8,7 +8,11 @@
 #ifndef __VOBJECT_H
 #define __VOBJECT_H
 
+#ifndef __linux__
 #include <d3d.h>
+#else // __linux__
+// d3d.h left out: D3DMATRIX -> oapi::FMATRIX4, D3DCOLORVALUE -> COLOUR4
+#endif // __linux__
 #include "Vecmat.h"
 #include "GraphicsAPI.h"
 
@@ -30,7 +34,11 @@ public:
 	static void CreateDeviceObjects (OrbiterGraphics *gclient);
 	static void DestroyDeviceObjects ();
 
+#ifndef __linux__
 	static D3DCOLORVALUE ColorToD3D(Vector4 col) { return { (float)col.x, (float)col.y, (float)col.z, (float)col.w }; };
+#else // __linux__
+	static COLOUR4 ColorToD3D(Vector4 col) { return { (float)col.x, (float)col.y, (float)col.z, (float)col.w }; };
+#endif // __linux__
 
 	virtual unsigned long GetCaps () const
 	{ return 0; }
@@ -56,6 +64,7 @@ public:
 	// objects return the near and far distance limits of the rendered object
 	// (including any applied scaling)
 
+#ifndef __linux__
 	virtual void Render (LPDIRECT3DDEVICE7 dev) = 0;
 	// Object renders itself in the 3d device
 
@@ -64,13 +73,20 @@ public:
 
 	virtual void RenderBeacons (LPDIRECT3DDEVICE7) {}
 	// allows objects to render light beacons or similar
+#else // __linux__
+	// Render, RenderExhaust, RenderBeacons left out: Direct3D 7 inline render path
+#endif // __linux__
 
 	inline double CDist () const { return cdist; }
 	inline const Vector &CPos () const { return cpos; }
 	inline double ScaleFactor () const { return apprad_factor; }
 	inline double AppRad () const { return 1.0/iapprad; }
 
+#ifndef __linux__
 	inline const D3DMATRIX &MWorld() const { return mWorld; }
+#else // __linux__
+	inline const oapi::FMATRIX4 &MWorld() const { return mWorld; }
+#endif // __linux__
 
 	virtual void clbkEvent (DWORD msg, DWORD_PTR content) {}
 	// Notification of visual event (e.g. mesh addition/deletion)
@@ -87,13 +103,18 @@ public:
 		float lsize;
 	};
 
+#ifndef __linux__
 	virtual void RenderVectors(LPDIRECT3DDEVICE7 dev);
 	virtual void RenderVectorLabels(LPDIRECT3DDEVICE7 dev);
+#else // __linux__
+	// RenderVectors, RenderVectorLabels left out: Direct3D 7 inline render path
+#endif // __linux__
 
 protected:
 	static OrbiterGraphics *gc;
 	// inline graphics client instance
 
+#ifndef __linux__
 	void RenderAsPixel (LPDIRECT3DDEVICE7 dev);
 	// Render distant object as 2x2 pixel block
 
@@ -106,14 +127,25 @@ protected:
 
 	void RenderAsSpot (LPDIRECT3DDEVICE7 dev, D3DCOLORVALUE *illumination = 0);
 	// Render distant object as circular blob with a billboard texture
+#else // __linux__
+	// RenderAsPixel, RenderAsDisc, RenderSpot, RenderAsSpot left out: Direct3D 7 inline render path
+#endif // __linux__
 
 	void AddVector(const Vector& v, const Vector& orig, double rad, const std::string& label, const Vector& col, float alpha = 1.0f, DWORD lcol = 0, float lsize = -1.0);
 
+#ifndef __linux__
 	bool DrawVector(LPDIRECT3DDEVICE7 dev, const Vector& end, const Vector& orig, double rad = 1.0);
+#else // __linux__
+	// DrawVector left out: Direct3D 7 inline render path
+#endif // __linux__
 
 	const Body *body;    // reference to logical object
 	static Scene *scene; // reference to scene
+#ifndef __linux__
 	D3DMATRIX mWorld;    // world transform matrix
+#else // __linux__
+	oapi::FMATRIX4 mWorld; // world transform matrix
+#endif // __linux__
 	MATRIX4 dmWorld;     // world transformation matrix in double precision
 
 	Vector cpos;         // object position relative to camera in global frame
@@ -125,7 +157,11 @@ protected:
 private:
 	double apprad_factor; // auxiliary variable for apprad calculation
 	double isdist_old;    // old inverse distance camera -> object surface
+#ifndef __linux__
 	static LPDIRECTDRAWSURFACE7 blobtex[3]; // billboard blob texture for distant objects
+#else // __linux__
+	// blobtex left out: DirectDraw billboard textures for distant objects
+#endif // __linux__
 };
 
 // =======================================================================

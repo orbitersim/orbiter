@@ -22,6 +22,9 @@
 
 #include <fstream>
 #include <cmath>
+#ifdef __linux__
+#include <cerrno>
+#endif // __linux__
 #include "Vecmat.h"
 #include "PinesGrav.h"
 #include "Orbiter.h"
@@ -132,7 +135,12 @@ int PinesGravProp::readGravModel(char* filename, int cutoff, int &actualLoadedTe
 	C[0] = 0;	//This needs to be 0 unless you want the point-mass gravity as well.
 	S[0] = 0; 
 
+#ifndef __linux__
 	int file_error = fopen_s(&gravModelFile, filename, "rt");
+#else // __linux__
+	gravModelFile = fopen(oapiResolvePath(filename).c_str(), "rt"); // fopen_s counterpart
+	int file_error = (gravModelFile ? 0 : errno);
+#endif // __linux__
 
 	if (file_error == 0 && gravModelFile) {
 		while (fgets(gravFileLine, 511, gravModelFile))

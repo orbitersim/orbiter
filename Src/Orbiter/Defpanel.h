@@ -24,8 +24,12 @@ public:
 	DefaultPanel (Pane *_pane, int cidx);
 	~DefaultPanel ();
 
+#ifndef __linux__
 	// Restore all devices (e.g. after render window is re-openend
 	void RestoreDeviceObjects (LPDIRECT3D7 d3d, LPDIRECT3DDEVICE7 dev);
+#else // __linux__
+	// RestoreDeviceObjects(LPDIRECT3D7, LPDIRECT3DDEVICE7) left out: Direct3D 7 inline render path
+#endif // __linux__
 
 	// Render the glass cockpit overlay on top of the target surface
 	void Render ();

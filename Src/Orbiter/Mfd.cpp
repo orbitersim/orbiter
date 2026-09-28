@@ -22,6 +22,9 @@
 #include "Log.h"
 #include "Util.h"
 #include "Psys.h"
+#ifdef __linux__
+#include <QPainter>
+#endif // __linux__
 
 using namespace std;
 
@@ -39,7 +42,11 @@ char Key2Char[256] = {
 	' ','A','S','D','F','G','H','J','K','L',';','\'','`',' ',
 	'\\','Z','X','C','V','B','N','M',',','.','/'};
 
+#ifndef __linux__
 HPEN Instrument::hdefpen[MAXPEN] = {0};
+#else // __linux__
+QPen *Instrument::hdefpen[MAXPEN] = {0};
+#endif // __linux__
 
 struct Instrument::DrawResource Instrument::draw[MAXDEFCOL][2] = {0};
 
@@ -109,9 +116,15 @@ Instrument *Instrument::Create (ifstream &ifs, Pane *_pane,
 	for (;instr == 0;) {
 		if (!ifs.getline (cbuf, 256)) return 0;
 		pc = trim_string (cbuf);
+#ifndef __linux__
 		if (!_strnicmp (pc, "END_MFD", 7)) return 0;
 		if (!_strnicmp (pc, "TYPE", 4)) {
+#else // __linux__
+		if (!strncasecmp (pc, "END_MFD", 7)) return 0;
+		if (!strncasecmp (pc, "TYPE", 4)) {
+#endif // __linux__
 			pc = trim_string (pc+4);
+#ifndef __linux__
 			if      (!_strnicmp (pc, "Orbit", 5))    instr = Create (MFD_ORBIT, _pane, _id, spec, _vessel);
 			else if (!_strnicmp (pc, "Surface", 7))  instr = Create (MFD_SURFACE, _pane, _id, spec, _vessel);
 			else if (!_strnicmp (pc, "Map", 3))      instr = Create (MFD_MAP, _pane, _id, spec, _vessel);
@@ -123,6 +136,19 @@ Instrument *Instrument::Create (ifstream &ifs, Pane *_pane,
 			else if (!_strnicmp (pc, "Transfer", 8)) instr = Create (MFD_TRANSFER, _pane, _id, spec, _vessel);
 			else if (!_strnicmp (pc, "COM/NAV", 4))  instr = Create (MFD_COMMS, _pane, _id, spec, _vessel);
 			else if (!_strnicmp (pc, "User", 4))     instr = Create (MFD_USERTYPE, _pane, _id, spec, _vessel);
+#else // __linux__
+			if      (!strncasecmp (pc, "Orbit", 5))    instr = Create (MFD_ORBIT, _pane, _id, spec, _vessel);
+			else if (!strncasecmp (pc, "Surface", 7))  instr = Create (MFD_SURFACE, _pane, _id, spec, _vessel);
+			else if (!strncasecmp (pc, "Map", 3))      instr = Create (MFD_MAP, _pane, _id, spec, _vessel);
+			else if (!strncasecmp (pc, "HSI", 3))      instr = Create (MFD_HSI, _pane, _id, spec, _vessel);
+			else if (!strncasecmp (pc, "Launch", 6))   instr = Create (MFD_LANDING, _pane, _id, spec, _vessel);
+			else if (!strncasecmp (pc, "Docking", 7))  instr = Create (MFD_DOCKING, _pane, _id, spec, _vessel);
+			else if (!strncasecmp (pc, "OAlign", 6))   instr = Create (MFD_OPLANEALIGN, _pane, _id, spec, _vessel, false);
+			else if (!strncasecmp (pc, "OSync", 5))    instr = Create (MFD_OSYNC, _pane, _id, spec, _vessel, false);
+			else if (!strncasecmp (pc, "Transfer", 8)) instr = Create (MFD_TRANSFER, _pane, _id, spec, _vessel);
+			else if (!strncasecmp (pc, "COM/NAV", 4))  instr = Create (MFD_COMMS, _pane, _id, spec, _vessel);
+			else if (!strncasecmp (pc, "User", 4))     instr = Create (MFD_USERTYPE, _pane, _id, spec, _vessel);
+#endif // __linux__
 		}
 	}
 	if (instr) {
@@ -151,7 +177,11 @@ void Instrument::GlobalInit (oapi::GraphicsClient *gc)
 	draw[4][1].col = 0xA00000;  // aux colour 4 dim
 
 	// Read customised settings
+#ifndef __linux__
 	ifstream ifs (g_pOrbiter->ConfigPath ("MFD\\Default"));
+#else // __linux__
+	ifstream ifs (oapiResolvePath(g_pOrbiter->ConfigPath ("MFD\\Default")));
+#endif // __linux__
 	if (ifs) {
 		char label[64];
 		int c;
@@ -177,7 +207,11 @@ void Instrument::GlobalInit (oapi::GraphicsClient *gc)
 		RGB(128,128,0), RGB(64,64,0), RGB(128,128,128)
 	};
 	for (i = 0; i < MAXPEN; i++) {
+#ifndef __linux__
 		hdefpen[i] = CreatePen (PS_SOLID, 0, pencol[i]);
+#else // __linux__
+		hdefpen[i] = new QPen (QColor (GetRValue(pencol[i]), GetGValue(pencol[i]), GetBValue(pencol[i])), 0); // CreatePen (PS_SOLID, 0, ...): width 0 is a cosmetic 1-pixel pen in both
+#endif // __linux__
 	}
 }
 
@@ -185,8 +219,15 @@ void Instrument::GlobalExit (oapi::GraphicsClient *gc)
 {
 	int i, j;
 
+#ifndef __linux__
 	for (i = 0; i < MAXPEN; i++)
 		DeleteObject (hdefpen[i]);
+#else // __linux__
+	for (i = 0; i < MAXPEN; i++) {
+		delete hdefpen[i]; // DeleteObject
+		hdefpen[i] = 0;
+	}
+#endif // __linux__
 	for (i = 0; i < MAXDEFCOL; i++) {
 		for (j = 0; j < 2; j++) {
 			if (gc && draw[i][j].solidpen) gc->clbkReleasePen (draw[i][j].solidpen);
@@ -262,7 +303,11 @@ int Instrument::ModeIdFromKey (DWORD key)
 int Instrument::ModeFromNameOld (char *name, MFDMODESPEC **spec)
 {
 	for (DWORD i = 0; i < nGlobalModes; i++) {
+#ifndef __linux__
 		if (!_stricmp (GlobalMode[i].spec->name, name)) {
+#else // __linux__
+		if (!strcasecmp (GlobalMode[i].spec->name, name)) {
+#endif // __linux__
 			if (spec) *spec = GlobalMode[i].oldspec;
 			return GlobalMode[i].id;
 		}
@@ -273,7 +318,11 @@ int Instrument::ModeFromNameOld (char *name, MFDMODESPEC **spec)
 int Instrument::ModeFromName (char *name, MFDMODESPECEX **spec)
 {
 	for (DWORD i = 0; i < nGlobalModes; i++) {
+#ifndef __linux__
 		if (!_stricmp (GlobalMode[i].spec->name, name)) {
+#else // __linux__
+		if (!strcasecmp (GlobalMode[i].spec->name, name)) {
+#endif // __linux__
 			if (spec) *spec = GlobalMode[i].spec;
 			return GlobalMode[i].id;
 		}
@@ -286,7 +335,11 @@ int Instrument::VesselModeFromName (const char *name, MFDMODESPECEX **spec)
 	const MFDMODE *mlist;
 	DWORD nmode = vessel->GetMFDModes (&mlist);
 	for (DWORD i = 0; i < nmode; i++) {
+#ifndef __linux__
 		if (!_stricmp (mlist[i].spec->name, name)) {
+#else // __linux__
+		if (!strcasecmp (mlist[i].spec->name, name)) {
+#endif // __linux__
 			if (spec) *spec = mlist[i].spec;
 			return mlist[i].id;
 		}
@@ -759,17 +812,37 @@ void Instrument::EndDraw (oapi::Sketchpad *skp)
 		gc->clbkReleaseSketchpad (skp);
 }
 
+#ifndef __linux__
 HDC Instrument::BeginDrawHDC ()
+#else // __linux__
+QPainter *Instrument::BeginDrawHDC ()
+#endif // __linux__
 {
+#ifndef __linux__
 	HDC hDC;
+#else // __linux__
+	QPainter *hDC;
+#endif // __linux__
 	if (gc && (hDC = gc->clbkGetSurfaceDC (surf))) {
+#ifndef __linux__
 		SetTextColor (hDC, draw[0][0].col);
 		SelectObject (hDC, mfdfont[0]->GetGDIFont());
 		SetBkMode (hDC, TRANSPARENT);
 		SelectObject (hDC, GetStockObject (NULL_BRUSH));
 		SelectObject (hDC, hdefpen[0]);
+#else // __linux__
+		// SetTextColor (draw[0][0].col) left out: QPainter draws text with the pen, hdefpen[0] has the same green
+		if (QFont *font = mfdfont[0]->GetGDIFont()) hDC->setFont (*font);
+		hDC->setBackgroundMode (Qt::TransparentMode); // SetBkMode (TRANSPARENT)
+		hDC->setBrush (Qt::NoBrush); // NULL_BRUSH
+		hDC->setPen (*hdefpen[0]);
+#endif // __linux__
 		if (pane->GetPanelMode() == 1) {
+#ifndef __linux__
 			Rectangle (hDC, 0, 0, IW, IH);
+#else // __linux__
+			hDC->drawRect (0, 0, IW-1, IH-1); // Rectangle: right and bottom edges are exclusive
+#endif // __linux__
 		}
 		return hDC;
 	} else {
@@ -777,11 +850,20 @@ HDC Instrument::BeginDrawHDC ()
 	}
 }
 
+#ifndef __linux__
 void Instrument::EndDrawHDC (HDC hDC)
+#else // __linux__
+void Instrument::EndDrawHDC (QPainter *hDC)
+#endif // __linux__
 {
 	if (gc && hDC) {
+#ifndef __linux__
 		SelectObject (hDC, GetStockObject (NULL_PEN));
 		SelectObject (hDC, GetStockObject (NULL_BRUSH));
+#else // __linux__
+		hDC->setPen (Qt::NoPen); // NULL_PEN
+		hDC->setBrush (Qt::NoBrush); // NULL_BRUSH
+#endif // __linux__
 		gc->clbkReleaseSurfaceDC (surf, hDC);
 	}
 }
@@ -803,7 +885,11 @@ bool Instrument::Update (double upDTscale)
 				EndDraw (skp);
 			}
 		} else {
+#ifndef __linux__
 			HDC hDC = BeginDrawHDC();
+#else // __linux__
+			QPainter *hDC = BeginDrawHDC();
+#endif // __linux__
 			if (hDC) {
 				UpdateDraw (hDC);
 				EndDrawHDC (hDC);
@@ -839,10 +925,21 @@ oapi::Font *Instrument::GetDefaultFont (DWORD fontidx)
 	return (fontidx < 4 ? mfdfont[fontidx] : 0);
 }
 
+#ifndef __linux__
 HFONT Instrument::SelectDefaultFont (HDC hDC, DWORD i)
+#else // __linux__
+QFont *Instrument::SelectDefaultFont (QPainter *hDC, DWORD i)
+#endif // __linux__
 {
+#ifndef __linux__
 	// obsolete
 	return (i < 4 ? (HFONT)SelectObject (hDC, mfdfont[i]->GetGDIFont()) : 0);
+#else // __linux__
+	// obsolete; QPainter holds fonts by value, so the selected font is returned, not the previous one
+	QFont *font = (i < 4 ? mfdfont[i]->GetGDIFont() : 0);
+	if (font) hDC->setFont (*font);
+	return font;
+#endif // __linux__
 }
 
 oapi::Pen *Instrument::GetDefaultPen (DWORD colidx, DWORD intens, DWORD style)
@@ -858,10 +955,21 @@ oapi::Pen *Instrument::GetDefaultPen (DWORD colidx, DWORD intens, DWORD style)
 	}
 }
 
+#ifndef __linux__
 HPEN Instrument::SelectDefaultPen (HDC hDC, DWORD i)
+#else // __linux__
+QPen *Instrument::SelectDefaultPen (QPainter *hDC, DWORD i)
+#endif // __linux__
 {
+#ifndef __linux__
 	// obsolete
 	return (i < 6 ? (HPEN)SelectObject (hDC, hdefpen[i]) : 0);
+#else // __linux__
+	// obsolete; QPainter holds pens by value, so the selected pen is returned, not the previous one
+	QPen *pen = (i < 6 ? hdefpen[i] : 0);
+	if (pen) hDC->setPen (*pen);
+	return pen;
+#endif // __linux__
 }
 
 DWORD Instrument::GetDefaultColour (DWORD colidx, DWORD intens) const
@@ -878,11 +986,23 @@ void Instrument::DisplayTitle (oapi::Sketchpad *skp, const char *title) const
 	skp->Text (cw/2, 0, title, strlen(title));
 }
 
+#ifndef __linux__
 void Instrument::DisplayTitle (HDC hDC, const char *title) const
+#else // __linux__
+void Instrument::DisplayTitle (QPainter *hDC, const char *title) const
+#endif // __linux__
 {
+#ifndef __linux__
 	// obsolete
 	SetTextColor (hDC, col_grey1);
 	TextOut (hDC, cw/2, 0, title, strlen(title));
+#else // __linux__
+	// obsolete; SetTextColor: QPainter draws text with the pen, so the pen is swapped for the text
+	QPen pen = hDC->pen ();
+	hDC->setPen (QColor (GetRValue(col_grey1), GetGValue(col_grey1), GetBValue(col_grey1)));
+	hDC->drawText (cw/2, hDC->fontMetrics().ascent(), QString::fromLatin1 (title)); // TextOut: GDI places the top edge at y, QPainter the baseline
+	hDC->setPen (pen);
+#endif // __linux__
 }
 
 void Instrument::DisplayModes (int page)
@@ -1147,7 +1267,11 @@ bool Instrument::FindScnHeader (ifstream &ifs) const
 	switch (id) {
 	case 0: strcpy (header+10, "Left"); break;
 	case 1: strcpy (header+10, "Right"); break;
+#ifndef __linux__
 	default: sprintf (header+10, "%lld", (int64_t)id + 1); break;
+#else // __linux__
+	default: sprintf (header+10, "%lld", (long long)id + 1); break;
+#endif // __linux__
 	}
 	return FindLine (ifs, header);
 }

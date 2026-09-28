@@ -7,7 +7,11 @@
 // Contains solar system environment, time, focus vessel, scenario help page
 // =============================================================
 
+#ifndef __linux__
 #define STRICT 1
+#else // __linux__
+// STRICT left out: windows.h handle type-checking switch
+#endif // __linux__
 
 #include <fstream>
 #include <iomanip>
@@ -41,7 +45,11 @@ void State::Update ()
 
 bool State::Read (const char *fname)
 {
+#ifndef __linux__
 	ifstream ifs (fname, ios::in);
+#else // __linux__
+	ifstream ifs (oapiResolvePath (fname), ios::in);
+#endif // __linux__
 	if (!ifs) return false;
 
 	int i;
@@ -67,31 +75,72 @@ bool State::Read (const char *fname)
 		for (;;) {
 			if (!ifs.getline (cbuf, 256)) break;
 			pc = trim_string (cbuf);
+#ifndef __linux__
 			if (!_stricmp (pc, "END_ENVIRONMENT")) break;
 			if (!_strnicmp (pc, "Date", 4)) {
+#else // __linux__
+			if (!strcasecmp (pc, "END_ENVIRONMENT")) break;
+			if (!strncasecmp (pc, "Date", 4)) {
+#endif // __linux__
 				pc = trim_string (pc+4);
+#ifndef __linux__
 				if (!_strnicmp (pc, "MJD", 3) && sscanf (pc+3, "%lf", &t) == 1)
+#else // __linux__
+				if (!strncasecmp (pc, "MJD", 3) && sscanf (pc+3, "%lf", &t) == 1)
+#endif // __linux__
 					mjd = mjd0 = t;
+#ifndef __linux__
 				else if (!_strnicmp (pc, "JD", 2) && sscanf (pc+2, "%lf", &t) == 1)
+#else // __linux__
+				else if (!strncasecmp (pc, "JD", 2) && sscanf (pc+2, "%lf", &t) == 1)
+#endif // __linux__
 					mjd = mjd0 = t-2400000.5;
+#ifndef __linux__
 				else if (!_strnicmp (pc, "JE", 2) && sscanf (pc+2, "%lf", &t) == 1)
+#else // __linux__
+				else if (!strncasecmp (pc, "JE", 2) && sscanf (pc+2, "%lf", &t) == 1)
+#endif // __linux__
 					mjd = mjd0 = Jepoch2MJD (t);
+#ifndef __linux__
 			} else if (!_strnicmp (pc, "System", 6)) {
+#else // __linux__
+			} else if (!strncasecmp (pc, "System", 6)) {
+#endif // __linux__
 				solsys = trim_string (pc+6);
+#ifndef __linux__
 			} else if (!_strnicmp (pc, "Context", 7)) {
+#else // __linux__
+			} else if (!strncasecmp (pc, "Context", 7)) {
+#endif // __linux__
 				context = trim_string (pc+7);
+#ifndef __linux__
 			} else if (!_strnicmp (pc, "SplashScreen", 12)) {
+#else // __linux__
+			} else if (!strncasecmp (pc, "SplashScreen", 12)) {
+#endif // __linux__
 				char color[256];
 				int nChar = 0;
 				if(sscanf(pc+12, "%255s %n", &color, &nChar)==1) {
 					splashcolor = GetCSSColor(color);
 					splashscreen = trim_string (pc+12+nChar);
 				}
+#ifndef __linux__
 			} else if (!_strnicmp (pc, "Script", 6)) {
+#else // __linux__
+			} else if (!strncasecmp (pc, "Script", 6)) {
+#endif // __linux__
 				script = trim_string (pc+6);
+#ifndef __linux__
 			} else if (!_strnicmp (pc, "Help", 4)) {
+#else // __linux__
+			} else if (!strncasecmp (pc, "Help", 4)) {
+#endif // __linux__
 				scnhelp = trim_string (pc+4);
+#ifndef __linux__
 			} else if (!_strnicmp (pc, "Playback", 8)) {
+#else // __linux__
+			} else if (!strncasecmp (pc, "Playback", 8)) {
+#endif // __linux__
 				playback = trim_string (pc+8);
 			}
 		}
@@ -100,8 +149,13 @@ bool State::Read (const char *fname)
 		for (;;) {
 			if (!ifs.getline (cbuf, 256)) break;
 			pc = trim_string (cbuf);
+#ifndef __linux__
 			if (!_stricmp (pc, "END_FOCUS")) break;
 			if (!_strnicmp (pc, "Ship", 4)) {
+#else // __linux__
+			if (!strcasecmp (pc, "END_FOCUS")) break;
+			if (!strncasecmp (pc, "Ship", 4)) {
+#endif // __linux__
 				focus = trim_string (pc+4);
 			}
 		}

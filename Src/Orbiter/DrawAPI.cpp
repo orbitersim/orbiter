@@ -1,10 +1,15 @@
 // Copyright (c) Martin Schweiger
 // Licensed under the MIT License
 
+#ifndef __linux__
 #define STRICT 1
+#endif // !__linux__
 #define OAPI_IMPLEMENTATION
 
 #include "DrawAPI.h"
+#ifdef __linux__
+#include <cstring>
+#endif // __linux__
 
 using namespace oapi;
 

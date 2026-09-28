@@ -91,7 +91,11 @@ public:
 		MenuItem(MenuItem&& other) noexcept {
 			*this = std::move(other);
 		}
+#ifndef __linux__
 		MenuItem& MenuItem::operator=(MenuItem&& other) noexcept {
+#else // __linux__
+		MenuItem& operator=(MenuItem&& other) noexcept {
+#endif // __linux__
 			label = std::move(other.label);
 			texture = other.texture;
 			other.texture = NULL;
@@ -708,7 +712,11 @@ public:
 			ImVec4 red{1,0,0,1};
 			ImVec4 yellow{1,1,0,1};
 			ImGui::PushFont(ImGuiFont::MONO);
+#ifndef __linux__
 			ImGui::TextColored(white, DateStr (td.MJD1));
+#else // __linux__
+			ImGui::TextColored(white, "%s", DateStr (td.MJD1));
+#endif // __linux__
 			ImGui::TextColored(white, "MJD %0.4f", td.MJD1);
 
 			if(g_pOrbiter->RecorderStatus() == 1) {

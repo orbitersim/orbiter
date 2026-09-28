@@ -27,7 +27,11 @@ Star::Star (double _mass, double _mean_radius)
 Star::Star (char *fname)
 : CelestialBody (fname)
 {
+#ifndef __linux__
 	ifstream ifs (g_pOrbiter->ConfigPath (fname));
+#else // __linux__
+	ifstream ifs (oapiResolvePath (g_pOrbiter->ConfigPath (fname)));
+#endif // __linux__
 	if (!ifs) return;
 	bDynamicPosVel = false;
 	// read star-specific parameters here

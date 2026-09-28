@@ -27,9 +27,15 @@ namespace orbiter {
 
 		bool OpenHelp();
 
+#ifndef __linux__
 		BOOL OnInitDialog(HWND hWnd, WPARAM wParam, LPARAM lParam);
+#else // __linux__
+		BOOL OnInitDialog(QWidget *hWnd);
+#endif // __linux__
 		BOOL OnSize(int w, int h);
+#ifndef __linux__
 		BOOL OnNotify(HWND hDlg, int idCtrl, LPNMHDR pnmh);
+#endif // !__linux__
 	};
 }
 

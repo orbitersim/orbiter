@@ -3,6 +3,10 @@
 
 #include <iostream>
 #include <set>
+#ifdef __linux__
+#include <cstring>
+#include <strings.h>
+#endif // __linux__
 #include "cmdline.h"
 #include "Orbiter.h"
 #include "Launchpad.h"
@@ -124,7 +128,11 @@ void CommandLine::MapKeys()
 		bool found = false;
 		for (auto it_key = keys.begin(); it_key < keys.end(); it_key++) {
 			if (isLong) {
+#ifndef __linux__
 				if (!stricmp(it_key->longName, it->strKey.c_str()))
+#else // __linux__
+				if (!strcasecmp(it_key->longName, it->strKey.c_str()))
+#endif // __linux__
 					found = true;
 			}
 			else {
@@ -235,13 +243,21 @@ void orbiter::CommandLine::ApplyOption(const Key* key, const std::string& value)
 
 void orbiter::CommandLine::PrintHelpAndExit() const
 {
+#ifndef __linux__
 	// Get console output
 	if (AttachConsole(ATTACH_PARENT_PROCESS) || AllocConsole()) {
 		freopen("CONOUT$", "w", stdout);
 	}
+#else // __linux__
+	// Get console output: AttachConsole/AllocConsole left out, stdout is the launching terminal on Linux
+#endif // __linux__
 
 	std::cout << "\nOrbiter Space Flight Simulator" << std::endl;
+#ifndef __linux__
 	std::cout << "orbiter.exe [options]\n\n";
+#else // __linux__
+	std::cout << "Orbiter [options]\n\n";
+#endif // __linux__
 	std::cout << "Options:\n";
 	std::cout << "  --help, -h: Print this help page and exit.\n";
 	std::cout << "  --scenario=<scn>, -S <scn>: Launch scenario <scn>\n";
@@ -253,7 +269,11 @@ void orbiter::CommandLine::PrintHelpAndExit() const
 	std::cout << "  --maxsystime=<t>, -T <t>: Terminate session after <t> seconds\n";
 	std::cout << "  --maxsimtime=<t>, -t <t>: Terminate session at simulation time <t>\n";
 	std::cout << "  --maxframes=<f>: Terminate session after <f> time frames\n";
+#ifndef __linux__
 	std::cout << "  --plugin=<pg>, -p <pg>: Load plugin <pg> (from Modules\\Plugin\\<pg>.dll)\n";
+#else // __linux__
+	std::cout << "  --plugin=<pg>, -p <pg>: Load plugin <pg> (from Modules/Plugin/<pg>.so)\n";
+#endif // __linux__
 	std::cout << std::endl;
 
 	exit(0);

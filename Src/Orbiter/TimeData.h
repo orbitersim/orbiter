@@ -1,6 +1,10 @@
 #ifndef TIMEDATA_H
 #define TIMEDATA_H
 
+#ifdef __linux__
+#include <cstddef> // size_t: MSVC's headers bring it in implicitly
+
+#endif // __linux__
 //-----------------------------------------------------------------------------
 // Name: class TimeData
 // Desc: stores timing information for current time step

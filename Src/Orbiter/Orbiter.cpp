@@ -1,18 +1,30 @@
 // Copyright (c) Martin Schweiger
 // Licensed under the MIT License
 
+#ifndef __linux__
 #define STRICT 1
+#endif // !__linux__
 #define OAPI_IMPLEMENTATION
 
+#ifndef __linux__
 // Enable visual styles. Source: https://msdn.microsoft.com/en-us/library/windows/desktop/bb773175(v=vs.85).aspx
 #pragma comment(linker,"\"/manifestdependency:type='win32' name='Microsoft.Windows.Common-Controls' version='6.0.0.0' processorArchitecture='*' publicKeyToken='6595b64144ccf1df' language='*'\"")
 
 #include <windows.h>
 #include <direct.h>
+#else // __linux__
+// common-controls manifest left out: the controls are Qt widgets
+#endif // __linux__
 #include <stdio.h>
 #include <time.h>
 #include <fstream>
+#ifndef __linux__
 #include <process.h> 
+#else // __linux__
+#include <unistd.h>
+#include <dlfcn.h>
+#include <clocale>
+#endif // __linux__
 #include "cmdline.h"
 #include "D3d7util.h"
 #include "D3dmath.h"
@@ -44,7 +56,28 @@
 #include "GraphicsAPI.h"
 #include "ConsoleManager.h"
 #include "imgui.h"
+#ifndef __linux__
 #include "imgui_impl_win32.h"
+#else // __linux__
+#include "imgui_impl_qt.h"
+#include "ResDialog.h"
+#include "OrbiterResource.h"
+#include <QApplication>
+#include <QMessageBox>
+#include <QWindow>
+#include <QCursor>
+#include <QCloseEvent>
+#include <QKeyEvent>
+#include <QMouseEvent>
+#include <QWheelEvent>
+#include <QAbstractEventDispatcher>
+#include <QThread>
+#include <QIcon>
+#include <QImage>
+#include "WlPointer.h"
+#include "WlShortcuts.h"
+#include "SleepWatch.h"
+#endif // __linux__
 #include <filesystem>
 
 #include "Tracy.hpp"
@@ -54,7 +87,9 @@ namespace fs = std::filesystem;
 using namespace std;
 using namespace oapi;
 
+#ifndef __linux__
 extern IMGUI_IMPL_API LRESULT ImGui_ImplWin32_WndProcHandler(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
+#endif // !__linux__
 
 #define OUTPUT_DBG
 #define LOADSTATUSCOL 0xC08080 //0xFFD0D0
@@ -67,11 +102,23 @@ const int MAX_TEXTURE_BUFSIZE = 8000000;
 // Texture manager buffer size. Should be determined from
 // memory size (System or Video?)
 
+#ifndef __linux__
 const TCHAR* g_strAppTitle = "OpenOrbiter";
+#else // __linux__
+const char* g_strAppTitle = "OpenOrbiter";
+#endif // __linux__
 
+#ifndef __linux__
 const TCHAR* MasterConfigFile = "Orbiter.cfg";
+#else // __linux__
+const char* MasterConfigFile = "Orbiter.cfg";
+#endif // __linux__
 
+#ifndef __linux__
 const TCHAR* CurrentScenario = "(Current state)";
+#else // __linux__
+const char* CurrentScenario = "(Current state)";
+#endif // __linux__
 char ScenarioName[256] = "\0";
 // some global string resources
 
@@ -138,48 +185,108 @@ HELPCONTEXT DefHelpContext = {
 // =======================================================================
 // Function prototypes
 
+#ifndef __linux__
 HRESULT ConfirmDevice (DDCAPS*, D3DDEVICEDESC7*);
+#else // __linux__
+// ConfirmDevice (DDCAPS*, D3DDEVICEDESC7*) left out: Direct3D 7 device selection
+#endif // __linux__
 
 //LRESULT CALLBACK WndProc3D (HWND, UINT, WPARAM, LPARAM);
+#ifndef __linux__
 INT_PTR CALLBACK BkMsgProc (HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam);
+#else // __linux__
+static void BkMsgProc (QWidget *hDlg);
+#endif // __linux__
 
 VOID    DestroyWorld ();
 void    SetEnvironmentVars ();
+#ifndef __linux__
 HANDLE hMutex = 0;
 HANDLE hConsoleMutex = 0;
+#else // __linux__
+// hMutex, hConsoleMutex left out: unused handles
+#endif // __linux__
 
 // =======================================================================
 // _matherr()
 // trap global math exceptions
+#ifdef __linux__
+// glibc has no math error hook: the exe exports its own acos, which every module binds to, as the CRT took the exe's _matherr
+#endif // __linux__
 
+#ifndef __linux__
 int _matherr(struct _exception *except )
+#else // __linux__
+extern "C" __attribute__((visibility("default"))) double acos (double x) noexcept
+#endif // __linux__
 {
+#ifndef __linux__
 	if (!strcmp (except->name, "acos")) {
 		except->retval = (except->arg1 < 0.0 ? Pi : 0.0);
 		return 1;
 	}
 	return 0;
+#else // __linux__
+	static double (*libm_acos)(double) = (double(*)(double))dlsym (RTLD_NEXT, "acos");
+	if (x < -1.0 || x > 1.0) // _DOMAIN
+		return (x < 0.0 ? Pi : 0.0);
+	return libm_acos (x);
+#endif // __linux__
 }
 
 
 // =======================================================================
+#ifndef __linux__
 // WinMain()
+#else // __linux__
+// main() (WinMain)
+#endif // __linux__
 // Application entry containing message loop
 
 
+#ifndef __linux__
 INT WINAPI WinMain (HINSTANCE hInstance, HINSTANCE, LPSTR strCmdLine, INT nCmdShow)
+#else // __linux__
+int main (int argc, char *argv[])
+#endif // __linux__
 {
+#ifndef __linux__
 #ifdef _CRTDBG_MAP_ALLOC
 	_CrtSetDbgFlag(_CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF);
 #endif
+#else // __linux__
+	QApplication app (argc, argv); // the Launchpad and the dialogs are Qt widgets
+	app.setQuitOnLastWindowClosed (false); // WM_QUIT comes only from the Launchpad (PostQuitMessage)
+	setlocale (LC_ALL, "C"); // QApplication took the environment's locale; Orbiter parses numbers in the C locale, like the MSVC CRT
+
+	// WinMain's command line: the arguments as one string, quoted where they contain blanks
+	std::string strCmdLine;
+	for (int i = 1; i < argc; i++) {
+		bool quote = (strchr (argv[i], ' ') != NULL);
+		if (i > 1) strCmdLine += ' ';
+		if (quote) strCmdLine += '"';
+		strCmdLine += argv[i];
+		if (quote) strCmdLine += '"';
+	}
+	void *hInstance = dlopen (NULL, RTLD_NOW); // HINSTANCE: handle of the executable
+#endif // __linux__
 
 	// Verify working directory
+#ifndef __linux__
 	char dir[1024];
 	GetCurrentDirectory(1024, dir);
+#else // __linux__
+	std::string dir = fs::current_path ().string (); // GetCurrentDirectory
+#endif // __linux__
 	// If the server version was launched from its own subdirectory, step back
 	// up to the Orbiter main directory
+#ifndef __linux__
 	if (strlen(dir) >= 15 && !stricmp (dir+strlen(dir)-15, "\\Modules\\Server"))
 		SetCurrentDirectory("..\\..");
+#else // __linux__
+	if (dir.size() >= 15 && !strcasecmp (dir.c_str()+dir.size()-15, "/Modules/Server"))
+		fs::current_path ("../.."); // SetCurrentDirectory
+#endif // __linux__
 
     // If we're not running from actual console, hide the window
     if (ConsoleManager::IsConsoleExclusive())
@@ -187,16 +294,31 @@ INT WINAPI WinMain (HINSTANCE hInstance, HINSTANCE, LPSTR strCmdLine, INT nCmdSh
     
     SetEnvironmentVars();
 	g_pOrbiter = new Orbiter; // application instance
+#ifdef __linux__
+	new SleepWatch (qApp); // WM_POWERBROADCAST
+#endif // __linux__
 
 	// Parse command line
+#ifndef __linux__
 	orbiter::CommandLine::Parse(g_pOrbiter, strCmdLine);
+#else // __linux__
+	orbiter::CommandLine::Parse(g_pOrbiter, &strCmdLine[0]);
+#endif // __linux__
 
 	// Initialise the log
 	INITLOG("Orbiter.log", g_pOrbiter->Cfg()->CfgCmdlinePrm.bAppendLog); // init log file
 #ifdef ISBETA
+#ifndef __linux__
 	LOGOUT("Build %s BETA [v.%06d]", __DATE__, GetVersion());
+#else // __linux__
+	LOGOUT("Build %s BETA [v.%06d]", __DATE__, g_pOrbiter->GetVersion()); // ::GetVersion was the Windows version; the build version is meant
+#endif // __linux__
 #else
+#ifndef __linux__
 	LOGOUT("Build %s [v.%06d]", __DATE__, GetVersion());
+#else // __linux__
+	LOGOUT("Build %s [v.%06d]", __DATE__, g_pOrbiter->GetVersion()); // ::GetVersion was the Windows version; the build version is meant
+#endif // __linux__
 #endif
 
 	// Initialise random number generator
@@ -205,12 +327,24 @@ INT WINAPI WinMain (HINSTANCE hInstance, HINSTANCE, LPSTR strCmdLine, INT nCmdSh
 
 	oapiRegisterCustomControls(hInstance);
 
+#ifndef __linux__
 	HRESULT hr;
+#else // __linux__
+	int hr;
+#endif // __linux__
 	// Create application
+#ifndef __linux__
 	if (FAILED (hr = g_pOrbiter->Create (hInstance))) {
+#else // __linux__
+	if ((hr = g_pOrbiter->Create (hInstance)) != 0) { // FAILED
+#endif // __linux__
 		LOGOUT("Application creation failed");
+#ifndef __linux__
 		MessageBox (NULL, "Application creation failed!\nTerminating.",
 			"Orbiter Error", MB_OK | MB_ICONERROR);
+#else // __linux__
+		QMessageBox::critical (NULL, "Orbiter Error", "Application creation failed!\nTerminating.");
+#endif // __linux__
 		return 0;
 	}
 
@@ -223,6 +357,7 @@ INT WINAPI WinMain (HINSTANCE hInstance, HINSTANCE, LPSTR strCmdLine, INT nCmdSh
 
 void SetEnvironmentVars ()
 {
+#ifndef __linux__
 	// Set search path to "Modules" subdirectory so that DLLs are found
 	char *ppath = getenv ("PATH");
 	if (ppath) {
@@ -235,6 +370,10 @@ void SetEnvironmentVars ()
 		_putenv ("PATH=Modules");
 	}
 	_getcwd (cwd, 512);
+#else // __linux__
+	// PATH=...;Modules left out: dlopen doesn't search PATH, modules find their libraries through their RUNPATH
+	if (!getcwd (cwd, 512)) cwd[0] = '\0';
+#endif // __linux__
 }
 
 // =======================================================================
@@ -289,8 +428,12 @@ Orbiter::Orbiter ()
     //m_bAppUseZBuffer  = TRUE;
     //m_fnConfirmDevice = ConfirmDevice;
 
+#ifndef __linux__
 	// Initialise timer
 	timeBeginPeriod(1);
+#else // __linux__
+	// timeBeginPeriod(1) left out: Linux timers need no resolution request
+#endif // __linux__
 
 	pDI             = new DInput(this); TRACENEW
 	pConfig         = new Config; TRACENEW
@@ -351,7 +494,11 @@ Orbiter::Orbiter ()
 			g_pOrbiter->OpenHelp (&DefHelpContext);			
 		});
 	RegisterMenuCmd("Save",     "MenuInfoBar/save.png",     [](void *) {g_pOrbiter->Quicksave();});
+#ifndef __linux__
 	RegisterMenuCmd("Exit",     "MenuInfoBar/exit.png",     [](void *) {PostMessage(g_pOrbiter->GetRenderWnd(), WM_CLOSE, 0, 0);});
+#else // __linux__
+	RegisterMenuCmd("Exit",     "MenuInfoBar/exit.png",     [](void *) {QCoreApplication::postEvent(g_pOrbiter->GetRenderWnd(), new QCloseEvent);}); // PostMessage WM_CLOSE
+#endif // __linux__
 
 }
 
@@ -368,23 +515,43 @@ Orbiter::~Orbiter ()
 // Name: Create()
 // Desc: This method selects a D3D device
 //-----------------------------------------------------------------------------
+#ifndef __linux__
 HRESULT Orbiter::Create (HINSTANCE hInstance)
+#else // __linux__
+int Orbiter::Create (void *hInstance)
+#endif // __linux__
 {
+#ifndef __linux__
 	if (m_pLaunchpad) return S_OK; // already created
+#else // __linux__
+	if (m_pLaunchpad) return 0; // already created
+#endif // __linux__
 
+#ifndef __linux__
 	HRESULT hr;
 	WNDCLASS wndClass;
+#else // __linux__
+	int hr;
+#endif // __linux__
 
+#ifndef __linux__
 	// Enable tab controls
 	InitCommonControls();
 	LoadLibrary ("riched20.dll");
+#else // __linux__
+	// InitCommonControls and riched20.dll left out: the controls are Qt widgets
+#endif // __linux__
 
 	// parameter manager - parses from master config file
 	hInst = hInstance;
 	pConfig->Load(MasterConfigFile);
 	strcpy (cfgpath, pConfig->CfgDirPrm.ConfigDir);   cfglen = strlen (cfgpath);
 
+#ifndef __linux__
 	if (FAILED (hr = pDI->Create (hInstance))) return hr;
+#else // __linux__
+	if ((hr = pDI->Create (hInstance)) != DI_OK) return hr;
+#endif // __linux__
 
 	// validate configuration
 	if (pConfig->CfgJoystickPrm.Joy_idx > GetDInput()->NumJoysticks()) pConfig->CfgJoystickPrm.Joy_idx = 0;
@@ -394,6 +561,7 @@ HRESULT Orbiter::Create (HINSTANCE hInstance)
 
     pState = new State(); TRACENEW
 
+#ifndef __linux__
 	// Register main dialog window class
 	GetClassInfo (hInstance, "#32770", &wndClass); // override default dialog class
 	wndClass.hIcon = LoadIcon (hInstance, MAKEINTRESOURCE (IDI_MAIN_ICON));
@@ -404,6 +572,16 @@ HRESULT Orbiter::Create (HINSTANCE hInstance)
 	long ret = RegOpenKeyEx (HKEY_CURRENT_USER, TEXT("Software\\Wine"), 0, KEY_QUERY_VALUE, &key);
 	RegCloseKey (key);
 	bWINEenv = (ret == ERROR_SUCCESS);
+#else // __linux__
+	// Main dialog icon: the dialog class icon becomes the application's window icon
+	if (QImage *icon = oapiLoadResImage (hInstance, IDI_MAIN_ICON)) {
+		QApplication::setWindowIcon (QIcon (QPixmap::fromImage (*icon)));
+		delete icon;
+	}
+
+	// Find out if we are running under Linux/WINE: native, never
+	bWINEenv = false;
+#endif // __linux__
 
 	// Register HTML viewer class
 	RegisterHtmlCtrl (hInstance, UseHtmlInline());
@@ -415,8 +593,15 @@ HRESULT Orbiter::Create (HINSTANCE hInstance)
 		OpenVideoTab();
 
 	if (pConfig->CfgDemoPrm.bBkImage) {
+#ifndef __linux__
 		hBk = CreateDialog (hInstance, MAKEINTRESOURCE(IDD_DEMOBK), NULL, BkMsgProc);
 		ShowWindow (hBk, SW_MAXIMIZE);
+#else // __linux__
+		if ((hBk = oapiCreateResDialog (hInstance, IDD_DEMOBK, NULL))) {
+			BkMsgProc (hBk);
+			hBk->showMaximized (); // SW_MAXIMIZE
+		}
+#endif // __linux__
 	}
 	
 	// Create the "launchpad" main dialog window
@@ -428,18 +613,31 @@ HRESULT Orbiter::Create (HINSTANCE hInstance)
 	script = new ScriptInterface(this); TRACENEW
 
 	// preload modules from command line requests
+#ifndef __linux__
 	LoadModules("Modules\\Plugin", pConfig->CfgCmdlinePrm.LoadPlugins);
+#else // __linux__
+	LoadModules("Modules/Plugin", pConfig->CfgCmdlinePrm.LoadPlugins);
+#endif // __linux__
 
 	// preload active plugin modules
+#ifndef __linux__
 	LoadModules("Modules\\Plugin", pConfig->GetActiveModules());
+#else // __linux__
+	LoadModules("Modules/Plugin", pConfig->GetActiveModules());
+#endif // __linux__
 
 	// preload startup plugin modules
 	LoadStartupModules();
 
 	{
+#ifndef __linux__
 		BOOL cleartype, ok;
 		ok = SystemParametersInfo(SPI_GETFONTSMOOTHING, 0, &cleartype, 0);
 		bSysClearType = (ok && cleartype);
+#else // __linux__
+		// SystemParametersInfo (SPI_GETFONTSMOOTHING) left out: Linux desktops smooth fonts, Qt picks it per font
+		bSysClearType = true;
+#endif // __linux__
 		//if (pConfig->CfgDebugPrm.bForceReenableSmoothFont) bSysClearType = true;
 	}
 	if (pConfig->CfgDebugPrm.bDisableSmoothFont)
@@ -447,7 +645,11 @@ HRESULT Orbiter::Create (HINSTANCE hInstance)
 
 	memstat = new MemStat;
 	
+#ifndef __linux__
 	return S_OK;
+#else // __linux__
+	return 0; // S_OK
+#endif // __linux__
 }
 
 //-----------------------------------------------------------------------------
@@ -477,7 +679,11 @@ VOID Orbiter::CloseApp (bool fast_shutdown)
 		if (memstat) delete memstat;
 		if (pConfig)  delete pConfig;
 		if (m_pLaunchpad) delete m_pLaunchpad;
+#ifndef __linux__
 		if (hBk) DestroyWindow (hBk);
+#else // __linux__
+		if (hBk) delete hBk; // DestroyWindow
+#endif // __linux__
 		if (pState)   delete pState;
 		if (script) delete script;
 		if (ncustomcmd) {
@@ -490,7 +696,11 @@ VOID Orbiter::CloseApp (bool fast_shutdown)
 		}
 		oapiUnregisterCustomControls (hInst);
 	}
+#ifndef __linux__
 	timeEndPeriod (1);
+#else // __linux__
+	// timeEndPeriod left out: no timer resolution was requested
+#endif // __linux__
 }
 
 //-----------------------------------------------------------------------------
@@ -506,7 +716,11 @@ int Orbiter::GetVersion () const
 		int day, month, year;
 		sscanf (__DATE__, "%s%d%d", ms, &day, &year);
 		for (month = 0; month < 12; month++)
+#ifndef __linux__
 			if (!_strnicmp (ms, mstr[month], 3)) break;
+#else // __linux__
+			if (!strncasecmp (ms, mstr[month], 3)) break;
+#endif // __linux__
 		v = (year%100)*10000 + (month+1)*100 + day;
 	}
 	return v;
@@ -517,7 +731,12 @@ int Orbiter::GetVersion () const
 //! @param cbufOut returns path to the plugin DLL
 static bool FindStandaloneDll(const char *path, const char *name, char* cbufOut)
 {
+#ifndef __linux__
 	sprintf (cbufOut, "%s\\%s.dll", path, name);
+#else // __linux__
+	sprintf (cbufOut, "%s/%s.so", path, name);
+	strcpy (cbufOut, oapiResolvePath (cbufOut).c_str());
+#endif // __linux__
 	return fs::exists(cbufOut);
 }
 
@@ -526,7 +745,12 @@ static bool FindStandaloneDll(const char *path, const char *name, char* cbufOut)
 //! @param cbufOut returns path to the plugin DLL
 static bool FindDllInPluginFolder(const char *path, const char *name, char* cbufOut)
 {
+#ifndef __linux__
 	sprintf(cbufOut, "%s\\%s\\%s.dll", path, name, name);
+#else // __linux__
+	sprintf(cbufOut, "%s/%s/%s.so", path, name, name);
+	strcpy (cbufOut, oapiResolvePath (cbufOut).c_str());
+#endif // __linux__
 	return fs::exists(cbufOut);
 }
 
@@ -538,9 +762,17 @@ void Orbiter::LoadModules(const std::string& path, const std::list<std::string>&
 
 void Orbiter::LoadModules(const std::string& path)
 {
+#ifndef __linux__
 	for (const auto& entry : fs::directory_iterator(path)) {
+#else // __linux__
+	for (const auto& entry : fs::directory_iterator(oapiResolvePath(path.c_str()))) {
+#endif // __linux__
 		auto fpath = entry.path();
+#ifndef __linux__
 		if (fpath.extension().string() == ".dll") {
+#else // __linux__
+		if (fpath.extension().string() == ".so") {
+#endif // __linux__
 			LoadModule(path.c_str(), fpath.stem().string().c_str());
 		}
 	}
@@ -552,33 +784,60 @@ void Orbiter::LoadModules(const std::string& path)
 //-----------------------------------------------------------------------------
 void Orbiter::LoadStartupModules()
 {
+#ifndef __linux__
 	LoadModules("Modules\\Startup");
+#else // __linux__
+	LoadModules("Modules/Startup");
+#endif // __linux__
 }
 
 //-----------------------------------------------------------------------------
 // Name: LoadModule()
 // Desc: Load a named plugin DLL
 //-----------------------------------------------------------------------------
+#ifndef __linux__
 HINSTANCE Orbiter::LoadModule (const char *path, const char *name)
+#else // __linux__
+void *Orbiter::LoadModule (const char *path, const char *name)
+#endif // __linux__
 {
 	register_module = NULL; // Clear the module. The loaded library may optionally populate it on LoadLibrary() call below.
 
 	// Load the module DLL
+#ifndef __linux__
 	HINSTANCE hDLL = NULL;
 	char cbuf[256];
+#else // __linux__
+	void *hDLL = NULL;
+	char cbuf[1024]; // 256 upstream; Linux working directories run longer
+#endif // __linux__
 	if (FindStandaloneDll(path, name, cbuf)) // try to find standalone plugin file
 	{
+#ifndef __linux__
 		hDLL = LoadLibrary (cbuf);
+#else // __linux__
+		hDLL = dlopen (cbuf, RTLD_NOW); // LoadLibrary
+#endif // __linux__
 	}
 	else // try to find plugin in a plugin folder
 	{
+#ifndef __linux__
 		char cbuf2[256];
+#else // __linux__
+		char cbuf2[512];
+#endif // __linux__
 		if (FindDllInPluginFolder(path, name, cbuf2))
 		{
+#ifndef __linux__
 			// Convert to absolute path, otherwise LoadLibraryEx fails with error code 87.
 			// See https://stackoverflow.com/questions/36275535/loadlibraryex-error-87-the-parameter-is-incorrect
 			sprintf(cbuf, "%s\\%s", cwd, cbuf2);
 			hDLL = LoadLibraryEx(cbuf, NULL, LOAD_LIBRARY_SEARCH_DLL_LOAD_DIR | LOAD_LIBRARY_SEARCH_DEFAULT_DIRS);
+#else // __linux__
+			// absolute path; the module finds the libraries in its folder through its RUNPATH ($ORIGIN), as LOAD_LIBRARY_SEARCH_DLL_LOAD_DIR did
+			sprintf(cbuf, "%s/%s", cwd, cbuf2);
+			hDLL = dlopen (cbuf, RTLD_NOW); // LoadLibraryEx
+#endif // __linux__
 		}
 		else
 		{
@@ -593,7 +852,11 @@ HINSTANCE Orbiter::LoadModule (const char *path, const char *name)
 			if (gclient->clbkInitialise() == false) {
 				// If graphics initialization fails remove client
 				RemoveGraphicsClient(gclient);
+#ifndef __linux__
 				FreeLibrary(hDLL);
+#else // __linux__
+				ModuleFree(hDLL); // FreeLibrary
+#endif // __linux__
 				LOGOUT_ERR("Client Initialization Failed. Unloading  %s", name);
 				hDLL = NULL;		
 				return NULL;
@@ -607,8 +870,13 @@ HINSTANCE Orbiter::LoadModule (const char *path, const char *name)
 		LOGOUT(register_module ? "Loading module %s" : "Loading module %s (legacy interface)", name);
 		m_Plugin.push_back(module);
 	} else {
+#ifndef __linux__
 		DWORD err = GetLastError();
 		LOGOUT_ERR ("Failed loading module %s (code %d)", cbuf, err);
+#else // __linux__
+		const char *err = dlerror(); // GetLastError
+		LOGOUT_ERR ("Failed loading module %s (%s)", cbuf, err ? err : "unknown error");
+#endif // __linux__
 	}
 	return hDLL;
 }
@@ -624,7 +892,11 @@ bool Orbiter::UnloadModule (const std::string &name)
 			LOGOUT("Unloading module %s", it->sName.c_str());
 			if (it->bLocalAlloc)
 				delete it->pModule;
+#ifndef __linux__
 			FreeLibrary(it->hDLL);
+#else // __linux__
+			ModuleFree(it->hDLL); // FreeLibrary
+#endif // __linux__
 			m_Plugin.erase(it);
 			return true;
 		}
@@ -636,14 +908,22 @@ bool Orbiter::UnloadModule (const std::string &name)
 // Name: UnloadModule()
 // Desc: Unload a module by its instance
 //-----------------------------------------------------------------------------
+#ifndef __linux__
 bool Orbiter::UnloadModule (HINSTANCE hDLL)
+#else // __linux__
+bool Orbiter::UnloadModule (void *hDLL)
+#endif // __linux__
 {
 	for (auto it = m_Plugin.begin(); it != m_Plugin.end(); it++) {
 		if (it->hDLL == hDLL) {
 			LOGOUT("Unloading module %s", it->sName.c_str());
 			if (it->bLocalAlloc)
 				delete it->pModule;
+#ifndef __linux__
 			FreeLibrary(it->hDLL);
+#else // __linux__
+			ModuleFree(it->hDLL); // FreeLibrary
+#endif // __linux__
 			m_Plugin.erase(it);
 			return true;
 		}
@@ -655,9 +935,17 @@ bool Orbiter::UnloadModule (HINSTANCE hDLL)
 // Name: FindModuleProc()
 // Desc: Returns address of a procedure in a plugin module
 //-----------------------------------------------------------------------------
+#ifndef __linux__
 OPC_Proc Orbiter::FindModuleProc (HINSTANCE hDLL, const char *procname)
+#else // __linux__
+OPC_Proc Orbiter::FindModuleProc (void *hDLL, const char *procname)
+#endif // __linux__
 {
+#ifndef __linux__
 	return (OPC_Proc)GetProcAddress (hDLL, procname);
+#else // __linux__
+	return (OPC_Proc)ModuleProc (hDLL, procname); // GetProcAddress
+#endif // __linux__
 }
 
 //-----------------------------------------------------------------------------
@@ -668,7 +956,11 @@ VOID Orbiter::Launch (const char *scenario)
 {
 	PrintModules();
 
+#ifndef __linux__
 	HCURSOR hCursor = SetCursor (LoadCursor (NULL, IDC_WAIT));
+#else // __linux__
+	QGuiApplication::setOverrideCursor (Qt::WaitCursor); // SetCursor (IDC_WAIT)
+#endif // __linux__
 	bool have_state = false;
 	pConfig->Write (); // save current settings
 	m_pLaunchpad->WriteExtraParams ();
@@ -681,14 +973,22 @@ VOID Orbiter::Launch (const char *scenario)
 	long m0 = memstat->HeapUsage();
 	CreateRenderWindow (pConfig, scenario);
 	simheapsize = memstat->HeapUsage()-m0;
+#ifndef __linux__
 	SetCursor (hCursor);
+#else // __linux__
+	QGuiApplication::restoreOverrideCursor (); // SetCursor (hCursor)
+#endif // __linux__
 }
 
 //-----------------------------------------------------------------------------
 // Name: CreateRenderWindow()
 // Desc: Create the window used for rendering the scene
 //-----------------------------------------------------------------------------
+#ifndef __linux__
 HWND Orbiter::CreateRenderWindow (Config *pCfg, const char *scenario)
+#else // __linux__
+QWindow *Orbiter::CreateRenderWindow (Config *pCfg, const char *scenario)
+#endif // __linux__
 {
 	DWORD i;
 
@@ -701,7 +1001,15 @@ HWND Orbiter::CreateRenderWindow (Config *pCfg, const char *scenario)
 	if (gclient) {
 		if(pState->SplashScreen())
 			gclient->clbkSetSplashScreen(pState->SplashScreen(), pState->SplashColor());
+#ifdef __linux__
+		WlPointerAttach ();
+		WlShortcutsAttach ();
+#endif // __linux__
 		hRenderWnd = gclient->InitRenderWnd (gclient->clbkCreateRenderWindow());
+#ifdef __linux__
+		if (hRenderWnd->minimumSize() != hRenderWnd->maximumSize()) // WM_GETMINMAXINFO: the tracking size, which a fixed-size window doesn't have
+			hRenderWnd->setMinimumSize (QSize (100, 100));
+#endif // __linux__
 		GetRenderParameters ();
 	} else {
 		hRenderWnd = NULL;
@@ -803,7 +1111,11 @@ HWND Orbiter::CreateRenderWindow (Config *pCfg, const char *scenario)
 	for (auto it = m_Plugin.begin(); it != m_Plugin.end(); it++) {
 		void (*opcLoadState)(FILEHANDLE) = (void(*)(FILEHANDLE))FindModuleProc(it->hDLL, "opcLoadState");
 		if (opcLoadState) {
+#ifndef __linux__
 			ifstream ifs(ScnPath(scenario));
+#else // __linux__
+			ifstream ifs(oapiResolvePath(ScnPath(scenario)));
+#endif // __linux__
 			std::string str = "BEGIN_" + it->sName;
 			if (FindLine(ifs, str.c_str())) {
 				opcLoadState((FILEHANDLE)&ifs);
@@ -849,9 +1161,17 @@ HWND Orbiter::CreateRenderWindow (Config *pCfg, const char *scenario)
 
 	// suppress throttle update on launch
 	if (pDI->joyprop.bThrottle && pCfg->CfgJoystickPrm.bThrottleIgnore) {
+#ifndef __linux__
 		DIJOYSTATE2 js;
+#else // __linux__
+		JoyState js;
+#endif // __linux__
 		if (pDI->PollJoystick(&js))
+#ifndef __linux__
 			plZ4 = *(long*)(((BYTE*)&js) + pDI->joyprop.ThrottleOfs) >> 3;
+#else // __linux__
+			plZ4 = *(LONG*)(((BYTE*)&js) + pDI->joyprop.ThrottleOfs) >> 3; // LONG: long is 64-bit on Linux
+#endif // __linux__
 	}
 
 	return hRenderWnd;
@@ -866,7 +1186,11 @@ void Orbiter::PreCloseSession()
 		// Render the scene once without the ImGui dialogs shown
 		// so they don't appear on the preview
 		Render3DEnvironment(true);
+#ifndef __linux__
 		gclient->clbkSaveSurfaceToImage (0, "Images\\CurrentState", oapi::IMAGE_JPG);
+#else // __linux__
+		gclient->clbkSaveSurfaceToImage (0, "Images/CurrentState", oapi::IMAGE_JPG);
+#endif // __linux__
 	}
 }
 
@@ -879,6 +1203,9 @@ void Orbiter::CloseSession ()
 	DWORD i;
 
 	bSession = false;
+#ifdef __linux__
+	WlShortcutsDetach (); // before the render window's surface goes: KWin keeps an inhibitor of a destroyed surface
+#endif // __linux__
 
 	if      (bRecord)   ToggleRecorder();
 	else if (bPlayback) EndPlayback();
@@ -926,6 +1253,9 @@ void Orbiter::CloseSession ()
 			it->pModule->clbkSimulationEnd();
 
 		hRenderWnd = NULL;
+#ifdef __linux__
+		WlPointerDetach ();
+#endif // __linux__
 		pDI->DestroyDevices();
 		pDI->SetRenderWindow(NULL);
 
@@ -948,8 +1278,13 @@ void Orbiter::CloseSession ()
 			exit (0); // just kill the process
 		} else {
 			LOGOUT("**** Respawning Orbiter process\r\n");
+#ifndef __linux__
 			const char *name = "orbiter.exe";
 			_execl (name, name, "-l", NULL);   // respawn the process
+#else // __linux__
+			const char *name = "Orbiter";
+			execl ("/proc/self/exe", name, "-l", (char*)NULL);   // respawn the process
+#endif // __linux__
 		}
 	}
 	LOGOUT("**** Closing simulation session");
@@ -982,7 +1317,11 @@ void Orbiter::BroadcastGlobalInit ()
 // Render3DEnvironment()
 // Draws the scene
 
+#ifndef __linux__
 HRESULT Orbiter::Render3DEnvironment (bool hidedialogs)
+#else // __linux__
+int Orbiter::Render3DEnvironment (bool hidedialogs)
+#endif // __linux__
 {
 	if (gclient) {
 		if(!hidedialogs)
@@ -995,7 +1334,11 @@ HRESULT Orbiter::Render3DEnvironment (bool hidedialogs)
 	}
 	// Mark frame boundary for when using the profiler
 	FrameMark;
+#ifndef __linux__
     return S_OK;
+#else // __linux__
+    return 0; // S_OK
+#endif // __linux__
 }
 
 //-----------------------------------------------------------------------------
@@ -1004,8 +1347,25 @@ HRESULT Orbiter::Render3DEnvironment (bool hidedialogs)
 //-----------------------------------------------------------------------------
 void Orbiter::ScreenToClient (POINT *pt) const
 {
+#ifndef __linux__
 	if (!IsFullscreen() && hRenderWnd)
 		::ScreenToClient (hRenderWnd, pt);
+#else // __linux__
+	// also when fullscreen: the window need not sit at the screen origin; client coordinates are device pixels
+	if (hRenderWnd) {
+		QPoint p = hRenderWnd->mapFromGlobal (QPoint (pt->x, pt->y));
+		qreal dpr = hRenderWnd->devicePixelRatio ();
+		pt->x = (LONG)(p.x()*dpr), pt->y = (LONG)(p.y()*dpr);
+	}
+}
+
+// DestroyWindow for the render window: its WM_DESTROY closed the session, then the window went
+static void DestroyRenderWindow (QWindow *hWnd)
+{
+	g_pOrbiter->CloseSession ();
+	hWnd->hide ();
+	hWnd->deleteLater ();
+#endif // __linux__
 }
 
 //-----------------------------------------------------------------------------
@@ -1015,15 +1375,23 @@ void Orbiter::ScreenToClient (POINT *pt) const
 INT Orbiter::Run ()
 {
     // Recieve and process Windows messages
+#ifndef __linux__
     BOOL  bGotMsg, bCanRender, bpCanRender = TRUE;
     MSG   msg;
     PeekMessage (&msg, NULL, 0U, 0U, PM_NOREMOVE);
+#else // __linux__
+	// Qt event loop for PeekMessage/GetMessage: in a session the idle step runs before each wait and wakes the loop again
+    BOOL  bCanRender, bpCanRender = TRUE;
+	bool  bInFrame = false;
+	QAbstractEventDispatcher *dispatcher = QAbstractEventDispatcher::instance ();
+#endif // __linux__
 
 	if (!pConfig->CfgCmdlinePrm.LaunchScenario.empty())
 		Launch (pConfig->CfgCmdlinePrm.LaunchScenario.c_str());
 	// otherwise wait for the user to make a selection from the scenario
 	// list in the launchpad dialog
 
+#ifndef __linux__
 	while (WM_QUIT != msg.message) {
 
         // Use PeekMessage() if the app is active, so we can use idle time to
@@ -1070,8 +1438,52 @@ INT Orbiter::Run ()
 		} else
 			bpCanRender = TRUE;
     }
+#else // __linux__
+	QMetaObject::Connection idle = QObject::connect (dispatcher, &QAbstractEventDispatcher::aboutToBlock, [&]() {
+		// nested loops (modal dialogs) run no frames, as their own message loops didn't on Windows
+		if (!bSession || bInFrame || QThread::currentThread()->loopLevel() > 1) return;
+		bInFrame = true;
+		if (bAllowInput) bActive = true, bAllowInput = false;
+		if (BeginTimeStep (bRunning)) {
+			UpdateWorld();
+			EndTimeStep (bRunning);
+			if (bVisible) {
+				if (bActive) UserInput ();
+				bRenderOnce = TRUE;
+			}
+			if (bRunning && bCapture) {
+				CaptureVideoFrame ();
+			}
+		}
+		if (m_pConsole)
+			m_pConsole->ParseCmd();
+
+		if (bRenderOnce && bVisible) {
+			if (Render3DEnvironment () != 0) // FAILED
+				if (hRenderWnd) DestroyRenderWindow (hRenderWnd);
+			bRenderOnce = FALSE;
+		}
+
+		if (bSession) {
+			bCanRender = TRUE;
+			if (bCanRender && !bpCanRender)
+				RestoreDeviceObjects ();
+			bpCanRender = bCanRender;
+		} else
+			bpCanRender = TRUE;
+		bInFrame = false;
+		dispatcher->wakeUp (); // PeekMessage: come straight back for the next frame
+	});
+
+	int ret = QCoreApplication::exec (); // returns on WM_QUIT (QCoreApplication::quit)
+	QObject::disconnect (idle);
+#endif // __linux__
 	hRenderWnd = NULL;
+#ifndef __linux__
     return msg.wParam;
+#else // __linux__
+    return ret;
+#endif // __linux__
 }
 
 void Orbiter::SingleFrame ()
@@ -1092,30 +1504,69 @@ void Orbiter::SingleFrame ()
 void Orbiter::TerminateOnError ()
 {
 	LogOut (">>> TERMINATING <<<");
+#ifndef __linux__
 	if (hRenderWnd) ShowWindow (hRenderWnd, FALSE);
 	MessageBox (NULL,
 		"Terminating after critical error. See Orbiter.log for details.",
 		"Orbiter: Critical Error", MB_OK | MB_ICONERROR);
+#else // __linux__
+	WlShortcutsDetach ();
+	if (hRenderWnd) hRenderWnd->hide (); // ShowWindow (FALSE)
+	QMessageBox::critical (NULL, "Orbiter: Critical Error",
+		"Terminating after critical error. See Orbiter.log for details.");
+#endif // __linux__
 	exit (1);
 }
 
+#ifndef __linux__
 void Orbiter::UpdateServerWnd (HWND hWnd)
+#else // __linux__
+void Orbiter::UpdateServerWnd (QWidget *hWnd)
+#endif // __linux__
 {
 	char cbuf[256];
 	sprintf (cbuf, "%0.0fs", td.SysT0);
+#ifndef __linux__
 	SetWindowText (GetDlgItem (hWnd, IDC_STATIC1), cbuf);
+#else // __linux__
+	oapiSetDlgItemText (hWnd, IDC_STATIC1, cbuf);
+#endif // __linux__
 	sprintf (cbuf, "%0.0fs", td.SimT0);
+#ifndef __linux__
 	SetWindowText (GetDlgItem (hWnd, IDC_STATIC2), cbuf);
+#else // __linux__
+	oapiSetDlgItemText (hWnd, IDC_STATIC2, cbuf);
+#endif // __linux__
 	sprintf (cbuf, "%0.5f", td.MJD0);
+#ifndef __linux__
 	SetWindowText (GetDlgItem (hWnd, IDC_STATIC3), cbuf);
+#else // __linux__
+	oapiSetDlgItemText (hWnd, IDC_STATIC3, cbuf);
+#endif // __linux__
 	sprintf (cbuf, "%0.1fx", td.Warp());
+#ifndef __linux__
 	SetWindowText (GetDlgItem (hWnd, IDC_STATIC4), cbuf);
+#else // __linux__
+	oapiSetDlgItemText (hWnd, IDC_STATIC4, cbuf);
+#endif // __linux__
 	sprintf (cbuf, "%f", td.SimDT);
+#ifndef __linux__
 	SetWindowText (GetDlgItem (hWnd, IDC_STATIC5), cbuf);
+#else // __linux__
+	oapiSetDlgItemText (hWnd, IDC_STATIC5, cbuf);
+#endif // __linux__
 	sprintf (cbuf, "%f", td.FPS());
+#ifndef __linux__
 	SetWindowText (GetDlgItem (hWnd, IDC_STATIC6), cbuf);
+#else // __linux__
+	oapiSetDlgItemText (hWnd, IDC_STATIC6, cbuf);
+#endif // __linux__
 	sprintf (cbuf, "%zd", g_psys->nVessel());
+#ifndef __linux__
 	SetWindowText (GetDlgItem (hWnd, IDC_STATIC7), cbuf);
+#else // __linux__
+	oapiSetDlgItemText (hWnd, IDC_STATIC7, cbuf);
+#endif // __linux__
 }
 
 void Orbiter::InitRotationMode ()
@@ -1123,10 +1574,17 @@ void Orbiter::InitRotationMode ()
 	bKeepFocus = true;
 
 	// Checks if the cursor is already hidden
+#ifndef __linux__
 	if (g_iCursorShowCount == 0) {
 		g_iCursorShowCount = ShowCursor(FALSE);
+#else // __linux__
+	if (g_iCursorShowCount == 0 && hRenderWnd) {
+		hRenderWnd->setCursor (Qt::BlankCursor); // ShowCursor (FALSE)
+		g_iCursorShowCount = -1;
+#endif // __linux__
 	}
 
+#ifndef __linux__
 	SetCapture (hRenderWnd);
 
 	// Limit cursor to render window confines, so we don't miss the button up event
@@ -1140,21 +1598,36 @@ void Orbiter::InitRotationMode ()
 		RECT rScreen = {pLeftTop.x, pLeftTop.y, pRightBottom.x, pRightBottom.y};
 		ClipCursor (&rScreen);
 	}
+#else // __linux__
+	// SetCapture + ClipCursor: the grab delivers the button up anywhere; Camera::UpdateMouse warps the cursor back
+	if (hRenderWnd) hRenderWnd->setMouseGrabEnabled (true);
+	WlPointerLock (hRenderWnd); // Wayland: no warp holds the pointer, a pointer lock does
+#endif // __linux__
 }
 
 void Orbiter::ExitRotationMode ()
 {
 	bKeepFocus = false;
+#ifndef __linux__
 	ReleaseCapture ();
+#else // __linux__
+	if (hRenderWnd) hRenderWnd->setMouseGrabEnabled (false); // ReleaseCapture, ClipCursor (NULL)
+	WlPointerUnlock ();
+#endif // __linux__
 
 	// Checks if the cursor is already hidden
 	if (g_iCursorShowCount < 0) {
+#ifndef __linux__
 		g_iCursorShowCount = ShowCursor (TRUE);
 	}
 
 	// Release cursor from render window confines
 	if (!bFullscreen && hRenderWnd) {
 		ClipCursor (NULL);
+#else // __linux__
+		if (hRenderWnd) hRenderWnd->unsetCursor (); // ShowCursor (TRUE)
+		g_iCursorShowCount = 0;
+#endif // __linux__
 	}
 }
 
@@ -1438,7 +1911,11 @@ bool Orbiter::SaveScenario (const char *fname, const char *desc, int desc_type)
 {
 	pState->Update ();
 
+#ifndef __linux__
 	ofstream ofs (ScnPath (fname));
+#else // __linux__
+	ofstream ofs (oapiResolvePath (ScnPath (fname)));
+#endif // __linux__
 	if (ofs) {
 		// save scenario state
 		pState->Write(ofs, desc, desc_type, 0);
@@ -1471,8 +1948,13 @@ VOID Orbiter::Quicksave ()
 	char desc[256], fname[256];
 	sprintf (desc, "Orbiter saved state at T = %0.0f", td.SimT0);
 	for (i = strlen(ScenarioName)-1; i > 0; i--)
+#ifndef __linux__
 		if (ScenarioName[i-1] == '\\') break;
 	sprintf (fname, "Quicksave\\%s %04d", ScenarioName+i, ++g_qsaveid);
+#else // __linux__
+		if (ScenarioName[i-1] == '/' || ScenarioName[i-1] == '\\') break;
+	sprintf (fname, "Quicksave/%s %04d", ScenarioName+i, ++g_qsaveid);
+#endif // __linux__
 	if(SaveScenario (fname, desc, 0))
 		oapiAddNotification(OAPINOTIF_SUCCESS, "Scenario saved successfully", fname);
 	else
@@ -1487,7 +1969,11 @@ void Orbiter::CaptureVideoFrame ()
 	if (gclient) {
 		if (video_skip_count == pConfig->CfgCapturePrm.SequenceSkip) {
 			char fname[256];
+#ifndef __linux__
 			sprintf (fname, "%s\\%04d", pConfig->CfgCapturePrm.SequenceDir, pConfig->CfgCapturePrm.SequenceStart++);
+#else // __linux__
+			sprintf (fname, "%s/%04d", pConfig->CfgCapturePrm.SequenceDir, pConfig->CfgCapturePrm.SequenceStart++);
+#endif // __linux__
 			oapi::ImageFileFormat fmt = (oapi::ImageFileFormat)pConfig->CfgCapturePrm.ImageFormat;
 			float quality = (float)pConfig->CfgCapturePrm.ImageQuality/10.0f;
 			gclient->clbkSaveSurfaceToImage (0, fname, fmt, quality);
@@ -1516,7 +2002,11 @@ void Orbiter::ToggleLabelDisplay()
 //-----------------------------------------------------------------------------
 VOID Orbiter::SavePlaybackScn (const char *fname)
 {
+#ifndef __linux__
 	char desc[256], scn[256] = "Playback\\";
+#else // __linux__
+	char desc[256], scn[256] = "Playback/";
+#endif // __linux__
 	sprintf (desc, "Orbiter playback scenario at T = %0.0f", td.SimT0);
 	strcat (scn, fname);
 	SaveScenario (scn, desc, 0);
@@ -1527,7 +2017,11 @@ const char *Orbiter::GetDefRecordName (void) const
 	const char *playbackdir = pState->PlaybackDir();
 	int i;
 	for (i = strlen(playbackdir)-1; i > 0; i--)
+#ifndef __linux__
 		if (playbackdir[i-1] == '\\') break;
+#else // __linux__
+		if (playbackdir[i-1] == '/' || playbackdir[i-1] == '\\') break;
+#endif // __linux__
 	return playbackdir+i;
 }
 
@@ -1631,9 +2125,17 @@ bool Orbiter::DeleteAnnotation (oapi::ScreenAnnotation *sn)
 // Name: InitDeviceObjects()
 // Desc: Initialize scene objects.
 //-----------------------------------------------------------------------------
+#ifndef __linux__
 HRESULT Orbiter::InitDeviceObjects ()
+#else // __linux__
+int Orbiter::InitDeviceObjects ()
+#endif // __linux__
 {
+#ifndef __linux__
     return S_OK;
+#else // __linux__
+    return 0; // S_OK
+#endif // __linux__
 }
 
 //-----------------------------------------------------------------------------
@@ -1641,18 +2143,34 @@ HRESULT Orbiter::InitDeviceObjects ()
 // Desc: Restore objects created for a specific device
 //-----------------------------------------------------------------------------
 
+#ifndef __linux__
 HRESULT Orbiter::RestoreDeviceObjects ()
+#else // __linux__
+int Orbiter::RestoreDeviceObjects ()
+#endif // __linux__
 {
+#ifndef __linux__
 	return S_OK;
+#else // __linux__
+	return 0; // S_OK
+#endif // __linux__
 }
 
 //-----------------------------------------------------------------------------
 // Name: DeleteDeviceObjects()
 // Desc: Delete objects created for a specific device
 //-----------------------------------------------------------------------------
+#ifndef __linux__
 HRESULT Orbiter::DeleteDeviceObjects ()
+#else // __linux__
+int Orbiter::DeleteDeviceObjects ()
+#endif // __linux__
 {
+#ifndef __linux__
 	return S_OK;
+#else // __linux__
+	return 0; // S_OK
+#endif // __linux__
 }
 
 static char linebuf[2][70] = {"", ""};
@@ -1684,13 +2202,21 @@ FILE *Orbiter::OpenTextureFile (const char *name, const char *ext)
 {
 	FILE *ftex = 0;
 	char *pch = HTexPath (name, ext); // first try high-resolution directory
+#ifndef __linux__
 	if (pch && (ftex = fopen (pch, "rb"))) {
+#else // __linux__
+	if (pch && (ftex = fopen (oapiResolvePath (pch).c_str(), "rb"))) {
+#endif // __linux__
 		LOGOUT_FINE("Texture load: %s", pch);
 		return ftex;
 	}
 	pch = TexPath (name, ext);        // try standard texture directory
 	LOGOUT_FINE("Texture load: %s", pch);
+#ifndef __linux__
 	return fopen (pch, "rb");
+#else // __linux__
+	return fopen (oapiResolvePath (pch).c_str(), "rb");
+#endif // __linux__
 }
 
 SURFHANDLE Orbiter::RegisterExhaustTexture (char *name)
@@ -1803,9 +2329,17 @@ void Orbiter::EndTimeStep (bool running)
 	g_bForceUpdate = false;                        // clear flag
 
 	// check for termination of demo mode
+#ifndef __linux__
 	if (SessionLimitReached())
 		if (hRenderWnd) PostMessage(hRenderWnd, WM_CLOSE, 0, 0);
+#else // __linux__
+	if (SessionLimitReached()) {
+		if (hRenderWnd) QCoreApplication::postEvent (hRenderWnd, new QCloseEvent); // PostMessage WM_CLOSE
+#endif // __linux__
 		else CloseSession();
+#ifdef __linux__
+	}
+#endif // __linux__
 }
 
 bool Orbiter::SessionLimitReached() const
@@ -1967,7 +2501,11 @@ VOID Orbiter::UpdateWorld ()
 	g_bStateUpdate = false;
 
 	if (!KillVessels())  // kill any vessels marked for deletion
+#ifndef __linux__
 		if (hRenderWnd) DestroyWindow (hRenderWnd);
+#else // __linux__
+		if (hRenderWnd) DestroyRenderWindow (hRenderWnd);
+#endif // __linux__
 
 	//g_texmanager->OutputInfo();
 }
@@ -1982,13 +2520,26 @@ const char *Orbiter::KeyState() const
 // Desc: Process user input via DirectInput keyboard and joystick (but not
 //       keyboard messages sent via window message queue)
 //-----------------------------------------------------------------------------
+#ifndef __linux__
 HRESULT Orbiter::UserInput ()
+#else // __linux__
+int Orbiter::UserInput ()
+#endif // __linux__
 {
 	static char buffer[256];
+#ifndef __linux__
 	DIDEVICEOBJECTDATA dod[10];
 	LPDIRECTINPUTDEVICE8 didev;
+#else // __linux__
+	KeyData dod[10];
+	KeyboardDevice *didev;
+#endif // __linux__
 	DWORD i, dwItems = 10;
+#ifndef __linux__
 	HRESULT hr;
+#else // __linux__
+	int hr;
+#endif // __linux__
 	bool skipkbd = false;
 
 	memset(simkstate, 0, 256);
@@ -1998,7 +2549,11 @@ HRESULT Orbiter::UserInput ()
 	if ((g_input && g_input->IsActive()) ||
 	    (g_select && g_select->IsActive())) skipkbd = true;
 
+#ifndef __linux__
 	if (didev = GetDInput()->GetKbdDevice()) {
+#else // __linux__
+	if ((didev = GetDInput()->GetKbdDevice())) {
+#endif // __linux__
 		ImGuiIO& io = ImGui::GetIO();
 
 		// When focus-follows-mouse is active and the mouse is not over any
@@ -2010,11 +2565,19 @@ HRESULT Orbiter::UserInput ()
 
 		// keyboard input: immediate key interpretation
 		hr = didev->GetDeviceState (sizeof(buffer), &buffer);
+#ifndef __linux__
 		if ((hr == DIERR_NOTACQUIRED || hr == DIERR_INPUTLOST) && SUCCEEDED (didev->Acquire()))
+#else // __linux__
+		if ((hr == DIERR_NOTACQUIRED || hr == DIERR_INPUTLOST) && didev->Acquire() == DI_OK)
+#endif // __linux__
 			hr = didev->GetDeviceState (sizeof(buffer), &buffer);
 
 		// Direct input bypasses the proc loop so we skip it here
+#ifndef __linux__
 		if (SUCCEEDED (hr) && !imguiWantsKeyboard)
+#else // __linux__
+		if (hr == DI_OK && !imguiWantsKeyboard)
+#endif // __linux__
 			for (i = 0; i < 256; i++)
 				simkstate[i] |= buffer[i];
 		bool consume = BroadcastImmediateKeyboardEvent (simkstate);
@@ -2024,10 +2587,17 @@ HRESULT Orbiter::UserInput ()
 		}
 
 		// keyboard input: buffered key events
+#ifndef __linux__
 		hr = didev->GetDeviceData (sizeof(DIDEVICEOBJECTDATA), dod, &dwItems, 0);
 		if ((hr == DIERR_NOTACQUIRED || hr == DIERR_INPUTLOST) && SUCCEEDED (didev->Acquire()))
 			hr = didev->GetDeviceData (sizeof(DIDEVICEOBJECTDATA), dod, &dwItems, 0);
 		if (SUCCEEDED (hr) && !imguiWantsKeyboard) {
+#else // __linux__
+		hr = didev->GetDeviceData (sizeof(KeyData), dod, &dwItems, 0);
+		if ((hr == DIERR_NOTACQUIRED || hr == DIERR_INPUTLOST) && didev->Acquire() == DI_OK)
+			hr = didev->GetDeviceData (sizeof(KeyData), dod, &dwItems, 0);
+		if (hr == DI_OK && !imguiWantsKeyboard) {
+#endif // __linux__
 			BroadcastBufferedKeyboardEvent (buffer, dod, dwItems);
 			if (!skipkbd) {
 				KbdInputBuffered_System (buffer, dod, dwItems);
@@ -2040,7 +2610,11 @@ HRESULT Orbiter::UserInput ()
 	for (i = 0; i < 15; i++) ctrlTotal[i] = ctrlKeyboard[i]; // update attitude requests
 
 	// joystick input
+#ifndef __linux__
 	DIJOYSTATE2 js;
+#else // __linux__
+	JoyState js;
+#endif // __linux__
 	if (pDI->PollJoystick (&js)) {
 		UserJoyInput_System (&js);                  // general joystick functions
 		if (bRunning) UserJoyInput_OnRunning (&js); // joystick vessel control functions
@@ -2052,7 +2626,11 @@ HRESULT Orbiter::UserInput ()
 	// apply manual attitude control
 	g_focusobj->ApplyUserAttitudeControls (ctrlTotal);
 
+#ifndef __linux__
 	return S_OK;
+#else // __linux__
+	return 0; // S_OK
+#endif // __linux__
 }
 
 //-----------------------------------------------------------------------------
@@ -2064,7 +2642,11 @@ bool Orbiter::SendKbdBuffered(DWORD key, DWORD *mod, DWORD nmod, bool onRunningO
 {
 	if (onRunningOnly && !bRunning) return false;
 
+#ifndef __linux__
 	DIDEVICEOBJECTDATA dod;
+#else // __linux__
+	KeyData dod = {};
+#endif // __linux__
 	dod.dwData = 0x80;
 	dod.dwOfs = key;
 	char buffer[256];
@@ -2270,7 +2852,11 @@ void Orbiter::KbdInputImmediate_OnRunning (char *kstate)
 // Desc: General user keyboard buffered key interpretation. Processes keys
 //       which are also interpreted when simulation is paused
 //-----------------------------------------------------------------------------
+#ifndef __linux__
 void Orbiter::KbdInputBuffered_System (char *kstate, DIDEVICEOBJECTDATA *dod, DWORD n)
+#else // __linux__
+void Orbiter::KbdInputBuffered_System (char *kstate, KeyData *dod, DWORD n)
+#endif // __linux__
 {
 	for (DWORD i = 0; i < n; i++) {
 
@@ -2303,7 +2889,11 @@ void Orbiter::KbdInputBuffered_System (char *kstate, DIDEVICEOBJECTDATA *dod, DW
 			if (bPlayback) EndPlayback();
 			else ToggleRecorder ();
 		} else if (keymap.IsLogicalKey (key, kstate, OAPI_LKEY_Quit)) {
+#ifndef __linux__
 			if (hRenderWnd) PostMessage (hRenderWnd, WM_CLOSE, 0, 0);
+#else // __linux__
+			if (hRenderWnd) QCoreApplication::postEvent (hRenderWnd, new QCloseEvent); // PostMessage WM_CLOSE
+#endif // __linux__
 		} else if (keymap.IsLogicalKey (key, kstate, OAPI_LKEY_SelectPrevVessel)) {
 			if (g_pfocusobj) SetFocusObject (g_pfocusobj);
 		}
@@ -2332,7 +2922,11 @@ void Orbiter::KbdInputBuffered_System (char *kstate, DIDEVICEOBJECTDATA *dod, DW
 // Name: KbdInputBuffered_OnRunning ()
 // Desc: User keyboard buffered key interpretation in running simulation
 //-----------------------------------------------------------------------------
+#ifndef __linux__
 void Orbiter::KbdInputBuffered_OnRunning (char *kstate, DIDEVICEOBJECTDATA *dod, DWORD n)
+#else // __linux__
+void Orbiter::KbdInputBuffered_OnRunning (char *kstate, KeyData *dod, DWORD n)
+#endif // __linux__
 {
 	for (DWORD i = 0; i < n; i++) {
 
@@ -2359,7 +2953,11 @@ void Orbiter::KbdInputBuffered_OnRunning (char *kstate, DIDEVICEOBJECTDATA *dod,
 
 		} else if (KEYMOD_SHIFT (kstate)) {  // Shift-key combinations (reserved for MFD control)
 
+#ifndef __linux__
 			int id = (KEYDOWN (kstate, DIK_LSHIFT) ? 0 : 1);
+#else // __linux__
+			int id = (KEYDOWN (kstate, OAPI_KEY_LSHIFT) ? 0 : 1); // DIK_LSHIFT
+#endif // __linux__
 			g_pane->MFDConsumeKeyBuffered (id, key);
 
 		} else if (KEYMOD_ALT (kstate)) {    // ALT-Key combinations
@@ -2379,7 +2977,11 @@ void Orbiter::KbdInputBuffered_OnRunning (char *kstate, DIDEVICEOBJECTDATA *dod,
 // Name: UserJoyInput_System ()
 // Desc: General user joystick input (also functional when paused)
 //-----------------------------------------------------------------------------
+#ifndef __linux__
 void Orbiter::UserJoyInput_System (DIJOYSTATE2 *js)
+#else // __linux__
+void Orbiter::UserJoyInput_System (JoyState *js)
+#endif // __linux__
 {
 	if (LOWORD (js->rgdwPOV[0]) != 0xFFFF) {
 		DWORD dir = js->rgdwPOV[0];
@@ -2415,7 +3017,11 @@ void Orbiter::UserJoyInput_System (DIJOYSTATE2 *js)
 // Name: UserJoyInput_OnRunning ()
 // Desc: User joystick input query for running simulation (ship controls etc.)
 //-----------------------------------------------------------------------------
+#ifndef __linux__
 void Orbiter::UserJoyInput_OnRunning (DIJOYSTATE2 *js)
+#else // __linux__
+void Orbiter::UserJoyInput_OnRunning (JoyState *js)
+#endif // __linux__
 {
 	if (bEnableAtt) {
 		if (js->lX) {
@@ -2438,7 +3044,11 @@ void Orbiter::UserJoyInput_OnRunning (DIJOYSTATE2 *js)
 	}
 
 	if (pDI->joyprop.bThrottle) { // main thrusters via throttle control
+#ifndef __linux__
 		long lZ4 = *(long*)(((BYTE*)js)+pDI->joyprop.ThrottleOfs) >> 3;
+#else // __linux__
+		long lZ4 = *(LONG*)(((BYTE*)js)+pDI->joyprop.ThrottleOfs) >> 3; // LONG: long is 64-bit on Linux
+#endif // __linux__
 		if (lZ4 != plZ4) {
 			if (ignorefirst) {
 				if (abs(lZ4-plZ4) > 10) ignorefirst = false;
@@ -2493,7 +3103,11 @@ bool Orbiter::BroadcastImmediateKeyboardEvent (char *kstate)
 	return consume;
 }
 
+#ifndef __linux__
 void Orbiter::BroadcastBufferedKeyboardEvent (char *kstate, DIDEVICEOBJECTDATA *dod, DWORD n)
+#else // __linux__
+void Orbiter::BroadcastBufferedKeyboardEvent (char *kstate, KeyData *dod, DWORD n)
+#endif // __linux__
 {
 	for (DWORD i = 0; i < n; i++) {
 		bool consume = false;
@@ -2513,45 +3127,148 @@ void Orbiter::BroadcastBufferedKeyboardEvent (char *kstate, DIDEVICEOBJECTDATA *
 // Desc: Render window message handler
 //-----------------------------------------------------------------------------
 
+#ifndef __linux__
 LRESULT Orbiter::MsgProc (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
+#else // __linux__
+// mouse key state flags (the WPARAM of the mouse messages)
+static DWORD MouseKeyState (const QSinglePointEvent *e)
+#endif // __linux__
 {
+#ifndef __linux__
 	if (ImGui_ImplWin32_WndProcHandler(hWnd, uMsg, wParam, lParam))
 		return 0;
+#else // __linux__
+	DWORD state = 0;
+	if (e->buttons() & Qt::LeftButton)       state |= MK_LBUTTON;
+	if (e->buttons() & Qt::RightButton)      state |= MK_RBUTTON;
+	if (e->buttons() & Qt::MiddleButton)     state |= MK_MBUTTON;
+	if (e->modifiers() & Qt::ShiftModifier)   state |= MK_SHIFT;
+	if (e->modifiers() & Qt::ControlModifier) state |= MK_CONTROL;
+	return state;
+}
 
+// a logical key of the keymap: the desktop's shortcut for it is not passed on (WlShortcuts)
+static bool IsKeymapKey (const Keymap &keymap, KeyboardDevice *kbd, const QKeyEvent *e)
+{
+	char kstate[256];
+	DWORD dik = KeyboardDevice::DIKCode ((int)e->nativeScanCode() - 8);
+	if (!dik) return false;
+	if (kbd->GetDeviceState (256, kstate) != DI_OK) { // not acquired yet: any side of a held modifier
+		memset (kstate, 0, 256);
+		if (e->modifiers() & Qt::ShiftModifier)   kstate[OAPI_KEY_LSHIFT]   = kstate[OAPI_KEY_RSHIFT]   = (char)0x80;
+		if (e->modifiers() & Qt::ControlModifier) kstate[OAPI_KEY_LCONTROL] = kstate[OAPI_KEY_RCONTROL] = (char)0x80;
+		if (e->modifiers() & Qt::AltModifier)     kstate[OAPI_KEY_LALT]     = kstate[OAPI_KEY_RALT]     = (char)0x80;
+	}
+	for (int i = 0; i < LKEY_COUNT; i++) {
+		DWORD key = dik;
+		if (keymap.IsLogicalKey (key, kstate, i, false)) return true;
+	}
+	return false;
+}
+#endif // __linux__
+
+#ifndef __linux__
 	switch (uMsg) {
+#else // __linux__
+bool Orbiter::MsgProc (QWindow *hWnd, QEvent *event)
+{
+	if (hWnd != hRenderWnd) return false; // session closed, the window is on its way out (DefWindowProc)
+#endif // __linux__
 
+#ifndef __linux__
 	case WM_ACTIVATE:
 		bActive = (wParam != WA_INACTIVE);
 		return 0;
+#else // __linux__
+	// DirectInput read the keyboard beside the message queue; here the keyboard device takes every key event first
+	if ((event->type() == QEvent::KeyPress || event->type() == QEvent::KeyRelease) && GetKbdDevice()) {
+		QKeyEvent *ke = static_cast<QKeyEvent*>(event);
+		bool press = (event->type() == QEvent::KeyPress);
+		if (WlShortcutsKey (ke, press && IsKeymapKey (keymap, GetKbdDevice(), ke)))
+			return true; // the desktop's shortcut (KDE Plasma): passed on, as the desktop would have taken it
+		GetKbdDevice()->KeyEvent ((int)ke->nativeScanCode() - 8, press); // xkb keycode -> evdev
+	}
+	if (event->type() == QEvent::MouseButtonPress || event->type() == QEvent::FocusIn || event->type() == QEvent::FocusOut)
+		WlShortcutsReset ();
+
+	if (ImGui_ImplQt_EventHandler(hWnd, event))
+		return true;
+
+	qreal dpr = hWnd->devicePixelRatio(); // client coordinates are device pixels
+
+	switch (event->type()) {
+
+	case QEvent::FocusIn:  // WM_ACTIVATE
+	case QEvent::FocusOut:
+		bActive = (event->type() == QEvent::FocusIn);
+		if (!bActive && GetKbdDevice()) GetKbdDevice()->Unacquire(); // DISCL_FOREGROUND: the device lets go with the focus
+		return false;
+#endif // __linux__
 
 	// *** User Keyboard Input ***
+#ifndef __linux__
 	case WM_CHAR:
 	case WM_KEYDOWN: {
+#else // __linux__
+	case QEvent::KeyPress: { // WM_CHAR, WM_KEYDOWN
+#endif // __linux__
 		ImGuiIO& io = ImGui::GetIO();
 		bool imguiWantsKbd = io.WantCaptureKeyboard &&
 			(pConfig->CfgUIPrm.MouseFocusMode == 0 || io.WantCaptureMouse);
 		if (imguiWantsKbd) {
+#ifndef __linux__
 			return 0;
+#else // __linux__
+			return true;
+#endif // __linux__
 		}
 		} break;
 
 	// Mouse event handler
+#ifndef __linux__
 	case WM_LBUTTONDOWN:
 	case WM_RBUTTONDOWN:
 	case WM_LBUTTONUP:
 	case WM_RBUTTONUP: {
+#else // __linux__
+	case QEvent::MouseButtonPress:
+	case QEvent::MouseButtonRelease: {
+		QMouseEvent *me = static_cast<QMouseEvent*>(event);
+		UINT uMsg;
+		if      (me->button() == Qt::LeftButton)  uMsg = (event->type() == QEvent::MouseButtonPress ? WM_LBUTTONDOWN : WM_LBUTTONUP);
+		else if (me->button() == Qt::RightButton) uMsg = (event->type() == QEvent::MouseButtonPress ? WM_RBUTTONDOWN : WM_RBUTTONUP);
+		else break; // other buttons: DefWindowProc
+
+#endif // __linux__
 		if (ImGuiIO& io = ImGui::GetIO(); io.WantCaptureMouse) {
+#ifndef __linux__
 			return 0;
+#else // __linux__
+			return true;
+#endif // __linux__
 		}
 
+#ifndef __linux__
 		if (MouseEvent(uMsg, wParam, LOWORD(lParam), HIWORD(lParam)))
+#else // __linux__
+		if (MouseEvent(uMsg, MouseKeyState(me), (DWORD)(me->position().x()*dpr), (DWORD)(me->position().y()*dpr)))
+#endif // __linux__
 			break; //return 0;
 		} break;
+#ifndef __linux__
 	case WM_MOUSEWHEEL: {
+#else // __linux__
+	case QEvent::Wheel: { // WM_MOUSEWHEEL
+#endif // __linux__
 		if (ImGuiIO& io = ImGui::GetIO(); io.WantCaptureMouse) {
+#ifndef __linux__
 			return 0;
+#else // __linux__
+			return true;
+#endif // __linux__
 		}
 
+#ifndef __linux__
 		int x = LOWORD(lParam);
 		int y = HIWORD(lParam);
 		if (!bFullscreen) {
@@ -2561,27 +3278,60 @@ LRESULT Orbiter::MsgProc (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 			y = pt.y;
 		}
 		if (MouseEvent(uMsg, wParam, x, y))
+#else // __linux__
+		QWheelEvent *we = static_cast<QWheelEvent*>(event);
+		int x = (int)(we->position().x()*dpr); // Qt passes client coordinates, the Win32 message passed screen coordinates
+		int y = (int)(we->position().y()*dpr);
+		DWORD state = MAKEWPARAM (MouseKeyState(we), (WORD)(short)we->angleDelta().y()); // HIWORD: wheel delta, 120 per notch
+		if (MouseEvent(WM_MOUSEWHEEL, state, x, y))
+#endif // __linux__
 			break; //return 0;
 		} break;
+#ifndef __linux__
 	case WM_MOUSEMOVE: {
+#else // __linux__
+	case QEvent::MouseMove: { // WM_MOUSEMOVE
+			QMouseEvent *me = static_cast<QMouseEvent*>(event);
+#endif // __linux__
 			// Focus-follows-mouse: must run before the WantCaptureMouse early-out,
 			// otherwise moving the mouse over an ImGui window (which sets
 			// WantCaptureMouse) would prevent focus from returning to the
 			// render window, breaking the "focus follows mouse" setting.
+#ifndef __linux__
 			if (!bKeepFocus && pConfig->CfgUIPrm.MouseFocusMode != 0 && GetFocus() != hWnd) {
 				if (GetWindowThreadProcessId(hWnd, NULL) == GetWindowThreadProcessId(GetFocus(), NULL))
 					SetFocus(hWnd);
 			}
+#else // __linux__
+			// GetWindowThreadProcessId check: only take the focus back from another window of this application
+			QWindow *focus = QGuiApplication::focusWindow();
+			if (!bKeepFocus && pConfig->CfgUIPrm.MouseFocusMode != 0 && focus && focus != hWnd)
+				hWnd->requestActivate(); // SetFocus
+#endif // __linux__
 
 			if (ImGuiIO& io = ImGui::GetIO(); io.WantCaptureMouse) {
+#ifndef __linux__
 				return 0;
+#else // __linux__
+				return true;
+#endif // __linux__
 			}
 
+#ifndef __linux__
 			int x = LOWORD(lParam);
 			int y = HIWORD(lParam);
 			MouseEvent(uMsg, wParam, x, y);
+#else // __linux__
+			int x = (int)(me->position().x()*dpr);
+			int y = (int)(me->position().y()*dpr);
+			MouseEvent(WM_MOUSEMOVE, MouseKeyState(me), x, y);
+#endif // __linux__
 		}
+#ifndef __linux__
 		return 0;
+#else // __linux__
+		return true;
+#endif // __linux__
 
 #ifdef UNDEF
 		// These messages could be intercepted to suspend the simulation
@@ -2604,6 +3354,7 @@ LRESULT Orbiter::MsgProc (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
         break;
 #endif
 
+#ifndef __linux__
     case WM_GETMINMAXINFO:
         ((MINMAXINFO*)lParam)->ptMinTrackSize.x = 100;
         ((MINMAXINFO*)lParam)->ptMinTrackSize.y = 100;
@@ -2644,18 +3395,41 @@ LRESULT Orbiter::MsgProc (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
         // Prevent the user from selecting the menu in fullscreen mode
         if (IsFullscreen()) return HTCLIENT;
         break;
+#else // __linux__
+	// WM_GETMINMAXINFO: the minimum size is set on the window in CreateRenderWindow
+	// WM_POWERBROADCAST: SleepWatch (logind PrepareForSleep) calls Freeze
+	// WM_COMMAND (SC_MONITORPOWER, IDM_EXIT) and WM_NCHITTEST left out: the render window has no menu or system commands
+#endif // __linux__
 
 		// shutdown options
+#ifndef __linux__
 	case WM_CLOSE:
+#else // __linux__
+	case QEvent::Close: // WM_CLOSE
+#endif // __linux__
 		PreCloseSession();
+#ifndef __linux__
 		DestroyWindow (hWnd);
 		return 0;
+#else // __linux__
+		DestroyRenderWindow (hWnd); // DestroyWindow; WM_DESTROY -> CloseSession
+		return true;
+#endif // __linux__
 
+#ifndef __linux__
 	case WM_DESTROY:
 		CloseSession ();
         break;
+#else // __linux__
+	default:
+		break;
+#endif // __linux__
 	}
+#ifndef __linux__
     return DefWindowProc (hWnd, uMsg, wParam, lParam);
+#else // __linux__
+    return false; // DefWindowProc: Qt's default handling
+#endif // __linux__
 }
 
 //-----------------------------------------------------------------------------
@@ -2667,6 +3441,7 @@ bool Orbiter::ActivateRoughType ()
 	//if (!bSysClearType) return false; // ClearType isn't user-enabled anyway
 	if (bRoughType) return false; // active already
 
+#ifndef __linux__
 	BOOL cleartype;
 	BOOL ok = SystemParametersInfo (SPI_GETFONTSMOOTHING, 0, &cleartype, 0);
 	if (!ok) return false; // ClearType status can't be determined
@@ -2674,6 +3449,11 @@ bool Orbiter::ActivateRoughType ()
 		bRoughType = true;
 		return true;
 	} else return false;
+#else // __linux__
+	// SPI_SETFONTSMOOTHING left out: no desktop setting changes; the client drops smoothing per font while the flag is set
+	bRoughType = true;
+	return true;
+#endif // __linux__
 }
 
 //-----------------------------------------------------------------------------
@@ -2685,10 +3465,15 @@ bool Orbiter::DeactivateRoughType ()
 	bool bEnforceClearType = pConfig->CfgDebugPrm.bForceReenableSmoothFont;
 	if (!bSysClearType && !bEnforceClearType) return false; // ClearType isn't user-enabled anyway
 	if (!bRoughType) return false; // not active
+#ifndef __linux__
 	if (SystemParametersInfo (SPI_SETFONTSMOOTHING, TRUE, NULL, SPIF_SENDCHANGE)) {
 		bRoughType = false;
 		return true;
 	} else return false;
+#else // __linux__
+	bRoughType = false; // SystemParametersInfo (SPI_SETFONTSMOOTHING) left out, see ActivateRoughType
+	return true;
+#endif // __linux__
 }
 
 //-----------------------------------------------------------------------------
@@ -2715,9 +3500,17 @@ bool Orbiter::RemoveGraphicsClient (oapi::GraphicsClient *gc)
 	return true;
 }
 
+#ifndef __linux__
 bool Orbiter::RegisterWindow (HINSTANCE hInstance, HWND hWnd, DWORD flag)
+#else // __linux__
+bool Orbiter::RegisterWindow (void *hInstance, QWidget *hWnd, DWORD flag)
+#endif // __linux__
 {
+#ifndef __linux__
 	return (pDlgMgr ? (pDlgMgr->AddWindow (hInstance, hWnd, hRenderWnd, flag) != NULL) : NULL);
+#else // __linux__
+	return (pDlgMgr ? (pDlgMgr->AddWindow (hInstance, hWnd, hRenderWnd, flag) != NULL) : false);
+#endif // __linux__
 }
 
 void Orbiter::UpdateDeallocationProgress()
@@ -2725,22 +3518,38 @@ void Orbiter::UpdateDeallocationProgress()
 	m_pLaunchpad->UpdateWaitProgress();
 }
 
+#ifndef __linux__
 HWND Orbiter::OpenDialog (int id, DLGPROC pDlg, void *context)
+#else // __linux__
+QWidget *Orbiter::OpenDialog (int id, DLGINIT pDlg, void *context)
+#endif // __linux__
 {
 	return OpenDialog (hInst, id, pDlg, context);
 }
 
+#ifndef __linux__
 HWND Orbiter::OpenDialogEx (int id, DLGPROC pDlg, DWORD flag, void *context)
+#else // __linux__
+QWidget *Orbiter::OpenDialogEx (int id, DLGINIT pDlg, DWORD flag, void *context)
+#endif // __linux__
 {
 	return OpenDialogEx (hInst, id, pDlg, flag, context);
 }
 
+#ifndef __linux__
 HWND Orbiter::OpenDialog (HINSTANCE hInstance, int id, DLGPROC pDlg, void *context)
+#else // __linux__
+QWidget *Orbiter::OpenDialog (void *hInstance, int id, DLGINIT pDlg, void *context)
+#endif // __linux__
 {
 	return (pDlgMgr ? pDlgMgr->OpenDialog (hInstance, id, hRenderWnd, pDlg, context) : NULL);
 }
 
+#ifndef __linux__
 HWND Orbiter::OpenDialogEx (HINSTANCE hInstance, int id, DLGPROC pDlg, DWORD flag, void *context)
+#else // __linux__
+QWidget *Orbiter::OpenDialogEx (void *hInstance, int id, DLGINIT pDlg, DWORD flag, void *context)
+#endif // __linux__
 {
 	return (pDlgMgr ? pDlgMgr->OpenDialogEx (hInstance, id, hRenderWnd, pDlg, flag, context) : NULL);
 }
@@ -2765,12 +3574,20 @@ HELPCONTEXT Orbiter::DefaultHelpPage(const char* topic)
 	return hcontext;
 }
 
+#ifndef __linux__
 void Orbiter::CloseDialog (HWND hDlg)
+#else // __linux__
+void Orbiter::CloseDialog (QWidget *hDlg)
+#endif // __linux__
 {
 	if (pDlgMgr) pDlgMgr->CloseDialog (hDlg);
 }
 
+#ifndef __linux__
 HWND Orbiter::IsDialog (HINSTANCE hInstance, DWORD resId)
+#else // __linux__
+QWidget *Orbiter::IsDialog (void *hInstance, DWORD resId)
+#endif // __linux__
 {
 	return (pDlgMgr ? pDlgMgr->IsEntry (hInstance, resId) : NULL);
 }
@@ -2779,8 +3596,14 @@ HWND Orbiter::IsDialog (HINSTANCE hInstance, DWORD resId)
 // Nonmember functions
 //=============================================================================
 
+#ifndef __linux__
 INT_PTR CALLBACK BkMsgProc (HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
+#else // __linux__
+// WM_SIZE of the demo background: the image fills the window
+static void BkMsgProc (QWidget *hDlg)
+#endif // __linux__
 {
+#ifndef __linux__
 	switch (uMsg) {
 	case WM_SIZE: {
 		RECT r;
@@ -2789,4 +3612,13 @@ INT_PTR CALLBACK BkMsgProc (HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 		} return 1;
 	}
 	return 0;
+#else // __linux__
+	new EventHook (hDlg, [hDlg](QObject *obj, QEvent *event) {
+		if (obj == hDlg && event->type() == QEvent::Resize) {
+			if (QWidget *img = oapiResDlgItem (hDlg, IDC_IMG))
+				img->setGeometry (0, 0, hDlg->width(), hDlg->height()); // MoveWindow
+		}
+		return false;
+	});
+#endif // __linux__
 }

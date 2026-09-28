@@ -595,7 +595,11 @@ bool Instrument_Transfer::SelectRef (char *str)
 bool Instrument_Transfer::SelectSrc (const char *str)
 {
 	RigidBody *obj;
+#ifndef __linux__
 	if (!_stricmp (str, "x")) {
+#else // __linux__
+	if (!strcasecmp (str, "x")) {
+#endif // __linux__
 		obj = vessel;
 	} else {
 		obj = (RigidBody*)g_psys->GetObj (str, true);
@@ -659,17 +663,38 @@ bool Instrument_Transfer::ReadParams (ifstream &ifs)
 	for (;;) {
 		if (!ifs.getline (cbuf, 256)) return false;
 		pc = trim_string (cbuf);
+#ifndef __linux__
 		if (!_strnicmp (pc, "END_MFD", 7)) break;
 		if (!_strnicmp (pc, "REF", 3)) {
+#else // __linux__
+		if (!strncasecmp (pc, "END_MFD", 7)) break;
+		if (!strncasecmp (pc, "REF", 3)) {
+#endif // __linux__
 			strcpy (cref, trim_string (pc+3));
+#ifndef __linux__
 		} else if (!_strnicmp (pc, "SOURCE", 6)) {
+#else // __linux__
+		} else if (!strncasecmp (pc, "SOURCE", 6)) {
+#endif // __linux__
 			strcpy (csrc, trim_string (pc+6));
+#ifndef __linux__
 		} else if (!_strnicmp (pc, "TARGET", 6)) {
+#else // __linux__
+		} else if (!strncasecmp (pc, "TARGET", 6)) {
+#endif // __linux__
 			strcpy (ctgt, trim_string (pc+6));
+#ifndef __linux__
 		} else if (!_strnicmp (pc, "SIMORBIT", 8)) {
+#else // __linux__
+		} else if (!strncasecmp (pc, "SIMORBIT", 8)) {
+#endif // __linux__
 			char flag[32];
 			int res = sscanf (pc+8, "%lf%lf%s", &le, &dv, flag);
+#ifndef __linux__
 			enable_hyp = (res == 3 && !_stricmp (flag, "SHOW"));
+#else // __linux__
+			enable_hyp = (res == 3 && !strcasecmp (flag, "SHOW"));
+#endif // __linux__
 			xferprm = true;
 		}
 	}

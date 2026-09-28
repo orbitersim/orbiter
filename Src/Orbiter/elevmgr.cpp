@@ -61,12 +61,20 @@ ElevationManager::ElevationManager (const CelestialBody *_cbody)
 	char path[MAX_PATH]; char fname[MAX_PATH];
 	sprintf(fname, "%s\\Elev", cbody->Name());
 	g_pOrbiter->Cfg()->PTexPath(path, fname);
+#ifndef __linux__
 	auto x = std::filesystem::status(path);
+#else // __linux__
+	auto x = std::filesystem::status(oapiResolvePath(path));
+#endif // __linux__
 	bDirExists = std::filesystem::is_directory(x);
 
 	sprintf(fname, "%s\\Elev_mod", cbody->Name());
 	g_pOrbiter->Cfg()->PTexPath(path, fname);
+#ifndef __linux__
 	auto y = std::filesystem::status(path);
+#else // __linux__
+	auto y = std::filesystem::status(oapiResolvePath(path));
+#endif // __linux__
 	bModExists = std::filesystem::is_directory(y);
 }
 
@@ -109,7 +117,11 @@ bool ElevationManager::HasElevationTile(int lvl, int ilat, int ilng) const
 			char fname[256], path[256];
 			sprintf(fname, "%s\\Elev\\%02d\\%06d\\%06d.elv", cbody->Name(), lvl, ilat, ilng);
 			g_pOrbiter->Cfg()->PTexPath(path, fname);
+#ifndef __linux__
 			if (std::filesystem::exists(path)) return true;
+#else // __linux__
+			if (std::filesystem::exists(oapiResolvePath(path))) return true;
+#endif // __linux__
 		}
 		if (treeMgr[0]) {
 			if (treeMgr[0]->Idx(lvl, ilat, ilng) != DWORD(-1)) return true;
@@ -132,7 +144,11 @@ INT16 *ElevationManager::LoadElevationTile (int lvl, int ilat, int ilng, double 
 			char fname[256], path[256];
 			sprintf (fname, "%s\\Elev\\%02d\\%06d\\%06d.elv", cbody->Name(), lvl, ilat, ilng);
 			g_pOrbiter->Cfg()->PTexPath(path, fname);
+#ifndef __linux__
 			if (f = fopen(path, "rb")) {
+#else // __linux__
+			if (f = fopen(oapiResolvePath(path).c_str(), "rb")) {
+#endif // __linux__
 				elev = new INT16[ndat];
 				ELEVFILEHEADER hdr;
 				fread (&hdr, sizeof(ELEVFILEHEADER), 1, f);
@@ -216,7 +232,11 @@ bool ElevationManager::LoadElevationTile_mod (int lvl, int ilat, int ilng, doubl
 			char fname[256], path[256];
 			sprintf (fname, "%s\\Elev_mod\\%02d\\%06d\\%06d.elv", cbody->Name(), lvl, ilat, ilng);
 			g_pOrbiter->Cfg()->PTexPath(path, fname);
+#ifndef __linux__
 			if (f = fopen(path, "rb")) {
+#else // __linux__
+			if (f = fopen(oapiResolvePath(path).c_str(), "rb")) {
+#endif // __linux__
 				ELEVFILEHEADER hdr;
 				fread (&hdr, sizeof(ELEVFILEHEADER), 1, f);
 				if (hdr.hdrsize != sizeof(ELEVFILEHEADER)) {

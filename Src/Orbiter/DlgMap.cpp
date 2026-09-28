@@ -124,10 +124,18 @@ bool DlgMap::SetSelection(const char *name)
 	if ((selectionfilter & DISP_VESSEL) && (vectormap->GetDisplayFlags() & DISP_VESSEL)) { // search for vessel
 		for (i = 0; i < g_psys->nVessel(); i++) {
 			Vessel *v = g_psys->GetVessel(i);
+#ifndef __linux__
 			if (!_strnicmp (v->Name(), name, len)) {
+#else // __linux__
+			if (!strncasecmp (v->Name(), name, len)) {
+#endif // __linux__
 				if (nhit < maxhit) hitstr[nhit] = v->Name();
 				nhit++;
+#ifndef __linux__
 				if (!found_exact && !_stricmp (v->Name(), name)) {
+#else // __linux__
+				if (!found_exact && !strcasecmp (v->Name(), name)) {
+#endif // __linux__
 					sel.type = DISP_VESSEL;
 					sel.obj = v;
 					found_exact = true;
@@ -140,10 +148,18 @@ bool DlgMap::SetSelection(const char *name)
 		if (planet) {
 			for (i = 0; i < planet->nBase(); i++) {
 				const Base *base = planet->GetBase(i);
+#ifndef __linux__
 				if (!_strnicmp (base->Name(), name, len)) {
+#else // __linux__
+				if (!strncasecmp (base->Name(), name, len)) {
+#endif // __linux__
 					if (nhit < maxhit) hitstr[nhit] = base->Name();
 					nhit++;
+#ifndef __linux__
 					if (!found_exact && !_stricmp (base->Name(), name)) {
+#else // __linux__
+					if (!found_exact && !strcasecmp (base->Name(), name)) {
+#endif // __linux__
 						sel.type = DISP_BASE;
 						sel.obj = base;
 						found_exact = true;
@@ -159,10 +175,18 @@ bool DlgMap::SetSelection(const char *name)
 				const Nav *nav = planet->NavMgr().GetNav(i);
 				if (nav->Type() == TRANSMITTER_VOR) {
 					const Nav_VOR *vor = (const Nav_VOR*)nav;
+#ifndef __linux__
 					if (!_strnicmp (vor->GetId(), name, len)) {
+#else // __linux__
+					if (!strncasecmp (vor->GetId(), name, len)) {
+#endif // __linux__
 						if (nhit < maxhit) hitstr[nhit] = vor->GetId();
 						nhit++;
+#ifndef __linux__
 						if (!found_exact && !_stricmp (vor->GetId(), name)) {
+#else // __linux__
+						if (!found_exact && !strcasecmp (vor->GetId(), name)) {
+#endif // __linux__
 							sel.type = DISP_NAVAID;
 							sel.obj = vor;
 							found_exact = true;
@@ -175,10 +199,18 @@ bool DlgMap::SetSelection(const char *name)
 	if ((selectionfilter & DISP_MOON) && vectormap->GetDisplayFlags() & DISP_MOON) { // search for moons
 		for (i = 0; i < vectormap->GetCBody()->nSecondary(); i++) {
 			const CelestialBody *moon = vectormap->GetCBody()->Secondary (i);
+#ifndef __linux__
 			if (!_strnicmp (moon->Name(), name, len)) {
+#else // __linux__
+			if (!strncasecmp (moon->Name(), name, len)) {
+#endif // __linux__
 				if (nhit < maxhit) hitstr[nhit] = moon->Name();
 				nhit++;
+#ifndef __linux__
 				if (!found_exact && !_stricmp (moon->Name(), name)) {
+#else // __linux__
+				if (!found_exact && !strcasecmp (moon->Name(), name)) {
+#endif // __linux__
 					sel.type = DISP_MOON;
 					sel.obj = moon;
 					found_exact = true;

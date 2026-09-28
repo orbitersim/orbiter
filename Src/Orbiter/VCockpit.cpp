@@ -6,7 +6,11 @@
 #include "Pane.h"
 #include "Camera.h"
 #include "Vessel.h"
+#ifndef __linux__
 #include "Texture.h"
+#else // __linux__
+// Texture.h left out: DirectDraw texture manager, nothing used here
+#endif // __linux__
 #include "Log.h"
 #include "Util.h"
 
@@ -31,10 +35,14 @@ VirtualCockpit::VirtualCockpit (int _id, const Pane *_pane)
 	idx_mfocus = -1;
 	mstate     = 0;
 	hud.surf   = NULL;
+#ifndef __linux__
 	if (g_pOrbiter->IsFullscreen())
 		cwnd = 0;
 	else
 		cwnd = g_pOrbiter->GetRenderWnd();
+#else // __linux__
+	cwnd = g_pOrbiter->GetRenderWnd(); // also when fullscreen: the window need not sit at the screen origin
+#endif // __linux__
 	for (i = 0; i < 4; i++)
 		connect[i] = -1;
 }
@@ -427,10 +435,14 @@ bool VirtualCockpit::ProcessMouse (UINT event, DWORD state, int x, int y)
 void VirtualCockpit::GetMouseState (int &idx, int &state, Vector &xs) const
 {
 	if (mstate & PANEL_MOUSE_PRESSED) {
+#ifndef __linux__
 		POINT pt;
 		GetCursorPos (&pt);
 		if (cwnd) // need to subtract client window offset
 			ScreenToClient (cwnd, &pt);
+#else // __linux__
+		POINT pt = CursorPos (cwnd); // need to subtract client window offset
+#endif // __linux__
 
 		// calculate ray intersection with current focus area
 		Vector gdir, ldir;

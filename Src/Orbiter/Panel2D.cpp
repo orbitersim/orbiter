@@ -5,7 +5,11 @@
 #include "Panel2D.h"
 #include "Pane.h"
 #include "Vessel.h"
+#ifndef __linux__
 #include <zmouse.h>
+#else // __linux__
+#include "Util.h" // zmouse.h left out: WM_MOUSEWHEEL is in OrbiterPlatform.h
+#endif // __linux__
 
 using namespace std;
 
@@ -40,8 +44,12 @@ Panel2D::Panel2D (int _id, Pane *_pane, double scale)
 	idx_mfocus = aid_mfocus = -1;
 	mstate = 0;
 
+#ifndef __linux__
 	if (g_pOrbiter->IsFullscreen()) cwnd = 0;
 	else                            cwnd = g_pOrbiter->GetRenderWnd();
+#else // __linux__
+	cwnd = g_pOrbiter->GetRenderWnd(); // also when fullscreen: the window need not sit at the screen origin
+#endif // __linux__
 
 	for (i = 0; i < 4; i++)
 		connect[i] = -1;
@@ -359,10 +367,14 @@ bool Panel2D::ProcessMouse_OnRunning (UINT event, DWORD state, int x, int y, con
 void Panel2D::GetMouseState (int &idx, int &state, int &mx, int &my) const
 {
 	if (mstate & PANEL_MOUSE_PRESSED) {
+#ifndef __linux__
 		POINT pt;
 		GetCursorPos (&pt);
 		if (cwnd) // need to subtract client window offset
 			ScreenToClient (cwnd, &pt);
+#else // __linux__
+		POINT pt = CursorPos (cwnd); // need to subtract client window offset
+#endif // __linux__
 	    double tx, ty;  // transformed coordinates
 	    tx = ((double)pt.x-x0)/panelscale;
 	    ty = ((double)pt.y-y0)/panelscale;

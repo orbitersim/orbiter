@@ -176,7 +176,11 @@ const std::vector<oapi::CelestialSphere::StarDataRec> oapi::CelestialSphere::Loa
 	std::vector<StarDataRec> rec;
 
 	std::string fname = m_dataDir + std::string("star.bin");
+#ifndef __linux__
 	FILE* f = fopen(fname.c_str(), "rb");
+#else // __linux__
+	FILE* f = fopen(oapiResolvePath(fname.c_str()).c_str(), "rb"); // oapiResolvePath: the data folder is written with '\\'
+#endif // __linux__
 	if (f) {
 		const int chunksize = 0x1000;
 		StarDataRecPacked* packBuf = new StarDataRecPacked[chunksize + 1]; // "+1": padding for avoiding reading out of bounds on packed data
@@ -306,7 +310,11 @@ const std::vector<oapi::CelestialSphere::LineDataRec> oapi::CelestialSphere::Loa
 	std::vector<LineDataRec> rec;
 	rec.resize(0x1000);
 
+#ifndef __linux__
 	FILE* f = fopen(fname.c_str(), "rb");
+#else // __linux__
+	FILE* f = fopen(oapiResolvePath(fname.c_str()).c_str(), "rb"); // oapiResolvePath: the data folder is written with '\\'
+#endif // __linux__
 	if (f) {
 		const int chunksize = 0x1000;
 		LineDataRecPacked* packBuf = new LineDataRecPacked[chunksize + 1]; // "+1": padding for avoiding reading out of bounds on packed data
@@ -380,7 +388,11 @@ const std::vector<oapi::GraphicsClient::ConstLabelRec> oapi::CelestialSphere::Lo
 	std::vector<GraphicsClient::ConstLabelRec> rec;
 
 	std::string fname = m_dataDir + std::string("const_labels.bin");
+#ifndef __linux__
 	FILE* f = fopen(fname.c_str(), "rb");
+#else // __linux__
+	FILE* f = fopen(oapiResolvePath(fname.c_str()).c_str(), "rb"); // oapiResolvePath: the data folder is written with '\\'
+#endif // __linux__
 	if (f) {
 		double pos[2];
 		char abbr[4] = "xxx";

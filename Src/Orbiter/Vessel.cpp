@@ -22,7 +22,11 @@
 
 #include "Orbiter.h"
 #include "Vessel.h"
+#ifndef __linux__
 #include "Supervessel.h"
+#else // __linux__
+#include "SuperVessel.h"
+#endif // __linux__
 #include "Config.h"
 #include "Camera.h"
 #include "Pane.h"
@@ -42,6 +46,9 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string>
+#ifdef __linux__
+#include <dlfcn.h>
+#endif // __linux__
 
 using namespace std;
 
@@ -239,15 +246,27 @@ bool Vessel::OpenConfigFile (ifstream &cfgfile) const
 	strcpy (cbuf, "Vessels\\");
 	strcat (cbuf, classname ? classname : name.c_str());
 	// first search in $CONFIGDIR\Vessels
+#ifndef __linux__
 	cfgfile.open (g_pOrbiter->ConfigPath (cbuf));
+#else // __linux__
+	cfgfile.open (oapiResolvePath (g_pOrbiter->ConfigPath (cbuf)));
+#endif // __linux__
 	if (cfgfile.good()) return true;
 	else cfgfile.clear();
 	// next search in $CONFIGDIR
+#ifndef __linux__
 	cfgfile.open (g_pOrbiter->ConfigPath (cbuf+8));
+#else // __linux__
+	cfgfile.open (oapiResolvePath (g_pOrbiter->ConfigPath (cbuf+8)));
+#endif // __linux__
 	if (cfgfile.good()) return true;
 	else {
 		cfgfile.clear();
+#ifndef __linux__
 		LOGOUT_ERR_FILENOTFOUND_MSG(g_pOrbiter->ConfigPath(cbuf + 8), "No vessel class configuration file found for: %s", classname ? classname : name);
+#else // __linux__
+		LOGOUT_ERR_FILENOTFOUND_MSG(g_pOrbiter->ConfigPath(cbuf + 8), "No vessel class configuration file found for: %s", classname ? classname : name.c_str()); // name.c_str(): a std::string can't pass through ...
+#endif // __linux__
 		//LogOut (">>> ERROR: No vessel class configuration file found for:");
 		//LOGOUT_ERR(classname ? classname : name);
 		return false;
@@ -436,7 +455,11 @@ void Vessel::ReadGenericCaps (ifstream &ifs)
 
 	// recursively read base class specs
 	if (GetItemString (ifs, "BaseClass", cbuf)) {
+#ifndef __linux__
 		ifstream basef (g_pOrbiter->ConfigPath (cbuf));
+#else // __linux__
+		ifstream basef (oapiResolvePath (g_pOrbiter->ConfigPath (cbuf)));
+#endif // __linux__
 		if (basef) ReadGenericCaps (basef);
 	}
 
@@ -686,7 +709,11 @@ void Vessel::ReadGenericCaps (ifstream &ifs)
 		for (;;) {
 			Vector pos, dir, rot;
 			int n, ids_step;
+#ifndef __linux__
 			if (!ifs.getline (cbuf, 256) || !_strnicmp (cbuf, "END_DOCKLIST", 12)) break;
+#else // __linux__
+			if (!ifs.getline (cbuf, 256) || !strncasecmp (cbuf, "END_DOCKLIST", 12)) break;
+#endif // __linux__
 			n = sscanf (cbuf, "%lf%lf%lf%lf%lf%lf%lf%lf%lf%d",
 				&pos.x, &pos.y, &pos.z,
 				&dir.x, &dir.y, &dir.z,
@@ -704,7 +731,11 @@ void Vessel::ReadGenericCaps (ifstream &ifs)
 		int n;
 		bool toparent;
 		for (;;) {
+#ifndef __linux__
 			if (!ifs.getline (cbuf, 256) || !_strnicmp (cbuf, "END_ATTACHMENT", 14)) break;
+#else // __linux__
+			if (!ifs.getline (cbuf, 256) || !strncasecmp (cbuf, "END_ATTACHMENT", 14)) break;
+#endif // __linux__
 			n = sscanf (trim_string (cbuf), "%c%lf%lf%lf%lf%lf%lf%lf%lf%lf%s",
 				&type,
 				&pos.x, &pos.y, &pos.z,
@@ -5952,9 +5983,17 @@ bool Vessel::LoadModule (ifstream &classf)
 	if (found = GetItemString (classf, "Module", cbuf)) {
 		found = RegisterModule (cbuf);
 		if (!found) {
+#ifndef __linux__
 			DWORD code = GetLastError();
+#else // __linux__
+			const char *err = dlerror(); // GetLastError counterpart
+#endif // __linux__
 			char errbuf[256];
+#ifndef __linux__
 			sprintf(errbuf, "Could not load vessel module: %s (code %d)", cbuf, code);
+#else // __linux__
+			snprintf(errbuf, 256, "Could not load vessel module: %s (%s)", cbuf, err ? err : "unknown error");
+#endif // __linux__
 			LOGOUT_ERR (errbuf);
 		}
 		if (modIntf.ovcInit)
@@ -5970,24 +6009,42 @@ bool Vessel::LoadModule (ifstream &classf)
 bool Vessel::RegisterModule (const char *dllname)
 {
 	char cbuf[256];
+#ifndef __linux__
 	sprintf (cbuf, "Modules\\%s.dll", dllname);
 	hMod = LoadLibrary (cbuf);
+#else // __linux__
+	sprintf (cbuf, "Modules/%s.so", dllname);
+	hMod = dlopen (oapiResolvePath (cbuf).c_str(), RTLD_NOW);
+#endif // __linux__
 	if (!hMod)
 		return false;
 
 	// retrieve module version
+#ifndef __linux__
 	int (*fversion)() = (int(*)())GetProcAddress (hMod, "GetModuleVersion");
+#else // __linux__
+	int (*fversion)() = (int(*)())ModuleProc (hMod, "GetModuleVersion");
+#endif // __linux__
 	modIntf.version = (fversion ? fversion() : 0);
 
+#ifndef __linux__
 	modIntf.ovcInit = (VESSEL_Init)GetProcAddress (hMod, "ovcInit");
 	modIntf.ovcExit = (VESSEL_Exit)GetProcAddress (hMod, "ovcExit");
+#else // __linux__
+	modIntf.ovcInit = (VESSEL_Init)ModuleProc (hMod, "ovcInit");
+	modIntf.ovcExit = (VESSEL_Exit)ModuleProc (hMod, "ovcExit");
+#endif // __linux__
 	return true;
 }
 
 void Vessel::ClearModule ()
 {
 	if (hMod) {
+#ifndef __linux__
 		FreeLibrary (hMod);
+#else // __linux__
+		ModuleFree (hMod); // FreeLibrary
+#endif // __linux__
 		hMod = 0;
 	}
 	memset (&modIntf, 0, sizeof (modIntf));
@@ -6090,7 +6147,11 @@ bool Vessel::ParseScenario (ifstream &scn, VESSELSTATUS &vs)
 	for (;;) {
 		if (!scn.getline (cbuf, 256)) break;
 		pc = trim_string (cbuf);
+#ifndef __linux__
 		if (!_stricmp (pc, "END")) break;
+#else // __linux__
+		if (!strcasecmp (pc, "END")) break;
+#endif // __linux__
 		ParseScenarioLine (pc, vs);
 	}
 	return true;
@@ -6103,7 +6164,11 @@ bool Vessel::ParseScenarioEx (ifstream &scn, void *status)
 	for (;;) {
 		if (!scn.getline (cbuf, 256)) break;
 		pc = trim_string (cbuf);
+#ifndef __linux__
 		if (!_stricmp (pc, "END")) break;
+#else // __linux__
+		if (!strcasecmp (pc, "END")) break;
+#endif // __linux__
 		ParseScenarioLineEx (pc, status);
 	}
 	return true;
@@ -8841,7 +8906,11 @@ void VESSEL2::clbkVisualDestroyed (VISHANDLE vis, int refcount)
 {
 }
 
+#ifndef __linux__
 void VESSEL2::clbkDrawHUD (int mode, const HUDPAINTSPEC *hps, HDC hDC)
+#else // __linux__
+void VESSEL2::clbkDrawHUD (int mode, const HUDPAINTSPEC *hps, QPainter *hDC)
+#endif // __linux__
 {
 	if (vessel->hudskp && vessel->hudskp->GetDC() == hDC)
 		g_pane->DrawDefaultHUD (vessel->hudskp);

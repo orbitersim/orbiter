@@ -9,7 +9,11 @@
 #ifndef __CELBODY_H
 #define __CELBODY_H
 
+#ifndef __linux__
 #include "RigidBody.h"
+#else // __linux__
+#include "Rigidbody.h"
+#endif // __linux__
 #include "OrbiterAPI.h"
 #include "PinesGrav.h"
 
@@ -197,7 +201,11 @@ protected:
 	} modIntf;
 
 private:
+#ifndef __linux__
 	HINSTANCE hMod;          // module handle, if available
+#else // __linux__
+	void *hMod;              // module handle (dlopen), if available
+#endif // __linux__
 	
 	double eps_ref;          // precession reference axis: obliquity against ecliptic normal
 	double lan_ref;          // precession reference axis: longitude of ascending node in ecliptic

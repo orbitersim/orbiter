@@ -4,7 +4,11 @@
 #ifndef __UTIL_H
 #define __UTIL_H
 
+#ifndef __linux__
 #include <windows.h>
+#else // __linux__
+// windows.h left out: OrbiterAPI.h brings the Win32-named integer types
+#endif // __linux__
 #include "Vecmat.h"
 #include "OrbiterAPI.h"
 #include "Orbiter.h"
@@ -65,8 +69,16 @@ inline void EulerAngles (const Matrix &R, VECTOR3 &e)
 double rand1();
 // uniformly distributed random number, range [0,1]
 
+#ifndef __linux__
 RECT GetClientPos (HWND hWnd, HWND hChild);
 void SetClientPos (HWND hWnd, HWND hChild, RECT &r);
+#else // __linux__
+RECT GetClientPos (QWidget *hWnd, QWidget *hChild);
+void SetClientPos (QWidget *hWnd, QWidget *hChild, RECT &r);
+
+// GetCursorPos + ScreenToClient: cursor in the window's device pixels (screen device pixels if hWnd is NULL)
+POINT CursorPos (const QWindow *hWnd);
+#endif // __linux__
 
 // Floating point output stream formatter
 struct FltFormatter
@@ -86,5 +98,16 @@ struct FltFormat
 
 // Convert a CSS color string to a DWORD (in 0xbbggrr format)
 DWORD GetCSSColor(const char *col);
+#ifdef __linux__
+
+// not upstream: GetProcAddress counterpart; dlsym also searches a module's dependencies, only the module's own symbol counts
+void *ModuleProc (void *hModule, const char *name);
+
+// not upstream: FreeLibrary counterpart; runs the module's ExitModule now, as dlclose keeps a module with unique symbols loaded until exit
+void ModuleFree (void *hModule);
+
+// not upstream: GetModuleFileName counterpart; the path the module was loaded from
+const char *ModuleFileName (void *hModule);
+#endif // __linux__
 
 #endif //!__UTIL_H

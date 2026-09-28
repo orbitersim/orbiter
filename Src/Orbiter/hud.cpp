@@ -94,7 +94,11 @@ void HUD::Draw (oapi::Sketchpad *skp)
 		spec.CX = HRES05 - (int)HUDofs.x, spec.CY = VRES05 + (int)HUDofs.y;
 		bCNTvis = (spec.CX >= 0 && spec.CX < spec.W && spec.CY >= 0 && spec.CY < spec.H);
 	} else {
+#ifndef __linux__
 		D3DVECTOR homog;
+#else // __linux__
+		oapi::FVECTOR3 homog;
+#endif // __linux__
 		bCNTvis = pane->GlobalToHomog (mul (g_focusobj->GRot(), Vector(0,0,1)), homog);
 		if (bCNTforward = (homog.z > 0.0)) {
 			spec.CX = (int)(HRES05*(1.0f+homog.x));
@@ -156,7 +160,11 @@ void HUD::Render ()
 		spec.CX = HRES05 - (int)HUDofs.x, spec.CY = VRES05 + (int)HUDofs.y;
 		bCNTvis = (spec.CX >= 0 && spec.CX < spec.W && spec.CY >= 0 && spec.CY < spec.H);
 	} else {
+#ifndef __linux__
 		D3DVECTOR homog;
+#else // __linux__
+		oapi::FVECTOR3 homog;
+#endif // __linux__
 		bCNTvis = pane->GlobalToHomog (mul (g_focusobj->GRot(), Vector(0,0,1)), homog);
 		if (bCNTforward = (homog.z > 0.0)) {
 			spec.CX = (int)(HRES05*(1.0f+homog.x));
@@ -1253,12 +1261,23 @@ HUD *HUD::Create (ifstream &ifs, const Pane *_pane, oapi::GraphicsClient *gc)
 	for (;hud == 0;) {
 		if (!ifs.getline (cbuf, 256)) return 0;
 		pc = trim_string (cbuf);
+#ifndef __linux__
 		if (!_strnicmp (pc, "END_HUD", 7)) return 0;
 		if (!_strnicmp (pc, "TYPE", 4)) {
+#else // __linux__
+		if (!strncasecmp (pc, "END_HUD", 7)) return 0;
+		if (!strncasecmp (pc, "TYPE", 4)) {
+#endif // __linux__
 			pc = trim_string (pc+4);
+#ifndef __linux__
 			if (!_strnicmp (pc, "Orbit", 5)) { hud = new HUD_Orbit (_pane); TRACENEW }
 			else if (!_strnicmp (pc, "Surface", 7)) { hud = new HUD_Surface (_pane); TRACENEW }
 			else if (!_strnicmp (pc, "Docking", 7)) { hud = new HUD_Docking (_pane); TRACENEW }
+#else // __linux__
+			if (!strncasecmp (pc, "Orbit", 5)) { hud = new HUD_Orbit (_pane); TRACENEW }
+			else if (!strncasecmp (pc, "Surface", 7)) { hud = new HUD_Surface (_pane); TRACENEW }
+			else if (!strncasecmp (pc, "Docking", 7)) { hud = new HUD_Docking (_pane); TRACENEW }
+#endif // __linux__
 		}
 	}
 	if (hud) hud->ReadParams (ifs);
@@ -1439,7 +1458,11 @@ void HUD_Orbit::UpdateMesh (int &ivtx, int &iidx)
 
 	// Output HUD mode and reference object
 	const char *name = cntobj->Name();
+#ifndef __linux__
 	if (_strnicmp(name, refname, 63)) {
+#else // __linux__
+	if (strncasecmp(name, refname, 63)) {
+#endif // __linux__
 		int i;
 		for (i = 0; name[i] && i<63; i++) refname[i] = toupper(name[i]);
 		refname[i] = '\0';
@@ -1543,10 +1566,19 @@ void HUD_Orbit::ReadParams (ifstream &ifs)
 			ifs.clear(); break;
 		}
 		pc = trim_string (cbuf);
+#ifndef __linux__
 		if (!_strnicmp (pc, "END_HUD", 7)) break;
 		if (!_strnicmp (pc, "REF", 3)) {
+#else // __linux__
+		if (!strncasecmp (pc, "END_HUD", 7)) break;
+		if (!strncasecmp (pc, "REF", 3)) {
+#endif // __linux__
 			pc = trim_string (pc+3);
+#ifndef __linux__
 			if (!_strnicmp (pc, "AUTO", 4)) ref = 0;
+#else // __linux__
+			if (!strncasecmp (pc, "AUTO", 4)) ref = 0;
+#endif // __linux__
 			else ref = g_psys->GetObj (pc, true);
 		}
 	}
@@ -1707,7 +1739,11 @@ void HUD_Surface::UpdateMesh (int &ivtx, int &iidx)
 
 	// Output HUD mode and reference object
 	const char *name = sp->ref->Name();
+#ifndef __linux__
 	if (_strnicmp(name, refname, 63)) {
+#else // __linux__
+	if (strncasecmp(name, refname, 63)) {
+#endif // __linux__
 		int i;
 		for (i = 0; name[i] && i<63; i++) refname[i] = toupper(name[i]);
 		refname[i] = '\0';
@@ -1968,7 +2004,11 @@ void HUD_Docking::UpdateMesh (int &ivtx, int &iidx)
 		NavRadioSpec *nav = self->nav+nv;
 
 		sprintf (cbuf, "NAV%d %0.2fMHz", nv+1, nav->freq);
+#ifndef __linux__
 		if (_strnicmp(cbuf, navname, 127)) {
+#else // __linux__
+		if (strncasecmp(cbuf, navname, 127)) {
+#endif // __linux__
 			for (i = 0; cbuf[i] && i<127; i++) navname[i] = cbuf[i];
 			navname[i] = '\0';
 			navwidth = TexBltString (navname, 256, 230);
@@ -1992,7 +2032,11 @@ void HUD_Docking::UpdateMesh (int &ivtx, int &iidx)
 	}
 
 	// Output HUD mode and reference object
+#ifndef __linux__
 	if (_strnicmp(refstr, refname, 127)) {
+#else // __linux__
+	if (strncasecmp(refstr, refname, 127)) {
+#endif // __linux__
 		for (i = 0; refstr[i] && i<127; i++) refname[i] = toupper(refstr[i]);
 		refname[i] = '\0';
 		refwidth = TexBltString (refname, 47, 230) + 47;
@@ -2017,7 +2061,11 @@ void HUD_Docking::UpdateMesh (int &ivtx, int &iidx)
 			AddMesh_DirectionMarker (ivtx, iidx, Vunit, false, &xcnt, &ycnt);
 	}
 
+#ifndef __linux__
 	if (_strnicmp (pc,vstr1, 127)) {
+#else // __linux__
+	if (strncasecmp (pc,vstr1, 127)) {
+#endif // __linux__
 		strncpy (vstr1, pc, 127);
 		vstr1width = TexBltString (vstr1, 0, 217);
 	}
@@ -2029,7 +2077,11 @@ void HUD_Docking::UpdateMesh (int &ivtx, int &iidx)
 	if (!AddMesh_Marker (ivtx, iidx, prel, 2, &xcnt, &ycnt))
 		AddMesh_DirectionMarker (ivtx, iidx, prel, false, &xcnt, &ycnt);
 	sprintf (cbuf, "D[%s]%s", tgt->Name(), DistStr(len));
+#ifndef __linux__
 	if (_strnicmp (cbuf, pstr1, 127)) {
+#else // __linux__
+	if (strncasecmp (cbuf, pstr1, 127)) {
+#endif // __linux__
 		strncpy (pstr1, cbuf, 127);
 		pstr1width = TexBltString (pstr1, 256, 217);
 	}
@@ -2121,11 +2173,20 @@ void HUD_Docking::ReadParams (ifstream &ifs)
 			ifs.clear(); break;
 		}
 		pc = trim_string (cbuf);
+#ifndef __linux__
 		if (!_strnicmp (pc, "END_HUD", 7)) break;
 		if (!_strnicmp (pc, "NAV", 3)) {
+#else // __linux__
+		if (!strncasecmp (pc, "END_HUD", 7)) break;
+		if (!strncasecmp (pc, "NAV", 3)) {
+#endif // __linux__
 			sscanf (pc+3, "%d", &nv);
 			bUseLegacyReference = false;
+#ifndef __linux__
 		} else if (!_strnicmp (pc, "REF", 3)) {
+#else // __linux__
+		} else if (!strncasecmp (pc, "REF", 3)) {
+#endif // __linux__
 			char name[256];
 			int res, port;
 			res = sscanf (pc+3, "%s%d", name, &port);

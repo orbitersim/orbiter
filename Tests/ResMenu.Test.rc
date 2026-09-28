@@ -1,0 +1,52 @@
+// not upstream: MENU/MENUEX templates and a dialog that names its menu, for ResDialog.Test
+
+#define IDR_TESTMENU   200
+#define IDR_TESTMENUEX 201
+#define IDD_TESTDLG    202
+#define IDM_OPEN       300
+#define IDM_SAVE       301
+#define IDM_RECENT1    302
+#define IDM_GRAY       303
+#define IDM_CHECK      304
+#define IDM_EXOPEN     310
+#define IDM_EXSUB      311
+#define IDM_EXITEM     312
+#define IDC_TESTEDIT   400
+
+IDR_TESTMENU MENU
+BEGIN
+    POPUP "&File"
+    BEGIN
+        MENUITEM "&Open\tCtrl+O",               IDM_OPEN
+        MENUITEM "&Save",                       IDM_SAVE, GRAYED
+        MENUITEM SEPARATOR
+        POPUP "&Recent"
+        BEGIN
+            MENUITEM "one.msh",                 IDM_RECENT1
+        END
+    END
+    POPUP "&View", INACTIVE
+    BEGIN
+        MENUITEM "Gray",                        IDM_GRAY, GRAYED
+        MENUITEM "Check",                       IDM_CHECK, CHECKED
+    END
+END
+
+IDR_TESTMENUEX MENUEX
+BEGIN
+    POPUP "&Edit", IDM_EXSUB, MFT_STRING, MFS_ENABLED
+    BEGIN
+        MENUITEM "&Open", IDM_EXOPEN
+        MENUITEM "", 0, MFT_SEPARATOR
+        MENUITEM "Item", IDM_EXITEM, MFT_STRING, MFS_CHECKED | MFS_GRAYED
+    END
+END
+
+IDD_TESTDLG DIALOG 0, 0, 160, 60
+STYLE DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "Menu test"
+MENU IDR_TESTMENU
+FONT 8, "MS Shell Dlg"
+BEGIN
+    EDITTEXT        IDC_TESTEDIT, 10, 10, 60, 14
+END

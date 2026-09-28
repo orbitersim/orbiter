@@ -1,7 +1,11 @@
 // Copyright (c) Martin Schweiger
 // Licensed under the MIT License
 
+#ifndef __linux__
 #define STRICT
+#else // __linux__
+// STRICT left out: windows.h handle type-checking switch
+#endif // __linux__
 #include "D3d7util.h"
 #include "Log.h"
 

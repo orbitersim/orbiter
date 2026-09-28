@@ -3,7 +3,11 @@
 
 #include "ZTreeMgr.h"
 #include "zlib.h"
+#ifndef __linux__
 #include "util.h"
+#else // __linux__
+#include "Util.h"
+#endif // __linux__
 
 // =======================================================================
 // File header for compressed tree files
@@ -41,7 +45,11 @@ bool TreeFileHeader::fread(FILE *f)
 		return false;
 	::fread(&flags, sizeof(DWORD), 1, f);
 	::fread(&dataOfs, sizeof(DWORD), 1, f);
+#ifndef __linux__
 	::fread(&dataLength, sizeof(__int64), 1, f);
+#else // __linux__
+	::fread(&dataLength, sizeof(int64_t), 1, f);
+#endif // __linux__
 	::fread(&nodeCount, sizeof(DWORD), 1, f);
 	::fread(&rootPos1, sizeof(DWORD), 1, f);
 	::fread(&rootPos2, sizeof(DWORD), 1, f);
@@ -124,7 +132,11 @@ bool ZTreeMgr::OpenArchive()
 	const char *name[6] = { "Surf", "Mask", "Elev", "Elev_mod", "Label", "Cloud" };
 	char fname[256];
 	sprintf (fname, "%s\\Archive\\%s.tree", path, name[layer]);
+#ifndef __linux__
 	treef = fopen(fname, "rb");
+#else // __linux__
+	treef = fopen(oapiResolvePath(fname).c_str(), "rb");
+#endif // __linux__
 	if (!treef) return false;
 
 	TreeFileHeader tfh;
@@ -138,7 +150,11 @@ bool ZTreeMgr::OpenArchive()
 	rootPos3 = tfh.rootPos3;
 	for (int i = 0; i < 2; i++)
 		rootPos4[i] = tfh.rootPos4[i];
+#ifndef __linux__
 	dofs = (__int64)tfh.dataOfs;
+#else // __linux__
+	dofs = (int64_t)tfh.dataOfs;
+#endif // __linux__
 
 	if (!toc.fread(tfh.nodeCount, treef)) {
 		fclose(treef);
@@ -178,7 +194,11 @@ DWORD ZTreeMgr::ReadData(DWORD idx, BYTE **outp)
 	if (!esize) // node doesn't have data, but has descendants with data
 		return 0;
 
+#ifndef __linux__
 	if (_fseeki64(treef, toc[idx].pos+dofs, SEEK_SET))
+#else // __linux__
+	if (fseeko(treef, toc[idx].pos+dofs, SEEK_SET))
+#endif // __linux__
 		return 0;
 
 	DWORD zsize = NodeSizeDeflated(idx);
@@ -203,7 +223,11 @@ DWORD ZTreeMgr::ReadData(DWORD idx, BYTE **outp)
 
 DWORD ZTreeMgr::Inflate(const BYTE *inp, DWORD ninp, BYTE *outp, DWORD noutp)
 {
+#ifndef __linux__
 	DWORD ndata = noutp;
+#else // __linux__
+	uLongf ndata = noutp; // zlib's uLongf is 64-bit on Linux, 32-bit (= DWORD) on Windows
+#endif // __linux__
 	if (uncompress (outp, &ndata, inp, ninp) != Z_OK)
 		return 0;
 	return ndata;

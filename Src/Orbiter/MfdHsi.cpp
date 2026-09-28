@@ -360,11 +360,23 @@ bool Instrument_HSI::ReadParams (ifstream &ifs)
 	for (;;) {
 		if (!ifs.getline (cbuf, 256)) return false;
 		pc = trim_string (cbuf);
+#ifndef __linux__
 		if (!_strnicmp (pc, "END_MFD", 7)) {
+#else // __linux__
+		if (!strncasecmp (pc, "END_MFD", 7)) {
+#endif // __linux__
 			break;
+#ifndef __linux__
 		} else if (!_strnicmp (pc, "NAV", 3)) {
+#else // __linux__
+		} else if (!strncasecmp (pc, "NAV", 3)) {
+#endif // __linux__
 			sscanf (pc+3, "%d%d", &hsi[0].nv, &hsi[1].nv);
+#ifndef __linux__
 		} else if (!_strnicmp (pc, "OBS", 3)) {
+#else // __linux__
+		} else if (!strncasecmp (pc, "OBS", 3)) {
+#endif // __linux__
 			sscanf (pc+3, "%lf%lf", &hsi[0].obs, &hsi[1].obs);
 		}
 	}

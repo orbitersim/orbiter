@@ -10,10 +10,17 @@
 #define __MESH_H
 
 #define OAPI_IMPLEMENTATION
+#ifndef __linux__
 #include <d3d.h>
 #include <d3dtypes.h>
+#else // __linux__
+// d3d.h/d3dtypes.h left out: the Direct3D 7 data types become the SDK's own (MATERIAL, FMATRIX4, float)
+#endif // __linux__
 #include <iostream>
 #include "OrbiterAPI.h"
+#ifdef __linux__
+#include "DrawAPI.h"
+#endif // __linux__
 
 typedef char Str256[256];
 
@@ -54,7 +61,11 @@ typedef struct {
 	WORD      Flags;
 	DWORD     TexIdxEx[MAXTEX];
 	float     TexMixEx[MAXTEX];
+#ifndef __linux__
 	LPDIRECT3DVERTEXBUFFER7 VtxBuf;
+#else // __linux__
+	// VtxBuf (LPDIRECT3DVERTEXBUFFER7) left out: vertex buffers belong to the graphics client
+#endif // __linux__
 } GroupSpec;
 
 // =======================================================================
@@ -128,19 +139,31 @@ public:
 	int EditGroup (DWORD grp, GROUPEDITSPEC *ges);
 	// edit/replace parts of the group
 
+#ifndef __linux__
 	bool MakeGroupVertexBuffer (DWORD grp);
 	// copy the group vertex information into a vertex buffer in video memory
 	// Ignored if the device has no T&L capability
+#else // __linux__
+	// MakeGroupVertexBuffer left out: Direct3D 7 inline render path (vertex buffers belong to the graphics client)
+#endif // __linux__
 
 	void AddMesh (Mesh &mesh);
 	// Merge "mesh" into "this", by adding all groups of "mesh"
 	// Currently this does not use the materials and textures of "mesh"
 
+#ifndef __linux__
 	inline D3DMATERIAL7 *GetMaterial (DWORD matidx)
+#else // __linux__
+	inline MATERIAL *GetMaterial (DWORD matidx)
+#endif // __linux__
 	{ return (matidx < nMtrl ? Mtrl+matidx : 0); }
 	// return a material pointer
 
+#ifndef __linux__
 	int AddMaterial (D3DMATERIAL7 &mtrl);
+#else // __linux__
+	int AddMaterial (MATERIAL &mtrl);
+#endif // __linux__
 	// Add new material to the mesh and return its list index
 
 	bool DeleteMaterial (DWORD matidx);
@@ -156,32 +179,62 @@ public:
 	bool SetTexture (DWORD texidx, SURFHANDLE tex, bool release_old = true);
 	// replace a texture
 
+#ifndef __linux__
 	inline LPDIRECTDRAWSURFACE7 GetTexture (DWORD texidx)
 	{ return (texidx < nTex ? (LPDIRECTDRAWSURFACE7)Tex[texidx] : 0); }
+#else // __linux__
+	inline SURFHANDLE GetTexture (DWORD texidx)
+	{ return (texidx < nTex ? Tex[texidx] : 0); }
+#endif // __linux__
 	// return a texture pointer
 
 	void SetTexMixture (DWORD grp, DWORD ntex, float mix);
 	void SetTexMixture (DWORD ntex, float mix);
 
+#ifndef __linux__
 	void ScaleGroup (DWORD grp, D3DVALUE sx, D3DVALUE sy, D3DVALUE sz);
 	void Scale (D3DVALUE sx, D3DVALUE sy, D3DVALUE sz);
+#else // __linux__
+	void ScaleGroup (DWORD grp, float sx, float sy, float sz);
+	void Scale (float sx, float sy, float sz);
+#endif // __linux__
 	// scale an individual group or the whole mesh
 
+#ifndef __linux__
 	void TranslateGroup (DWORD grp, D3DVALUE dx, D3DVALUE dy, D3DVALUE dz);
 	void Translate (D3DVALUE dx, D3DVALUE dy, D3DVALUE dz);
+#else // __linux__
+	void TranslateGroup (DWORD grp, float dx, float dy, float dz);
+	void Translate (float dx, float dy, float dz);
+#endif // __linux__
 	// translate an individual group or the whole mesh
 
 	enum RotAxis { ROTATE_X, ROTATE_Y, ROTATE_Z };
+#ifndef __linux__
 	void RotateGroup (DWORD grp, RotAxis axis, D3DVALUE angle);
 	void Rotate (RotAxis axis, D3DVALUE angle);
+#else // __linux__
+	void RotateGroup (DWORD grp, RotAxis axis, float angle);
+	void Rotate (RotAxis axis, float angle);
+#endif // __linux__
 	// rotate the mesh 'angle' rad around a coordiate axis
 
+#ifndef __linux__
 	void TransformGroup (DWORD grp, const D3DMATRIX &mat);
 	void Transform (const D3DMATRIX &mat);
+#else // __linux__
+	void TransformGroup (DWORD grp, const oapi::FMATRIX4 &mat);
+	void Transform (const oapi::FMATRIX4 &mat);
+#endif // __linux__
 	// rotate mesh using the provided rotation matrix
 
+#ifndef __linux__
 	void TexScaleGroup (DWORD grp, D3DVALUE su, D3DVALUE sv);
 	void TexScale (D3DVALUE su, D3DVALUE sv);
+#else // __linux__
+	void TexScaleGroup (DWORD grp, float su, float sv);
+	void TexScale (float su, float sv);
+#endif // __linux__
 	// scale the texture coordinates of an individual group or the whole mesh
 
 	void CalcNormals (DWORD grp, bool missingonly);
@@ -193,6 +246,7 @@ public:
 
 	void Clear ();
 
+#ifndef __linux__
 	DWORD Render (LPDIRECT3DDEVICE7 dev);
 	// render the mesh using device dev
 	// return value is the number of rendered groups
@@ -200,6 +254,9 @@ public:
 	void RenderGroup (LPDIRECT3DDEVICE7 dev, DWORD grp, bool setstate = true) const;
 	// render a single mesh group
 	// if setstate=false, the group render parameters are skipped
+#else // __linux__
+	// Render/RenderGroup (LPDIRECT3DDEVICE7) left out: Direct3D 7 inline render path, never called; the graphics client renders meshes
+#endif // __linux__
 
 	static void GlobalEnableSpecular (bool enable);
 	void EnableMatAlpha (bool enable);
@@ -219,14 +276,23 @@ private:
 	GroupSpec *Grp;     // list of group specs	
 
 	DWORD nMtrl;        // number of materials
+#ifndef __linux__
 	D3DMATERIAL7 *Mtrl; // list of materials used by the mesh
+#else // __linux__
+	MATERIAL *Mtrl;     // list of materials used by the mesh
+#endif // __linux__
 
 	DWORD nTex;         // number of textures
 	SURFHANDLE *Tex;    // list of textures used by the mesh
 
 	bool GrpSetup;      // true if the following arrays are allocated
+#ifndef __linux__
 	D3DVECTOR *GrpCnt;  // list of barycentres for each group (local coords)
 	D3DVALUE *GrpRad;   // list of max. radii for each group
+#else // __linux__
+	oapi::FVECTOR3 *GrpCnt; // list of barycentres for each group (local coords)
+	float *GrpRad;      // list of max. radii for each group
+#endif // __linux__
 	DWORD *GrpVis;      // visibility flags for each group
 	char* name;
 

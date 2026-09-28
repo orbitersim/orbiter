@@ -9,7 +9,11 @@
 #include "Select.h"
 #include "Keymap.h"
 #include <stdio.h>
+#ifndef __linux__
 #include <commctrl.h>
+#else // __linux__
+// commctrl.h left out: the common controls are Qt widgets
+#endif // __linux__
 #include "Mesh.h"
 #include "TimeData.h"
 #include <chrono>
@@ -27,6 +31,9 @@ class OrbiterServer;
 class OrbiterClient;
 class PlaybackEditor;
 class MemStat;
+#ifdef __linux__
+class ScriptInterface; // g++: a friend declaration doesn't introduce the name
+#endif // __linux__
 class DDEServer;
 class ImageIO;
 namespace orbiter {
@@ -52,23 +59,40 @@ public:
 	Orbiter ();
 	~Orbiter ();
 
+#ifndef __linux__
     HRESULT Create (HINSTANCE);
+#else // __linux__
+    int Create (void*); // HRESULT -> int (0 = success), HINSTANCE -> dlopen handle
+#endif // __linux__
 	VOID Launch (const char *scenario);
 	void CloseApp (bool fast_shutdown = false);
 	int GetVersion () const;
+#ifndef __linux__
 	HWND CreateRenderWindow (Config *pCfg, const char *scenario);
+#else // __linux__
+	QWindow *CreateRenderWindow (Config *pCfg, const char *scenario);
+#endif // __linux__
 	void PreCloseSession();
 	void CloseSession ();
 	void GetRenderParameters ();
 	bool InitializeWorld (char *name);
 	void ScreenToClient (POINT *pt) const;
+#ifndef __linux__
     LRESULT MsgProc (HWND, UINT, WPARAM, LPARAM);
 	HRESULT Render3DEnvironment(bool hidedialogs = false);
+#else // __linux__
+    bool MsgProc (QWindow*, QEvent*); // render window events; returns true if handled
+	int Render3DEnvironment(bool hidedialogs = false);
+#endif // __linux__
 	VOID Output2DData ();
 	void OutputLoadStatus (const char *msg, int line);
 	void OutputLoadTick (int line, bool ok = true);
 	void TerminateOnError();
+#ifndef __linux__
 	void UpdateServerWnd (HWND hWnd);
+#else // __linux__
+	void UpdateServerWnd (QWidget *hWnd);
+#endif // __linux__
 	void InitRotationMode ();
 	void ExitRotationMode ();
 	bool StickyFocus() const { return bKeepFocus; }
@@ -93,22 +117,39 @@ public:
 	const char *KeyState() const;
 
 	// dialog box processing
+#ifndef __linux__
 	HWND OpenDialog (int id, DLGPROC pDlg, void *context = 0); // This version expects the dialog resource in the Orbiter instance
 	HWND OpenDialog (HINSTANCE hInst, int id, DLGPROC pDlg, void *context = 0); // use this version for for calls from external dlls
 	HWND OpenDialogEx (int id, DLGPROC pDlg, DWORD flag = 0, void *context = 0); // extended version
 	HWND OpenDialogEx (HINSTANCE hInst, int id, DLGPROC pDlg, DWORD flag = 0, void *context = 0); // extended version
+#else // __linux__
+	QWidget *OpenDialog (int id, DLGINIT pDlg, void *context = 0); // This version expects the dialog resource in the Orbiter instance
+	QWidget *OpenDialog (void *hInst, int id, DLGINIT pDlg, void *context = 0); // use this version for for calls from external dlls
+	QWidget *OpenDialogEx (int id, DLGINIT pDlg, DWORD flag = 0, void *context = 0); // extended version
+	QWidget *OpenDialogEx (void *hInst, int id, DLGINIT pDlg, DWORD flag = 0, void *context = 0); // extended version
+#endif // __linux__
 	void OpenHelp (const HELPCONTEXT *hcontext);
 	void OpenLaunchpadHelp (HELPCONTEXT *hcontext);
 	HELPCONTEXT DefaultHelpPage(const char* topic);
 	//void OpenDialogAsync (int id, DLGPROC pDlg, void *context = 0);
+#ifndef __linux__
 	void CloseDialog (HWND hDlg);
 	HWND IsDialog (HINSTANCE hInst, DWORD resId);
 	bool RegisterWindow (HINSTANCE hInstance, HWND hWnd, DWORD flag);
+#else // __linux__
+	void CloseDialog (QWidget *hDlg);
+	QWidget *IsDialog (void *hInst, DWORD resId);
+	bool RegisterWindow (void *hInstance, QWidget *hWnd, DWORD flag);
+#endif // __linux__
 
 	void UpdateDeallocationProgress();
 
 	// plugin module loading/unloading
+#ifndef __linux__
 	HINSTANCE LoadModule (const char *path, const char *name);   // load a plugin
+#else // __linux__
+	void *LoadModule (const char *path, const char *name);   // load a plugin
+#endif // __linux__
 
 	/// \brief Unload a DLL plugin identified by its name
 	/// \param name DLL name
@@ -118,7 +159,12 @@ public:
 	/// \brief Unload a DLL plugin identified by its instance handle
 	/// \param hDLL DLL handle
 	/// \return true on success (module found and unloaded)
+#ifndef __linux__
 	bool UnloadModule (HINSTANCE hDLL);
+#else // __linux__
+	bool UnloadModule (void *hDLL);
+	bool UnloadModule (const char *name) { return UnloadModule (std::string (name)); } // char* names picked the void* overload (HINSTANCE never took one)
+#endif // __linux__
 
 	Vessel *SetFocusObject (Vessel *vessel, bool setview = true);
 	// Select a new user-controlled vessel
@@ -155,8 +201,13 @@ public:
 	// Increase camera field of view by dfov
 
 	// Accessor functions
+#ifndef __linux__
 	inline HINSTANCE GetInstance() const { return hInst; }
 	inline HWND    GetRenderWnd() const { return hRenderWnd; }
+#else // __linux__
+	inline void   *GetInstance() const { return hInst; }
+	inline QWindow *GetRenderWnd() const { return hRenderWnd; }
+#endif // __linux__
 	inline bool    IsFullscreen() const { return bFullscreen; }
 	inline DWORD   ViewW() const { return viewW; }
 	inline DWORD   ViewH() const { return viewH; }
@@ -174,8 +225,13 @@ public:
 
 	// DirectInput components
 	inline CDIFramework7 *GetDInput() const { return pDI->GetDIFrame(); }
+#ifndef __linux__
 	inline LPDIRECTINPUTDEVICE8 GetKbdDevice() const { return pDI->GetKbdDevice(); }
 	inline LPDIRECTINPUTDEVICE8 GetJoyDevice() const { return pDI->GetJoyDevice(); }
+#else // __linux__
+	inline KeyboardDevice *GetKbdDevice() const { return pDI->GetKbdDevice(); }
+	inline JoystickDevice *GetJoyDevice() const { return pDI->GetJoyDevice(); }
+#endif // __linux__
 
 	// memory monitor
 	MemStat *memstat;
@@ -301,10 +357,18 @@ public:
 	inline bool FillSurface (SURFHANDLE surf, DWORD tgtx, DWORD tgty, DWORD w, DWORD h, DWORD col)
 	{ return (gclient ? gclient->clbkFillSurface (surf, tgtx, tgty, w, h, col) : false); }
 
+#ifndef __linux__
 	inline HDC GetSurfaceDC (SURFHANDLE surf)
+#else // __linux__
+	inline QPainter *GetSurfaceDC (SURFHANDLE surf)
+#endif // __linux__
 	{ return (gclient ? gclient->clbkGetSurfaceDC (surf) : NULL); }
 
+#ifndef __linux__
 	inline void ReleaseSurfaceDC (SURFHANDLE surf, HDC hDC)
+#else // __linux__
+	inline void ReleaseSurfaceDC (SURFHANDLE surf, QPainter *hDC)
+#endif // __linux__
 	{ if (gclient) gclient->clbkReleaseSurfaceDC (surf, hDC); }
 
 	bool SendKbdBuffered(DWORD key, DWORD *mod = 0, DWORD nmod = 0, bool onRunningOnly = false);
@@ -316,17 +380,32 @@ public:
 	void OnOptionChanged(DWORD cat, DWORD item = 0);
 
 protected:
+#ifndef __linux__
 	HRESULT UserInput ();
+#else // __linux__
+	int UserInput ();
+#endif // __linux__
 	void KbdInputImmediate_System    (char *kstate);
 	void KbdInputImmediate_OnRunning (char *buffer);
+#ifndef __linux__
 	void KbdInputBuffered_System     (char *kstate, DIDEVICEOBJECTDATA *dod, DWORD n);
 	void KbdInputBuffered_OnRunning  (char *kstate, DIDEVICEOBJECTDATA *dod, DWORD n);
 	void UserJoyInput_System (DIJOYSTATE2 *js);
 	void UserJoyInput_OnRunning (DIJOYSTATE2 *js);
+#else // __linux__
+	void KbdInputBuffered_System     (char *kstate, KeyData *dod, DWORD n);
+	void KbdInputBuffered_OnRunning  (char *kstate, KeyData *dod, DWORD n);
+	void UserJoyInput_System (JoyState *js);
+	void UserJoyInput_OnRunning (JoyState *js);
+#endif // __linux__
 	bool MouseEvent (UINT event, DWORD state, DWORD x, DWORD y);
 	bool BroadcastMouseEvent (UINT event, DWORD state, DWORD x, DWORD y);
 	bool BroadcastImmediateKeyboardEvent (char *kstate);
+#ifndef __linux__
 	void BroadcastBufferedKeyboardEvent (char *kstate, DIDEVICEOBJECTDATA *dod, DWORD n);
+#else // __linux__
+	void BroadcastBufferedKeyboardEvent (char *kstate, KeyData *dod, DWORD n);
+#endif // __linux__
 
 	void BroadcastGlobalInit();
 
@@ -352,9 +431,15 @@ protected:
 	void ApplyWarpFactor ();
 	// broadcast new warp factor to components and modules
 
+#ifndef __linux__
     HRESULT InitDeviceObjects ();
 	HRESULT RestoreDeviceObjects ();
     HRESULT DeleteDeviceObjects ();
+#else // __linux__
+    int InitDeviceObjects ();
+	int RestoreDeviceObjects ();
+    int DeleteDeviceObjects ();
+#endif // __linux__
 
 private:
 	Config         *pConfig;
@@ -363,9 +448,15 @@ private:
 	DialogManager  *pDlgMgr;
 	orbiter::ConsoleNG* m_pConsole;    // The console window opened when Orbiter server is launched without a graphics client
 	DInput         *pDI;
+#ifndef __linux__
 	HINSTANCE       hInst;         // orbiter instance handle
 	HWND            hRenderWnd;    // render window handle (NULL if no render support)
 	HWND            hBk;           // background window handle (demo mode only)
+#else // __linux__
+	void           *hInst;         // orbiter instance handle
+	QWindow        *hRenderWnd;    // render window handle (NULL if no render support)
+	QWidget        *hBk;           // background window handle (demo mode only)
+#endif // __linux__
 	BOOL            bRenderOnce;   // flag for single frame render request
 	BOOL            bEnableLighting;
 	bool			bUseStencil;   // render device provides stencil buffer (and user requests it)
@@ -415,7 +506,11 @@ private:
 
 	// === The plugin module interface ===
 	struct DLLModule {
+#ifndef __linux__
 		HINSTANCE hDLL;        // DLL instance handle
+#else // __linux__
+		void *hDLL;            // DLL instance handle
+#endif // __linux__
 		oapi::Module* pModule; // pointer to module instance, if the plugin registered one
 		std::string sName;     // DLL name
 		bool bLocalAlloc;      // locally allocated; should be freed by Orbiter core
@@ -443,7 +538,11 @@ private:
 	 */
 	void LoadStartupModules();
 
+#ifndef __linux__
 	OPC_Proc FindModuleProc (HINSTANCE hDLL, const char *procname);
+#else // __linux__
+	OPC_Proc FindModuleProc (void *hDLL, const char *procname);
+#endif // __linux__
 	// returns address of a procedure in a plugin module, or NULL if procedure not found
 
 	// list of custom commands

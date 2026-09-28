@@ -5,8 +5,15 @@
 
 #include <string.h>
 #include <fstream>
+#ifndef __linux__
 #include <Windows.h>
 #include <Psapi.h>
+#else // __linux__
+#include <cstdarg>
+#include <cerrno>
+#include <chrono>
+#include <link.h> // dl_iterate_phdr lists the loaded objects (EnumProcessModules counterpart)
+#endif // __linux__
 #include "Log.h"
 #include "Orbiter.h"
 
@@ -18,7 +25,11 @@ extern TimeData td;
 static char logname[256] = "Orbiter.log";
 static char logs[256] = "";
 static bool finelog = false;
+#ifndef __linux__
 static DWORD t0 = 0;
+#else // __linux__
+static std::chrono::steady_clock::time_point t0; // timeGetTime() counterpart
+#endif // __linux__
 
 static LogOutFunc logOut = 0;
 
@@ -27,7 +38,11 @@ void InitLog (const char *logfile, bool append)
 	strcpy (logname, logfile);
 	ofstream ofs (logname, append ? ios::app : ios::out);
 	ofs << "**** " << logname << endl;
+#ifndef __linux__
 	t0 = timeGetTime();
+#else // __linux__
+	t0 = std::chrono::steady_clock::now();
+#endif // __linux__
 }
 
 void SetLogOutFunc(LogOutFunc func)
@@ -50,9 +65,18 @@ void LogOut (const char *msg, ...)
 
 void LogOutVA(const char *format, va_list ap)
 {
+#ifndef __linux__
 	FILE *f = fopen(logname, "a+t");
 	fprintf(f, "%010.3f: ", (timeGetTime() - t0) * 1e-3);
 	vfprintf(f, format, ap);
+#else // __linux__
+	FILE *f = fopen(logname, "a+"); // "t" (MS text mode) left out: Linux streams have no text mode
+	fprintf(f, "%010.3f: ", std::chrono::duration<double>(std::chrono::steady_clock::now() - t0).count());
+	va_list ap2;
+	va_copy(ap2, ap); // a va_list can't be read twice on x86-64 Linux (it can on Windows)
+	vfprintf(f, format, ap2);
+	va_end(ap2);
+#endif // __linux__
 	fputc('\n', f);
 	fclose(f);
 	if (logOut) {
@@ -66,9 +90,18 @@ void LogOutFine (const char *msg, ...)
 	if (finelog) {
 		va_list ap;
 		va_start (ap, msg);
+#ifndef __linux__
 		FILE *f = fopen (logname, "a+t");
 		fprintf (f, "%010.3f: ", (timeGetTime() - t0) * 1e-3);
 		vfprintf (f, msg, ap);
+#else // __linux__
+		FILE *f = fopen (logname, "a+"); // "t" left out, see LogOutVA
+		fprintf (f, "%010.3f: ", std::chrono::duration<double>(std::chrono::steady_clock::now() - t0).count());
+		va_list ap2;
+		va_copy (ap2, ap); // see LogOutVA
+		vfprintf (f, msg, ap2);
+		va_end (ap2);
+#endif // __linux__
 		fputc ('\n', f);
 		fclose (f);
 		if (logOut) {
@@ -141,6 +174,7 @@ void LogOut_WarningVA(const char* func, const char* file, int line, const char* 
 
 void LogOut_LastError (const char *func, const char *file, int line)
 {
+#ifndef __linux__
 	DWORD err = GetLastError();
 	LPTSTR errString = NULL;
 	FormatMessage (FORMAT_MESSAGE_FROM_SYSTEM|FORMAT_MESSAGE_ALLOCATE_BUFFER|FORMAT_MESSAGE_IGNORE_INSERTS,NULL,err,MAKELANGID(LANG_NEUTRAL,SUBLANG_DEFAULT),(LPTSTR)&errString,0,NULL);
@@ -279,10 +313,21 @@ void LogOut_DDErr (HRESULT hr, const char *func, const char *file, int line) {
 	sprintf (logs, ">>> [%s | %s | %d]", func, file, line);
 	LogOut();
 	LogOut ("---------------------------------------------------------------");
+#else // __linux__
+	int err = errno; // GetLastError/FormatMessage counterpart
+	LogOut_Error (func, file, line, "%s", strerror (err));
+#endif // __linux__
 }
 
+#ifndef __linux__
 void LogOut_DIErr (HRESULT hr, const char *func, const char *file, int line) {
+#else // __linux__
+// LogOut_DDErr left out: no DirectDraw on Linux
+
+void LogOut_DIErr (int err, const char *func, const char *file, int line) {
+#endif // __linux__
 	static char errmsg[256] = ">>> ERROR: DInput error ";
+#ifndef __linux__
 	static char *err = errmsg+24;
 	switch (hr) {
 	case DIERR_INPUTLOST:                   strcpy (err, "DIERR_INPUTLOST"); break;
@@ -297,6 +342,10 @@ void LogOut_DIErr (HRESULT hr, const char *func, const char *file, int line) {
 	case E_PENDING:                         strcpy (err, "E_PENDING"); break;
 	default:								sprintf (err, "DIERR CODE %ld", hr); break;
 	}
+#else // __linux__
+	static char *err_ = errmsg+24;
+	snprintf (err_, 256-24, "%s (errno %d)", strerror (err), err); // evdev reports errno values, not DIERR codes
+#endif // __linux__
 	LogOut ("---------------------------------------------------------------");
 	LogOut (errmsg);
 	sprintf (logs, ">>> [%s | %s | %d]", func, file, line);
@@ -329,6 +378,7 @@ void LogOut_Obsolete(const char* func, const char* msg)
 
 void PrintModules()
 {
+#ifndef __linux__
 	HMODULE hMods[4096];
 	HANDLE hProcess;
 	DWORD cbNeeded;
@@ -389,6 +439,21 @@ void PrintModules()
 		}
 	}
 	CloseHandle(hProcess);
+#else // __linux__
+	// EnumProcessModules counterpart: every loaded ELF object; ELF has no VS_VERSIONINFO, so path and mapped size only
+	dl_iterate_phdr ([](struct dl_phdr_info *info, size_t, void *) -> int {
+		if (!info->dlpi_name || !info->dlpi_name[0]) return 0;
+		ElfW(Addr) lo = ~(ElfW(Addr))0, hi = 0;
+		for (int i = 0; i < info->dlpi_phnum; i++) {
+			const ElfW(Phdr) &ph = info->dlpi_phdr[i];
+			if (ph.p_type != PT_LOAD) continue;
+			if (ph.p_vaddr < lo) lo = ph.p_vaddr;
+			if (ph.p_vaddr + ph.p_memsz > hi) hi = ph.p_vaddr + ph.p_memsz;
+		}
+		LogOut("Module linked [%s]  Size=%u", info->dlpi_name, (unsigned)(hi > lo ? hi - lo : 0));
+		return 0;
+	}, NULL);
+#endif // __linux__
 	return;
 }
 

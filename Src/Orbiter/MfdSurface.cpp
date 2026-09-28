@@ -996,8 +996,13 @@ bool Instrument_Surface::ReadParams (ifstream &ifs)
 	for (;;) {
 		if (!ifs.getline (cbuf, 256)) return false;
 		pc = trim_string (cbuf);
+#ifndef __linux__
 		if (!_strnicmp (pc, "END_MFD", 7)) break;
 		if (!_strnicmp (pc, "SPDMODE", 7)) {
+#else // __linux__
+		if (!strncasecmp (pc, "END_MFD", 7)) break;
+		if (!strncasecmp (pc, "SPDMODE", 7)) {
+#endif // __linux__
 			n = sscanf (pc+7, "%d", &spdmode);
 			if (spdmode <= 0 || spdmode > 4) spdmode = 1;
 		}

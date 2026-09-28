@@ -8,7 +8,11 @@
 
 #include "Orbiter.h"
 #include "Vessel.h"
+#ifndef __linux__
 #include "Supervessel.h"
+#else // __linux__
+#include "SuperVessel.h"
+#endif // __linux__
 #include "Config.h"
 #include "Pane.h"
 #include "Element.h"
@@ -41,17 +45,33 @@ bool Vessel::ParseScenarioLine (char *line, VESSELSTATUS &vs)
 	DWORD n;
 	double lvl;
 
+#ifndef __linux__
 	if (!_strnicmp (line, "STATUS", 6)) {
+#else // __linux__
+	if (!strncasecmp (line, "STATUS", 6)) {
+#endif // __linux__
 		line = trim_string (line+6);
+#ifndef __linux__
 		if (!_strnicmp (line, "LANDED", 6)) {
+#else // __linux__
+		if (!strncasecmp (line, "LANDED", 6)) {
+#endif // __linux__
 			vs.rbody = (OBJHANDLE)g_psys->GetGravObj (trim_string (line+6));
 			vs.status = 1;
 			vs.vdata[0].z = 0.0f; // default when landed
+#ifndef __linux__
 		} else if (!_strnicmp (line, "ORBITING", 8)) {
+#else // __linux__
+		} else if (!strncasecmp (line, "ORBITING", 8)) {
+#endif // __linux__
 			vs.rbody = (OBJHANDLE)g_psys->GetGravObj (trim_string (line+8));
 			vs.status = 0;
 		}
+#ifndef __linux__
 	} else if (!_strnicmp (line, "BASE", 4)) {
+#else // __linux__
+	} else if (!strncasecmp (line, "BASE", 4)) {
+#endif // __linux__
 		line = trim_string (line+4);
 		if (pd = strtok (line, ":")) {
 			strcpy (cbuf, pd);
@@ -66,18 +86,38 @@ bool Vessel::ParseScenarioLine (char *line, VESSELSTATUS &vs)
 				// place ship in centre of landing pad by default
 			}
 		}
+#ifndef __linux__
 	} else if (!_strnicmp (line, "POS", 3)) {
+#else // __linux__
+	} else if (!strncasecmp (line, "POS", 3)) {
+#endif // __linux__
 		sscanf (line+3, "%lf%lf", &vs.vdata[0].x, &vs.vdata[0].y);
 		vs.vdata[0].x *= RAD;
 		vs.vdata[0].y *= RAD;
+#ifndef __linux__
 	} else if (!_strnicmp (line, "HEADING", 7)) {
+#else // __linux__
+	} else if (!strncasecmp (line, "HEADING", 7)) {
+#endif // __linux__
 		sscanf (line+7, "%lf", &vs.vdata[0].z);
 		vs.vdata[0].z *= RAD;
+#ifndef __linux__
 	} else if (!_strnicmp (line, "RPOS", 4)) {
+#else // __linux__
+	} else if (!strncasecmp (line, "RPOS", 4)) {
+#endif // __linux__
 		sscanf (line+4, "%lf%lf%lf", &vs.rpos.x, &vs.rpos.y, &vs.rpos.z);
+#ifndef __linux__
 	} else if (!_strnicmp (line, "RVEL", 4)) {
+#else // __linux__
+	} else if (!strncasecmp (line, "RVEL", 4)) {
+#endif // __linux__
 		sscanf (line+4, "%lf%lf%lf", &vs.rvel.x, &vs.rvel.y, &vs.rvel.z);
+#ifndef __linux__
 	} else if (!_strnicmp (line, "ELEMENTS", 8)) {
+#else // __linux__
+	} else if (!strncasecmp (line, "ELEMENTS", 8)) {
+#endif // __linux__
 		double a, e, i, theta, omegab, L, elmjd;
 		Vector rpos, rvel;
 		sscanf (line+8, "%lf%lf%lf%lf%lf%lf%lf",  &a, &e, &i, &theta, &omegab, &L, &elmjd);
@@ -89,26 +129,50 @@ bool Vessel::ParseScenarioLine (char *line, VESSELSTATUS &vs)
 			vs.rvel.x = rvel.x, vs.rvel.y = rvel.y, vs.rvel.z = rvel.z;
 			el_valid = true;
 		}
+#ifndef __linux__
 	} else if (!_strnicmp (line, "AROT", 4)) {
+#else // __linux__
+	} else if (!strncasecmp (line, "AROT", 4)) {
+#endif // __linux__
 		sscanf (line+4, "%lf%lf%lf", &vs.arot.x, &vs.arot.y, &vs.arot.z);
 		vs.arot.x *= RAD, vs.arot.y *= RAD, vs.arot.z *= RAD;
+#ifndef __linux__
 	} else if (!_strnicmp (line, "VROT", 4)) {
+#else // __linux__
+	} else if (!strncasecmp (line, "VROT", 4)) {
+#endif // __linux__
 		sscanf (line+4, "%lf%lf%lf", &vs.vrot.x, &vs.vrot.y, &vs.vrot.z);
 		vs.vrot.x *= RAD, vs.vrot.y *= RAD, vs.vrot.z *= RAD;
+#ifndef __linux__
 	} else if (!_strnicmp (line, "FUEL", 4)) {  // old style propellant interface
+#else // __linux__
+	} else if (!strncasecmp (line, "FUEL", 4)) {  // old style propellant interface
+#endif // __linux__
 		sscanf (line+4, "%lf", &vs.fuel);
+#ifndef __linux__
 	} else if (!_strnicmp (line, "PRPLEVEL", 8)) { // new style propellant interface
+#else // __linux__
+	} else if (!strncasecmp (line, "PRPLEVEL", 8)) { // new style propellant interface
+#endif // __linux__
 		for (pd = strtok (line+8, " "); pd; pd = strtok (NULL, " "))
 			if (sscanf (pd, "%d%c%lf", &n, &c, &lvl) == 3)
 				if (n < ntank && tank[n] == def_tank) vs.fuel = lvl;
+#ifndef __linux__
 	} else if (!_strnicmp (line, "THLEVEL", 7)) {
+#else // __linux__
+	} else if (!strncasecmp (line, "THLEVEL", 7)) {
+#endif // __linux__
 		for (pd = strtok (line+7, " "); pd; pd = strtok (NULL, " ")) {
 			if (sscanf (pd, "%d%c%lf", &n, &c, &lvl) == 3 && n < m_thruster.size()) {
 				m_thruster[n]->level = m_thruster[n]->level_permanent = lvl;
 				m_thruster[n]->level_override = 0.0;
 			}
 		}
+#ifndef __linux__
 	} else if (!_strnicmp (line, "IDS", 3)) {
+#else // __linux__
+	} else if (!strncasecmp (line, "IDS", 3)) {
+#endif // __linux__
 		DWORD step, irange, m, i;
 		for (pd = strtok (line+3, " "), n = 0; n < ndock && pd; pd = strtok (NULL, " ")) {
 			if ((m = sscanf (pd, "%d%c%d%c%d", &i, &c, &step, &c, &irange)) >= 3 && i < ndock) {
@@ -116,7 +180,11 @@ bool Vessel::ParseScenarioLine (char *line, VESSELSTATUS &vs)
 				SetDockIDS (dock[i], (float)(step*0.05 + NAV_RADIO_FREQ_MIN), (float)(irange*1e3));
 			}
 		}
+#ifndef __linux__
 	} else if (!_strnicmp (line, "NAVFREQ", 7)) {
+#else // __linux__
+	} else if (!strncasecmp (line, "NAVFREQ", 7)) {
+#endif // __linux__
 		DWORD step;
 		for (pd = strtok (line+7, " "), n = 0; n < nnav && pd; pd = strtok (NULL, " "))
 			if (sscanf (pd, "%d", &step) == 1) {
@@ -137,19 +205,35 @@ bool Vessel::ParseScenarioLine2 (char *line, void *status)
 	double lvl;
 	VESSELSTATUS2 *vs = (VESSELSTATUS2*)status;
 
+#ifndef __linux__
 	if (!_strnicmp (line, "STATUS", 6)) {
+#else // __linux__
+	if (!strncasecmp (line, "STATUS", 6)) {
+#endif // __linux__
 
 		line = trim_string (line+6);
+#ifndef __linux__
 		if (!_strnicmp (line, "LANDED", 6)) {
+#else // __linux__
+		if (!strncasecmp (line, "LANDED", 6)) {
+#endif // __linux__
 			vs->rbody = (OBJHANDLE)g_psys->GetGravObj (trim_string (line+6));
 			vs->surf_hdg = 0.0; // default when landed
 			vs->status = 1;
 			vs->arot.x = 10; // flag for 'not set'
+#ifndef __linux__
 		} else if (!_strnicmp (line, "ORBITING", 8)) {
+#else // __linux__
+		} else if (!strncasecmp (line, "ORBITING", 8)) {
+#endif // __linux__
 			vs->rbody = (OBJHANDLE)g_psys->GetGravObj (trim_string (line+8));
 			vs->status = 0;
 #ifdef UNDEF
+#ifndef __linux__
 		} else if (!strnicmp (line, "DOCKED", 6)) {
+#else // __linux__
+		} else if (!strncasecmp (line, "DOCKED", 6)) {
+#endif // __linux__
 			line = trim_string (line+6);
 			if (pd = strtok (line, ":")) {
 				strcpy (cbuf, pd);
@@ -166,7 +250,11 @@ bool Vessel::ParseScenarioLine2 (char *line, void *status)
 #endif
 		}
 
+#ifndef __linux__
 	} else if (!_strnicmp (line, "BASE", 4)) {
+#else // __linux__
+	} else if (!strncasecmp (line, "BASE", 4)) {
+#endif // __linux__
 
 		line = trim_string (line+4);
 		if (pd = strtok (line, ":")) {
@@ -189,18 +277,30 @@ bool Vessel::ParseScenarioLine2 (char *line, void *status)
 			}
 		}
 
+#ifndef __linux__
 	} else if (!_strnicmp (line, "POS", 3)) {
+#else // __linux__
+	} else if (!strncasecmp (line, "POS", 3)) {
+#endif // __linux__
 
 		sscanf (line+3, "%lf%lf", &vs->surf_lng, &vs->surf_lat);
 		vs->surf_lng *= RAD;
 		vs->surf_lat *= RAD;
 
+#ifndef __linux__
 	} else if (!_strnicmp (line, "HEADING", 7)) {
+#else // __linux__
+	} else if (!strncasecmp (line, "HEADING", 7)) {
+#endif // __linux__
 
 		sscanf (line+7, "%lf", &vs->surf_hdg);
 		vs->surf_hdg *= RAD;
 
+#ifndef __linux__
 	} else if (!_strnicmp (line, "PRPLEVEL", 8)) { // propellant status
+#else // __linux__
+	} else if (!strncasecmp (line, "PRPLEVEL", 8)) { // propellant status
+#endif // __linux__
 
 		if (vs->nfuel) delete []vs->fuel;
 		// pass 1: find out how many propellant definitions there are
@@ -217,7 +317,11 @@ bool Vessel::ParseScenarioLine2 (char *line, void *status)
 				nn++;
 			}
 
+#ifndef __linux__
 	} else if (!_strnicmp (line, "FUEL", 4)) { // global propellant resource setting
+#else // __linux__
+	} else if (!strncasecmp (line, "FUEL", 4)) { // global propellant resource setting
+#endif // __linux__
 
 		if (sscanf (line+4, "%lf", &lvl)) { // old style fuel definition
 			if (vs->nfuel) delete []vs->fuel;
@@ -226,7 +330,11 @@ bool Vessel::ParseScenarioLine2 (char *line, void *status)
 			vs->fuel[0].level = lvl;
 		}
 
+#ifndef __linux__
 	} else if (!_strnicmp (line, "THLEVEL", 7)) { // read thruster status
+#else // __linux__
+	} else if (!strncasecmp (line, "THLEVEL", 7)) { // read thruster status
+#endif // __linux__
 
 		if (vs->nthruster) delete []vs->thruster;
 		// pass 1: find out how many thruster defintions there are
@@ -241,7 +349,11 @@ bool Vessel::ParseScenarioLine2 (char *line, void *status)
 				nn++;
 			}
 
+#ifndef __linux__
 	} else if (!_strnicmp (line, "ENGINE_MAIN", 11)) { // old style main/retro thruster status
+#else // __linux__
+	} else if (!strncasecmp (line, "ENGINE_MAIN", 11)) { // old style main/retro thruster status
+#endif // __linux__
 
 		if (sscanf (line+11, "%lf", &lvl)) {
 			if (lvl > 0) {
@@ -274,7 +386,11 @@ bool Vessel::ParseScenarioLine2 (char *line, void *status)
 				}
 			}
 		}
+#ifndef __linux__
 	} else if (!_strnicmp (line, "ENGINE_HOVR", 11)) { // old style hover thruster status
+#else // __linux__
+	} else if (!strncasecmp (line, "ENGINE_HOVR", 11)) { // old style hover thruster status
+#endif // __linux__
 
 		if (sscanf (line+11, "%lf", &lvl) && lvl > 0) {
 			ThrustGroupSpec& tgs = m_thrusterGroupDef[THGROUP_HOVER];
@@ -292,7 +408,11 @@ bool Vessel::ParseScenarioLine2 (char *line, void *status)
 			}
 		}
 
+#ifndef __linux__
 	} else if (!_strnicmp (line, "DOCKINFO", 8)) {
+#else // __linux__
+	} else if (!strncasecmp (line, "DOCKINFO", 8)) {
+#endif // __linux__
 
 		if (vs->ndockinfo) delete []vs->dockinfo;
 		// pass 1: find number of dock info records
@@ -309,19 +429,43 @@ bool Vessel::ParseScenarioLine2 (char *line, void *status)
 			nn++;
 		}
 
+#ifndef __linux__
 	} else if (!_strnicmp (line, "RPOS", 4)) {
+#else // __linux__
+	} else if (!strncasecmp (line, "RPOS", 4)) {
+#endif // __linux__
 		sscanf (line+4, "%lf%lf%lf", &vs->rpos.x, &vs->rpos.y, &vs->rpos.z);
+#ifndef __linux__
 	} else if (!_strnicmp (line, "RVEL", 4)) {
+#else // __linux__
+	} else if (!strncasecmp (line, "RVEL", 4)) {
+#endif // __linux__
 		sscanf (line+4, "%lf%lf%lf", &vs->rvel.x, &vs->rvel.y, &vs->rvel.z);
+#ifndef __linux__
 	} else if (!_strnicmp (line, "AROT", 4)) {
+#else // __linux__
+	} else if (!strncasecmp (line, "AROT", 4)) {
+#endif // __linux__
 		sscanf (line+4, "%lf%lf%lf", &vs->arot.x, &vs->arot.y, &vs->arot.z);
 		vs->arot.x *= RAD, vs->arot.y *= RAD, vs->arot.z *= RAD;
+#ifndef __linux__
 	} else if (!_strnicmp (line, "VROT", 4)) {
+#else // __linux__
+	} else if (!strncasecmp (line, "VROT", 4)) {
+#endif // __linux__
 		sscanf (line+4, "%lf%lf%lf", &vs->vrot.x, &vs->vrot.y, &vs->vrot.z);
 		vs->vrot.x *= RAD, vs->vrot.y *= RAD, vs->vrot.z *= RAD;
+#ifndef __linux__
 	} else if (!_strnicmp (line, "ALT", 3)) { // NOTE: 'ALT' and 'VROT' cannot be used together. ALT is used for landed vessels
+#else // __linux__
+	} else if (!strncasecmp (line, "ALT", 3)) { // NOTE: 'ALT' and 'VROT' cannot be used together. ALT is used for landed vessels
+#endif // __linux__
 		sscanf (line+3, "%lf", &vs->vrot.x);
+#ifndef __linux__
 	} else if (!_strnicmp (line, "ELEMENTS", 8)) {
+#else // __linux__
+	} else if (!strncasecmp (line, "ELEMENTS", 8)) {
+#endif // __linux__
 		double a, e, i, theta, omegab, L, elmjd;
 		Vector rpos, rvel;
 		sscanf (line+8, "%lf%lf%lf%lf%lf%lf%lf",  &a, &e, &i, &theta, &omegab, &L, &elmjd);
@@ -333,7 +477,11 @@ bool Vessel::ParseScenarioLine2 (char *line, void *status)
 			vs->rvel.x = rvel.x, vs->rvel.y = rvel.y, vs->rvel.z = rvel.z;
 			el_valid = true;
 		}
+#ifndef __linux__
 	} else if (!_strnicmp (line, "IDS", 3)) {
+#else // __linux__
+	} else if (!strncasecmp (line, "IDS", 3)) {
+#endif // __linux__
 		DWORD step, irange, m, i, n = 0;
 		char c;
 		for (pd = strtok (line+3, " "); n < ndock && pd; pd = strtok (NULL, " ")) {
@@ -342,14 +490,22 @@ bool Vessel::ParseScenarioLine2 (char *line, void *status)
 				SetDockIDS (dock[i], (float)(step*0.05 + NAV_RADIO_FREQ_MIN), (float)(irange*1e3));
 			}
 		}
+#ifndef __linux__
 	} else if (!_strnicmp (line, "NAVFREQ", 7)) {
+#else // __linux__
+	} else if (!strncasecmp (line, "NAVFREQ", 7)) {
+#endif // __linux__
 		DWORD step, n = 0;
 		for (pd = strtok (line+7, " "); n < nnav && pd; pd = strtok (NULL, " "))
 			if (sscanf (pd, "%d", &step) == 1) {
 				nav[n].freq = (float)((nav[n].step = step)*0.05 + NAV_RADIO_FREQ_MIN);
 				n++;
 			}
+#ifndef __linux__
 	} else if (!_strnicmp (line, "XPDR", 4)) {
+#else // __linux__
+	} else if (!strncasecmp (line, "XPDR", 4)) {
+#endif // __linux__
 		sscanf (line+4, "%d", &vs->xpdr);
 	} else return ParseScenarioLineDirect (line);
 	return true;
@@ -364,20 +520,36 @@ bool Vessel::ParseScenarioLine2 (char *line, void *status)
 
 bool Vessel::ParseScenarioLineDirect (char *line)
 {
+#ifndef __linux__
 	if (!_strnicmp (line, "RCSMODE", 7)) {
+#else // __linux__
+	if (!strncasecmp (line, "RCSMODE", 7)) {
+#endif // __linux__
 		sscanf (line+7, "%d", &attmode);
 		return true;
+#ifndef __linux__
 	} else if (!_strnicmp (line, "AFCMODE", 7)) {
+#else // __linux__
+	} else if (!strncasecmp (line, "AFCMODE", 7)) {
+#endif // __linux__
 		sscanf (line+7, "%d", &ctrlsurfmode);
 		return true;
+#ifndef __linux__
 	} else if (!_strnicmp (line, "ATTACHED", 8)) {
+#else // __linux__
+	} else if (!strncasecmp (line, "ATTACHED", 8)) {
+#endif // __linux__
 		char cbuf[256];
 		sscanf (line+8, "%d:%d,%s", &attach_status.ci, &attach_status.pi, cbuf);
 		if (attach_status.pname) delete []attach_status.pname;
 		attach_status.pname = new char[strlen(cbuf)+1]; TRACENEW
 		strcpy (attach_status.pname, cbuf);
 		return true;
+#ifndef __linux__
 	} else if (!_strnicmp (line, "FLIGHTDATA", 10)) {
+#else // __linux__
+	} else if (!strncasecmp (line, "FLIGHTDATA", 10)) {
+#endif // __linux__
 		bRequestPlayback = true;
 	}
 	return false;
@@ -711,7 +883,11 @@ int Vessel::TouchdownPointsFromFile (const char *fname)
 	char line[512], *c;
 	strcpy (line, fname);
 	strcat (line, ".dat");
+#ifndef __linux__
 	std::ifstream ifs (g_pOrbiter->Cfg()->ConfigPathNoext (line));
+#else // __linux__
+	std::ifstream ifs (oapiResolvePath (g_pOrbiter->Cfg()->ConfigPathNoext (line)));
+#endif // __linux__
 	if (!ifs.good()) return 1;
 
 	// parse the touchdown point specs

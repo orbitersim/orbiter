@@ -39,7 +39,11 @@ class Nav;
 class Nav_IDS;
 class Nav_XPDR;
 class ExhaustStream;
+#ifndef __linux__
 class oapi::Sketchpad;
+#else // __linux__
+namespace oapi { class Sketchpad; } // g++ rejects the qualified "class oapi::Sketchpad;"
+#endif // __linux__
 class LightEmitter;
 class Select;
 class InputBox;
@@ -53,6 +57,7 @@ struct ScenarioData { // packed vessel state
 	DWORD size;             // size of the complete data block
 	DWORD flag;
 	BYTE fstate;            // flight status
+#ifndef __linux__
 	union {
 		struct {
 			Vector rpos;    // reference body-relative position
@@ -66,6 +71,16 @@ struct ScenarioData { // packed vessel state
 			double hdg;     // orientation on the ground
 		};
 	};
+#else // __linux__
+	// union of the free-flight and landed layouts left out: g++ allows no member with a constructor (Vector) in an anonymous aggregate
+	Vector rpos;    // reference body-relative position
+	Vector rvel;    // reference body-relative velocity
+	Vector arot;    // orientation (Euler angles)
+	Vector vrot;    // angular velocity
+	double lng;     // longitude of landing site [rad]
+	double lat;     // latitude of landing site [rad]
+	double hdg;     // orientation on the ground
+#endif // __linux__
 	char buf[1];            // pointer to variable-length parameters
 };
 
@@ -1432,7 +1447,11 @@ protected:
 	void ClearModule ();
 	// clear interface pointers and unload module
 
+#ifndef __linux__
 	HINSTANCE hMod;        // module handle
+#else // __linux__
+	void *hMod;            // module handle (dlopen)
+#endif // __linux__
 	struct {               // module interface
 		VESSEL *v;
 		int version;

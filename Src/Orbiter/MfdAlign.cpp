@@ -22,7 +22,11 @@ static const Body *last_target = 0;
 // =======================================================================
 // class Instrument_OPlaneAlign
 
+#ifndef __linux__
 struct Instrument_OPlaneAlign::SavePrm Instrument_OPlaneAlign::saveprm = {0,0,0,0.0,0.0,false};
+#else // __linux__
+struct Instrument_OPlaneAlign::SavePrm Instrument_OPlaneAlign::saveprm = {0,0,0,false,0.0,0.0}; // same values in field order: MSVC accepted {..,0.0,0.0,false} as a narrowing
+#endif // __linux__
 
 Instrument_OPlaneAlign::Instrument_OPlaneAlign (Pane *_pane, INT_PTR _id, const Spec &spec, Vessel *_vessel, bool restore)
 : Instrument (_pane, _id, spec, _vessel)
@@ -602,17 +606,34 @@ bool Instrument_OPlaneAlign::ReadParams (ifstream &ifs)
 	for (;;) {
 		if (!ifs.getline (cbuf, 256)) return false;
 		pc = trim_string (cbuf);
+#ifndef __linux__
 		if (!_strnicmp (pc, "END_MFD", 7)) break;
 		if (!_strnicmp (pc, "TARGET", 6)) {
+#else // __linux__
+		if (!strncasecmp (pc, "END_MFD", 7)) break;
+		if (!strncasecmp (pc, "TARGET", 6)) {
+#endif // __linux__
 			strcpy (ctgt, trim_string (pc+6));
 		}
+#ifndef __linux__
 		else if (!_strnicmp(pc, "REF", 3)) {
+#else // __linux__
+		else if (!strncasecmp(pc, "REF", 3)) {
+#endif // __linux__
 			strcpy(cref, trim_string(pc + 3));
+#ifndef __linux__
 		} else if (!_strnicmp(pc, "MODE", 4)) {
+#else // __linux__
+		} else if (!strncasecmp(pc, "MODE", 4)) {
+#endif // __linux__
 			int m;
 			sscanf(pc + 4, "%d", &m);
 			mode = (Mode)m;
+#ifndef __linux__
 		} else if (!_strnicmp (pc, "TGTELS", 6)) {
+#else // __linux__
+		} else if (!strncasecmp (pc, "TGTELS", 6)) {
+#endif // __linux__
 			sscanf (pc+6, "%lf%lf", &i, &theta);
 			customels = true;
 		}

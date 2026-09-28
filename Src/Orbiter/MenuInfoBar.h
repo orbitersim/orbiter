@@ -8,9 +8,16 @@
 #ifndef __MENUINFOBAR_H
 #define __MENUINFOBAR_H
 
+#ifndef __linux__
 #define STRICT 1
 
+#endif // !__linux__
 #include "OrbiterAPI.h"
+#ifdef __linux__
+#include <memory>
+#include <string>
+#include <vector>
+#endif // __linux__
 
 // =======================================================================
 // class MenuInfoBar

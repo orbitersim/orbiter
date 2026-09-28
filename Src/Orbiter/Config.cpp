@@ -20,6 +20,10 @@
 #include "VectorMap.h"
 #include "GraphicsAPI.h"
 #include "resource.h"
+#ifdef __linux__
+#include <QGuiApplication> // primary screen size (GetDesktopWindow counterpart)
+#include <QScreen>
+#endif // __linux__
 
 using namespace std;
 
@@ -299,7 +303,11 @@ char *trim_string (char *cbuf)
 	}
 	// strip trailing white space
 	for (--c; c >= cbuf; c--) {
+#ifndef __linux__
 		if (*c == ' ' || *c == '\t') *c = '\0';
+#else // __linux__
+		if (*c == ' ' || *c == '\t' || *c == '\r') *c = '\0'; // '\r': Linux streams keep the CR of CRLF files
+#endif // __linux__
 		else break;
 	}
 	// skip leading white space
@@ -346,13 +354,21 @@ bool GetItemString (istream &is, const char *label, char *val)
 
 	while (is.getline (cbuf, 512)) {
 		cl = trim_string(cbuf);
+#ifndef __linux__
 		if (!_stricmp(cl, "END_PARSE")) return false;
+#else // __linux__
+		if (!strcasecmp(cl, "END_PARSE")) return false;
+#endif // __linux__
 		
 		for (i = 0; cl[i] && cl[i] != '='; i++);
 		cv = (cl[i] ? cl+(i+1) : cl+i);
 		for (cl[i--] = '\0'; i >= 0 && (cl[i] == ' ' || cl[i] == '\t'); i--)
 			cl[i] = '\0';
+#ifndef __linux__
 		if (!_stricmp (cl, label)) {
+#else // __linux__
+		if (!strcasecmp (cl, label)) {
+#endif // __linux__
 			while (*cv == ' ' || *cv == '\t') cv++;
 			if (*cv) {
 				strcpy (val, cv);
@@ -394,8 +410,13 @@ bool GetItemHex (istream &is, const char *label, int &val)
 bool GetItemBool (istream &is, const char *label, bool &val)
 {
 	if (!GetItemString (is, label, g_cbuf)) return false;
+#ifndef __linux__
 	if (!_strnicmp (g_cbuf, "true", 4)) { val = true; return true; }
 	else if (!_strnicmp (g_cbuf, "false", 5)) { val = false; return true; }
+#else // __linux__
+	if (!strncasecmp (g_cbuf, "true", 4)) { val = true; return true; }
+	else if (!strncasecmp (g_cbuf, "false", 5)) { val = false; return true; }
+#endif // __linux__
 	return false;
 }
 
@@ -428,7 +449,11 @@ bool FindLine (istream &is, const char *line)
 				if (is.eof()) break;               // EOF
 				else is.clear();                   // heal stream to continue after truncation error
 			}
+#ifndef __linux__
 			if (!_strnicmp (g_cbuf, line, len)) {  // found string
+#else // __linux__
+			if (!strncasecmp (g_cbuf, line, len)) {  // found string
+#endif // __linux__
 				ok = true;
 				break;
 			}
@@ -444,7 +469,11 @@ bool FindLine (istream &is, const char *line)
 int ListIndex (int listlen, char **list, char *label)
 {
 	for (int i = 0; i < listlen; i++)
+#ifndef __linux__
 		if (!_stricmp (label, list[i])) return i;
+#else // __linux__
+		if (!strcasecmp (label, list[i])) return i;
+#endif // __linux__
 	return -1;
 }
 
@@ -474,7 +503,11 @@ bool Config::Load(const char *fname)
 	Root = new char[strlen(fname)+1]; TRACENEW
 	strcpy (Root, fname);
 
+#ifndef __linux__
 	ifstream ifs (fname);
+#else // __linux__
+	ifstream ifs (oapiResolvePath (fname));
+#endif // __linux__
 	if (!ifs) return false;
 
 	found_config_file = true;
@@ -801,7 +834,11 @@ bool Config::Load(const char *fname)
 	// list of active modules
 	if (FindLine (ifs, "ACTIVE_MODULES")) {
 		char cbuf[256];
+#ifndef __linux__
 		while (ifs.getline (cbuf, 256) && _strnicmp (cbuf, "END_MODULES", 11))
+#else // __linux__
+		while (ifs.getline (cbuf, 256) && strncasecmp (cbuf, "END_MODULES", 11))
+#endif // __linux__
 			m_activeModules.push_back(std::string(trim_string(cbuf)));
 	}
 	return true;
@@ -837,9 +874,16 @@ void Config::SetDefaults ()
 	bEchoAll = bEchoAll_default;
 	memset (&rLaunchpad, 0, sizeof(RECT));
 
+#ifndef __linux__
 	RECT r;
 	GetWindowRect (GetDesktopWindow(), &r);
 	CfgDevPrm_default.WinW = r.right-r.left; CfgDevPrm_default.WinH = r.bottom-r.top;
+#else // __linux__
+	if (QScreen *scr = QGuiApplication::primaryScreen()) { // no screen before the QGuiApplication exists: keep 800x600
+		QRect r = scr->geometry();
+		CfgDevPrm_default.WinW = (DWORD)(r.width()*scr->devicePixelRatio()); CfgDevPrm_default.WinH = (DWORD)(r.height()*scr->devicePixelRatio());
+	}
+#endif // __linux__
 	// use the screen size as the default render window size
 
 	AmbientColour = 0x0c0c0c0c;
@@ -957,7 +1001,11 @@ BOOL Config::Write (const char *fname) const
 
 	if (!fname) fname = Root;
 	if (!fname) return FALSE;
+#ifndef __linux__
 	ofstream ofs (fname);
+#else // __linux__
+	ofstream ofs (oapiResolvePath (fname));
+#endif // __linux__
 	if (!ofs) return FALSE;
 
 	ofs << "; === ORBITER Master Configuration File ===\n";
@@ -1428,7 +1476,11 @@ char* Config::PTexPath(const char* name, const char* ext)
 
 const char *Config::ScnPath (const char *name)
 {
+#ifndef __linux__
 	if (name[1] == ':') { // assume full absolute path
+#else // __linux__
+	if (name[0] == '/') { // assume full absolute path
+#endif // __linux__
 		return name;
 	} else {
 		strcpy (scnpath+scnlen, name);
@@ -1482,7 +1534,11 @@ bool Config::GetString (istream &is, const char *category, char *val)
 	}
 
 	// cut comments
+#ifndef __linux__
 	for (i = 0; cbuf[i] && cbuf[i] != ';'; i++);
+#else // __linux__
+	for (i = 0; cbuf[i] && cbuf[i] != ';' && cbuf[i] != '\r'; i++); // '\r': see trim_string
+#endif // __linux__
 	cbuf[i] = '\0';
 
 	// find value
@@ -1515,8 +1571,13 @@ bool Config::GetSize (istream& is, const char* category, size_t& val)
 bool Config::GetBool (istream &is, const char *category, bool &val)
 {
 	if (!GetString (is, category, g_cbuf)) return false;
+#ifndef __linux__
 	if (!_strnicmp (g_cbuf, "true", 4)) { val = true; return true; }
 	else if (!_strnicmp (g_cbuf, "false", 5)) { val = false; return true; }
+#else // __linux__
+	if (!strncasecmp (g_cbuf, "true", 4)) { val = true; return true; }
+	else if (!strncasecmp (g_cbuf, "false", 5)) { val = false; return true; }
+#endif // __linux__
 	return false;
 }
 
@@ -1532,7 +1593,11 @@ bool Config::GetVector (istream &is, const char *category, Vector &val)
 bool Config::GetString (const char *category, char *val)
 {
 	if (!Root) return false;
+#ifndef __linux__
 	ifstream ifs (Root);
+#else // __linux__
+	ifstream ifs (oapiResolvePath (Root));
+#endif // __linux__
 	if (!ifs) return false;
 	return GetString (ifs, category, val);
 }
@@ -1540,7 +1605,11 @@ bool Config::GetString (const char *category, char *val)
 bool Config::GetReal (const char *category, double &val)
 {
 	if (!Root) return false;
+#ifndef __linux__
 	ifstream ifs (Root);
+#else // __linux__
+	ifstream ifs (oapiResolvePath (Root));
+#endif // __linux__
 	if (!ifs) return false;
 	return GetReal (ifs, category, val);
 }
@@ -1548,7 +1617,11 @@ bool Config::GetReal (const char *category, double &val)
 bool Config::GetInt (const char *category, int &val)
 {
 	if (!Root) return false;
+#ifndef __linux__
 	ifstream ifs (Root);
+#else // __linux__
+	ifstream ifs (oapiResolvePath (Root));
+#endif // __linux__
 	if (!ifs) return false;
 	return GetInt (ifs, category, val);
 }
@@ -1556,7 +1629,11 @@ bool Config::GetInt (const char *category, int &val)
 bool Config::GetSize (const char* category, size_t& val)
 {
 	if (!Root) return false;
+#ifndef __linux__
 	ifstream ifs(Root);
+#else // __linux__
+	ifstream ifs(oapiResolvePath (Root));
+#endif // __linux__
 	if (!ifs) return false;
 	return GetSize(ifs, category, val);
 }
@@ -1564,7 +1641,11 @@ bool Config::GetSize (const char* category, size_t& val)
 bool Config::GetBool (const char *category, bool &val)
 {
 	if (!Root) return false;
+#ifndef __linux__
 	ifstream ifs (Root);
+#else // __linux__
+	ifstream ifs (oapiResolvePath (Root));
+#endif // __linux__
 	if (!ifs) return false;
 	return GetBool (ifs, category, val);
 }
@@ -1572,7 +1653,11 @@ bool Config::GetBool (const char *category, bool &val)
 bool Config::GetVector (const char *category, Vector &val)
 {
 	if (!Root) return false;
+#ifndef __linux__
 	ifstream ifs (Root);
+#else // __linux__
+	ifstream ifs (oapiResolvePath (Root));
+#endif // __linux__
 	if (!ifs) return false;
 	return GetVector (ifs, category, val);
 }

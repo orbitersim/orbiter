@@ -15,13 +15,21 @@
 #ifndef __MFD_H
 #define __MFD_H
 
+#ifndef __linux__
 #define STRICT 1
+#else // __linux__
+// STRICT left out: windows.h handle type-checking switch
+#endif // __linux__
 #include "OrbiterAPI.h"
 #include "GraphicsAPI.h"
 #include "Vessel.h"
 #include "Element.h"
 #include "Select.h"
+#ifndef __linux__
 #include <d3d.h>
+#else // __linux__
+// d3d.h left out: no Direct3D 7 device in the core
+#endif // __linux__
 
 #define ELN 256           // polygon resolution for orbit trajectory
 #define ELNH (ELN/2)
@@ -43,7 +51,11 @@ public:
 };
 
 class Pane;
+#ifndef __linux__
 class oapi::GraphicsClient;
+#else // __linux__
+namespace oapi { class GraphicsClient; } // g++ rejects the qualified "class oapi::GraphicsClient;"
+#endif // __linux__
 
 static char work_kstate[256];
 inline char *KstateSet (int key) {
@@ -71,7 +83,11 @@ public:
 
 	Instrument (Pane *_pane, INT_PTR _id, const Spec &spec, Vessel *_vessel, bool defer_alloc=false);
 	virtual ~Instrument ();
+#ifndef __linux__
 	virtual void RestoreDeviceObjects (LPDIRECT3D7 d3d, LPDIRECT3DDEVICE7 dev) {}
+#else // __linux__
+	// RestoreDeviceObjects (LPDIRECT3D7, LPDIRECT3DDEVICE7) left out: Direct3D 7 device path, never called
+#endif // __linux__
 	virtual int Type () const = 0;                 // mode id
 	virtual char ModeSelKey () const = 0;          // mode selection key
 	virtual HELPCONTEXT *HelpTopic () const { return 0; } // help topic (CHM file address) if available
@@ -110,7 +126,11 @@ public:
 
 	virtual bool Update (double upDTscale);
 	virtual void UpdateDraw (oapi::Sketchpad *skp) = 0;
+#ifndef __linux__
 	virtual void UpdateDraw (HDC hDC) {}
+#else // __linux__
+	virtual void UpdateDraw (QPainter *hDC) {}
+#endif // __linux__
 	virtual void UpdateBlt () {}
 	virtual void Timejump ();
 	void Refresh (); // force refresh
@@ -126,7 +146,11 @@ public:
 	void DisplayTitle (oapi::Sketchpad *skp, const char *title) const;
 	// to be called from UpdateDraw
 
+#ifndef __linux__
 	void DisplayTitle (HDC hDC, const char *title) const;
+#else // __linux__
+	void DisplayTitle (QPainter *hDC, const char *title) const;
+#endif // __linux__
 	// obsolete
 
 	void DisplayModes (int page);
@@ -137,8 +161,13 @@ public:
 	// BeginDraw also draws a rectangle around the border of the instrument
 	// note that BLT operations are not allowed between Begin and End
 
+#ifndef __linux__
 	HDC BeginDrawHDC ();
 	void EndDrawHDC (HDC hDC);
+#else // __linux__
+	QPainter *BeginDrawHDC ();
+	void EndDrawHDC (QPainter *hDC);
+#endif // __linux__
 	// Compatibility versions
 
 	// ******************************************************************
@@ -251,13 +280,21 @@ protected:
 	oapi::Font *GetDefaultFont (DWORD fontidx);
 	// Returns a predefined font resource
 
+#ifndef __linux__
 	HFONT SelectDefaultFont (HDC hDC, DWORD i);
+#else // __linux__
+	QFont *SelectDefaultFont (QPainter *hDC, DWORD i);
+#endif // __linux__
 	// obsolete
 
 	oapi::Pen *GetDefaultPen (DWORD colidx, DWORD intens=0, DWORD style=1);
 	// Returns a predefined pen resource
 
+#ifndef __linux__
 	HPEN SelectDefaultPen (HDC hDC, DWORD i);
+#else // __linux__
+	QPen *SelectDefaultPen (QPainter *hDC, DWORD i);
+#endif // __linux__
 	// obsolete
 
 	DWORD GetDefaultColour (DWORD colidx, DWORD intens) const;
@@ -292,7 +329,11 @@ public:
 		oapi::Pen *dashpen;
 	} draw[MAXDEFCOL][2];  // first index: colour scheme, second index: intensity (0=bright, 1=dim)
 
+#ifndef __linux__
 	static HPEN hdefpen[MAXPEN];       // deprecated pen resources
+#else // __linux__
+	static QPen *hdefpen[MAXPEN];      // deprecated pen resources
+#endif // __linux__
 
 	static void GlobalInit (oapi::GraphicsClient *gc);
 	static void GlobalExit (oapi::GraphicsClient *gc);

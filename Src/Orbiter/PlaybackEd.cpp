@@ -201,7 +201,11 @@ void DlgPlaybackEditor::Load(const char *ScnName) {
 void DlgPlaybackEditor::ScanEventFile ()
 {
 	char line[2048];
+#ifndef __linux__
 	ifstream ifs (m_sysfname);
+#else // __linux__
+	ifstream ifs (oapiResolvePath (m_sysfname));
+#endif // __linux__
 	while (ifs.getline (line, 2048)) {
 		PlaybackEvent *pe = PlaybackEvent::Create (line);
 		if (pe) {
@@ -213,7 +217,11 @@ void DlgPlaybackEditor::ScanEventFile ()
 void DlgPlaybackEditor::SaveEventFile ()
 {
 	g_pOrbiter->FRecorder_SuspendPlayback();
+#ifndef __linux__
 	ofstream ofs (m_sysfname);
+#else // __linux__
+	ofstream ofs (oapiResolvePath (m_sysfname));
+#endif // __linux__
 	for (auto &e: m_Events) {
 		e->Write (ofs);
 	}
@@ -239,7 +247,11 @@ PlaybackEvent *PlaybackEvent::Create (char *event)
 	if (!s || sscanf (s, "%lf", &t) != 1) return NULL;
 	s = strtok (NULL, " \t\n");
 	if (!s) return NULL;
+#ifndef __linux__
 	if (!_stricmp (s, "TACC")) {
+#else // __linux__
+	if (!strcasecmp (s, "TACC")) {
+#endif // __linux__
 		double acc, delay;
 		s = strtok (NULL, " \t\n");
 		if (!s || sscanf (s, "%lf", &acc) != 1) return NULL;
@@ -247,32 +259,60 @@ PlaybackEvent *PlaybackEvent::Create (char *event)
 		if (!s || sscanf (s, "%lf", &delay) != 1)
 			delay = 0.0;
 		TRACENEW; return new TaccEvent (t, acc, delay);
+#ifndef __linux__
 	} else if (!_stricmp (s, "CAMERA")) {
+#else // __linux__
+	} else if (!strcasecmp (s, "CAMERA")) {
+#endif // __linux__
 		int32_t pr;
 		s = strtok (NULL, " \t\n");
 		if (!s) return NULL;
+#ifndef __linux__
 		if (!_stricmp (s, "PRESET")) {
+#else // __linux__
+		if (!strcasecmp (s, "PRESET")) {
+#endif // __linux__
 			s = strtok (NULL, " \t\n");
 			if (!s || sscanf (s, "%d", &pr) != 1) return NULL;
 			TRACENEW; return new CameraEvent (t, pr);
 		} else if (!strcmp (s, "SET")) {
 			TRACENEW; return new CameraEvent (t, s+4);
 		}
+#ifndef __linux__
 	} else if (!_stricmp (s, "NOTE")) {
+#else // __linux__
+	} else if (!strcasecmp (s, "NOTE")) {
+#endif // __linux__
 		TRACENEW; return new NoteEvent (t, strtok (NULL, "\n"));
+#ifndef __linux__
 	} else if (!_stricmp (s, "NOTEOFF")) {
+#else // __linux__
+	} else if (!strcasecmp (s, "NOTEOFF")) {
+#endif // __linux__
 		TRACENEW; return new NoteoffEvent (t);
+#ifndef __linux__
 	} else if (!_stricmp (s, "NOTEPOS")) {
+#else // __linux__
+	} else if (!strcasecmp (s, "NOTEPOS")) {
+#endif // __linux__
 		double x0, y0, x1, y1;
 		int res = sscanf (s+8, "%lf %lf %lf %lf", &x0, &y0, &x1, &y1);
 		if (res != 4) return NULL;
 		else { TRACENEW; return new NoteposEvent (t, x0, y0, x1, y1); }
+#ifndef __linux__
 	} else if (!_stricmp (s, "NOTECOL")) {
+#else // __linux__
+	} else if (!strcasecmp (s, "NOTECOL")) {
+#endif // __linux__
 		double r, g, b;
 		int res = sscanf (s+8, "%lf %lf %lf", &r, &g, &b);
 		if (res != 3) return NULL;
 		else { TRACENEW; return new NotecolEvent (t, r, g, b); }
+#ifndef __linux__
 	} else if (!_stricmp (s, "NOTESIZE")) {
+#else // __linux__
+	} else if (!strcasecmp (s, "NOTESIZE")) {
+#endif // __linux__
 		double scale;
 		int res = sscanf (s+9, "%lf", &scale);
 		if (!res) return NULL;

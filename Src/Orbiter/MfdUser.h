@@ -8,7 +8,9 @@
 #ifndef __MFD_USER_H
 #define __MFD_USER_H
 
+#ifndef __linux__
 #define STRICT 1
+#endif // !__linux__
 #include "Mfd.h"
 #include "OrbiterAPI.h"
 
@@ -26,7 +28,11 @@ public:
 	inline const char *BtnLabel (int bt) const { return mfd->ButtonLabel (bt); }
 	inline int BtnMenu (const MFDBUTTONMENU **menu) const { return (mfd ? mfd->ButtonMenu (menu) : 0); }
 	void UpdateDraw (oapi::Sketchpad *skp);
+#ifndef __linux__
 	void UpdateDraw (HDC hDC);
+#else // __linux__
+	void UpdateDraw (QPainter *hDC);
+#endif // __linux__
 
 protected:
 	bool ReadParams (std::ifstream &ifs);

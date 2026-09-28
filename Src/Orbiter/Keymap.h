@@ -8,7 +8,11 @@
 #ifndef __KEYMAP_H
 #define __KEYMAP_H
 
+#ifndef __linux__
 #include "windows.h"
+#else // __linux__
+// windows.h left out: Orbitersdk.h brings the WORD/DWORD types
+#endif // __linux__
 #include "Orbitersdk.h"
 
 // key modifier list

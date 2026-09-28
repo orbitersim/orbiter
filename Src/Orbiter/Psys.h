@@ -202,7 +202,11 @@ public:
 
 	void ForEach(int type, std::function<void(const fs::directory_entry&)> callback) {
 		std::error_code ec;
+#ifndef __linux__
 		for (const auto& entry : fs::directory_iterator(m_labelPath, ec)) {
+#else // __linux__
+		for (const auto& entry : fs::directory_iterator(oapiResolvePath(m_labelPath.c_str()), ec)) {
+#endif // __linux__
 			if (entry.path().extension().string() == ".mkr") {
 				callback(entry);
 			}

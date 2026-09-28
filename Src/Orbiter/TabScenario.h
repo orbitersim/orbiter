@@ -9,12 +9,20 @@
 #ifndef __TABSCENARIO_H
 #define __TABSCENARIO_H
 
+#ifndef __linux__
 #include <CommCtrl.h>
+#endif // !__linux__
 #include "LpadTab.h"
 #include "CustomControls.h"
 #include <filesystem>
 namespace fs = std::filesystem;
 
+#ifdef __linux__
+class QIcon;
+class QTreeWidgetItem;
+class QFileSystemWatcher;
+
+#endif // __linux__
 namespace orbiter {
 
 	class ScenarioTab : public orbiter::LaunchpadTab {
@@ -39,15 +47,23 @@ namespace orbiter {
 
 		void LaunchpadShowing(bool show);
 
+#ifndef __linux__
 		BOOL OnNotify(HWND hDlg, int idCtrl, LPNMHDR pnmh);
 
 		BOOL OnMessage(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
+#else // __linux__
+		BOOL OnInitDialog(QWidget *hWnd);
+#endif // __linux__
 
 	protected:
 		void RefreshList(bool preserveSelection);
 		// refresh the scenario list
 
+#ifndef __linux__
 		void ScanDirectory(const fs::path &path, HTREEITEM hti);
+#else // __linux__
+		void ScanDirectory(const fs::path &path, QTreeWidgetItem *hti);
+#endif // __linux__
 		// scan scenario files from a subdirectory
 
 		void ScenarioChanged();
@@ -67,15 +83,29 @@ namespace orbiter {
 		// open the help file associated with the current scenario
 
 	private:
+#ifndef __linux__
 		static INT_PTR CALLBACK SaveProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
 		// callback function for "scenario save" dialog
+#else // __linux__
+		static void SaveProc(QWidget *hWnd, ScenarioTab *pTab);
+		// set-up function for "scenario save" dialog
+#endif // __linux__
 
+#ifndef __linux__
 		static DWORD WINAPI threadWatchScnList(LPVOID pPrm);
 		// thread function for scenario list watcher
+#else // __linux__
+		void WatchScnList();
+		// (re)registers the scenario directory tree with the scenario list watcher
+#endif // __linux__
 
 		SplitterCtrl splitListDesc;  // splitter control for scenario list(left) and description(right)
+#ifndef __linux__
 		HIMAGELIST imglist;      // image list for scenario icons
 		int treeicon_idx[4];     // icon indices for scenario tree
+#else // __linux__
+		QIcon *treeicon[2];      // icons for scenario tree: folder, scenario (with its selected image)
+#endif // __linux__
 		char scnhelp[128];       // scenario help string, if available
 		RECT r_list0;            // initial position of scenario list - REMOVE!
 		RECT r_desc0;            // initial position of description block - REMOVE!
@@ -86,7 +116,11 @@ namespace orbiter {
 		RECT r_pause0;           // initial position of "start paused" button
 		int infoId;              // IDC_SCN_HTML or IDC_SCN_INFO, depending on which is active
 		bool htmldesc;           // Use embedded html viewer for scenario description
+#ifndef __linux__
 		HANDLE hThread;          // scenario directory tree watcher
+#else // __linux__
+		QFileSystemWatcher *hWatch; // scenario directory tree watcher
+#endif // __linux__
 	};
 
 }

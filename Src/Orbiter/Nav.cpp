@@ -23,7 +23,11 @@ Nav *ParseNav (const char *line, const Planet *planet)
 {
 	char typestr[32];
 	sscanf (line, "%s", typestr);
+#ifndef __linux__
 	if (!_stricmp (typestr, "VOR") && planet) {
+#else // __linux__
+	if (!strcasecmp (typestr, "VOR") && planet) {
+#endif // __linux__
 		TRACENEW; return new Nav_VOR (planet, line+3);
 	}
 	return NULL;
@@ -125,7 +129,11 @@ Nav_VOR::Nav_VOR (const Planet *_planet, const char *str)
 
 int Nav_VOR::IdString (char *str, int len) const
 {
+#ifndef __linux__
 	return _snprintf (str, len, "VOR %s", GetId());
+#else // __linux__
+	return snprintf (str, len, "VOR %s", GetId());
+#endif // __linux__
 }
 
 void Nav_VOR::GPos (Vector &gp) const
@@ -155,7 +163,11 @@ Nav_VTOL::Nav_VTOL (const Base *_base, int _npad, double _lng, double _lat, floa
 
 int Nav_VTOL::IdString (char *str, int len) const
 {
+#ifndef __linux__
 	return _snprintf (str, len, "VTOL Pad-%02d %s", GetPad()+1, GetBase()->Name());
+#else // __linux__
+	return snprintf (str, len, "VTOL Pad-%02d %s", GetPad()+1, GetBase()->Name());
+#endif // __linux__
 }
 
 void Nav_VTOL::GetData (NAVDATA *data) const
@@ -178,7 +190,11 @@ Nav_ILS::Nav_ILS (const Base *_base, double _dir, double _lng, double _lat, floa
 
 int Nav_ILS::IdString (char *str, int len) const
 {
+#ifndef __linux__
 	return _snprintf (str, len, "ILS Rwy %02d %s", (int)(ApprDir()*DEG*0.1+0.5), GetBase()->Name());
+#else // __linux__
+	return snprintf (str, len, "ILS Rwy %02d %s", (int)(ApprDir()*DEG*0.1+0.5), GetBase()->Name());
+#endif // __linux__
 }
 
 void Nav_ILS::GetData (NAVDATA *data) const
@@ -205,9 +221,17 @@ int Nav_IDS::IdString (char *str, int len) const
 	for (i = 0; i < vessel->nDock(); i++)
 		if (vessel->GetDockParams(i) == ps) break;
 	if (i < vessel->nDock())
+#ifndef __linux__
 		return _snprintf (str, len, "IDS D-%02d %s", i+1, vessel->Name());
+#else // __linux__
+		return snprintf (str, len, "IDS D-%02d %s", i+1, vessel->Name());
+#endif // __linux__
 	else // should not happen
+#ifndef __linux__
 		return _snprintf (str, len, "IDS %s", vessel->Name());
+#else // __linux__
+		return snprintf (str, len, "IDS %s", vessel->Name());
+#endif // __linux__
 }
 
 void Nav_IDS::GPos (Vector &gp) const
@@ -234,7 +258,11 @@ Nav_XPDR::Nav_XPDR (const Vessel *_vessel, float _freq, float _range)
 
 int Nav_XPDR::IdString (char *str, int len) const
 {
+#ifndef __linux__
 	return _snprintf (str, len, "XPDR %s", vessel->Name());
+#else // __linux__
+	return snprintf (str, len, "XPDR %s", vessel->Name());
+#endif // __linux__
 }
 
 void Nav_XPDR::GetData (NAVDATA *data) const
@@ -297,7 +325,11 @@ DWORD NavManager::Read (ifstream &ifs, const Planet *planet, bool append)
 	if (FindLine (ifs, "BEGIN_NAVBEACON")) {
 		char cbuf[256];
 		for (;;) {
+#ifndef __linux__
 			if (!ifs.getline (cbuf, 256) || !_strnicmp (cbuf, "END_NAVBEACON", 13)) break;
+#else // __linux__
+			if (!ifs.getline (cbuf, 256) || !strncasecmp (cbuf, "END_NAVBEACON", 13)) break;
+#endif // __linux__
 			Nav *nv = ParseNav (cbuf, planet);
 			if (nv) AddNav (nv);
 		}

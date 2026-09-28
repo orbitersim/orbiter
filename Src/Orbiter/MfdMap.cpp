@@ -669,22 +669,51 @@ bool Instrument_Map::ReadParams (std::ifstream &ifs)
 	for (;;) {
 		if (!ifs.getline (cbuf, 256)) return false;
 		pc = trim_string (cbuf);
+#ifndef __linux__
 		if (!_strnicmp (pc, "END_MFD", 7)) break;
 		if (!_strnicmp (pc, "REF", 3)) {
+#else // __linux__
+		if (!strncasecmp (pc, "END_MFD", 7)) break;
+		if (!strncasecmp (pc, "REF", 3)) {
+#endif // __linux__
 			strcpy (cref, trim_string (pc+3));
+#ifndef __linux__
 		} else if (!_strnicmp (pc, "TARGET", 6)) {
+#else // __linux__
+		} else if (!strncasecmp (pc, "TARGET", 6)) {
+#endif // __linux__
 			strcpy (ctgt, trim_string (pc+6));
+#ifndef __linux__
 		} else if (!_strnicmp (pc, "OTARGET", 7)) { // backward compatibility
+#else // __linux__
+		} else if (!strncasecmp (pc, "OTARGET", 7)) { // backward compatibility
+#endif // __linux__
 			strcpy (otgt, trim_string (pc+7));
+#ifndef __linux__
 		} else if (!_strnicmp (pc, "BTARGET", 7)) { // backward compatibility
+#else // __linux__
+		} else if (!strncasecmp (pc, "BTARGET", 7)) { // backward compatibility
+#endif // __linux__
 			strcpy (btgt, trim_string (pc+7));
+#ifndef __linux__
 		} else if (!_strnicmp (pc, "ZOOM", 4)) {
+#else // __linux__
+		} else if (!strncasecmp (pc, "ZOOM", 4)) {
+#endif // __linux__
 			int res = sscanf (trim_string(pc+4), "%d", &zoom);
 			if (res < 1) zoom = 2;
+#ifndef __linux__
 		} else if (!_strnicmp (pc, "POS", 3)) {
+#else // __linux__
+		} else if (!strncasecmp (pc, "POS", 3)) {
+#endif // __linux__
 			int res = sscanf (pc+4, "%lf%lf", &lng, &lat);
 			if (res == 2) track = false;
+#ifndef __linux__
 		} else if (!_strnicmp (pc, "DISP", 4)) {
+#else // __linux__
+		} else if (!strncasecmp (pc, "DISP", 4)) {
+#endif // __linux__
 			sscanf (trim_string(pc+4), "%d", &dflag);
 		}
 	}
@@ -771,11 +800,19 @@ bool Instrument_Map::ClbkSubmn_Target (Select *menu, int item, char *str, void *
 bool Instrument_Map::ClbkEnter_Target (Select *menu, int item, char *str, void *data)
 {
 	Instrument_Map *map = (Instrument_Map*)data;
+#ifndef __linux__
 	if (!_stricmp (str, "By name ...")) {
+#else // __linux__
+	if (!strcasecmp (str, "By name ...")) {
+#endif // __linux__
 		g_input->Open ("Enter target:", 0, 20, Instrument_Map::ClbkName_Target,
 			map);
 		return true;
+#ifndef __linux__
 	} else if (!_stricmp (str, "[none]")) {
+#else // __linux__
+	} else if (!strcasecmp (str, "[none]")) {
+#endif // __linux__
 		map->UnselectTarget ();
 		return true;
 	} else

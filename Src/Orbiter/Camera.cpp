@@ -24,7 +24,14 @@
 #include "Log.h"
 #include "OrbiterAPI.h"
 #include "Vobject.h"
+#ifndef __linux__
 #include <zmouse.h>
+#else // __linux__
+// zmouse.h left out: WM_MOUSEWHEEL is in OrbiterPlatform.h
+#include <QCursor>
+#include <QWindow>
+#include "WlPointer.h"
+#endif // __linux__
 
 using namespace std;
 
@@ -69,7 +76,12 @@ Camera::Camera (double _nearplane, double _farplane)
 	has_tref = false;
 	movehead = false;
 	ExtCtrlMode = 0;
+#ifndef __linux__
 	GetCursorPos (&pm);
+#else // __linux__
+	QPoint p0 = QCursor::pos (); // GetCursorPos
+	pm.x = p0.x(), pm.y = p0.y();
+#endif // __linux__
 	mmoveT = -1000.0;
 	ap_int = ap_ext = RAD*25.0;
 	ap = &ap_ext;
@@ -133,8 +145,14 @@ bool Camera::ProcessMouse (UINT event, DWORD state, DWORD x, DWORD y, const char
 
 void Camera::UpdateMouse ()
 {
+#ifndef __linux__
 	POINT pt;
 	GetCursorPos (&pt);
+#else // __linux__
+	WlPointerDispatch ();
+	QPoint gpt = QCursor::pos (); // GetCursorPos
+	POINT pt = { gpt.x(), gpt.y() };
+#endif // __linux__
 	if (pt.x != pm.x || pt.y != pm.y) {
 		pm.x = pt.x, pm.y = pt.y;
 		mmoveT = td.SysT0;
@@ -143,11 +161,25 @@ void Camera::UpdateMouse ()
 	if (mbdown[1]) {
 		int dx, dy, x0, y0;
 		x0 = pt.x, y0 = pt.y;
+#ifndef __linux__
 		if (!g_pOrbiter->IsFullscreen())
 			ScreenToClient (g_pOrbiter->GetRenderWnd(), &pt);
+#else // __linux__
+		QWindow *hWnd = g_pOrbiter->GetRenderWnd();
+		pt = CursorPos (hWnd); // ScreenToClient, also when fullscreen: the window need not sit at the screen origin
+#endif // __linux__
 		dx = pt.x - mx;
 		dy = pt.y - my;
+#ifndef __linux__
 		SetCursorPos (x0-dx, y0-dy);
+#else // __linux__
+		if (WlPointerLocked ())
+			WlPointerMotion (dx, dy); // Wayland moves no pointer: it stays locked, the motion comes relative
+		else {
+			qreal dpr = (hWnd ? hWnd->devicePixelRatio() : 1.0);
+			QCursor::setPos (x0-qRound(dx/dpr), y0-qRound(dy/dpr)); // SetCursorPos
+		}
+#endif // __linux__
 		if (!(dx || dy)) return;
 
 		if (external_view) {
@@ -408,7 +440,11 @@ void Camera::Attach (Body *_target, int mode)
 
 bool Camera::Direction2Viewport(const Vector &dir, int &x, int &y)
 {
+#ifndef __linux__
 	D3DVECTOR homog;
+#else // __linux__
+	oapi::FVECTOR3 homog;
+#endif // __linux__
 	D3DMath_VectorMatrixMultiply (homog, D3DMath_Vector(dir.x, dir.y, dir.z), *D3D_ProjViewMatrix());
 	if (homog.x >= -1.0f && homog.y <= 1.0f && homog.z <= 1.0f) {
 		if (std::hypot(homog.x, homog.y) < 1e-6) {
@@ -1269,7 +1305,11 @@ MATRIX4 Camera::ViewMatrix() const
 	return mat;
 }
 
+#ifndef __linux__
 D3DMATRIX *Camera::D3D_ProjViewMatrix ()
+#else // __linux__
+oapi::FMATRIX4 *Camera::D3D_ProjViewMatrix ()
+#endif // __linux__
 {
 	if (!pv_mat_valid) {
 		D3DMath_MatrixMultiply (pv_mat, proj_mat, view_mat);
@@ -1280,16 +1320,35 @@ D3DMATRIX *Camera::D3D_ProjViewMatrix ()
 
 void Camera::UpdateProjectionMatrix ()
 {
+#ifndef __linux__
 	ZeroMemory (&proj_mat, sizeof (D3DMATRIX));
 	proj_mat._11 = (FLOAT)(aspect / tan_ap);
 	proj_mat._22 = (FLOAT)(1.0    / tan_ap);
+#else // __linux__
+	memset (&proj_mat, 0, sizeof (oapi::FMATRIX4)); // ZeroMemory
+	proj_mat.m11 = (FLOAT)(aspect / tan_ap);
+	proj_mat.m22 = (FLOAT)(1.0    / tan_ap);
+#endif // __linux__
 	if (farplane >= 1e20) {
+#ifndef __linux__
 		proj_mat._33 = 1.0f;
 		proj_mat._43 = -nearplane;
+#else // __linux__
+		proj_mat.m33 = 1.0f;
+		proj_mat.m43 = -nearplane;
+#endif // __linux__
 	} else {
+#ifndef __linux__
 		proj_mat._43 = (proj_mat._33 = farplane / (farplane-nearplane)) * (-nearplane);
+#else // __linux__
+		proj_mat.m43 = (proj_mat.m33 = farplane / (farplane-nearplane)) * (-nearplane);
+#endif // __linux__
 	}
+#ifndef __linux__
 	proj_mat._34 = 1.0f;
+#else // __linux__
+	proj_mat.m34 = 1.0f;
+#endif // __linux__
 
 	// register new projection matrix with device
     //pDev->SetTransform (D3DTRANSFORMSTATE_PROJECTION, &proj_mat);
@@ -1305,7 +1364,11 @@ void Camera::InitState (const char *scn, Body *default_target)
 
 	// read state from scenario file
 	if (scn) {
+#ifndef __linux__
 		ifstream ifs (g_pOrbiter->ScnPath(scn));
+#else // __linux__
+		ifstream ifs (oapiResolvePath(g_pOrbiter->ScnPath(scn)));
+#endif // __linux__
 		if (ifs) Read (ifs);
 	}
 	Body *newtgt = target; target = NULL;
@@ -1380,39 +1443,80 @@ bool Camera::Read (ifstream &ifs)
 	for (;;) {
 		if (!ifs.getline (cbuf, 256)) break;
 		pc = trim_string (cbuf);
+#ifndef __linux__
 		if (!_strnicmp (pc, "END_CAMERA", 10)) break;
 		if (!_strnicmp (pc, "TARGET", 6)) {
+#else // __linux__
+		if (!strncasecmp (pc, "END_CAMERA", 10)) break;
+		if (!strncasecmp (pc, "TARGET", 6)) {
+#endif // __linux__
 			pc = trim_string (pc+6);
 			if (!(tg = g_psys->GetObj (pc, true)))
 				tg = g_psys->GetBase (pc, true);
+#ifndef __linux__
 		} else if (!_strnicmp (pc, "MODE", 4)) {
+#else // __linux__
+		} else if (!strncasecmp (pc, "MODE", 4)) {
+#endif // __linux__
 			pc = trim_string (pc+4);
+#ifndef __linux__
 			if (!_strnicmp (pc, "Extern", 6)) external_view = true;
+#else // __linux__
+			if (!strncasecmp (pc, "Extern", 6)) external_view = true;
+#endif // __linux__
 			else                             external_view = false;
+#ifndef __linux__
 		} else if (!_strnicmp (pc, "POS", 3)) {
+#else // __linux__
+		} else if (!strncasecmp (pc, "POS", 3)) {
+#endif // __linux__
 			n = sscanf (pc+3, "%lf%lf%lf", &rd, &ph, &th);
 			ph *= RAD, th *= RAD;
+#ifndef __linux__
 		} else if (!_strnicmp (pc, "FOV", 3)) {
+#else // __linux__
+		} else if (!strncasecmp (pc, "FOV", 3)) {
+#endif // __linux__
 			double a;
 			n = sscanf (pc+3, "%lf", &a);
 			if (a < 10.0) a = 10.0;
 			else if (a > 160.0) a = 160.0;
 			a *= RAD*0.5;
 			ap_int = ap_ext = a;
+#ifndef __linux__
 		} else if (!_strnicmp (pc, "TRACKMODE", 9)) {
+#else // __linux__
+		} else if (!strncasecmp (pc, "TRACKMODE", 9)) {
+#endif // __linux__
 			n = sscanf (pc+9, "%s%s", ctrackmode, cdirref);
+#ifndef __linux__
 		} else if (!_strnicmp (pc, "GROUNDLOCATION", 14)) {
+#else // __linux__
+		} else if (!strncasecmp (pc, "GROUNDLOCATION", 14)) {
+#endif // __linux__
 			n = sscanf (pc+14, "%lf%lf%lf", &go.lng, &go.lat, &go.alt);
 			go.lng *= RAD, go.lat *= RAD;
+#ifndef __linux__
 		} else if (!_strnicmp (pc, "GROUNDDIRECTION", 15)) {
+#else // __linux__
+		} else if (!strncasecmp (pc, "GROUNDDIRECTION", 15)) {
+#endif // __linux__
 			n = sscanf (pc+15, "%lf%lf", &go.phi, &go.tht);
 			go.phi *= RAD, go.tht *= RAD;
 			go.tgtlock = false;
+#ifndef __linux__
 		} else if (!_strnicmp (pc, "BEGIN_PRESET", 12)) {
+#else // __linux__
+		} else if (!strncasecmp (pc, "BEGIN_PRESET", 12)) {
+#endif // __linux__
 			for (;;) {
 				if (!ifs.getline (cbuf, 256)) break;
 				pc = trim_string (cbuf);
+#ifndef __linux__
 				if (!_strnicmp (pc, "END_PRESET", 10)) break;
+#else // __linux__
+				if (!strncasecmp (pc, "END_PRESET", 10)) break;
+#endif // __linux__
 				AddPreset (CameraMode::Create (pc));
 			}
 		}
@@ -1420,15 +1524,35 @@ bool Camera::Read (ifstream &ifs)
 	if (tg && external_view) target = tg;
 	if (external_view) {
 		rdist = rd, ephi = ph, etheta = th;
+#ifndef __linux__
 		if (!_stricmp (ctrackmode, "AbsoluteDirection"))
+#else // __linux__
+		if (!strcasecmp (ctrackmode, "AbsoluteDirection"))
+#endif // __linux__
 			extmode = CAMERA_ABSDIRECTION;
+#ifndef __linux__
 		else if (!_stricmp (ctrackmode, "GlobalFrame"))
+#else // __linux__
+		else if (!strcasecmp (ctrackmode, "GlobalFrame"))
+#endif // __linux__
 			extmode = CAMERA_GLOBALFRAME;
+#ifndef __linux__
 		else if (!_stricmp (ctrackmode, "TargetTo") && (dirref = g_psys->GetObj (cdirref, true)))
+#else // __linux__
+		else if (!strcasecmp (ctrackmode, "TargetTo") && (dirref = g_psys->GetObj (cdirref, true)))
+#endif // __linux__
 			extmode = CAMERA_TARGETTOOBJECT;
+#ifndef __linux__
 		else if (!_stricmp (ctrackmode, "TargetFrom") && (dirref = g_psys->GetObj (cdirref, true)))
+#else // __linux__
+		else if (!strcasecmp (ctrackmode, "TargetFrom") && (dirref = g_psys->GetObj (cdirref, true)))
+#endif // __linux__
 			extmode = CAMERA_TARGETFROMOBJECT;
+#ifndef __linux__
 		else if (!_stricmp (ctrackmode, "Ground") && (dirref = g_psys->GetObj (cdirref, true)))
+#else // __linux__
+		else if (!strcasecmp (ctrackmode, "Ground") && (dirref = g_psys->GetObj (cdirref, true)))
+#endif // __linux__
 			extmode = CAMERA_GROUNDOBSERVER;
 		else 
 			extmode = CAMERA_TARGETRELATIVE;
@@ -1540,11 +1664,23 @@ CameraMode *CameraMode::Create (char *str)
 
 	if (!(pc = strtok (str, ":"))) return 0;
 	tc = trim_string (pc);
+#ifndef __linux__
 	if (!_stricmp (tc, "Cockpit")) {
+#else // __linux__
+	if (!strcasecmp (tc, "Cockpit")) {
+#endif // __linux__
 		cm = new CameraMode_Cockpit; TRACENEW
+#ifndef __linux__
 	} else if (!_stricmp (tc, "Track")) {
+#else // __linux__
+	} else if (!strcasecmp (tc, "Track")) {
+#endif // __linux__
 		cm = new CameraMode_Track; TRACENEW
+#ifndef __linux__
 	} else if (!_stricmp (tc, "Ground")) {
+#else // __linux__
+	} else if (!strcasecmp (tc, "Ground")) {
+#endif // __linux__
 		cm = new CameraMode_Ground; TRACENEW
 	} else {
 		cm = new CameraMode_Cockpit; TRACENEW
@@ -1578,15 +1714,27 @@ void CameraMode_Cockpit::Init (char *str)
 {
 	if (!str || str[0] == '\0') return;
 
+#ifndef __linux__
 	if (!strnicmp(str, "generic", 7)) {
+#else // __linux__
+	if (!strncasecmp(str, "generic", 7)) {
+#endif // __linux__
 		cmode = CM_GENERIC;
 		str += 7;
+#ifndef __linux__
 	} else if (!strnicmp(str, "panel2d", 7)) {
+#else // __linux__
+	} else if (!strncasecmp(str, "panel2d", 7)) {
+#endif // __linux__
 		cmode = CM_PANEL2D;
 		str += 7;
 		if (str[0] == ':' && sscanf(++str, "%d", &pos))
 			while (*str != ' ' && *str != '\0') str++;
+#ifndef __linux__
 	} else if (!strnicmp(str, "vc", 2)) {
+#else // __linux__
+	} else if (!strncasecmp(str, "vc", 2)) {
+#endif // __linux__
 		cmode = CM_VC;
 		str += 2;
 		if (str[0] == ':' && sscanf(++str, "%d", &pos)) {
@@ -1600,7 +1748,11 @@ void CameraMode_Cockpit::Init (char *str)
 				}
 			}
 		}
+#ifndef __linux__
 	} else if (!strnicmp(str, "current", 7)) {
+#else // __linux__
+	} else if (!strncasecmp(str, "current", 7)) {
+#endif // __linux__
 		cmode = CM_CURRENT;
 		str += 7;
 	}
@@ -1632,18 +1784,38 @@ void CameraMode_Track::Init (char *str)
 {
 	char tm[64], rf[256];
 	sscanf (str, "%s%lf%lf%lf%s", tm, &reldist, &phi, &theta, rf);
+#ifndef __linux__
 	if (!_stricmp (tm, "RELATIVE"))
+#else // __linux__
+	if (!strcasecmp (tm, "RELATIVE"))
+#endif // __linux__
 		tmode = TM_RELATIVE;
+#ifndef __linux__
 	else if (!_stricmp (tm, "ABSDIR"))
+#else // __linux__
+	else if (!strcasecmp (tm, "ABSDIR"))
+#endif // __linux__
 		tmode = TM_ABSDIR;
+#ifndef __linux__
 	else if (!_stricmp (tm, "GLOBAL"))
+#else // __linux__
+	else if (!strcasecmp (tm, "GLOBAL"))
+#endif // __linux__
 		tmode = TM_GLOBAL;
+#ifndef __linux__
 	else if (!_stricmp (tm, "TARGETTOREF")) {
+#else // __linux__
+	else if (!strcasecmp (tm, "TARGETTOREF")) {
+#endif // __linux__
 		tmode = TM_TARGETTOREF;
 		Body *r = g_psys->GetObj (rf, true);
 		if (r) ref = (OBJHANDLE)r;
 		else tmode = TM_CURRENT;
+#ifndef __linux__
 	} else if (!_stricmp (tm, "TARGETFROMREF")) {
+#else // __linux__
+	} else if (!strcasecmp (tm, "TARGETFROMREF")) {
+#endif // __linux__
 		tmode = TM_TARGETFROMREF;
 		Body *r = g_psys->GetObj (rf, true);
 		if (r) ref = (OBJHANDLE)r;
@@ -1654,9 +1826,15 @@ void CameraMode_Track::Init (char *str)
 void CameraMode_Track::Store (char *str)
 {
 	static const char *tmstr[6] = {"CURRENT","RELATIVE", "ABSDIR", "GLOBAL", "TARGETTOREF", "TARGETFROMREF"};
+#ifndef __linux__
 	sprintf (str, "Track:%s%:%0.2f:%s %0.3f %0.3f %0.3f", 
 		target ? ((Body*)target)->Name() : "-", fov,
 		tmstr[tmode], reldist, phi, theta);
+#else // __linux__
+	sprintf (str, "Track:%s:%0.2f:%s %0.3f %0.3f %0.3f", // "%s%:" typo: MSVC printed ":", glibc prints "%:"
+		target ? ((Body*)target)->Name() : "-", fov,
+		tmstr[tmode], reldist, phi, theta);
+#endif // __linux__
 	if (tmode == TM_TARGETTOREF || tmode == TM_TARGETFROMREF) {
 		strcat (str, " ");
 		strcat (str, ((Body*)ref)->Name());

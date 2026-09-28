@@ -7,6 +7,9 @@
 #include "Celbody.h"
 #include "Planet.h"
 #include "Base.h"
+#ifdef __linux__
+#include <QImage>
+#endif // __linux__
 
 using namespace std;
 
@@ -474,16 +477,31 @@ SURFHANDLE Instrument_MapOld::LoadBitmap (const char *cbuf, int *w, int *h)
 
 	// Load bitmap
 	char *path = g_pOrbiter->TexPath (cbuf, ".bmp");
+#ifndef __linux__
 	HBITMAP hbm = (HBITMAP)LoadImage (GetModuleHandle(NULL), path, IMAGE_BITMAP, 0, 0, LR_CREATEDIBSECTION);
 	if (!hbm)
 		hbm = (HBITMAP)LoadImage (NULL, path, IMAGE_BITMAP, 0, 0, LR_LOADFROMFILE|LR_CREATEDIBSECTION);
 	if (!hbm)
+#else // __linux__
+	// LoadImage from the exe resources left out: a file path is never a resource name
+	QImage *hbm = new QImage (QString::fromStdString (oapiResolvePath (path)));
+	if (hbm->isNull()) {
+		delete hbm;
+#endif // __linux__
 		return NULL;
+#ifdef __linux__
+	}
+#endif // __linux__
 	// Get bitmap size
+#ifndef __linux__
 	BITMAP bm;
 	GetObject (hbm, sizeof(bm), &bm);
 	*w = bm.bmWidth;
 	*h = bm.bmHeight;
+#else // __linux__
+	*w = hbm->width();
+	*h = hbm->height();
+#endif // __linux__
 	// Create surface
 	SURFHANDLE surf = gc->clbkCreateSurfaceEx (*w, *h, OAPISURFACE_RENDERTARGET);
 	// Copy bitmap
@@ -493,7 +511,11 @@ SURFHANDLE Instrument_MapOld::LoadBitmap (const char *cbuf, int *w, int *h)
 			surf = NULL;
 		}
 	}
+#ifndef __linux__
 	DeleteObject (hbm);
+#else // __linux__
+	delete hbm; // DeleteObject
+#endif // __linux__
 	return surf;
 }
 
@@ -671,7 +693,11 @@ bool Instrument_MapOld::ClbkSubmn_Target (Select *menu, int item, char *str, voi
 bool Instrument_MapOld::ClbkEnter_Target (Select *menu, int item, char *str, void *data)
 {
 	Instrument_MapOld *map = (Instrument_MapOld*)data;
+#ifndef __linux__
 	if (!_stricmp (str, "By name ...")) {
+#else // __linux__
+	if (!strcasecmp (str, "By name ...")) {
+#endif // __linux__
 		g_input->Open ("Enter target:", 0, 20, Instrument_MapOld::ClbkName_Target,
 			map);
 		return true;
@@ -701,17 +727,39 @@ bool Instrument_MapOld::ReadParams (ifstream &ifs)
 	for (;;) {
 		if (!ifs.getline (cbuf, 256)) return false;
 		pc = trim_string (cbuf);
+#ifndef __linux__
 		if (!_strnicmp (pc, "END_MFD", 7)) break;
 		if (!_strnicmp (pc, "REF", 3)) {
+#else // __linux__
+		if (!strncasecmp (pc, "END_MFD", 7)) break;
+		if (!strncasecmp (pc, "REF", 3)) {
+#endif // __linux__
 			strcpy (cref, trim_string (pc+3));
+#ifndef __linux__
 		} else if (!_strnicmp (pc, "BTARGET", 7)) {
+#else // __linux__
+		} else if (!strncasecmp (pc, "BTARGET", 7)) {
+#endif // __linux__
 			strcpy (cbtgt, trim_string (pc+7));
+#ifndef __linux__
 		} else if (!_strnicmp (pc, "OTARGET", 7)) {
+#else // __linux__
+		} else if (!strncasecmp (pc, "OTARGET", 7)) {
+#endif // __linux__
 			strcpy (cotgt, trim_string (pc+7));
+#ifndef __linux__
 		} else if (!_strnicmp (pc, "ZOOM", 4)) {
+#else // __linux__
+		} else if (!strncasecmp (pc, "ZOOM", 4)) {
+#endif // __linux__
 			zoom = true;
+#ifndef __linux__
 		} else if (!_strnicmp (pc, "TRACK", 5)) {
 			if (!_stricmp (trim_string (pc+5), "ON")) {
+#else // __linux__
+		} else if (!strncasecmp (pc, "TRACK", 5)) {
+			if (!strcasecmp (trim_string (pc+5), "ON")) {
+#endif // __linux__
 				track = true;
 			} else {
 				track = false;

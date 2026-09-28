@@ -32,6 +32,9 @@ class Star;
 class Elements;
 class Base;
 class TileManager;
+#ifdef __linux__
+template<class T> class TileManager2; // g++: the friend declaration below does not introduce the name
+#endif // __linux__
 class SurfTile;
 class CloudTile;
 class ElevationManager;
@@ -196,7 +199,11 @@ public:
 			break;
 		}
 		std::error_code ec;
+#ifndef __linux__
 		for (const auto& entry : fs::directory_iterator(path, ec)) {
+#else // __linux__
+		for (const auto& entry : fs::directory_iterator(oapiResolvePath(path.string().c_str()), ec)) {
+#endif // __linux__
 			if (entry.path().extension().string() == ext) {
 				callback(entry);
 			}
@@ -287,10 +294,18 @@ private:
 	int max_cloud_level;
 	// separate cloud layer is rendered from this resolution
 
+#ifndef __linux__
 	LPDIRECTDRAWSURFACE7 *cloudtex;   // textures for cloud layer - TODO: replace with SURFHANDLE!
+#else // __linux__
+	SURFHANDLE *cloudtex;   // textures for cloud layer - TODO: replace with SURFHANDLE!
+#endif // __linux__
 	int ncloudtex;
 
+#ifndef __linux__
 	LPDIRECTDRAWSURFACE7 *ringtex;    // textures for ring system (if bHasRings) - TODO: replace with SURFHANDLE!
+#else // __linux__
+	SURFHANDLE *ringtex;    // textures for ring system (if bHasRings) - TODO: replace with SURFHANDLE!
+#endif // __linux__
 	int nringtex;
 
 	int tmgr_version;                 // which tile manager?

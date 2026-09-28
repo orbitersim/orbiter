@@ -10,6 +10,11 @@
 
 #include <cmath>
 #include <algorithm>
+#ifdef __linux__
+#include <QGuiApplication>
+#include <QScreen>
+#include <QString>
+#endif // __linux__
 
 #define OUTLINE_COAST 1
 #define OUTLINE_CONTOUR 2
@@ -99,7 +104,12 @@ void VectorMap::InitGDIResources ()
 
 	fontLabel = NULL;
 	// for default label size, query screen resolution
+#ifndef __linux__
 	int screenh = GetSystemMetrics(SM_CYSCREEN);
+#else // __linux__
+	QScreen *screen = QGuiApplication::primaryScreen(); // GetSystemMetrics(SM_CYSCREEN): primary screen height in device pixels
+	int screenh = (screen ? (int)(screen->size().height() * screen->devicePixelRatio()) : 1080);
+#endif // __linux__
 	labelsize = screenh / 100;
 	SetLabelSize(labelsize);
  
@@ -1016,8 +1026,14 @@ void VectorMap::DrawCustomMarkerSet (oapi::Sketchpad *skp, int idx)
 			} else {
 				skp->Ellipse (x-2, y-2, x+3, y+3);
 				if (drawlabel && set->list->marker[i].label[0].size()) {
+#ifndef __linux__
 					WCHAR wlabel[256];
 					MultiByteToWideChar(CP_UTF8, 0, set->list->marker[i].label[0].c_str(), -1, wlabel, 256);
+#else // __linux__
+					wchar_t wlabel[256];
+					int wn = QString::fromUtf8(set->list->marker[i].label[0].c_str()).left(255).toWCharArray(wlabel); // MultiByteToWideChar(CP_UTF8)
+					wlabel[wn] = 0;
+#endif // __linux__
 					skp->TextW (x+3, y, wlabel, wcslen(wlabel));
 				}
 			}
@@ -1319,7 +1335,11 @@ int PolyLineSet::Load (const char *path, int type_id)
 
 	Clear ();
 
+#ifndef __linux__
 	ifstream ifs(path);
+#else // __linux__
+	ifstream ifs(oapiResolvePath(path));
+#endif // __linux__
 	if (!ifs) return 0;
 
 	ifs.getline (cbuf, 256);
