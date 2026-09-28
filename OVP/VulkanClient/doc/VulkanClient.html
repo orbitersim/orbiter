@@ -1,0 +1,1557 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>VulkanClient documentation</title>
+  <style type="text/css">
+   .brk  { page-break-before:always; }
+   .nbrk { page-break-inside:avoid; }
+    body { font-size: 16pt; }
+    p    { page-break-inside:avoid; text-align: justify; }
+    dt   { margin-top:10px; }
+    dd   { margin-left:20px; }
+    li   { text-decoration:underline; font-weight:bold; page-break-inside:avoid; }
+    li.nodeco { text-decoration:none; font-weight:normal; page-break-inside:avoid; }
+    code { background-color: #E0E0E0; }
+  </style>
+</head>
+<body style="padding: 10px; margin: 10px;">
+
+<div style="font-weight:bold;font-size:28pt;">
+  <center>VulkanClient documentation</center>
+</div>
+
+<p>
+  The VulkanClient is the graphics client of the Linux version of Orbiter. It
+  is the D3D9Client of the Windows version, ported to Vulkan, and has the same
+  features, settings and configuration files. This manual is the Linux edition
+  of the D3D9Client documentation.
+</p>
+
+<hr />
+<!-- ====================================================================== -->
+<h1>Features &amp; Limitations</h1>
+<p>
+  The VulkanClient renders Orbiter through Orbiter's graphics client
+  interface, like the D3D9Client does on Windows, and adds a number of features
+  to the basic rendering. Here is a brief overview:
+  <ul>
+    <li>Advanced Texture Maps</li>
+      Additional texture information for meshes. These define for example how
+      "rough" or "shiny" a texture appears.
+    <li>Cloud Normal Maps</li>
+      To make clouds look more "voluminous", the VulkanClient allows normal
+      maps for planetary cloud layers.
+    <li>Custom Cameras</li>
+      Custom cameras allow add-ons to render images on isolated surfaces
+      (like camera screens for example).
+    <li>Local Lights</li>
+      The number of local lights in a scenario is unlimited.
+      Each mesh picks the lights which are most relevant to it for rendering
+      (up to 20, depending on the <a href="#_local_lights">Local lights</a>
+      setting). So, each mesh can have its own set of local lights.
+    <li>Reflections</li>
+      Environment mapping is used to draw reflections of the surrounding
+      environment onto reflective surfaces.
+    <li>Self Shadowing</li>
+      Vessels cast shadows onto themselves or onto other vessel structures.
+    <li>Sketchpad2</li>
+      A feature-enhanced Sketchpad to draw 2D graphics onto surfaces;
+      for example MFD Displays or announcements in the Simulation.
+    <li>Surface Micro Textures</li>
+      Surfaces of planets (or moons) will have a much more realistic look when
+      viewed from very close to the surface (when landed on the surface for
+      example).
+    <li>Terrain Flattening</li>
+      Regions of a planet's surface can be flattened, for example under
+      launch pads (see <a href="#_terrain_flattening">Terrain Flattening
+      definitions</a>).
+  </ul>
+  Stereoscopic 3D rendering, which the D3D9Client provides for NVIDIA 3D
+  Vision on Windows, is not available.
+</p>
+
+<hr />
+<!-- ====================================================================== -->
+<h1 class="brk">Requirements</h1>
+<p>
+  The VulkanClient needs a graphics card and driver with
+  <a href="https://www.vulkan.org" target="_blank">Vulkan</a> 1.4 support.
+  The anti-aliasing and anisotropic filtering levels offered in the setup
+  dialog are the ones the selected device supports.
+</p>
+
+<hr />
+<!-- ====================================================================== -->
+<h1>Installation</h1>
+<p>
+  The VulkanClient is part of the Linux version of Orbiter; there is nothing
+  to install separately. Select <b>VulkanClient</b> as graphics engine on the
+  Video tab of the Orbiter Launchpad:
+</p>
+<blockquote>
+  <img title="Video tab" src="images/Video%20Tab.png" alt="Video tab" />
+</blockquote>
+<p>
+  Its files are:
+</p>
+<ul>
+  <li class="nodeco"><code>Modules/Plugin/VulkanClient.so</code>: the client
+    module</li>
+  <li class="nodeco"><code>Modules/VulkanClient/</code>: shaders, the
+    configuration file <code>VulkanClient.cfg</code> and the log file
+    <code>D3D9ClientLog.html</code></li>
+  <li class="nodeco"><code>Config/GC/</code>: vessel material settings and
+    atmosphere configurations</li>
+  <li class="nodeco"><code>Config/MicroTex.cfg</code>: the surface micro
+    textures of each celestial body</li>
+  <li class="nodeco"><code>Cache/VulkanClient/Shaders/</code>: compiled
+    shaders, if the shader cache is enabled</li>
+</ul>
+
+<hr />
+<!-- ====================================================================== -->
+<h1 class="brk">Full screen modes</h1>
+<p>
+  The Full Screen Mode list on the Video tab offers three modes:
+  "True Full Screen (no alt-tab)" shows the render window full screen,
+  "Full Screen Window" opens a window without frame that covers the screen,
+  and "Window with Taskbar" opens a window without frame that covers the screen
+  except for the desktop's panels. The names come from the Windows version: on
+  Linux, switching to other windows works in all three modes, and the display
+  mode is never changed, so full screen always uses the current resolution of
+  the screen.<br />
+  In "True Full Screen" mode, and with "Force window size" ticked, the
+  anti-aliasing setting of the Advanced Setup dialog is not available.
+</p>
+
+<hr />
+<!-- ====================================================================== -->
+<h1>VulkanClient Advanced Setup</h1>
+<p>
+  On the Video tab of the Orbiter Launchpad you find the "Advanced" button that
+  will show the "VulkanClient Advanced Setup" dialog. Here you can change
+  several settings to tweak your experience with the VulkanClient. The
+  settings are stored in <code>Modules/VulkanClient/VulkanClient.cfg</code>.
+</p>
+<blockquote>
+  <img title="VulkanClient Advanced Setup"
+       src="images/VulkanClient%20Advanced%20Setup.png"
+       alt="VulkanClient Advanced Setup" />
+</blockquote>
+
+<h2 class="brk">Surface texture load options</h2>
+<p>
+  Here you can change the behavior how the VulkanClient will load surface
+  textures. The two options available are either "Load on demand (recommended)"
+  or "Pre-load at session start":
+</p>
+<ul>
+  <li>Load on demand (recommended)</li>
+    <p>
+      With this recommended option selected the VulkanClient will only load
+      surface textures when they come into view while you are orbiting a
+      planet. The value in the "Max. load frequency [Hz]" input field lets you
+      tune the maximum frequency the VulkanClient will check whether some new
+      surface textures have come into view.
+    </p>
+  <li>Pre-load at session start</li>
+    <p>
+      With this option selected the VulkanClient will load all surface textures
+      at startup of a scenario which results in a longer loading time.
+    </p>
+  <li>Tile Archive</li>
+    <p>
+      The tile archive selector lets you choose the type and order of planetary
+      body rendering option.
+      The planetary body data is located under the
+      <code>Textures/&lt;Planet&gt;</code> folder and comes in two "flavors".
+      The <code>Archive</code> sub folder contains compressed data, while the
+      <code>Elev_mod</code>, <code>Label</code>, <code>Mask</code> and
+      <code>Surf</code> folders contain the data structures as file system
+      folders and files.<br />
+      Access through the archive files is generally faster and should be
+      preferred over cache access.<br />
+      <p style="margin-bottom: 5px;">
+       The tile archive selection offers three settings:
+        <div style="text-indent:-1em; margin-left:1em">
+          <b><em>Cache only</em></b>:
+            Planetary body data will be loaded from cache only.
+        </div>
+        <div style="text-indent:-1em; margin-left:1em">
+          <b><em>Archive only</em></b>:
+            Planetary body data will be loaded from archive only.
+        </div>
+        <div style="text-indent:-1em; margin-left:1em">
+          <b><em>Cache &amp; Archive</em></b>:
+            Planetary body data will be loaded from archive but if tiles were
+            found in cache, those will be taken.<br />
+            This is useful to "overwrite" some parts of a planet, which could
+            be a correction of a erroneous archive part or just some additional
+            details provided by an add-on.
+        </div>
+      </p>
+    </p>
+</ul>
+
+<h2 id="_graphics_options">Graphics options</h2>
+<p>
+  Here you can change settings according to your graphic hardware:
+</p>
+<ul>
+  <li>Anti-aliasing</li>
+    <p>
+      Depending on your hardware you can select the anti-aliasing feature that
+      will "smoothen" the visual artifacts that occur when displaying edges.
+      The list offers the sample counts your graphics device supports.
+    </p>
+  <li>Anisotropic filtering</li>
+    <p>
+      Depending on your hardware you can select the level of anisotropic
+      filtering. For further details about this topic take a look at
+      <a href ="http://en.wikipedia.org/wiki/Anisotropic_filtering" target="_blank">Anisotropic
+      filtering</a> in the wikipedia.
+    </p>
+    <li>Planet glow</li>
+    <p>
+      The value set here is a factor that lets you brighten or dim the "shine"
+      produced by the reflection of a planet. The higher the value the more the
+      current orbiting planet acts like a additional light source.
+      The supported value range is from 0.01 to 2.0. The same value can be
+      changed during the simulation as "Indirect Lighting" in the
+      <a href="#_graphics_controls">Graphics Controls</a> dialog.
+    </p>
+    <li class="brk">Texture Mipmaps</li>
+    <p>
+      The texture mipmaps selector lets you choose the texture mipmap auto
+      generation policy. The select box lets you decide how to deal with
+      missing (not defined) mipmaps at load time.<br />
+      <p style="margin-bottom: 5px;">
+        The texture mipmaps selection offers three settings:
+        <div style="text-indent:-1em; margin-left:1em">
+          <b><em>Load as defined</em></b>:
+            Only defined mipmaps will be loaded. No automatic generation of
+            mipmaps will be performed.
+        </div>
+        <div style="text-indent:-1em; margin-left:1em">
+          <b><em>Autogen missing</em></b>:
+            Defined mipmaps will be loaded unaltered. Missing (not defined)
+            mipmaps will be generated automatically.
+        </div>
+        <div style="text-indent:-1em; margin-left:1em">
+          <b><em>Autogen all</em></b>:
+            All mipmaps (defined or not defined) will be generated automatically.
+        </div>
+      </p>
+    </p>
+    <li id="_post_processing">Post Processing</li>
+    <p>
+      The post processing selector lets you choose whether to add an
+      additional post processing shader.<br />
+      Note that enabling post processing will impact framerates.<br />
+      <p style="margin-bottom: 5px;">
+        The post processing selection offers two settings:
+        <div style="text-indent:-1em; margin-left:1em">
+          <b><em>None</em></b>:
+            No post processing shader will be applied.
+        </div>
+        <div style="text-indent:-1em; margin-left:1em">
+          <b><em>Light glow</em></b>:
+            The light glow post processing will "enhance" bright surfaces.
+            Its parameters can be changed during the simulation in the
+            <a href="#_graphics_controls">Graphics Controls</a> dialog.
+        </div>
+      </p>
+    </p>
+    <li>gcGUI Mode</li>
+    <p>
+      The graphic client Graphical User Interface (gcGUI) is an interface that
+      allows add-ons to add their own user interface elements to a simulation
+      session. These may be vessel specific controls or general simulation
+      settings.<br />
+      Note that this feature is still under development and that the API for
+      programming it may change.<br />
+      <p style="margin-bottom: 5px;">
+        The gcGUI Mode selection offers these settings:
+        <div style="text-indent:-1em; margin-left:1em">
+          <b><em>Disabled</em></b>:
+            No gcGUI elements will be rendered.
+        </div>
+        <div style="text-indent:-1em; margin-left:1em">
+          <b><em>(unused)</em></b>:
+            Treated as Disabled.
+        </div>
+        <div style="text-indent:-1em; margin-left:1em">
+          <b><em>Windowed</em></b>:
+            The gcGUI elements will be rendered as separate window.
+        </div>
+      </p>
+    </p>
+    <li>Earth visual config</li>
+    <p>
+      Selects the atmosphere configuration used for Earth. The list contains
+      "Default" (<code>Config/GC/Earth.atm.cfg</code>) and the other Earth
+      configurations found in <code>Config/GC</code>: files whose names end in
+      <code>_atm.cfg</code> (for example <code>Earth_A_atm.cfg</code>) and
+      whose <code>Planet</code> entry is Earth. The list shows their
+      <code>ConfigName</code> entries. Atmosphere parameters are tuned with the
+      <a href="#_atmospheric_controls">Atmospheric Controls</a> dialog.
+    </p>
+</ul>
+<p>
+  Following checkboxes can be checked (enabled) or unchecked (disabled) to
+  further fine-tune your VulkanClient experience:
+</p>
+<ul>
+  <li>Pre-load base visuals at startup</li>
+    <p>
+      With this option <b><em>enabled</em></b> the VulkanClient
+      will load all base visuals at startup of a scenario which results in a
+      longer loading time.
+      <br />
+      With this option <b><em>disabled</em></b> the VulkanClient
+      will only load base visuals when they come into view while you are e.g.
+      flying through the atmosphere or orbiting a planet.
+    </p>
+  <li>Enable advanced texture maps</li>
+    <p>
+      With this option enabled the VulkanClient will try to add additional
+      texture information for meshes that supply them. This
+      <a href="#_advanced_texture_maps">advanced texture maps</a> define for
+      example how "rough" or "shiny" a texture appears.
+    </p>
+  <li>Enable improved glass shading</li>
+    <p>
+      With this option enabled the VulkanClient will try to add improved glass
+      shading (Fresnel reflection) for meshes that supply them.
+    </p>
+  <li>Disable near clip plane compatibility mode</li>
+    <p>
+      If the near clip-plane compatibility mode is enabled then the minimum
+      clip-plane distance is 1.0 meters as is in the Orbiters internal engine.
+      If the compatibility mode is disabled then the client can reduce the clip
+      distance down to 0.1 meters, if there is a graphics close to the camera.
+      This setting will only effect in so-called exterior pass. Virtual cockpit
+      near clip-plane distance is defined in VulkanClient.cfg
+      (<code>VCNearPlane</code>) and the default value is 0.1 meters.
+    </p>
+  <li>Enable cloud micro-textures</li>
+    <p>
+      With this option enabled the VulkanClient will create micro textured
+      cloud surfaces that will make clouds appear much more realistic.
+    </p>
+  <li>Enable cloud normal maps</li>
+    <p>
+      With this option enabled the VulkanClient will render cloud textures as
+      if they were normal-maps. This lets clouds look more "voluminous".
+    </p>
+  <li>Enable GDI Overlay</li>
+    <p>
+      Some older add-ons draw directly onto the simulation window with a device
+      context (<code>oapiGetDC</code> without a surface; on Windows a GDI
+      device context, on Linux a QPainter). With this option enabled the
+      VulkanClient provides an overlay layer for such drawing and blends it
+      over the rendered scene. Enable it only if an add-on needs it.
+    </p>
+  <li>Enable absolute animation handling</li>
+    <p>
+      By default Orbiter uses <b><em>incremental animations</em></b>, meaning
+      that for each frame the previous animation state is incremented by a small
+      amount, which will induce some small error.<br />
+      Over time these errors accumulate and the animation is no longer in the
+      orientation it's supposed to be (3-10 mins in worst cases).<br />
+      <b><em>Absolute animations</em></b> updates the animation state from a
+      default state for each frame. Which doesn't suffer from the accumulted
+      error mentioned before. But absolute animations can fail if an add-on
+      alters the order of operations (rotations).<br />
+      Therefore it's not 100% backwards compatible. So far however, no add-on is
+      known to fail.
+    </p>
+  <li>Enable increased atmosphere quality</li>
+    <p>
+      With this option enabled the atmospheric scattering of planets is
+      computed with more detail (including the sun colour seen through the
+      atmosphere). This looks better, but costs some frame rate.
+    </p>
+</ul>
+<p>
+  The checkboxes below the "Surface micro textures" group are:
+</p>
+<ul>
+  <li>Enable shader cache for faster startup</li>
+    <p>
+      With this option enabled the VulkanClient stores its compiled shaders in
+      <code>Cache/VulkanClient/Shaders</code> in the Orbiter folder and reuses
+      them at the next start, which shortens the loading time.
+    </p>
+  <li>Enable dynamic ambient light</li>
+    <p>
+      With this option enabled the ambient light of vessels is computed from
+      their surroundings (an irradiance map made from the environment map).
+      This needs a <a href="#_reflections">Reflection Mode</a> other than
+      "Disable".
+    </p>
+  <li>Enable sun glare</li>
+    <p>
+      With this option enabled the sun is drawn with a glare effect. Its
+      strength can be changed during the simulation in the
+      <a href="#_graphics_controls">Graphics Controls</a> dialog.
+    </p>
+  <li>Enable terrain flattening</li>
+    <p>
+      With the planetary elevation model, some areas of a planet (or moon) might
+      not be perfectly "flat" and make it hard for some vessels to stand upright
+      for example. With the "terrain flattening" feature enabled, the regions
+      defined in <strong>.flt</strong> files are flattened. For the details on
+      how to set up <strong>.flt</strong> files, see section
+      <a href="#_terrain_flattening">Terrain Flattening definitions</a>.
+    </p>
+</ul>
+
+<h2 id="_local_lights">Local lights</h2>
+<p>
+  Here you can change settings regarding the rendering of local lights.<br />
+  In contrast to the global light (the sun) local lights are individual light
+  sources that might be a flood-light or a special beacon light source in a
+  fright bay or anywhere else on a vessel.
+  <br />
+  The number of local lights in a scenario is unlimited.
+  Each mesh picks the lights which are most relevant to it for rendering.
+  So, each mesh can have its own set of local lights.
+  "Partial" lights only compute diffuse part of the lighting while
+  "Full" lights do specular part too.<br />
+  The Local lights selection offers these settings:
+</p>
+<ul>
+  <li class="nodeco"><b><em>None</em></b>: No rendering of local lights.</li>
+  <li class="nodeco"><b><em>4x Partial</em></b>, <b><em>8x Partial</em></b>,
+    <b><em>12x Partial</em></b>, <b><em>16x Partial</em></b>,
+    <b><em>20x Partial</em></b>: at most 4, 8, 12, 16 or 20 local lights per
+    mesh, computing only the diffuse part.</li>
+  <li class="nodeco"><b><em>4x Full</em></b>, <b><em>8x Full</em></b>,
+    <b><em>12x Full</em></b>, <b><em>16x Full</em></b>,
+    <b><em>20x Full</em></b>: at most 4, 8, 12, 16 or 20 local lights per
+    mesh, computing the diffuse and specular parts.</li>
+</ul>
+
+<h2>Self Shadows</h2>
+<p>
+  Here you can change settings that will affect the rendering of shadows that
+  vessels will cast onto themselves or onto other vessel structures.
+</p>
+<ul>
+  <li>Vessel mapping</li>
+    <p>
+      This will control how many vessels will receive shadowing feature,
+      varying from "None" to "All visible" vessels.
+      <p style="margin-bottom: 5px;">
+        The vessel mapping selection offers four settings:
+        <div style="text-indent:-1em; margin-left:1em">
+          <b><em>None</em></b>:
+          No vessels will receive shadowing feature.
+        </div>
+        <div style="text-indent:-1em; margin-left:1em">
+          <b><em>Focus + payload</em></b>:
+          The vessel in focus and its payload will cast shadows.
+        </div>
+        <div style="text-indent:-1em; margin-left:1em">
+          <b><em>Near by objects</em></b>:
+          All nearby vessels (objects) will cast shadows.
+        </div>
+        <div style="text-indent:-1em; margin-left:1em">
+          <b><em>All visible objects</em></b>:
+          All visible vessels (objects) will cast shadows.
+        </div>
+      </p>
+    </p>
+  <li>Filter options</li>
+    <p>
+      This will select filtering for shadow maps. "9 Samples" is the fastest
+      setting for older computers and "27s dither" is the best that is
+      currently available.<br />
+      Better filtering produce smoother (better) edges for shadows. The
+      difference becomes more visible when zooming the camera into a shadow.
+      <p style="margin-bottom: 5px;">
+        The filter options selection offers three settings:
+        <div style="text-indent:-1em; margin-left:1em">
+          <b><em>9 samples</em></b>:
+          Shadow maps use 9 samples (fastest setting for older computers).
+        </div>
+        <div style="text-indent:-1em; margin-left:1em">
+          <b><em>27 samples</em></b>:
+          Shadow maps using 27 samples.
+        </div>
+        <div style="text-indent:-1em; margin-left:1em">
+          <b><em>27s dither</em></b>:
+          Shadow maps using 27 samples with dithering.
+        </div>
+      </p>
+    </p>
+  <li>Terrain mapping</li>
+    <p>
+      This setting will choose the shadowing mode for planetary surface and
+      base-objects.
+      "Stencil" is the legacy mode that's been there for ages.
+      "Projected" produces more realistic surface shadows for the focused (i.e.
+      currently active) vessel but doesn't effect any other vessels (all the
+      other vessels are using Stencil shadows).<br />
+      In this mode the focus vessel can cast shadows on base objects. This
+      shadowing option doesn't work well if the vessel is inside a base object.
+      <p style="margin-bottom: 5px;">
+        The terrain mapping selection offers three settings:
+        <div style="text-indent:-1em; margin-left:1em">
+          <b><em>None</em></b>:
+          No shadowing for planetary surface and base-objects.
+        </div>
+        <div style="text-indent:-1em; margin-left:1em">
+          <b><em>Stencil</em></b>:
+          This is the legacy mode that's been there for ages.
+        </div>
+        <div style="text-indent:-1em; margin-left:1em">
+          <b><em>Projected</em></b>:
+          Produces more realistic surface shadows for the focused (i.e.
+          currently active) vessel but doesn't effect any other vessels (all
+          the other vessels are using Stencil shadows).
+        </div>
+      </p>
+    </p>
+</ul>
+
+<h2 class="brk">Terrain Resolution</h2>
+<p>
+  Here you can change settings that will affect the rendering of planetary
+  terrains.
+</p>
+<ul>
+  <li>Texture Bias</li>
+  <p>
+    This slider allows to adjust the terrain tile resolution
+    <a href="https://en.wikipedia.org/wiki/Level_of_detail" target="_blank">
+      level-of-detail (LOD)</a> bias.
+    Higher uses higher resolution tiles, which give a sharper appearance, but
+    can induce flickering. Lower uses lower resolution tiles which look
+    smoother and produce less flickering.
+  </p>
+  <li>Mesh resolution</li>
+  <p>
+    Selects the terrain tile mesh resolution (16 or 32).
+    Higher values will result in smoother appearance, but can affect frame
+    rates on some systems.
+  </p>
+  <li>Max tiles allocated</li>
+  <p>
+    Selects 600, 1200 or 2400 tiles. The value is stored in VulkanClient.cfg
+    (<code>MaxTiles</code>), but the client does not use it in this version.
+  </p>
+  <li>Surface mipmaps</li>
+  <p style="margin-bottom: 5px;">
+    The Surface mipmaps selection offers two settings:
+    <div style="text-indent:-1em; margin-left:1em">
+    <b><em>Disabled</em></b>:
+      Planetary surface tiles are loaded without
+      <a href="https://en.wikipedia.org/wiki/Mipmap" target="_blank">mipmaps</a>.
+    </div>
+    <div style="text-indent:-1em; margin-left:1em">
+    <b><em>Enabled (slow2load)</em></b>:
+      Mipmaps are created for surface tiles (and for cloud tiles below
+      resolution level 10). This reduces the flickering of distant terrain,
+      but tiles take longer to load.
+    </div>
+  </p>
+</ul>
+
+<h2 class="brk">SketchPad settings</h2>
+<p>
+  The SketchPad is used in Orbiter to draw 2D graphics onto surfaces. These are
+  for example MFD Displays or announcements in the Simulation.
+</p>
+<ul>
+  <li>Font rendering</li>
+    <p>
+      The three options you can choose from at "<b><em>Font rendering</em></b>"
+      are "<b><em>Crisp</em></b>", "<b><em>Antialiased</em></b>" and
+      "<b><em>Cleartype</em></b>". They define how the fonts are pre-rendered
+      for sketchpad use: Crisp draws fonts without anti-aliasing, the other
+      two with anti-aliasing (on Linux, "Cleartype" is drawn like
+      "Antialiased"). Add-ons can override this for their own fonts. No
+      performance impact.
+    </p>
+</ul>
+
+<h2>Generic configuration</h2>
+<p>
+  The generic configuration contains options that will change the general
+  behavior of the VulkanClient. For most of the time the default setup should
+  be fine (Debug Level "1").
+  But you can for example change the verbosity of the internal logging system
+  to be able to report more detailed issue information when you experience an
+  error or failure.
+</p>
+<ul>
+  <li>Debug level</li>
+    <p>
+      The five options you can choose from here [0...4] represent the level of
+      information that will be written into the log-file. The log-file is
+      called D3D9ClientLog.html which can be found in the
+      <code>Modules/VulkanClient/</code> folder. Higher values will create more
+      detailed output.
+    </p>
+    <p>
+      Until you have any problems and like to have more detailed information
+      what's going on, you should keep this level reasonably low as higher
+      values will result in more disk I/O what slows down the Simulation.
+    </p>
+  <li>Enable Development Tools</li>
+    <p>
+      With this option enabled the VulkanClient provides the "Vulkan Debug
+      Controls" dialog and additional debugging options in its shaders. For
+      further details see the <a href="#_debug_controls">Vulkan Debug
+      Controls Dialog</a> section below. The Launchpad has to be restarted for
+      a change to take effect.
+    </p>
+  <li>Enable debug break</li>
+    <p>
+      For developers only: with this option enabled the VulkanClient stops
+      the program with a SIGTRAP signal when it logs a warning, so that a
+      debugger stops there. Without a debugger attached, this ends Orbiter at
+      the first warning. Leave it disabled.
+    </p>
+</ul>
+
+<h2 id="_stereoscopic_3d">StereoScopic 3D</h2>
+<p>
+  The stereoscopic 3D settings (Convergence and Field Depth) are used by the
+  D3D9Client with NVIDIA 3D Vision on Windows. The VulkanClient stores them in
+  VulkanClient.cfg, but they have no effect on Linux.
+</p>
+
+<h2 class="brk" id="_reflections">Reflections and Custom camera settings</h2>
+<p>
+  The reflections and custom camera settings allow you to tweak the parameters
+  that define the behavior of the environment mapping feature. Environment
+  mapping is a feature used to draw reflections of the surrounding environment
+  on reflective surfaces. Custom camera settings will allow add-ons to render
+  images on isolated surfaces (camera screens).
+</p>
+<ul>
+  <li>Reflection Mode</li>
+    <p style="margin-bottom: 5px;">
+      The reflection mode selection offers three settings:
+      <div style="text-indent:-1em; margin-left:1em">
+      <b><em>Disable (Debug)</em></b> will completely disable the environment
+        mapping feature.</div>
+      <div style="text-indent:-1em; margin-left:1em">
+      <b><em>Planet Only</em></b> will only "reflect" the currently orbiting
+        planet or moon.</div>
+      <div style="text-indent:-1em; margin-left:1em">
+      <b><em>Full Scene</em></b> will "reflect" the complete scene, that is all
+        other ships, moons and planets.</div>
+    </p>
+  <li>Custom Cameras</li>
+    <p>
+      The custom camera interface can be used by add-ons to create e.g.
+      payload-bay cameras, docking cameras and other things like that.
+      The camera image rendered by a custom camera can be displayed in an MFD
+      screen or any other screen in a virtual cockpit or in a panel.
+      Developer note: see the custom camera functions of the gcCore interface
+      (<code>gcCoreAPI.h</code> in <code>Orbitersdk/include</code>).
+      <br />
+      The custom camera selection offers therefore only two settings:
+      <b><em>Enabled</em></b> or <b><em>Disable</em></b>.
+      <br />
+      (Note: This has nothing to do with environment maps; it merely uses the
+      same code and update mechanism to do the rendering)
+    </p>
+  <li>Update Rate</li>
+    <p>
+      Selects the number of environment map faces that will be rendered per
+      frame.
+      The update rate selection offers three settings: <b><em>Light</em></b>,
+      <b><em>Medium</em></b> or <b><em>Heavy</em></b>.
+    </p>
+</ul>
+
+<h2 class="brk">Surface micro textures</h2>
+<p>
+  The Surface micro textures settings allow you to tweak the parameters that
+  define the rendering of additional extra details on (planetary body) surfaces
+  when viewed from very close. The settings include texture filtering options,
+  blend modes and <a href="https://en.wikipedia.org/wiki/Mipmap" target="_blank">
+  Mipmap</a> settings.<br />
+  The micro textures for the Moon, Mars, Mercury and several other bodies come
+  with Orbiter; <code>Config/MicroTex.cfg</code> defines which textures each
+  body uses.
+</p>
+<ul>
+  <li>Render Mode</li>
+    <p style="margin-bottom: 5px;">
+      The Render Mode selection offers two settings:
+      <div style="text-indent:-1em; margin-left:1em">
+        <b><em>Disabled</em></b>:
+        Turns the rendering of surface micro textures off.
+      </div>
+      <div style="text-indent:-1em; margin-left:1em">
+        <b><em>Enabled</em></b>:
+        Turns the rendering of surface micro textures on.
+      </div>
+    </p>
+  <li>Texture filter</li>
+    <p>
+      Selects the texture filtering of the micro textures, from
+      <b><em>Point (Fast/Good)</em></b> and <b><em>Linear (Fast/Bad)</em></b> to
+      <b><em>Anisotropic 2x</em></b>, <b><em>4x (Better)</em></b>,
+      <b><em>8x</em></b> and <b><em>16x (Slow/Best)</em></b>. Higher
+      anisotropic levels keep the micro textures sharp at low viewing angles,
+      at some cost in frame rate.
+    </p>
+  <li>Blend Mode</li>
+    <p>
+      Selects how strongly the micro textures modulate the surface texture:
+      <b><em>Soft light</em></b>, <b><em>Normal light</em></b> or
+      <b><em>Hard light</em></b>.
+    </p>
+  <li>Mipmap bias</li>
+    <p style="margin-bottom: 5px;">
+      The Mipmap bias slider lets you select the bias level from <b><em>Sharp</em></b>
+      to <b><em>Smooth</em></b>.
+    </p>
+</ul>
+
+<hr />
+<!-- ====================================================================== -->
+<h1 class="brk">Dialogs during the simulation</h1>
+<p>
+  The VulkanClient adds these entries to the Custom functions list
+  (<code>Ctrl+F4</code>, or the <i>function</i> button of the main menu):
+  "Vulkan Graphics Controls", "Vulkan Atmospheric Controls" and, with
+  <i>Enable Development Tools</i> ticked in the Advanced Setup dialog,
+  "Vulkan Debug Controls".
+</p>
+
+<h2 id="_graphics_controls">Graphics Controls</h2>
+<p>
+  The Graphics Controls dialog allows you to tweak scene rendering settings
+  while the simulation is running. Right-click a slider to reset it to its
+  default value.
+  <blockquote>
+    <img title="Graphics Controls" src="images/Vulkan%20Graphics%20Controls.png"
+         alt="Graphics Controls" />
+  </blockquote>
+</p>
+<ul>
+  <li>Post Processing Configuration</li>
+    <p>
+      Light glow intensity, Light glow distance and Glow threshold set up the
+      "Light glow" <a href="#_post_processing">post processing</a>; Gamma
+      adjusts the brightness curve of the image.
+    </p>
+  <li>Light Configuration</li>
+    <p>
+      Sunlight Intensity sets the brightness of the sun light, Indirect
+      Lighting the light reflected by the planet (the Planet glow setting of
+      the Advanced Setup dialog), Local Lights Max the brightness limit of
+      local lights, and Sun Glare Intensity the strength of the sun glare. The
+      "Recrete Sun/Glares" button creates the sun glare again with the current
+      settings.
+    </p>
+</ul>
+
+<h2 id="_atmospheric_controls">Atmospheric Controls</h2>
+<p>
+  The Atmospheric Controls dialog shows the atmospheric scattering parameters
+  of the planet near the camera, and lets you change them while watching the
+  result. The title bar shows the planet, its configuration file and the
+  altitude range (Surface, Low Orbit, High Orbit) whose parameters are shown.
+  <blockquote>
+    <img title="Atmospheric Controls" src="images/Vulkan%20Atmospheric%20Controls.png"
+         alt="Atmospheric Controls" />
+  </blockquote>
+  The list at the top selects the page: the atmospheric parameters, or the
+  water and sun-glare parameters. On the atmospheric page, the sliders are
+  grouped into twilight and ambient settings, wavelength and scale height
+  settings, terrain settings, Rayleigh and Mie scattering settings, and custom
+  settings. The <i>Configuration</i> list selects the altitude range to edit
+  ("Auto" follows the camera altitude), and the Copy buttons copy the values
+  shown to the surface, low orbit or high orbit range. <i>Save Settings</i>
+  writes the parameters to the configuration file in use, shown in the title
+  bar (a file in <code>Config/GC</code>, for example
+  <code>Earth.atm.cfg</code>); <i>Load Settings</i> reads them back from it.
+</p>
+
+<h2 id="_debug_controls" class="brk">Vulkan Debug Controls Dialog</h2>
+<p>
+  The Vulkan Debug Controls dialog allows you look at different things while
+  the simulation is running. It is available when <i>Enable Development
+  Tools</i> is ticked in the Advanced Setup dialog.
+  <br />
+  Such things are for example the highlighting of Meshes or Groups, so their
+  location and look can be easily checked. Looking at a complete scene in
+  wireframe mode might for example help in finding any mesh parts that are not
+  placed correct.
+  <br />
+  The dialog also allows you to change the settings of materials at runtime,
+  so that changes can be 'seen' while changing them.
+  <br />
+  The dialog opens with its left column only; the <b>&gt;&gt;&gt;</b> button
+  shows the right column with further tools, <b>&lt;&lt;&lt;</b> hides it
+  again.
+  <blockquote>
+    <img title="Vulkan Debug Controls" src="images/Vulkan%20Debug%20Controls.png"
+         alt="Vulkan Debug Controls" />
+  </blockquote>
+</p>
+
+<h3>Mesh debugger</h3>
+<p>
+  The mesh debugger group contains elements to inspect a mesh. It gives a mesh
+  developer some tools at hand to better inspect a mesh in its 'natural
+  environment', the Orbiter Simulation environment.<br />
+  With the options available in this group one can for example separate
+  individual parts of the shown scene and leave out all the rest, so it might
+  be easier to see what really happens at rendering.<br />
+  Other settings change the environment so that the current lighting
+  conditions do not apply, so when the mesh is currently in the shadowed part
+  of the orbit it can still be seen with some artificial ambient light.
+</p>
+<ul>
+  <li id="_display">Display</li>
+    <p>
+      This combo box lets you select what parts of a scene is rendered.
+      <div style="text-indent:-1em; margin-left:1em">
+      <b><em>Everything</em></b> will, as the name suggests, display
+      everything. This will show the scene as it will be shown normally when
+      running a Orbiter simulation session.
+      </div>
+      <div style="text-indent:-1em; margin-left:1em">
+      <b><em>Selected Visual</em></b> will display only the currently selected
+      visual. Planets and moons for example are excluded.
+      </div>
+      <div style="text-indent:-1em; margin-left:1em">
+      <b><em>Selected Mesh</em></b> will display only the currently selected
+      mesh. If for example two vessels are in the complete scene, only one of
+      them will be displayed. All other vessels, planets and moons are
+      excluded.
+      </div>
+      <div style="text-indent:-1em; margin-left:1em">
+      <b><em>Selected Group</em></b> will display only the current selected
+      group. This is often just a "part" of a vessels mesh. All other groups,
+      vessels, planets and moons are excluded.
+      </div>
+    </p>
+  <li id ="_camera">Camera</li>
+    <p>
+      This combo box lets you select the camera-mode. It can be either "Center
+      on visual" or "Wheel Fly/Pan Cam".
+      <br />
+      <b><em>Center on visual</em></b> will select the 'normal' Orbiter camera
+      operations where with pressed right mouse button you can 'drag' the
+      camera around the current selected visual.
+      <br />
+      <b><em>Wheel Fly/Pan Cam</em></b> will select another camera-mode where
+      with pressed left mouse button you can pan the camera left/right or
+      up/down and with the right mouse button pressed it can be 'tilted'.
+    </p>
+  <li>Speed</li>
+    <p>
+      This control lets you change the speed of the camera movements when you
+      are in "Wheel Fly/Pan Cam" camera-mode (see
+      <a href="#_camera">Camera</a>).
+    </p>
+  <li id="_mesh_idx">Mesh Idx</li>
+    <p>
+      This control lets you select one mesh of a multi-mesh vessel by its
+      index. If a vessel consists of a "hull"-mesh and a cockpit-mesh, you will
+      be able to select the two meshes individually by selecting the according
+      mesh index here.
+    </p>
+  <li>Group Idx</li>
+    <p>
+      This control lets you select one group out of the current selected mesh
+      (see <a href="#_mesh_idx">Mesh Idx</a>) of a multi-group mesh by its
+      index.
+    </p>
+  <li>Highlight selected group</li>
+    <p>
+      With this option <b><em>enabled</em></b> the current selected group will
+      be permanently highlighted (green).
+    </p>
+  <li>Highlight selected mesh</li>
+    <p>
+      With this option <b><em>enabled</em></b> the current selected mesh will
+      be permanently highlighted (blue).
+    </p>
+  <li>Add ambient light</li>
+    <p>
+      With this option <b><em>enabled</em></b> the current selected mesh will
+      be lit by artificial ambient light independent of the current 'global'
+      lighting conditions.
+    </p>
+  <li>Dual sided</li>
+    <p>
+      Faces are normally only rendered from one side (the "backside" is kind of
+      completely transparent). With this option <b><em>enabled</em></b> all
+      faces are rendered opaque from both sides. This helps to find mesh parts
+      that are "sticking out" of another mesh-part.
+    </p>
+  <li>Wireframe</li>
+    <p>
+      With this option <b><em>enabled</em></b> the scene (or only parts of it,
+      see <a href="#_display">Display</a>) will be rendered as wireframe model.
+      In a wireframe model only the edges (the lines connecting vertices) of
+      the meshes are drawn.
+    </p>
+  <li>Pick</li>
+    <p>
+      The Pick option is one of the most useful tools for selecting materials.
+      With this option <b><em>enabled</em></b> you can just select a material
+      by clicking onto it with the left mouse button.
+      <div style="left:5%; position:relative">
+      <img title="Pick in action" src="images/PickInAction.png"
+           alt="Pick in action"
+           height="300px" />
+      </div>
+      Whenever a material is picked it will light up in green, so it is easy to
+      see which material is chosen. After a material is chosen all the settings
+      in the Material group apply to that material.
+    </p>
+</ul>
+
+<h3>Mesh</h3>
+<p>
+  The group below the mesh debugger shows the name of the selected mesh.
+  <i>Default Shader</i> selects the shader the mesh is rendered with:
+  <b><em>PBR (Old)</em></b> or <b><em>Metalness PBR</em></b>. The material
+  properties offered in the Material group depend on this choice.
+</p>
+
+<h3 id="_material_x">Material</h3>
+<p>
+  This group contains all the elements that enable you to tweak the different
+  parameters of the selected material. Its title shows the material's index.
+</p>
+<ul>
+  <li>Material property</li>
+    <dl>
+      <dt><b>Diffuse</b></dt>
+      <dd>
+        Defines diffuse material color [RGBA]. Texture is modulated with this
+        color. The range for every property in this section is [0.0 to 1.0]
+        unless otherwise noted.
+      </dd>
+      <dt><b>Ambient</b></dt>
+      <dd>
+        Defines ambient material color [RGB].
+      </dd>
+      <dt><b>Specular</b></dt>
+      <dd>
+        Defines specular material color [RGB] and the specular power
+        [1.0 to 4096.0].
+      </dd>
+      <dt><b>Emission</b></dt>
+      <dd>
+        Defines emissive material color [RGB].
+      </dd>
+      <dt><b>Reflect</b></dt>
+      <dd>
+        Defines reflection color [RGB] for a metallic (mirror a-like)
+        reflection which intensity is independent from a viewing angle.
+      </dd>
+      <dt><b>Smoothness</b></dt>
+      <dd>
+        Defines the smoothness of the surface and the texture linearity
+        (default 1.0).
+      </dd>
+      <dt><b>Fresnel</b></dt>
+      <dd>
+        The first field is the angle dependency of the reflection [0.5 to 2.0],
+        the second the maximum intensity, the third the specular lobe size.
+        With the Metalness PBR shader, the second field is the attenuation of
+        the Fresnel effect (1.0 = disabled, 0.0 = maximum intensity).
+      </dd>
+      <dt><b>Emission2</b></dt>
+      <dd>
+        A second emissive color [RGB, 0.0 to 2.0].
+      </dd>
+      <dt><b>Metalness</b></dt>
+      <dd>
+        Metalness PBR shader only: the metalness of the material.
+      </dd>
+      <dt><b>SpecialFX</b></dt>
+      <dd>
+        Metalness PBR shader only: the part temperature, for heat effects.
+      </dd>
+      <dt><b>Tune Albedo, Tune _Emis, Tune _Refl, Tune _Rghn, Tune _Transl,
+        Tune _Transm, Tune _Spec</b></dt>
+      <dd>
+        PBR (Old) shader only: adjust the colours of the base texture and of
+        the <a href="#_advanced_texture_maps">advanced texture maps</a>.
+      </dd>
+    </dl>
+  <li>(4) Channel values &amp; Slider</li>
+  <p>
+    Meaning of the fields will depend about the selected material property.
+    Click a field to select it for the slider.
+  </p>
+  <li>Copy &amp; Paste</li>
+  <p>
+    Copy and paste buttons can be used to copy [RGB] values from different
+    material properties for an example from specular color to reflect color.
+  </p>
+  <li>Link channels</li>
+  <p>
+    The link checkbox allows the link the R, G and B fields and after that
+    they can be adjusted simultaneously with the slider.
+  </p>
+  <li>Extend material range</li>
+  <p>
+    Extends the range of the slider for properties that allow values above
+    1.0.
+  </p>
+  <li>Use and Save the property</li>
+  <p>
+    Marks the selected property as defined for the material, so that it is
+    used and saved with <i>Save materials</i>.
+  </p>
+</ul>
+<p>
+  Below the Material group the dialog shows the texture, the mesh and the group
+  status of the selected group.
+</p>
+
+<h3>Buttons</h3>
+<ul>
+  <li>Save materials</li>
+  <p>
+    Once you are happy with the result you have adjusted in the
+    <a href="#_material_x">Material</a> group, click on "Save materials" and
+    the changed material specifications will be saved in the
+    <code>Config/GC/</code> folder of your Orbiter installation, in a file
+    named after the vessel class (e.g. <code>Config/GC/DeltaGlider.cfg</code>).
+    <br />
+    You can edit these files with any text editor. The next time you fly a
+    ship of the same class it will have the properties you have defined.
+    <br />
+    If you want to have the "default" look back, just remove the according
+    file from that folder and the standard Orbiter appearance will be restored.
+    Orbiter comes with such files for some of the standard vessels.
+  </p>
+  <li>Reload Textures</li>
+  <p>
+    Reloads the textures of the selected vessel from their files, for example
+    after you have edited a texture.
+    <strong style="color:red">Caution:</strong> vessels that draw into
+    textures of their own, like the instrument displays of the Delta-glider,
+    can crash Orbiter when their textures are reloaded.
+  </p>
+  <li>Data window</li>
+  <p>
+    Opens a window with data about the selected object and the picked
+    location.
+  </p>
+  <li>Reload Shader</li>
+  <p>
+    Loads the VulkanClient's mesh shaders again, for shader development.
+  </p>
+</ul>
+
+<h3>Misc.</h3>
+<ul>
+  <li>FPS Limiter</li>
+    <p>
+      With this option <b><em>enabled</em></b> the number of frames rendered
+      per second is limited, to reduce unnecessary GPU and CPU load. The limit
+      is the <code>FrameRate</code> entry in VulkanClient.cfg (default 200).
+      The limiter only works with vertical sync disabled; it is recommended to
+      use the vertical sync option of the Video tab instead.
+    </p>
+  <li>Create kernel</li>
+    <p>
+      Client development utility: writes a sampling kernel to Orbiter.log.
+    </p>
+  <li>Resolution Bias</li>
+    <p>
+      Changes the resolution bias of the planetary surface tiles while the
+      simulation runs, to compare levels of detail.
+    </p>
+</ul>
+
+<h3>Scene Debugger</h3>
+<ul>
+  <li>Debug Mode</li>
+    <p>
+      Shows the planetary surface with debugging colours: <i>Normals
+      Global</i>, <i>Normals Tangent</i>, <i>Height</i>, <i>Height Mk2</i> or
+      <i>Tile Level</i> (<i>None</i> for normal rendering).
+    </p>
+  <li>Display special buffer</li>
+    <p>
+      Shows one of the client's internal render buffers on the screen, for
+      example the shadow map, the environment map blur levels or the screen
+      depth.
+    </p>
+  <li>Save envmap</li>
+    <p>
+      Saves the environment map of the selected vessel as
+      <code>EnvMap.dds</code> in the Orbiter folder.
+    </p>
+</ul>
+
+<h3>Texture Tools</h3>
+<p>
+  <i>Open</i> selects a texture file (DDS, JPG, PNG, HDR, BMP or TGA).
+  <i>Select Action</i> converts it to DXT5, RGB8 or RGB4. <i>Normalize</i>,
+  <i>Reduce seams</i> and <i>Mipmap fade</i> apply corrections, and
+  <i>Noise</i>, <i>Fa</i> and <i>Fb</i> are the parameters of the conversion.
+  <i>Target</i> selects what happens with the result when you press
+  <i>Execute</i>: <i>Save</i> writes it to a DDS file, <i>Assign to slot
+  0</i> to <i>2</i> uses it as micro texture level 0 to 2 of the planet near
+  the camera, to try out micro textures.
+</p>
+
+<h3>Bounding geometry</h3>
+<ul>
+  <li>Boxes</li>
+    <p>
+      With this option <b><em>enabled</em></b>, objects of the scene will have
+      their bounding boxes also drawn.
+    </p>
+  <li>Spheres</li>
+    <p>
+      With this option <b><em>enabled</em></b>, objects of the scene will have
+      their bounding spheres drawn. The sphere represents the smallest volume
+      that still fits the complete geometry.
+    </p>
+  <li>Surface Tiles</li>
+    <p>
+      With this option <b><em>enabled</em></b>, the bounding boxes of the
+      planetary surface tiles are drawn.
+    </p>
+  <li>Selected group only, Selected mesh only, Selected visual only</li>
+    <p>
+      Limit the bounding geometry to the currently selected group, mesh or
+      visual.
+    </p>
+</ul>
+
+<h3>Visualize local light cones</h3>
+<p>
+  Selects a light source of the selected vessel whose light cone is drawn.
+</p>
+<p>
+  The <i>Export textures</i> button has no function in this version.
+</p>
+
+<hr />
+<!-- ====================================================================== -->
+<h1 class="brk" id="_base_configuration">Base Configuration settings</h1>
+<p>
+  The VulkanClient allows you to configure some more details when setting up
+  runway lights.
+  <br />
+  In addition to the parameters that Orbiter itself defines (see the section
+  on base configuration files in <em>Doc/Orbiter Developer Manual
+  (Linux).pdf</em>) there are some extra parameters you can define.
+  <br />
+  For a better understanding of how some of those parameters affect the
+  rendering of the runway lights this image might help:
+  <blockquote>
+    <img title="Runway lights" src="images/rwylights.png" alt="Runway lights"/>
+  </blockquote>
+</p>
+
+<div style="text-decoration:underline;font-weight:bold;">&lt;RUNWAYLIGHTS&gt;</div>
+<ul>
+  <li><strong>&lt;END1 V&gt;</strong></li>
+    <p>
+      First end point of runway (center line).
+    </p>
+  <li><strong>&lt;END2 V&gt;</strong></li>
+    <p>
+      Second end point of runway (center line).
+    </p>
+  <li><strong>&lt;WIDTH F&gt;</strong></li>
+    <p>
+      Runway width (m)
+      <br />
+      Note: Two different light configurations exist (wide&gt;59m) and
+      (narrow&lt;59m)
+    </p>
+  <li class="brk"><strong>&lt;PAPI F F F I I&gt;</strong></li>
+    <p>
+      Precision Approach Path Indicator (PAPI).<br />
+      Parameters:<br />
+      Designated approach angle (deg)<br />
+      Approach cone aperture (deg)<br />
+      Offset of PAPI location from runway endpoints. (m)<br />
+      PAPI Mode (int:0-3) (this is optional parameter)<br />
+      PAPI runway end point (int: 0-1) (if this parameter is not defined then
+      PAPI is added in both ends)<br />
+      <br />
+      PAPI Modes:<br />
+      0: On center line<br />
+      1: On left side<br />
+      2: On right side<br />
+      3 or none: On both sides<br />
+      <br />
+      PAPI Endpoint:<br />
+      0: PAPI lights added to END1 only<br />
+      1: PAPI lights added to END2 only<br />
+      Not Defined: PAPI lights added in both ends<br />
+      <br />
+      Note: Runwaylights can have 12 PAPI lights. A runwaylights section can
+      have more than one PAPI entry.
+    </p>
+  <li><strong>&lt;VASI F F F I&gt;</strong></li>
+    <p>
+      Visual Approach Slope Indicator (VASI).<br />
+      Parameters:<br />Designated approach angle (deg)<br />
+      Distance between white and red indicator lights (m)<br />
+      Offset of VASI (red bar) location from runway endpoints (m)<br />
+      VASI runway end point (int: 0-1) (if not defined then VASI is added in
+      both ends)<br />
+      <br />
+      Note: Runwaylights can have 2 VASI lights.
+    </p>
+  <li><strong>&lt;TD_DISP F&gt;</strong></li>
+    <p>
+      Touch Down displacement (m). (default: 0m)<br />
+      Displacement between runway endpoint and the green line.
+    </p>
+  <li><strong>&lt;TD_DISP2 F&gt;</strong></li>
+    <p>
+      Touch Down displacement for the other end of the runway (m).
+      (default: 0m)<br />
+      Displacement between runway endpoint and the green line. If this value
+      isn't specified then TD_DISP is used for both ends of the runway.
+    </p>
+  <li><strong>&lt;TD_LENGTH F&gt;</strong></li>
+    <p>
+      Length of the Touchdown zone (m). (default: 600m)<br />
+      Two columns of lights on a runway each containing 3 parallel lights.
+    </p>
+  <li><strong>&lt;DECISION_DIST F&gt;</strong></li>
+    <p>
+      Length of the "red lights" zone (m). (default: 257m)<br />
+      This zone contains 2 x 3 x 9 red lights and the spacing between lights
+      depends on the length of the zone. The touchdown zone uses the same
+      spacing of about 30m.
+    </p>
+  <li class="brk"><strong>&lt;APPROACH_START F&gt;</strong></li>
+    <p>
+      Length of the approach lights from the green line (m).
+      (default: 900m)<br />
+      It's the long column of 5 parallel lights.
+    </p>
+  <li><strong>&lt;SINGLEENDED&gt;</strong></li>
+    <p>
+      If the singleended keyword is defined then the lights are only rendered
+      when approaching a runway from END1 towards END2. If you want
+      asymmetric runway lights then you need two runwaylight sections in a base
+      configuration file.
+    </p>
+  <li><strong>&lt;CATEGORY&gt;</strong></li>
+    <p>
+      Defines the category of runway lights. 1 = SSALR, 2 = ALSF-II. If this
+      value isn't specified then the category is automatically selected based
+      on the runway width. ALSF-II is used if the width is greater than 59m.
+    </p>
+</ul>
+
+<p>
+  Example of runway lights for KSC:
+</p>
+<blockquote style="background-color:silver; font-size:9pt; padding:10px;">
+<pre>RUNWAYLIGHTS
+  END1 -8220 -3 -600
+  END2 -12670 -12 -3155
+  WIDTH 100
+  PAPI 5.0 3.0 257 3      ; both sides of the green line, in both ends
+  PAPI 20.0 3.0 -2000 0 0 ; on a center line 2km before rwy in END 1
+  PAPI 20.0 3.0 -2000 3 1 ; both sides of center line, 2km before rwy, in END 2
+  VASI 1.5 152 671
+  TD_DISP 257
+  TD_LENGTH 600
+  DECISION_DIST 257
+  APPROACH_START 900
+END</pre>
+</blockquote>
+
+<hr />
+<!-- ====================================================================== -->
+<h1 class="brk" id="_advanced_texture_maps">Advanced Texture Maps</h1>
+<p>
+  Additional texture maps can be automatically assigned to a mesh simply by
+  placing additional textures into a texture folder. Additional textures are
+  identified by an identifier at the end of the texture name, like
+  "dgmk4_1_norm.dds" where "dgmk4_1.dds" is the name of the base texture.
+  As on Windows, the texture file names are looked up without regard to
+  upper and lower case.
+</p>
+<p>
+  A texture set could for example consist of these files:
+  <pre>
+    cube.dds        &lt;= 'base' texture
+    cube_norm.dds   &lt;= 'advanced texture Normal-map'
+    cube_spec.dds   &lt;= 'advanced texture Specular-map'
+    cube_emis.dds   &lt;= 'advanced texture Emission-map'
+    cube_refl.dds   &lt;= 'advanced texture Reflection-map'
+  </pre>
+</p>
+<p>
+  The maps can be DDS, PNG, JPG, BMP or TGA files, with the same file
+  extension as the base texture.
+</p>
+<p>
+  Available identifiers are:<br />
+</p>
+<ul>
+  <li id="_norm"><strong>&lt;_norm&gt;</strong></li>
+    <p>
+      Tangent space normal map. The [RGB] channels are used.
+    </p>
+  <li id="_spec"><strong>&lt;_spec&gt;</strong></li>
+    <p>
+      Specular map controls a specular reflection on a per pixel basis. The
+      [RGB] channels hold the specular color and the alpha channel holds the
+      specular power. Value 255 is mapped to the maximum material defined
+      power and 0 is mapped to 0.0.
+    </p>
+  <li id="_emis"><strong>&lt;_emis&gt;</strong></li>
+    <p>
+      Emission map. The [RGB] channels are used, the alpha channel is ignored.
+    </p>
+  <li id="_rghn"><strong>&lt;_rghn&gt;</strong></li>
+    <p>
+      Roughness map controls the surface roughness on a per pixel basis. Only
+      the green channel is used. The <i>Metalness PBR</i> shader reads it as
+      smoothness (1.0 = smooth).
+    </p>
+  <li id="_metal"><strong>&lt;_metal&gt;</strong></li>
+    <p>
+      Metalness map. Only the green channel is used. It is used by the
+      advanced shaders only (<i>PBR-ADV</i> and <i>Metalness PBR</i>).
+    </p>
+  <li id="_refl"><strong>&lt;_refl&gt;</strong></li>
+    <p>
+      Reflection map controls material reflectivity and color on a per pixel
+      basis. Fresnel reflection works independently from a reflection map.
+      However, a zero (black) reflection map value will mask off the fresnel
+      reflections as well. A non zero value will apply full fresnel reflections
+      for that pixel. Only [RGB] channels from a texture are used.
+    </p>
+  <li id="_transl"><strong>&lt;_transl&gt;</strong></li>
+    <p>
+      Translucence map controls the material translucency on a per pixel basis.
+      The texture behaves much like a diffuse texture, except that it is
+      illuminated from behind. Illumination is based on the angle of the sun
+      relative to the surface; if the sun is directly behind the surface, the
+      illumination is strong, and if the sun is at a low angle but still behind
+      the surface, the illumination is dim. If the sun begins to illuminate the
+      surface from in front, the translucence effect is no longer visible.
+      <br />
+      Only [RGB] channels from a texture are used. It is used by the advanced
+      shaders only.
+    </p>
+  <li id="_transm"><strong>&lt;_transm&gt;</strong></li>
+    <p>
+      Transmittance map controls the amount of light that passes through a
+      translucent material without being diffused. The effect is very similar
+      to a specular reflection, except that it simulates the bright spot on a
+      semi-transparent material that is directly between the sun and the
+      observer.<br />
+      The [RGBA] channels from a texture are used. The RGB channels provide
+      color and brightness, while the alpha channel changes the size of the
+      bright spot. This is analogous to how the <a href="#_spec">specular map</a>
+      is used. It is used by the advanced shaders only.
+    </p>
+  <li id="_heat"><strong>&lt;_heat&gt;</strong></li>
+    <p>
+      Heat map. It shapes the heat glow that the <i>Part Temperature</i>
+      value of the material's <i>SpecialFX</i> property produces, for example
+      on a re-entering vessel. Only the green channel is used. It is used by the
+      <i>Metalness PBR</i> shader.
+    </p>
+</ul>
+<br />
+<p>
+  The advanced texture maps are used on vessel and base meshes. Base meshes
+  have no environment map of their own. The planetary surface does not use
+  advanced texture maps.
+</p>
+
+<hr />
+<!-- ====================================================================== -->
+<h1 class="brk" id="_terrain_flattening">Terrain Flattening definitions</h1>
+<p>
+  With the planetary elevation model, some areas of a planet (or moon) might not
+  be perfectly "flat" and make it hard for some vessels to stand upright for
+  example.<br />
+  With the "terrain flattening" feature enabled (the default), one can define
+  specific regions to be modified.<br />
+  <br />
+  <strong>.flt</strong>-files for a planet (or moon) must be placed in a
+  <tt>Flat</tt> folder in the body's texture folder:
+  <tt>Textures/&lt;planet&gt;/Flat</tt>.<br />
+  There can be multiple <strong>.flt</strong>-files in each folder, so different
+  add-ons can co-exist.
+  <br />
+  In every <strong>.flt</strong>-file, one or more of the following line entries are parsed:
+  <blockquote style="background-color:silver; font-size:normal; padding:10px;">
+  <pre style="margin-bottom:0; margin-top:0">ELLIPSE &lt;height&gt; &lt;lng&gt; &lt;lat&gt; &lt;major&gt; &lt;minor&gt; &lt;phi&gt; &lt;falloff&gt;
+// or
+RECT &lt;height&gt; &lt;lng&gt; &lt;lat&gt; &lt;length&gt; &lt;width&gt; &lt;phi&gt; &lt;falloff&gt;</pre>
+  </blockquote>
+</p>
+
+<ul>
+  <li class="nodeco">Lines that start with double-slashes (//) are treated as
+    comments</li>
+  <li class="nodeco"><strong>&lt;height&gt;</strong> [Integer]
+    Height values are altitude (in meters) relative to mean surface level.
+    For Earth for example, a value of 8 means "8 meters above mean sea level"
+    (MSL).<br />
+    To get a starting value for &lt;height&gt;, one can use the altitude
+    value provided by "Surface MFD".
+  </li>
+  <li class="nodeco"><strong>&lt;lng&gt;</strong> &amp;
+                     <strong>&lt;lat&gt;</strong> [Float]
+    longitude and latitude coordinates, as defined in e.g. base configuration
+    file</li>
+  <li class="nodeco"><strong>&lt;major&gt;</strong> &amp;
+                     <strong>&lt;minor&gt;</strong> [Integer]
+    are ellipse major and minor radius in meter,<br />
+    &lt;minor&gt; defaults to &lt;major&gt; if not defined<br />
+    - the meter definition might not be exact, as it uses a decimal degree
+    guess at the latitude circle</li>
+  <li class="nodeco"><strong>&lt;length&gt;</strong> &amp;
+                     <strong>&lt;width&gt;</strong> [Integer]
+    are rectangle length and width in meter,<br />
+    &lt;width&gt; defaults to &lt;length&gt; if not defined<br />
+    - meter definition same as above</li>
+  <li class="nodeco"><strong>&lt;phi&gt;</strong> [Float]
+    is a rotation angle in degrees from the equator, with &lt;major&gt; and
+    &lt;length&gt; being parallel to the equator</li>
+  <li class="nodeco"><strong>&lt;falloff&gt;</strong> [Integer]
+    is the percentage value (e.g. 50 for 50%) of the shape radius where
+    transparent merging with original height is done</li>
+</ul>
+<ul>
+  <li class="nodeco"><strong>ELLIPSE</strong> is defined with the midpoint
+    at &lt;lng&gt;/&lt;lat&gt;, &lt;major&gt; axis radius in meter,
+    &lt;minor&gt; axis radius in meter,<br />
+    &lt;phi&gt; rotation 0-90&deg; tilted major axis,
+    flattened to &lt;height&gt; in meter
+    with &lt;falloff&gt; percent (of full radius seen from edge of shape)
+    gradual transparency merging with actual height.
+    Only the first 4 parameters are necessary,
+    &lt;minor&gt; defaults to &lt;major&gt;, the rest to zero.</li>
+  <li class="nodeco"><strong>RECT</strong>ANGLE is with midpoint at
+    &lt;lng&gt;/&lt;lat&gt;, &lt;length&gt; and &lt;width&gt; in meter,<br />
+    tilted with &lt;phi&gt; 0-90&deg;,
+    flattened to &lt;height&gt; in meter
+    with &lt;falloff&gt; percent (of full radius seen from edge of shape)
+    gradual transparency merging with actual height.
+    Only the first 4 parameters are necessary,
+    &lt;width&gt; defaults to &lt;length&gt;, the rest to zero.</li>
+  <li class="nodeco">Shapes are loaded in order of file and line position,
+    last shapes overriding first.</li>
+  <li class="nodeco">Shapes are preprocessed into a cascaded map, creating a
+    GBody->level->ilat->ilng database. Whenever a shape touches a given path
+    (so it has multiple paths due to higher levels), it is within that tile
+    and will be taken into account.
+    If a shape's tile contribution is below pixel size, it will not land in
+    the path.</li>
+  <li class="nodeco">The filter function will check the database, then do the
+    drawing algorithm for all shapes in the path's list.</li>
+  <li class="nodeco">The flattening is applied to the rendered terrain and to
+    the elevation that Orbiter uses for the physics (e.g. touchdown
+    points).</li>
+</ul>
+
+<p class="brk">
+  <strong style="color:red">Notes:</strong>
+  <ul>
+    <li class="nodeco">The resolution of the flattening shapes is only as
+      high as the tiles they operate on. I.e.: if you have low resolution
+      terrain, too small shapes could be invisible or distorted.</li>
+    <li class="nodeco">When in doubt about terrain resolution, start with a
+      large area (2 or 3 km) and lower it until you get a good result.</li>
+    <li class="nodeco">Terrain interpolation mode (linear, cubic) will impact
+      the results.</li>
+    <li class="nodeco">The shape keywords are case-insensitive. Using UPPERCASE
+      however is recommended.</li>
+    <li class="nodeco">All lines that are not recognized as a valid shape
+      configuration (<strong>ELLIPSE</strong>- rsp. <strong>RECT</strong>-line)
+      will be ignored (as if they are comment lines). It is however recommended
+      to only use the double-slashes (//) to start comment lines.</li>
+    <li class="nodeco">The file is read word by word. To comment out a shape,
+      put the double-slashes directly in front of the keyword
+      (<tt>//ELLIPSE ...</tt>). With a space after the double-slashes
+      (<tt>// ELLIPSE ...</tt>) the shape is still read.</li>
+  </ul>
+</p>
+
+<p>
+  Example of a <strong>.flt</strong>-file <tt>Textures/Moon/Flat/test.flt</tt>
+</p>
+<blockquote style="background-color:silver; font-size:9pt; padding:10px;">
+<pre>// *** Example Terrain Flattening .flt file ***
+ELLIPSE -2700 -32.6  +41.5  2500
+ELLIPSE -2600 -32.6  +41.5  1700
+ELLIPSE -2700 -32.6  +41.5  1500
+RECT    -2700 -32.6  +41.47 3400 2400
+ELLIPSE -2600 -32.55 +41.46 250
+ELLIPSE -2600 -32.65 +41.46 250</pre>
+</blockquote>
+
+<p>
+  Another example of a <strong>.flt</strong>-file <tt>Textures/Earth/Flat/Cape1.flt</tt>
+</p>
+<blockquote style="background-color:silver; font-size:9pt; padding:10px;">
+<pre>;; LC11
+Ellipse 7 -80.5405960 28.4752030 1000 1000 0 20
+;; LC12
+Ellipse 7 -80.5430260 28.4805330 1000 1000 0 20
+;; LC13
+Ellipse 7 -80.5454560 28.4857930 1000 1000 0 20
+;; LC14
+Ellipse 7 -80.5478960 28.4910830 1000 1000 0 20</pre>
+</blockquote>
+<blockquote style="padding:10px;">...for the Atlas pads on Cape Canaveral
+  (We have good resolution there &amp; it also demonstrates that invalid lines
+  will be treated as comments - although not recommended).
+</blockquote>
+
+<hr />
+<!-- ====================================================================== -->
+<h1 class="brk" id="_developers">For add-on developers</h1>
+<p>
+  The VulkanClient provides the same client interface (gcCore) as the
+  D3D9Client, so add-ons can use the extra features of the client, such as
+  custom camera views, render targets, extended Sketchpad functions and
+  custom GUI windows. The headers are in the <tt>Orbitersdk/include</tt>
+  folder:
+</p>
+<ul>
+  <li class="nodeco"><tt>gcCoreAPI.h</tt>: the client interface.
+    <tt>gcGetCoreInterface()</tt> returns the interface of the loaded
+    VulkanClient, or NULL if Orbiter runs with a different client. It finds
+    the client by the name <tt>VulkanClient.so</tt>.</li>
+  <li class="nodeco"><tt>gcGUI.h</tt>: custom GUI windows. On Linux the
+    dialogs are Qt widgets (<tt>QWidget</tt>) where the Windows version uses
+    <tt>HWND</tt>.</li>
+</ul>
+<p>
+  Examples are in the <tt>Orbitersdk/samples</tt> folder:
+  <tt>DrawOrbits</tt>, <tt>DX9ExtMFD</tt> and <tt>GenericCamera</tt>.
+  They are built like the other Orbiter samples (see
+  <em>Orbitersdk/doc/BuildingSamples (Linux).pdf</em>).
+</p>
+<p>
+  An API reference in HTML format can be created from the source code with
+  <tt>OVP/VulkanClient/doc/createAPI_References.sh</tt> in the Orbiter source
+  tree. It needs <tt>doxygen</tt> and <tt>graphviz</tt>.
+</p>
+
+</body>
+</html>
