@@ -5,7 +5,11 @@
 #define __EARTHATMNRLMSISE00
 
 #include "OrbiterAPI.h"
+#ifndef __linux__
 #include "CelbodyAPI.h"
+#else // __linux__
+#include "CelBodyAPI.h"
+#endif // __linux__
 
 // ======================================================================
 // class EarthAtmosphere_NRLMSISE00

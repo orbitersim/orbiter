@@ -3,7 +3,11 @@
 
 set(CELBODY "Mars")
 
+if(WIN32) # Windows: upstream
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/Modules/Celbody)
+else() # Linux port
+set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/Modules/Celbody)
+endif() # WIN32
 
 add_library(${CELBODY} SHARED
 	${CELBODY}.cpp
@@ -47,11 +51,19 @@ add_subdirectory(
 )
 
 #Installation
+if(WIN32) # Windows: upstream
 install(TARGETS
 	${CELBODY}
 	RUNTIME
 	DESTINATION ${ORBITER_INSTALL_CELBODY_DIR}
 )
+else() # Linux port
+install(TARGETS
+	${CELBODY}
+	LIBRARY
+	DESTINATION ${ORBITER_INSTALL_CELBODY_DIR}
+)
+endif() # WIN32
 install(DIRECTORY Config
 	DESTINATION ${ORBITER_INSTALL_ROOT_DIR}
 )

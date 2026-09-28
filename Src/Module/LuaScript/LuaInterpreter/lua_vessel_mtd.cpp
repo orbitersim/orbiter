@@ -5,7 +5,13 @@
 
 #include "Interpreter.h"
 #include "VesselAPI.h"
+#ifndef __linux__
 #include "MfdApi.h"
+#else // __linux__
+#include "MFDAPI.h"
+#include <cstring> // windows.h brought the C string functions
+#include <strings.h>
+#endif // __linux__
 
 
 /*
@@ -2830,7 +2836,11 @@ int Interpreter::v_set_elements (lua_State *L)
 		lua_getfield (L, 3, "frame");
 		if (lua_isstring (L, -1)) {
 			const char *framestr = lua_tostring (L, -1);
+#ifndef __linux__
 			if (!_stricmp (framestr, "equ")) frame = FRAME_EQU;
+#else // __linux__
+			if (!strcasecmp (framestr, "equ")) frame = FRAME_EQU;
+#endif // __linux__
 		}
 		lua_pop (L, 1);
 	}

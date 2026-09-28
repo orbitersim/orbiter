@@ -5,7 +5,11 @@
 #define __VSOP_H
 
 #include "OrbiterAPI.h"
+#ifndef __linux__
 #include "CelbodyAPI.h"
+#else // __linux__
+#include "CelBodyAPI.h"
+#endif // __linux__
 
 #define VSOP_MAXALPHA 5		// max power of time
 

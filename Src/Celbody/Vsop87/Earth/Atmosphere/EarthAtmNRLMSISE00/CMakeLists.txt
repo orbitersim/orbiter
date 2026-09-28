@@ -3,7 +3,11 @@
 
 set(ATM_TARGET EarthAtmNRLMSISE00)
 
+if(WIN32) # Windows: upstream
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${ORBITER_BINARY_CELBODY_DIR}/${CELBODY}/Atmosphere)
+else() # Linux port
+set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${ORBITER_BINARY_CELBODY_DIR}/${CELBODY}/Atmosphere)
+endif() # WIN32
 
 add_library(${ATM_TARGET} SHARED
 	EarthAtmNRLMSISE00.cpp
@@ -31,7 +35,14 @@ set_target_properties(${ATM_TARGET}
 )
 
 # Installation
+if(WIN32) # Windows: upstream
 install(TARGETS ${ATM_TARGET}
 	RUNTIME
 	DESTINATION ${ORBITER_INSTALL_CELBODY_DIR}/${CELBODY}/Atmosphere
 )
+else() # Linux port
+install(TARGETS ${ATM_TARGET}
+	LIBRARY
+	DESTINATION ${ORBITER_INSTALL_CELBODY_DIR}/${CELBODY}/Atmosphere
+)
+endif() # WIN32

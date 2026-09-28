@@ -4,7 +4,11 @@
 #define ORBITER_MODULE
 
 #include "Saturn.h"
+#ifndef __linux__
 #include "..\Satsat\Satsat.h"
+#else // __linux__
+#include "../Satsat/Satsat.h"
+#endif // __linux__
 
 // ======================================================================
 // class Saturn: implementation
@@ -71,10 +75,18 @@ int Saturn::clbkFastEphemeris (double simt, int req, double *ret)
 // API interface
 // ======================================================================
 
+#ifndef __linux__
 DLLCLBK void InitModule (HINSTANCE hModule)
+#else // __linux__
+DLLCLBK void InitModule (void *hModule)
+#endif // __linux__
 {}
 
+#ifndef __linux__
 DLLCLBK void ExitModule (HINSTANCE hModule)
+#else // __linux__
+DLLCLBK void ExitModule (void *hModule)
+#endif // __linux__
 {}
 
 DLLCLBK CELBODY *InitInstance (OBJHANDLE hBody)

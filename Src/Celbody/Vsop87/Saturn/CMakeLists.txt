@@ -3,7 +3,11 @@
 
 set(CELBODY "Saturn")
 
+if(WIN32) # Windows: upstream
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/Modules/Celbody)
+else() # Linux port
+set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/Modules/Celbody)
+endif() # WIN32
 
 add_library(${CELBODY} SHARED
 	${CELBODY}.cpp
@@ -21,12 +25,21 @@ target_include_directories(${CELBODY}
 	PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/..
 )
 
+if(WIN32) # Windows: upstream
 target_link_libraries(${CELBODY}
 	${VSOP87_LIB}
 	$<TARGET_LINKER_FILE:Satsat>
 	${ORBITER_LIB}
 	${ORBITER_SDK_LIB}
 )
+else() # Linux port
+target_link_libraries(${CELBODY}
+	${VSOP87_LIB}
+	Satsat
+	${ORBITER_LIB}
+	${ORBITER_SDK_LIB}
+)
+endif() # WIN32
 
 add_custom_command(
 	TARGET ${CELBODY} PRE_BUILD
@@ -45,11 +58,19 @@ set_target_properties(${CELBODY}
 )
 
 #Installation
+if(WIN32) # Windows: upstream
 install(TARGETS
 	${CELBODY}
 	RUNTIME
 	DESTINATION ${ORBITER_INSTALL_CELBODY_DIR}
 )
+else() # Linux port
+install(TARGETS
+	${CELBODY}
+	LIBRARY
+	DESTINATION ${ORBITER_INSTALL_CELBODY_DIR}
+)
+endif() # WIN32
 install(DIRECTORY Config
 	DESTINATION ${ORBITER_INSTALL_ROOT_DIR}
 )

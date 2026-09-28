@@ -20,12 +20,26 @@
 //   which must also be present in the Orbiter root directory.
 // ==============================================================
 
+#ifndef __linux__
 #define STRICT
+#else // __linux__
+// STRICT left out: windows.h handle type-checking switch
+#endif // __linux__
 #define ORBITER_MODULE
+#ifndef __linux__
 #include "orbitersdk.h"
+#else // __linux__
+#include "Orbitersdk.h"
+#endif // __linux__
 #include "LuaInline.h"
+#ifndef __linux__
 #include <direct.h>
 #include <process.h>
+#else // __linux__
+// direct.h left out: nothing of it is used
+#include <chrono> // process.h: threads are std::thread (LuaInline.h)
+#include <cstring>
+#endif // __linux__
 
 // ==============================================================
 // class InterpreterList::Environment: implementation
@@ -46,11 +60,22 @@ InterpreterList::Environment::~Environment()
 			interp->Terminate();
 			interp->EndExec(); // give the thread opportunity to close
 
+#ifndef __linux__
 			if (WaitForSingleObject (hThread, 1000) != 0) {
+#else // __linux__
+			if (thExit.wait_for (std::chrono::milliseconds(1000)) != std::future_status::ready) {
+#endif // __linux__
 				oapiWriteLog((char*)"LuaInline: timeout while waiting for interpreter thread");
+#ifndef __linux__
 				TerminateThread (hThread, 0);
 			}
 			CloseHandle (hThread);
+#else // __linux__
+				hThread->detach(); // TerminateThread left out: a std::thread can't be killed; it keeps its interpreter
+				interp = NULL;
+			} else hThread->join();
+			delete hThread;
+#endif // __linux__
 		}
 		delete interp;
 	}
@@ -58,15 +83,27 @@ InterpreterList::Environment::~Environment()
 
 Interpreter *InterpreterList::Environment::CreateInterpreter ()
 {
+#ifndef __linux__
 	unsigned id;
+#endif // !__linux__
 	termInterp = false;
 	interp = new Interpreter ();
 	interp->Initialise();
+#ifndef __linux__
 	hThread = (HANDLE)_beginthreadex (NULL, 4096, &InterpreterThreadProc, this, 0, &id);
+#else // __linux__
+	std::packaged_task<unsigned int(void*)> task (&InterpreterThreadProc); // _beginthreadex; stack size left to the system
+	thExit = task.get_future();
+	hThread = new std::thread (std::move (task), this);
+#endif // __linux__
 	return interp;
 }
 
+#ifndef __linux__
 unsigned int WINAPI InterpreterList::Environment::InterpreterThreadProc (LPVOID context)
+#else // __linux__
+unsigned int InterpreterList::Environment::InterpreterThreadProc (void *context)
+#endif // __linux__
 {
 	InterpreterList::Environment *env = (InterpreterList::Environment*)context;
 	Interpreter *interp = env->interp;
@@ -86,7 +123,11 @@ unsigned int WINAPI InterpreterList::Environment::InterpreterThreadProc (LPVOID 
 		interp->EndExec();  // return control
 	}
 	interp->EndExec();  // return mutex (is this necessary?)
+#ifndef __linux__
 	_endthreadex(0);
+#else // __linux__
+	// _endthreadex left out: returning ends the std::thread
+#endif // __linux__
 	return 0;
 }
 
@@ -94,7 +135,11 @@ unsigned int WINAPI InterpreterList::Environment::InterpreterThreadProc (LPVOID 
 // ==============================================================
 // class InterpreterList: implementation
 
+#ifndef __linux__
 InterpreterList::InterpreterList (HINSTANCE hDLL): Module (hDLL)
+#else // __linux__
+InterpreterList::InterpreterList (void *hDLL): Module (hDLL)
+#endif // __linux__
 {
 	nlist = nbuf = 0;
 }
@@ -169,13 +214,21 @@ int InterpreterList::DelInterpreter (InterpreterList::Environment *env)
 
 static InterpreterList *g_IList = nullptr;
 
+#ifndef __linux__
 DLLCLBK void InitModule (HINSTANCE hDLL)
+#else // __linux__
+DLLCLBK void InitModule (void *hDLL)
+#endif // __linux__
 {
 	g_IList = new InterpreterList (hDLL);
 	oapiRegisterModule (g_IList);
 }
 
+#ifndef __linux__
 DLLCLBK void ExitModule (HINSTANCE hDLL)
+#else // __linux__
+DLLCLBK void ExitModule (void *hDLL)
+#endif // __linux__
 {
 	if (g_IList) {
 		delete g_IList;

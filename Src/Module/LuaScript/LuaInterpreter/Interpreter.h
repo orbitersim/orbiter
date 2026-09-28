@@ -5,9 +5,15 @@
 #define __INTERPRETER_H
 
 extern "C" {
+#ifndef __linux__
 #include <lua/lua.h>
 #include <lua/lualib.h>
 #include <lua/lauxlib.h>
+#else // __linux__
+#include <Lua/lua.h>
+#include <Lua/lualib.h>
+#include <Lua/lauxlib.h>
+#endif // __linux__
 }
 
 #include "OrbiterAPI.h"
@@ -15,6 +21,13 @@ extern "C" {
 #include <unordered_set>
 
 class gcCore;
+#ifdef __linux__
+class ExecMutex; // not upstream: Win32 mutex counterpart (Interpreter.cpp)
+
+#ifndef INFINITE
+#define INFINITE 0xFFFFFFFF // not upstream: Win32 wait constant (no timeout)
+#endif
+#endif // __linux__
 
 #define PRMTP_NIL           0x01
 #define PRMTP_NUMBER        0x02
@@ -26,7 +39,12 @@ class gcCore;
 #define PRMTP_MATRIX        0x80
 #define PRMTP_USERDATA     0x100
 
+#ifndef __linux__
 #define ASSERT_SYNTAX(cond,msg) { if(!(cond)) { luaL_error(L, "%s: %s", __FUNCTION__+13, msg); return 0; } }
+#else // __linux__
+// g++ __FUNCTION__ is the bare name; MSVC's starts with "Interpreter::", which +13 skipped
+#define ASSERT_SYNTAX(cond,msg) { if(!(cond)) { luaL_error(L, "%s: %s", __FUNCTION__, msg); return 0; } }
+#endif // __linux__
 #define ASSERT_FUNCPRM(L,idx,tp) { if (!AssertPrmtp(L,__FUNCTION__,idx,idx,tp)) return 0; }
 
 #define ASSERT_PRM(L,idx,tp)     { if (!AssertPrmtp(L,__FUNCTION__,idx,idx,tp)) return 0; }
@@ -1152,8 +1170,13 @@ protected:
 #endif
 
 private:
+#ifndef __linux__
 	HANDLE hExecMutex; // flow control synchronisation
 	HANDLE hWaitMutex;
+#else // __linux__
+	ExecMutex *hExecMutex; // flow control synchronisation
+	ExecMutex *hWaitMutex;
+#endif // __linux__
 	static inline gcCore *pCore;
 	static inline bool gcCoreInitialized = false;
 

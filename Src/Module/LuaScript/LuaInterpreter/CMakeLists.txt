@@ -2,7 +2,11 @@
 # Licensed under the MIT License
 
 # Core library to go to the Orbiter main directory
+if(WIN32) # Windows: upstream
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${ORBITER_BINARY_ROOT_DIR})
+else() # Linux port
+set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${ORBITER_BINARY_ROOT_DIR})
+endif() # WIN32
 set(BUILD_OUT_DIR ${CMAKE_CURRENT_BINARY_DIR}/out)
 
 add_library(LuaInterpreter SHARED
@@ -31,9 +35,15 @@ add_dependencies(LuaInterpreter
 	Orbitersdk
 )
 
+if(WIN32) # Windows: upstream
 if(ORBITER_BUILD_D3D9CLIENT)
   add_dependencies(LuaInterpreter	D3D9Client D3D9Client_Interface)
 endif()
+else() # Linux port
+if(ORBITER_BUILD_VULKANCLIENT)
+  add_dependencies(LuaInterpreter	D3D9Client D3D9Client_Interface) # the VulkanClient target keeps upstream's names
+endif()
+endif() # WIN32
 
 if(ORBITER_BUILD_XRSOUND)
   add_dependencies(LuaInterpreter	XRSound_lib	XRSound_assets)
@@ -47,6 +57,7 @@ set_target_properties(LuaInterpreter
 )
 
 # Copy library to its Orbitersdk/lib location so that external project integrated into the build can find it
+if(WIN32) # Windows: upstream
 add_custom_command(TARGET LuaInterpreter
 	POST_BUILD
 	COMMAND ${CMAKE_COMMAND} -E make_directory ${ORBITER_BINARY_SDK_DIR}/include
@@ -54,6 +65,15 @@ add_custom_command(TARGET LuaInterpreter
 	COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_CURRENT_SOURCE_DIR}/Interpreter.h ${ORBITER_BINARY_SDK_DIR}/include/
 	COMMAND ${CMAKE_COMMAND} -E copy ${LUAINTERPRETER_LIB} ${ORBITER_BINARY_SDK_DIR}/lib/Lua/
 )
+else() # Linux port
+add_custom_command(TARGET LuaInterpreter
+	POST_BUILD
+	COMMAND ${CMAKE_COMMAND} -E make_directory ${ORBITER_BINARY_SDK_DIR}/include
+	COMMAND ${CMAKE_COMMAND} -E make_directory ${ORBITER_BINARY_SDK_DIR}/lib/Lua
+	COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_CURRENT_SOURCE_DIR}/Interpreter.h ${ORBITER_BINARY_SDK_DIR}/include/
+	COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_LINKER_FILE:LuaInterpreter> ${ORBITER_BINARY_SDK_DIR}/lib/Lua/
+)
+endif() # WIN32
 
 if(ORBITER_MAKE_DOC)
 file(GLOB lua_in *.h *.cpp *.ld *.md *.lua)
@@ -93,10 +113,17 @@ install(FILES ${ORBITER_BINARY_SDK_DIR}/doc/orbiter_lua.chm
 endif()
 
 # Installation
+if(WIN32) # Windows: upstream
 install(TARGETS LuaInterpreter
 	RUNTIME
 	DESTINATION ${ORBITER_INSTALL_ROOT_DIR}
 )
+else() # Linux port
+install(TARGETS LuaInterpreter
+	LIBRARY
+	DESTINATION ${ORBITER_INSTALL_ROOT_DIR}
+)
+endif() # WIN32
 install(FILES $<TARGET_LINKER_FILE:LuaInterpreter>
 	DESTINATION ${ORBITER_INSTALL_SDK_DIR}/lib/Lua
 )

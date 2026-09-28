@@ -98,10 +98,18 @@ bool EarthAtmosphere_2006::clbkParams (const PRM_IN *prm_in, PRM_OUT *prm)
 // API interface
 // ======================================================================
 
+#ifndef __linux__
 DLLCLBK void InitModule (HINSTANCE hModule)
+#else // __linux__
+DLLCLBK void InitModule (void *hModule)
+#endif // __linux__
 {}
 
+#ifndef __linux__
 DLLCLBK void ExitModule (HINSTANCE hModule)
+#else // __linux__
+DLLCLBK void ExitModule (void *hModule)
+#endif // __linux__
 {}
 
 DLLCLBK ATMOSPHERE *CreateAtmosphere (CELBODY2 *cbody)

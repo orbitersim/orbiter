@@ -2,7 +2,11 @@
 # Licensed under the MIT License
 
 # Core library to go to the Orbiter main directory
+if(WIN32) # Windows: upstream
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${ORBITER_BINARY_ROOT_DIR})
+else() # Linux port
+set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${ORBITER_BINARY_ROOT_DIR})
+endif() # WIN32
 
 add_library(LuaInline SHARED
 	LuaInline.cpp
@@ -32,7 +36,14 @@ set_target_properties(LuaInline
 )
 
 # Installation
+if(WIN32) # Windows: upstream
 install(TARGETS LuaInline
 	RUNTIME
 	DESTINATION ${ORBITER_INSTALL_ROOT_DIR}
 )
+else() # Linux port
+install(TARGETS LuaInline
+	LIBRARY
+	DESTINATION ${ORBITER_INSTALL_ROOT_DIR}
+)
+endif() # WIN32

@@ -815,10 +815,18 @@ double molweight_fit (double Z, double Tinf)
 // API interface
 // ======================================================================
 
+#ifndef __linux__
 DLLCLBK void InitModule (HINSTANCE hModule)
+#else // __linux__
+DLLCLBK void InitModule (void *hModule)
+#endif // __linux__
 {}
 
+#ifndef __linux__
 DLLCLBK void ExitModule (HINSTANCE hModule)
+#else // __linux__
+DLLCLBK void ExitModule (void *hModule)
+#endif // __linux__
 {}
 
 DLLCLBK ATMOSPHERE *CreateAtmosphere (CELBODY2 *cbody)

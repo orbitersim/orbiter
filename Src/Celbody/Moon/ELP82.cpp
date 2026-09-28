@@ -192,7 +192,11 @@ int ELP82_read (double prec)
 	pre[2] = prec*ath;
 
 	const char *datf = "Config\\Moon\\Data\\ELP82.dat";
+#ifndef __linux__
 	ifstream ifs (datf);  // term data stream
+#else // __linux__
+	ifstream ifs (oapiResolvePath (datf));  // term data stream
+#endif // __linux__
 	if (!ifs) {
 		oapiWriteLogError("ELP82: Data file not found: %s", datf);
 		return -1;

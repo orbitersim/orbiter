@@ -1,7 +1,11 @@
 # Copyright (c) Martin Schweiger
 # Licensed under the MIT License
 
+if(WIN32) # Windows: upstream
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/Modules)
+else() # Linux port
+set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/Modules)
+endif() # WIN32
 
 add_library(Satsat SHARED
 	Satsat.cpp
@@ -33,7 +37,11 @@ add_custom_command(
 	COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_CURRENT_SOURCE_DIR}/tass17.dat ${CMAKE_BINARY_DIR}/Config/Saturn/Data/
 )
 
+if(WIN32) # Windows: upstream
 set(SATSAT_LIB $<TARGET_LINKER_FILE:Satsat>)
+else() # Linux port
+set(SATSAT_LIB Satsat) # target name: CMake links a raw path to a prefix-less .so as -l<name>
+endif() # WIN32
 
 add_subdirectory(Mimas)
 add_subdirectory(Enceladus)
@@ -45,11 +53,19 @@ add_subdirectory(Hyperion)
 add_subdirectory(Iapetus)
 
 # Installation
+if(WIN32) # Windows: upstream
 install(TARGETS
 	Satsat
 	RUNTIME
 	DESTINATION ${ORBITER_INSTALL_MODULE_DIR}
 )
+else() # Linux port
+install(TARGETS
+	Satsat
+	LIBRARY
+	DESTINATION ${ORBITER_INSTALL_MODULE_DIR}
+)
+endif() # WIN32
 install(FILES tass17.dat
 	DESTINATION ${ORBITER_INSTALL_ROOT_DIR}/Config/Saturn/Data
 )

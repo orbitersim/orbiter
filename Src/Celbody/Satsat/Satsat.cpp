@@ -274,12 +274,20 @@ void SaturnFastEphemeris (double simt, double *ret)
 // API interface
 // ===========================================================
 
+#ifndef __linux__
 DLLCLBK void InitModule (HINSTANCE hModule)
+#else // __linux__
+DLLCLBK void InitModule (void *hModule)
+#endif // __linux__
 {
 	// Load the data for the TASS 1.7 perturbation solutions
 	// into global data structures
 
+#ifndef __linux__
 	ReadData ("Config\\Saturn\\Data\\tass17.dat", 0);
+#else // __linux__
+	ReadData (oapiResolvePath ("Config\\Saturn\\Data\\tass17.dat").c_str(), 0);
+#endif // __linux__
 
 	// invalidate all data structures
 	int i;

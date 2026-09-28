@@ -9,10 +9,52 @@
 #include "DrawAPI.h"
 #include "gcCoreAPI.h"
 #include <list>
+#ifdef __linux__
+#include <cstring> // windows.h brought the C string functions
+#include <iterator>
+#include <mutex>
+#include <condition_variable>
+#include <thread>
+#include <chrono>
+#include <strings.h>
+#include <string>
+#include <algorithm>
+#endif // __linux__
 
 using std::min;
 using std::max;
 
+#ifdef __linux__
+// not upstream: Win32 mutex semantics (owner thread, recursive, timed wait, only the owner releases)
+class ExecMutex {
+public:
+	ExecMutex (bool initialOwner): count(0) {
+		if (initialOwner) { owner = std::this_thread::get_id(); count = 1; }
+	}
+	bool Wait (DWORD timeout) { // WaitForSingleObject
+		std::unique_lock<std::mutex> lock(m);
+		std::thread::id self = std::this_thread::get_id();
+		if (count && owner == self) { count++; return true; }
+		auto isfree = [this] { return count == 0; };
+		if (timeout == INFINITE) cv.wait (lock, isfree);
+		else if (!cv.wait_for (lock, std::chrono::milliseconds(timeout), isfree)) return false;
+		owner = self; count = 1;
+		return true;
+	}
+	bool Release () { // ReleaseMutex
+		std::lock_guard<std::mutex> lock(m);
+		if (!count || owner != std::this_thread::get_id()) return false;
+		if (!--count) { owner = std::thread::id(); cv.notify_all(); }
+		return true;
+	}
+private:
+	std::mutex m;
+	std::condition_variable cv;
+	std::thread::id owner;
+	int count;
+};
+
+#endif // __linux__
 typedef struct {
 	NTVERTEX *vtx;  // vertex array
 	int nVtx;       // number of vertices in the array
@@ -67,8 +109,13 @@ Interpreter::Interpreter ()
 	lua_pushlightuserdata (L, this);
 	lua_setfield (L, LUA_REGISTRYINDEX, "interp");
 
+#ifndef __linux__
 	hExecMutex = CreateMutex (NULL, TRUE, NULL);
 	hWaitMutex = CreateMutex (NULL, FALSE, NULL);
+#else // __linux__
+	hExecMutex = new ExecMutex (true);  // CreateMutex, owned by the creating thread
+	hWaitMutex = new ExecMutex (false); // CreateMutex
+#endif // __linux__
 
 }
 
@@ -112,13 +159,113 @@ Interpreter::~Interpreter ()
 {
 	lua_close (L);
 
+#ifndef __linux__
 	if (hExecMutex) CloseHandle (hExecMutex);
 	if (hWaitMutex) CloseHandle (hWaitMutex);
+#else // __linux__
+	if (hExecMutex) delete hExecMutex; // CloseHandle
+	if (hWaitMutex) delete hWaitMutex;
+}
+
+// not upstream: dofile/loadfile get the file name resolved like every other Orbiter path (case, '\')
+static int resolved_fileop (lua_State *L)
+{
+	if (lua_type (L, 1) == LUA_TSTRING) {
+		lua_pushstring (L, oapiResolvePath (lua_tostring (L, 1)).c_str());
+		lua_replace (L, 1);
+	}
+	lua_pushvalue (L, lua_upvalueindex (1)); // stock dofile/loadfile
+	lua_insert (L, 1);
+	lua_call (L, lua_gettop (L) - 1, LUA_MULTRET);
+	return lua_gettop (L);
+}
+
+// not upstream: require's stock searchers see package.path/cpath with this module's file names resolved
+static int resolved_searcher (lua_State *L)
+{
+	const char *pname = lua_tostring (L, lua_upvalueindex (2)); // "path" or "cpath"
+	luaL_checkstring (L, 1);
+	lua_settop (L, 1);
+	lua_getfenv (L, lua_upvalueindex (1)); // 2: the package table (the searcher's environment)
+	lua_getfield (L, 2, pname);            // 3: template list as set
+	if (lua_type (L, 3) == LUA_TSTRING) {
+		std::string mod (lua_tostring (L, 1)), tmpl (lua_tostring (L, 3)), list;
+		if (lua_toboolean (L, lua_upvalueindex (3))) mod = mod.substr (0, mod.find ('.')); // loader_Croot: root module
+		std::replace (mod.begin(), mod.end(), '.', LUA_DIRSEP[0]);
+		for (size_t i = 0, j; i <= tmpl.size(); i = j + 1) {
+			if ((j = tmpl.find (LUA_PATHSEP[0], i)) == std::string::npos) j = tmpl.size();
+			std::string f = tmpl.substr (i, j - i);
+			if (f.empty()) continue;
+			for (size_t k = 0; (k = f.find (LUA_PATH_MARK[0], k)) != std::string::npos; k += mod.size())
+				f.replace (k, 1, mod);
+			if (!list.empty()) list += LUA_PATHSEP;
+			list += oapiResolvePath (f.c_str());
+		}
+		lua_pushstring (L, list.c_str());
+		lua_setfield (L, 2, pname);
+	}
+	lua_pushvalue (L, lua_upvalueindex (1)); // stock searcher
+	lua_pushvalue (L, 1);
+	int err = lua_pcall (L, 1, LUA_MULTRET, 0);
+	lua_pushvalue (L, 3);
+	lua_setfield (L, 2, pname);            // template list back as it was
+	if (err) lua_error (L);
+	return lua_gettop (L) - 3;
+}
+
+// not upstream: script file names (run, run_global, dofile, loadfile, require) resolve like other Orbiter paths
+static void ResolveScriptPaths (lua_State *L)
+{
+	static const char *fileop[2] = {"dofile", "loadfile"};
+	for (int i = 0; i < 2; i++) {
+		lua_getglobal (L, fileop[i]);
+		lua_pushcclosure (L, resolved_fileop, 1);
+		lua_setglobal (L, fileop[i]);
+	}
+	static const struct { int idx; const char *pname; int root; } searcher[3] = {{2, "path", 0}, {3, "cpath", 0}, {4, "cpath", 1}};
+	lua_getglobal (L, "package");
+	lua_getfield (L, -1, "loaders");
+	for (int i = 0; i < 3; i++) {
+		lua_rawgeti (L, -1, searcher[i].idx);
+		lua_pushstring (L, searcher[i].pname);
+		lua_pushboolean (L, searcher[i].root);
+		lua_pushcclosure (L, resolved_searcher, 3);
+		lua_rawseti (L, -2, searcher[i].idx);
+	}
+	lua_pop (L, 2);
+}
+
+// not upstream: loadlib.c setpath, so LUA_PATH/LUA_CPATH (";;" = default) still override the defaults below
+static void SetPackagePath (lua_State *L, const char *fieldname, const char *envname, const char *def)
+{
+	const char *path = getenv (envname);
+	if (path == NULL)
+		lua_pushstring (L, def);
+	else {
+		path = luaL_gsub (L, path, LUA_PATHSEP LUA_PATHSEP, LUA_PATHSEP "\1" LUA_PATHSEP);
+		luaL_gsub (L, path, "\1", def);
+		lua_remove (L, -2);
+	}
+	lua_setfield (L, -2, fieldname);
+}
+
+// not upstream: Lua's Windows defaults search the exe folder ('!'), which is Orbiter's working folder
+static void SetPackagePaths (lua_State *L)
+{
+	lua_getglobal (L, "package");
+	SetPackagePath (L, "path", LUA_PATH, "./?.lua;./lua/?.lua;./lua/?/init.lua;./?/init.lua");
+	SetPackagePath (L, "cpath", LUA_CPATH, "./?.so;./loadall.so");
+	lua_pop (L, 1);
+#endif // __linux__
 }
 
 void Interpreter::Initialise ()
 {
 	luaL_openlibs (L);    // load the default libraries
+#ifdef __linux__
+	ResolveScriptPaths (L); // not upstream: see above
+	SetPackagePaths (L);    // not upstream: see above
+#endif // __linux__
 	LoadAPI ();           // load default set of API interface functions
 	LoadVesselAPI ();     // load vessel-specific part of API
 	LoadLightEmitterMethods (); // load light source methods
@@ -377,11 +524,19 @@ const char *Interpreter::lua_tostringex (lua_State *L, int idx, char *cbuf)
 		return cbuf;
 	} else if (lua_islightuserdata (L,idx)) {
 		void *p = lua_touserdata(L,idx);
+#ifndef __linux__
 		sprintf (cbuf, "0x%08p [data]", p);
+#else // __linux__
+		sprintf (cbuf, "%p [data]", p); // glibc's %p writes the 0x itself
+#endif // __linux__
 		return cbuf;
 	} else if (lua_isuserdata (L,idx)) {
 		void *p = lua_touserdata(L,idx);
+#ifndef __linux__
 		sprintf (cbuf, "0x%08p [object]", p);
+#else // __linux__
+		sprintf (cbuf, "%p [object]", p); // glibc's %p writes the 0x itself
+#endif // __linux__
 		return cbuf;
 	} else if (lua_istable (L, idx)) {
 		if (idx < 0) idx--;
@@ -685,15 +840,25 @@ void Interpreter::WaitExec (DWORD timeout)
 {
 	// Called by orbiter thread or interpreter thread to wait its turn
 	// Orbiter waits for the script for 1 second to return
+#ifndef __linux__
 	WaitForSingleObject (hWaitMutex, timeout); // wait for synchronisation mutex
 	WaitForSingleObject (hExecMutex, timeout); // wait for execution mutex
 	ReleaseMutex (hWaitMutex);              // release synchronisation mutex
+#else // __linux__
+	hWaitMutex->Wait (timeout); // wait for synchronisation mutex
+	hExecMutex->Wait (timeout); // wait for execution mutex
+	hWaitMutex->Release ();     // release synchronisation mutex
+#endif // __linux__
 }
 
 void Interpreter::EndExec ()
 {
 	// called by orbiter thread or interpreter thread to hand over control
+#ifndef __linux__
 	ReleaseMutex (hExecMutex);
+#else // __linux__
+	hExecMutex->Release ();
+#endif // __linux__
 }
 
 void Interpreter::frameskip (lua_State *L)
@@ -776,7 +941,11 @@ void Interpreter::LoadAPI ()
 		//{"api", help_api},
 		{NULL, NULL}
 	};
+#ifndef __linux__
 	for (int i = 0; i < ARRAYSIZE(glob) && glob[i].name; i++) {
+#else // __linux__
+	for (int i = 0; i < (int)std::size(glob) && glob[i].name; i++) { // ARRAYSIZE
+#endif // __linux__
 		lua_pushcfunction (L, glob[i].func);
 		lua_setglobal (L, glob[i].name);
 	}
@@ -3872,7 +4041,12 @@ Do not use it in published modules!
 int Interpreter::oapiExit(lua_State* L)
 {
 	auto code = lua_tointeger(L, 1);
+#ifndef __linux__
 	exit(code);
+#else // __linux__
+	fflush(NULL);
+	_Exit(code); // exit() on the script thread runs the modules' destructors while the main thread runs on
+#endif // __linux__
 	return 0; // compiler warnings
 }
 
@@ -6039,7 +6213,11 @@ int Interpreter::oapi_set_cameramode (lua_State *L)
 	ASSERT_STRING(L,-1);
 	strcpy(modestr, lua_tostring(L,-1));
 	lua_pop(L,1);
+#ifndef __linux__
 	if (!_stricmp(modestr, "ground")) {
+#else // __linux__
+	if (!strcasecmp(modestr, "ground")) {
+#endif // __linux__
 
 		lua_getfield(L,1,"ref");
 		ASSERT_STRING(L,-1);
@@ -6075,7 +6253,11 @@ int Interpreter::oapi_set_cameramode (lua_State *L)
 		lua_pop(L,1);
 		cm = new CameraMode_Ground();
 
+#ifndef __linux__
 	} else if (!_stricmp(modestr, "track")) {
+#else // __linux__
+	} else if (!strcasecmp(modestr, "track")) {
+#endif // __linux__
 
 		lua_getfield(L,1,"trackmode");
 		ASSERT_STRING(L,-1);
@@ -6102,7 +6284,11 @@ int Interpreter::oapi_set_cameramode (lua_State *L)
 		lua_pop(L,1);
 		cm = new CameraMode_Track();
 
+#ifndef __linux__
 	} else if (!_stricmp(modestr, "cockpit")) {
+#else // __linux__
+	} else if (!strcasecmp(modestr, "cockpit")) {
+#endif // __linux__
 
 		lua_getfield(L,1,"cockpitmode");
 		if (lua_isstring(L,-1)) {
@@ -6513,7 +6699,11 @@ int Interpreter::oapi_create_animationcomponent (lua_State *L)
 	}
 	lua_pop(L,1); // pop table of group indices
 
+#ifndef __linux__
 	if (!_stricmp(typestr, "rotation")) {
+#else // __linux__
+	if (!strcasecmp(typestr, "rotation")) {
+#endif // __linux__
 		lua_getfield(L,1,"ref");
 		ASSERT_VECTOR(L,-1);
 		VECTOR3 ref = lua_tovector(L,-1);
@@ -6527,13 +6717,21 @@ int Interpreter::oapi_create_animationcomponent (lua_State *L)
 		double angle = lua_tonumber(L,-1);
 		lua_pop(L,1);
 		trans = new MGROUP_ROTATE(mesh,grp,ngrp,ref,axis,(float)angle);
+#ifndef __linux__
 	} else if (!_stricmp(typestr, "translation")) {
+#else // __linux__
+	} else if (!strcasecmp(typestr, "translation")) {
+#endif // __linux__
 		lua_getfield(L,1,"shift");
 		ASSERT_VECTOR(L,-1);
 		VECTOR3 shift = lua_tovector(L,-1);
 		lua_pop(L,1);
 		trans = new MGROUP_TRANSLATE(mesh,grp,ngrp,shift);
+#ifndef __linux__
 	} else if (!_stricmp(typestr, "scaling")) {
+#else // __linux__
+	} else if (!strcasecmp(typestr, "scaling")) {
+#endif // __linux__
 		lua_getfield(L,1,"ref");
 		ASSERT_VECTOR(L,-1);
 		VECTOR3 ref = lua_tovector(L,-1);
