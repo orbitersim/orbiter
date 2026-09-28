@@ -3,7 +3,12 @@ set(name "Orbiter Developer Manual")
 set(src_path ${CMAKE_CURRENT_SOURCE_DIR}/${name}.tex)
 set(out_path ${CMAKE_CURRENT_BINARY_DIR}/${name}.pdf)
 set(pdflatex_cmd ${PDFLATEX_COMPILER} --synctex=1 -output-directory=${CMAKE_CURRENT_BINARY_DIR} ${src_path})
+if(WIN32) # Windows: upstream
 set(bibtex_cmd ${BIBTEX_COMPILER} ${CMAKE_CURRENT_BINARY_DIR}/${name})
+else() # Linux port
+# not upstream: TeX Live's bibtex won't write outside its working folder (openout_any = p), MiKTeX's does
+set(bibtex_cmd ${CMAKE_COMMAND} -E env openout_any=a ${BIBTEX_COMPILER} ${CMAKE_CURRENT_BINARY_DIR}/${name})
+endif() # WIN32
 
 add_custom_command(
 	OUTPUT ${out_path}

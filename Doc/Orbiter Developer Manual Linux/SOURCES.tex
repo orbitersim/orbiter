@@ -1,0 +1,54 @@
+\documentclass[Orbiter Developer Manual.tex]{subfiles}
+\begin{document}
+
+\section{Orbiter Source Code}
+
+\subsection{Introduction}
+As Orbiter is open-source, you can contribute to its development!
+Below are instructions on how to download and setup and environment to build Orbiter by yourself.
+
+
+\subsection{Setup}
+Get the Orbiter source repository from GitHub (\url{https://github.com/orbitersim/orbiter})
+
+\begin{lstlisting}
+git clone --recursive git@github.com:orbitersim/orbiter.git
+\end{lstlisting}
+
+\noindent
+or
+
+\begin{lstlisting}
+git clone --recursive https://github.com/orbitersim/orbiter.git
+\end{lstlisting}
+
+\noindent
+The Windows version and the Linux version are built from the same sources. The Linux parts are selected by CMake and the compiler on Linux only.\\
+To compile Orbiter on Linux, you need CMake (3.26 or later), Ninja and GCC with C++20 support, and the development packages of Qt 6, Vulkan (with glslangValidator and glslang), PipeWire, Wayland, FreeType and libpng, as well as Python 3. The file COMPILE.md in the Orbiter sources lists the package names. The remaining libraries (Lua, zlib, Dear ImGui and others) are fetched by CMake.\\
+The Linux version of Orbiter is a 64-bit (x86-64) application. To build it:
+
+\begin{lstlisting}
+cmake --preset linux-x64-release
+cmake --build --preset linux-x64-release
+ctest --preset linux-x64-release
+\end{lstlisting}
+
+\noindent
+The binaries and data are placed in out/build/linux-x64-release, in the same layout as the installed Orbiter. Other presets are linux-x64-debug, linux-x64-asan (with address sanitizer) and linux-x64-tracy (with the Tracy profiler).\\
+If you want to build the documentation (CMake option ORBITER\_MAKE\_DOC), you need a few additional tools:
+
+\begin{itemize}
+\item a LaTeX compiler suite such as TeX Live.
+\item Doxygen and Graphviz for building the source-level documentation for developers.
+\end{itemize}
+
+\noindent
+If the documentation build fails, try limiting the build to a single thread; some of the document compilers are not thread-safe.
+
+
+\subsection{Contribute}
+You can contribute to the development of Orbiter, either by fixing a bug or by adding a new feature. You'll need to create your own fork of Orbiter in GitHub, put your changes in a branch, and then create a "Pull Request" (PR) so that you changes can be analysed by others, before they are merged into Orbiter.\\
+If you find an issue in Orbiter, but you don't know how to fix it, you can open a ticket (\url{https://github.com/orbitersim/orbiter/issues}) to allow others to fix it.
+
+
+\end{document}

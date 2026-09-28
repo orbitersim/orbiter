@@ -1,0 +1,69 @@
+% not upstream: Linux edition of BuildingSamples.tex, prebuilt to BuildingSamplesLinux.pdf like the Windows edition
+
+\title{Building Orbiter Sample Programs (Linux)}
+
+\documentclass[a4paper]{article}
+\usepackage{times}
+\usepackage{cite}
+\usepackage{hyperref}
+\usepackage{geometry}
+\usepackage{graphicx}
+
+\geometry{
+ a4paper,
+ total={160mm,240mm},
+ left=30mm,
+ top=30mm,
+ }
+
+\begin{document}
+\maketitle
+
+\section{Getting everything ready}
+The samples are built with CMake from a terminal, with the same compiler and libraries as Orbiter itself. On Ubuntu/Debian, install these packages (other distributions have them under their own names):
+
+\begin{verbatim}
+sudo apt install cmake ninja-build g++ qt6-base-dev python3
+\end{verbatim}
+
+\begin{itemize}
+\item \textbf{cmake} and \textbf{ninja-build}: the build system. Ninja is optional, CMake's default generator (make) works too.
+\item \textbf{g++}: a C++20 compiler.
+\item \textbf{qt6-base-dev}: module dialogs and drawing use Qt 6 on Linux.
+\item \textbf{python3}: dialog resources (.rc files) are compiled to C++ by \textit{cmake/rc2cpp.py}.
+\end{itemize}
+
+Everything else comes with Orbiter: the Orbiter folder (the \textit{root} folder, which contains the \textit{Orbiter} executable) has the CMake script \textit{CMakeLists.txt}, the \textit{cmake} folder, and the SDK in \textit{Orbitersdk} (headers in \textit{include}, libraries in \textit{lib} and the sample sources in \textit{samples}).
+
+\section{Building the samples}
+Open a terminal in the Orbiter \textit{root} folder and run:
+
+\begin{verbatim}
+cmake -S . -B build -G Ninja
+cmake --build build
+\end{verbatim}
+
+The first command configures the build in the \textit{build} subfolder (leave out \texttt{-G Ninja} to use make). The second one builds all samples. The default configuration is \textit{Release}; for debugging, configure with:
+
+\begin{verbatim}
+cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=Debug
+\end{verbatim}
+
+As on Windows, the CMake scripts use your Orbiter folder as the output directory. The modules are built directly into \textit{Modules}, \textit{Modules/Plugin} and \textit{Modules/Startup}, replacing the modules that came with Orbiter, so no separate install step is needed. Only the intermediate files go to the \textit{build} folder. Keep a copy of your Orbiter folder if you want to go back to the original modules.
+
+To build a single sample, name its target, for example:
+
+\begin{verbatim}
+cmake --build build --target DeltaGlider
+\end{verbatim}
+
+Plugin modules (MFDs and tools in \textit{Modules/Plugin}) must be activated in the \textit{Modules} tab of the Orbiter Launchpad before they are loaded.
+
+\section{Working on the samples}
+The sample sources are in \textit{Orbitersdk/samples}. Build again after changing them; CMake only recompiles what changed. Mesh resource headers (\textit{meshres*.h}) are created by the \textit{meshc} tool in \textit{Orbitersdk/Utils} and go to the \textit{build} folder.
+
+Any IDE that opens CMake projects (for example Qt Creator, KDevelop or Visual Studio Code with the CMake extension) can open the \textit{CMakeLists.txt} in the Orbiter \textit{root} folder. To debug a module, run Orbiter from the \textit{root} folder in the debugger, for example \texttt{gdb ./Orbiter}.
+
+For what is different in Linux modules (window and drawing types, dialog resources, exported functions), see the section ``Modules on Linux'' in the \textit{Orbiter Developer Manual (Linux)}.
+
+\end{document}

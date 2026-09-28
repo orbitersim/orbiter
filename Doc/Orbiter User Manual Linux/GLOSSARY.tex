@@ -1,0 +1,103 @@
+\documentclass[Orbiter User Manual.tex]{subfiles}
+\begin{document}
+
+\section{Glossary}
+A list of technical terms and abbreviations frequently used in this manual and elsewhere in Orbiter.
+
+%\begin{table}[H]
+	%\centering
+	\begin{longtable}{ |p{0.22\textwidth}|p{0.72\textwidth}| }
+	\hline\rule{0pt}{2ex}
+	Albedo & Fraction of incident radiation reflected back diffusely by a body.\\
+	\hline\rule{0pt}{2ex}
+	Apoapsis & The point of an elliptic orbit farthest from the focus (from the orbited body). Body-specific names are sometimes used, e.g. \textit{apogee} (for Earth orbits) or \textit{aphelion} (for solar orbits). Orbital velocity is lowest at apoapsis. See also \textit{periapsis}.\\
+	\hline\rule{0pt}{2ex}
+	Argument of periapsis & The angle from \textit{ascending node} to \textit{periapsis} of an orbit, measured in the direction of motion ($\omega$). One of the 6 primary 2-body orbital elements (defines the orientation of the orbit in the orbital plane).\\
+	\hline\rule{0pt}{2ex}
+	Ascending node & One of the points (nodes) of an orbit intersecting an inclined reference plane (e.g. the equator). At the ascending node, the orbiting object crosses the reference plane from south to north. See also \textit{descending node}.\\
+	\hline\rule{0pt}{2ex}
+	Astronomical unit & One astronomical unit (1 AU) is the mean radius of Earth's orbit around the sun (approximately 150 $\cdot$ 10$^{6}$ km). It is commonly used as a distance measure on interplanetary scales within the solar system.\\
+	\hline\rule{0pt}{2ex}
+	Axial precession & A change in the orientation of the rotation axis of a rotating body (e.g. a planet). For example, Earth's axis is precessing around the ecliptic pole at an angle of 23.5° over a period of 26000 years.\\
+	\hline\rule{0pt}{2ex}
+	Delta-V & $\Delta$v: The magnitude of a velocity change, specifically, a change of a spacecraft's velocity, effected by engaging its engines to alter its trajectory. The amount of  available $\Delta$v (\textit{delta-v budget}) is limited by the remaining propellant (via the \textit{rocket equation}). Fuel is a limited resource, meaning that $\Delta$v requirements are an important aspect of mission planning.\\
+	\hline\rule{0pt}{2ex}
+	Descending node & One of the points (nodes) of an orbit intersecting an inclined reference plane (e.g. the equator). At the descending node, the orbiting object crosses the reference plane from north to south. See also \textit{ascending node}.\\
+	\hline\rule{0pt}{2ex}
+	Eccentricity & Shape parameter for conic sections, e.g. 2-body orbits (\textit{e}). Circular: \textit{e} = 0, elliptic: 0 < \textit{e} < 1, parabolic: \textit{e} = 1, hyperbolic: \textit{e} > 1. One of the 6 primary 2-body orbital elements.\\
+	\hline\rule{0pt}{2ex}
+	Ecliptic & The ecliptic is the Earth's mean orbital plane. The orbital planes of most planetary bodies are close to the ecliptic, which makes it an important reference plane for interplanetary missions. The ecliptic undergoes slight variations over time due to gravitational perturbations, so a reference date (epoch), e.g. J2000.0 must be added to define a fixed plane.\\
+	\hline\rule{0pt}{2ex}
+	Geostationary orbit & A circular equatorial orbit with an orbit period equal to the orbited body's sidereal rotation period. As a result, the orbiting object maintains its position above a point on the equator, at zero ground speed. For Earth, geostationary orbits are at an altitude of $\sim$36000 km. Geostationary orbits are often used by communication or weather satellites.\\
+	\hline\rule{0pt}{2ex}
+	HUD & Head-up display. Avionics display used in modern aircraft and spacecraft that projects data and visual cues onto a transparent screen directly in the pilot's line of sight.\\
+	\hline\rule{0pt}{2ex}
+	IDS & Instrument docking system. A fictional universal docking system that provides linear and rotational alignment cues for docking approaches, similar to ILS.\\
+	\hline\rule{0pt}{2ex}
+	ILS & Instrument Landing System. A combination of radio transmitters installed at a runway, and onboard receivers and avionics displays to provide an aircraft pilot with deviation cues from a target approach path. In Orbiter, this is also used by horizontally landing spacecraft, including a (fictional) ILS at the Kennedy SLF.\\
+	\hline\rule{0pt}{2ex}
+	Inclination & The angle between the orbital plane and a reference plane (\textit{i}). One of the 6 primary orbital elements to describe a 2-body orbit (defines the orientation of the orbital plane in space together with the \textit{longitude of the ascending node}).\\
+	\hline\rule{0pt}{2ex}
+	Inertia tensor & A 3x3 matrix that defines a rigid body's resistance to a change of its angular velocity around its axes, analogous to the role of mass in linear kinematics:\newline
+	$L = I\omega$ (\textit{L}: angular momentum, \textit{I}: inertia tensor, $\omega$: angular velocity)\\
+	\hline\rule{0pt}{2ex}
+	Isp & Specific impulse ($I_{sp}$). Equivalent to effective exhaust velocity $v_{e}$ [m/s]. Specifies the amount of thrust [N] produced by burning propellant at a rate of 1 kg/s. An often used alternative definition for $I_{sp}$ is $v_{e} \cdot g_{0}$ [s] with standard gravity $g_{0}$ = 9.81 m/s$^{2}$.\\
+	\hline\rule{0pt}{2ex}
+	LEO & Low Earth orbit. An orbit with an an apogee altitude of less than $\sim$2000 km and an orbital period of less than $\sim$128 minutes. Objects in LEO can experience orbit degradation due to atmospheric friction, limiting their lifetime unless periodically boosted to compensate, such as the ISS.\\
+	\hline\rule{0pt}{2ex}
+	Line of nodes & The intersection of the orbital plane with an inclined reference plane. Contains the \textit{ascending} and \textit{descending nodes}.\\
+	\hline\rule{0pt}{2ex}
+	Longitude of the ascending node & The angle in the reference plane between reference direction (e.g. vernal point) and the orbit's ascending node ($\Omega$). One of the primary 2-body orbital elements (defines the orientation of the orbital plane in space together with \textit{inclination}).\\
+	\hline\rule{0pt}{2ex}
+	Mean anomaly & Fraction of orbital period passed since apoapsis passage, expressed as an angle (\textit{M}). Equivalent to true anomaly of a fictitious circular orbit with the same orbital period as the actual orbit. Unlike true anomaly in a non-circular orbit, mean anomaly varies linearly with time.\\
+	\hline\rule{0pt}{2ex}
+	Mean longitude & The sum of \textit{longitude of the ascending node}, \textit{argument of periapsis} and \textit{mean anomaly}: $l = \Omega + \omega + M$. See also \textit{true longitude}.\\
+	\hline\rule{0pt}{2ex}
+	MET & Mission elapsed time. A time scale for mission events referenced to launch time. \\
+	\hline\rule{0pt}{2ex}
+	MFD & Multifunctional display. An avionics instrument consisting of a digital display and input device. Can display a variety of data and combines multiple traditional aircraft/spacecraft instruments.\\
+	\hline\rule{0pt}{2ex}
+	Normal & The direction perpendicular to a plane. In orbital operations, attitudes normal to the orbital plane are often used for out-of-plane manoeuvres, such as plane rotations. Orbiter differentiates between normal (in the direction of the momentum vector \textbf{r} $\times$ \textbf{v}) and anti-normal (in the opposite direction). See also \textit{specific relative angular momentum}.\\
+	\hline\rule{0pt}{2ex}
+	Orbital elements & 6 scalar values defining the Keplerian (2-body) orbital motion of an object in the unperturbed field of a gravitational point source. Shape and size of the orbit are defined by semi-major axis (\textit{a}) and eccentricity (\textit{e}); orientation of the orbital plane is defined by inclination (\textit{i}) and longitude of the ascending node ($\Omega$); orientation of the orbit in the plane is defined by argument of periapsis ($\omega$); position of the orbiting object along the orbit is given by true anomaly (\textit{v}) at a given time. See also state vectors.\\
+	\hline\rule{0pt}{2ex}
+	Osculating elements & The momentary \textit{orbital elements} of a body corresponding to its current \textit{state vectors}. In the presence of gravitational forces in addition to the primary, the orbit is perturbed and the osculating elements change over time.\\
+	\hline\rule{0pt}{2ex}
+	Patched conic approximation & Approximate trajectory calculation in the presence of multiple gravitational sources. The trajectory is constructed from partial conic sections, assuming only a single source for each section within the \textit{sphere of influence} of that body. The sections are joined by continuity conditions for the state vectors.\\
+	\hline\rule{0pt}{2ex}
+	Periapsis & The point of an elliptic orbit closest to the focus (the orbited body). Body-specific names are sometimes used, e.g. \textit{perigee} (for Earth orbits) or \textit{perihelion} (for solar orbits). Orbital velocity is highest at periapsis. See also \textit{apoapsis}.\\
+	\hline\rule{0pt}{2ex}
+	PMI & Principal moments of inertia: the diagonal elements of the \textit{inertia tensor} expressed in the principal body frame where the inertia tensor is diagonal. See "Inertia calculations for composite vessels" in Orbiter Technical Reference for more details.\\
+	\hline\rule{0pt}{2ex}
+	Prograde & The \textit{prograde direction} of an orbiting body is that of the current orbital velocity vector. In a \textit{prograde orbit} the orbiting body is moving in the direction of the rotation of the orbited body. See also \textit{retrograde}.\\
+	\hline\rule{0pt}{2ex}
+	RCS & Reaction Control System. A set of thrusters on a spacecraft that provides attitude control. Usually engaged in pairs to create angular moments (in angular mode) or linear moments (in linear mode) in the 3 main spacecraft axes.\\
+	\hline\rule{0pt}{2ex}
+	Retrograde & The \textit{retrograde direction} of an orbiting body is the direction opposite to the current orbital velocity vector. In a \textit{retrograde orbit} the orbiting body is moving in the opposite direction to the rotation of the orbited body. See also \textit{prograde}.\\
+	\hline\rule{0pt}{2ex}
+	Semi-major axis & Longest half-axis of an ellipse (\textit{a}). One of the 6 primary 2-body orbital elements (defines the shape of the orbit together with the \textit{eccentricity}).\\
+	\hline\rule{0pt}{2ex}
+	Semi-minor axis & Shortest half-axis of an ellipse.\\
+	\hline\rule{0pt}{2ex}
+	Sidereal day & Time for one full (360°) rotation of a celestial body. Used in astronomy, where a star will appear at the same position in the sky at the same sidereal time. Shorter than a \textit{synodic day}, which also has to take into account the apparent motion of the sun in front of the celestial background, caused by the planet's orbital motion.\\
+	\hline\rule{0pt}{2ex}
+	SOI & Sphere of influence: region around a planet or moon where the gravitational influence on an object is predominantly caused by that body. Used for approximate trajectory calculations (\textit{patched conic approximation}), where the SOI surfaces define the endpoints of the conic sections.\\
+	\hline\rule{0pt}{2ex}
+	Specific relative angular momentum & The vector product of an orbiting object's position and velocity vectors: $\textbf{h} = \textbf{r} \times \textbf{v}$. \textbf{h} is normal (perpendicular) to the orbital plane.\\
+	\hline\rule{0pt}{2ex}
+	SRB & Solid rocket booster. Solid propellant rocket used to provide additional thrust during first stage ascent of a launch vehicle, in particular the Space Shuttle.\\
+	\hline\rule{0pt}{2ex}
+	State vectors & Cartesian position (\textbf{r}) and velocity (\textbf{v}) vectors of an orbiting body at a given time. Uniquely defines an unperturbed (Keplerian) orbit. From the state vectors, the 6 orbital elements of the corresponding 2-body orbit can be calculated, and vice versa.\\
+	\hline\rule{0pt}{2ex}
+	Synodic day & Mean period between two meridian passages of the sun, averaged over a year. For a planet rotating prograde, this requires a rotation > 360° to account for the orbital movement of the planet around its sun, and is therefore longer than a \textit{sidereal day}. The length of a synodic day varies annually on a planet with an elliptic orbit.\\
+	\hline\rule{0pt}{2ex}
+	True anomaly & Angular distance of an orbital position from periapsis, as measured from the focus (\textit{v}).\\
+	\hline\rule{0pt}{2ex}
+	True longitude & The sum of \textit{longitude of the ascending node}, \textit{argument of periapsis} and \textit{true anomaly}: $L = \Omega + \omega + v$). See also \textit{mean longitude}.\\
+	\hline\rule{0pt}{2ex}
+	VTOL & Vertical take-off and landing. Spacecraft can use downward directed engines to compensate for gravitational acceleration and enable vertical take-off and soft touchdown, either using main engines ("tailsitters") or dedicated hover engines. Spacecraft with lifting bodies or airfoils may more efficiently use horizontal runway take-offs and/or landings on planets with sufficient atmospheric density.\\
+	\hline
+	\end{longtable}
+%\end{table}
+
+\end{document}

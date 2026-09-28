@@ -1,0 +1,112 @@
+\documentclass[Orbiter Developer Manual.tex]{subfiles}
+\begin{document}
+
+\section{Modules on Linux}
+\label{sec:linux_modules}
+On Linux, Orbiter's plugin modules (vessel, planet, atmosphere, MFD, plugin and graphics client modules) are shared libraries with the extension .so, which Orbiter loads with dlopen. Module names are written the same way as on Windows: a vessel configuration file entry \textit{Module = MyVessel} makes Orbiter load MyVessel.so from the Modules folder, where the Windows version loads MyVessel.dll.\\
+A Windows .dll cannot be loaded by the Linux version. An add-on with modules needs a Linux build of them, made from their source code. This section describes what changes between the two platforms.
+
+
+\subsection{Source compatibility}
+The Orbiter API and the SDK headers are the same on both platforms. Where the Windows version uses Windows types, the Linux version uses native counterparts, defined in OrbiterPlatform.h, which Orbitersdk.h includes:
+
+%\begin{table}[H]
+	%\centering
+	\begin{longtable}{ |p{0.3\textwidth}|p{0.6\textwidth}| }
+	\hline\rule{0pt}{2ex}
+	\textbf{Windows} & \textbf{Linux}\\
+	\hline\rule{0pt}{2ex}
+	HINSTANCE & void *, the dlopen handle of the module (passed to InitModule and ExitModule)\\
+	\hline\rule{0pt}{2ex}
+	HWND (dialogs, windows) & QWidget *\\
+	\hline\rule{0pt}{2ex}
+	HWND (render window) & QWindow *\\
+	\hline\rule{0pt}{2ex}
+	HDC & QPainter *\\
+	\hline\rule{0pt}{2ex}
+	HFONT, HPEN, HBRUSH & QFont *, QPen *, QBrush *\\
+	\hline\rule{0pt}{2ex}
+	HBITMAP & QImage *\\
+	\hline\rule{0pt}{2ex}
+	DLGPROC & DLGINIT, a dialog initialisation function (see below)\\
+	\hline\rule{0pt}{2ex}
+	BYTE, WORD, DWORD, BOOL, LONG, ... & Same names and sizes as on Windows (DWORD and LONG are 32 bit)\\
+	\hline\rule{0pt}{2ex}
+	RECT, POINT, SIZE, RGB(), COLORREF & Same layout and values as on Windows\\
+	\hline\rule{0pt}{2ex}
+	MAX\_PATH & 4096\\
+	\hline
+	\end{longtable}
+%\end{table}
+
+\noindent
+DLLCLBK exports a function with C linkage on both platforms, so the module callbacks keep their names:
+
+\begin{lstlisting}
+DLLCLBK void InitModule (void *hModule)
+DLLCLBK void ExitModule (void *hModule)
+DLLCLBK VESSEL *ovcInit (OBJHANDLE hvessel, int flightmodel)
+DLLCLBK void ovcExit (VESSEL *vessel)
+\end{lstlisting}
+
+\noindent
+A module can build for both platforms from one source file, with the differences in \textit{\#ifdef \_\_linux\_\_} blocks. Orbiter's own modules and the SDK samples are written this way and are the best reference for porting an add-on.\\
+Other differences to keep in mind: file names are case-sensitive on Linux, so a module should open its own files through oapiOpenFile or oapiResolvePath, which find files the way Windows does (ignoring case and accepting backslashes). The C type \textit{long} is 64 bit on Linux, and \textit{wchar\_t} holds UTF-32 instead of UTF-16.
+
+
+\subsection{Resources and dialogs}
+Modules keep their resource scripts (.rc). The build compiles them into C++ resource tables with the CMake function \textit{orbiter\_rc\_resources} (cmake/rcresources.cmake in the Orbiter folder, which needs Python 3):
+
+\begin{lstlisting}
+add_library(MyModule SHARED MyModule.cpp)
+orbiter_rc_resources(MyModule MyModule.rc)
+\end{lstlisting}
+
+\noindent
+Orbiter builds Qt dialogs from the dialog templates. Bitmaps, icons, string tables and menus are read with the functions in OrbiterResource.h, for example oapiLoadResImage (LoadBitmap, LoadIcon), oapiLoadResString (LoadString), oapiResDlgItem and DlgItem<T> (GetDlgItem), and oapiSetDlgItemText and oapiGetDlgItemText (SetDlgItemText, GetDlgItemText).\\
+\\
+Linux has no window messages, so dialogs have no message procedure. oapiOpenDialog and the other dialog functions take a DLGINIT function instead:
+
+\begin{lstlisting}
+typedef void (*DLGINIT)(QWidget *hDlg, void *context);
+\end{lstlisting}
+
+\noindent
+Orbiter calls it once, after it has built the dialog from its template (where the Windows procedure handles WM\_INITDIALOG). There the module initialises its controls and connects them to its code. oapiConnectDlgCommands registers one handler for the command notifications of all controls and menu items of the dialog (where the Windows procedure handles WM\_COMMAND). Its arguments are the resource id of the control, a RESNOTIFY code (RESN\_CLICKED, RESN\_CHANGE, RESN\_SELCHANGE, ...) and the control. Other controls can be connected with Qt signals directly.
+
+\begin{lstlisting}
+void MyDlgInit (QWidget *hDlg, void *context)
+{
+	oapiSetDlgItemText (hDlg, IDC_NAME, "Hello");  // WM_INITDIALOG
+	oapiConnectDlgCommands (hDlg, [hDlg](int id, int code, QWidget *hCtrl) {
+		switch (id) {                               // WM_COMMAND
+		case IDCANCEL:
+			oapiCloseDialog (hDlg);
+			return;
+		}
+	});
+}
+
+QWidget *hDlg = oapiOpenDialog (g_hDLL, IDD_MYDIALOG, MyDlgInit);
+\end{lstlisting}
+
+\noindent
+The DialogTemplate sample in Orbitersdk/samples shows a complete dialog module for both platforms.
+
+
+\subsection{Drawing}
+Sketchpad drawing (oapiGetSketchpad) works the same on both platforms and is the recommended way to draw into surfaces. oapiGetDC returns a QPainter on Linux, so code that draws with GDI functions has to be rewritten, preferably for Sketchpad.
+
+
+\subsection{Building modules}
+Modules are built with CMake and GCC (C++20) against the SDK in the Orbiter folder:
+
+\begin{itemize}
+\item include folder: Orbitersdk/include
+\item link libraries: Orbitersdk/lib/libOrbitersdk.a, Orbitersdk/lib/libDlgCtrl.a (for modules that use DlgCtrl) and Qt6::Widgets
+\end{itemize}
+
+\noindent
+There is no import library for Orbiter itself: when Orbiter loads a module, the module's references to the Orbiter API are bound to the functions the Orbiter executable exports. Module files have no \textit{lib} prefix (set CMAKE\_SHARED\_LIBRARY\_PREFIX to an empty string). The sample build in the Orbiter folder sets up all of this and is a good starting point for your own modules (see ``Building Orbiter Sample Programs (Linux)'', Orbitersdk/doc/BuildingSamples (Linux).pdf).
+
+\end{document}

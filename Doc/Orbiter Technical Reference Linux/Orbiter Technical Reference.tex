@@ -1,0 +1,86 @@
+% import macros and common styles
+\input{..//common_definitions}
+
+
+\graphicspath{{Images//}{../Orbiter Technical Reference/}{../Orbiter Technical Reference/Images//}}
+% eps figures come from the Windows edition's folder: convert them into this folder, the path has spaces
+\usepackage{epstopdf}
+\epstopdfsetup{outdir=./}
+\epstopdfDeclareGraphicsRule{.eps}{pdf}{.pdf}{repstopdf "#1" --outfile=\OutputFile}
+\bibliographystyle{unsrt}
+
+
+\renewcommand*\familydefault{\sfdefault}
+\sffamily
+
+\pagestyle{fancy}
+\renewcommand{\footrulewidth}{0.4pt}
+
+
+% define page header/footer
+\lhead{}
+\chead{}
+\rhead{}
+\lfoot{Orbiter Technical Reference (Linux)}
+\cfoot{\thepage}
+
+
+\titleformat{\paragraph}[hang]{\bfseries}{\theparagraph}{1em}{}
+
+
+
+\begin{document}
+
+\begin{titlepage}
+\begin{center}
+
+
+\textsc{\fontsize{60}{60} \textbf{Orbiter}}\\
+\vspace{0.5cm}
+
+\textsc{\Huge Space Flight Simulator}\\
+\vspace{2.0cm}
+
+\includegraphics[width=0.75\textwidth]{..//orbiterlogo.png}
+\vspace{2.0cm}
+
+\textsc{\LARGE Orbiter Technical Reference}\\
+\vspace{0.5cm}
+\textsc{\Large Linux edition}
+
+\end{center}
+\end{titlepage}
+
+
+\newpage
+\pagenumbering{roman}
+
+\tableofcontents
+\newpage
+
+\pagenumbering{arabic}
+
+\newpage
+\subfile{INTRODUCTION}
+\newpage
+\subfile{composite}
+\newpage
+\subfile{distmass}
+\newpage
+\subfile{dynamics}
+\newpage
+\subfile{dynsurf}
+\newpage
+\subfile{earth_atm}
+\newpage
+\subfile{gravity}
+\newpage
+\subfile{lighting}
+\newpage
+\subfile{precession}
+\newpage
+\subfile{RecorderRef}
+\newpage
+\bibliography{REFERENCES}
+
+\end{document}

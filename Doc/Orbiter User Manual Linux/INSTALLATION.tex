@@ -1,0 +1,61 @@
+\documentclass[Orbiter User Manual.tex]{subfiles}
+\begin{document}
+
+\section{Installation}
+\label{sec:installation}
+This section lists the computer requirements for running Orbiter on Linux, and contains download and installation instructions.
+
+\subsection{Computer requirements}
+Orbiter runs on 64-bit (x86-64) Linux distributions with a Wayland or X11 desktop. It needs a graphics driver with Vulkan 1.4 support, and plays sound through PipeWire.\\
+The following table lists the hardware requirements needed by Orbiter.
+
+%\begin{table}[H]
+	%\centering
+	\begin{longtable}{ |p{0.065\textwidth}|p{0.3\textwidth}|p{0.55\textwidth}| }
+	\hline\rule{0pt}{2ex}
+	& \textbf{Minimum requirements} & \textbf{Recommended requirements}\\
+	\hline\rule{0pt}{2ex}
+	RAM & 500 MB & 2 GB\\
+	\hline\rule{0pt}{2ex}
+	CPU & Dual Core &\\
+	\hline\rule{0pt}{2ex}
+	GPU & 50 GFlops, Vulkan 1.4 driver & 100 GFlops\\
+	\hline\rule{0pt}{2ex}
+	Disk & 5 GB of free space & 10 GB of free space (80 GB if you want hi-res textures)\\
+	\hline
+	\end{longtable}
+%\end{table}
+
+\noindent
+Orbiter supports an optional joystick.\\
+The TrackIR head tracker is not available on Linux: its driver and the NPClient library Orbiter's TrackIR module uses exist only for Windows.
+
+\subsection{Download}
+The latest Orbiter release can be downloaded from \url{https://github.com/orbitersim/orbiter/releases}. The Linux package is the file named OpenOrbiter-<version>-Linux.tar.gz.\\
+If desired, high-resolution texture packs are available for Mercury, Earth, Moon, Mars, Titan and some minor-bodies, which can be downloaded from \url{http://orbit.medphys.ucl.ac.uk/mirrors/orbiter_radio/tex_mirror.html}. The downloads are provided as torrents for fast and reliable transfer. If you can't handle torrent downloads, alternative http download links are also provided. The same packs are used on Windows and Linux. The archive files of a pack (Surf.tree, Elev.tree, Mask.tree and so on) belong in the Textures/<planet>/Archive folder of your Orbiter installation, for example Textures/Earth/Archive/Surf.tree.
+
+\subsection{Installation}
+\begin{itemize}
+\item Create a new folder for the Orbiter installation, e.g. \textasciitilde/Orbiter in your home folder. A folder you own is recommended, because Orbiter writes its configuration, log and scenario files into its own folder.
+\item If a previous version of Orbiter is already installed on your computer, you should not install the new version into the same folder, because this could lead to file conflicts. You may want to keep your old installation until you have made sure that the latest version works without problems. Multiple Orbiter installations can exist on the same computer.
+\item Unpack the Orbiter .tar.gz installation package into the new folder, using either your file manager's archive tool or the command\\
+\texttt{tar -xzf OpenOrbiter-<version>-Linux.tar.gz -C \textasciitilde/Orbiter}\\
+Important: Take care to preserve the directory structure of the package. The Orbiter folder is OpenOrbiter-<version>-Linux/Orbiter inside it.
+\item After unpacking the package, make sure your Orbiter folder contains the executable (Orbiter), its launcher (OpenOrbiter) and, among other files, the Config, Meshes, Scenarios and Textures subfolders.
+\item Orbiter is launched with the OpenOrbiter launcher in the Orbiter folder, which starts the Orbiter executable from its own folder. The first time, the launcher checks the libraries Orbiter needs, offers to install anything missing from your distribution's own package repositories (apt, dnf, zypper or pacman), and adds Orbiter to your application menu, so after that it starts from the menu like any other program. Orbiter's output goes to \textasciitilde/.cache/orbiter64-linux/orbiter.log; \texttt{./OpenOrbiter -{}-verbose} keeps it in the terminal instead.
+\item Graphics come from the included VulkanClient plugin, which renders with Vulkan: select it as graphics engine on the \textit{Video} tab of the Launchpad (see section \ref{ssec:launchpad_video}). Without a graphics engine, Orbiter runs in console mode, controlled from a text console (the terminal it was started from, or a console window of its own). Once running, Orbiter will show you the "Launchpad" dialog, where you can select video options and simulation parameters.
+\item You are now ready to start, select a scenario from the Launchpad dialog and click the \textit{Launch Orbiter} button!
+\end{itemize}
+
+\noindent
+\alertbox{If Orbiter does not show any scenarios in the Scenario tab, or if planets appear plain white without any textures when running the simulation, the most likely reason is that the installation packages were not properly unpacked. Make sure your Orbiter folder contains the subfolders as described above. If necessary, you may have to repeat the installation process.}
+
+\subsection{Add-ons from the Windows version}
+Orbiter on Linux looks up files the way Windows does: the case of file and folder names does not matter, and backslashes in paths inside configuration and scenario files are accepted. Add-ons made of meshes, textures, configuration files and scenarios therefore work without changes.\\
+Add-ons that contain program modules (.dll files) are different: a Windows .dll cannot be loaded by the Linux version. Such an add-on needs a Linux build of its modules (.so files), made from its source code (see the Orbiter Developer Manual).\\
+Help files (.chm) of Windows add-ons are Microsoft compiled HTML files, which Orbiter's help window on Linux cannot show (Orbiter's own .chm files on Linux are zip archives of HTML pages). Such help files can be read with a CHM viewer, for example xCHM or KchmViewer.
+
+\subsection{Uninstall}
+Run \texttt{./OpenOrbiter -{}-remove-menu} in the Orbiter folder to take Orbiter out of the application menu, then simply remove the Orbiter folders with all contents and subdirectories. This will completely remove Orbiter from your hard drive. The launcher's own files are in \textasciitilde/.cache/orbiter64-linux and can be removed as well.
+
+\end{document}
