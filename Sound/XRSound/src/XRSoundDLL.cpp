@@ -6,10 +6,17 @@
 // ==============================================================
 
 #define ORBITER_MODULE
+#ifndef __linux__
 #include "OrbiterSDK.h"
+#else // __linux__
+#include "Orbitersdk.h"
+#endif // __linux__
 #include "XRSoundDLL.h"
 #include "VesselXRSoundEngine.h"
 #include "ModuleXRSoundEngine.h"
+#ifdef __linux__
+#include <chrono>
+#endif // __linux__
 
 namespace
 {
@@ -21,17 +28,33 @@ namespace
 // TODO: Investigate the CTD that prompted the catch-all handlers and whether
 // they can be removed. Continuing after an access violation may leave Orbiter
 // in an invalid state; changing that policy is outside this build fix.
+#ifdef __linux__
+// __try/__except -> try/catch: C++ exceptions are caught; access violations have no catchable counterpart on Linux
+#endif // __linux__
 bool PreStepVesselWithSEH(OBJHANDLE hVessel, VesselXRSoundEngine *pEngine,
     double simt, double simdt, double mjd)
 {
+#ifndef __linux__
     __try
+#else // __linux__
+    try
+#endif // __linux__
     {
+#ifndef __linux__
         _ASSERTE(oapiIsVessel(hVessel));
         _ASSERTE(pEngine);
+#else // __linux__
+        assert(oapiIsVessel(hVessel));
+        assert(pEngine);
+#endif // __linux__
         pEngine->clbkPreStep(simt, simdt, mjd);
         return true;
     }
+#ifndef __linux__
     __except(EXCEPTION_EXECUTE_HANDLER)
+#else // __linux__
+    catch (...)
+#endif // __linux__
     {
         return false;
     }
@@ -39,12 +62,20 @@ bool PreStepVesselWithSEH(OBJHANDLE hVessel, VesselXRSoundEngine *pEngine,
 
 bool UpdateIrrKlangWithSEH()
 {
+#ifndef __linux__
     __try
+#else // __linux__
+    try
+#endif // __linux__
     {
         XRSoundEngine::UpdateIrrKlangEngine();
         return true;
     }
+#ifndef __linux__
     __except(EXCEPTION_EXECUTE_HANDLER)
+#else // __linux__
+    catch (...)
+#endif // __linux__
     {
         return false;
     }
@@ -82,7 +113,11 @@ DLLCLBK XRSoundEngine *GetModuleXRSoundEngineInstance(const char *pUniqueModuleN
 VesselXRSoundEngine *XRSoundDLL::GetXRSoundEngineInstance(const OBJHANDLE hVessel, const bool bInvokedByClientVessel)
 {
     const bool bIsValidVessel = oapiIsVessel(hVessel);
+#ifndef __linux__
     _ASSERTE(bIsValidVessel);
+#else // __linux__
+    assert(bIsValidVessel);
+#endif // __linux__
     if (!bIsValidVessel)
     {
         // should never happen!
@@ -93,7 +128,11 @@ VesselXRSoundEngine *XRSoundDLL::GetXRSoundEngineInstance(const OBJHANDLE hVesse
     }
 
     VESSEL *pVessel = oapiGetVesselInterface(hVessel);
+#ifndef __linux__
     _ASSERTE(pVessel);
+#else // __linux__
+    assert(pVessel);
+#endif // __linux__
     
     // sanity check: bail out now if this is not a valid vessel for unknown reason
     if (!pVessel)
@@ -144,7 +183,11 @@ VesselXRSoundEngine *XRSoundDLL::GetXRSoundEngineInstance(const OBJHANDLE hVesse
 ModuleXRSoundEngine *XRSoundDLL::GetXRSoundEngineInstance(const char *pUniqueModuleName)
 {
     const bool bIsValidModuleID = (pUniqueModuleName && *pUniqueModuleName);
+#ifndef __linux__
     _ASSERTE(bIsValidModuleID);
+#else // __linux__
+    assert(bIsValidModuleID);
+#endif // __linux__
     if (!bIsValidModuleID)
     {
         // should never happen!
@@ -179,14 +222,22 @@ ModuleXRSoundEngine *XRSoundDLL::GetXRSoundEngineInstance(const char *pUniqueMod
 // This function is called when Orbiter starts or when the module
 // is activated.
 //==============================================================
+#ifndef __linux__
 DLLCLBK void InitModule(HINSTANCE hDLL)
+#else // __linux__
+DLLCLBK void InitModule(void *hDLL)
+#endif // __linux__
 {
 #ifdef _DEBUG
     // Enable Visual Studio's runtime heap checking for debug builds
     // NOTE: _CRTDBG_CHECK_ALWAYS_DF is too slow; only enable that flag if chasing a difficult memory corruption bug
+#ifndef __linux__
     _CrtSetDbgFlag(_CRTDBG_ALLOC_MEM_DF |
         _CRTDBG_CHECK_CRT_DF |
         _CRTDBG_LEAK_CHECK_DF);
+#else // __linux__
+    // _CrtSetDbgFlag left out: MSVC debug heap; the asan preset (ORBITER_SANITIZER) checks the heap on Linux
+#endif // __linux__
 #endif
 
     XRSoundDLL::s_pInstance = new XRSoundDLL(hDLL);
@@ -217,7 +268,11 @@ void XRSoundDLL::ParseGlobalConfigFile()
 // This function is called when Orbiter shuts down or when the
 // module is deactivated.
 //==============================================================
+#ifndef __linux__
 DLLCLBK void ExitModule(HINSTANCE hDLL)
+#else // __linux__
+DLLCLBK void ExitModule(void *hDLL)
+#endif // __linux__
 {
     // Note: do not delete XRSoundDLL::s_pInstance here; per the Orbiter docs, the Orbiter core automatically
     // destroys all modules when required.
@@ -227,7 +282,11 @@ DLLCLBK void ExitModule(HINSTANCE hDLL)
 XRSoundDLL *XRSoundDLL::s_pInstance;
 
 // Constructor
+#ifndef __linux__
 XRSoundDLL::XRSoundDLL(HINSTANCE hDLL) :
+#else // __linux__
+XRSoundDLL::XRSoundDLL(void *hDLL) :
+#endif // __linux__
     Module(hDLL), m_hDLL(hDLL), m_nextSoundEnginesRefreshSimt(0), m_absoluteSimTime(0), m_nextIrrKlangUpdateRealtime(0)
 {
 }
@@ -238,9 +297,15 @@ XRSoundDLL::~XRSoundDLL()
     // Note: we already freed all XRSoundEngine objects in clbkSimulationEnd()
 #ifdef _DEBUG
     // sanity checks to make sure things were already cleaned up as expected
+#ifndef __linux__
     _ASSERTE(m_allVesselsMap.size() == 0);
     _ASSERTE(m_allModulesMap.size() == 0);
     _ASSERTE(!XRSoundEngine::IsKlangEngineInitialized());
+#else // __linux__
+    assert(m_allVesselsMap.size() == 0);
+    assert(m_allModulesMap.size() == 0);
+    assert(!XRSoundEngine::IsKlangEngineInitialized());
+#endif // __linux__
 #endif
 }
 
@@ -360,7 +425,11 @@ void XRSoundDLL::UpdateAllVesselsMap()
 
         // Can't just use FindXRSoundEngineForVessel here because we need remove the VesselXRSoundEngine * pair in the map itself, too.
         auto it = m_allVesselsMap.find(hVessel);
+#ifndef __linux__
         _ASSERTE(it != m_allVesselsMap.end());  // sanity check
+#else // __linux__
+        assert(it != m_allVesselsMap.end());  // sanity check
+#endif // __linux__
         if (it != m_allVesselsMap.end())
         {
             VesselXRSoundEngine *pEngine = it->second;  // may be nullptr, in which case it was already previously freed or never added in the first place
@@ -374,13 +443,21 @@ void XRSoundDLL::UpdateAllVesselsMap()
     for (unsigned int i = 0; i < allVesselHandles.size(); i++)
     {
         OBJHANDLE hVessel = allVesselHandles[i];
+#ifndef __linux__
         _ASSERTE(oapiIsVessel(hVessel));  // should always be a valid vessel handle
+#else // __linux__
+        assert(oapiIsVessel(hVessel));  // should always be a valid vessel handle
+#endif // __linux__
 
         auto it = m_allVesselsMap.find(hVessel);
         if (it == m_allVesselsMap.end())
         {
             // this is a new vessel; create a new, default XRSoundEngine instance for it so we can play default sounds on it
+#ifndef __linux__
             _ASSERTE(oapiIsVessel(hVessel));
+#else // __linux__
+            assert(oapiIsVessel(hVessel));
+#endif // __linux__
             VesselXRSoundEngine *pEngine = GetXRSoundEngineInstance(hVessel, false);  // Note: will be nullptr if this vessel should not have any default sounds AND if it wasn't created by a client API call
             if (pEngine)
             {
@@ -451,7 +528,12 @@ double XRSoundDLL::GetSystemUptime()
     // Even though we lose some precision going from 2^64 max down to 2^53 (53 bits mantissia in a double), that's still enough
     // precision to track 104,249,991.37 days, or 285,616 years of uptime right down to the millisecond.  
     // See https://stackoverflow.com/questions/1848700/biggest-integer-that-can-be-stored-in-a-double
+#ifndef __linux__
     const double uptimeMilli = static_cast<double>(GetTickCount64());  // GetTickCount64 requires Vista or higher, but that is our minimum target OS anyway
+#else // __linux__
+    // GetTickCount64 -> steady_clock (CLOCK_MONOTONIC, time since boot)
+    const double uptimeMilli = static_cast<double>(std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::steady_clock::now().time_since_epoch()).count());
+#endif // __linux__
     return (uptimeMilli / 1000);  // convert to seconds
 }
 
@@ -465,7 +547,11 @@ void XRSoundDLL::clbkPause(bool paused)
         for (auto it = m_allVesselsMap.begin(); it != m_allVesselsMap.end(); it++)
         {
             XRSoundEngine *pEngine = it->second;   // will be nullptr if this vessel has already been freed
+#ifndef __linux__
             _ASSERTE(pEngine);
+#else // __linux__
+            assert(pEngine);
+#endif // __linux__
             pEngine->SetAllWavPaused(true);
         }
     }
@@ -474,7 +560,11 @@ void XRSoundDLL::clbkPause(bool paused)
     for (auto it = m_allModulesMap.begin(); it != m_allModulesMap.end(); it++)
     {
         XRSoundEngine *pEngine = it->second;
+#ifndef __linux__
         _ASSERTE(pEngine);
+#else // __linux__
+        assert(pEngine);
+#endif // __linux__
         pEngine->SetAllWavPaused(paused);
     }
 

@@ -9,7 +9,11 @@
 
 #include <unordered_map>
 
+#ifndef __linux__
 #include "OrbiterSDK.h"
+#else // __linux__
+#include "Orbitersdk.h"
+#endif // __linux__
 #include "XRSound.h"            // for enums
 #include "VesselXRSoundEngine.h"
 
@@ -21,36 +25,60 @@ class SoundPreStep
 public:
     SoundPreStep(VesselXRSoundEngine *pEngine) : m_pEngine(pEngine)
     { 
+#ifndef __linux__
         _ASSERTE(pEngine); 
+#else // __linux__
+        assert(pEngine); 
+#endif // __linux__
     }
 
     XRSoundConfigFileParser &GetConfig()
     {
+#ifndef __linux__
         _ASSERTE(m_pEngine);
+#else // __linux__
+        assert(m_pEngine);
+#endif // __linux__
         return m_pEngine->GetConfig();
     }
 
     bool HasFocus() const
     {
+#ifndef __linux__
         _ASSERTE(m_pEngine);
+#else // __linux__
+        assert(m_pEngine);
+#endif // __linux__
         return m_pEngine->HasFocus();
     }
 
     bool InCockpitView() const
     {
+#ifndef __linux__
         _ASSERTE(m_pEngine);
+#else // __linux__
+        assert(m_pEngine);
+#endif // __linux__
         return m_pEngine->InCockpitView();
     }
 
     void WriteLog(const char *pMsg)
     {
+#ifndef __linux__
         _ASSERTE(m_pEngine);
+#else // __linux__
+        assert(m_pEngine);
+#endif // __linux__
         m_pEngine->WriteLog(pMsg);
     }
     
     VESSEL *GetVessel()
     {
+#ifndef __linux__
         _ASSERTE(m_pEngine);
+#else // __linux__
+        assert(m_pEngine);
+#endif // __linux__
         return m_pEngine->GetVessel();
     }
 

@@ -37,7 +37,11 @@ void VesselXRSoundEngine::FreeResources()
 // This also handles static one-time initialization of our singleton irrKlang engine.
 VesselXRSoundEngine *VesselXRSoundEngine::CreateInstance(const OBJHANDLE hVessel)
 {
+#ifndef __linux__
     _ASSERTE(oapiIsVessel(hVessel));
+#else // __linux__
+    assert(oapiIsVessel(hVessel));
+#endif // __linux__
     if (!oapiIsVessel(hVessel))
         return nullptr;
 
@@ -60,7 +64,11 @@ VesselXRSoundEngine::VesselXRSoundEngine(const OBJHANDLE hVessel) :
 {
     m_pConfig = new XRSoundConfigFileParser();
     VESSEL *pVessel = GetVessel();  // should never be nullptr at this point (XRSoundDLL::GetXRSoundEngineInstance already validated hVessel).
+#ifndef __linux__
     _ASSERTE(pVessel);
+#else // __linux__
+    assert(pVessel);
+#endif // __linux__
 
     // parse XRSound.log + any vessel class-specific override file
     m_pConfig->ParseVesselSoundConfig(pVessel);
@@ -108,7 +116,11 @@ bool VesselXRSoundEngine::SetDefaultSoundEnabled(const XRSound::DefaultSoundID s
             pContext = FindWavContext(soundID);     // must get the persisted copy in our map; should always succeed now
         }
 
+#ifndef __linux__
         _ASSERTE(pContext);
+#else // __linux__
+        assert(pContext);
+#endif // __linux__
 
         // TOO VERBOSE -- keeps alternating when two or more XR1s are in the scenario: VERBOSE_LOG(this, "XRSoundEngine::SetDefaultSoundEnabled: setting default sound %s bEnabled = %d", pContext->ToStr(), bEnabled);
 
@@ -229,10 +241,18 @@ void VesselXRSoundEngine::UpdateSoundState(WavContext &context)
 {
     // NOTE: If you update this method, check/update the same method in ModuleXRSoundEngine as well.
 
+#ifndef __linux__
     ISound *pISound = context.pISound;  // will be nullptr if sound was never played yet, or was stopped before finishing
+#else // __linux__
+    AudioVoice *pISound = context.pISound;  // will be nullptr if sound was never played yet, or was stopped before finishing
+#endif // __linux__
     if (pISound)    // sound was marked to play or is playing now?
     {
+#ifndef __linux__
         if (!pISound->isFinished())
+#else // __linux__
+        if (!pISound->IsFinished())
+#endif // __linux__
         {
             // sound is currently playing or paused
             if (!context.bEnabled)  // NOTE: we only use this field for *default* sounds, nothing else!
@@ -275,20 +295,34 @@ void VesselXRSoundEngine::UpdateSoundState(WavContext &context)
                 break;      // not faded by distance or pressure, and does not require focus
 
             default:
+#ifndef __linux__
                 _ASSERTE(false);    // unknown sound type -- should never happen!
+#else // __linux__
+                assert(false);    // unknown sound type -- should never happen!
+#endif // __linux__
                 goto release_sound;
             }
 
             // update the irrKlang state for this sound
+#ifndef __linux__
             pISound->setVolume(volume);
             pISound->setIsLooped(context.bLoop);
             pISound->setIsPaused(context.bPaused);
+#else // __linux__
+            pISound->SetVolume(volume);
+            pISound->SetLooped(context.bLoop);
+            pISound->SetPaused(context.bPaused);
+#endif // __linux__
         }
         else
         {
         release_sound:
             // sound has finished, so release its resources
+#ifndef __linux__
             pISound->drop();
+#else // __linux__
+            pISound->Release();
+#endif // __linux__
             context.pISound = nullptr;
         }
     }
@@ -344,7 +378,11 @@ void VesselXRSoundEngine::PollAllAnimationStates()
         else
             state = AnimationState::StateType::Moving;  // between 0.0 and 1.0: still moving, but neither fully open nor fully closed yet
 
+#ifndef __linux__
         _ASSERTE(state != AnimationState::StateType::Unknown);  // in case we screw up the above logic at some point
+#else // __linux__
+        assert(state != AnimationState::StateType::Unknown);  // in case we screw up the above logic at some point
+#endif // __linux__
 
         // add to the map of all known animations for this vessel (we rebuild this every frame since they can change at any time).
         AnimationState animationState(state, thisFrameProc);
@@ -628,7 +666,11 @@ void VesselXRSoundEngine::LoadDefaultSounds()
 // Returns true on success, false if the supplied pWavFilename is empty (i.e., sound is disabled) or could not be loaded.
 void VesselXRSoundEngine::AddSoundPreStep(SoundPreStep *pPreStep)
 {
+#ifndef __linux__
     _ASSERTE(pPreStep);
+#else // __linux__
+    assert(pPreStep);
+#endif // __linux__
     m_allSoundPreSteps.push_back(pPreStep);
 }
 
@@ -640,10 +682,18 @@ void VesselXRSoundEngine::AddSoundPreStep(SoundPreStep *pPreStep)
 // Returns true on success, false if the supplied pWavFilename is empty (i.e., sound is disabled) or could not be loaded.
 bool VesselXRSoundEngine::AddDefaultSound(DefaultSoundPreStep *pPreStep, const int soundID, const char *pSoundFileOrFolderName, const XRSound::PlaybackType playbackType)
 {
+#ifndef __linux__
     _ASSERTE(pSoundFileOrFolderName);
+#else // __linux__
+    assert(pSoundFileOrFolderName);
+#endif // __linux__
 
     // see if this sound is disabled
+#ifndef __linux__
     if (!(*pSoundFileOrFolderName) || (_stricmp(pSoundFileOrFolderName, "none") == 0))
+#else // __linux__
+    if (!(*pSoundFileOrFolderName) || (strcasecmp(pSoundFileOrFolderName, "none") == 0))
+#endif // __linux__
     {
         // no sound filename set, so sound was disabled by the user in XRSound.cfg (or vessel class .cfg override)
         VERBOSE_LOG(this, "XRSoundEngine::AddDefaultSound INFO: default sound ID %d disabled via config file.", soundID);

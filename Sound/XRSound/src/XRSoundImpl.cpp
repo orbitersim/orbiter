@@ -8,7 +8,12 @@
 // ==============================================================
 
 #include "XRSoundImpl.h"
+#ifndef __linux__
 #include <Strsafe.h> 
+#else // __linux__
+#include <dlfcn.h>
+#include <cstdio>
+#endif // __linux__
 
 // NOTE: In order to maximize compatibility with users using versions of Visual Studio other than VS 2019, do not call any MSVCRT methods in this code.
 // More information is at https://connect.microsoft.com/VisualStudio/feedback/details/1144980/error-lnk2001-unresolved-external-symbol-imp-iob-func.
@@ -37,11 +42,21 @@ bool XRSoundImpl::Initialize(VESSEL *pVessel)
     bool retVal = false;
     // Note: GetModuleHandle is faster than LoadLibrary (and no need to call FreeLibrary on it), but it's not 
     // thread-safe.  However, GetModuleHandle is fine for our purposes since Orbiter is not multi-threaded anyway.
+#ifndef __linux__
     m_hDLL = GetModuleHandle("XRSound.dll");  
+#else // __linux__
+    // RTLD_NOLOAD finds Modules/Plugin/XRSound.so by its soname only if Orbiter loaded it, as GetModuleHandle does
+    m_hDLL = dlopen("XRSound.so", RTLD_NOW | RTLD_NOLOAD);
+#endif // __linux__
     if (m_hDLL)
     {
         // Note: the m_pEngine acquired by this call is a *borrowed reference*: do not attempt to delete it
+#ifndef __linux__
         VesselXRSoundEngineInstanceFuncPtr pFunc = reinterpret_cast<VesselXRSoundEngineInstanceFuncPtr>(GetProcAddress(m_hDLL, "GetXRSoundEngineInstance"));
+#else // __linux__
+        VesselXRSoundEngineInstanceFuncPtr pFunc = reinterpret_cast<VesselXRSoundEngineInstanceFuncPtr>(dlsym(m_hDLL, "GetXRSoundEngineInstance"));
+        dlclose(m_hDLL);    // GetModuleHandle takes no reference: Orbiter's own keeps the plugin loaded
+#endif // __linux__
         if (pFunc)
             m_pEngine = (pFunc)(pVessel->GetHandle());   // returns nullptr if sound initialization fails
 
@@ -51,7 +66,11 @@ bool XRSoundImpl::Initialize(VESSEL *pVessel)
             // Note: in order to maximize cross-compiler version linking compatibility, we don't want to use any msvcrt functions in this library, so we can't use sprintf here.
             // Also, Orbiter's oapiWriteLog takes a char * instead of const char *, which I presume is just a bug, so we can safely (?) assume that is just a typo in the method signature.
             const float dllVersion = GetVersion();
+#ifndef __linux__
             _ASSERTE(dllVersion > 0);
+#else // __linux__
+            assert(dllVersion > 0);
+#endif // __linux__
             char messageBuf[512];
             if (dllVersion >= 2.0)
             {
@@ -59,16 +78,26 @@ bool XRSoundImpl::Initialize(VESSEL *pVessel)
                 const XRSoundEngine::EngineType engineType = GetEngineType();
                 const char *pEngineType = XRSoundImpl::EngineTypeToStr(engineType);  // "Vessel", "Module", etc.
 
+#ifndef __linux__
                 StringCchPrintf(messageBuf, sizeof(messageBuf), "[XRSound INFO] %s '%s' built with XRSound API version %.2f", 
                     pEngineType, pVesselOrModuleName, XRSOUND_ENGINE_VERSION);
+#else // __linux__
+                snprintf(messageBuf, sizeof(messageBuf), "[XRSound INFO] %s '%s' built with XRSound API version %.2f", 
+                    pEngineType, pVesselOrModuleName, XRSOUND_ENGINE_VERSION);
+#endif // __linux__
                 oapiWriteLog(messageBuf);
             }
 
             if (dllVersion < XRSOUND_ENGINE_VERSION)
             {
                 // user is running with an older XRSound.dll version than this vessel was linked with
+#ifndef __linux__
                 StringCchPrintf(messageBuf, sizeof(messageBuf), "[XRSOUND WARNING] XRSound.dll version %0.2f is installed, but an active Orbiter vessel or module was built with XRSound version %.2f.  Please install the latest XRSound version from https://www.alteaaerospace.com.",
                     dllVersion, XRSOUND_ENGINE_VERSION);
+#else // __linux__
+                snprintf(messageBuf, sizeof(messageBuf), "[XRSOUND WARNING] XRSound.dll version %0.2f is installed, but an active Orbiter vessel or module was built with XRSound version %.2f.  Please install the latest XRSound version from https://www.alteaaerospace.com.",
+                    dllVersion, XRSOUND_ENGINE_VERSION);
+#endif // __linux__
                 oapiWriteLog(messageBuf);
             }
         }
@@ -108,11 +137,20 @@ bool XRSoundImpl::Initialize(const char *pUniqueModuleName)
         return false;
 
     bool retVal = false;
+#ifndef __linux__
     m_hDLL = GetModuleHandle("XRSound.dll");
+#else // __linux__
+    m_hDLL = dlopen("XRSound.so", RTLD_NOW | RTLD_NOLOAD);
+#endif // __linux__
     if (m_hDLL)
     {
         // Note: the m_pEngine acquired by this call is a *borrowed reference*: do not attempt to delete it
+#ifndef __linux__
         ModuleXRSoundEngineInstanceFuncPtr pFunc = reinterpret_cast<ModuleXRSoundEngineInstanceFuncPtr>(GetProcAddress(m_hDLL, "GetModuleXRSoundEngineInstance"));
+#else // __linux__
+        ModuleXRSoundEngineInstanceFuncPtr pFunc = reinterpret_cast<ModuleXRSoundEngineInstanceFuncPtr>(dlsym(m_hDLL, "GetModuleXRSoundEngineInstance"));
+        dlclose(m_hDLL);    // GetModuleHandle takes no reference: Orbiter's own keeps the plugin loaded
+#endif // __linux__
         if (pFunc)
             m_pEngine = (pFunc)(pUniqueModuleName);   // returns nullptr if sound initialization fails or if another module has previously registered using pUniqueModuleName
     }
@@ -147,8 +185,13 @@ bool XRSoundImpl::LoadWav(const int soundID, const char *pSoundFilename, const P
     if (IsDefaultSoundGroup(soundID))
         return false;
 
+#ifndef __linux__
     _ASSERTE(pSoundFilename);
     _ASSERTE(*pSoundFilename);
+#else // __linux__
+    assert(pSoundFilename);
+    assert(*pSoundFilename);
+#endif // __linux__
     if (!pSoundFilename || !*pSoundFilename)
         return false;
 
@@ -257,8 +300,13 @@ bool XRSoundImpl::GetDefaultSoundEnabled(const DefaultSoundID soundID) const
 // Returns true on success, false if XRSound.dll not present.
 bool XRSoundImpl::SetDefaultSoundGroupFolder(const DefaultSoundID defaultSoundID, const char *pSubfolderPath)
 {
+#ifndef __linux__
     _ASSERTE(pSubfolderPath);
     _ASSERTE(*pSubfolderPath);
+#else // __linux__
+    assert(pSubfolderPath);
+    assert(*pSubfolderPath);
+#endif // __linux__
 
     // sanity-check the path
     if (!pSubfolderPath || !*pSubfolderPath)

@@ -9,7 +9,11 @@
 
 #include <unordered_map>
 
+#ifndef __linux__
 #include "OrbiterSDK.h"
+#else // __linux__
+#include "Orbitersdk.h"
+#endif // __linux__
 #include "XRSound.h"            // for enums
 #include "VesselXRSoundEngine.h"
 #include "SoundPreSteps.h"

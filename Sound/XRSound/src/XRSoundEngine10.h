@@ -42,11 +42,19 @@ public:
 #define XRSOUND_BETA_STR "RC2 "
 
 // for use by build version strings
+#ifndef __linux__
 #ifdef _WIN64
 #define ARCH_TYPE "64-bit"
 #else
 #define ARCH_TYPE "32-bit"
 #endif
+#else // __linux__
+#ifdef __LP64__   // _WIN64 counterpart: 64-bit pointers
+#define ARCH_TYPE "64-bit"
+#else
+#define ARCH_TYPE "32-bit"
+#endif
+#endif // __linux__
 
 #ifdef _DEBUG
 #define BUILD_TYPE "Debug"

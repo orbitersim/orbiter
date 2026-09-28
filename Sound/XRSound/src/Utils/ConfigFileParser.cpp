@@ -22,6 +22,10 @@
 #include <string>
 #include <ctime>
 #include <chrono>
+#ifdef __linux__
+#include <cerrno>
+#include <QMessageBox>
+#endif // __linux__
 
 // Constructor
 // pDefaultFilename = path to default config file; may be relative to Orbiter root or absolute
@@ -39,7 +43,11 @@ ConfigFileParser::ConfigFileParser(const char *pDefaultFilename, const char *pLo
         {
             char temp[256];
             sprintf(temp, "Error opening log file '%s' for writing; attempting to continue", pLogFilename);
+#ifndef __linux__
             MessageBox(nullptr, temp, "XR Framework Warning", MB_OK | MB_SETFOREGROUND);
+#else // __linux__
+            QMessageBox::warning(nullptr, "XR Framework Warning", temp);
+#endif // __linux__
         }
     }
 }
@@ -64,7 +72,11 @@ bool ConfigFileParser::ParseFile(const char *pFilename)
     if (pFilename == nullptr)
         pFilename = GetDefaultFilename();
 
+#ifndef __linux__
     const bool bParsingOverrideFile = (_stricmp(pFilename, GetDefaultFilename()) != 0);  // true if we are parsing an override file
+#else // __linux__
+    const bool bParsingOverrideFile = (strcasecmp(pFilename, GetDefaultFilename()) != 0);  // true if we are parsing an override file
+#endif // __linux__
 
     static char temp[256]; // reused for messages
 
@@ -72,11 +84,19 @@ bool ConfigFileParser::ParseFile(const char *pFilename)
     sprintf(temp, "Parsing config file '%s'", pFilename);
     WriteLog(temp);
 
+#ifndef __linux__
     FILE *pFile = fopen(pFilename, "rt");
+#else // __linux__
+    FILE *pFile = fopen(oapiResolvePath(pFilename).c_str(), "rt");   // paths relative to $ORBITER_ROOT may use '\' and any letter case
+#endif // __linux__
 
     if (pFile == nullptr)
     {
+#ifndef __linux__
         sprintf(temp, "ERROR: fopen failed for '%s'; GetLastError=0x%X", pFilename, GetLastError());
+#else // __linux__
+        sprintf(temp, "ERROR: fopen failed for '%s'; errno=%d (%s)", pFilename, errno, strerror(errno));
+#endif // __linux__
         WriteLog(temp);
         m_parseFailed = true;
         return false;       // could not open file
@@ -273,7 +293,11 @@ void ConfigFileParser::WriteLog(const char *pMsg) const
     std::tm tm{};
 
 	// Warning MS BS, POSIX is localtime_r(&t, &tm);
+#ifndef __linux__
     localtime_s(&tm, &t);
+#else // __linux__
+    localtime_r(&t, &tm);
+#endif // __linux__
 
     auto ms = std::chrono::duration_cast<std::chrono::milliseconds>(
         now.time_since_epoch()) % 1000;
@@ -288,7 +312,11 @@ void ConfigFileParser::WriteLog(const char *pMsg) const
         csPrefix, pMsg);
 
     // no point in checking for error here
+#ifndef __linux__
     OutputDebugString(csMsg);   // send to debug console
+#else // __linux__
+    // OutputDebugString left out: Linux has no debugger message channel; the log file gets the same line
+#endif // __linux__
     fwrite(csMsg, 1, strlen(csMsg), m_pLogFile);
 
     // flush to disk in case we crash or are terminated

@@ -10,8 +10,18 @@
 
 #pragma once
 
+#ifndef __linux__
 #include <Windows.h>
+#else // __linux__
+// Windows.h left out: strings.h, errno and Qt stand in for what it declared
+#endif // __linux__
 #include <stdio.h>
+#ifdef __linux__
+#include <string.h>
+#include <strings.h>
+#include <cassert>
+#include "Orbitersdk.h"   // oapiResolvePath
+#endif // __linux__
 
 #include <fstream>      // for ifstream
 #include <string>
@@ -61,7 +71,11 @@ public:
         if (!pFilename || !*pFilename)
             return false;
 
+#ifndef __linux__
         std::ifstream file(pFilename);
+#else // __linux__
+        std::ifstream file(oapiResolvePath(pFilename));   // paths relative to $ORBITER_ROOT may use '\' and any letter case
+#endif // __linux__
         return file.good();
     }
 

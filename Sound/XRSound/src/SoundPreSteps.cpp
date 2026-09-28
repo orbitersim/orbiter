@@ -68,7 +68,11 @@ DefaultSoundPreStep::DefaultSoundPreStep(VesselXRSoundEngine *pEngine) :
     SoundPreStep(pEngine),
     m_soundID(-1), m_playbackType(XRSound::PlaybackType::InternalOnly), m_bWavPresent(false)
 {
+#ifndef __linux__
     _ASSERTE(pEngine);
+#else // __linux__
+    assert(pEngine);
+#endif // __linux__
 }
 
 // Destructor
@@ -101,7 +105,11 @@ bool DefaultSoundPreStep::Initialize(const int soundID, const char *pSoundFilena
 // Load a new sound into our sound ID slot; this will stop any existing sound in this slot that is currently playing, as well.
 bool DefaultSoundPreStep::LoadWav(const char *pSoundFilename)
 {
+#ifndef __linux__
     _ASSERTE(IsInitialized());
+#else // __linux__
+    assert(IsInitialized());
+#endif // __linux__
     // Note: this is called by Initialize(), so don't check for m_bWavPresent here
     return m_pEngine->LoadWav(m_soundID, pSoundFilename, m_playbackType);  // this logs a message on success or failure
 }
@@ -126,7 +134,11 @@ bool DefaultSoundPreStep::LoadAndPlayWav(const char *pSoundFilename, float volum
 // Returns true on success, false if invalid sound ID
 bool DefaultSoundPreStep::PlayWav(const bool bLoop, float volume)
 {
+#ifndef __linux__
     _ASSERTE(IsInitialized());
+#else // __linux__
+    assert(IsInitialized());
+#endif // __linux__
     bool bSuccess = false;
 
     if (m_bWavPresent)
@@ -140,7 +152,11 @@ bool DefaultSoundPreStep::PlayWav(const bool bLoop, float volume)
 // Returns true on success, false if invalid sound ID (should never happen)
 bool DefaultSoundPreStep::StopWav()
 {
+#ifndef __linux__
     _ASSERTE(IsInitialized());
+#else // __linux__
+    assert(IsInitialized());
+#endif // __linux__
     bool bSuccess = false;
 
     if (m_bWavPresent)
@@ -152,7 +168,11 @@ bool DefaultSoundPreStep::StopWav()
 // Returns true if our wav is playing, false if not.
 bool DefaultSoundPreStep::IsWavPlaying() const
 {
+#ifndef __linux__
     _ASSERTE(IsInitialized());
+#else // __linux__
+    assert(IsInitialized());
+#endif // __linux__
     bool bSuccess = false;
 
     if (m_bWavPresent)
@@ -165,7 +185,11 @@ bool DefaultSoundPreStep::IsWavPlaying() const
 //   bPause: true to pause sound, false to unpause it
 bool DefaultSoundPreStep::SetPaused(const bool bPause)
 {
+#ifndef __linux__
     _ASSERTE(IsInitialized());
+#else // __linux__
+    assert(IsInitialized());
+#endif // __linux__
     bool bSuccess = false;
 
     if (m_bWavPresent)
@@ -176,7 +200,11 @@ bool DefaultSoundPreStep::SetPaused(const bool bPause)
 
 bool DefaultSoundPreStep::IsPaused() const
 {
+#ifndef __linux__
     _ASSERTE(IsInitialized());
+#else // __linux__
+    assert(IsInitialized());
+#endif // __linux__
     bool bSuccess = false;
 
     if (m_bWavPresent)
@@ -241,7 +269,11 @@ void AnimationSoundPreStep::clbkPreStep(const double simt, const double simdt, c
 
         default:
             // this means we missed an enum case
+#ifndef __linux__
             _ASSERTE(false);
+#else // __linux__
+            assert(false);
+#endif // __linux__
             break;      // no-op
         }
     }
@@ -531,7 +563,11 @@ void RCSModeDefaultSoundPreStep::clbkPreStep(const double simt, const double sim
             break;
 
         default:
+#ifndef __linux__
             _ASSERTE(false);    // should never happen!
+#else // __linux__
+            assert(false);    // should never happen!
+#endif // __linux__
             break;
         }
         m_previousRCSMode = rcsMode;  // remember for next time
@@ -593,7 +629,11 @@ void AFCtrlModeDefaultSoundPreStep::clbkPreStep(const double simt, const double 
             break;
 
         default:
+#ifndef __linux__
             _ASSERTE(false);    // should never happen!
+#else // __linux__
+            assert(false);    // should never happen!
+#endif // __linux__
             break;
         }
         m_previousAFCtrlMode = afCtrlMode;  // remember for next time
@@ -649,7 +689,11 @@ CustomEnginesDefaultSoundPreStep::CustomEnginesDefaultSoundPreStep(VesselXRSound
 // Invoked n times per second 
 void CustomEnginesDefaultSoundPreStep::clbkPreStep(const double simt, const double simdt, const double mjd)
 {
+#ifndef __linux__
     _ASSERTE(IsInitialized());      // wav should be present if we were invoked
+#else // __linux__
+    assert(IsInitialized());      // wav should be present if we were invoked
+#endif // __linux__
 
     VESSEL *pVessel = GetVessel();
     if (!pVessel)

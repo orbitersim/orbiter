@@ -18,11 +18,20 @@ bool XRSoundEngine::SetPan(const int soundID, const float pan)
     WavContext *pContext = FindWavContext(soundID);
     if (pContext)
     {
+#ifndef __linux__
         ISound *pISound = pContext->pISound;
+#else // __linux__
+        AudioVoice *pISound = pContext->pISound;
+#endif // __linux__
         if (pISound)   // was sound ever started via PlayWav?
         {
             // irrKlang has pan direction inverted with Orbiter's X coordinate system, so flip it
+#ifndef __linux__
             pISound->setPan(-pan);
+#else // __linux__
+            // our engine pans -1 left .. 1 right like this API, so there is nothing to flip
+            pISound->SetPan(pan);
+#endif // __linux__
             retVal = true;
         }
     }
@@ -38,11 +47,20 @@ float XRSoundEngine::GetPan(const int soundID)
     WavContext *pContext = FindWavContext(soundID);
     if (pContext)
     {
+#ifndef __linux__
         ISound *pISound = pContext->pISound;
+#else // __linux__
+        AudioVoice *pISound = pContext->pISound;
+#endif // __linux__
         if (pISound)   // was sound ever started via PlayWav?
         {
             // irrKlang has pan direction inverted with Orbiter's X coordinate system, so flip it
+#ifndef __linux__
             retVal = -(pISound->getPan());
+#else // __linux__
+            // our engine pans -1 left .. 1 right like this API, so there is nothing to flip
+            retVal = pISound->GetPan();
+#endif // __linux__
         }
     }
     return retVal;
@@ -57,9 +75,17 @@ bool XRSoundEngine::SetPlaybackSpeed(const int soundID, const float speed)
     WavContext* pContext = FindWavContext(soundID);
     if (pContext)
     {
+#ifndef __linux__
         ISound *pISound = pContext->pISound;
+#else // __linux__
+        AudioVoice *pISound = pContext->pISound;
+#endif // __linux__
         if (pISound)   // was sound ever started via PlayWav?
+#ifndef __linux__
             retVal = pISound->setPlaybackSpeed(speed);
+#else // __linux__
+            retVal = pISound->SetPlaybackSpeed(speed);
+#endif // __linux__
     }
     return retVal;
 }
@@ -73,9 +99,17 @@ float XRSoundEngine::GetPlaybackSpeed(const int soundID)
     WavContext *pContext = FindWavContext(soundID);
     if (pContext)
     {
+#ifndef __linux__
         ISound* pISound = pContext->pISound;
+#else // __linux__
+        AudioVoice* pISound = pContext->pISound;
+#endif // __linux__
         if (pISound)   // was sound ever started via PlayWav?
+#ifndef __linux__
             retVal = pISound->getPlaybackSpeed();
+#else // __linux__
+            retVal = pISound->GetPlaybackSpeed();
+#endif // __linux__
     }
     return retVal;
 }
@@ -90,9 +124,17 @@ bool XRSoundEngine::SetPlayPosition(const int soundID, const unsigned int positi
     WavContext* pContext = FindWavContext(soundID);
     if (pContext)
     {
+#ifndef __linux__
         ISound *pISound = pContext->pISound;
+#else // __linux__
+        AudioVoice *pISound = pContext->pISound;
+#endif // __linux__
         if (pISound)   // was sound ever started via PlayWav?
+#ifndef __linux__
             retVal = pISound->setPlayPosition(positionMillis);
+#else // __linux__
+            retVal = pISound->SetPlayPosition(positionMillis);
+#endif // __linux__
     }
     return retVal;
 }
@@ -106,11 +148,19 @@ int XRSoundEngine::GetPlayPosition(const int soundID)
     WavContext *pContext = FindWavContext(soundID);
     if (pContext)
     {
+#ifndef __linux__
         ISound* pISound = pContext->pISound;
+#else // __linux__
+        AudioVoice* pISound = pContext->pISound;
+#endif // __linux__
         if (pISound)   // was sound ever started via PlayWav?
         {
             // 2 millions seconds is 555 hours, so casting to a signed integer is (quite) sufficent here
+#ifndef __linux__
             retVal = static_cast<int>(pISound->getPlayPosition());
+#else // __linux__
+            retVal = static_cast<int>(pISound->GetPlayPosition());
+#endif // __linux__
         }
     }
     return retVal;

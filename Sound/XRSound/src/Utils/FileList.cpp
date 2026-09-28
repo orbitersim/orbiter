@@ -8,10 +8,18 @@
 
 #include "Orbitersdk.h"   // for oapiRand
 #include "FileList.h"
+#ifdef __linux__
+#include <cassert>
+#include <strings.h>
+#endif // __linux__
 
 // Convenience constructor for when you want to accept all file types
 FileList::FileList(const char *pRootPath, const bool bRecurseSubfolders) :
+#ifndef __linux__
     m_rootPath(pRootPath), m_bRecurseSubfolders(bRecurseSubfolders), m_previousRandomFileIndex(-1)
+#else // __linux__
+    m_rootPath(oapiResolvePath(pRootPath)), m_bRecurseSubfolders(bRecurseSubfolders), m_previousRandomFileIndex(-1)   // any letter case and '\', as on Windows
+#endif // __linux__
 {
 }
 
@@ -48,8 +56,13 @@ FileList::~FileList()
 // Note: recursionLevel is just here for debugging purposes
 void FileList::Scan(const char *pPath, const int recursionLevel)
 {
+#ifndef __linux__
     _ASSERTE(pPath);
     _ASSERTE(*pPath);
+#else // __linux__
+    assert(pPath);
+    assert(*pPath);
+#endif // __linux__
 
     // This code was broken out from XRPayloadClassData::InitializeXRPayloadClassData().
 
@@ -93,7 +106,11 @@ bool FileList::clbkFilterNode(const fs::directory_entry& entry)
             // see if we have a case-insensitive match for this extension in our master list
             for (auto it = m_fileTypesToAccept.begin(); it != m_fileTypesToAccept.end(); it++)
             {
+#ifndef __linux__
                 if (stricmp(entry.path().extension().string().c_str(), it->c_str()) == 0)
+#else // __linux__
+                if (strcasecmp(entry.path().extension().string().c_str(), it->c_str()) == 0)
+#endif // __linux__
                 {
                     bAcceptFile = true;
                     break;
@@ -153,8 +170,13 @@ const std::string FileList::GetFile(const int index) const
 // Returns the first file in our file list with the specified basename (case-insensitive search), or nullptr if no file found.
 const std::string *FileList::FindFileWithBasename(const char *pBasename) const
 {
+#ifndef __linux__
     _ASSERTE(pBasename);
     _ASSERTE(*pBasename);
+#else // __linux__
+    assert(pBasename);
+    assert(*pBasename);
+#endif // __linux__
 
     const std::string *pRetVal = nullptr;
     if (pBasename && *pBasename)
@@ -166,7 +188,11 @@ const std::string *FileList::FindFileWithBasename(const char *pBasename) const
 			int lastSeparatorIndex;
 
             // locate the filename portion of the string
+#ifndef __linux__
 			size_t pos = filespec.rfind('\\');
+#else // __linux__
+			size_t pos = filespec.rfind('/');   // scanned paths use '/' on Linux
+#endif // __linux__
 			if (pos == std::string::npos)
 				lastSeparatorIndex = -1;     // we have just a filename ("bar.flac") -- no leading path; adjust so it will start at index 0 below
 			else

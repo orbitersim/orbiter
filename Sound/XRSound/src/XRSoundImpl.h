@@ -7,7 +7,11 @@
 
 #pragma once
 
+#ifndef __linux__
 #include <windows.h>
+#else // __linux__
+// windows.h left out: the XRSound.dll handle is a dlopen handle (void *)
+#endif // __linux__
 
 #include "XRSound.h"   
 #include "XRSoundEngine.h" 
@@ -67,6 +71,10 @@ public:
     // -------------------------------------------------------------------------------
 
 private:
+#ifndef __linux__
     HMODULE m_hDLL;
+#else // __linux__
+    void *m_hDLL;
+#endif // __linux__
     XRSoundEngine *m_pEngine;   // created by XRSound.dll; this is a BORROWED reference; do not free it from this side!
 };

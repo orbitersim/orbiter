@@ -16,7 +16,11 @@
 #include <unordered_map>
 #include <sstream>
 
+#ifndef __linux__
 static const char *XRSOUND_CONFIG_FILE = "XRSound\\XRSound.cfg";
+#else // __linux__
+static const char *XRSOUND_CONFIG_FILE = "XRSound/XRSound.cfg";
+#endif // __linux__
 
 // XRSound.log always resides in the Orbiter root folder, alongside Orbiter.log and the XR vessel log files
 static const char *XRSOUND_LOG_FILE = "XRSound.log";
