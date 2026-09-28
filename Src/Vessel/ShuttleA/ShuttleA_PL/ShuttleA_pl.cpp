@@ -8,12 +8,19 @@
 // Reference implementation of Shuttle-A Payload vessel class module
 // ==============================================================
 
+#ifndef __linux__
 #define STRICT
+#else // __linux__
+// STRICT left out: windows.h handle type-checking switch
+#endif // __linux__
 #define ORBITER_MODULE
 
 #include "ShuttleA_pl.h"
 #include <math.h>
 #include <stdio.h>
+#ifdef __linux__
+#include <strings.h>
+#endif // __linux__
 
 
 //Payload parachute airfoil definitions
@@ -136,9 +143,17 @@ void ShuttleA_PL::clbkLoadStateEx (FILEHANDLE scn, void *vs)
 	char *line;
 
 	while (oapiReadScenario_nextline (scn, line)) {
+#ifndef __linux__
 		if (!_strnicmp (line, "PARACHUTE", 9)) {
+#else // __linux__
+		if (!strncasecmp (line, "PARACHUTE", 9)) {
+#endif // __linux__
 			sscanf (line+9, "%d", &Parachute_mode);
+#ifndef __linux__
 		} else if (!_strnicmp (line, "TIMER", 5)) {
+#else // __linux__
+		} else if (!strncasecmp (line, "TIMER", 5)) {
+#endif // __linux__
 			sscanf (line+5, "%lf", &timer);
 		
 		} else {
@@ -218,9 +233,15 @@ void ShuttleA_PL::clbkSetClassCaps (FILEHANDLE cfg)
 
 	EnableTransponder (true);
 
+#ifndef __linux__
 	mesh_main = oapiLoadMeshGlobal ("ShuttleA\\ShuttleA_pl");
 	mesh_drogue = oapiLoadMeshGlobal ("ShuttleA\\ShuttleA_chpr");
 	mesh_parachute = oapiLoadMeshGlobal ("ShuttleA\\ShuttleA_chmain");
+#else // __linux__
+	mesh_main = oapiLoadMeshGlobal ("ShuttleA/ShuttleA_pl");
+	mesh_drogue = oapiLoadMeshGlobal ("ShuttleA/ShuttleA_chpr");
+	mesh_parachute = oapiLoadMeshGlobal ("ShuttleA/ShuttleA_chmain");
+#endif // __linux__
 
 	
 
@@ -290,7 +311,11 @@ void ShuttleA_PL::clbkPostStep(double simt,double simdt,double mjd)
 // --------------------------------------------------------------
 // Module initialisation
 // --------------------------------------------------------------
+#ifndef __linux__
 DLLCLBK void InitModule (HINSTANCE hModule)
+#else // __linux__
+DLLCLBK void InitModule (void *hModule)
+#endif // __linux__
 {
    
 }
@@ -298,7 +323,11 @@ DLLCLBK void InitModule (HINSTANCE hModule)
 // --------------------------------------------------------------
 // Module cleanup
 // --------------------------------------------------------------
+#ifndef __linux__
 DLLCLBK void ExitModule (HINSTANCE hModule)
+#else // __linux__
+DLLCLBK void ExitModule (void *hModule)
+#endif // __linux__
 {
 
 	 int d=0;

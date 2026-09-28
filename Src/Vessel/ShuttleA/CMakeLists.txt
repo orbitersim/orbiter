@@ -7,6 +7,7 @@ set(CONFIG_SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/Config)
 set(SCRIPT_SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/Script)
 set(THUMBNAIL_SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/Thumbnail)
 
+if(WIN32) # Windows: upstream
 add_library(ShuttleA SHARED
 	adiball.cpp
 	adictrl.cpp
@@ -30,6 +31,33 @@ add_library(ShuttleA SHARED
 	ShuttleA.rc
 	${VESSEL_COMMON_DIR}/Instrument.cpp
 )
+else() # Linux port
+add_library(ShuttleA SHARED
+	adiball.cpp
+	adictrl.cpp
+	airlockswitch.cpp
+	attref.cpp
+	auxpodctrl.cpp
+	dockcvrswitch.cpp
+	gearswitch.cpp
+	hudbutton.cpp
+	InstrVs.cpp
+	mfdbutton.cpp
+	navbutton.cpp
+	needlepair.cpp
+	paneltext.cpp
+	payloadctrl.cpp
+	rcsswitch.cpp
+	ShuttleA.cpp
+	ShuttleALua.cpp
+	sliderpair.cpp
+	switches.cpp
+	${VESSEL_COMMON_DIR}/Instrument.cpp
+)
+endif() # WIN32
+if(NOT WIN32) # Linux port
+orbiter_rc_resources(ShuttleA ShuttleA.rc)
+endif() # NOT WIN32
 
 set_target_properties(ShuttleA
 	PROPERTIES
@@ -98,10 +126,17 @@ add_dependencies(ShuttleA
 add_subdirectory(ShuttleA_PL)
 
 # Installation
+if(WIN32) # Windows: upstream
 install(TARGETS ShuttleA
 	RUNTIME
 	DESTINATION ${ORBITER_INSTALL_MODULE_DIR}
 )
+else() # Linux port
+install(TARGETS ShuttleA
+	LIBRARY
+	DESTINATION ${ORBITER_INSTALL_MODULE_DIR}
+)
+endif() # WIN32
 install(DIRECTORY ${CONFIG_SOURCE_DIR}/
 	DESTINATION ${ORBITER_INSTALL_ROOT_DIR}/Config/Vessels
 )
@@ -118,6 +153,12 @@ install(DIRECTORY ${THUMBNAIL_SOURCE_DIR}/
 	DESTINATION ${ORBITER_INSTALL_ROOT_DIR}/Images/Vessels/Default
 )
 
+if(WIN32) # Windows: upstream
 if(ORBITER_MAKE_DOC)
 	add_subdirectory(Help)
 endif()
+else() # Linux port
+if(ORBITER_MAKE_DOC OR ORBITER_MAKE_HELP) # not upstream: ORBITER_MAKE_HELP
+	add_subdirectory(Help)
+endif()
+endif() # WIN32

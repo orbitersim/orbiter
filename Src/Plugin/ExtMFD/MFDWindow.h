@@ -17,6 +17,9 @@
 #define __MFDWINDOW_H
 
 #include "GraphicsAPI.h"
+#ifdef __linux__
+#include <memory> // std::unique_ptr (MSVC headers pull it in)
+#endif // __linux__
 
 class MFDWindow : public ExternMFD {
 public:

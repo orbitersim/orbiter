@@ -46,6 +46,9 @@ private:
 // Main/retro engine throttle
 // ==============================================================
 
+#ifdef __linux__
+class MainRetroThrottleLevers; // g++: a friend declaration does not declare the name
+#endif // __linux__
 class MainRetroThrottle: public DGSubsystem {
 	friend class MainRetroThrottleLevers;
 
@@ -208,6 +211,10 @@ private:
 // Retro cover control
 // ==============================================================
 
+#ifdef __linux__
+class RetroCoverSwitch;
+class RetroCoverIndicator;
+#endif // __linux__
 class RetroCoverControl: public DGSubsystem {
 	friend class RetroCoverSwitch;
 	friend class RetroCoverIndicator;

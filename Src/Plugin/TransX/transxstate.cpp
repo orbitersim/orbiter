@@ -18,9 +18,18 @@
 ** OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 ** THE SOFTWARE.*/
 
+#ifndef __linux__
 #define STRICT
+#else // __linux__
+// STRICT left out: windows.h handle type-checking switch
+#include <cstring> // str* functions (windows.h brought in string.h)
+#endif // __linux__
 
+#ifndef __linux__
 #include "orbitersdk.h"
+#else // __linux__
+#include "Orbitersdk.h"
+#endif // __linux__
 #include <deque>
 #include "mfd.h"
 #include "intercept.h"

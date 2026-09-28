@@ -4,9 +4,15 @@
 #ifndef __ESYSTEMS_H_
 #define __ESYSTEMS_H_
 
+#ifndef __linux__
 #include "thermal.h"
 #include "orbitersdk.h"
 #include "hsystems.h"
+#else // __linux__
+#include "Thermal.h"
+#include "Orbitersdk.h"
+#include "Hsystems.h"
+#endif // __linux__
 
 class e_object:public therm_obj
 { public:

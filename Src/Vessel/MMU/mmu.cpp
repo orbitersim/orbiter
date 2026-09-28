@@ -5,7 +5,11 @@
 // ORBITER vessel module: NASA Manned Manuveuring Unit (MMU)
 // ==============================================================
 
+#ifndef __linux__
 #include "orbitersdk.h"
+#else // __linux__
+#include "Orbitersdk.h"
+#endif // __linux__
 
 const double slThrust = 367455;
 const double vacThrust = 414340;

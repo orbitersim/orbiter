@@ -8,6 +8,7 @@ set(CONFIG_SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/Config)
 set(SCRIPT_SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/Script)
 set(THUMBNAIL_SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/Thumbnail)
 
+if(WIN32) # Windows: upstream
 add_library(DeltaGlider SHARED
 	DeltaGlider.cpp
 	DGLua.cpp
@@ -40,6 +41,42 @@ add_library(DeltaGlider SHARED
 	# Resources
 	DeltaGlider.rc
 )
+else() # Linux port
+add_library(DeltaGlider SHARED
+	DeltaGlider.cpp
+	DGLua.cpp
+	# Subsystems
+	AAPSubsys.cpp
+	AerodynSubsys.cpp
+	AvionicsSubsys.cpp
+	DGSubsys.cpp
+	DockingSubsys.cpp
+	FailureSubsys.cpp
+	GearSubsys.cpp
+	HoverSubsys.cpp
+	HudCtrl.cpp
+	LightSubsys.cpp
+	MainRetroSubsys.cpp
+	MfdSubsys.cpp
+	PressureSubsys.cpp
+	RcsSubsys.cpp
+	ScramSubsys.cpp
+	ThermalSubsys.cpp
+	# Instruments
+	DGSwitches.cpp
+	FuelMfd.cpp
+	Horizon.cpp
+	InstrAoa.cpp
+	InstrHsi.cpp
+	${VESSEL_COMMON_DIR}/Instrument.cpp
+	InstrVs.cpp
+	MomentInd.cpp
+	# Resources
+)
+endif() # WIN32
+if(NOT WIN32) # Linux port
+orbiter_rc_resources(DeltaGlider DeltaGlider.rc)
+endif() # NOT WIN32
 
 set_target_properties(DeltaGlider
 	PROPERTIES
@@ -128,10 +165,17 @@ set_target_properties(DeltaGlider_Prerequisites
 )
 
 # Installation
+if(WIN32) # Windows: upstream
 install(TARGETS DeltaGlider
 	RUNTIME
 	DESTINATION ${ORBITER_INSTALL_MODULE_DIR}
 )
+else() # Linux port
+install(TARGETS DeltaGlider
+	LIBRARY
+	DESTINATION ${ORBITER_INSTALL_MODULE_DIR}
+)
+endif() # WIN32
 install(DIRECTORY ${CONFIG_SOURCE_DIR}/
 	DESTINATION ${ORBITER_INSTALL_ROOT_DIR}/Config/Vessels
 )
@@ -152,6 +196,12 @@ install(DIRECTORY ${THUMBNAIL_SOURCE_DIR}/
 )
 
 add_subdirectory(DGConfigurator)
+if(WIN32) # Windows: upstream
 if(ORBITER_MAKE_DOC)
 	add_subdirectory(Help)
 endif()
+else() # Linux port
+if(ORBITER_MAKE_DOC OR ORBITER_MAKE_HELP) # not upstream: ORBITER_MAKE_HELP
+	add_subdirectory(Help)
+endif()
+endif() # WIN32

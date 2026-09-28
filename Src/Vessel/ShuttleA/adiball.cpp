@@ -9,9 +9,16 @@
 // Panel interface ADI ball
 // ==============================================================
 
+#ifndef __linux__
 #define STRICT 1
+#else // __linux__
+// STRICT left out: windows.h handle type-checking switch
+#endif // __linux__
 #include "adiball.h"
 #include "attref.h"
+#ifdef __linux__
+#include <string.h>
+#endif // __linux__
 
 using std::min;
 using std::max;

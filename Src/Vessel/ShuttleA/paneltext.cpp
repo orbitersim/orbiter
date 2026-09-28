@@ -9,9 +9,16 @@
 // Text output into panel elements
 // ==============================================================
 
+#ifndef __linux__
 #define STRICT 1
+#else // __linux__
+// STRICT left out: windows.h handle type-checking switch
+#endif // __linux__
 #define __PANELTEXT_CPP
 #include "paneltext.h"
+#ifdef __linux__
+#include <string.h>
+#endif // __linux__
 
 int small_font_xpos[256] = {
 	0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,

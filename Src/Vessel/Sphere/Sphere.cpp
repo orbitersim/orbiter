@@ -15,10 +15,18 @@
 // behaviour.
 // ==============================================================
 
+#ifndef __linux__
 #define STRICT
+#else // __linux__
+// STRICT left out: windows.h handle type-checking switch
+#endif // __linux__
 #define ORBITER_MODULE
 
+#ifndef __linux__
 #include "orbitersdk.h"
+#else // __linux__
+#include "Orbitersdk.h"
+#endif // __linux__
 
 // ==============================================================
 // Some vessel parameters

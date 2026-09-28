@@ -16,6 +16,9 @@
 #include "IconsFontAwesome6.h"
 #include "imgui_extras.h"
 #include "implot.h"
+#ifdef __linux__
+#include <strings.h>
+#endif // __linux__
 
 #define NDATA 256
 
@@ -535,11 +538,19 @@ void AscentAP::SaveState (FILEHANDLE scn)
 
 bool AscentAP::ParseScenarioLine (const char *line)
 {
+#ifndef __linux__
 	if (!_strnicmp(line, "MET ", 4)) {
+#else // __linux__
+	if (!strncasecmp(line, "MET ", 4)) {
+#endif // __linux__
 		sscanf(line+4, "%lf%lf%lf%lf", &met, &met_meco, &met_oms_start, &met_oms_end);
 		t_launch = oapiGetSimTime()-met;
 		return true;
+#ifndef __linux__
 	} else if (!_strnicmp(line, "ASCENTAP", 8)) {
+#else // __linux__
+	} else if (!strncasecmp(line, "ASCENTAP", 8)) {
+#endif // __linux__
 		int i1, i2, i3;
 		sscanf(line+9, "%d%d%d%lf%lf%lf%lf", &i1, &i2, &i3, &tgt_alt, &launch_azimuth, &launch_lng, &launch_lat);
 		active = (bool)i1;

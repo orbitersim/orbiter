@@ -43,6 +43,9 @@ private:
 // Control selector dial
 // ==============================================================
 
+#ifdef __linux__
+class AerodynSelectorDial; // g++: a friend declaration does not declare the name
+#endif // __linux__
 class AerodynSelector: public DGSubsystem {
 	friend class AerodynSelectorDial;
 
@@ -81,6 +84,9 @@ private:
 // Airbrake
 // ==============================================================
 
+#ifdef __linux__
+class AirbrakeLever;
+#endif // __linux__
 class Airbrake: public DGSubsystem {
 	friend class AirbrakeLever;
 
@@ -128,6 +134,9 @@ private:
 // Elevator trim control
 // ==============================================================
 
+#ifdef __linux__
+class ElevatorTrimWheel;
+#endif // __linux__
 class ElevatorTrim: public DGSubsystem {
 	friend class ElevatorTrimWheel;
 

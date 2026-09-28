@@ -12,7 +12,11 @@
 #ifndef __ADICTRL_H
 #define __ADICTRL_H
 
+#ifndef __linux__
 #include "..\Common\Instrument.h"
+#else // __linux__
+#include "../Common/Instrument.h"
+#endif // __linux__
 
 // ==============================================================
 

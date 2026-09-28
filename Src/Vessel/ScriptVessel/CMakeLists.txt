@@ -26,7 +26,14 @@ add_dependencies(ScriptVessel
 )
 
 # Installation
+if(WIN32) # Windows: upstream
 install(TARGETS ScriptVessel
 	RUNTIME
 	DESTINATION ${ORBITER_INSTALL_MODULE_DIR}
 )
+else() # Linux port
+install(TARGETS ScriptVessel
+	LIBRARY
+	DESTINATION ${ORBITER_INSTALL_MODULE_DIR}
+)
+endif() # WIN32

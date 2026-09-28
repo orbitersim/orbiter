@@ -10,11 +10,25 @@
 // This module loads MFD modes defined via Lua scripts.
 // ==============================================================
 
+#ifndef __linux__
 #define STRICT
+#else // __linux__
+// STRICT left out: windows.h handle type-checking switch
+#endif // __linux__
 #define ORBITER_MODULE
+#ifndef __linux__
 #include "windows.h"
 #include "orbitersdk.h"
+#else // __linux__
+// windows.h left out: the SDK headers carry the types
+#include "Orbitersdk.h"
+#endif // __linux__
 #include "ScriptMFD.h"
+#ifdef __linux__
+#include <fstream>
+#include <cstring>
+#include <strings.h>
+#endif // __linux__
 
 #undef DLLEXPORT
 #define DLLEXPORT  // hack - this could be solved a bit more elegantly
@@ -38,7 +52,11 @@ struct VINTERP { // list of vessel-based interpreters
 } **vinterp;
 int nvinterp = 0;
 
+#ifndef __linux__
 static const char *cfgfile = "Config\\MFD\\ScriptMFD.cfg";
+#else // __linux__
+static const char *cfgfile = "Config/MFD/ScriptMFD.cfg";
+#endif // __linux__
 
 // clears the global list of vessel-based interpreters
 static void ClearVinterpList()
@@ -80,14 +98,25 @@ int LuaCall(lua_State *L, int narg, int nres)
 // ==============================================================
 // API interface
 
+#ifndef __linux__
 DLLCLBK void InitModule (HINSTANCE hDLL)
+#else // __linux__
+DLLCLBK void InitModule (void *hDLL)
+#endif // __linux__
 {
 	int i;
 	char cbuf[256], name[256], script[256], key[256], persist[256];
 
 	// Scan the list of script MFD modes
+#ifndef __linux__
 	ifstream ifs (cfgfile);
+#else // __linux__
+	ifstream ifs (oapiResolvePath (cfgfile));
+#endif // __linux__
 	while (ifs.getline (cbuf, 256)) {
+#ifdef __linux__
+		cbuf[strcspn (cbuf, "\r")] = '\0'; // CRLF cfg: Linux streams keep the '\r'
+#endif // __linux__
 		FILEHANDLE hFile = oapiOpenFile (cbuf, FILE_IN, CONFIG);
 		if (oapiReadItem_string (hFile, (char*)"Name", name) &&
 			oapiReadItem_string (hFile, (char*)"Script", script) &&
@@ -109,7 +138,11 @@ DLLCLBK void InitModule (HINSTANCE hDLL)
 					sscanf (key, "%d", &modespec[nmode].key);
 				modespec[nmode].persist = 0;
 				if (oapiReadItem_string (hFile, (char*)"Persist", persist))
+#ifndef __linux__
 					if (!_stricmp(persist, "vessel"))
+#else // __linux__
+					if (!strcasecmp(persist, "vessel"))
+#endif // __linux__
 						modespec[nmode].persist = 1;
 				nmode++;
 		}
@@ -128,7 +161,11 @@ DLLCLBK void InitModule (HINSTANCE hDLL)
 	nvinterp = 0;
 }
 
+#ifndef __linux__
 DLLCLBK void ExitModule (HINSTANCE hDLL)
+#else // __linux__
+DLLCLBK void ExitModule (void *hDLL)
+#endif // __linux__
 {
 	int i;
 	for (i = 0; i < nmode; i++) {
@@ -137,7 +174,11 @@ DLLCLBK void ExitModule (HINSTANCE hDLL)
 	ClearVinterpList();
 }
 
+#ifndef __linux__
 DLLCLBK void opcOpenRenderViewport(HWND,DWORD,DWORD,BOOL)
+#else // __linux__
+DLLCLBK void opcOpenRenderViewport(QWindow*,DWORD,DWORD,BOOL)
+#endif // __linux__
 {
 }
 

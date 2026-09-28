@@ -15,6 +15,9 @@
 
 #include "Orbitersdk.h"
 #include <math.h>
+#ifdef __linux__
+#include <memory>
+#endif // __linux__
 
 #ifdef ATLANTIS_TANK_MODULE
 #define TANKFUNC DLLEXPORT
@@ -218,7 +221,11 @@ const VECTOR3 ORBITER_DOCKPOS      = { 0.0, 2.40, 10.15};
 #define AID_R13L_MAX     120
 
 typedef struct {
+#ifndef __linux__
 	HINSTANCE hDLL;
+#else // __linux__
+	void *hDLL;
+#endif // __linux__
 	SURFHANDLE tkbk_label;
 	oapi::Font *font[1];
 	oapi::Brush* brush[1];
@@ -226,6 +233,10 @@ typedef struct {
 
 class Atlantis_Tank;
 class Atlantis;
+#ifdef __linux__
+class AscentAP;     // g++: a friend declaration doesn't introduce the name
+class PayloadBayOp;
+#endif // __linux__
 
 class AtlantisDialog: public ImGuiDialog {
 	Atlantis *m_atlantis;

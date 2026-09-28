@@ -7,6 +7,10 @@
 #include "Interpreter.h"
 #include "LuaConsole.h"
 
+#ifdef __linux__
+class LuaConsole; // g++ doesn't take the friend declaration below as a declaration (MSVC does)
+
+#endif // __linux__
 // ==============================================================
 // class ConsoleInterpreter
 

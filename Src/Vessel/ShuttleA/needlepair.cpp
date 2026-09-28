@@ -9,7 +9,11 @@
 // Panel element: Pair of indicator needles
 // ==============================================================
 
+#ifndef __linux__
 #define STRICT 1
+#else // __linux__
+// STRICT left out: windows.h handle type-checking switch
+#endif // __linux__
 #include "needlepair.h"
 #include "paneltext.h"
 

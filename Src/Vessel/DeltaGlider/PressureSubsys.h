@@ -74,6 +74,10 @@ private:
 // Airlock controls
 // ==============================================================
 
+#ifdef __linux__
+class OuterLockSwitch; // g++: a friend declaration does not declare the name
+class InnerLockSwitch;
+#endif // __linux__
 class AirlockCtrl: public DGSubsystem {
 	friend class PressureSubsystem;
 	friend class OuterLockSwitch;
@@ -143,6 +147,9 @@ private:
 // Top hatch controls
 // ==============================================================
 
+#ifdef __linux__
+class HatchCtrlSwitch;
+#endif // __linux__
 class TophatchCtrl: public DGSubsystem {
 	friend class PressureSubsystem;
 	friend class HatchCtrlSwitch;

@@ -12,7 +12,11 @@
 #include "ShuttleA.h"
 #include "hudbutton.h"
 
+#ifndef __linux__
 #define STRICT 1
+#else // __linux__
+// STRICT left out: windows.h handle type-checking switch
+#endif // __linux__
 
 // panel coordinates
 static const float bb_x0 = (float)(HUDBTN_X+44);

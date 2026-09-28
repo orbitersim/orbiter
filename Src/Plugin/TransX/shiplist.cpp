@@ -18,12 +18,25 @@
 ** OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 ** THE SOFTWARE.*/
 
+#ifndef __linux__
 #define STRICT
+#else // __linux__
+// STRICT left out: windows.h handle type-checking switch
+#endif // __linux__
 
+#ifndef __linux__
 #include <windows.h>
+#else // __linux__
+// windows.h left out: the Win32 types come from OrbiterPlatform.h
+#include <cstring> // str* functions (windows.h brought in string.h)
+#endif // __linux__
 #include <cstdio>
 #include <cmath>
+#ifndef __linux__
 #include "orbitersdk.h"
+#else // __linux__
+#include "Orbitersdk.h"
+#endif // __linux__
 #include "parser.h"
 #include "mapfunction.h"
 #include "shiplist.h"
@@ -35,7 +48,11 @@ bool shipptrs::saved=false;
 shipptrs::shipptrs()
 {
 	OBJHANDLE hcraft=oapiGetFocusObject();//Sets up new shipptrs for focus object
+#ifndef __linux__
 	ZeroMemory(shipname, SHIPNAME_LENGTH);
+#else // __linux__
+	memset(shipname, 0, SHIPNAME_LENGTH);
+#endif // __linux__
 	oapiGetObjectName(hcraft,shipname,SHIPNAME_LENGTH - 1); // Why is this -1?
 	subcreate();
 	state=new transxstate(hcraft,this);//A new plan base for this vessel
@@ -43,7 +60,11 @@ shipptrs::shipptrs()
 
 shipptrs::shipptrs(OBJHANDLE hcraft)
 {
+#ifndef __linux__
 	ZeroMemory(shipname, SHIPNAME_LENGTH);
+#else // __linux__
+	memset(shipname, 0, SHIPNAME_LENGTH);
+#endif // __linux__
 	oapiGetObjectName(hcraft,shipname,SHIPNAME_LENGTH - 1);
 	state=new transxstate(hcraft,this);//A new plan base for this vessel
 	subcreate();

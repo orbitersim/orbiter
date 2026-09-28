@@ -16,16 +16,34 @@
 // by calling corresponding script functions.
 // ==============================================================
 
+#ifndef __linux__
 #define STRICT
+#else // __linux__
+// STRICT left out: windows.h handle type-checking switch
+#endif // __linux__
 #define ORBITER_MODULE
 #include <set>
 #include <vector>
+#ifdef __linux__
+#include <stdio.h>
+#include <string.h>
+#endif // __linux__
 extern "C" {
+#ifndef __linux__
 #include <lua/lua.h>
 #include <lua/lualib.h>
 #include <lua/lauxlib.h>
+#else // __linux__
+#include <Lua/lua.h>
+#include <Lua/lualib.h>
+#include <Lua/lauxlib.h>
+#endif // __linux__
 }
+#ifndef __linux__
 #include "orbitersdk.h"
+#else // __linux__
+#include "Orbitersdk.h"
+#endif // __linux__
 #include <filesystem>
 namespace fs = std::filesystem;
 
@@ -96,11 +114,19 @@ const char *CLBKNAME[NCLBK] = {
 	"getradiationforce"
 };
 
+#ifndef __linux__
 DLLCLBK void InitModule (HINSTANCE hDLL)
+#else // __linux__
+DLLCLBK void InitModule (void *hDLL)
+#endif // __linux__
 {
 }
 
+#ifndef __linux__
 DLLCLBK void ExitModule (HINSTANCE hDLL)
+#else // __linux__
+DLLCLBK void ExitModule (void *hDLL)
+#endif // __linux__
 {
 }
 
@@ -294,8 +320,15 @@ void ScriptVessel::clbkSetClassCaps (FILEHANDLE cfg)
 	auto globals = GetGlobalFunctions(L);
 
 	oapiReadItem_string (cfg, (char*)"Script", script);
+#ifdef __linux__
+	for (char *c = script; *c; c++) if (*c == '\\') *c = '/'; // not upstream: fs::path splits only at '/' on Linux
+#endif // __linux__
 	fs::path script_path(script);
+#ifndef __linux__
 	std::string parent_path = script_path.parent_path().u8string();
+#else // __linux__
+	std::string parent_path = script_path.parent_path().string(); // u8string() is std::u8string in C++20; string() is UTF-8 here
+#endif // __linux__
 	// Add the script path to the package path so that we can "require" additional files
 	sprintf(cmd, "package.path = package.path .. ';Config/Vessels/%s/?.lua'", parent_path.c_str());
 	oapiExecScriptCmd(hInterp, cmd);

@@ -42,6 +42,9 @@ private:
 // Control selector dial
 // ==============================================================
 
+#ifdef __linux__
+class RcsModeDial; // g++: a friend declaration does not declare the name
+#endif // __linux__
 class RcsModeSelector: public DGSubsystem {
 	friend class RcsModeDial;
 

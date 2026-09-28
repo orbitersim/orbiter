@@ -9,8 +9,15 @@
 // User interface payload controls
 // ==============================================================
 
+#ifndef __linux__
 #define STRICT 1
+#else // __linux__
+// STRICT left out: windows.h handle type-checking switch
+#endif // __linux__
 #include "payloadctrl.h"
+#ifdef __linux__
+#include <string.h>
+#endif // __linux__
 
 static const float texw = (float)PANELEL_TEXW;
 static const float texh = (float)PANELEL_TEXH;

@@ -26,8 +26,13 @@
 bool SelectVariableBody(void *id, char *str, void *usrdata);
 bool SelectVariableFloat(void *id, char *str, void *usrdata);
 bool SelectVariableAngle(void *id, char *str, void *usrdata); // hurr
+#ifndef __linux__
 DLLCLBK void opcDLLInit (HINSTANCE hDLL);
 DLLCLBK void opcDLLExit (HINSTANCE hDLL);
+#else // __linux__
+DLLCLBK void opcDLLInit (void *hDLL);
+DLLCLBK void opcDLLExit (void *hDLL);
+#endif // __linux__
 double cosangle(const VECTOR3 &veca,const VECTOR3 &vecb);
 double length2my(const VECTOR3 &vector);
 void getinvrotmatrix(VECTOR3 arot, MATRIX3 *invrotmatrix);

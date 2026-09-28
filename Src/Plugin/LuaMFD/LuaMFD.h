@@ -32,7 +32,11 @@ protected:
 private:
 	InterpreterList::VesselInterp *vi;
 	OBJHANDLE hVessel;      // vessel object handle
+#ifndef __linux__
 	HANDLE interpTh;        // interpreter thread handle
+#else // __linux__
+	std::thread *interpTh;  // interpreter thread handle
+#endif // __linux__
 	oapi::Font *hFont;      // font handle
 	DWORD pg;               // current page   
 	DWORD fw, fh;           // character width, height

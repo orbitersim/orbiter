@@ -9,18 +9,34 @@
 // Reference implementation of "Dragonfly" class space tug
 // ==============================================================
 
+#ifndef __linux__
 #define STRICT
+#else // __linux__
+// STRICT left out: windows.h handle type-checking switch
+#endif // __linux__
 
 #include "Dragonfly.h"
 #include <stdio.h>
 #include <math.h>
+#ifndef __linux__
 #include "internal.h"
+#else // __linux__
+#include <string.h>
+#include <strings.h>
+#include <dlfcn.h>
+#include <QPainter>
+#include "Internal.h"
+#endif // __linux__
 //#include "glstuff.cpp"
 
 using std::min;
 using std::max;
 
+#ifndef __linux__
 HINSTANCE hDLL; 
+#else // __linux__
+void *hDLL; 
+#endif // __linux__
 double Lsim;
 
 // ==============================================================
@@ -203,21 +219,41 @@ void Dragonfly::SetClassCaps (FILEHANDLE cfg)
     
 	// ******************************** mesh ***************************************
 
+#ifndef __linux__
 	AddMesh (oapiLoadMeshGlobal ("Dragonfly\\Dragonfly"));
+#else // __linux__
+	AddMesh (oapiLoadMeshGlobal ("Dragonfly/Dragonfly"));
+#endif // __linux__
 };
 
 void Dragonfly::LoadState (FILEHANDLE scn, void *vs)
 {
     char *line;
 	while (oapiReadScenario_nextline (scn, line)) {
+#ifndef __linux__
         if (!strnicmp (line, "UPPERANT", 8)) {
+#else // __linux__
+        if (!strncasecmp (line, "UPPERANT", 8)) {
+#endif // __linux__
 			sscanf (line+8, "%f %f %i %i %i", &UP_pos ,&UY_pos,&UP_handle, &UY_handle,&UAnt_handle);
+#ifndef __linux__
 		} else if (!strnicmp (line, "LOWERANT", 8)) {
+#else // __linux__
+		} else if (!strncasecmp (line, "LOWERANT", 8)) {
+#endif // __linux__
 			sscanf (line+8, "%f %f %i %i %i", &LP_pos, &LY_pos,&LP_handle,&LY_handle,&LAnt_handle);
 			//SetGearParameters (gear_proc);
+#ifndef __linux__
 		} else if (!strnicmp (line, "HATCH", 5)) {
+#else // __linux__
+		} else if (!strncasecmp (line, "HATCH", 5)) {
+#endif // __linux__
 			sscanf (line+5, "%f %i", &dock_latched, &latch_handle);
+#ifndef __linux__
 		} else if (!strnicmp (line, "ANTTRG", 6)) {
+#else // __linux__
+		} else if (!strncasecmp (line, "ANTTRG", 6)) {
+#endif // __linux__
 			Dock_target_object=oapiGetObjectByName(line+7);
 			//sscanf (line+5, "%f %i", &dock_latched, &latch_handle);
         } else {
@@ -796,28 +832,60 @@ void Dragonfly::RedrawPanel_SensorInfo (SURFHANDLE surf)
 {
 	bool engaged = false;
 	OBJHANDLE hObj = GetDockStatus (GetDockHandle (0));
+#ifndef __linux__
 	HDC hDC = oapiGetDC (surf);
+#else // __linux__
+	QPainter *hDC = oapiGetDC (surf);
+#endif // __linux__
 //	SelectObject (hDC, g_Param.font[1]);
+#ifndef __linux__
 	SetTextColor (hDC, RGB(0,255,0));
 	SetBkMode (hDC, TRANSPARENT);
+#else // __linux__
+	hDC->setPen (QColor (0,255,0)); // SetTextColor: QPainter draws text with the pen
+	hDC->setBackgroundMode (Qt::TransparentMode);
+#endif // __linux__
 	if (!sensormode) {
+#ifndef __linux__
 		TextOut (hDC, 0, 0, "LOCAL", 5);
+#else // __linux__
+		hDC->drawText (QRect (0, 0, 0, 0), Qt::TextDontClip, QString::fromLatin1 ("LOCAL", 5));
+#endif // __linux__
 		engaged = (hObj != NULL);
 	} else {
+#ifndef __linux__
 		TextOut (hDC, 0, 0, "REMOTE", 6);
+#else // __linux__
+		hDC->drawText (QRect (0, 0, 0, 0), Qt::TextDontClip, QString::fromLatin1 ("REMOTE", 6));
+#endif // __linux__
 		if (remoteport >= 0) {
 			char cbuf[20];
 			sprintf (cbuf, "DOCK %d", remoteport+1);
+#ifndef __linux__
 			TextOut (hDC, 0, 10, cbuf, strlen(cbuf));
+#else // __linux__
+			hDC->drawText (QRect (0, 10, 0, 0), Qt::TextDontClip, QString::fromLatin1 (cbuf, strlen(cbuf)));
+#endif // __linux__
 			engaged = (GetDockStatus (oapiGetDockHandle (hObj, remoteport)) != NULL);
 		} else 
+#ifndef __linux__
 			TextOut (hDC, 0, 10, "NO DATA", 7);
+#else // __linux__
+			hDC->drawText (QRect (0, 10, 0, 0), Qt::TextDontClip, QString::fromLatin1 ("NO DATA", 7));
+#endif // __linux__
 	}
 	if (engaged) {
+#ifndef __linux__
 		SetTextColor (hDC, 0);
 		SetBkColor (hDC, RGB(255,255,0));
 		SetBkMode (hDC, OPAQUE);
 		TextOut (hDC, 50, 0, "ENG", 3);
+#else // __linux__
+		hDC->setPen (QColor (0,0,0));
+		hDC->setBackground (QColor (255,255,0));
+		hDC->setBackgroundMode (Qt::OpaqueMode);
+		hDC->drawText (QRect (50, 0, 0, 0), Qt::TextDontClip, QString::fromLatin1 ("ENG", 3));
+#endif // __linux__
 	}
 	oapiReleaseDC (surf, hDC);
 };
@@ -825,15 +893,34 @@ void Dragonfly::RedrawPanel_SensorInfo (SURFHANDLE surf)
 void Dragonfly::RedrawPanel_CGIndicator (SURFHANDLE surf)
 {
 	char cbuf[20];
+#ifndef __linux__
 	HDC hDC = oapiGetDC (surf);
+#else // __linux__
+	QPainter *hDC = oapiGetDC (surf);
+#endif // __linux__
 //	SelectObject (hDC, g_Param.font[1]);
+#ifndef __linux__
 	SetTextColor (hDC, RGB(0,255,0));
 	SetBkMode (hDC, TRANSPARENT);
+#else // __linux__
+	QPen pen = hDC->pen(); // text colour is not the pen in GDI: keep the DC's pen for the lines
+	hDC->setPen (QColor (0,255,0)); // SetTextColor
+	hDC->setBackgroundMode (Qt::TransparentMode);
+#endif // __linux__
 	sprintf (cbuf, "%0.1f m", cgofs);
+#ifndef __linux__
 	TextOut (hDC, 30, 0, cbuf, strlen (cbuf));
+#else // __linux__
+	hDC->drawText (QRect (30, 0, 0, 0), Qt::TextDontClip, QString::fromLatin1 (cbuf, strlen (cbuf)));
+#endif // __linux__
 	int loc = 4+min ((int)(cgofs*3.784), 74);
 //	SelectObject (hDC, g_Param.pen[0]);
+#ifndef __linux__
 	MoveToEx (hDC, loc, 15, NULL); LineTo (hDC, loc-3, 22); LineTo (hDC, loc+3, 22); LineTo (hDC, loc, 15);
+#else // __linux__
+	hDC->setPen (pen);
+	const QPoint tri[4] = {{loc, 15}, {loc-3, 22}, {loc+3, 22}, {loc, 15}}; hDC->drawPolyline (tri, 4); // MoveToEx/LineTo
+#endif // __linux__
 	oapiReleaseDC (surf, hDC);
 };
 
@@ -1001,12 +1088,24 @@ DLLCLBK void ovcExit (VESSEL *vessel)
 	if (vessel) delete (Dragonfly*)vessel;
 }
 
+#ifndef __linux__
 BOOL WINAPI DllMain (HINSTANCE hModule,
 					 DWORD ul_reason_for_call,
 					 LPVOID lpReserved)
+#else // __linux__
+// DllMain counterpart: ELF constructor (DLL_PROCESS_ATTACH) and destructor (DLL_PROCESS_DETACH) of the module
+__attribute__((constructor)) static void DllMain_ProcessAttach ()
+#endif // __linux__
 {
+#ifndef __linux__
 	switch (ul_reason_for_call) {
 	case DLL_PROCESS_ATTACH:
+#else // __linux__
+	Dl_info self;
+	void *hModule = (dladdr ((void*)&DllMain_ProcessAttach, &self) ? dlopen (self.dli_fname, RTLD_NOW | RTLD_NOLOAD) : 0);
+	if (hModule) dlclose (hModule); // same handle as the loader's dlopen; drop the extra reference
+	{
+#endif // __linux__
 	    hDLL = hModule;
 		// allocate GDI resources
 		
@@ -1019,11 +1118,21 @@ BOOL WINAPI DllMain (HINSTANCE hModule,
 	//	Internals.Init();
 	//	Internals.MakePanels();
 
+#ifndef __linux__
 			break;
 	case DLL_PROCESS_DETACH:
+#else // __linux__
+	}
+}
+
+__attribute__((destructor)) static void DllMain_ProcessDetach ()
+{
+#endif // __linux__
 		// deallocate GDI resources
 //		CloseGLWindow();
+#ifndef __linux__
 		break;
 	}
 	return TRUE;
+#endif // !__linux__
 }

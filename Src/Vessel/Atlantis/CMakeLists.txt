@@ -5,9 +5,15 @@ add_subdirectory(Atlantis)
 add_subdirectory(Atlantis_SRB)
 add_subdirectory(Atlantis_Tank)
 add_subdirectory(AtlantisConfig)
+if(WIN32) # Windows: upstream
 if(ORBITER_MAKE_DOC)
 	add_subdirectory(Help)
 endif()
+else() # Linux port
+if(ORBITER_MAKE_DOC OR ORBITER_MAKE_HELP) # not upstream: ORBITER_MAKE_HELP
+	add_subdirectory(Help)
+endif()
+endif() # WIN32
 
 set(ORBITER_SAMPLES ${ORBITER_INSTALL_ROOT_DIR}/Orbitersdk/samples)
 

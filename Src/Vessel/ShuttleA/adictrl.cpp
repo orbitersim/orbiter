@@ -13,8 +13,15 @@
 #include "adictrl.h"
 #include "attref.h"
 #include "paneltext.h"
+#ifdef __linux__
+#include <string.h>
+#endif // __linux__
 
+#ifndef __linux__
 #define STRICT 1
+#else // __linux__
+// STRICT left out: windows.h handle type-checking switch
+#endif // __linux__
 
 static const float texw = (float)PANEL2D_TEXW;
 static const float texh = (float)PANEL2D_TEXH;

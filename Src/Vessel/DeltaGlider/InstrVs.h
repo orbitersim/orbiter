@@ -12,7 +12,11 @@
 #ifndef __INSTRVS_H
 #define __INSTRVS_H
 
+#ifndef __linux__
 #include "..\Common\Instrument.h"
+#else // __linux__
+#include "../Common/Instrument.h"
+#endif // __linux__
 
 class InstrVS: public PanelElement {
 public:

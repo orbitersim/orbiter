@@ -1,10 +1,19 @@
 # Copyright (c) Martin Schweiger
 # Licensed under the MIT License
 
+if(WIN32) # Windows: upstream
 add_library(ScriptMFD SHARED
 	ScriptMFD.cpp
 	ScriptMFD.rc
 )
+else() # Linux port
+add_library(ScriptMFD SHARED
+	ScriptMFD.cpp
+)
+endif() # WIN32
+if(NOT WIN32) # Linux port
+orbiter_rc_resources(ScriptMFD ScriptMFD.rc)
+endif() # NOT WIN32
 
 target_include_directories(ScriptMFD
 	PUBLIC ${ORBITER_SOURCE_SDK_INCLUDE_DIR}
@@ -31,7 +40,14 @@ set_target_properties(ScriptMFD
 )
 
 # Installation
+if(WIN32) # Windows: upstream
 install(TARGETS ScriptMFD
 	RUNTIME
 	DESTINATION ${ORBITER_INSTALL_PLUGIN_DIR}
 )
+else() # Linux port
+install(TARGETS ScriptMFD
+	LIBRARY
+	DESTINATION ${ORBITER_INSTALL_PLUGIN_DIR}
+)
+endif() # WIN32

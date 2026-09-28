@@ -27,7 +27,14 @@ set_target_properties(Framerate
 )
 
 # Installation
+if(WIN32) # Windows: upstream
 install(TARGETS Framerate
 	RUNTIME
 	DESTINATION ${ORBITER_INSTALL_PLUGIN_DIR}
 )
+else() # Linux port
+install(TARGETS Framerate
+	LIBRARY
+	DESTINATION ${ORBITER_INSTALL_PLUGIN_DIR}
+)
+endif() # WIN32

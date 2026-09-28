@@ -4,9 +4,15 @@
 #include "SolarSail.h"
 
 extern "C" {
+#ifndef __linux__
 #include <lua/lua.h>
 #include <lua/lualib.h>
 #include <lua/lauxlib.h>
+#else // __linux__
+#include <Lua/lua.h>
+#include <Lua/lualib.h>
+#include <Lua/lauxlib.h>
+#endif // __linux__
 }
 
 using std::min;
@@ -16,7 +22,11 @@ using std::max;
 // API function prototypes
 
 SolarSail *lua_toSSail (lua_State *L, int idx = 1);
+#ifndef __linux__
 int sailSetPaddle (lua_State *L);
+#else // __linux__
+static int sailSetPaddle (lua_State *L); // static: g++ rejects a static definition after an extern declaration
+#endif // __linux__
 
 // ==========================================================================
 // API initialisation

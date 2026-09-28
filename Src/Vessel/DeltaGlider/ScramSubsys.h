@@ -120,6 +120,9 @@ private:
 // Throttle control
 // ==============================================================
 
+#ifdef __linux__
+class ScramThrottleLever; // g++: a friend declaration does not declare the name
+#endif // __linux__
 class ScramThrottle: public DGSubsystem {
 	friend class ScramThrottleLever;
 

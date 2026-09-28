@@ -1,7 +1,11 @@
 # Copyright (c) Martin Schweiger
 # Licensed under the MIT License
 
+if(WIN32) # Windows: upstream
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${ORBITER_BINARY_VESSEL_DIR})
+else() # Linux port
+set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${ORBITER_BINARY_VESSEL_DIR})
+endif() # WIN32
 
 set(MESH_SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/Meshes)
 set(TEXTURE_SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/Textures)
@@ -46,10 +50,17 @@ add_custom_command(
 )
 
 # Installation
+if(WIN32) # Windows: upstream
 install(TARGETS ShuttleA_PL
 	RUNTIME
 	DESTINATION ${ORBITER_INSTALL_MODULE_DIR}
 )
+else() # Linux port
+install(TARGETS ShuttleA_PL
+	LIBRARY
+	DESTINATION ${ORBITER_INSTALL_MODULE_DIR}
+)
+endif() # WIN32
 install(DIRECTORY ${CONFIG_SOURCE_DIR}/
 	DESTINATION ${ORBITER_INSTALL_ROOT_DIR}/Config/Vessels
 )

@@ -12,7 +12,11 @@
 #ifndef __SHUTTLEA_PL_H
 #define __SHUTTLEA_PL_H
 
+#ifndef __linux__
 #include "orbitersdk.h"
+#else // __linux__
+#include "Orbitersdk.h"
+#endif // __linux__
 
 // ==========================================================
 // Some vessel class caps

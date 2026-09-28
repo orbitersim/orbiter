@@ -27,11 +27,22 @@ set_target_properties(Rcontrol
 )
 
 # Installation
+if(WIN32) # Windows: upstream
 install(TARGETS Rcontrol
 	RUNTIME
 	DESTINATION ${ORBITER_INSTALL_PLUGIN_DIR}
 )
+else() # Linux port
+install(TARGETS Rcontrol
+	LIBRARY
+	DESTINATION ${ORBITER_INSTALL_PLUGIN_DIR}
+)
+endif() # WIN32
 
 install(FILES Rcontrol.png
 	DESTINATION ${ORBITER_INSTALL_TEXTURES_DIR}/MenuInfoBar
 )
+if(NOT WIN32) # Linux port
+# not upstream: also in the build tree, so Orbiter run from there finds it
+file(COPY Rcontrol.png DESTINATION ${ORBITER_BINARY_TEXTURES_DIR}/MenuInfoBar)
+endif() # NOT WIN32

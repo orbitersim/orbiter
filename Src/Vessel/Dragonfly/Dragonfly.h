@@ -12,9 +12,15 @@
 #ifndef __DRAGONFLY_H
 #define __DRAGONFLY_H
 
+#ifndef __linux__
 #include "orbitersdk.h"
 #include "panel.h"
 #include "internal.h"
+#else // __linux__
+#include "Orbitersdk.h"
+#include "Panel.h"
+#include "Internal.h"
+#endif // __linux__
 // ==========================================================
 // Some vessel class caps
 // ==========================================================
@@ -101,7 +107,11 @@ public:
 	PROPELLANT_HANDLE ph_main;
 	float *AC_power;
 	float *DC_power;
+#ifndef __linux__
 	HDC openGLhDC;
+#else // __linux__
+	QPainter *openGLhDC;
+#endif // __linux__
 
 	// overloaded VESSEL2 callback functions
 	void clbkSetClassCaps (FILEHANDLE cfg);

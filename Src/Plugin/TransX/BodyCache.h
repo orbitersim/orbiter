@@ -26,7 +26,11 @@
 #ifndef BODYCACHE_H
 #define BODYCACHE_H
 
+#ifndef __linux__
 #include <OrbiterSdk.h>
+#else // __linux__
+#include <Orbitersdk.h>
+#endif // __linux__
 
 struct GBODY;
 class BodyCache

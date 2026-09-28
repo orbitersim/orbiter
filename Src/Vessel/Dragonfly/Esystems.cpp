@@ -1,7 +1,11 @@
 // Copyright (c) Martin Schweiger
 // Licensed under the MIT License
 
+#ifndef __linux__
 #include "esystems.h"
+#else // __linux__
+#include "Esystems.h"
+#endif // __linux__
 #include <math.h>
 #include <stdio.h>
 

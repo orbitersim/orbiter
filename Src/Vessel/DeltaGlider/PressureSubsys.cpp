@@ -456,12 +456,22 @@ bool AirlockCtrl::clbkLoadVC (int vcid)
 
 bool AirlockCtrl::clbkPlaybackEvent (double simt, double event_t, const char *event_type, const char *event)
 {
+#ifndef __linux__
 	if (!_stricmp (event_type, "OLOCK")) {
 		if (!_stricmp (event, "CLOSE")) CloseOuterLock();
+#else // __linux__
+	if (!strcasecmp (event_type, "OLOCK")) {
+		if (!strcasecmp (event, "CLOSE")) CloseOuterLock();
+#endif // __linux__
 		else                            OpenOuterLock();
 		return true;
+#ifndef __linux__
 	} else if (!_stricmp (event_type, "ILOCK")) {
 		if (!_stricmp (event, "CLOSE")) CloseInnerLock();
+#else // __linux__
+	} else if (!strcasecmp (event_type, "ILOCK")) {
+		if (!strcasecmp (event, "CLOSE")) CloseInnerLock();
+#endif // __linux__
 		else                            OpenInnerLock();
 		return true;
 	}
@@ -761,8 +771,13 @@ bool TophatchCtrl::clbkLoadVC (int vcid)
 
 bool TophatchCtrl::clbkPlaybackEvent (double simt, double event_t, const char *event_type, const char *event)
 {
+#ifndef __linux__
 	if (!_stricmp (event_type, "HATCH")) {
 		if (!_stricmp (event, "CLOSE")) CloseHatch();
+#else // __linux__
+	if (!strcasecmp (event_type, "HATCH")) {
+		if (!strcasecmp (event, "CLOSE")) CloseHatch();
+#endif // __linux__
 		else                            OpenHatch();
 		return true;
 	}

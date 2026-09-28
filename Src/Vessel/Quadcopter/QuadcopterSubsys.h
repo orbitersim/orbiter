@@ -5,7 +5,11 @@
 #define __QUADCOPTERSUBSYS_H
 
 #include "Quadcopter.h"
+#ifndef __linux__
 #include "..\Common\Instrument.h"
+#else // __linux__
+#include "../Common/Instrument.h"
+#endif // __linux__
 
 // ==============================================================
 

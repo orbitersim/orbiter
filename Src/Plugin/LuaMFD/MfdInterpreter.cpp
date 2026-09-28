@@ -2,7 +2,12 @@
 // Licensed under the MIT License
 
 #include "MfdInterpreter.h"
+#ifndef __linux__
 #include <process.h>
+#else // __linux__
+#include <cstring>
+#include <chrono> // process.h: threads are std::thread (MfdInterpreter.h)
+#endif // __linux__
 
 // ==============================================================
 // MFD interpreter class implementation
@@ -130,8 +135,20 @@ InterpreterList::Environment::~Environment()
 {
 	if (interp) {
 		if (hThread) {
+#ifndef __linux__
 			TerminateThread (hThread, 0);
 			CloseHandle (hThread);
+#else // __linux__
+			// TerminateThread: a std::thread can't be killed, so the thread is asked to end
+			interp->Terminate();
+			interp->EndExec();
+			if (thExit.wait_for (std::chrono::milliseconds(1000)) != std::future_status::ready) {
+				oapiWriteLog ((char*)"LuaMFD: timeout while waiting for interpreter thread"); // not upstream
+				hThread->detach(); // the stuck thread keeps its interpreter
+				interp = NULL;
+			} else hThread->join();
+			delete hThread;
+#endif // __linux__
 		}
 		delete interp;
 	}
@@ -139,16 +156,28 @@ InterpreterList::Environment::~Environment()
 
 MFDInterpreter *InterpreterList::Environment::CreateInterpreter (OBJHANDLE hV)
 {
+#ifndef __linux__
 	unsigned int id;
+#endif // !__linux__
 	interp = new MFDInterpreter ();
 	interp->Initialise();
 	interp->SetSelf (hV);
+#ifndef __linux__
 	hThread = (HANDLE)_beginthreadex (NULL, 4096, &InterpreterThreadProc, this, 0, &id);
+#else // __linux__
+	std::packaged_task<unsigned int(void*)> task (&InterpreterThreadProc); // _beginthreadex; stack size left to the system
+	thExit = task.get_future();
+	hThread = new std::thread (std::move (task), this);
+#endif // __linux__
 	return interp;
 }
 
 // Interpreter thread function
+#ifndef __linux__
 unsigned int WINAPI InterpreterList::Environment::InterpreterThreadProc (LPVOID context)
+#else // __linux__
+unsigned int InterpreterList::Environment::InterpreterThreadProc (void *context)
+#endif // __linux__
 {
 	InterpreterList::Environment *env = (InterpreterList::Environment*)context;
 	MFDInterpreter *interp = (MFDInterpreter*)env->interp;
@@ -163,7 +192,11 @@ unsigned int WINAPI InterpreterList::Environment::InterpreterThreadProc (LPVOID 
 		interp->EndExec();  // return control
 	}
 	interp->EndExec();  // release mutex (is this necessary?)
+#ifndef __linux__
 	_endthreadex(0);
+#else // __linux__
+	// _endthreadex left out: returning ends the std::thread
+#endif // __linux__
 	return 0;
 }
 

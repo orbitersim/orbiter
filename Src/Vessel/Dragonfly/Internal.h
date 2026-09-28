@@ -5,10 +5,17 @@
 #define __INTERNAL_H__
 
 
+#ifndef __linux__
 #include "panel.h"
 #include "hsystems.h"
 #include "esystems.h"
 #include "orbitersdk.h"
+#else // __linux__
+#include "Panel.h"
+#include "Hsystems.h"
+#include "Esystems.h"
+#include "Orbitersdk.h"
+#endif // __linux__
 
 class ShipInternal
 { public:

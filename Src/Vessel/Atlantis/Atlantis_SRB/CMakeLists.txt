@@ -74,10 +74,17 @@ set_target_properties(${VESSEL_NAME}_Prerequisites
 )
 
 # Installation
+if(WIN32) # Windows: upstream
 install(TARGETS ${VESSEL_NAME}
 	RUNTIME
 	DESTINATION ${ORBITER_INSTALL_MODULE_DIR}
 )
+else() # Linux port
+install(TARGETS ${VESSEL_NAME}
+	LIBRARY
+	DESTINATION ${ORBITER_INSTALL_MODULE_DIR}
+)
+endif() # WIN32
 install(DIRECTORY ${CONFIG_SOURCE_DIR}/
 	DESTINATION ${ORBITER_INSTALL_ROOT_DIR}/Config/Vessels
 )

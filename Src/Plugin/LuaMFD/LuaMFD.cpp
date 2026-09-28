@@ -1,10 +1,21 @@
 // Copyright (c) Martin Schweiger
 // Licensed under the MIT License
 
+#ifndef __linux__
 #define STRICT 1
+#else // __linux__
+// STRICT left out: windows.h handle type-checking switch
+#endif // __linux__
 #define ORBITER_MODULE
+#ifndef __linux__
 #include "orbitersdk.h"
+#else // __linux__
+#include "Orbitersdk.h"
+#endif // __linux__
 #include "LuaMFD.h"
+#ifdef __linux__
+#include <cstring>
+#endif // __linux__
 
 using std::min;
 
@@ -206,7 +217,11 @@ OAPI_MSGTYPE ScriptMFD::MsgProc (UINT msg, UINT mfd, WPARAM wparam, LPARAM lpara
 // ==============================================================
 // API interface
 
+#ifndef __linux__
 DLLCLBK void InitModule (HINSTANCE hDLL)
+#else // __linux__
+DLLCLBK void InitModule (void *hDLL)
+#endif // __linux__
 {
 	MFDMODESPECEX spec;
 	spec.name = (char*)"Terminal MFD";
@@ -217,7 +232,11 @@ DLLCLBK void InitModule (HINSTANCE hDLL)
 	g_IList = new InterpreterList;
 }
 
+#ifndef __linux__
 DLLCLBK void ExitModule (HINSTANCE hDLL)
+#else // __linux__
+DLLCLBK void ExitModule (void *hDLL)
+#endif // __linux__
 {
 	oapiUnregisterMFDMode (g_MFDmode);
 	delete g_IList;
@@ -230,7 +249,11 @@ DLLCLBK void opcPostStep (double simt, double simdt, double mjd)
 	}
 }
 
+#ifndef __linux__
 DLLCLBK void opcOpenRenderViewport (HWND hWnd, DWORD w, DWORD h, BOOL bFullscreen)
+#else // __linux__
+DLLCLBK void opcOpenRenderViewport (QWindow *hWnd, DWORD w, DWORD h, BOOL bFullscreen)
+#endif // __linux__
 {
 }
 

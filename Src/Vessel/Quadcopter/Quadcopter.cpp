@@ -42,7 +42,11 @@ void Quadcopter::clbkSetClassCaps(FILEHANDLE cfg)
 	SetCrossSections(_V(0.1, 0.6, 0.1));
 	SetCW(1.0, 1.0, 1.0, 1.0);
 	SetTouchdownPoints(tdv, 12);
+#ifndef __linux__
 	exmesh_tpl = oapiLoadMeshGlobal("Quadcopter\\quadcopter");
+#else // __linux__
+	exmesh_tpl = oapiLoadMeshGlobal("Quadcopter/quadcopter");
+#endif // __linux__
 	SetMeshVisibilityMode(AddMesh(exmesh_tpl), MESHVIS_EXTERNAL);
 
 	// Dummy thruster

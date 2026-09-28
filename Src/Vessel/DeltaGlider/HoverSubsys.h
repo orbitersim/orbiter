@@ -111,6 +111,9 @@ class HoverAltSwitch;
 class HoverAltResetBtn;
 class HoverAltModeButtons;
 
+#ifdef __linux__
+class HoverHoldAltIndicator; // g++: a friend declaration does not declare the name
+#endif // __linux__
 class HoverHoldComponent: public HoverSubsystemComponent {
 	friend class HoverHoldAltIndicator;
 
@@ -164,6 +167,9 @@ private:
 // Manual hover control submode
 // ==============================================================
 
+#ifdef __linux__
+class HoverThrottle;
+#endif // __linux__
 class HoverManualComponent: public HoverSubsystemComponent {
 	friend class HoverThrottle;
 

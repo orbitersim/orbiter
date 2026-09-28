@@ -9,12 +9,19 @@
 // Reference implementation of Shuttle-A vessel class module
 // ==============================================================
 
+#ifndef __linux__
 #define STRICT 1
+#else // __linux__
+// STRICT left out: windows.h handle type-checking switch
+#endif // __linux__
 #define ORBITER_MODULE
 
 #include "ShuttleA.h"
 #include "ScnEditorAPI.h"
 #include "DlgCtrl.h"
+#ifdef __linux__
+#include "OrbiterResource.h"
+#endif // __linux__
 #include "attref.h"
 #include "mfdbutton.h"
 #include "navbutton.h"
@@ -34,11 +41,20 @@
 #include "meshres.h"
 #include <math.h>
 #include <stdio.h>
+#ifdef __linux__
+#include <string.h>
+#include <strings.h>
+#include <QAbstractButton>
+#endif // __linux__
 
 using std::min;
 using std::max;
 
+#ifndef __linux__
 #define LOADBMP(id) (LoadBitmap (g_Param.hDLL, MAKEINTRESOURCE (id)))
+#else // __linux__
+#define LOADBMP(id) (oapiLoadResImage (g_Param.hDLL, id))
+#endif // __linux__
 
 // ==============================================================
 // Global parameters
@@ -1228,10 +1244,19 @@ void ShuttleA::clbkSetClassCaps (FILEHANDLE cfg)
 
 	// ************************ Meshes ****************************
 
+#ifndef __linux__
 	SetMeshVisibilityMode (AddMesh (exmesh_tpl = oapiLoadMeshGlobal ("ShuttleA\\ShuttleA")), MESHVIS_EXTERNAL);
 	SetMeshVisibilityMode (AddMesh (vcmesh_tpl = oapiLoadMeshGlobal ("ShuttleA\\ShuttleA_vc")), MESHVIS_VC);
+#else // __linux__
+	SetMeshVisibilityMode (AddMesh (exmesh_tpl = oapiLoadMeshGlobal ("ShuttleA/ShuttleA")), MESHVIS_EXTERNAL);
+	SetMeshVisibilityMode (AddMesh (vcmesh_tpl = oapiLoadMeshGlobal ("ShuttleA/ShuttleA_vc")), MESHVIS_VC);
+#endif // __linux__
 	hPanelMesh0 = 0;
+#ifndef __linux__
 	hPanelMesh1 = oapiLoadMeshGlobal ("ShuttleA\\ShuttleA_2dpanel1");
+#else // __linux__
+	hPanelMesh1 = oapiLoadMeshGlobal ("ShuttleA/ShuttleA_2dpanel1");
+#endif // __linux__
 
 
 	// ************************ Blit Ship Name ****************************
@@ -1293,25 +1318,57 @@ void ShuttleA::clbkLoadStateEx (FILEHANDLE scn, void *vs)
 	char *line;
 
 	while (oapiReadScenario_nextline (scn, line)) {
+#ifndef __linux__
 		if (!_strnicmp (line, "PODANGLE", 8)) {
+#else // __linux__
+		if (!strncasecmp (line, "PODANGLE", 8)) {
+#endif // __linux__
 			sscanf (line+8, "%lf%lf", pod_angle+0, pod_angle+1);
+#ifndef __linux__
 		} else if (!_strnicmp (line, "DOCKSTATE", 9)) {
+#else // __linux__
+		} else if (!strncasecmp (line, "DOCKSTATE", 9)) {
+#endif // __linux__
 			sscanf (line+9, "%d%lf", &dock_status, &dock_proc);
+#ifndef __linux__
 		} else if (!_strnicmp (line, "AIRLOCK", 7)) {
+#else // __linux__
+		} else if (!strncasecmp (line, "AIRLOCK", 7)) {
+#endif // __linux__
 			sscanf (line+7, "%d%lf", &lock_status[0], &lock_proc[0]);
+#ifndef __linux__
 		} else if (!_strnicmp (line, "IAIRLOCK", 8)) {
+#else // __linux__
+		} else if (!strncasecmp (line, "IAIRLOCK", 8)) {
+#endif // __linux__
 			sscanf (line+8, "%d%lf", &lock_status[1], &lock_proc[1]);
+#ifndef __linux__
 		} else if (!_strnicmp (line, "GEAR", 4)) {
+#else // __linux__
+		} else if (!strncasecmp (line, "GEAR", 4)) {
+#endif // __linux__
 			sscanf (line+4, "%d%lf", &gear_status, &gear_proc);
+#ifndef __linux__
 		} else if (!_strnicmp (line, "PAYLOAD MASS", 12)) {
+#else // __linux__
+		} else if (!strncasecmp (line, "PAYLOAD MASS", 12)) {
+#endif // __linux__
 			sscanf (line+12, "%lf%d", &payload_mass,&cargo_arm_status);
+#ifndef __linux__
 		} else if (!_strnicmp (line, "ATTREF", 6)) {
+#else // __linux__
+		} else if (!strncasecmp (line, "ATTREF", 6)) {
+#endif // __linux__
 			int mode, tgtmode, navid;
 			sscanf (line+6, "%d%d%d", &mode, &tgtmode, &navid);
 			attref->SetMode (mode);
 			attref->SetTgtmode (tgtmode);
 			attref->SetNavid (navid);
+#ifndef __linux__
 		} else if (!_strnicmp (line, "ADI_LAYOUT", 10)) {
+#else // __linux__
+		} else if (!strncasecmp (line, "ADI_LAYOUT", 10)) {
+#endif // __linux__
 			int layout = 0;
 			if (sscanf (line+10, "%d", &layout) && layout >= 0 && layout <= 1)
 				adi_layout = layout;
@@ -1374,33 +1431,76 @@ void ShuttleA::clbkSaveState (FILEHANDLE scn)
 // --------------------------------------------------------------
 bool ShuttleA::clbkPlaybackEvent (double simt, double event_t, const char *event_type, const char *event)
 {
+#ifndef __linux__
 	if (!_stricmp (event_type, "DOCK")) {
 		ActivateDockingPort (!_stricmp (event, "CLOSE") ? DOOR_CLOSING : DOOR_OPENING);
+#else // __linux__
+	if (!strcasecmp (event_type, "DOCK")) {
+		ActivateDockingPort (!strcasecmp (event, "CLOSE") ? DOOR_CLOSING : DOOR_OPENING);
+#endif // __linux__
 		return true;
+#ifndef __linux__
 	} else if (!_stricmp (event_type, "AIRLOCK")) {
 		ActivateAirlock (0, !_stricmp (event, "CLOSE") ? DOOR_CLOSING : DOOR_OPENING);
+#else // __linux__
+	} else if (!strcasecmp (event_type, "AIRLOCK")) {
+		ActivateAirlock (0, !strcasecmp (event, "CLOSE") ? DOOR_CLOSING : DOOR_OPENING);
+#endif // __linux__
 		return true;
+#ifndef __linux__
 	} else if (!_stricmp (event_type, "IAIRLOCK")) {
 		ActivateAirlock (1, !_stricmp (event, "CLOSE") ? DOOR_CLOSING : DOOR_OPENING);
+#else // __linux__
+	} else if (!strcasecmp (event_type, "IAIRLOCK")) {
+		ActivateAirlock (1, !strcasecmp (event, "CLOSE") ? DOOR_CLOSING : DOOR_OPENING);
+#endif // __linux__
 		return true;
+#ifndef __linux__
 	} else if (!_stricmp (event_type, "GEAR")) {
 		ActivateLandingGear (!_stricmp (event, "UP") ? DOOR_CLOSING : DOOR_OPENING);
+#else // __linux__
+	} else if (!strcasecmp (event_type, "GEAR")) {
+		ActivateLandingGear (!strcasecmp (event, "UP") ? DOOR_CLOSING : DOOR_OPENING);
+#endif // __linux__
 		return true;
+#ifndef __linux__
 	} else if (!_stricmp (event_type, "POD")) {
+#else // __linux__
+	} else if (!strcasecmp (event_type, "POD")) {
+#endif // __linux__
 		UINT which;
 		double angle;
 		char action[256];
 		sscanf (event, "%d %s %lf", &which, action, &angle);
+#ifndef __linux__
 		if (!_stricmp (action, "SET")) CommandPodAngle (which, angle);
 		else if (!_stricmp (action, "FWD")) CommandPodAngle (which, PI);
 		else if (!_stricmp (action, "BACK")) CommandPodAngle (which, 0);
+#else // __linux__
+		if (!strcasecmp (action, "SET")) CommandPodAngle (which, angle);
+		else if (!strcasecmp (action, "FWD")) CommandPodAngle (which, PI);
+		else if (!strcasecmp (action, "BACK")) CommandPodAngle (which, 0);
+#endif // __linux__
 		return true;
+#ifndef __linux__
 	} else if (!_stricmp (event_type, "CARGO")) {
 		if (!_strnicmp (event, "ARM", 3))
+#else // __linux__
+	} else if (!strcasecmp (event_type, "CARGO")) {
+		if (!strncasecmp (event, "ARM", 3))
+#endif // __linux__
 			ActivateCargo (1);
+#ifndef __linux__
 		else if (!_strnicmp (event, "DISARM", 6))
+#else // __linux__
+		else if (!strncasecmp (event, "DISARM", 6))
+#endif // __linux__
 			ActivateCargo (0);
+#ifndef __linux__
 		else if (!_strnicmp (event, "GRAPPLE", 7)) {
+#else // __linux__
+		else if (!strncasecmp (event, "GRAPPLE", 7)) {
+#endif // __linux__
 			int grapple;
 			sscanf (event+7, "%d", &grapple);
 			ToggleGrapple (grapple);
@@ -2432,7 +2532,11 @@ void ShuttleA::PaintMarkings (SURFHANDLE tex)
 // --------------------------------------------------------------
 // Module initialisation
 // --------------------------------------------------------------
+#ifndef __linux__
 DLLCLBK void InitModule (HINSTANCE hModule)
+#else // __linux__
+DLLCLBK void InitModule (void *hModule)
+#endif // __linux__
 {
 	g_Param.hDLL = hModule;
 	oapiRegisterCustomControls (hModule);
@@ -2446,15 +2550,25 @@ DLLCLBK void InitModule (HINSTANCE hModule)
 	g_Param.pBrush[1] = oapiCreateBrush(RGB(0, 0, 0));
 
 	// load 2D panel texture
+#ifndef __linux__
 	ShuttleA::panel2dtex = oapiLoadTexture ("ShuttleA\\panel2d.dds");
 	ShuttleA::paneleltex = oapiLoadSurfaceEx("ShuttleA\\panel_el.dds", OAPISURFACE_TEXTURE | OAPISURFACE_RENDERTARGET);
 	ShuttleA::aditex = oapiLoadTexture ("Common\\adiball_grey.dds");
+#else // __linux__
+	ShuttleA::panel2dtex = oapiLoadTexture ("ShuttleA/panel2d.dds");
+	ShuttleA::paneleltex = oapiLoadSurfaceEx("ShuttleA/panel_el.dds", OAPISURFACE_TEXTURE | OAPISURFACE_RENDERTARGET);
+	ShuttleA::aditex = oapiLoadTexture ("Common/adiball_grey.dds");
+#endif // __linux__
 }
 
 // --------------------------------------------------------------
 // Module cleanup
 // --------------------------------------------------------------
+#ifndef __linux__
 DLLCLBK void ExitModule (HINSTANCE hModule)
+#else // __linux__
+DLLCLBK void ExitModule (void *hModule)
+#endif // __linux__
 {
 	int i;
 	// deallocate Sketchpad resources
@@ -2489,27 +2603,50 @@ DLLCLBK void ovcExit (VESSEL *vessel)
 // Scenario editor interface
 // ==============================================================
 
+#ifndef __linux__
 ShuttleA *GetV (HWND hDlg)
+#else // __linux__
+ShuttleA *GetV (QWidget *hDlg)
+#endif // __linux__
 {
 	// retrieve DG interface from scenario editor
 	OBJHANDLE hVessel;
+#ifndef __linux__
 	SendMessage (hDlg, WM_SCNEDITOR, SE_GETVESSEL, (LPARAM)&hVessel);
+#else // __linux__
+	ScnEditorMsg (hDlg, SE_GETVESSEL, (LPARAM)&hVessel);
+#endif // __linux__
 	return (ShuttleA*)oapiGetVesselInterface (hVessel);
 }
 
+#ifndef __linux__
 void UpdatePodSliders (HWND hDlg, ShuttleA *v)
+#else // __linux__
+void UpdatePodSliders (QWidget *hDlg, ShuttleA *v)
+#endif // __linux__
 {
 	int lpos = (int)(v->GetPodAngle(0)/PI*100.0+0.5);
 	int rpos = (int)(v->GetPodAngle(1)/PI*100.0+0.5);
+#ifndef __linux__
 	oapiSetGaugePos (GetDlgItem (hDlg, IDC_LAUX_POS), lpos);
 	oapiSetGaugePos (GetDlgItem (hDlg, IDC_RAUX_POS), rpos);
 	oapiSetGaugePos (GetDlgItem (hDlg, IDC_AUX_POS), (lpos+rpos)/2);
+#else // __linux__
+	oapiSetGaugePos (oapiResDlgItem (hDlg, IDC_LAUX_POS), lpos);
+	oapiSetGaugePos (oapiResDlgItem (hDlg, IDC_RAUX_POS), rpos);
+	oapiSetGaugePos (oapiResDlgItem (hDlg, IDC_AUX_POS), (lpos+rpos)/2);
+#endif // __linux__
 }
 
+#ifndef __linux__
 void InitEdPg1 (HWND hDlg, OBJHANDLE hVessel)
+#else // __linux__
+void InitEdPg1 (QWidget *hDlg, OBJHANDLE hVessel)
+#endif // __linux__
 {
 	ShuttleA *v = (ShuttleA*)oapiGetVesselInterface (hVessel);
 	GAUGEPARAM gp = { 0, 100, GAUGEPARAM::LEFT, GAUGEPARAM::BLACK };
+#ifndef __linux__
 	oapiSetGaugeParams (GetDlgItem (hDlg, IDC_LAUX_POS), &gp);
 	oapiSetGaugeParams (GetDlgItem (hDlg, IDC_RAUX_POS), &gp);
 	oapiSetGaugeParams (GetDlgItem (hDlg, IDC_AUX_POS), &gp);
@@ -2517,14 +2654,28 @@ void InitEdPg1 (HWND hDlg, OBJHANDLE hVessel)
 	ShowWindow (GetDlgItem (hDlg, IDC_RAUX_POS), SW_HIDE);
 	ShowWindow (GetDlgItem (hDlg, IDC_AUX_POS), SW_SHOW);
 	SendDlgItemMessage (hDlg, IDC_AUX_SYNC, BM_SETCHECK, BST_CHECKED, 0);
+#else // __linux__
+	oapiSetGaugeParams (oapiResDlgItem (hDlg, IDC_LAUX_POS), &gp);
+	oapiSetGaugeParams (oapiResDlgItem (hDlg, IDC_RAUX_POS), &gp);
+	oapiSetGaugeParams (oapiResDlgItem (hDlg, IDC_AUX_POS), &gp);
+	oapiResDlgItem (hDlg, IDC_LAUX_POS)->hide();
+	oapiResDlgItem (hDlg, IDC_RAUX_POS)->hide();
+	oapiResDlgItem (hDlg, IDC_AUX_POS)->show();
+	DlgItem<QAbstractButton>(hDlg, IDC_AUX_SYNC)->setChecked (true);
+#endif // __linux__
 	UpdatePodSliders (hDlg, v);
 }
 
 // --------------------------------------------------------------
 // Message procedure for editor page 1 (animation settings)
 // --------------------------------------------------------------
+#ifndef __linux__
 INT_PTR CALLBACK EdPg1Proc (HWND hTab, UINT uMsg, WPARAM wParam, LPARAM lParam)
+#else // __linux__
+void EdPg1Proc (QWidget *hTab, void *context)
+#endif // __linux__
 {
+#ifndef __linux__
 	switch (uMsg) {
 	case WM_INITDIALOG:
 		InitEdPg1 (hTab, (OBJHANDLE)lParam);
@@ -2598,15 +2749,96 @@ INT_PTR CALLBACK EdPg1Proc (HWND hTab, UINT uMsg, WPARAM wParam, LPARAM lParam)
 			break;
 		}
 		} break;
+#else // __linux__
+	// WM_INITDIALOG
+	InitEdPg1 (hTab, (OBJHANDLE)context);
+
+	// WM_COMMAND
+	oapiConnectDlgCommands (hTab, [hTab](int id, int code, QWidget *hCtrl) {
+		switch (id) {
+		case IDC_GEAR_UP:
+			GetV(hTab)->ActivateLandingGear (ShuttleA::DOOR_OPEN);
+			return;
+		case IDC_GEAR_DOWN:
+			GetV(hTab)->ActivateLandingGear (ShuttleA::DOOR_CLOSED);
+			return;
+		case IDC_DPORT_CLOSE:
+			GetV(hTab)->ActivateDockingPort (ShuttleA::DOOR_CLOSED);
+			return;
+		case IDC_DPORT_OPEN:
+			GetV(hTab)->ActivateDockingPort (ShuttleA::DOOR_OPEN);
+			return;
+		case IDC_OLOCK_CLOSE:
+			GetV(hTab)->ActivateAirlock (0, ShuttleA::DOOR_CLOSED);
+			return;
+		case IDC_OLOCK_OPEN:
+			GetV(hTab)->ActivateAirlock (0, ShuttleA::DOOR_OPEN);
+			return;
+		case IDC_AUX_RETRO: {
+			ShuttleA *v = GetV(hTab);
+			v->SetPodAngle (3, 0.0);
+			UpdatePodSliders (hTab, v);
+			} return;
+		case IDC_AUX_HOVER: {
+			ShuttleA *v = GetV(hTab);
+			v->SetPodAngle (3, PI05);
+			UpdatePodSliders (hTab, v);
+			} return;
+		case IDC_AUX_FWD: {
+			ShuttleA *v = GetV(hTab);
+			v->SetPodAngle (3, PI);
+			UpdatePodSliders (hTab, v);
+			} return;
+		case IDC_AUX_SYNC:
+			if (DlgItem<QAbstractButton>(hTab, IDC_AUX_SYNC)->isChecked()) {
+				oapiResDlgItem (hTab, IDC_LAUX_POS)->hide();
+				oapiResDlgItem (hTab, IDC_RAUX_POS)->hide();
+				oapiResDlgItem (hTab, IDC_AUX_POS)->show();
+				GetV(hTab)->SetPodAngle (3, oapiGetGaugePos (oapiResDlgItem (hTab, IDC_AUX_POS))*0.01*PI);
+			} else {
+				oapiResDlgItem (hTab, IDC_AUX_POS)->hide();
+				oapiResDlgItem (hTab, IDC_LAUX_POS)->show();
+				oapiResDlgItem (hTab, IDC_RAUX_POS)->show();
+			}
+		}
+	});
+
+	// WM_HSCROLL
+	for (int id : {IDC_LAUX_POS, IDC_RAUX_POS, IDC_AUX_POS}) {
+		QObject::connect (DlgItem<GaugeCtrl>(hTab, id), &GaugeCtrl::scrolled, hTab, [hTab, id](int request, int pos) {
+			ShuttleA *v = GetV (hTab);
+			switch (request) {
+			case GAUGE_THUMBTRACK:
+			case GAUGE_LINEDEC:
+			case GAUGE_LINEINC:
+				if (id == IDC_LAUX_POS || id == IDC_AUX_POS)
+					v->SetPodAngle (1, pos*0.01*PI);
+				if (id == IDC_RAUX_POS || id == IDC_AUX_POS)
+					v->SetPodAngle (2, pos*0.01*PI);
+				UpdatePodSliders (hTab, v);
+				return;
+			}
+		});
+#endif // __linux__
 	}
+#ifndef __linux__
 	return FALSE;
+#endif // !__linux__
 }
 
 // --------------------------------------------------------------
 // Add vessel-specific pages into scenario editor
 // --------------------------------------------------------------
+#ifndef __linux__
 DLLCLBK void secInit (HWND hEditor, OBJHANDLE hVessel)
+#else // __linux__
+DLLCLBK void secInit (QWidget *hEditor, OBJHANDLE hVessel)
+#endif // __linux__
 {
 	EditorPageSpec eps1 = {"Animations", g_Param.hDLL, IDD_EDITOR_PG1, EdPg1Proc};
+#ifndef __linux__
 	SendMessage (hEditor, WM_SCNEDITOR, SE_ADDPAGEBUTTON, (LPARAM)&eps1);
+#else // __linux__
+	ScnEditorMsg (hEditor, SE_ADDPAGEBUTTON, (LPARAM)&eps1);
+#endif // __linux__
 }

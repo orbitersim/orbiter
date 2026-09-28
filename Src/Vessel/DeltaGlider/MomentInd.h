@@ -12,7 +12,11 @@
 #ifndef __MOMENTIND_H
 #define __MOMENTIND_H
 
+#ifndef __linux__
 #include "..\Common\Instrument.h"
+#else // __linux__
+#include "../Common/Instrument.h"
+#endif // __linux__
 
 // ==============================================================
 

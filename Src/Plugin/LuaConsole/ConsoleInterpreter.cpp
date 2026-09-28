@@ -2,6 +2,9 @@
 // Licensed under the MIT License
 
 #include "ConsoleInterpreter.h"
+#ifdef __linux__
+#include <cstring> // windows.h brought the C string functions
+#endif // __linux__
 
 // ==============================================================
 // Console interpreter class implementation

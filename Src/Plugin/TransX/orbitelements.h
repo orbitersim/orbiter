@@ -21,7 +21,11 @@
 
 #pragma once
 
+#ifndef __linux__
 #include <OrbiterSDK.h>
+#else // __linux__
+#include <Orbitersdk.h>
+#endif // __linux__
 
 
 class OrbitElements{

@@ -365,8 +365,13 @@ void Airbrake::clbkPostCreation ()
 
 bool Airbrake::clbkPlaybackEvent (double simt, double event_t, const char *event_type, const char *event)
 {
+#ifndef __linux__
 	if (!_stricmp (event_type, "AIRBRAKE")) {
 		if (!_stricmp (event, "CLOSE")) Retract();
+#else // __linux__
+	if (!strcasecmp (event_type, "AIRBRAKE")) {
+		if (!strcasecmp (event, "CLOSE")) Retract();
+#endif // __linux__
 		else                            Extend();
 		return true;
 	}
@@ -481,7 +486,11 @@ void ElevatorTrim::clbkSaveState (FILEHANDLE scn)
 
 bool ElevatorTrim::clbkParseScenarioLine (const char *line)
 {
+#ifndef __linux__
 	if (!_strnicmp (line, "TRIM", 4)) {
+#else // __linux__
+	if (!strncasecmp (line, "TRIM", 4)) {
+#endif // __linux__
 		double trim;
 		sscanf (line+4, "%lf", &trim);
 		DG()->SetControlSurfaceLevel (AIRCTRL_ELEVATORTRIM, trim, true);

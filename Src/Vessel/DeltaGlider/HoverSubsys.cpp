@@ -249,7 +249,11 @@ void HoverAttitudeComponent::clbkSaveState (FILEHANDLE scn)
 
 bool HoverAttitudeComponent::clbkParseScenarioLine (const char *line)
 {
+#ifndef __linux__
 	if (!_strnicmp (line, "HOVERMODE", 9)) {
+#else // __linux__
+	if (!strncasecmp (line, "HOVERMODE", 9)) {
+#endif // __linux__
 		double ph, rh;
 		int n = sscanf (line+9, "%d%lf%lf", &mode, &ph, &rh);
 		if (mode == 2 && n == 3) // copy manual settings
@@ -460,7 +464,11 @@ void HoverHoldComponent::clbkSaveState (FILEHANDLE scn)
 
 bool HoverHoldComponent::clbkParseScenarioLine (const char *line)
 {
+#ifndef __linux__
 	if (!_strnicmp (line, "HOVERHOLD", 9)) {
+#else // __linux__
+	if (!strncasecmp (line, "HOVERHOLD", 9)) {
+#endif // __linux__
 		int iact, imode;
 		double alt, vspd;
 		int n = sscanf (line+9, "%d%d%lf%lf", &iact, &imode, &alt, &vspd);

@@ -1,3 +1,4 @@
+if(WIN32) # Windows: upstream
 add_library(TransX SHARED
 	BodyCache.cpp
 	BodyProvider.cpp
@@ -21,6 +22,33 @@ add_library(TransX SHARED
     viewstate.cpp
     TransX.rc
 )
+else() # Linux port
+add_library(TransX SHARED
+	BodyCache.cpp
+	BodyProvider.cpp
+    basefunction.cpp
+    doublelink.cpp
+    globals.cpp
+    graph.cpp
+    intercept.cpp
+    mapfunction.cpp
+    mfdfunction.cpp
+    mfdvarhandler.cpp
+    mfdvariable.cpp
+    mfdvartypes.cpp
+    orbitelements.cpp
+    parser.cpp
+    planfunction.cpp
+    shiplist.cpp
+    transx.cpp
+    TransXFunction.cpp
+    transxstate.cpp
+    viewstate.cpp
+)
+endif() # WIN32
+if(NOT WIN32) # Linux port
+orbiter_rc_resources(TransX TransX.rc)
+endif() # NOT WIN32
 
 target_include_directories(TransX
 	PUBLIC ${ORBITER_SOURCE_SDK_INCLUDE_DIR}
@@ -50,10 +78,17 @@ add_custom_command(
 )
 
 # Installation
+if(WIN32) # Windows: upstream
 install(TARGETS TransX
 	RUNTIME
 	DESTINATION ${ORBITER_INSTALL_PLUGIN_DIR}
 )
+else() # Linux port
+install(TARGETS TransX
+	LIBRARY
+	DESTINATION ${ORBITER_INSTALL_PLUGIN_DIR}
+)
+endif() # WIN32
 install(DIRECTORY ${ORBITER_BINARY_DOC_DIR}/TransX
     DESTINATION ${ORBITER_INSTALL_DOC_DIR}
 )

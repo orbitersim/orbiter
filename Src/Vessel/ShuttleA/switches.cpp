@@ -9,7 +9,11 @@
 // Panel switch templates
 // ==============================================================
 
+#ifndef __linux__
 #define STRICT 1
+#else // __linux__
+// STRICT left out: windows.h handle type-checking switch
+#endif // __linux__
 #include "switches.h"
 
 static const float texw = (float)PANELEL_TEXW;

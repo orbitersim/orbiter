@@ -18,6 +18,9 @@
 // Failure subsystem
 // ==============================================================
 
+#ifdef __linux__
+class MwsButton; // g++: a friend declaration does not declare the name
+#endif // __linux__
 class FailureSubsystem: public DGSubsystem {
 	friend class MwsButton;
 

@@ -214,7 +214,11 @@ void ThermalSubsystem::clbkSaveState (FILEHANDLE scn)
 
 bool ThermalSubsystem::clbkParseScenarioLine (const char *line)
 {
+#ifndef __linux__
 	if (!_strnicmp(line, "COMPARTMENT_TEMP", 16)) {
+#else // __linux__
+	if (!strncasecmp(line, "COMPARTMENT_TEMP", 16)) {
+#endif // __linux__
 		sscanf(line+16, "%lf%lf%lf%lf%lf%lf%lf%lf%lf%lf%lf%lf%lf",
 			&cprm[0].T, &cprm[1].T, &cprm[2].T, &cprm[3].T, &cprm[4].T, &cprm[5].T,
 			&cprm[6].T, &cprm[7].T, &cprm[8].T, &cprm[9].T, &cprm[10].T, &cprm[11].T,
@@ -731,7 +735,11 @@ void CoolantLoop::clbkSaveState (FILEHANDLE scn)
 
 bool CoolantLoop::clbkParseScenarioLine (const char *line)
 {
+#ifndef __linux__
 	if (!_strnicmp(line, "COOLANT_STATE", 13)) {
+#else // __linux__
+	if (!strncasecmp(line, "COOLANT_STATE", 13)) {
+#endif // __linux__
 		int i;
 		double rate, temp;
 		sscanf(line+13, "%d%lf%lf", &i, &rate, &temp);
@@ -1163,8 +1171,13 @@ void RadiatorControl::clbkResetVC (int vcid, DEVMESHHANDLE hMesh)
 
 bool RadiatorControl::clbkPlaybackEvent (double simt, double event_t, const char *event_type, const char *event)
 {
+#ifndef __linux__
 	if (!_stricmp (event_type, "RADIATOR")) {
 		if (!_stricmp (event, "CLOSE")) CloseRadiator();
+#else // __linux__
+	if (!strcasecmp (event_type, "RADIATOR")) {
+		if (!strcasecmp (event, "CLOSE")) CloseRadiator();
+#endif // __linux__
 		else                            OpenRadiator();
 		return true;
 	}

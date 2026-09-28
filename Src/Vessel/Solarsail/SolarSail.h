@@ -12,8 +12,13 @@
 #ifndef __SOLARSAIL_H
 #define __SOLARSAIL_H
 
+#ifndef __linux__
 #define STRICT 1
 #include "orbitersdk.h"
+#else // __linux__
+// STRICT left out: windows.h handle type-checking switch
+#include "Orbitersdk.h"
+#endif // __linux__
 
 #define MAXNBHR 6 // max node neighbours
 

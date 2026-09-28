@@ -50,6 +50,10 @@ private:
 // Nosecone control
 // ==============================================================
 
+#ifdef __linux__
+class NoseconeLever; // g++: a friend declaration does not declare the name
+class NoseconeIndicator;
+#endif // __linux__
 class NoseconeCtrl: public DGSubsystem {
 	friend class NoseconeLever;
 	friend class NoseconeIndicator;
@@ -117,6 +121,9 @@ private:
 // Undock control
 // ==============================================================
 
+#ifdef __linux__
+class UndockLever;
+#endif // __linux__
 class UndockCtrl: public DGSubsystem {
 	friend class UndockLever;
 
@@ -155,6 +162,10 @@ private:
 // Escape ladder control
 // ==============================================================
 
+#ifdef __linux__
+class LadderSwitch;
+class LadderIndicator;
+#endif // __linux__
 class EscapeLadderCtrl: public DGSubsystem {
 	friend class LadderSwitch;
 	friend class LadderIndicator;
@@ -214,6 +225,9 @@ private:
 // Dock seal control
 // ==============================================================
 
+#ifdef __linux__
+class DocksealIndicator;
+#endif // __linux__
 class DocksealCtrl: public DGSubsystem {
 	friend class DocksealIndicator;
 

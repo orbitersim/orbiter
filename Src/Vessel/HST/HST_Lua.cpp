@@ -14,18 +14,30 @@
 #ifdef SCRIPTSUPPORT
 
 extern "C" {
+#ifndef __linux__
 #include <lua/lua.h>
 #include <lua/lualib.h>
 #include <lua/lauxlib.h>
+#else // __linux__
+#include <Lua/lua.h>
+#include <Lua/lualib.h>
+#include <Lua/lauxlib.h>
+#endif // __linux__
 }
 
 // ==========================================================================
 // API function prototypes
 
 HST *lua_toHST (lua_State *L, int idx = 1);
+#ifndef __linux__
 int hstAntenna (lua_State *L);
 int hstHatch (lua_State *L);
 int hstArray (lua_State *L);
+#else // __linux__
+static int hstAntenna (lua_State *L); // static: g++ rejects a static definition after an extern declaration
+static int hstHatch (lua_State *L);
+static int hstArray (lua_State *L);
+#endif // __linux__
 
 // ==========================================================================
 // API initialisation

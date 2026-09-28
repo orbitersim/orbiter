@@ -13,6 +13,9 @@
 
 #include "SolarSail.h"
 #include "meshres.h"
+#ifdef __linux__
+#include <string.h>
+#endif // __linux__
 
 // ==============================================================
 // Some vessel parameters
@@ -407,12 +410,20 @@ DWORD SolarSail::sail_ntri = 0;
 // Global initialisation
 // --------------------------------------------------------------
 
+#ifndef __linux__
 DLLCLBK void InitModule (HINSTANCE hModule)
+#else // __linux__
+DLLCLBK void InitModule (void *hModule)
+#endif // __linux__
 {
 	SolarSail::GlobalSetup();
 }
 
+#ifndef __linux__
 DLLCLBK void ExitModule (HINSTANCE hModule)
+#else // __linux__
+DLLCLBK void ExitModule (void *hModule)
+#endif // __linux__
 {
 	for (int i = 0; i < 4; i++) {
 		delete []SolarSail::sail_idx[i];

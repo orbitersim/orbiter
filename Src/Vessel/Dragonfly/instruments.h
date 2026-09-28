@@ -5,10 +5,23 @@
 #define __INSTRUMENTS_H_
 
 #include <stdlib.h>
+#ifndef __linux__
 #include <windows.h>
+#else // __linux__
+// windows.h left out: POINT comes with the SDK (OrbiterPlatform.h), the GDI handles are Qt types
+#endif // __linux__
 #include "vectors.h"
+#ifndef __linux__
 #include "orbitersdk.h"
+#else // __linux__
+#include "Orbitersdk.h"
+#endif // __linux__
 
+#ifdef __linux__
+class QOffscreenSurface;
+class QOpenGLContext;
+class QOpenGLFramebufferObject;
+#endif // __linux__
 
 class Panel;
 
@@ -73,13 +86,22 @@ class SFSwitch:public Switch
 	void LBD(int x, int y);
 private:
 	SURFHANDLE temps;
+#ifndef __linux__
 	HDC hTEMPDC;			//SFSwitch needs a back-surface
+#else // __linux__
+	QPainter *hTEMPDC;			//SFSwitch needs a back-surface
+#endif // __linux__
 	int safed;				//is the switch safed or not?
 };
 
 class EGauge:public instrument
 { public:
+#ifndef __linux__
     char unit[5];							// units as displayed on the screen
+#else // __linux__
+    // upstream unit[5]: "PITCH" (6 bytes) overflowed into the padding; glibc aborts
+    char unit[6];							// units as displayed on the screen
+#endif // __linux__
     int MaxV,MinV;						// min & max values on the scale
     float scale;							// scale between displayed values and actual pointer value (usually 10,100,1000);
 	float *SRC;
@@ -283,10 +305,17 @@ class ADI:public instrument
    vector3 target;
    float over_rate;
    //some stuff for OpenGL
+#ifndef __linux__
    HDC		   hDC2;
    HGLRC       hRC;
    HBITMAP	   hBMP;
    HBITMAP hBMP_old;
+#else // __linux__
+   QOffscreenSurface *hDC2;       // CreateCompatibleDC counterpart: the surface the context is made current on
+   QOpenGLContext    *hRC;        // wglCreateContext counterpart
+   QOpenGLFramebufferObject *hBMP; // CreateDIBSection counterpart: the 160x160 image OpenGL draws into
+   // hBMP_old left out: no bitmap is selected into a Qt surface
+#endif // __linux__
    ADI(int x,int y,Panel *i_parent);
    virtual ~ADI();
    void InitGL();

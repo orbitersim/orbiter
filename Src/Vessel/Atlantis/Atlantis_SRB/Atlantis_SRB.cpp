@@ -18,6 +18,10 @@
 #include "Atlantis.h"
 #include "math.h"
 #include "stdio.h"
+#ifdef __linux__
+#include <string.h>
+#include <strings.h>
+#endif // __linux__
 
 // ==============================================================
 // Specialised vessel class Atlantis_SRB
@@ -45,7 +49,11 @@ Atlantis_SRB::Atlantis_SRB (OBJHANDLE hObj)
 : VESSEL2(hObj)
 {
 	// preload mesh
+#ifndef __linux__
 	hSRBMesh = oapiLoadMeshGlobal ("Atlantis\\Atlantis_srb");
+#else // __linux__
+	hSRBMesh = oapiLoadMeshGlobal ("Atlantis/Atlantis_srb");
+#endif // __linux__
 }
 
 void Atlantis_SRB::SetLaunchElevation (double elev)
@@ -221,7 +229,11 @@ void Atlantis_SRB::clbkLoadStateEx (FILEHANDLE scn, void *vs)
 	char *line;
 
 	while (oapiReadScenario_nextline (scn, line)) {
+#ifndef __linux__
 		if (!_strnicmp (line, "MET ", 4)) {
+#else // __linux__
+		if (!strncasecmp (line, "MET ", 4)) {
+#endif // __linux__
 			double met;
 			sscanf (line+4, "%lf", &met);
 			t0 = oapiGetSimTime()-met;

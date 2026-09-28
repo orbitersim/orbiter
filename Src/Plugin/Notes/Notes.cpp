@@ -14,7 +14,11 @@
 
 #define ORBITER_MODULE
 #define IMGUI_DEFINE_MATH_OPERATORS
+#ifndef __linux__
 #include "orbitersdk.h"
+#else // __linux__
+#include "Orbitersdk.h"
+#endif // __linux__
 #include "imgui.h"
 #include "imgui_extras.h"
 #include <vector>
@@ -151,13 +155,29 @@ public:
 		char *line;
 		double scale = 2.0;
 		while (oapiReadScenario_nextline(scn, line)) {
+#ifndef __linux__
 			if (!strnicmp (line, "NAME = ", 7)) {
+#else // __linux__
+			if (!strncasecmp (line, "NAME = ", 7)) {
+#endif // __linux__
 				name = line + 7;
+#ifndef __linux__
 			} else if (!strnicmp (line, "SCALE = ", 8)) {
+#else // __linux__
+			} else if (!strncasecmp (line, "SCALE = ", 8)) {
+#endif // __linux__
 				scale = atof(line + 8);
+#ifndef __linux__
 			} else if (!stricmp (line, "END_NOTE")) {
+#else // __linux__
+			} else if (!strcasecmp (line, "END_NOTE")) {
+#endif // __linux__
 				break;
+#ifndef __linux__
 			} else if (!strnicmp (line, "DATA ", 5)) {
+#else // __linux__
+			} else if (!strncasecmp (line, "DATA ", 5)) {
+#endif // __linux__
 				char *hexstream = line + 5;
 				char *next;
 				do {
@@ -187,7 +207,11 @@ static int g_dwMenuCmd;
 // Local prototypes
 // ==============================================================
 
+#ifndef __linux__
 void OpenDlgClbk (void *context);
+#else // __linux__
+static void OpenDlgClbk (void *context); // static: g++ rejects a static definition after an extern declaration
+#endif // __linux__
 
 // ==============================================================
 // API interface
@@ -197,7 +221,11 @@ void OpenDlgClbk (void *context);
 // This function is called when Orbiter starts or when the module
 // is activated.
 
+#ifndef __linux__
 DLLCLBK void InitModule (HINSTANCE hDLL)
+#else // __linux__
+DLLCLBK void InitModule (void *hDLL)
+#endif // __linux__
 {
 	// To allow the user to open our new dialog box, we create
 	// an entry in the "Custom Functions" list which is accessed
@@ -213,7 +241,11 @@ DLLCLBK void InitModule (HINSTANCE hDLL)
 // This function is called when Orbiter shuts down or when the
 // module is deactivated
 
+#ifndef __linux__
 DLLCLBK void ExitModule (HINSTANCE hDLL)
+#else // __linux__
+DLLCLBK void ExitModule (void *hDLL)
+#endif // __linux__
 {
 	// Unregister the custom function in Orbiter
 	oapiUnregisterCustomCmd (g_dwCmd);
@@ -243,7 +275,11 @@ DLLCLBK void opcLoadState (FILEHANDLE scn)
 {
 	char *line;
 	while (oapiReadScenario_nextline (scn, line)) {
+#ifndef __linux__
 		if (!stricmp (line, "BEGIN_NOTE")) {
+#else // __linux__
+		if (!strcasecmp (line, "BEGIN_NOTE")) {
+#endif // __linux__
 			oapiOpenDialog(ImGuiNote::Load(scn));
 		}
 	}

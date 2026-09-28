@@ -23,11 +23,19 @@ target_include_directories(${VESSEL_NAME}
 	PUBLIC ${ORBITER_SOURCE_SDK_INCLUDE_DIR}
 )
 
+if(WIN32) # Windows: upstream
 target_link_libraries(${VESSEL_NAME}
 	${ORBITER_LIB}
 	${ORBITER_SDK_LIB}
 	$<TARGET_LINKER_FILE:Atlantis_SRB>
 )
+else() # Linux port
+target_link_libraries(${VESSEL_NAME}
+	${ORBITER_LIB}
+	${ORBITER_SDK_LIB}
+	Atlantis_SRB # not upstream: by target name, CMake turns a path to a prefix-less .so into -l<name>
+)
+endif() # WIN32
 
 add_custom_command(
 	TARGET ${VESSEL_NAME} PRE_BUILD
@@ -55,10 +63,17 @@ add_dependencies(${VESSEL_NAME}
 	Atlantis_SRB
 )
 
+if(WIN32) # Windows: upstream
 install(TARGETS ${VESSEL_NAME}
 	RUNTIME
 	DESTINATION ${ORBITER_INSTALL_MODULE_DIR}
 )
+else() # Linux port
+install(TARGETS ${VESSEL_NAME}
+	LIBRARY
+	DESTINATION ${ORBITER_INSTALL_MODULE_DIR}
+)
+endif() # WIN32
 install(DIRECTORY ${CONFIG_SOURCE_DIR}/
 	DESTINATION ${ORBITER_INSTALL_ROOT_DIR}/Config/Vessels
 )

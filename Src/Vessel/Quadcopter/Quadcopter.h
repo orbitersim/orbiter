@@ -12,9 +12,17 @@
 #ifndef __QUADCOPTER_H
 #define __QUADCOPTER_H
 
+#ifndef __linux__
 #include "orbitersdk.h"
+#else // __linux__
+#include "Orbitersdk.h"
+#endif // __linux__
 #include "QuadcopterLua.h"
+#ifndef __linux__
 #include "..\Common\Instrument.h"
+#else // __linux__
+#include "../Common/Instrument.h"
+#endif // __linux__
 
 class PropulsionSubsystem;
 

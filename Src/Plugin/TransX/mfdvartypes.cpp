@@ -18,13 +18,26 @@
 ** OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 ** THE SOFTWARE.*/
 
+#ifndef __linux__
 #define STRICT
+#else // __linux__
+// STRICT left out: windows.h handle type-checking switch
+#endif // __linux__
 
+#ifndef __linux__
 #include <windows.h>
+#else // __linux__
+// windows.h left out: the Win32 types come from OrbiterPlatform.h
+#include <cstring> // str* functions (windows.h brought in string.h)
+#endif // __linux__
 #include <cstdio>
 #include <cmath>
 #include <string>
+#ifndef __linux__
 #include "orbitersdk.h"
+#else // __linux__
+#include "Orbitersdk.h"
+#endif // __linux__
 #include "mfd.h"
 #include "mfdvartypes.h"
 #include "doublelink.h"
@@ -33,7 +46,11 @@
 
 liststring::liststring(bool manageme) : listelement(manageme)
 {
+#ifndef __linux__
 	ZeroMemory(buffer, MAX_STRING_LENGTH);
+#else // __linux__
+	memset(buffer, 0, MAX_STRING_LENGTH);
+#endif // __linux__
 }
 
 void MFDsemiintdiscrete::init(MFDvarhandler *vars, int viewmode1, int viewmode2, const char *vname, int tvalue)
@@ -482,7 +499,11 @@ void MFDvarfloat::showadjustment(oapi::Sketchpad *sketchpad, int width, int line
 
 void MFDvarfloat::enter_variable() {
     char tbuffer[128];
+#ifndef __linux__
 	sprintf_s(tbuffer,"%.12g",value);
+#else // __linux__
+	snprintf(tbuffer, sizeof(tbuffer),"%.12g",value);
+#endif // __linux__
 	oapiOpenInputBox((char*)"Enter number. 'x' to reset, 'number+/number-' to inc/decrement",SelectVariableFloat,tbuffer,20, (void*)this);
 }
 
@@ -732,7 +753,11 @@ bool MFDvarangle::show(oapi::Sketchpad *sketchpad, int width, int line)
 
 void MFDvarangle::enter_variable() {
 	char tbuffer[128];
+#ifndef __linux__
 	sprintf_s(tbuffer,"%.12g", (value/PI)*180 );
+#else // __linux__
+	snprintf(tbuffer, sizeof(tbuffer),"%.12g", (value/PI)*180 );
+#endif // __linux__
 	oapiOpenInputBox((char*)"Enter cookie, but no bufu. 'x' to reset, 'num+/num-' to inc/decrement",SelectVariableAngle,tbuffer,20, (void*)this);
 }
 

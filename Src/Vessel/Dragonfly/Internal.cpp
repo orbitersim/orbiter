@@ -1,10 +1,19 @@
 // Copyright (c) Martin Schweiger
 // Licensed under the MIT License
 
+#ifndef __linux__
 #include "internal.h"
+#else // __linux__
+#include "Internal.h"
+#endif // __linux__
 #include <stdio.h>
+#ifndef __linux__
 #include "orbitersdk.h"
 #include "dragonfly.h"
+#else // __linux__
+#include "Orbitersdk.h"
+#include "Dragonfly.h"
+#endif // __linux__
 ShipInternal::ShipInternal()
 {Dk[0]=NULL;
 };

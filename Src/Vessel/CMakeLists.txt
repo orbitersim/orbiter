@@ -1,8 +1,18 @@
 # Copyright (c) Martin Schweiger
 # Licensed under the MIT License
 
+if(NOT WIN32) # Linux port
+# not upstream: module dialogs and drawing are Qt (the SDK's HWND/HDC are QWidget/QPainter)
+set(CMAKE_AUTOMOC ON)
+link_libraries(Qt6::Widgets)
+
+endif() # NOT WIN32
 # The target location for all vessel modules
+if(WIN32) # Windows: upstream
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${ORBITER_BINARY_VESSEL_DIR})
+else() # Linux port
+set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${ORBITER_BINARY_VESSEL_DIR})
+endif() # WIN32
 
 # Common tools for vessels
 set(VESSEL_COMMON_DIR ${CMAKE_CURRENT_SOURCE_DIR}/Common)

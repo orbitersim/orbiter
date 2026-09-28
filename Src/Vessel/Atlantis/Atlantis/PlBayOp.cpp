@@ -4,6 +4,9 @@
 #include "PlBayOp.h"
 #include "meshres_vc.h"
 #include <stdio.h>
+#ifdef __linux__
+#include <strings.h>
+#endif // __linux__
 
 using std::min;
 using std::max;
@@ -384,16 +387,32 @@ void PayloadBayOp::RevertKuAntennaAction ()
 
 bool PayloadBayOp::ParseScenarioLine (char *line)
 {
+#ifndef __linux__
 	if (!_strnicmp (line, "CARGODOOR", 9)) {
+#else // __linux__
+	if (!strncasecmp (line, "CARGODOOR", 9)) {
+#endif // __linux__
 		sscan_state (line+9, BayDoorStatus);
 		return true;
+#ifndef __linux__
 	} else if (!_strnicmp (line, "RADIATOR", 8)) {
+#else // __linux__
+	} else if (!strncasecmp (line, "RADIATOR", 8)) {
+#endif // __linux__
 		sscan_state (line+8, RadiatorStatus);
 		return true;
+#ifndef __linux__
 	} else if (!_strnicmp (line, "RADLATCH", 8)) {
+#else // __linux__
+	} else if (!strncasecmp (line, "RADLATCH", 8)) {
+#endif // __linux__
 		sscan_state (line+8, RadLatchStatus);
 		return true;
+#ifndef __linux__
 	} else if (!_strnicmp (line, "KUBAND", 6)) {
+#else // __linux__
+	} else if (!strncasecmp (line, "KUBAND", 6)) {
+#endif // __linux__
 		sscan_state (line+6, KuAntennaStatus);
 		return true;
 	}

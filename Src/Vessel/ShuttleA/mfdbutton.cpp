@@ -9,8 +9,15 @@
 // User interface for MFD buttons
 // ==============================================================
 
+#ifndef __linux__
 #define STRICT 1
+#else // __linux__
+// STRICT left out: windows.h handle type-checking switch
+#endif // __linux__
 #include "mfdbutton.h"
+#ifdef __linux__
+#include <string.h>
+#endif // __linux__
 
 // MFD button font geometry
 

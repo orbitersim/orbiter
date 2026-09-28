@@ -29,6 +29,7 @@ target_include_directories(${VESSEL_NAME}
 	PUBLIC ${CMAKE_CURRENT_BINARY_DIR}                 # for the dynamically generated header files
 )
 
+if(WIN32) # Windows: upstream
 target_link_libraries(${VESSEL_NAME}
 	${ORBITER_LIB}
 	${ORBITER_SDK_LIB}
@@ -37,6 +38,16 @@ target_link_libraries(${VESSEL_NAME}
 	$<TARGET_LINKER_FILE:Atlantis_Tank>
 	imgui
 )
+else() # Linux port
+target_link_libraries(${VESSEL_NAME}
+	${ORBITER_LIB}
+	${ORBITER_SDK_LIB}
+	${ORBITER_DLGCTRL_LIB}
+	# UxTheme.lib left out: Windows visual styles library
+	Atlantis_Tank # not upstream: by target name, CMake turns a path to a prefix-less .so into -l<name>
+	imgui
+)
+endif() # WIN32
 
 # scan mesh files for labels and output to header file
 add_custom_command(OUTPUT meshres.h
@@ -93,10 +104,17 @@ set_target_properties(${VESSEL_NAME}_Prerequisites
 )
 
 # Installation
+if(WIN32) # Windows: upstream
 install(TARGETS ${VESSEL_NAME}
 	RUNTIME
 	DESTINATION ${ORBITER_INSTALL_MODULE_DIR}
 )
+else() # Linux port
+install(TARGETS ${VESSEL_NAME}
+	LIBRARY
+	DESTINATION ${ORBITER_INSTALL_MODULE_DIR}
+)
+endif() # WIN32
 install(DIRECTORY ${CONFIG_SOURCE_DIR}/
 	DESTINATION ${ORBITER_INSTALL_ROOT_DIR}/Config/Vessels
 )
