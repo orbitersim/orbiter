@@ -17,6 +17,23 @@ Beyond this, the new spice-module allows ephemerides to be updated, and custom e
 
 \subsection{Data Sources}
 
+Spice kernels for the default Orbiter installation are distributed in a merged archive \texttt{orbiter.bsp} which combines the following archives, and covers the dates 1 January 1800, through 31 December 2199
+
+\begin{table}[]
+\begin{tabular}{|l|l|}
+$Kernel$             & $Bodies$                                                                \\ \hline
+DE442\cite{DE440}\cite{DE442}     & Sun, all Planets and Earth's Moon                                       \\
+MAR099\cite{MAR099}  & Phobos, Deimos                                                          \\
+JUP365\cite{JUP365}  & Io, Europa, Ganymede, Callisto, Amalthea                                \\
+JUP344\cite{JUP344}  & Himalia                                                                 \\
+SAT441\cite{SAT441}  & Mimas, Enceladus, Tethys, Dione, Rhea, Titan, Hyperion, Iapetus, Phoebe \\
+URA182\cite{URA182}  & Miranda, Ariel, Umbriel, Titania, Oberon                                \\
+NEP098\cite{NEP098}  & Triton, Proteus, Nereid                                                 \\
+PLU060\cite{PLU060}  & Charon, Nix, Hydra                                                      \\
+SSB441-N16\cite{SSB441-N16}    & Ceres, Vesta                                                           
+\end{tabular}
+\end{table}
+
 \subsection{Error and Orbiter Log Messages}
 
 These messages appear in the \texttt{orbiter.log} file.
@@ -38,44 +55,95 @@ The spice module loaded a kernel successfully.
 spice.dll: <kernel name> (MJD <MJD Start> - <MJD END>) - OK.
 \end{verbatim}
 Kernel \texttt{kernel name} has valid data for \texttt{MJD Start} to \texttt{MJD Start}. Scenerios within these MJDs will load successfully.
-Scenerios outside these MJDs will require spice kernels with longer valid date ranges.\\
+Scenerios outside these MJDs will require spice kernels with longer valid date ranges.
 
-%% cfg errors
+\subsubsection{Configuration Errors}
 
-%\subsubsection{spice.dll: Error in <body_name> - Module_Atm is wrong!}
+\paragraph{}
+\begin{verbatim}
+spice.dll: Error in <body_name> - Module_Atm is wrong!
+\end{verbatim}
+Incorrectly specified atmosphere module in \texttt{<body name>.cfg}
 
-%\subsubsection{spice.dll: Error in <body_name> - Kernel parameter is wrong!}
+\paragraph{}
+\begin{verbatim}
+spice.dll: Error in <body_name> - Kernel parameter is wrong!
+\end{verbatim}
+Incorrectly specified kernel module in \texttt{<body name>.cfg}
 
-%\subsubsection{spice.dll: Error in <body_name>- Not specified: body name!}
+\paragraph{}
+\begin{verbatim}
+spice.dll: Error in <body_name>- Not specified: body name!
+\end{verbatim}
+Incorrectly specified or missing SPICE body name in \texttt{<body name>.cfg}
 
-%\subsubsection{spice.dll: Error in <body_name> - Not specified: barycenter name!}
+\paragraph{}
+\begin{verbatim}
+spice.dll: Error in <body_name> - Not specified: barycenter name!
+\end{verbatim}
+Incorrectly specified or missing SPICE barycenter name in \texttt{<body name>.cfg}
 
-%\subsubsection{spice.dll: Error in <body_name> - Not specified the ParentBarycenter!}
+\paragraph{}
+\begin{verbatim}
+spice.dll: Error in <body_name> - Not specified the ParentBarycenter!
+\end{verbatim}
+Incorrectly specified or missing SPICE parent barycenter in \texttt{<body name>.cfg}
 
-%\subsubsection{spice.dll: Couldn't find SPICE ID for <body_name>}
+\paragraph{}
+\begin{verbatim}
+spice.dll: Couldn't find SPICE ID for <body_name>
+\end{verbatim}
+The function \texttt{get\_id} failed when looking up parent barycenter name. This is likely due to missing data in the kernel files. Double check data sources if you are creating a custom merged kernel.
 
-%\subsubsection{spice.dll: Error in <body_name> - Not specified the origin name!}
+\paragraph{}
+\begin{verbatim}
+spice.dll: Error in <body_name> - Not specified the origin name!
+\end{verbatim}
+Incorrectly specified or missing SPICE origin name in \texttt{<body name>.cfg}
 
-%% kernal errors
 
-%\subsubsection{spice.dll: <body name> - Couldn't load kernel: <kernel name>}
+\subsubsection{Kernel Errors}
 
-%\subsubsection{spice.dll: Couldn't find SPICE ID for <body_name>}
+\paragraph{}
+\begin{verbatim}
+spice.dll: <body name> - Couldn't load kernel: <kernel name>
+\end{verbatim}
 
-%\subsubsection{spice.dll: Couldn't find SPICE ID for <origin_name>}
+\paragraph{}
+\begin{verbatim}
+spice.dll: Couldn't find SPICE ID for <body_name>
+\end{verbatim}
 
-%\subsubsection{spice.dll: Couldn't find SPICE ID for <barycentre_name>
+\paragraph{}
+\begin{verbatim}
+spice.dll: Couldn't find SPICE ID for <origin_name>
+\end{verbatim}
 
-%\subsubsection{spice.dll: Couldn't find object <body name> in SPICE kernel pool!}
+\paragraph{}
+\begin{verbatim}
+spice.dll: Couldn't find SPICE ID for <barycentre_name>
+\end{verbatim}
 
-%\subsubsection{spice.dll: Specified time interval for target <body_name> not available.}
+\paragraph{}
+\begin{verbatim}
+spice.dll: Couldn't find object <body name> in SPICE kernel pool!
+\end{verbatim}
 
-%\subsubsection{spice.dll, ERROR in failed_c\(\) during init for <body name>: }
+\paragraph{}
+\begin{verbatim}
+spice.dll: Specified time interval for target <body_name> not available.
+\end{verbatim}
 
-%\subsubsection{spice.dll: Scenerio MJD for <body_name> is outside loaded kernel data. Closing Simulation Use kernel with longer date range or remove <body_name> from sol.cfg"}
+\paragraph{}
+\begin{verbatim}
+spice.dll, ERROR in failed_c\(\) during init for <body name>: <SPICE ERROR>
+\end{verbatim}
 
-%% Generic Error
-
+\paragraph{}
+\begin{verbatim}
+spice.dll: Scenerio MJD for <body_name> is outside loaded kernel data.
+Closing Simulation Use kernel with longer date range or remove <body_name> from sol.cfg
+\end{verbatim}
 
 
 \end{document}
