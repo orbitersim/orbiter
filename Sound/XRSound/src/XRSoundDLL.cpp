@@ -11,6 +11,46 @@
 #include "VesselXRSoundEngine.h"
 #include "ModuleXRSoundEngine.h"
 
+namespace
+{
+// These SEH guards were inline in XRSoundDLL::clbkPreStep. The VS 2026 Debug
+// build reports C2712 there because that function also owns a debug STL
+// iterator requiring destruction. Keep the guards in these helpers without
+// changing their behavior: false makes clbkPreStep write the original error
+// message, then continue the update.
+// TODO: Investigate the CTD that prompted the catch-all handlers and whether
+// they can be removed. Continuing after an access violation may leave Orbiter
+// in an invalid state; changing that policy is outside this build fix.
+bool PreStepVesselWithSEH(OBJHANDLE hVessel, VesselXRSoundEngine *pEngine,
+    double simt, double simdt, double mjd)
+{
+    __try
+    {
+        _ASSERTE(oapiIsVessel(hVessel));
+        _ASSERTE(pEngine);
+        pEngine->clbkPreStep(simt, simdt, mjd);
+        return true;
+    }
+    __except(EXCEPTION_EXECUTE_HANDLER)
+    {
+        return false;
+    }
+}
+
+bool UpdateIrrKlangWithSEH()
+{
+    __try
+    {
+        XRSoundEngine::UpdateIrrKlangEngine();
+        return true;
+    }
+    __except(EXCEPTION_EXECUTE_HANDLER)
+    {
+        return false;
+    }
+}
+}
+
 // Exported DLL method; invoked only by our static XRSound.lib to obtain an XRSoundEngine object for a given vessel.
 // Added in API version 1.0
 DLLCLBK XRSoundEngine *GetXRSoundEngineInstance(OBJHANDLE hVessel)
@@ -66,8 +106,10 @@ VesselXRSoundEngine *XRSoundDLL::GetXRSoundEngineInstance(const OBJHANDLE hVesse
         const DWORD dwThrusterCount = pVessel->GetThrusterCount();
         const bool bShouldHaveDefaultSounds = (dwThrusterCount > 0);
         char csVesselDesc[256];
+        const char *pName = pVessel->GetName();
+        const char *pClassName = pVessel->GetClassName();
         snprintf(csVesselDesc, 256, "'%s' [class name '%s'], bInvokedByClientVessel = %d, dwThrusterCount = %u, bShouldHaveDefaultSounds = %d",
-            pVessel->GetName(), pVessel->GetClassName(), bInvokedByClientVessel, dwThrusterCount, bShouldHaveDefaultSounds);
+            pName ? pName : "<unknown>", pClassName ? pClassName : "<unknown>", bInvokedByClientVessel, dwThrusterCount, bShouldHaveDefaultSounds);
 
         // if the request for an engine came from a vessel, it should *always* succeed, even if it would not normally have default sounds
         if (bInvokedByClientVessel || bShouldHaveDefaultSounds)
@@ -360,24 +402,9 @@ void XRSoundDLL::UpdateAllVesselsMap()
 //   mjd simulation time after the currently processed step into modified Julian Date format[days]
 void XRSoundDLL::clbkPreStep(double simtDoNotUse, double simdt, double mjd)
 {
-    // This note copied verbatim from our VesselExt::clbkPreStep method in Vessel3Ext.cpp.
-
-    //**************************************************************************************************************
-    // Update our absolute sim time counter: it is simt that always counts *up*, ignoring MDJ changes both positive and negative.
-    // (The Orbiter core does not invoke clkbPreStep for MJD edits: it adjusts simt but not *simdt* on the next call, so that makes it easy.)
-    //
-    // Note: do NOT use simt in any way for this: simt adjusts with MJD, but simdt does not.
-    // WARNING: XRSOUND CODE SHOULD *NEVER* INVOKE oapiGetSimTime(): it varies by MJD and so is unreliable for time deltas (which 
-    // was the whole point of simt in the first place).  Instead, you should always use simt we pass to our PreStep objects (since we 
-    // pass absoluteSimtTime in it instead), or invoke XRSoundDLL::GetAbsoluteSimTime() if a local simt is not available.  
-    //
-    // I added a #define oapiGetSimTime error to XRSoundEngine.h to prevent XRSound code from accidentally trying to invoke it.
-    //**************************************************************************************************************
     // Note: currently simdt never appears to go negative, but we're being defensive here anyway
     if (simdt > 0)
         m_absoluteSimTime += simdt;
-
-    // DEV DEBUGGING ONLY: sprintf(oapiDebugString(), "GetAbsoluteSimTime()=%lf, simtDoNotUse=%lf, simdt=%lf", GetAbsoluteSimTime(), simtDoNotUse, simdt);
 
     // use our simt that is not affected by MDJ changes
     const double simt = GetAbsoluteSimTime();
@@ -391,10 +418,13 @@ void XRSoundDLL::clbkPreStep(double simtDoNotUse, double simdt, double mjd)
         for (auto it = m_allVesselsMap.begin(); it != m_allVesselsMap.end(); it++)
         {
             const OBJHANDLE hVessel = it->first;
-            _ASSERTE(oapiIsVessel(hVessel));    // should still be a valid vessel, since UpdateAllVesselsMap() removes invalid (i.e., now-deleted) vessels
-            VesselXRSoundEngine *pEngine = it->second;
-            _ASSERTE(pEngine);
-            pEngine->clbkPreStep(simt, simdt, mjd);
+            // The vessel should still be valid: UpdateAllVesselsMap removes deleted vessels.
+            if (!PreStepVesselWithSEH(hVessel, it->second, simt, simdt, mjd))
+            {
+                char csMsg[256];
+                snprintf(csMsg, 256, "XRSoundDLL::clbkPreStep ERROR: Access Violation in VesselXRSoundEngine::clbkPreStep for vessel %s", oapiIsVessel(hVessel) ? oapiGetVesselInterface(hVessel)->GetName() : "<invalid>");
+                WriteLog(csMsg);
+            }
         }
         m_nextSoundEnginesRefreshSimt = simt + GetGlobalConfig().UpdateInterval;
     }
@@ -404,8 +434,10 @@ void XRSoundDLL::clbkPreStep(double simtDoNotUse, double simdt, double mjd)
     const double systemUptime = GetSystemUptime();
     if (systemUptime >= m_nextIrrKlangUpdateRealtime)
     {
-        // DEV DEBUGGING ONLY: sprintf(oapiDebugString(), "Updating irrKlang engine at systemUptime %lf", systemUptime);
-        XRSoundEngine::UpdateIrrKlangEngine();
+        if (!UpdateIrrKlangWithSEH())
+        {
+            WriteLog("XRSoundDLL::clbkPreStep ERROR: Access Violation in XRSoundEngine::UpdateIrrKlangEngine");
+        }
         m_nextIrrKlangUpdateRealtime = systemUptime + 0.05;     // 20 updates per second in realtime
     }
 }
@@ -455,4 +487,3 @@ void XRSoundDLL::WriteLog(const char *pMsg)
 {
     GetGlobalConfig().WriteLog(pMsg);
 }
-

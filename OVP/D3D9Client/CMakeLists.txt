@@ -5,8 +5,8 @@ configure_file(D3D9ClientConfig.h.in D3D9ClientConfig.h)
 FetchContent_MakeAvailable(imgui)
 
 # specify the C++ standard
-# set(CMAKE_CXX_STANDARD 11)
-# set(CMAKE_CXX_STANDARD_REQUIRED True)
+set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD_REQUIRED True)
 
 set(DXSDK_LIB_DIR ${DXSDK_DIR}/lib/${ARCH})
 set(DXSDK_LIB_DIR2 "C:/Program Files (x86)/Windows Kits/10/Lib/10.0.19041.0/um/${ARCH}")  #Must acquire d3d9.lib from here

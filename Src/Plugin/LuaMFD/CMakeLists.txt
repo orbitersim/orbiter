@@ -17,7 +17,7 @@ target_link_libraries(LuaMFD
 	${ORBITER_LIB}
 	${ORBITER_SDK_LIB}
 	lua::lib
-	${LUAINTERPRETER_LIB}
+	LuaInterpreter
 )
 
 add_dependencies(LuaMFD

@@ -20,8 +20,123 @@
 #include "imgui_extras.h"
 #include "IconsFontAwesome6.h"
 
+#include <vector>
+
+static std::vector<bool> g_usedWindowIds;
+
+static int GetFreeWindowId() {
+	for (size_t i = 0; i < g_usedWindowIds.size(); ++i) {
+		if (!g_usedWindowIds[i]) {
+			g_usedWindowIds[i] = true;
+			return i + 1;
+		}
+	}
+	g_usedWindowIds.push_back(true);
+	return g_usedWindowIds.size();
+}
+
+static void FreeWindowId(int id) {
+	int index = id - 1;
+	if (index >= 0 && index < (int)g_usedWindowIds.size()) {
+		g_usedWindowIds[index] = false;
+	}
+}
+
 // ==============================================================
 // class MFDWindow
+
+DWORD MapImGuiToOAPIKey(ImGuiKey key) {
+	switch (key) {
+	case ImGuiKey_Escape: return OAPI_KEY_ESCAPE;
+	case ImGuiKey_1: return OAPI_KEY_1;
+	case ImGuiKey_2: return OAPI_KEY_2;
+	case ImGuiKey_3: return OAPI_KEY_3;
+	case ImGuiKey_4: return OAPI_KEY_4;
+	case ImGuiKey_5: return OAPI_KEY_5;
+	case ImGuiKey_6: return OAPI_KEY_6;
+	case ImGuiKey_7: return OAPI_KEY_7;
+	case ImGuiKey_8: return OAPI_KEY_8;
+	case ImGuiKey_9: return OAPI_KEY_9;
+	case ImGuiKey_0: return OAPI_KEY_0;
+	case ImGuiKey_Minus: return OAPI_KEY_MINUS;
+	case ImGuiKey_Equal: return OAPI_KEY_EQUALS;
+	case ImGuiKey_Backspace: return OAPI_KEY_BACK;
+	case ImGuiKey_Tab: return OAPI_KEY_TAB;
+	case ImGuiKey_Q: return OAPI_KEY_Q;
+	case ImGuiKey_W: return OAPI_KEY_W;
+	case ImGuiKey_E: return OAPI_KEY_E;
+	case ImGuiKey_R: return OAPI_KEY_R;
+	case ImGuiKey_T: return OAPI_KEY_T;
+	case ImGuiKey_Y: return OAPI_KEY_Y;
+	case ImGuiKey_U: return OAPI_KEY_U;
+	case ImGuiKey_I: return OAPI_KEY_I;
+	case ImGuiKey_O: return OAPI_KEY_O;
+	case ImGuiKey_P: return OAPI_KEY_P;
+	case ImGuiKey_LeftBracket: return OAPI_KEY_LBRACKET;
+	case ImGuiKey_RightBracket: return OAPI_KEY_RBRACKET;
+	case ImGuiKey_Enter: return OAPI_KEY_RETURN;
+	case ImGuiKey_LeftCtrl: return OAPI_KEY_LCONTROL;
+	case ImGuiKey_RightCtrl: return OAPI_KEY_RCONTROL;
+	case ImGuiKey_A: return OAPI_KEY_A;
+	case ImGuiKey_S: return OAPI_KEY_S;
+	case ImGuiKey_D: return OAPI_KEY_D;
+	case ImGuiKey_F: return OAPI_KEY_F;
+	case ImGuiKey_G: return OAPI_KEY_G;
+	case ImGuiKey_H: return OAPI_KEY_H;
+	case ImGuiKey_J: return OAPI_KEY_J;
+	case ImGuiKey_K: return OAPI_KEY_K;
+	case ImGuiKey_L: return OAPI_KEY_L;
+	case ImGuiKey_Semicolon: return OAPI_KEY_SEMICOLON;
+	case ImGuiKey_Apostrophe: return OAPI_KEY_APOSTROPHE;
+	case ImGuiKey_GraveAccent: return OAPI_KEY_GRAVE;
+	case ImGuiKey_LeftShift: return OAPI_KEY_LSHIFT;
+	case ImGuiKey_Backslash: return OAPI_KEY_BACKSLASH;
+	case ImGuiKey_Z: return OAPI_KEY_Z;
+	case ImGuiKey_X: return OAPI_KEY_X;
+	case ImGuiKey_C: return OAPI_KEY_C;
+	case ImGuiKey_V: return OAPI_KEY_V;
+	case ImGuiKey_B: return OAPI_KEY_B;
+	case ImGuiKey_N: return OAPI_KEY_N;
+	case ImGuiKey_M: return OAPI_KEY_M;
+	case ImGuiKey_Comma: return OAPI_KEY_COMMA;
+	case ImGuiKey_Period: return OAPI_KEY_PERIOD;
+	case ImGuiKey_Slash: return OAPI_KEY_SLASH;
+	case ImGuiKey_RightShift: return OAPI_KEY_RSHIFT;
+	case ImGuiKey_KeypadMultiply: return OAPI_KEY_MULTIPLY;
+	case ImGuiKey_LeftAlt: return OAPI_KEY_LALT;
+	case ImGuiKey_RightAlt: return OAPI_KEY_RALT;
+	case ImGuiKey_Space: return OAPI_KEY_SPACE;
+	case ImGuiKey_CapsLock: return OAPI_KEY_CAPITAL;
+	case ImGuiKey_F1: return OAPI_KEY_F1;
+	case ImGuiKey_F2: return OAPI_KEY_F2;
+	case ImGuiKey_F3: return OAPI_KEY_F3;
+	case ImGuiKey_F4: return OAPI_KEY_F4;
+	case ImGuiKey_F5: return OAPI_KEY_F5;
+	case ImGuiKey_F6: return OAPI_KEY_F6;
+	case ImGuiKey_F7: return OAPI_KEY_F7;
+	case ImGuiKey_F8: return OAPI_KEY_F8;
+	case ImGuiKey_F9: return OAPI_KEY_F9;
+	case ImGuiKey_F10: return OAPI_KEY_F10;
+	case ImGuiKey_NumLock: return OAPI_KEY_NUMLOCK;
+	case ImGuiKey_ScrollLock: return OAPI_KEY_SCROLL;
+	case ImGuiKey_Keypad7: return OAPI_KEY_NUMPAD7;
+	case ImGuiKey_Keypad8: return OAPI_KEY_NUMPAD8;
+	case ImGuiKey_Keypad9: return OAPI_KEY_NUMPAD9;
+	case ImGuiKey_KeypadSubtract: return OAPI_KEY_SUBTRACT;
+	case ImGuiKey_Keypad4: return OAPI_KEY_NUMPAD4;
+	case ImGuiKey_Keypad5: return OAPI_KEY_NUMPAD5;
+	case ImGuiKey_Keypad6: return OAPI_KEY_NUMPAD6;
+	case ImGuiKey_KeypadAdd: return OAPI_KEY_ADD;
+	case ImGuiKey_Keypad1: return OAPI_KEY_NUMPAD1;
+	case ImGuiKey_Keypad2: return OAPI_KEY_NUMPAD2;
+	case ImGuiKey_Keypad3: return OAPI_KEY_NUMPAD3;
+	case ImGuiKey_Keypad0: return OAPI_KEY_NUMPAD0;
+	case ImGuiKey_KeypadDecimal: return OAPI_KEY_DECIMAL;
+	case ImGuiKey_F11: return OAPI_KEY_F11;
+	case ImGuiKey_F12: return OAPI_KEY_F12;
+	default: return 0;
+	}
+}
 
 const int button_yoffset = 30;
 
@@ -72,7 +187,7 @@ void DlgExtMFD::Display() {
 	ImVec2 pos = mouse + offset;
 	ImGui::SetNextWindowPos(pos, ImGuiCond_FirstUseEver);
 
-	ImGui::SetNextWindowSize(ImVec2(defaultSize.width, defaultSize.height), ImGuiCond_Once);
+	ImGui::SetNextWindowSize(ImVec2(defaultSize.width, defaultSize.height), ImGuiCond_FirstUseEver);
 	ImGui::SetNextWindowSizeConstraints(ImVec2(382,366), ImVec2(FLT_MAX, FLT_MAX), AspectRatio, m_mfd);
 	
 	char cbuf[256] = ICON_FA_TABLET_SCREEN_BUTTON " MFD [";
@@ -107,6 +222,16 @@ void DlgExtMFD::Display() {
 
 
 void DlgExtMFD::OnDraw() {
+
+	if (ImGui::IsWindowFocused(ImGuiFocusedFlags_RootAndChildWindows)) {
+		for (int k = ImGuiKey_NamedKey_BEGIN; k < ImGuiKey_NamedKey_END; k++) {
+			ImGuiKey key = (ImGuiKey)k;
+			if (ImGui::IsKeyPressed(key, false)) { // false for no repeat
+				DWORD oapi_key = MapImGuiToOAPIKey(key);
+				if (oapi_key) m_mfd->SendKey(oapi_key);
+			}
+		}
+	}
 
 	const int button_row_width = 50;
 	const int button_bottom_height = 50;
@@ -187,13 +312,7 @@ void DlgExtMFD::OnDraw() {
 	//sz.x - button_sz.x * 4
 	ImGui::SetCursorPosX(60);
 
-	ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(0.9, 0, 0, 1));
-	if (ImGui::Button("PWR", button_sz)) {
-		m_mfd->ProcessButton(12, PANEL_MOUSE_LBDOWN);
 
-	}
-	ImGui::PopStyleColor();
-	ImGui::SameLine();
 	if (ImGui::Button("SEL", button_sz)) {
 		m_mfd->ProcessButton(13, PANEL_MOUSE_LBDOWN);
 	}
@@ -207,16 +326,18 @@ void DlgExtMFD::OnDraw() {
 
 MFDWindow::MFDWindow(const MFDSPEC& spec) : ExternMFD(spec)
 {
+	m_windowId = GetFreeWindowId();
 	fnth = 0;
 	vstick = false;
 	char cbuf[128];
-	sprintf(cbuf, "ExtMFD%lld", (uint64_t)Id());
+	sprintf(cbuf, "ExtMFD_%d", m_windowId);
 	m_window = std::make_unique<DlgExtMFD>(cbuf, this);
 	oapiOpenDialog(m_window.get());
 }
 
 MFDWindow::~MFDWindow()
 {
+	FreeWindowId(m_windowId);
 }
 
 void MFDWindow::SetVessel(OBJHANDLE hV)

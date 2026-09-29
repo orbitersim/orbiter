@@ -56,6 +56,7 @@ bool XRSoundConfigFileParser::ParseVesselSoundConfig(VESSEL *pVessel)
 
     bool bOverrideFileExists = false;
     const char *pVesselClassName = pVessel->GetClassName();
+    if (!pVesselClassName) pVesselClassName = "<unknown>";
 
     // NOTE: some vessel class names have slashes or other illegal filename characters, so we have to handle that here
     static const std::string s_csIllegalCharacters("\\/:? \"<>|");
@@ -81,7 +82,8 @@ bool XRSoundConfigFileParser::ParseVesselSoundConfig(VESSEL *pVessel)
     }
 
     char csTemp[256];
-    snprintf(csTemp, 256, "[%s][class %s] Using configuration file(s): %s", pVessel->GetName(), pVesselClassName, GetConfigFilenames());
+    const char *pVesselName = pVessel->GetName();
+    snprintf(csTemp, 256, "[%s][class %s] Using configuration file(s): %s", pVesselName ? pVesselName : "<unknown>", pVesselClassName, GetConfigFilenames());
     WriteLog(csTemp);
 
     // parse the default config file first

@@ -224,12 +224,20 @@ void AnimationSoundPreStep::clbkPreStep(const double simt, const double simdt, c
         case AnimationState::StateType::Open:
         case AnimationState::StateType::Closing:
         case AnimationState::StateType::Closed:
-            LoadAndPlayWavUsingID(m_animationSounds.GetOpenCloseSoundID(), m_animationSounds.GetWavForAnimationState(stateType), false, m_animationSounds.GetPlaybackType());
+        {
+            const char *wavefile = m_animationSounds.GetWavForAnimationState(stateType);
+            if (wavefile)
+                LoadAndPlayWavUsingID(m_animationSounds.GetOpenCloseSoundID(), wavefile, false, m_animationSounds.GetPlaybackType());
             break;
+        }
 
         case AnimationState::StateType::Moving:
-            LoadAndPlayWavUsingID(m_animationSounds.GetMovingSoundID(), m_animationSounds.GetWavForAnimationState(stateType), true, m_animationSounds.GetPlaybackType());
+        {
+            const char *wavefile = m_animationSounds.GetWavForAnimationState(stateType);
+            if (wavefile)
+                LoadAndPlayWavUsingID(m_animationSounds.GetMovingSoundID(), wavefile, true, m_animationSounds.GetPlaybackType());
             break;
+        }
 
         default:
             // this means we missed an enum case

@@ -24,7 +24,7 @@ function(add_test_file test_name)
 		${ORBITER_LIB}
 		${ORBITER_SDK_LIB}
 		lua::lib
-		${LUAINTERPRETER_LIB}
+		LuaInterpreter
 		Catch2::Catch2WithMain
 	)
 
