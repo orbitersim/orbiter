@@ -2,7 +2,7 @@ LEAPSECONDS_KERNEL    = naif0012.tls
 
 SPK_KERNEL            = orbiter.bsp
 
-   BEGIN_TIME         = 1900 JAN 01 00:00:00.000 TDB
+   BEGIN_TIME         = 1800 JAN 01 00:00:00.000 TDB
    END_TIME           = 2199 DEC 31 23:59:59.000 TDB
 LOG_FILE              = orbiter.log
 
