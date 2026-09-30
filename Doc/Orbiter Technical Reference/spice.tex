@@ -21,17 +21,19 @@ Spice kernels for the default Orbiter installation are distributed in a merged a
 
 \begin{table}[]
 \begin{tabular}{|l|l|}
+\hline
 $Kernel$             & $Bodies$                                                                \\ \hline
-DE442\cite{DE440}\cite{DE442}     & Sun, all Planets and Earth's Moon                                       \\
-MAR099\cite{MAR099}  & Phobos, Deimos                                                          \\
-JUP365\cite{JUP365}  & Io, Europa, Ganymede, Callisto, Amalthea                                \\
-JUP344\cite{JUP344}  & Himalia                                                                 \\
-SAT441\cite{SAT441}  & Mimas, Enceladus, Tethys, Dione, Rhea, Titan, Hyperion, Iapetus, Phoebe \\
-URA182\cite{URA182}  & Miranda, Ariel, Umbriel, Titania, Oberon                                \\
-NEP098\cite{NEP098}  & Triton, Proteus, Nereid                                                 \\
-PLU060\cite{PLU060}  & Charon, Nix, Hydra                                                      \\
-SSB441-N16\cite{SSB441-N16}    & Ceres, Vesta                                                           
+DE442\cite{DE440}\cite{DE442}     & Sun, all Planets and Earth's Moon                          \\ \hline
+MAR099\cite{MAR099}  & Phobos, Deimos                                                          \\ \hline
+JUP365\cite{JUP365}  & Io, Europa, Ganymede, Callisto, Amalthea                                \\ \hline
+JUP344\cite{JUP344}  & Himalia                                                                 \\ \hline
+SAT441\cite{SAT441}  & Mimas, Enceladus, Tethys, Dione, Rhea, Titan, Hyperion, Iapetus, Phoebe \\ \hline
+URA182\cite{URA182}  & Miranda, Ariel, Umbriel, Titania, Oberon                                \\ \hline
+NEP098\cite{NEP098}  & Triton, Proteus, Nereid                                                 \\ \hline
+PLU060\cite{PLU060}  & Charon, Nix, Hydra                                                      \\ \hline
+SSB441-N16\cite{SSB441-N16}    & Ceres, Vesta                                                  \\ \hline
 \end{tabular}
+\caption{Default included kernal data with the current release of Orbiter.}
 \end{table}
 
 \subsection{Error and Orbiter Log Messages}
@@ -108,42 +110,52 @@ Incorrectly specified or missing SPICE origin name in \texttt{<body name>.cfg}
 \begin{verbatim}
 spice.dll: <body name> - Couldn't load kernel: <kernel name>
 \end{verbatim}
+\texttt{<body name>} was unable to load \texttt{<kernel name>}. Check the \texttt{SPICE.ERR} file in the Orbiter directory.
 
 \paragraph{}
 \begin{verbatim}
 spice.dll: Couldn't find SPICE ID for <body_name>
 \end{verbatim}
+The function \texttt{get\_id} could not find the specified spice body ID. This could be due to missing or currupt data for that partular body in the specified kernal.
 
 \paragraph{}
 \begin{verbatim}
 spice.dll: Couldn't find SPICE ID for <origin_name>
 \end{verbatim}
+The function \texttt{get\_id} could not find the specified spice origin name. This could be due to missing or currupt data for that partular body in the specified kernal.
 
 \paragraph{}
 \begin{verbatim}
 spice.dll: Couldn't find SPICE ID for <barycentre_name>
 \end{verbatim}
+The function \texttt{get\_id} could not find the specified spice barycenter name. This could be due to missing or currupt data for that partular body in the specified kernal.
 
 \paragraph{}
 \begin{verbatim}
 spice.dll: Couldn't find object <body name> in SPICE kernel pool!
 \end{verbatim}
+Spice could not find any intervals for \texttt{<body name>} in the kernal pool. Orbiter will exit. Check the \texttt{SPICE.ERR} file in the Orbiter directory.
 
 \paragraph{}
 \begin{verbatim}
 spice.dll: Specified time interval for target <body_name> not available.
 \end{verbatim}
+The spice function \texttt(wnincd\_c) could not find an interval at the required time.
 
 \paragraph{}
 \begin{verbatim}
-spice.dll, ERROR in failed_c\(\) during init for <body name>: <SPICE ERROR>
+spice.dll, ERROR in failed_c() during init for <body name>: <SPICE ERROR>
 \end{verbatim}
+The spice function \texttt{failed\_c} reported an error.Check the \texttt{SPICE.ERR} file in the Orbiter directory.
 
 \paragraph{}
 \begin{verbatim}
 spice.dll: Scenerio MJD for <body_name> is outside loaded kernel data.
-Closing Simulation Use kernel with longer date range or remove <body_name> from sol.cfg
+Closing Simulation Use kernel with longer date range \\
+or remove <body_name> from sol.cfg
 \end{verbatim}
+The scenerio date that was loaded is not between the kernal begin and kernal end date and time for at least one body.
+If you are trying to run a scenerio that is far in the future or past you may need to make a custom kernal 
 
 
 \end{document}
