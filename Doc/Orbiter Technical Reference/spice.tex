@@ -10,10 +10,68 @@
 \subsection{Introduction}
 This document describes the addition, implimentation details, and usage of a SPICE-based ephemerides module, derived from Orbiter's CELBODY2 class.
 This module was introduced as a replacement for Orbiter's VSOP87, ELP82, and custom planetary satelite ephemerides.
-SPICE ephemerides offer significantly increased accuracy over VSOP87 etc..
+SPICE ephemerides offer significantly increased accuracy over VSOP87 etc.
 Beyond this, the new spice-module allows ephemerides to be updated, and custom ephemerides to be added without the need to recompile Orbiter, since all spice-bodies share a common module (spice.dll/spice.so).
 
-\subsection{Function}
+\subsection{Theory of Operation}
+SPICE\cite{SPICE} is set of tools developed by NASA JPL's Navigation and Ancillary Information Facility, intended to furnish data, with a broad range of applications for space-born and simulation functions.
+SPICE works with datasets called "Kernels", which allow data for various bodies, spacecraft, or ground stations to be combined into a structured set of records and be accessed by a common set of tools.
+The implimentation of SPICE data in Orbiter, is permitted by creating creating a custom spice module called SpiceBody which, like the VSOP87 modules, is simply an overloaded CELBODY class, with a custom implimentation of clbkEphemeris.
+clbkEphemeris, in turn interacts with the internal CSPICE dataset and the modules to which it is linked.
+
+\subsection{Configuration File Options}
+The following parameters may be set in Orbiter's celestial body configuration files.
+\subsubsection{Example from Sun.cfg}
+The following is an example of the SpiceBody options set in sun.cfg.
+\begin{verbatim}
+Name = Sun                                                                  
+Module = spice
+Body = SUN
+Kernel = Kernels\naif0012.tls,Kernels\pck00011.tpc,Kernels\orbiter.bsp
+Origin = SSB
+Barycenter = SSB
+ParentBarycenter = SSB
+Interval = 100000 ; Error < 0.005m
+\end{verbatim}
+
+\paragraph{Name}
+Specifies the celestial body name in Orbiter. Required, but not a SpiceBody parameter.
+
+\paragraph{Module = spice}
+This must be in all SpiceBody config files. This tells Orbiter to load the dynamic library \(spice.dll or spice.so\) that contains the SpiceBody object. SpiceBodies can exist in a simulation alongside any other CELBODY class.
+
+\paragraph{Body}
+This command tells CSPICE which body name \(NAIF body name\) to look for in the kernal pool, and what data to load for this specific celestial body for querying ephemerides.
+
+\paragraph{Kernel}
+Load a kernel or multiple kerneks into the kernel pool. Note that at a minimum, for all bodies in the simulation binary SPK kernels and a leapsecond kernel must be loaded,
+however, module config files do not need to individually specify the SPK kernel files associated with the Orbiter body. Kernels are loaded into a kernel pool by SPICE and are accessed as needed during the simulation.
+To making loading of kernel files easier, Orbiter is shipped with a single merged kernel file \texttt{orbiter.bsp}, consisting of the datasets shown in Table \ref{tab:spicedata}.
+
+\paragraph{Origin}
+Specifies the origin of the reference from for the given body, in this case it is \texttt{SSB} or the solar system barycenter.
+
+\paragraph{Barycenter}
+Specifies the barycenter for the given body.
+
+\paragraph{ParentBarycenter}
+Specifies the bary center of the parent body.
+
+\paragraph{Interval}
+Specifies the interpolation interval in seconds.
+
+\subsubsection{Example for Europa}
+Note the difference from the sun, specificially ParentBarycenter.
+\begin{verbatim}
+Name = Europa
+Module = spice
+Body = 	EUROPA
+Origin = JUPITER
+Barycenter = EUROPA
+ParentBarycenter = JUPITER BARYCENTER
+Interval = 1100 ; Error < 0.5m
+\end{verbatim}
+
 
 \subsection{Data Sources}
 
@@ -34,6 +92,7 @@ PLU060\cite{PLU060}  & Charon, Nix, Hydra                                       
 SSB441-N16\cite{SSB441-N16}    & Ceres, Vesta                                                  \\ \hline
 \end{tabular}
 \caption{Default included kernal data with the current release of Orbiter.}
+\label{tab:spicedata}
 \end{table}
 
 \subsection{Error and Orbiter Log Messages}
