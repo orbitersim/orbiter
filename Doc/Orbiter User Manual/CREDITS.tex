@@ -74,6 +74,31 @@ Carl Romanik ("Chode")\\
 Code based on: Jacobson et al., Astron. Astrophys. 247, 565 (1991)\\
 "This also appears to be what Horizons use, and the DLL agrees within about 1000km."
 \\
+\subsubsection{Spice Ephemerides Modules}
+\textbf{SpiceBody Module for Orbiter}\\
+Alex Frost ("Ajaja")\\
+
+\textbf{Spice Data Sources}\\
+JPL NAIF. Models and sources shown in Table \ref{tab:spicedata}.\\
+\\
+\begin{table}[]
+\begin{tabular}{|l|l|}
+\hline
+$Kernel$             & $Bodies$                                                                \\ \hline
+DE442\cite{DE440}\cite{DE442}     & Sun, all Planets and Earth's Moon                          \\ \hline
+MAR099\cite{MAR099}  & Phobos, Deimos                                                          \\ \hline
+JUP365\cite{JUP365}  & Io, Europa, Ganymede, Callisto, Amalthea                                \\ \hline
+JUP344\cite{JUP344}  & Himalia                                                                 \\ \hline
+SAT441\cite{SAT441}  & Mimas, Enceladus, Tethys, Dione, Rhea, Titan, Hyperion, Iapetus, Phoebe \\ \hline
+URA182\cite{URA182}  & Miranda, Ariel, Umbriel, Titania, Oberon                                \\ \hline
+NEP098\cite{NEP098}  & Triton, Proteus, Nereid                                                 \\ \hline
+PLU060\cite{PLU060}  & Charon, Nix, Hydra                                                      \\ \hline
+SSB441-N16\cite{SSB441-N16}    & Ceres, Vesta                                                  \\ \hline
+\end{tabular}
+\caption{Default included kernal data with the current release of Orbiter.}
+\label{tab:spicedata}
+\end{table}
+
 \subsubsection{Harmonic Gravity Models}
 \textbf{Mercury Harmonic Gravity Model}\\
 MESS160A	\textit{jgmess\_160a\_sha.tab}\\
@@ -111,6 +136,11 @@ PDS Geosciences Node, Washington University in St. Louis\\
 "Konopliv, A.S., Park, R.S., Asmar, S.W., and Buccino, D.R., Dawn Vesta Derived Gravity Data, NASA Planetary Data System, DAWN-A-RSS-5-VEGR-V2.0, 2017."\\
 NASA JPL\\
 \url{https://sbn.psi.edu/pds/resource/dawn/dwnvgravL2.html?refUrl=https\%3A\%2F\%2Fsbn.psi.edu\%2Fpds\%2Farchive\%2Fgravity.html&refName=Gravity&type=Data+Type&typeUrl=https\%3A\%2F\%2Fsbn.psi.edu\%2Fpds\%2Farchive\%2Fdata-types.html}\\
+\\
+\textbf{Ceres Harmonic Gravity Model}\\
+"Park, R.S., Konopliv, A.S., Asmar, S.W., and Buccino, D.R., Dawn Ceres Derived Gravity Data V4.0, NASA Planetary Data System, DAWN-A-RSS-5-CEGR-V4.0, 2024."\\
+NASA JPL\\
+\url{https://sbn.psi.edu/pds/resource/dawn/dwncgravL2.html}\\
 \\
 
 
@@ -242,6 +272,10 @@ Planetary Geomatics Group\\
 Gazetteer of Planetary Nomenclature\\
 \url{http://planetarynames.wr.usgs.gov/}\\
 \\
+\textbf{Amalthea Elevation}\\
+STOOKE SMALL BODY SHAPE MODELS V2.0 \\
+\url{https://data.nasa.gov/dataset/stooke-small-body-shape-models-v2-0}\\
+\\
 \textbf{Saturn}\\
 Björn Jónsson\\
 \url{http://www.mmedia.is/~bjj}\\
@@ -310,6 +344,10 @@ NASA/JPL/Space Science Institute\\
 Cassini Imaging Central Laboratory for Operations\\
 PIA 07775\\
 \url{http://www.ciclops.org/view/1743/Map-of-Phoebe---December-2005}\\
+\\
+\textbf{Phoebe Elevation}\\
+Gaskell, R.W. (2020). Gaskell Phoebe Shape Model V1.0. urn:nasa:pds:gaskell.phoebe.shape-model::1.0. NASA Planetary Data System; https://doi.org/10.26033/ehkj-xj95.
+\url{https://sbn.psi.edu/pds/resource/phoebeshape.html}\\
 \\
 \textbf{Uranus}\\
 James Hastings-Trew\\
