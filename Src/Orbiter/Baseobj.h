@@ -21,6 +21,7 @@
 #define OBJSPEC_EXPORTSHADOWMESH   0x0400
 #define OBJSPEC_OWNSHADOW          0x0800 // meshobjects only: use mesh group flags for selecting shadow
 #define OBJSPEC_WRAPTOSURFACE      0x1000 // meshobjects only: wrap mesh to elevated surface (e.g. taxiways)
+#define OBJSPEC_COLLISION          0x2000 // object has collision
 
 // ======================================================================================
 // Atomic objects for surface bases
@@ -39,7 +40,7 @@ public:
 	virtual int ParseLine (const char *label, const char *value) { return 0; }
 	// interpret a label/value pair read from the object description
 
-	virtual DWORD GetSpecs() const { return 0; }
+	virtual DWORD GetSpecs() const { return 0 | (bCollision ? OBJSPEC_COLLISION : 0); }
 
 	virtual void Setup();
 	// Initialisation after reading (but before activation)
@@ -66,6 +67,8 @@ public:
 	// Allow the object to export its visual as a mesh.
 
 	virtual Mesh *ExportShadowMesh (double &elev) { elev = 0.0; return NULL; }
+
+	virtual Mesh *GetCollisionMesh () { return NULL; }
 
 	virtual bool GetShadowSpec (DWORD &nvtx, DWORD &nidx)
 	{ return false; }
@@ -127,6 +130,7 @@ protected:
 	double rot;       // rotation around vertical axis
 	double elev;      // elevation of reference point above mean radius [m]
 	double yofs;      // vertical translation of reference point against base reference
+	bool bCollision;  // object has collision
 };
 
 // ======================================================================================
@@ -138,7 +142,7 @@ public:
 	~MeshObject ();
 	int ParseLine (const char *label, const char *value);
 	int Read (std::istream &is);
-	DWORD GetSpecs() const { return specs; }
+	DWORD GetSpecs() const { return specs | (bCollision ? OBJSPEC_COLLISION : 0); }
 	void Setup();
 	void Activate ();
 	void Deactivate();
@@ -147,6 +151,7 @@ public:
 	void ExportGroup (int grp, NTVERTEX *vtx, WORD *idx, DWORD &idx_ofs);
 	Mesh *ExportMesh ();
 	Mesh *ExportShadowMesh (double &elev);
+	Mesh *GetCollisionMesh ();
 	void UpdateShadow (Vector &fromsun, double az);
 	void Render (LPDIRECT3DDEVICE7 dev, bool day=true);
 	void RenderShadow (LPDIRECT3DDEVICE7 dev);
@@ -172,7 +177,7 @@ public:
 	Block (const Base *_base);
 	~Block ();
 	int ParseLine (const char *label, const char *value);
-	DWORD GetSpecs() const { return OBJSPEC_EXPORTVERTEX | OBJSPEC_EXPORTSHADOWMESH; }
+	DWORD GetSpecs() const { return OBJSPEC_EXPORTVERTEX | OBJSPEC_EXPORTSHADOWMESH | (bCollision ? OBJSPEC_COLLISION : 0); }
 	bool GetGroupSpec (int grp, DWORD &nvtx, DWORD &nidx, LONGLONG &texid,
 		bool &undershadow, bool &groundshadow);
 	void ExportGroup (int grp, NTVERTEX *vtx, WORD *idx, DWORD &idx_ofs);
@@ -201,7 +206,7 @@ public:
 	Hangar (const Base *_base);
 	~Hangar ();
 	int ParseLine (const char *label, const char *value);
-	DWORD GetSpecs() const { return OBJSPEC_EXPORTVERTEX | OBJSPEC_EXPORTSHADOWMESH; }
+	DWORD GetSpecs() const { return OBJSPEC_EXPORTVERTEX | OBJSPEC_EXPORTSHADOWMESH | (bCollision ? OBJSPEC_COLLISION : 0); }
 	bool GetGroupSpec (int grp, DWORD &nvtx, DWORD &nidx, LONGLONG &texid,
 		bool &undershadow, bool &groundshadow);
 	void ExportGroup (int grp, NTVERTEX *vtx, WORD *idx, DWORD &idx_ofs);
@@ -229,7 +234,7 @@ public:
 	Hangar2 (const Base *_base);
 	~Hangar2 ();
 	int ParseLine (const char *label, const char *value);
-	DWORD GetSpecs() const { return OBJSPEC_EXPORTVERTEX | OBJSPEC_EXPORTSHADOWMESH; }
+	DWORD GetSpecs() const { return OBJSPEC_EXPORTVERTEX | OBJSPEC_EXPORTSHADOWMESH | (bCollision ? OBJSPEC_COLLISION : 0); }
 	bool GetGroupSpec (int grp, DWORD &nvtx, DWORD &nidx, LONGLONG &texid,
 		bool &undershadow, bool &groundshadow);
 	void ExportGroup (int grp, NTVERTEX *vtx, WORD *idx, DWORD &idx_ofs);
@@ -259,7 +264,7 @@ public:
 	Hangar3 (const Base *_base);
 	~Hangar3 ();
 	int ParseLine (const char *label, const char *value);
-	DWORD GetSpecs() const { return OBJSPEC_EXPORTVERTEX | OBJSPEC_EXPORTSHADOWMESH; }
+	DWORD GetSpecs() const { return OBJSPEC_EXPORTVERTEX | OBJSPEC_EXPORTSHADOWMESH | (bCollision ? OBJSPEC_COLLISION : 0); }
 	bool GetGroupSpec (int grp, DWORD &nvtx, DWORD &nidx, LONGLONG &texid,
 		bool &undershadow, bool &groundshadow);
 	void ExportGroup (int grp, NTVERTEX *vtx, WORD *idx, DWORD &idx_ofs);
@@ -286,7 +291,7 @@ class Tank: public BaseObject {
 public:
 	Tank (const Base *_base);
 	int ParseLine (const char *label, const char *value);
-	DWORD GetSpecs() const { return OBJSPEC_EXPORTVERTEX | OBJSPEC_EXPORTSHADOWMESH; }
+	DWORD GetSpecs() const { return OBJSPEC_EXPORTVERTEX | OBJSPEC_EXPORTSHADOWMESH | (bCollision ? OBJSPEC_COLLISION : 0); }
 	bool GetGroupSpec (int grp, DWORD &nvtx, DWORD &nidx, LONGLONG &texid,
 		bool &undershadow, bool &groundshadow);
 	void ExportGroup (int grp, NTVERTEX *vtx, WORD *idx, DWORD &idx_ofs);
@@ -329,7 +334,7 @@ class Lpad01: public Lpad {
 public:
 	Lpad01 (const Base *_base);
 	int ParseLine (const char *label, const char *value);
-	DWORD GetSpecs() const { return OBJSPEC_EXPORTVERTEX | OBJSPEC_LPAD; }
+	DWORD GetSpecs() const { return OBJSPEC_EXPORTVERTEX | OBJSPEC_LPAD | (bCollision ? OBJSPEC_COLLISION : 0); }
 	bool GetGroupSpec (int grp, DWORD &nvtx, DWORD &nidx, LONGLONG &texid,
 		bool &undershadow, bool &groundshadow);
 	void ExportGroup (int grp, NTVERTEX *vtx, WORD *idx, DWORD &idx_ofs);
@@ -347,7 +352,7 @@ class Lpad02: public Lpad {
 public:
 	Lpad02 (const Base *_base);
 	int ParseLine (const char *label, const char *value);
-	DWORD GetSpecs() const { return OBJSPEC_EXPORTVERTEX | OBJSPEC_LPAD; }
+	DWORD GetSpecs() const { return OBJSPEC_EXPORTVERTEX | OBJSPEC_LPAD | (bCollision ? OBJSPEC_COLLISION : 0); }
 	bool GetGroupSpec (int grp, DWORD &nvtx, DWORD &nidx, LONGLONG &texid,
 		bool &undershadow, bool &groundshadow);
 	void ExportGroup (int grp, NTVERTEX *vtx, WORD *idx, DWORD &idx_ofs);
@@ -365,7 +370,7 @@ class Lpad02a: public Lpad {
 public:
 	Lpad02a (const Base *_base);
 	int ParseLine (const char *label, const char *value);
-	DWORD GetSpecs() const { return OBJSPEC_EXPORTVERTEX | OBJSPEC_LPAD; }
+	DWORD GetSpecs() const { return OBJSPEC_EXPORTVERTEX | OBJSPEC_LPAD | (bCollision ? OBJSPEC_COLLISION : 0); }
 	bool GetGroupSpec (int grp, DWORD &nvtx, DWORD &nidx, LONGLONG &texid,
 		bool &undershadow, bool &groundshadow);
 	void ExportGroup (int grp, NTVERTEX *vtx, WORD *idx, DWORD &idx_ofs);
@@ -383,7 +388,7 @@ private:
 class BeaconArray: public BaseObject {
 public:
 	BeaconArray (const Base *_base);
-	DWORD GetSpecs() const { return OBJSPEC_RENDERAFTERSHADOW | OBJSPEC_UPDATEVERTEX; }
+	DWORD GetSpecs() const { return OBJSPEC_RENDERAFTERSHADOW | OBJSPEC_UPDATEVERTEX | (bCollision ? OBJSPEC_COLLISION : 0); }
 	int Read (std::istream &is);
 	void Render (LPDIRECT3DDEVICE7 dev, bool day=true);
 	void Update ();
@@ -411,7 +416,7 @@ class Runway: public BaseObject {
 public:
 	Runway (const Base *_base);
 	~Runway ();
-	DWORD GetSpecs() const { return OBJSPEC_EXPORTVERTEX | OBJSPEC_RWY; }
+	DWORD GetSpecs() const { return OBJSPEC_EXPORTVERTEX | OBJSPEC_RWY | (bCollision ? OBJSPEC_COLLISION : 0); }
 	bool GetGroupSpec (int grp, DWORD &nvtx, DWORD &nidx, LONGLONG &texid,
 		bool &undershadow, bool &groundshadow);
 	void ExportGroup (int grp, NTVERTEX *vtx, WORD *idx, DWORD &idx_ofs);
@@ -448,7 +453,7 @@ public:
 	RunwayLights (const Base *_base);
 	~RunwayLights ();
 	void Setup ();
-	DWORD GetSpecs() const { return OBJSPEC_RENDERAFTERSHADOW | OBJSPEC_UPDATEVERTEX; }
+	DWORD GetSpecs() const { return OBJSPEC_RENDERAFTERSHADOW | OBJSPEC_UPDATEVERTEX | (bCollision ? OBJSPEC_COLLISION : 0); }
 	int Read (std::istream &is);
 	void Render (LPDIRECT3DDEVICE7 dev, bool day=true);
 	void Update ();
@@ -541,7 +546,7 @@ public:
 	Train1 (const Base *_base);
 	~Train1 ();
 	int Read (std::istream &is);
-	DWORD GetSpecs() const { return OBJSPEC_EXPORTVERTEX | OBJSPEC_EXPORTSHADOW | OBJSPEC_UPDATEVERTEX; }
+	DWORD GetSpecs() const { return OBJSPEC_EXPORTVERTEX | OBJSPEC_EXPORTSHADOW | OBJSPEC_UPDATEVERTEX | (bCollision ? OBJSPEC_COLLISION : 0); }
 	bool GetGroupSpec (int grp, DWORD &nvtx, DWORD &nidx, LONGLONG &_texid,
 		bool &undershadow, bool &groundshadow);
 	void ExportGroup (int grp, NTVERTEX *vtx, WORD *idx, DWORD &idx_ofs);
@@ -574,7 +579,7 @@ public:
 	~Train2 ();
 	int Read (std::istream &is);
 	DWORD GetSpecs() const { return OBJSPEC_EXPORTVERTEX | OBJSPEC_EXPORTSHADOW |
-		OBJSPEC_RENDERAFTERSHADOW | OBJSPEC_RENDERSHADOW | OBJSPEC_UPDATEVERTEX; }
+		OBJSPEC_RENDERAFTERSHADOW | OBJSPEC_RENDERSHADOW | OBJSPEC_UPDATEVERTEX | (bCollision ? OBJSPEC_COLLISION : 0); }
 	bool GetGroupSpec (int grp, DWORD &nvtx, DWORD &nidx, LONGLONG &_texid,
 		bool &undershadow, bool &groundshadow);
 	void ExportGroup (int grp, NTVERTEX *vtx, WORD *idx, DWORD &idx_ofs);
@@ -612,7 +617,7 @@ public:
 	SolarPlant (const Base *_base);
 	~SolarPlant ();
 	int Read (std::istream &is);
-	DWORD GetSpecs() const { return OBJSPEC_RENDERAFTERSHADOW | OBJSPEC_RENDERSHADOW | OBJSPEC_UPDATEVERTEX; }
+	DWORD GetSpecs() const { return OBJSPEC_RENDERAFTERSHADOW | OBJSPEC_RENDERSHADOW | OBJSPEC_UPDATEVERTEX | (bCollision ? OBJSPEC_COLLISION : 0); }
 	void Render (LPDIRECT3DDEVICE7 dev, bool day=true);
 	void RenderShadow (LPDIRECT3DDEVICE7 dev);
 	void Update ();

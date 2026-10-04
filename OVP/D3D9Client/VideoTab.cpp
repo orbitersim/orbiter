@@ -824,6 +824,9 @@ void VideoTab::InitSetupDialog(HWND hWnd)
 	SendDlgItemMessage(hWnd, IDC_ESCACHE, BM_SETCHECK, Config->ShaderCacheUse == 1, 0);
 	SendDlgItemMessage(hWnd, IDC_EAQUALITY, BM_SETCHECK, Config->bAtmoQuality == 1, 0);
 
+	SendDlgItemMessage(hWnd, IDC_SHOW_BASE_COL, BM_SETCHECK, Config->bShowBaseColliders == 1, 0);
+	SendDlgItemMessage(hWnd, IDC_SHOW_VESSEL_COL, BM_SETCHECK, Config->bShowVesselColliders == 1, 0);
+
 
 	SendDlgItemMessage(hWnd, IDC_NORMALMAPS, BM_SETCHECK, Config->UseNormalMap==1, 0);
 	SendDlgItemMessage(hWnd, IDC_BASEVIS,    BM_SETCHECK, Config->PreLBaseVis==1, 0);
@@ -909,6 +912,8 @@ void VideoTab::SaveSetupState(HWND hWnd)
 	Config->Separation	  = double(SendDlgItemMessage(hWnd, IDC_SEPARATION,  TBM_GETPOS, 0, 0));
 	Config->LODBias       = 0.2 * double(SendDlgItemMessage(hWnd, IDC_LODBIAS,  TBM_GETPOS, 0, 0));
 	Config->MicroBias     = int(SendDlgItemMessage(hWnd, IDC_MICROBIAS,  TBM_GETPOS, 0, 0));
+	Config->bShowBaseColliders = (int)SendDlgItemMessage(hWnd, IDC_SHOW_BASE_COL, BM_GETCHECK, 0, 0);
+	Config->bShowVesselColliders = (int)SendDlgItemMessage(hWnd, IDC_SHOW_VESSEL_COL, BM_GETCHECK, 0, 0);
 
 	// Other things
 	GetWindowText(GetDlgItem(hWnd, IDC_HZ),  cbuf, 32);

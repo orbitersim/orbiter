@@ -748,6 +748,10 @@ void OptionsPage_Physics::UpdateControls(HWND hPage)
 		Cfg()->CfgPhysicsPrm.bDistributedMass ? BST_CHECKED : BST_UNCHECKED, 0);
 	SendDlgItemMessage(hPage, IDC_OPT_PHYS_WIND, BM_SETCHECK,
 		Cfg()->CfgPhysicsPrm.bAtmWind ? BST_CHECKED : BST_UNCHECKED, 0);
+	SendDlgItemMessage(hPage, IDC_OPT_PHYS_BASECOLLISION, BM_SETCHECK,
+		Cfg()->CfgPhysicsPrm.bBaseCollision ? BST_CHECKED : BST_UNCHECKED, 0);
+	SendDlgItemMessage(hPage, IDC_OPT_PHYS_VESSELCOLLISION, BM_SETCHECK,
+		Cfg()->CfgPhysicsPrm.bVesselCollision ? BST_CHECKED : BST_UNCHECKED, 0);
 }
 
 // ----------------------------------------------------------------------
@@ -758,6 +762,8 @@ void OptionsPage_Physics::UpdateConfig(HWND hPage)
 	Cfg()->CfgPhysicsPrm.bNonsphericalGrav = (SendDlgItemMessage(hPage, IDC_OPT_PHYS_COMPLEXGRAV, BM_GETCHECK, 0, 0) == BST_CHECKED);
 	Cfg()->CfgPhysicsPrm.bRadiationPressure = (SendDlgItemMessage(hPage, IDC_OPT_PHYS_RPRESSURE, BM_GETCHECK, 0, 0) == BST_CHECKED);
 	Cfg()->CfgPhysicsPrm.bAtmWind = (SendDlgItemMessage(hPage, IDC_OPT_PHYS_WIND, BM_GETCHECK, 0, 0) == BST_CHECKED);
+	Cfg()->CfgPhysicsPrm.bBaseCollision = (SendDlgItemMessage(hPage, IDC_OPT_PHYS_BASECOLLISION, BM_GETCHECK, 0, 0) == BST_CHECKED);
+	Cfg()->CfgPhysicsPrm.bVesselCollision = (SendDlgItemMessage(hPage, IDC_OPT_PHYS_VESSELCOLLISION, BM_GETCHECK, 0, 0) == BST_CHECKED);
 }
 
 // ----------------------------------------------------------------------
@@ -803,6 +809,22 @@ BOOL OptionsPage_Physics::OnCommand( HWND hPage, WORD ctrlId, WORD notification,
 			{
 				bool check = (SendDlgItemMessage( hPage, IDC_OPT_PHYS_WIND, BM_GETCHECK, 0, 0 ) == BST_CHECKED);
 				Cfg()->CfgPhysicsPrm.bAtmWind = check;
+				return FALSE;
+			}
+			break;
+		case IDC_OPT_PHYS_BASECOLLISION:
+			if (notification == BN_CLICKED)
+			{
+				bool check = (SendDlgItemMessage( hPage, IDC_OPT_PHYS_BASECOLLISION, BM_GETCHECK, 0, 0 ) == BST_CHECKED);
+				Cfg()->CfgPhysicsPrm.bBaseCollision = check;
+				return FALSE;
+			}
+			break;
+		case IDC_OPT_PHYS_VESSELCOLLISION:
+			if (notification == BN_CLICKED)
+			{
+				bool check = (SendDlgItemMessage(hPage, IDC_OPT_PHYS_VESSELCOLLISION, BM_GETCHECK, 0, 0) == BST_CHECKED);
+				Cfg()->CfgPhysicsPrm.bVesselCollision = check;
 				return FALSE;
 			}
 			break;

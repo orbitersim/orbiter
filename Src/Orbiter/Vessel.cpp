@@ -36,9 +36,16 @@
 #include "Dialogs.h"
 #include "State.h"
 #include "Util.h"
+#include "Planet.h"
+#include "Mesh.h"
+#include "GjkEpa.h"
 #include "elevmgr.h"
 #include <fstream>
 #include <iomanip>
+#include <map>
+#include <unordered_map>
+#include <unordered_set>
+#include <functional>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string>
@@ -310,6 +317,7 @@ void Vessel::SetDefaultState ()
 	sp.is_in_atm        = false;
 	m_bThrustEngaged    = false;
 	bForceActive        = false;
+	collisionCooldownT  = 0.0;
 	rpressure           = g_pOrbiter->Cfg()->CfgPhysicsPrm.bRadiationPressure;
 	Lift = Drag = SideForce = 0.0;
 	attach_status.pname = 0;
@@ -323,6 +331,9 @@ void Vessel::SetDefaultState ()
 	forcevecbuf = 10;
 	forcevec = new Vector[forcevecbuf];
 	forcepos = new Vector[forcevecbuf];
+
+	nforcevec_col = 0;
+	memset(&m_colDebug, 0, sizeof(m_colDebug));
 
 	proxyT    = -(double)rand()*100.0/(double)RAND_MAX - 1.0;
 	commsT    = -(double)rand()*5.0/(double)RAND_MAX - 1.0;
@@ -340,6 +351,7 @@ void Vessel::DefaultGenericCaps ()
 	nmesh              = 0;
 	mesh_crc           = 0;
 	nanim              = 0;
+	bIsConvexCollider  = true;
 	size               = 10.0;
 	clipradius         = 0.0; // flag for clipradius=size
 	vislimit           = spotlimit = 1e-3;
@@ -4289,6 +4301,12 @@ void Vessel::UpdateAerodynamicForces_OLD ()
 bool Vessel::AddSurfaceForces (Vector *F, Vector *M, const StateVectors *s, double tfrac, double dt, bool allow_groundcontact) const
 {
 	nforcevec = 0; // should move higher up
+	for (int k = 0; k < nforcevec_col && nforcevec < forcevecbuf; k++) {
+		forcevec[nforcevec] = col_forcevec[k];
+		forcepos[nforcevec] = col_forcepos[k];
+		nforcevec++;
+	}
+
 	E_comp = 0.0;  // compression energy
 
 	int i, j;
@@ -4510,6 +4528,20 @@ bool Vessel::AddSurfaceForces (Vector *F, Vector *M, const StateVectors *s, doub
 					nforcevec++;
 				}
 
+				if (!m_colDebug.active || -tdy[i] > m_colDebug.depth) {
+					Vector nLocal = tmul(s->R, hn);
+					m_colDebug.active = true;
+					m_colDebug.contactPt = { (float)touchdown_vtx[i].pos.x, (float)touchdown_vtx[i].pos.y, (float)touchdown_vtx[i].pos.z };
+					m_colDebug.normal = { (float)nLocal.x, (float)nLocal.y, (float)nLocal.z };
+					m_colDebug.depth = -tdy[i];
+					Vector force = hn * fn[i] + d1h * flng[i] + d2h * flat[i];
+					Vector impLocal = tmul(s->R, force) * dt;
+					m_colDebug.impulseDir = { (float)impLocal.x, (float)impLocal.y, (float)impLocal.z };
+					m_colDebug.impulseMag = impLocal.length();
+					m_colDebug.leverArm = m_colDebug.contactPt;
+					m_colDebug.showTime = td.SimT1 + 3.0;
+				}
+
 			} else {
 				fn[i] = flng[i] = flat[i] = 0.0;
 			}
@@ -4711,9 +4743,1565 @@ bool Vessel::AddSurfaceForces (Vector *F, Vector *M, const StateVectors *s, doub
 	return true;
 }
 
-// =======================================================================
-// vessel state update
+// Extracts vertices from all visual meshes into vessel-local coords.
+// Decomposes meshes into physical convex sub-colliders by connected triangle components.
+// Only rebuilds when mesh count changes.
+void Vessel::RebuildHullCache() {
 
+  if (m_hullCacheMeshCount == nmesh)
+    return; // cache is up to date
+  m_hullCacheStatic.clear();
+  m_hullCacheStatic.reserve(4096);
+
+  DWORD clusterCounter = 0;
+
+  for (UINT mi = 0; mi < nmesh; mi++) {
+    if (!meshlist[mi])
+      continue;
+    MESHHANDLE hMesh = meshlist[mi]->hMesh;
+    if (!hMesh)
+      continue;
+
+    VECTOR3 meshOfs = meshlist[mi]->meshofs;
+    DWORD nGrp = oapiMeshGroupCount(hMesh);
+
+    for (DWORD g = 0; g < nGrp; g++) {
+      MESHGROUPEX *grp = oapiMeshGroupEx(hMesh, g);
+      if (!grp || !grp->Vtx || !grp->Idx || grp->nVtx == 0 || grp->nIdx == 0)
+        continue;
+
+      // 1. Position welding to find shared geometric vertices across UV/normal seams
+      struct PosKey {
+        int x, y, z;
+        bool operator==(const PosKey& o) const { return x == o.x && y == o.y && z == o.z; }
+      };
+      struct PosKeyHash {
+        size_t operator()(const PosKey& k) const {
+          return (size_t)k.x * 73856093 ^ (size_t)k.y * 19349663 ^ (size_t)k.z * 83492791;
+        }
+      };
+
+      std::unordered_map<PosKey, int, PosKeyHash> posToWeld;
+      posToWeld.reserve(grp->nVtx);
+      std::vector<int> vWeld(grp->nVtx);
+
+      for (DWORD v = 0; v < grp->nVtx; v++) {
+        PosKey k = {
+          (int)floor(grp->Vtx[v].x / 0.02 + 0.5),
+          (int)floor(grp->Vtx[v].y / 0.02 + 0.5),
+          (int)floor(grp->Vtx[v].z / 0.02 + 0.5)
+        };
+        auto it = posToWeld.find(k);
+        if (it == posToWeld.end()) {
+          int wid = (int)posToWeld.size();
+          posToWeld[k] = wid;
+          vWeld[v] = wid;
+        } else {
+          vWeld[v] = it->second;
+        }
+      }
+
+      // 2. Disjoint Set Union (DSU) on triangles
+      DWORD nTris = grp->nIdx / 3;
+      std::vector<int> parent(nTris);
+      for (DWORD t = 0; t < nTris; t++) parent[t] = t;
+
+      auto dsuFind = [&](int i) -> int {
+        int root = i;
+        while (parent[root] != root) root = parent[root];
+        int curr = i;
+        while (curr != root) {
+          int nxt = parent[curr];
+          parent[curr] = root;
+          curr = nxt;
+        }
+        return root;
+      };
+
+      auto dsuUnion = [&](int i, int j) {
+        int ri = dsuFind(i);
+        int rj = dsuFind(j);
+        if (ri != rj) parent[ri] = rj;
+      };
+
+      std::vector<int> firstTriForWeld(posToWeld.size(), -1);
+      for (DWORD t = 0; t < nTris; t++) {
+        for (int vi = 0; vi < 3; vi++) {
+          WORD vIdx = grp->Idx[t * 3 + vi];
+          if (vIdx >= grp->nVtx) continue;
+          int wid = vWeld[vIdx];
+          if (firstTriForWeld[wid] == -1) {
+            firstTriForWeld[wid] = t;
+          } else {
+            dsuUnion(t, firstTriForWeld[wid]);
+          }
+        }
+      }
+
+      // 3. Group triangles by connected component root
+      std::unordered_map<int, std::vector<int>> compTris;
+      for (DWORD t = 0; t < nTris; t++) {
+        compTris[dsuFind(t)].push_back(t);
+      }
+
+      // 4. For each component, build a convex hull cluster
+      for (const auto& kv : compTris) {
+        const auto& tris = kv.second;
+        if (tris.empty()) continue;
+
+        std::unordered_map<PosKey, HullVertex, PosKeyHash> compPts;
+        for (int t : tris) {
+          for (int vi = 0; vi < 3; vi++) {
+            WORD vIdx = grp->Idx[t * 3 + vi];
+            if (vIdx >= grp->nVtx) continue;
+            VECTOR3 p = {
+              (float)(grp->Vtx[vIdx].x + meshOfs.x),
+              (float)(grp->Vtx[vIdx].y + meshOfs.y),
+              (float)(grp->Vtx[vIdx].z + meshOfs.z)
+            };
+            PosKey k = {
+              (int)floor(p.x / 0.02 + 0.5),
+              (int)floor(p.y / 0.02 + 0.5),
+              (int)floor(p.z / 0.02 + 0.5)
+            };
+            if (compPts.find(k) == compPts.end()) {
+              compPts[k] = { p, mi, g, clusterCounter };
+            }
+          }
+        }
+
+        if (compPts.empty()) continue;
+
+        // If component has 3 points, add a 4th point with tiny offset to make a valid 3D tetrahedron
+        if (compPts.size() == 3) {
+          auto it = compPts.begin();
+          VECTOR3 p0 = (it++)->second.pos;
+          VECTOR3 p1 = (it++)->second.pos;
+          VECTOR3 p2 = it->second.pos;
+          Vector e1(p1.x - p0.x, p1.y - p0.y, p1.z - p0.z);
+          Vector e2(p2.x - p0.x, p2.y - p0.y, p2.z - p0.z);
+          Vector n = crossp(e1, e2).unit();
+          if (n.length() < 1e-6) n = Vector(0, 1, 0);
+          VECTOR3 p3 = {
+            (float)((p0.x + p1.x + p2.x) / 3.0 + n.x * 0.02),
+            (float)((p0.y + p1.y + p2.y) / 3.0 + n.y * 0.02),
+            (float)((p0.z + p1.z + p2.z) / 3.0 + n.z * 0.02)
+          };
+          PosKey k3 = {
+            (int)floor(p3.x / 0.02 + 0.5),
+            (int)floor(p3.y / 0.02 + 0.5),
+            (int)floor(p3.z / 0.02 + 0.5)
+          };
+          compPts[k3] = { p3, mi, g, clusterCounter };
+        }
+
+        for (const auto& pk : compPts) {
+          m_hullCacheStatic.push_back(pk.second);
+        }
+        clusterCounter++;
+      }
+    }
+  }
+
+  std::sort(m_hullCacheStatic.begin(), m_hullCacheStatic.end(), [](const HullVertex& a, const HullVertex& b) {
+      if (a.meshIdx != b.meshIdx) return a.meshIdx < b.meshIdx;
+      if (a.groupIdx != b.groupIdx) return a.groupIdx < b.groupIdx;
+      return a.clusterIdx < b.clusterIdx;
+  });
+
+  m_hullGroupSlices.clear();
+  if (!m_hullCacheStatic.empty()) {
+      HullGroupSlice currentSlice;
+      currentSlice.startIdx = 0;
+      currentSlice.count = 1;
+      currentSlice.isDockClearZone = false;
+      UINT curMesh = m_hullCacheStatic[0].meshIdx;
+      UINT curGrp = m_hullCacheStatic[0].groupIdx;
+      DWORD curCls = m_hullCacheStatic[0].clusterIdx;
+
+      for (size_t i = 1; i < m_hullCacheStatic.size(); i++) {
+          if (m_hullCacheStatic[i].meshIdx == curMesh && m_hullCacheStatic[i].groupIdx == curGrp && m_hullCacheStatic[i].clusterIdx == curCls) {
+              currentSlice.count++;
+          } else {
+              m_hullGroupSlices.push_back(currentSlice);
+              currentSlice.startIdx = i;
+              currentSlice.count = 1;
+              currentSlice.isDockClearZone = false;
+              curMesh = m_hullCacheStatic[i].meshIdx;
+              curGrp = m_hullCacheStatic[i].groupIdx;
+              curCls = m_hullCacheStatic[i].clusterIdx;
+          }
+      }
+      m_hullGroupSlices.push_back(currentSlice);
+  }
+
+  // Determine dock clear zones
+  for (auto& slice : m_hullGroupSlices) {
+      slice.isDockClearZone = false;
+      if (ndock == 0) continue;
+      for (size_t i = 0; i < slice.count; i++) {
+          const VECTOR3& p = m_hullCacheStatic[slice.startIdx + i].pos;
+          for (DWORD d = 0; d < ndock; d++) {
+              if (!dock[d]) continue;
+              double dx = p.x - dock[d]->ref.x;
+              double dy = p.y - dock[d]->ref.y;
+              double dz = p.z - dock[d]->ref.z;
+              if (dx*dx + dy*dy + dz*dz < 9.0) { // 3.0 meters radius
+                  slice.isDockClearZone = true;
+                  break;
+              }
+          }
+          if (slice.isDockClearZone) break;
+      }
+  }
+
+  m_hullCacheMeshCount = nmesh;
+  m_hullCachePValid = false;
+  m_hullVisualValid = false;
+}
+
+void Vessel::RebuildConvexHullVisual() {
+  m_convexHullIdx.clear();
+  m_hullVisualValid = true;
+  if (!bIsConvexCollider || m_hullGroupSlices.empty() || m_hullCache.empty()) return;
+
+  for (const auto& slice : m_hullGroupSlices) {
+      if (slice.count < 3) continue;
+      if (slice.startIdx + slice.count > 65535) continue;
+
+      if (slice.count == 3) {
+          m_convexHullIdx.push_back((WORD)(slice.startIdx + 0));
+          m_convexHullIdx.push_back((WORD)(slice.startIdx + 1));
+          m_convexHullIdx.push_back((WORD)(slice.startIdx + 2));
+          continue;
+      }
+
+      // 1. Create a jittered copy to eliminate degeneracies
+      std::vector<VECTOR3> pts(slice.count);
+      for (size_t i = 0; i < slice.count; i++) {
+          pts[i] = m_hullCache[slice.startIdx + i];
+          pts[i].x += (((double)rand() / RAND_MAX) - 0.5) * 1e-5;
+          pts[i].y += (((double)rand() / RAND_MAX) - 0.5) * 1e-5;
+          pts[i].z += (((double)rand() / RAND_MAX) - 0.5) * 1e-5;
+      }
+
+      auto getVec = [&](int i) -> Vector { return Vector(pts[i].x, pts[i].y, pts[i].z); };
+
+      // Find point A with minimum X
+      int A = 0;
+      for (int i = 1; i < pts.size(); i++) {
+          if (pts[i].x < pts[A].x) A = i;
+      }
+
+      // Find point B that minimizes angle with -X axis
+      int B = -1;
+      double max_dot = -1e9;
+      Vector n_fake(-1, 0, 0);
+      for (int i = 0; i < pts.size(); i++) {
+          if (i == A) continue;
+          Vector d = (getVec(i) - getVec(A)).unit();
+          double d_dot = dotp(d, n_fake);
+          if (d_dot > max_dot) {
+              max_dot = d_dot;
+              B = i;
+          }
+      }
+
+      if (B != -1) {
+          // Find C to form the first face by finding smallest bend from -X
+          Vector e_dir = (getVec(B) - getVec(A)).unit();
+          Vector n_old = (n_fake - e_dir * dotp(n_fake, e_dir)).unit();
+          Vector Y_dir = crossp(e_dir, n_old).unit();
+
+          int C = -1;
+          double min_theta = 1e9;
+          for (int i = 0; i < pts.size(); i++) {
+              if (i == A || i == B) continue;
+              Vector N_raw = crossp(getVec(A) - getVec(B), getVec(i) - getVec(B));
+              if (N_raw.length() < 1e-6) continue;
+              Vector N_new = N_raw.unit();
+              double x = dotp(N_new, n_old);
+              double y = dotp(N_new, Y_dir);
+              double theta = atan2(y, x);
+              if (theta < 0) theta += 2.0 * 3.14159265359;
+              if (theta < min_theta) {
+                  min_theta = theta;
+                  C = i;
+              }
+          }
+
+          if (C != -1) {
+              // Ensure outward normal
+              Vector N_first = crossp(getVec(B) - getVec(A), getVec(C) - getVec(A)).unit();
+              int positive_count = 0;
+              for (int i = 0; i < pts.size(); i++) {
+                  if (dotp(N_first, getVec(i) - getVec(A)) > 1e-5) positive_count++;
+              }
+              if (positive_count > pts.size() / 2) {
+                  std::swap(B, C);
+                  N_first = crossp(getVec(B) - getVec(A), getVec(C) - getVec(A)).unit();
+              }
+
+              m_convexHullIdx.push_back((WORD)(slice.startIdx + A));
+              m_convexHullIdx.push_back((WORD)(slice.startIdx + B));
+              m_convexHullIdx.push_back((WORD)(slice.startIdx + C));
+
+              struct Edge { int u, v; Vector n; };
+              std::vector<Edge> queue;
+              queue.push_back({A, B, N_first});
+              queue.push_back({B, C, N_first});
+              queue.push_back({C, A, N_first});
+
+              std::unordered_set<uint64_t> visited;
+
+              // "Gift wrap" convex
+              while (!queue.empty()) {
+                  Edge edge = queue.back();
+                  queue.pop_back();
+
+                  uint64_t edge_hash = ((uint64_t)edge.u << 32) | (uint32_t)edge.v;
+                  if (visited.find(edge_hash) != visited.end()) continue;
+                  visited.insert(edge_hash);
+
+                  int U = edge.u;
+                  int V = edge.v;
+                  Vector N_old = edge.n;
+
+                  Vector e = (getVec(V) - getVec(U)).unit();
+                  Vector Y = crossp(e, N_old).unit();
+
+                  int W = -1;
+                  double min_t = 1e9;
+                  for (int i = 0; i < pts.size(); i++) {
+                      if (i == U || i == V) continue;
+                      Vector N_raw = crossp(getVec(U) - getVec(V), getVec(i) - getVec(V));
+                      if (N_raw.length() < 1e-6) continue;
+                      Vector N_new = N_raw.unit();
+                      double x = dotp(N_new, N_old);
+                      double y = dotp(N_new, Y);
+                      double theta = atan2(y, x);
+                      if (theta < 0) theta += 2.0 * 3.14159265359;
+                      if (theta < min_t) {
+                          min_t = theta;
+                          W = i;
+                      }
+                  }
+
+                  if (W != -1) {
+                      m_convexHullIdx.push_back((WORD)(slice.startIdx + V));
+                      m_convexHullIdx.push_back((WORD)(slice.startIdx + U));
+                      m_convexHullIdx.push_back((WORD)(slice.startIdx + W));
+
+                      Vector N_new = crossp(getVec(U) - getVec(V), getVec(W) - getVec(V)).unit();
+
+                      queue.push_back({U, W, N_new});
+                      queue.push_back({W, V, N_new});
+                  }
+              }
+          }
+      }
+  }
+}
+
+void Vessel::CheckBaseCollisions(Planet *pp) {
+	if (!pp) return;
+	UpdateHullCacheP();
+	if (m_hullCacheP.empty()) return;
+
+	Vector localPosV(s1->pos - pp->s1->pos);
+	localPosV.Set(tmul(pp->s1->R, localPosV));
+
+	Matrix V2P;
+	V2P.Set(s1->R);
+	V2P.tpremul(pp->s1->R);
+
+	VECTOR3 vPosP = { (float)localPosV.x, (float)localPosV.y, (float)localPosV.z };
+
+	for (DWORD i = 0; i < pp->nBase(); i++) {
+		Base *base = pp->GetBase(i);
+		if (!base) continue;
+
+		Vector basePosV(base->s1->pos - pp->s1->pos);
+		basePosV.Set(tmul(pp->s1->R, basePosV));
+		double dist2 = (localPosV - basePosV).length2();
+		if (dist2 > 2000.0 * 2000.0) continue;
+
+		Matrix M_b2p;
+		M_b2p.Set(base->s1->R);
+		M_b2p.tpremul(pp->s1->R);
+
+		Mesh **m_us, **m_os;
+		DWORD n_us, n_os;
+		base->ExportBaseStructures(&m_us, &n_us, &m_os, &n_os);
+
+		Mesh **m_col;
+		DWORD n_col;
+		base->ExportCollisionMeshes(&m_col, &n_col);
+
+		BaseCollisionResult bestRes;
+		bestRes.hit = false;
+		bestRes.depth = 0;
+
+		VECTOR3 bPosP = { (float)basePosV.x, (float)basePosV.y, (float)basePosV.z };
+
+		double vground = Pi2 * sp.rad * sp.clat / pp->RotT();
+		Vector groundVel(-vground * sp.slng, 0.0, vground * sp.clng);
+		groundVel.Set(mul(pp->s1->R, groundVel) + pp->s1->vel);
+		Vector vRelPlanet = s1->vel - groundVel;
+
+		auto checkMeshList = [&](Mesh **mlist, DWORD n) {
+			for (DWORD m = 0; m < n; m++) {
+				BaseCollisionResult res;
+				if (CheckMeshCollision(mlist[m], M_b2p, bPosP, vRelPlanet, res)) {
+					if (!bestRes.hit || res.depth > bestRes.depth) {
+						bestRes = res;
+					}
+				}
+			}
+		};
+
+		if (n_col > 0) {
+			checkMeshList(m_col, n_col);
+		} else {
+			checkMeshList(m_us, n_us);
+			checkMeshList(m_os, n_os);
+		}
+
+		if (bestRes.hit) {
+			Vector norm(bestRes.normal.x, bestRes.normal.y, bestRes.normal.z);
+			Vector normGlobal = mul(pp->s1->R, norm);
+
+			// Resolve penetration
+			Vector pushOut = normGlobal * (bestRes.depth * 1.0);
+			s1->pos += pushOut;
+			rpos_base += pushOut;
+			// We MUST NOT zero rpos_add! It destroys the symplectic integrator's fractional precision.
+
+			double vground = Pi2 * sp.rad * sp.clat / pp->RotT();
+			Vector groundVel(-vground * sp.slng, 0.0, vground * sp.clng);
+			groundVel.Set(mul(pp->s1->R, groundVel) + pp->s1->vel);
+			Vector v_rel = s1->vel - groundVel;
+			double v_rel_norm = dotp(v_rel, normGlobal);
+
+			if (v_rel_norm < 0.0) {
+				// Normal restitution (bounce)
+				// If impact is soft (< 0.5 m/s), don't bounce at all (restitution = 0)
+				double restitution = (fabs(v_rel_norm) > 0.5) ? 0.1 : 0.0;
+				double j_n = -(1.0 + restitution) * v_rel_norm;
+
+				// Tangential friction (sliding & brakes)
+				Vector v_rel_t = v_rel - (normGlobal * v_rel_norm);
+				double vt_len = v_rel_t.length();
+				Vector delta_v_t(0, 0, 0);
+
+				if (vt_len > 1e-6) {
+					// Read vessel's wheel brakes (average of left and right)
+					double brake = 0.5 * (wbrake[0] + wbrake[1]);
+
+					// Base friction of 0.8, scaling up to 2.8 with full brakes applied
+					double mu = 0.8 + (brake * 2.0);
+					double j_t = mu * j_n;
+
+					// Cap friction impulse so it doesn't reverse our tangential velocity
+					if (j_t > vt_len) j_t = vt_len;
+
+					delta_v_t = -(v_rel_t / vt_len) * j_t;
+				}
+
+				// Apply final velocity change
+				s1->vel += (normGlobal * j_n) + delta_v_t;
+				rvel_base = s1->vel;
+				rvel_add.Set(0, 0, 0);
+
+				if (nforcevec_col < 10 && td.SimDT > 0.0) {
+					Vector F_global = ((normGlobal * j_n) + delta_v_t) * (mass / td.SimDT);
+					col_forcevec[nforcevec_col] = tmul(s1->R, F_global);
+					col_forcepos[nforcevec_col] = Vector(bestRes.contactPtLocal.x, bestRes.contactPtLocal.y, bestRes.contactPtLocal.z);
+					nforcevec_col++;
+				}
+
+				m_colDebug.active = true;
+				m_colDebug.contactPt = { bestRes.contactPtLocal.x, bestRes.contactPtLocal.y, bestRes.contactPtLocal.z };
+				Vector nLocal = tmul(s1->R, normGlobal);
+				m_colDebug.normal = { (float)nLocal.x, (float)nLocal.y, (float)nLocal.z };
+				m_colDebug.depth = bestRes.depth;
+				Vector impLocal = tmul(s1->R, (normGlobal * (j_n * mass)) + (delta_v_t * mass));
+				m_colDebug.impulseDir = { (float)impLocal.x, (float)impLocal.y, (float)impLocal.z };
+				m_colDebug.impulseMag = impLocal.length();
+				m_colDebug.leverArm = m_colDebug.contactPt;
+				m_colDebug.showTime = td.SimT1 + 3.0;
+
+				// Angular damping
+				// Because this mesh check evaluates a single deepest penetration point,
+				// we heavily dampen angular momentum when resting on pads to simulate
+				// multi-point suspension and prevent the ship from jittering or tipping over.
+				if (fabs(v_rel_norm) < 0.5 && bestRes.depth > 0.005) {
+					Vector planet_omega = mul(pp->s1->R, Vector(0, -Pi2 / pp->RotT(), 0));
+					Vector omega_rel = s1->omega - planet_omega;
+					s1->omega = planet_omega + (omega_rel * 0.8);
+				}
+			}
+		}
+	}
+}
+
+bool Vessel::CheckMeshCollision(const Mesh *m, const Matrix &M_mesh2planet, const VECTOR3 &meshPosPlanet, const Vector &vRelPlanet, BaseCollisionResult &res, const std::vector<Vector>* dockPtsP) {
+	if (!m || m_hullCacheP.empty()) return false;
+	res.hit = false;
+	double deepestPen = 0.0;
+
+	Vector mPosP(meshPosPlanet.x, meshPosPlanet.y, meshPosPlanet.z);
+	Vector vRelLocal = tmul(M_mesh2planet, vRelPlanet);
+
+	// Pre-transform hull points to mesh-local frame
+	double simDT = td.SimDT;
+	std::vector<Vector> hullM;
+	hullM.reserve(m_hullCacheP.size());
+	Vector hMinM(1e10, 1e10, 1e10), hMaxM(-1e10, -1e10, -1e10);
+
+	for (const auto& hp_v : m_hullCacheP) {
+		Vector hp_p(hp_v.x, hp_v.y, hp_v.z);
+		Vector hp_m = tmul(M_mesh2planet, hp_p - mPosP);
+		hullM.push_back(hp_m);
+
+		if (hp_m.x < hMinM.x) hMinM.x = hp_m.x;
+		if (hp_m.y < hMinM.y) hMinM.y = hp_m.y;
+		if (hp_m.z < hMinM.z) hMinM.z = hp_m.z;
+		if (hp_m.x > hMaxM.x) hMaxM.x = hp_m.x;
+		if (hp_m.y > hMaxM.y) hMaxM.y = hp_m.y;
+		if (hp_m.z > hMaxM.z) hMaxM.z = hp_m.z;
+	}
+
+	for (DWORD g = 0; g < m->nGroup(); g++) {
+		GroupSpec *grp = const_cast<Mesh*>(m)->GetGroup(g);
+		if (!grp || !grp->Vtx || !grp->Idx) continue;
+
+		// Compute group AABB
+		double gmin_x = 1e10, gmin_y = 1e10, gmin_z = 1e10;
+		double gmax_x = -1e10, gmax_y = -1e10, gmax_z = -1e10;
+		for (DWORD v = 0; v < grp->nVtx; v++) {
+			if (grp->Vtx[v].x < gmin_x) gmin_x = grp->Vtx[v].x;
+			if (grp->Vtx[v].x > gmax_x) gmax_x = grp->Vtx[v].x;
+			if (grp->Vtx[v].y < gmin_y) gmin_y = grp->Vtx[v].y;
+			if (grp->Vtx[v].y > gmax_y) gmax_y = grp->Vtx[v].y;
+			if (grp->Vtx[v].z < gmin_z) gmin_z = grp->Vtx[v].z;
+			if (grp->Vtx[v].z > gmax_z) gmax_z = grp->Vtx[v].z;
+		}
+
+		// Reject group if AABBs don't overlap
+		if (gmax_x < hMinM.x || gmin_x > hMaxM.x ||
+		    gmax_y < hMinM.y || gmin_y > hMaxM.y ||
+		    gmax_z < hMinM.z || gmin_z > hMaxM.z) continue;
+
+		// Filter hull points to only those near this group
+		std::vector<std::pair<Vector, size_t>> groupHull;
+		for (size_t ptIdx = 0; ptIdx < hullM.size(); ptIdx++) {
+			const auto& hp_m = hullM[ptIdx];
+			if (hp_m.x >= gmin_x - 0.1 && hp_m.x <= gmax_x + 0.1 &&
+			    hp_m.y >= gmin_y - 0.1 && hp_m.y <= gmax_y + 0.1 &&
+			    hp_m.z >= gmin_z - 0.1 && hp_m.z <= gmax_z + 0.1) {
+				groupHull.push_back({hp_m, ptIdx});
+			}
+		}
+		if (groupHull.empty()) continue;
+
+		// Test triangles against filtered hull points
+		for (DWORD i = 0; i < grp->nIdx; i += 3) {
+			const auto& v0_raw = grp->Vtx[grp->Idx[i]];
+			const auto& v1_raw = grp->Vtx[grp->Idx[i+1]];
+			const auto& v2_raw = grp->Vtx[grp->Idx[i+2]];
+
+			// Triangle AABB culling
+			double tmin_x = min(v0_raw.x, min(v1_raw.x, v2_raw.x)) - 0.1;
+			double tmax_x = max(v0_raw.x, max(v1_raw.x, v2_raw.x)) + 0.1;
+			double tmin_y = min(v0_raw.y, min(v1_raw.y, v2_raw.y)) - 0.1;
+			double tmax_y = max(v0_raw.y, max(v1_raw.y, v2_raw.y)) + 0.1;
+			double tmin_z = min(v0_raw.z, min(v1_raw.z, v2_raw.z)) - 0.1;
+			double tmax_z = max(v0_raw.z, max(v1_raw.z, v2_raw.z)) + 0.1;
+
+			Vector p0(v0_raw.x, v0_raw.y, v0_raw.z);
+			Vector p1(v1_raw.x, v1_raw.y, v1_raw.z);
+			Vector p2(v2_raw.x, v2_raw.y, v2_raw.z);
+
+			Vector e1 = p1 - p0;
+			Vector e2 = p2 - p0;
+			Vector n = crossp(e1, e2);
+			double area2 = n.length();
+			if (area2 < 1e-6) continue;
+			n /= area2;
+
+			// Relative velocity dot normal: negative means approaching
+			double vDotN = dotp(vRelLocal, n);
+
+			for (const auto& hp_pair : groupHull) {
+				const auto& hp_m = hp_pair.first;
+				size_t ptIdx = hp_pair.second;
+
+				// Hull point AABB check
+				if (hp_m.x < tmin_x || hp_m.x > tmax_x ||
+					hp_m.y < tmin_y || hp_m.y > tmax_y ||
+					hp_m.z < tmin_z || hp_m.z > tmax_z) continue;
+
+				if (dockPtsP) {
+					Vector hp_P = Vector(meshPosPlanet.x, meshPosPlanet.y, meshPosPlanet.z) + mul(M_mesh2planet, hp_m);
+					bool nearDock = false;
+					for (const Vector& dP : *dockPtsP) {
+						if (dP.dist2(hp_P) < 4.0) { // 2.0 meter radius
+							nearDock = true;
+							break;
+						}
+					}
+					if (nearDock) continue;
+				}
+
+				double d = dotp(hp_m - p0, n);
+
+				// Static test: point is within penetration threshold
+				if (d > 0.05 || d < -2.0) {
+					// Möller-Trumbore
+					// If the hull point is beyond the triangle (d > 0.05),
+					// it may have tunneled through during this frame.
+					// Cast a ray from start-of-frame position to current.
+					if (d > 0.05 && vDotN < -0.01 && simDT > 0.0) {
+						Vector rayD = vRelLocal * simDT;  // displacement during frame
+						Vector rayO = hp_m - rayD;        // start-of-frame position
+
+						// Möller-Trumbore intersection
+						Vector h = crossp(rayD, e2);
+						double a_mt = dotp(e1, h);
+						if (fabs(a_mt) > 1e-8) {
+							double f_mt = 1.0 / a_mt;
+							Vector s_mt = rayO - p0;
+							double u_mt = f_mt * dotp(s_mt, h);
+							if (u_mt >= -0.05 && u_mt <= 1.05) {
+								Vector q_mt = crossp(s_mt, e1);
+								double v_mt = f_mt * dotp(rayD, q_mt);
+								if (v_mt >= -0.05 && u_mt + v_mt <= 1.10) {
+									double t_mt = f_mt * dotp(e2, q_mt);
+									if (t_mt >= 0.0 && t_mt <= 1.0) {
+										// Through-penetration detected!
+										// Depth = how far past the surface the point is now
+										double pen = fabs(d);
+										if (pen > deepestPen) {
+											deepestPen = pen;
+											res.hit = true;
+											// Normal points back toward where the point came from
+											Vector nP = mul(M_mesh2planet, n);
+											res.normal = { (float)nP.x, (float)nP.y, (float)nP.z };
+											res.depth = pen;
+											if (ptIdx < m_hullCache.size()) {
+												res.contactPtLocal = { (float)m_hullCache[ptIdx].x, (float)m_hullCache[ptIdx].y, (float)m_hullCache[ptIdx].z };
+											} else {
+												size_t tdi = ptIdx - m_hullCache.size();
+												if (tdi < ntouchdown_vtx) {
+													res.contactPtLocal = { (float)touchdown_vtx[tdi].pos.x, (float)touchdown_vtx[tdi].pos.y, (float)touchdown_vtx[tdi].pos.z };
+												} else {
+													res.contactPtLocal = { 0, 0, 0 };
+												}
+											}
+										}
+									}
+								}
+							}
+						}
+					}
+					continue;
+				}
+
+				// Barycentric check
+				Vector v2p = hp_m - p0;
+				double d00 = dotp(e1, e1);
+				double d01 = dotp(e1, e2);
+				double d11 = dotp(e2, e2);
+				double d20 = dotp(v2p, e1);
+				double d21 = dotp(v2p, e2);
+				double denom = d00 * d11 - d01 * d01;
+				if (fabs(denom) < 1e-12) continue;
+				double v = (d11 * d20 - d01 * d21) / denom;
+				double w = (d00 * d21 - d01 * d20) / denom;
+				double u = 1.0 - v - w;
+
+				if (u >= -0.05 && v >= -0.05 && w >= -0.05) {
+					double pen = -d;
+					if (pen > deepestPen) {
+						deepestPen = pen;
+						res.hit = true;
+						Vector nP = mul(M_mesh2planet, n);
+						res.normal = { (float)nP.x, (float)nP.y, (float)nP.z };
+						res.depth = pen;
+						if (ptIdx < m_hullCache.size()) {
+							res.contactPtLocal = { (float)m_hullCache[ptIdx].x, (float)m_hullCache[ptIdx].y, (float)m_hullCache[ptIdx].z };
+						} else {
+							size_t tdi = ptIdx - m_hullCache.size();
+							if (tdi < ntouchdown_vtx) {
+								res.contactPtLocal = { (float)touchdown_vtx[tdi].pos.x, (float)touchdown_vtx[tdi].pos.y, (float)touchdown_vtx[tdi].pos.z };
+							} else {
+								res.contactPtLocal = { 0, 0, 0 };
+							}
+						}
+				}
+			}
+			}
+		}
+	}
+	return res.hit;
+}
+
+void Vessel::ApplyAnimationToHullCache() {
+    m_hullCache.resize(m_hullCacheStatic.size());
+    for (size_t i = 0; i < m_hullCacheStatic.size(); i++) {
+        m_hullCache[i] = m_hullCacheStatic[i].pos;
+    }
+    if (nanim == 0) return;
+
+    struct Mat4 {
+        float m[4][4];
+        Mat4() {
+            memset(m, 0, sizeof(m));
+            m[0][0] = m[1][1] = m[2][2] = m[3][3] = 1.0f;
+        }
+    };
+
+    auto TransformPoint = [](VECTOR3& p, const Mat4& M) {
+        float x = (float)p.x, y = (float)p.y, z = (float)p.z;
+        p.x = x*M.m[0][0] + y*M.m[1][0] + z*M.m[2][0] + M.m[3][0];
+        p.y = x*M.m[0][1] + y*M.m[1][1] + z*M.m[2][1] + M.m[3][1];
+        p.z = x*M.m[0][2] + y*M.m[1][2] + z*M.m[2][2] + M.m[3][2];
+    };
+    auto TransformDirection = [](VECTOR3& d, const Mat4& M, bool normalize) {
+        float x = (float)d.x, y = (float)d.y, z = (float)d.z;
+        d.x = x*M.m[0][0] + y*M.m[1][0] + z*M.m[2][0];
+        d.y = x*M.m[0][1] + y*M.m[1][1] + z*M.m[2][1];
+        d.z = x*M.m[0][2] + y*M.m[1][2] + z*M.m[2][2];
+        if (normalize) {
+            double len = sqrt(d.x*d.x + d.y*d.y + d.z*d.z);
+            if (len > 0) { d.x = (float)(d.x/len); d.y = (float)(d.y/len); d.z = (float)(d.z/len); }
+        }
+    };
+
+    std::map<MGROUP_TRANSFORM*, MGROUP_TRANSFORM*> tempTransMap;
+    auto GetTrans = [&](MGROUP_TRANSFORM* t) -> MGROUP_TRANSFORM* {
+        if (!t) return nullptr;
+        if (tempTransMap.find(t) == tempTransMap.end()) {
+            if (t->Type() == MGROUP_TRANSFORM::ROTATE) tempTransMap[t] = new MGROUP_ROTATE(*(MGROUP_ROTATE*)t);
+            else if (t->Type() == MGROUP_TRANSFORM::TRANSLATE) tempTransMap[t] = new MGROUP_TRANSLATE(*(MGROUP_TRANSLATE*)t);
+            else if (t->Type() == MGROUP_TRANSFORM::SCALE) tempTransMap[t] = new MGROUP_SCALE(*(MGROUP_SCALE*)t);
+            else tempTransMap[t] = new MGROUP_TRANSFORM(*t);
+        }
+        return tempTransMap[t];
+    };
+
+    std::function<void(ANIMATIONCOMP*, const Mat4&)> AnimateComponent = [&](ANIMATIONCOMP* comp, const Mat4& T) {
+        MGROUP_TRANSFORM* trans = GetTrans(comp->trans);
+        if (trans && trans->mesh != (UINT)-1 && trans->mesh < nmesh) {
+            for (size_t i = 0; i < m_hullCacheStatic.size(); i++) {
+                if (m_hullCacheStatic[i].meshIdx == trans->mesh) {
+                    bool matchGrp = false;
+                    if (!trans->grp) matchGrp = true;
+                    else {
+                        for (UINT g = 0; g < trans->ngrp; g++) {
+                            if (trans->grp[g] == m_hullCacheStatic[i].groupIdx) {
+                                matchGrp = true; break;
+                            }
+                        }
+                    }
+                    if (matchGrp) {
+                        TransformPoint(m_hullCache[i], T);
+                    }
+                }
+            }
+        }
+        for (UINT i = 0; i < comp->nchildren; i++) {
+            ANIMATIONCOMP* child = comp->children[i];
+            AnimateComponent(child, T);
+            MGROUP_TRANSFORM* childTrans = GetTrans(child->trans);
+            if (childTrans) {
+                switch (childTrans->Type()) {
+                    case MGROUP_TRANSFORM::NULLTRANSFORM: break;
+                    case MGROUP_TRANSFORM::ROTATE: {
+                        MGROUP_ROTATE* rot = (MGROUP_ROTATE*)childTrans;
+                        TransformPoint(rot->ref, T);
+                        TransformDirection(rot->axis, T, true);
+                    } break;
+                    case MGROUP_TRANSFORM::TRANSLATE: {
+                        MGROUP_TRANSLATE* lin = (MGROUP_TRANSLATE*)childTrans;
+                        TransformDirection(lin->shift, T, false);
+                    } break;
+                    case MGROUP_TRANSFORM::SCALE: {
+                        MGROUP_SCALE* scl = (MGROUP_SCALE*)childTrans;
+                        TransformPoint(scl->ref, T);
+                    } break;
+                }
+            }
+        }
+    };
+
+    for (UINT an = 0; an < nanim; an++) {
+        ANIMATION* A = anim + an;
+        for (UINT ii = 0; ii < A->ncomp; ii++) {
+            UINT i = (A->state > A->defstate ? ii : A->ncomp - ii - 1);
+            ANIMATIONCOMP* AC = A->comp[i];
+
+            double s0 = A->defstate;
+            if (s0 < AC->state0) s0 = AC->state0;
+            else if (s0 > AC->state1) s0 = AC->state1;
+
+            double s1 = A->state;
+            if (s1 < AC->state0) s1 = AC->state0;
+            else if (s1 > AC->state1) s1 = AC->state1;
+
+            double ds = s1 - s0;
+            if (ds == 0) continue;
+            ds /= (AC->state1 - AC->state0);
+
+            MGROUP_TRANSFORM* trans = GetTrans(AC->trans);
+            if (!trans) continue;
+
+            Mat4 T;
+            switch (trans->Type()) {
+                case MGROUP_TRANSFORM::NULLTRANSFORM: {
+                    AnimateComponent(AC, T);
+                } break;
+                case MGROUP_TRANSFORM::ROTATE: {
+                    MGROUP_ROTATE* rot = (MGROUP_ROTATE*)trans;
+                    double angle = ds * rot->angle;
+                    double c = cos(angle), s = sin(angle);
+                    double x = rot->axis.x, y = rot->axis.y, z = rot->axis.z;
+                    T.m[0][0] = (float)(c + (1-c)*x*x);
+                    T.m[0][1] = (float)((1-c)*x*y + s*z);
+                    T.m[0][2] = (float)((1-c)*x*z - s*y);
+                    T.m[1][0] = (float)((1-c)*x*y - s*z);
+                    T.m[1][1] = (float)(c + (1-c)*y*y);
+                    T.m[1][2] = (float)((1-c)*y*z + s*x);
+                    T.m[2][0] = (float)((1-c)*x*z + s*y);
+                    T.m[2][1] = (float)((1-c)*y*z - s*x);
+                    T.m[2][2] = (float)(c + (1-c)*z*z);
+                    double dx = rot->ref.x, dy = rot->ref.y, dz = rot->ref.z;
+                    T.m[3][0] = (float)(dx - T.m[0][0]*dx - T.m[1][0]*dy - T.m[2][0]*dz);
+                    T.m[3][1] = (float)(dy - T.m[0][1]*dx - T.m[1][1]*dy - T.m[2][1]*dz);
+                    T.m[3][2] = (float)(dz - T.m[0][2]*dx - T.m[1][2]*dy - T.m[2][2]*dz);
+                    AnimateComponent(AC, T);
+                } break;
+                case MGROUP_TRANSFORM::TRANSLATE: {
+                    MGROUP_TRANSLATE* lin = (MGROUP_TRANSLATE*)trans;
+                    T.m[3][0] = (float)(ds * lin->shift.x);
+                    T.m[3][1] = (float)(ds * lin->shift.y);
+                    T.m[3][2] = (float)(ds * lin->shift.z);
+                    AnimateComponent(AC, T);
+                } break;
+                case MGROUP_TRANSFORM::SCALE: {
+                    MGROUP_SCALE* scl = (MGROUP_SCALE*)trans;
+                    double s0_n = (s0 - AC->state0)/(AC->state1 - AC->state0);
+                    double s1_n = (s1 - AC->state0)/(AC->state1 - AC->state0);
+                    T.m[0][0] = (float)((s1_n*(scl->scale.x-1.0)+1.0)/(s0_n*(scl->scale.x-1.0)+1.0));
+                    T.m[1][1] = (float)((s1_n*(scl->scale.y-1.0)+1.0)/(s0_n*(scl->scale.y-1.0)+1.0));
+                    T.m[2][2] = (float)((s1_n*(scl->scale.z-1.0)+1.0)/(s0_n*(scl->scale.z-1.0)+1.0));
+                    T.m[3][0] = (float)(scl->ref.x * (1.0f - T.m[0][0]));
+                    T.m[3][1] = (float)(scl->ref.y * (1.0f - T.m[1][1]));
+                    T.m[3][2] = (float)(scl->ref.z * (1.0f - T.m[2][2]));
+                    AnimateComponent(AC, T);
+                } break;
+            }
+        }
+    }
+
+    for (auto& pair : tempTransMap) {
+        delete pair.second;
+    }
+}
+
+void Vessel::UpdateHullCacheP() {
+	if (m_hullCachePValid) return;
+	RebuildHullCache();
+    ApplyAnimationToHullCache();
+
+	if (m_hullCache.empty() || !proxyplanet) return;
+
+	Matrix V2P;
+	V2P.Set(s1->R);
+	V2P.tpremul(((Planet*)proxyplanet)->s1->R);
+	Vector localPosV(s1->pos - proxyplanet->s1->pos);
+	localPosV.Set(tmul(proxyplanet->s1->R, localPosV));
+
+	m_hullCacheP.resize(m_hullCache.size());
+	m_hullMinP.Set(1e10, 1e10, 1e10);
+	m_hullMaxP.Set(-1e10, -1e10, -1e10);
+
+	for (size_t i = 0; i < m_hullCache.size(); i++) {
+		Vector vp(m_hullCache[i].x, m_hullCache[i].y, m_hullCache[i].z);
+		Vector plv = mul(V2P, vp);
+		m_hullCacheP[i] = { (float)(plv.x + localPosV.x), (float)(plv.y + localPosV.y), (float)(plv.z + localPosV.z) };
+
+		if (m_hullCacheP[i].x < m_hullMinP.x) m_hullMinP.x = m_hullCacheP[i].x;
+		if (m_hullCacheP[i].y < m_hullMinP.y) m_hullMinP.y = m_hullCacheP[i].y;
+		if (m_hullCacheP[i].z < m_hullMinP.z) m_hullMinP.z = m_hullCacheP[i].z;
+		if (m_hullCacheP[i].x > m_hullMaxP.x) m_hullMaxP.x = m_hullCacheP[i].x;
+		if (m_hullCacheP[i].y > m_hullMaxP.y) m_hullMaxP.y = m_hullCacheP[i].y;
+		if (m_hullCacheP[i].z > m_hullMaxP.z) m_hullMaxP.z = m_hullCacheP[i].z;
+	}
+
+	m_hullGroupSlices.erase(
+        std::remove_if(m_hullGroupSlices.begin(), m_hullGroupSlices.end(),
+            [this](const HullGroupSlice& s) { return s.startIdx >= m_hullCache.size(); }),
+        m_hullGroupSlices.end()
+    );
+
+	for (auto& slice : m_hullGroupSlices) {
+		slice.minP.Set(1e10, 1e10, 1e10);
+		slice.maxP.Set(-1e10, -1e10, -1e10);
+		for (size_t i = slice.startIdx; i < slice.startIdx + slice.count; i++) {
+			if (m_hullCacheP[i].x < slice.minP.x) slice.minP.x = m_hullCacheP[i].x;
+			if (m_hullCacheP[i].y < slice.minP.y) slice.minP.y = m_hullCacheP[i].y;
+			if (m_hullCacheP[i].z < slice.minP.z) slice.minP.z = m_hullCacheP[i].z;
+			if (m_hullCacheP[i].x > slice.maxP.x) slice.maxP.x = m_hullCacheP[i].x;
+			if (m_hullCacheP[i].y > slice.maxP.y) slice.maxP.y = m_hullCacheP[i].y;
+			if (m_hullCacheP[i].z > slice.maxP.z) slice.maxP.z = m_hullCacheP[i].z;
+		}
+	}
+	// This ensures that deployed landing gears (which are often visual animations
+	// and missing from static .msh vertices) physically collide with base meshes.
+	if (proxyplanet && touchdown_vtx && ntouchdown_vtx > 0) {
+		Planet *pp = (Planet*)proxyplanet;
+		size_t tdStart = m_hullCacheP.size();
+		for (DWORD i = 0; i < ntouchdown_vtx; i++) {
+			// Transform local Touchdown Point to Global space
+			Vector tdpGlobal = s1->pos + mul(s1->R, touchdown_vtx[i].pos);
+
+			// Transform to the Planet's rotating reference frame
+			Vector tdpPlanet = tdpGlobal - pp->s1->pos;
+			tdpPlanet.Set(tmul(pp->s1->R, tdpPlanet));
+
+			// Append to our cache
+			VECTOR3 v3;
+			v3.x = (float)tdpPlanet.x;
+			v3.y = (float)tdpPlanet.y;
+			v3.z = (float)tdpPlanet.z;
+			m_hullCacheP.push_back(v3);
+		}
+
+		if (m_hullCacheP.size() > tdStart) {
+			HullGroupSlice tdSlice;
+			tdSlice.startIdx = tdStart;
+			tdSlice.count = m_hullCacheP.size() - tdStart;
+			tdSlice.isDockClearZone = false;
+			tdSlice.minP.Set(1e10, 1e10, 1e10);
+			tdSlice.maxP.Set(-1e10, -1e10, -1e10);
+			for (size_t i = tdSlice.startIdx; i < tdSlice.startIdx + tdSlice.count; i++) {
+				if (m_hullCacheP[i].x < tdSlice.minP.x) tdSlice.minP.x = m_hullCacheP[i].x;
+				if (m_hullCacheP[i].y < tdSlice.minP.y) tdSlice.minP.y = m_hullCacheP[i].y;
+				if (m_hullCacheP[i].z < tdSlice.minP.z) tdSlice.minP.z = m_hullCacheP[i].z;
+				if (m_hullCacheP[i].x > tdSlice.maxP.x) tdSlice.maxP.x = m_hullCacheP[i].x;
+				if (m_hullCacheP[i].y > tdSlice.maxP.y) tdSlice.maxP.y = m_hullCacheP[i].y;
+				if (m_hullCacheP[i].z > tdSlice.maxP.z) tdSlice.maxP.z = m_hullCacheP[i].z;
+			}
+			m_hullGroupSlices.push_back(tdSlice);
+		}
+	}
+	m_hullCachePValid = true;
+}
+
+// GJK/EPA Implementation
+
+void Vessel::ResolveCollisionWith(Vessel *v) {
+	if (!proxyplanet || proxyplanet != v->proxyplanet) return;
+
+	Vessel *v_root = v;
+	while (v_root->attach && v_root->attach->mate) v_root = v_root->attach->mate;
+	Vessel *my_root = this;
+	while (my_root->attach && my_root->attach->mate) my_root = my_root->attach->mate;
+	if (v_root == my_root) return;
+
+	if (supervessel && supervessel == v->supervessel) return; // Skip docked vessels
+
+	// Post-undock grace period: skip collision for 5 seconds after undocking
+	// to allow the separation push to clear the vessels' overlaps.
+	extern TimeData td;
+	if (td.SimT1 < undock_t + 5.0 || td.SimT1 < v->undock_t + 5.0) return;
+
+	// Relative velocity and position
+	Vector pRel = v->s1->pos - s1->pos;
+	Vector vRel = v->s1->vel - s1->vel;
+	double rsum = size + v->Size();
+
+	// Broad-phase CCD check
+	double dir = dotp(pRel, vRel);
+	if (dir >= 0.0 && pRel.length() > rsum + 5.0) return; // Moving apart
+
+	double vRelLen2 = vRel.length2();
+	if (vRelLen2 > 1e-12) {
+		double t = -dir / vRelLen2;
+		if (t > 0.0 && t < td.SimDT) {
+			Vector closestApproach = pRel + (vRel * t);
+			if (closestApproach.length() > rsum + 5.0) return; // Missed
+		} else {
+			if (pRel.length() > rsum + 5.0) return; // Did not overlap at start or end of frame
+		}
+	} else {
+		if (pRel.length() > rsum + 5.0) return; // Stationary relative to each other, not overlapping
+	}
+
+	// Drop time warp if we are close to collision
+	if (td.Warp() > 1.0) {
+		g_pOrbiter->SetWarpFactor(1.0);
+	}
+
+	UpdateHullCacheP();
+	if (m_hullCacheP.empty()) return;
+
+	// Anti-tunneling is now handled by ray-triangle CCD in CheckMeshCollision
+
+	Planet* pp = (Planet*)proxyplanet;
+	std::vector<Vector> dockPtsA;
+	for (DWORD i = 0; i < ndock; i++) {
+		Vector dP = s1->pos - pp->s1->pos + mul(s1->R, dock[i]->ref);
+		dP.Set(tmul(pp->s1->R, dP));
+		dockPtsA.push_back(dP);
+	}
+
+	std::vector<Vector> dockPtsB;
+	for (DWORD i = 0; i < v->ndock; i++) {
+		Vector dP = v->s1->pos - pp->s1->pos + mul(v->s1->R, v->dock[i]->ref);
+		dP.Set(tmul(pp->s1->R, dP));
+		dockPtsB.push_back(dP);
+	}
+
+	BaseCollisionResult bestRes;
+	bestRes.hit = false;
+	bestRes.depth = 0;
+	bool bestResFromB = false;
+
+	if (bIsConvexCollider && v->bIsConvexCollider) {
+		// Convex-to-Convex (Fast)
+		bool dockingApproach = false;
+		if (ndock > 0 && v->ndock > 0) {
+			for (DWORD i = 0; i < ndock; i++) {
+				Vector dockPosA = s1->pos + mul(s1->R, dock[i]->ref);
+				Vector dockDirA = mul(s1->R, dock[i]->dir);
+				for (DWORD j = 0; j < v->ndock; j++) {
+					Vector dockPosB = v->s1->pos + mul(v->s1->R, v->dock[j]->ref);
+					Vector dockDirB = mul(v->s1->R, v->dock[j]->dir);
+					if (dockPosA.dist(dockPosB) < 5.0 && dotp(dockDirA, dockDirB) < -0.8) {
+						dockingApproach = true;
+						break;
+					}
+				}
+				if (dockingApproach) break;
+			}
+		}
+
+		v->UpdateHullCacheP();
+		for (const auto& sliceA : m_hullGroupSlices) {
+			for (const auto& sliceB : v->m_hullGroupSlices) {
+				if (dockingApproach && (sliceA.isDockClearZone || sliceB.isDockClearZone)) continue;
+
+				if (sliceA.maxP.x < sliceB.minP.x || sliceA.minP.x > sliceB.maxP.x) continue;
+				if (sliceA.maxP.y < sliceB.minP.y || sliceA.minP.y > sliceB.maxP.y) continue;
+				if (sliceA.maxP.z < sliceB.minP.z || sliceA.minP.z > sliceB.maxP.z) continue;
+
+				GjkEpa::Simplex simplex;
+				if (GjkEpa::Intersect(&m_hullCacheP[sliceA.startIdx], sliceA.count, &v->m_hullCacheP[sliceB.startIdx], sliceB.count, simplex)) {
+					Vector normal, contactPtGlobal;
+					double depth;
+					if (GjkEpa::Penetration(&m_hullCacheP[sliceA.startIdx], sliceA.count, &v->m_hullCacheP[sliceB.startIdx], sliceB.count, simplex, normal, depth, contactPtGlobal)) {
+						if (!bestRes.hit || depth > bestRes.depth) {
+							bestRes.hit = true;
+							bestRes.depth = depth;
+							// Normal should point from B to A. EPA normal points from A to B (out of A).
+							bestRes.normal = { (float)-normal.x, (float)-normal.y, (float)-normal.z };
+
+							// contactPtGlobal is in Planet Local space
+							Vector cGlobal = pp->s1->pos + mul(pp->s1->R, contactPtGlobal);
+							Vector cLocal = cGlobal - s1->pos;
+							cLocal.Set(tmul(s1->R, cLocal)); // convert to local frame of A
+							bestRes.contactPtLocal = { (float)cLocal.x, (float)cLocal.y, (float)cLocal.z };
+							bestResFromB = false;
+						}
+					}
+				}
+			}
+		}
+	} else if (bIsConvexCollider || v->bIsConvexCollider) {
+		// Convex-to-Concave
+		Vessel* conv = bIsConvexCollider ? this : v;
+		Vessel* conc = bIsConvexCollider ? v : this;
+
+		conv->UpdateHullCacheP();
+
+		Matrix M_conc2p;
+		M_conc2p.Set(conc->s1->R);
+		M_conc2p.tpremul(pp->s1->R);
+		Vector posConc_P(conc->s1->pos - pp->s1->pos);
+		posConc_P.Set(tmul(pp->s1->R, posConc_P));
+		bool dockingApproach = false;
+		if (conv->ndock > 0 && conc->ndock > 0) {
+			for (DWORD i = 0; i < conv->ndock; i++) {
+				Vector dockPosA = conv->s1->pos + mul(conv->s1->R, conv->dock[i]->ref);
+				Vector dockDirA = mul(conv->s1->R, conv->dock[i]->dir);
+				for (DWORD j = 0; j < conc->ndock; j++) {
+					Vector dockPosB = conc->s1->pos + mul(conc->s1->R, conc->dock[j]->ref);
+					Vector dockDirB = mul(conc->s1->R, conc->dock[j]->dir);
+					if (dockPosA.dist(dockPosB) < 5.0 && dotp(dockDirA, dockDirB) < -0.8) {
+						dockingApproach = true;
+						break;
+					}
+				}
+				if (dockingApproach) break;
+			}
+		}
+
+		for (DWORD mi = 0; mi < conc->nmesh; mi++) {
+			if (!conc->meshlist[mi] || !conc->meshlist[mi]->hMesh) continue;
+			Mesh *m = (Mesh*)conc->meshlist[mi]->hMesh;
+			Vector meshOfsP = mul(M_conc2p, Vector(conc->meshlist[mi]->meshofs.x, conc->meshlist[mi]->meshofs.y, conc->meshlist[mi]->meshofs.z));
+
+			for (DWORD g = 0; g < m->nGroup(); g++) {
+				GroupSpec* grp = m->GetGroup(g);
+				if (!grp || !grp->Vtx || !grp->Idx) continue;
+				for (DWORD i = 0; i < grp->nIdx; i += 3) {
+					Vector t0(grp->Vtx[grp->Idx[i]].x, grp->Vtx[grp->Idx[i]].y, grp->Vtx[grp->Idx[i]].z);
+					Vector t1(grp->Vtx[grp->Idx[i+1]].x, grp->Vtx[grp->Idx[i+1]].y, grp->Vtx[grp->Idx[i+1]].z);
+					Vector t2(grp->Vtx[grp->Idx[i+2]].x, grp->Vtx[grp->Idx[i+2]].y, grp->Vtx[grp->Idx[i+2]].z);
+
+					t0 = posConc_P + meshOfsP + mul(M_conc2p, t0);
+					t1 = posConc_P + meshOfsP + mul(M_conc2p, t1);
+					t2 = posConc_P + meshOfsP + mul(M_conc2p, t2);
+					double tminX = min(t0.x, min(t1.x, t2.x));
+					double tmaxX = max(t0.x, max(t1.x, t2.x));
+					double tminY = min(t0.y, min(t1.y, t2.y));
+					double tmaxY = max(t0.y, max(t1.y, t2.y));
+					double tminZ = min(t0.z, min(t1.z, t2.z));
+					double tmaxZ = max(t0.z, max(t1.z, t2.z));
+
+					if (tmaxX < conv->m_hullMinP.x || tminX > conv->m_hullMaxP.x) continue;
+					if (tmaxY < conv->m_hullMinP.y || tminY > conv->m_hullMaxP.y) continue;
+					if (tmaxZ < conv->m_hullMinP.z || tminZ > conv->m_hullMaxP.z) continue;
+
+					VECTOR3 triPts[3] = {
+						{(float)t0.x, (float)t0.y, (float)t0.z},
+						{(float)t1.x, (float)t1.y, (float)t1.z},
+						{(float)t2.x, (float)t2.y, (float)t2.z}
+					};
+
+					for (const auto& sliceA : conv->m_hullGroupSlices) {
+						if (dockingApproach && sliceA.isDockClearZone) {
+							bool nearDock = false;
+							for (DWORD d = 0; d < conc->ndock; d++) {
+								Vector dockPosP = conc->s1->pos - pp->s1->pos + mul(conc->s1->R, conc->dock[d]->ref);
+								dockPosP.Set(tmul(pp->s1->R, dockPosP));
+								if (t0.dist2(dockPosP) < 9.0 || t1.dist2(dockPosP) < 9.0 || t2.dist2(dockPosP) < 9.0) {
+									nearDock = true;
+									break;
+								}
+							}
+							if (nearDock) continue;
+						}
+
+						if (tmaxX < sliceA.minP.x || tminX > sliceA.maxP.x) continue;
+						if (tmaxY < sliceA.minP.y || tminY > sliceA.maxP.y) continue;
+						if (tmaxZ < sliceA.minP.z || tminZ > sliceA.maxP.z) continue;
+
+						GjkEpa::Simplex simplex;
+						if (GjkEpa::Intersect(&conv->m_hullCacheP[sliceA.startIdx], sliceA.count, triPts, 3, simplex)) {
+							Vector normal, contactPtGlobal;
+							double depth;
+							if (GjkEpa::Penetration(&conv->m_hullCacheP[sliceA.startIdx], sliceA.count, triPts, 3, simplex, normal, depth, contactPtGlobal)) {
+								if (!bestRes.hit || depth > bestRes.depth) {
+									bestRes.hit = true;
+									bestRes.depth = depth;
+									if (bIsConvexCollider) {
+										// normal points out of A (conv) towards B (conc). We need B to A.
+										bestRes.normal = { (float)-normal.x, (float)-normal.y, (float)-normal.z };
+										// contactPtGlobal is in Planet Local space. Convert it correctly.
+										Vector cGlobal = pp->s1->pos + mul(pp->s1->R, contactPtGlobal);
+										Vector cLocal = cGlobal - s1->pos;
+										cLocal.Set(tmul(s1->R, cLocal));
+										bestRes.contactPtLocal = { (float)cLocal.x, (float)cLocal.y, (float)cLocal.z };
+										bestResFromB = false;
+
+#ifdef VESSEL_COLLISION_DEBUG
+										oapiWriteLogV("COLLISION Convex: depth=%.3f, dockApproach=%d, sliceA.dock=%d", depth, dockingApproach, sliceA.isDockClearZone);
+#endif
+									} else {
+										// normal points out of B (conv) towards A (conc). We need B to A.
+										bestRes.normal = { (float)normal.x, (float)normal.y, (float)normal.z };
+										// contactPtGlobal is in Planet Local space. Convert it correctly.
+										Vector cGlobal = pp->s1->pos + mul(pp->s1->R, contactPtGlobal);
+										Vector cLocal = cGlobal - v->s1->pos;
+										cLocal.Set(tmul(v->s1->R, cLocal));
+										bestRes.contactPtLocal = { (float)cLocal.x, (float)cLocal.y, (float)cLocal.z };
+										bestResFromB = true;
+									}
+								}
+							}
+						}
+					}
+				}
+			}
+		}
+	} else {
+		// Concave-to-Concave (Legacy fallback)
+		// Check A's hull vs B's meshes
+		Matrix M_B2p;
+		M_B2p.Set(v->s1->R);
+		M_B2p.tpremul(pp->s1->R);
+		Vector posB_P(v->s1->pos - pp->s1->pos);
+		posB_P.Set(tmul(pp->s1->R, posB_P));
+		Vector vRel_AvsB = s1->vel - v->s1->vel;
+
+		for (DWORD mi = 0; mi < v->nmesh; mi++) {
+			if (!v->meshlist[mi] || !v->meshlist[mi]->hMesh) continue;
+			Mesh *m = (Mesh*)v->meshlist[mi]->hMesh;
+			Vector meshOfsP = mul(M_B2p, Vector(v->meshlist[mi]->meshofs.x, v->meshlist[mi]->meshofs.y, v->meshlist[mi]->meshofs.z));
+			VECTOR3 mPosP = { (float)(posB_P.x + meshOfsP.x), (float)(posB_P.y + meshOfsP.y), (float)(posB_P.z + meshOfsP.z) };
+
+			BaseCollisionResult res;
+			if (CheckMeshCollision(m, M_B2p, mPosP, vRel_AvsB, res, &dockPtsB)) {
+				if (!bestRes.hit || res.depth > bestRes.depth) {
+					bestRes = res;
+					bestResFromB = false;
+				}
+			}
+		}
+
+		// Check B's hull vs A's meshes
+		v->UpdateHullCacheP();
+		if (!v->m_hullCacheP.empty()) {
+			Matrix M_A2p;
+			M_A2p.Set(s1->R);
+			M_A2p.tpremul(pp->s1->R);
+			Vector posA_P(s1->pos - pp->s1->pos);
+			posA_P.Set(tmul(pp->s1->R, posA_P));
+			Vector vRel_BvsA = v->s1->vel - s1->vel;
+
+			for (DWORD mi = 0; mi < nmesh; mi++) {
+				if (!meshlist[mi] || !meshlist[mi]->hMesh) continue;
+				Mesh *m = (Mesh*)meshlist[mi]->hMesh;
+				Vector meshOfsP = mul(M_A2p, Vector(meshlist[mi]->meshofs.x, meshlist[mi]->meshofs.y, meshlist[mi]->meshofs.z));
+				VECTOR3 mPosP = { (float)(posA_P.x + meshOfsP.x), (float)(posA_P.y + meshOfsP.y), (float)(posA_P.z + meshOfsP.z) };
+
+				BaseCollisionResult res;
+				if (v->CheckMeshCollision(m, M_A2p, mPosP, vRel_BvsA, res, &dockPtsA)) {
+					if (!bestRes.hit || res.depth > bestRes.depth) {
+						res.normal.x = -res.normal.x;
+						res.normal.y = -res.normal.y;
+						res.normal.z = -res.normal.z;
+						bestRes = res;
+						bestResFromB = true;
+					}
+				}
+			}
+		}
+	}
+
+	if (bestRes.hit) {
+		Vector norm(bestRes.normal.x, bestRes.normal.y, bestRes.normal.z);
+		Vector normGlobal = mul(pp->s1->R, norm);
+
+		// Clamp penetration depth to prevent catastrophic overcorrection
+		if (bestRes.depth > 2.0) bestRes.depth = 2.0;
+
+		// Contact point & lever arms
+		// The contact point lives on one vessel's surface. Compute it, then
+		// project it onto the line between the two CoMs so that the lever arm
+		// for each vessel is clamped to its own size.  This prevents a hull
+		// point on vessel A from creating a large torque arm on vessel B
+		// (whose CoM may be far from the contact point on A's surface).
+		Vector rawContactPtGlobal;
+		if (bestResFromB) {
+			rawContactPtGlobal = v->s1->pos + mul(v->s1->R, Vector(bestRes.contactPtLocal.x, bestRes.contactPtLocal.y, bestRes.contactPtLocal.z));
+		} else {
+			rawContactPtGlobal = s1->pos + mul(s1->R, Vector(bestRes.contactPtLocal.x, bestRes.contactPtLocal.y, bestRes.contactPtLocal.z));
+		}
+
+		Vector rA = rawContactPtGlobal - s1->pos;
+		Vector rB = rawContactPtGlobal - v->s1->pos;
+
+		double rA_len = rA.length();
+		double rB_len = rB.length();
+
+		// For the contact point used in force-vector display, use the midpoint
+		Vector contactPtGlobal = (s1->pos + rA + v->s1->pos + rB) * 0.5;
+
+		Vector omegaA_global = mul(s1->R, s1->omega);
+		Vector omegaB_global = mul(v->s1->R, v->s1->omega);
+
+		// All cross products MUST remain in the left-handed convention to avoid inverse spins and negative effective mass.
+		Vector velA = s1->vel + crossp(rA, omegaA_global);
+		Vector velB = v->s1->vel + crossp(rB, omegaB_global);
+		Vector vRelContact = velA - velB;
+
+		double relVelAlongNormal = dotp(vRelContact, normGlobal);
+
+		if (fabs(relVelAlongNormal) > 500.0) {
+			my_root->RequestDestruct();
+			v_root->RequestDestruct();
+			return;
+		}
+
+		double linearRelVel = dotp(s1->vel - v->s1->vel, normGlobal);
+		double relVelForImpulse = relVelAlongNormal;
+
+		// If already separating, no impulse
+		if (relVelForImpulse > 0) relVelForImpulse = 0.0;
+
+		// Inverse Inertia Tensors
+		Vector invI_A(1.0 / (PMI().x * Mass()), 1.0 / (PMI().y * Mass()), 1.0 / (PMI().z * Mass()));
+		Vector invI_B(1.0 / (v->PMI().x * v->Mass()), 1.0 / (v->PMI().y * v->Mass()), 1.0 / (v->PMI().z * v->Mass()));
+
+		double e = 1.0; // Perfectly rigid body restitution
+
+		// Again, Orbiter's left-handed convention means where v = r x w, torque is tau = F x r.
+		Vector crossA = crossp(normGlobal, rA);
+		Vector crossB = crossp(normGlobal, rB);
+		Vector crossA_local = tmul(s1->R, crossA);
+		Vector crossB_local = tmul(v->s1->R, crossB);
+		Vector iIT_crossA_local = crossA_local * invI_A;
+		Vector iIT_crossB_local = crossB_local * invI_B;
+		Vector iIT_crossA_global = mul(s1->R, iIT_crossA_local);
+		Vector iIT_crossB_global = mul(v->s1->R, iIT_crossB_local);
+
+		// Angular effect is the dot product of the contact point velocity generated by the unit torque (v = r x w)
+		double angularEffect = dotp(crossp(rA, iIT_crossA_global) + crossp(rB, iIT_crossB_global), normGlobal);
+		double denom = (1.0 / Mass()) + (1.0 / v->Mass()) + angularEffect;
+		if (denom < 1e-8) denom = 1e-8;
+		double j = -(1.0 + e) * relVelForImpulse / denom;
+
+#ifdef VESSEL_COLLISION_DEBUG
+		// Logs
+		double KE_pre_lin = 0.5 * Mass() * s1->vel.length2() + 0.5 * v->Mass() * v->s1->vel.length2();
+		Vector omA_loc_pre = s1->omega;
+		Vector omB_loc_pre = v->s1->omega;
+		double KE_pre_rot = 0.5 * Mass() * (PMI().x * omA_loc_pre.x * omA_loc_pre.x + PMI().y * omA_loc_pre.y * omA_loc_pre.y + PMI().z * omA_loc_pre.z * omA_loc_pre.z)
+		                   + 0.5 * v->Mass() * (v->PMI().x * omB_loc_pre.x * omB_loc_pre.x + v->PMI().y * omB_loc_pre.y * omB_loc_pre.y + v->PMI().z * omB_loc_pre.z * omB_loc_pre.z);
+		double KE_pre = KE_pre_lin + KE_pre_rot;
+		Vector P_pre = s1->vel * Mass() + v->s1->vel * v->Mass();
+		oapiWriteLogV("VCOL[%s<->%s] T=%.3f depth=%.4f e=%.2f", Name(), v->Name(), td.SimT1, bestRes.depth, e);
+		oapiWriteLogV("  normal=(%.4f,%.4f,%.4f) vN=%.4f vN_imp=%.4f linVN=%.4f",
+			normGlobal.x, normGlobal.y, normGlobal.z, relVelAlongNormal, relVelForImpulse, linearRelVel);
+		oapiWriteLogV("  rA=(%.2f,%.2f,%.2f)|%.2f rB=(%.2f,%.2f,%.2f)|%.2f rA_raw|%.2f rB_raw|%.2f",
+			rA.x, rA.y, rA.z, rA.length(), rB.x, rB.y, rB.z, rB.length(), rA_len, rB_len);
+		oapiWriteLogV("  j=%.4f massA=%.1f massB=%.1f angEff=%.6f denom=%.6f",
+			j, Mass(), v->Mass(), angularEffect, denom);
+#endif
+
+		Vector impulse = normGlobal * j;
+		Vector deltaVelA = impulse / Mass();
+		Vector deltaVelB = -(impulse / v->Mass());
+
+		// Normal impulse +j*n is applied to A (pushes A away from B).
+		// Torque on A = (+j*n) x rA = j * (n x rA).
+		// Angular accel = I_A^-1 * (j*n x rA) = j * iIT_crossA_local.
+		// Because of the convention, this dw pushes the contact point along +n (away from B),
+		// so we add the angular impulse to oppose the collision.
+		Vector deltaOmegaA = iIT_crossA_local * j;
+		Vector deltaOmegaB = -(iIT_crossB_local * j);
+
+		// Tangential Friction
+		Vector vRel_t = vRelContact - (normGlobal * relVelAlongNormal);
+		double vt_len = vRel_t.length();
+		if (vt_len > 1e-4) {
+			Vector tangent = vRel_t / vt_len;
+			// Tangential force on A is -jt * tangent. Torque is (-tangent) x rA = - (tangent x rA).
+			Vector crossA_t = crossp(tangent, rA);
+			Vector crossB_t = crossp(tangent, rB);
+			Vector iIT_crossA_t_local = tmul(s1->R, crossA_t) * invI_A;
+			Vector iIT_crossB_t_local = tmul(v->s1->R, crossB_t) * invI_B;
+			Vector iIT_crossA_t_global = mul(s1->R, iIT_crossA_t_local);
+			Vector iIT_crossB_t_global = mul(v->s1->R, iIT_crossB_t_local);
+
+			// Angular effect (left-handed velocity - (v = r x w))
+			double angularEffect_t = dotp(crossp(rA, iIT_crossA_t_global) + crossp(rB, iIT_crossB_t_global), tangent);
+			double denom_t = (1.0 / Mass()) + (1.0 / v->Mass()) + angularEffect_t;
+			if (denom_t < 1e-8) denom_t = 1e-8;
+			double effectiveMass_t = 1.0 / denom_t;
+
+			double jt = vt_len * effectiveMass_t;
+			double mu = 0.6;
+			if (jt > mu * j) jt = mu * j;
+
+			// Friction impulse on A is -jt*tangent
+			Vector frictionImpulse = tangent * jt;
+			deltaVelA -= frictionImpulse / Mass();
+			deltaVelB += frictionImpulse / v->Mass();
+			// Torque on A = (-jt * tangent) x rA = -jt * crossA_t
+			deltaOmegaA -= iIT_crossA_t_local * jt;
+			deltaOmegaB += iIT_crossB_t_local * jt;
+
+#ifdef VESSEL_COLLISION_DEBUG
+			oapiWriteLogV("  friction: vt=%.4f jt=%.4f mu*j=%.4f tangent=(%.3f,%.3f,%.3f)",
+				vt_len, jt, mu * j, tangent.x, tangent.y, tangent.z);
+#endif
+		}
+
+		// Angular damping: only active during sustained/resting contact
+		// (low normal approach velocity), and only dampens the spin component
+		// around the contact normal to avoid killing a legit tumble
+		double closingSpeed = relVelAlongNormal < 0 ? -relVelAlongNormal : 0.0;
+		if (td.SimDT > 0.0 && closingSpeed < 0.5) {
+			Vector omA_g = mul(s1->R, s1->omega);
+			Vector omB_g = mul(v->s1->R, v->s1->omega);
+			Vector omega_rel_g = omA_g - omB_g;
+
+			double omega_normal = dotp(omega_rel_g, normGlobal);
+			Vector omega_damp_g = normGlobal * (omega_normal * min(0.3, td.SimDT * 3.0));
+			deltaOmegaA -= tmul(s1->R, omega_damp_g);
+			deltaOmegaB += tmul(v->s1->R, omega_damp_g);
+		}
+
+		// Cap angular velocity gain per collision (Relaxed significantly to allow angular momentum transfer)
+		double maxOmegaGain = 10.0; // Flat cap to prevent pure numerical explosions, without killing legit spin
+		Vector newOmA = s1->omega + deltaOmegaA;
+		if (newOmA.length() > s1->omega.length() + maxOmegaGain && newOmA.length() > 1e-6)
+			deltaOmegaA = newOmA.unit() * (s1->omega.length() + maxOmegaGain) - s1->omega;
+		Vector newOmB = v->s1->omega + deltaOmegaB;
+		if (newOmB.length() > v->s1->omega.length() + maxOmegaGain && newOmB.length() > 1e-6)
+			deltaOmegaB = newOmB.unit() * (v->s1->omega.length() + maxOmegaGain) - v->s1->omega;
+
+		// Positional correction: push-out along normal with a small margin
+		// to prevent persistent overlap. Velocity-proportional margin is
+		// clamped to the penetration depth to avoid overshoot at low framerates.
+		double totalMass = Mass() + v->Mass();
+		double velMargin = min(closingSpeed * td.SimDT * 0.5, bestRes.depth * 0.5);
+		double pushOutMag = bestRes.depth * 1.01 + velMargin;
+		Vector deltaPosA = normGlobal * (pushOutMag * (v->Mass() / totalMass));
+		Vector deltaPosB = -(normGlobal * (pushOutMag * (Mass() / totalMass)));
+
+#ifdef VESSEL_COLLISION_DEBUG
+		// Logs
+		Vector velA_post = s1->vel + deltaVelA;
+		Vector velB_post = v->s1->vel + deltaVelB;
+		Vector omA_post = s1->omega + deltaOmegaA;
+		Vector omB_post = v->s1->omega + deltaOmegaB;
+		double KE_post_lin = 0.5 * Mass() * velA_post.length2() + 0.5 * v->Mass() * velB_post.length2();
+		double KE_post_rot = 0.5 * Mass() * (PMI().x * omA_post.x * omA_post.x + PMI().y * omA_post.y * omA_post.y + PMI().z * omA_post.z * omA_post.z)
+		                   + 0.5 * v->Mass() * (v->PMI().x * omB_post.x * omB_post.x + v->PMI().y * omB_post.y * omB_post.y + v->PMI().z * omB_post.z * omB_post.z);
+		double KE_post = KE_post_lin + KE_post_rot;
+		Vector P_post = velA_post * Mass() + velB_post * v->Mass();
+		double dKE = KE_post - KE_pre;
+		Vector dP = P_post - P_pre;
+		oapiWriteLogV("  dVelA=(%.4f,%.4f,%.4f) dVelB=(%.4f,%.4f,%.4f)",
+			deltaVelA.x, deltaVelA.y, deltaVelA.z, deltaVelB.x, deltaVelB.y, deltaVelB.z);
+		oapiWriteLogV("  dOmA=(%.4f,%.4f,%.4f)|%.4f dOmB=(%.4f,%.4f,%.4f)|%.4f",
+			deltaOmegaA.x, deltaOmegaA.y, deltaOmegaA.z, deltaOmegaA.length(),
+			deltaOmegaB.x, deltaOmegaB.y, deltaOmegaB.z, deltaOmegaB.length());
+		oapiWriteLogV("  KE: pre=%.2f post=%.2f delta=%.2f (%.1f%%)", KE_pre, KE_post, dKE,
+			KE_pre > 1e-6 ? 100.0 * dKE / KE_pre : 0.0);
+		oapiWriteLogV("  P: pre=(%.4f,%.4f,%.4f) post=(%.4f,%.4f,%.4f) dP|=%.6f",
+			P_pre.x, P_pre.y, P_pre.z, P_post.x, P_post.y, P_post.z, dP.length());
+		oapiWriteLogV("  pushOut=%.4f (depth=%.4f velMargin=%.4f) closingSpd=%.4f",
+			pushOutMag, bestRes.depth, velMargin, closingSpeed);
+		if (dKE > 0.0 && KE_pre > 1e-6)
+			oapiWriteLogV("  *** WARNING: ENERGY GAIN OF %.1f%% ***", 100.0 * dKE / KE_pre);
+#endif
+
+		// Debug visualization data for both vessels
+		{
+			Vector nLocal = tmul(s1->R, normGlobal);
+			Vector rAlocal = tmul(s1->R, rA);
+			Vector impLocal = tmul(s1->R, impulse);
+			m_colDebug.active = true;
+			m_colDebug.contactPt = {rAlocal.x, rAlocal.y, rAlocal.z};
+			m_colDebug.normal = {nLocal.x, nLocal.y, nLocal.z};
+			m_colDebug.depth = bestRes.depth;
+			m_colDebug.impulseDir = {impLocal.x, impLocal.y, impLocal.z};
+			m_colDebug.impulseMag = j;
+			m_colDebug.leverArm = {rAlocal.x, rAlocal.y, rAlocal.z};
+			m_colDebug.showTime = td.SimT1 + 3.0;
+		}
+		{
+			Vector nLocalB = tmul(v->s1->R, -normGlobal);
+			Vector rBlocal = tmul(v->s1->R, rB);
+			Vector impLocalB = tmul(v->s1->R, -impulse);
+			v->m_colDebug.active = true;
+			v->m_colDebug.contactPt = {rBlocal.x, rBlocal.y, rBlocal.z};
+			v->m_colDebug.normal = {nLocalB.x, nLocalB.y, nLocalB.z};
+			v->m_colDebug.depth = bestRes.depth;
+			v->m_colDebug.impulseDir = {impLocalB.x, impLocalB.y, impLocalB.z};
+			v->m_colDebug.impulseMag = j;
+			v->m_colDebug.leverArm = {rBlocal.x, rBlocal.y, rBlocal.z};
+			v->m_colDebug.showTime = td.SimT1 + 3.0;
+		}
+
+		double cooldownEnd = td.SimT1 + 1.0;
+
+		// Apply to entire stack
+		for (DWORD idx = 0; idx < g_psys->nVessel(); idx++) {
+			Vessel *vj = g_psys->GetVessel(idx);
+			Vessel *vj_root = vj;
+			while (vj_root->attach && vj_root->attach->mate) vj_root = vj_root->attach->mate;
+
+			if (vj_root == my_root) {
+				if (vj->fstatus == FLIGHTSTATUS_LANDED) {
+					vj->fstatus = FLIGHTSTATUS_FREEFLIGHT;
+					vj->bSurfaceContact = false;
+					if (vj->proxybase) vj->proxybase->ReportTakeoff (vj);
+					if (vj->lstatus == 3 || vj->lstatus == 5) vj->lstatus = 1;
+					vj->rpos_base = vj->s1->pos; vj->rpos_add.Set(0,0,0);
+					vj->s1->vel += vj->rvel_add;
+					vj->rvel_base = vj->s1->vel; vj->rvel_add.Set(0,0,0);
+					vj->s1->omega.Set(0,0,0);
+				}
+				vj->s1->pos += deltaPosA;
+				vj->s1->vel += deltaVelA;
+				vj->s1->omega += deltaOmegaA;
+				vj->rpos_base = vj->s1->pos; vj->rpos_add.Set(0,0,0);
+				vj->rvel_base = vj->s1->vel; vj->rvel_add.Set(0,0,0);
+				vj->UpdateSurfParams();
+				vj->bOrbitStabilised = false;
+				vj->el_valid = false;
+				vj->bForceActive = true;
+				if (cooldownEnd > vj->collisionCooldownT)
+					vj->collisionCooldownT = cooldownEnd;
+				if (vj->cbody) {
+					vj->cpos = vj->s1->pos - vj->cbody->s1->pos;
+					vj->cvel = vj->s1->vel - vj->cbody->s1->vel;
+				}
+				if (vj->nforcevec_col < 10 && td.SimDT > 0.0) {
+					Vector F_global = deltaVelA * (vj->Mass() / td.SimDT);
+					vj->col_forcevec[vj->nforcevec_col] = tmul(vj->s1->R, F_global);
+					vj->col_forcepos[vj->nforcevec_col] = tmul(vj->s1->R, contactPtGlobal - vj->s1->pos);
+					vj->nforcevec_col++;
+				}
+			}
+			else if (vj_root == v_root) {
+				if (vj->fstatus == FLIGHTSTATUS_LANDED) {
+					vj->fstatus = FLIGHTSTATUS_FREEFLIGHT;
+					vj->bSurfaceContact = false;
+					if (vj->proxybase) vj->proxybase->ReportTakeoff (vj);
+					if (vj->lstatus == 3 || vj->lstatus == 5) vj->lstatus = 1;
+					vj->rpos_base = vj->s1->pos; vj->rpos_add.Set(0,0,0);
+					vj->s1->vel += vj->rvel_add;
+					vj->rvel_base = vj->s1->vel; vj->rvel_add.Set(0,0,0);
+					vj->s1->omega.Set(0,0,0);
+				}
+				vj->s1->pos += deltaPosB;
+				vj->s1->vel += deltaVelB;
+				vj->s1->omega += deltaOmegaB;
+				vj->rpos_base = vj->s1->pos; vj->rpos_add.Set(0,0,0);
+				vj->rvel_base = vj->s1->vel; vj->rvel_add.Set(0,0,0);
+				vj->UpdateSurfParams();
+				vj->bOrbitStabilised = false;
+				vj->el_valid = false;
+				vj->bForceActive = true;
+				if (cooldownEnd > vj->collisionCooldownT)
+					vj->collisionCooldownT = cooldownEnd;
+				if (vj->cbody) {
+					vj->cpos = vj->s1->pos - vj->cbody->s1->pos;
+					vj->cvel = vj->s1->vel - vj->cbody->s1->vel;
+				}
+				if (vj->nforcevec_col < 10 && td.SimDT > 0.0) {
+					Vector F_global = deltaVelB * (vj->Mass() / td.SimDT);
+					vj->col_forcevec[vj->nforcevec_col] = tmul(vj->s1->R, F_global);
+					vj->col_forcepos[vj->nforcevec_col] = tmul(vj->s1->R, contactPtGlobal - vj->s1->pos);
+					vj->nforcevec_col++;
+				}
+			}
+		}
+
+		m_hullCachePValid = false;
+		v->m_hullCachePValid = false;
+	}
+}
 void Vessel::Update (bool force)
 {
 	// if the vessel is part of a composite structure or passively attached
@@ -4729,7 +6317,11 @@ void Vessel::Update (bool force)
 			if (bFRplayback) {
 				FRecorder_Play();          // update from playback stream
 			} else {
+				bool savedCanStabilise = bCanUpdateStabilised;
+				if (collisionCooldownT > td.SimT0)
+					bCanUpdateStabilised = false;
 				RigidBody::Update (force); // standard dynamic update
+				bCanUpdateStabilised = savedCanStabilise;
 			}
 		}
 
@@ -4771,6 +6363,21 @@ void Vessel::Update (bool force)
 	// update surface parameters
 	if (proxybody && fstatus != FLIGHTSTATUS_LANDED)
 		UpdateSurfParams();
+
+	nforcevec_col = 0;
+	if (td.SimT1 >= m_colDebug.showTime)
+		m_colDebug.active = false;
+
+	if (proxyplanet && fstatus != FLIGHTSTATUS_LANDED && !bFRplayback) {
+
+		// base-to-vessel mesh collision
+		if (g_pOrbiter->Cfg()->CfgPhysicsPrm.bBaseCollision && sp.alt < 5.0 * size) {
+			CheckBaseCollisions((Planet*)proxyplanet);
+		}
+	}
+
+	if (proxyplanet && !bFRplayback)
+		m_hullCachePValid = false; // reset cache for this frame
 
 	if (proxyplanet && fstatus != FLIGHTSTATUS_LANDED && !bFRplayback) {
 
@@ -4987,6 +6594,16 @@ void Vessel::PostUpdate ()
 	// module clbkPostStep is called for the vessel
 
 	VesselBase::PostUpdate ();
+
+	if (proxyplanet && !bFRplayback) {
+		// Vessel-to-vessel collisions
+		if (g_pOrbiter->Cfg()->CfgPhysicsPrm.bVesselCollision) {
+			for (DWORD i = 0; i < g_psys->nVessel(); i++) {
+				Vessel *v = g_psys->GetVessel(i);
+				if (v > this) ResolveCollisionWith(v);
+			}
+		}
+	}
 
 	DWORD j, k;
 
@@ -5876,7 +7493,10 @@ bool Vessel::DelAnimationComponent (UINT an, ANIMATIONCOMP *comp)
 bool Vessel::SetAnimation (UINT an, double state)
 {
 	if (an >= nanim) return false;
-	anim[an].state = state;
+	if (anim[an].state != state) {
+		anim[an].state = state;
+		m_hullCachePValid = false;
+	}
 	return true;
 }
 
@@ -8066,6 +9686,71 @@ void VESSEL::SaveDefaultState (FILEHANDLE scn) const
 void VESSEL::AddForce (const VECTOR3 &F, const VECTOR3 &r) const
 {
 	vessel->AddForce (MakeVector(F), MakeVector(r));
+}
+
+bool VESSEL::GetCollisionDebugData (VECTOR3 &contactPt, VECTOR3 &normal, VECTOR3 &impulseDir, VECTOR3 &leverArm, double &depth, double &impulseMag) const
+{
+	if (td.SimT1 >= vessel->m_colDebug.showTime && !vessel->m_colDebug.active) return false;
+
+	contactPt = vessel->m_colDebug.contactPt;
+	normal = vessel->m_colDebug.normal;
+	impulseDir = vessel->m_colDebug.impulseDir;
+	leverArm = vessel->m_colDebug.leverArm;
+	depth = vessel->m_colDebug.depth;
+	impulseMag = vessel->m_colDebug.impulseMag;
+	return true;
+}
+
+const VECTOR3 *VESSEL::GetCollisionPointCloud (DWORD &nPts) const
+{
+	vessel->RebuildHullCache();
+	vessel->ApplyAnimationToHullCache();
+	if (vessel->m_hullCache.empty()) {
+		nPts = 0;
+		return NULL;
+	}
+	nPts = (DWORD)vessel->m_hullCache.size();
+	return &(vessel->m_hullCache[0]);
+}
+
+const WORD *VESSEL::GetCollisionHullIndices (DWORD &nIdx) const
+{
+	vessel->RebuildHullCache();
+	vessel->ApplyAnimationToHullCache();
+	if (!vessel->m_hullVisualValid) vessel->RebuildConvexHullVisual();
+	if (vessel->m_convexHullIdx.empty()) {
+		nIdx = 0;
+		return NULL;
+	}
+	nIdx = (DWORD)vessel->m_convexHullIdx.size();
+	return &(vessel->m_convexHullIdx[0]);
+}
+
+const VECTOR3 *VESSEL::GetCollisionClearZones (DWORD &nBoxes) const
+{
+	vessel->RebuildHullCache();
+	vessel->ApplyAnimationToHullCache();
+
+	vessel->m_clearZoneCache.clear();
+	for (const auto& slice : vessel->m_hullGroupSlices) {
+		if (slice.isDockClearZone) {
+			vessel->m_clearZoneCache.push_back({slice.minP.x, slice.minP.y, slice.minP.z});
+			vessel->m_clearZoneCache.push_back({slice.maxP.x, slice.maxP.y, slice.maxP.z});
+		}
+	}
+
+	if (vessel->m_clearZoneCache.empty()) {
+		nBoxes = 0;
+		return NULL;
+	}
+
+	nBoxes = (DWORD)(vessel->m_clearZoneCache.size() / 2);
+	return &(vessel->m_clearZoneCache[0]);
+}
+
+bool VESSEL::IsConvexCollider () const
+{
+	return vessel->bIsConvexCollider;
 }
 
 PROPELLANT_HANDLE VESSEL::CreatePropellantResource (double maxmass, double mass, double efficiency) const

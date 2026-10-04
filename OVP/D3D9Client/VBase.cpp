@@ -458,9 +458,20 @@ void vBase::RenderRunwayLights(LPDIRECT3DDEVICE9 dev)
 	if (DebugControls::IsActive()) {
 		DWORD flags = *(DWORD*)gc->GetConfigParam(CFGPRM_GETDEBUGFLAGS);
 		if (flags&DBG_FLAGS_SELVISONLY && this!=DebugControls::GetVisual()) return; // Used for debugging
-		if (flags&DBG_FLAGS_BOXES) {
-			D3DXMATRIX id;
-			D3D9Effect::RenderBoundingBox(&mWorld, D3DXMatrixIdentity(&id), &BBox.min, &BBox.max, ptr(D3DXVECTOR4(1,0,1,0.75f)));
+		if (flags&DBG_FLAGS_BOXES || Config->bShowBaseColliders) {
+			for (DWORD i = 0; i < nstructure_bs; i++) {
+				if (structure_bs[i]) structure_bs[i]->RenderWireframe(&mWorld, D3DCOLOR_RGBA(50, 255, 50, 100));
+			}
+			for (DWORD i = 0; i < nstructure_as; i++) {
+				if (structure_as[i]) structure_as[i]->RenderWireframe(&mWorld, D3DCOLOR_RGBA(50, 255, 50, 100));
+			}
+		}
+	} else if (Config->bShowBaseColliders) {
+		for (DWORD i = 0; i < nstructure_bs; i++) {
+			if (structure_bs[i]) structure_bs[i]->RenderWireframe(&mWorld, D3DCOLOR_RGBA(50, 255, 50, 100));
+		}
+		for (DWORD i = 0; i < nstructure_as; i++) {
+			if (structure_as[i]) structure_as[i]->RenderWireframe(&mWorld, D3DCOLOR_RGBA(50, 255, 50, 100));
 		}
 	}
 }
