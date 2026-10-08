@@ -11,9 +11,9 @@ if(NOT IRRKLANG_DIR)
 
 		include(FetchContent)
 		FetchContent_Declare(irrKlang
-			URL ${IRRKLANG_URL}
 			SOURCE_DIR ${IRRKLANG_DIR}
 			DOWNLOAD_EXTRACT_TIMESTAMP ON
+			URL ${IRRKLANG_URL}
 		)
 
 		message("Downloading irrKlang from ${IRRKLANG_URL} ...")
