@@ -42,8 +42,34 @@ function(add_test_file test_name)
 	set_tests_properties(${test_name} PROPERTIES TIMEOUT 30)
 endfunction()
 
+# Utility function for self-contained tests that only need a few core source
+# files (listed after the test name) and neither the Orbiter library nor Lua
+function(add_core_test_file test_name)
+	add_executable(${test_name} "${test_name}.cpp" ${ARGN})
+
+	set_target_properties( ${test_name} PROPERTIES RUNTIME_OUTPUT_DIRECTORY "${ORBITER_BINARY_ROOT_DIR}" )
+
+	target_include_directories(${test_name}
+		PRIVATE ${ORBITER_SOURCE_SDK_INCLUDE_DIR}
+		PRIVATE ${ORBITER_SOURCE_ROOT_DIR}/Src/Orbiter
+	)
+
+	target_link_libraries(${test_name} Catch2::Catch2WithMain)
+
+	add_test(
+		NAME ${test_name}
+		COMMAND $<TARGET_FILE:${test_name}>
+		WORKING_DIRECTORY ${ORBITER_BINARY_ROOT_DIR}
+	)
+	set_tests_properties(${test_name} PROPERTIES TIMEOUT 30)
+endfunction()
+
 # Register unit tests
 add_test_file(Lua.Interpreter)
+add_core_test_file(Collision.GjkEpa
+	${ORBITER_SOURCE_ROOT_DIR}/Src/Orbiter/GjkEpa.cpp
+	${ORBITER_SOURCE_ROOT_DIR}/Src/Orbiter/Vecmat.cpp
+)
 
 if (BUILD_ORBITER_SERVER)
 
