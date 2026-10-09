@@ -1,16 +1,13 @@
 BEGIN_HYPERDESC
-<h1>Space Shuttle final approach</h1>
-<p>Final approach to SLF runway 33 at the Kennedy Space Center.</p>
-<p>Initially pitch down to -15°. Use the PAPI indicators ahead of the runway for glideslope adjustment.
-Use the split rudder speed brake (Ctrl-B) to bleed off airspeed.</p>
-<p>On approach, slowly raise the nose to touch down with an AOA of approx. +10°.
-Lower your gear during the final flare-up, about 10 seconds before touchdown.
-Touchdown speed is approximately 100 m/s.</p>
+<h1>Atlantis deorbit preparation</h1>
+<p>
+A little more than an orbit away from landing. Prepare to deorbit.
+</p>
 END_HYPERDESC
 
 BEGIN_ENVIRONMENT
   System Sol
-  Date MJD 52261.8651773674
+  Date MJD 52261.7968108103
 END_ENVIRONMENT
 
 BEGIN_FOCUS
@@ -24,25 +21,31 @@ BEGIN_CAMERA
 END_CAMERA
 
 BEGIN_HUD
-  TYPE Surface
+  TYPE Orbit
+  REF Earth
 END_HUD
 
 BEGIN_MFD Left
-  TYPE Surface
-  SPDMODE 1
+  TYPE Orbit
+  PROJ Ship
+  FRAME Ecliptic
+  ALT
+  REF Earth
 END_MFD
 
 BEGIN_MFD Right
-  TYPE HSI
-  NAV 1 0
-  OBS 5.76 5.81
+  TYPE Map
+  REF Earth
+  TARGET Cape Canaveral
+  ZOOM 4
+  POS -1.41 0.50
 END_MFD
 
 BEGIN_SHIPS
 ISS:ISS
   STATUS Orbiting Earth
-  RPOS -4199297.878 -4805165.309 2169841.833
-  RVEL -5847.3187 4982.3201 -273.1477
+  RPOS -1464639.565 -6250499.274 2047876.310
+  RVEL -7372.8373 2004.3579 862.9139
   AROT 30.000 0.000 50.000
   IDS 0:588 20 1:578 20 2:568 20
   XPDR 466
@@ -66,18 +69,14 @@ GL-01:DeltaGlider
 END
 STS-101:Atlantis
   STATUS Orbiting Earth
-  RPOS 4161703.327 4282542.892 -2226233.089
-  RVEL 129.5864 -42.6543 335.1232
-  AROT 58.341 53.620 47.667
-  VROT -0.2133 -0.0248 0.0103
-  RCSMODE 0
-  AFCMODE 7
-  PRPLEVEL 0:0.042842
+  RPOS 2491365.323 5683990.672 -2091498.002
+  RVEL 7070.1382 -3266.5670 -455.5557
+  AROT 17.888 -86.080 -92.167
+  PRPLEVEL 0:0.828401
   NAVFREQ 94 524
-  CONFIGURATION 4
+  CONFIGURATION 3
   GEAR 0 0.0000
   ARM_STATUS 0.5000 0.0000 0.0000 0.5000 0.5000 0.5000
-  SAS_ENABLED 1
   TRIM 0.0
   SAT_OFS_X 0.0
   SAT_OFS_Y 0.0
@@ -98,7 +97,7 @@ GL-02:DeltaGlider
   HOVERHOLD 0 1 0.0000e+00 0.0000e+00
   GEAR 1.0000 0.0000
   HUDMode 2
-  COMPARTMENT_TEMP 248.51 234.73 258.42 235.21 258.38 235.21 270.47 612.59 290.61 236.49 236.10 240.44 206.60
+  COMPARTMENT_TEMP 234.45 216.11 199.03 218.01 222.80 218.01 249.58 565.39 266.94 236.47 236.07 240.38 195.81
   COOLANT_STATE 0 0.500 287.000
   AAP 0:0 0:0 0:0
 END
