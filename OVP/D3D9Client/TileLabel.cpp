@@ -187,7 +187,7 @@ bool TileLabel::Read ()
 		ZTreeMgr *mgr = tile->smgr->ZTreeManager(4);
 		DWORD ndata = mgr->ReadData(lvl+4, ilat, ilng, &buf);
 		if (ndata) {
-			std::istringstream iss((char*)buf);
+			std::istringstream iss(std::string((char*)buf, ndata));
 			while (/*iss.tellg() < ndata &&*/ iss >> typestr >> lat >> lng >> altstr >> std::ws) {
 				std::getline(iss, name, '\n');
 
