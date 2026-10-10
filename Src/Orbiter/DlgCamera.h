@@ -16,7 +16,15 @@ class DlgCamera : public ImGuiDialog {
 public:
     DlgCamera();
     void OnDraw() override;
+
 private:
+	void DrawCockpitMode();
+	void DrawTrackMode();
+	void DrawTrackMode_Vessel();
+	void DrawTrackMode_CBody();
+	void DrawTrackMode_Base();
+	void DrawTrackMode_Frame();
+
     void DrawControl();
     void DrawTarget();
     void DrawTrack();
@@ -28,7 +36,8 @@ private:
 	bool extcam;
 	bool ground_lock;
 	bool rot_is_tilt, rot_is_pan;
-    std::string m_SelectedTarget;
+	const Body* m_SelectedTarget;
+    //std::string m_SelectedTarget;
     std::string m_SelectedSite;
     std::string m_SitePlanet;
     int m_SelectedPreset;
@@ -40,9 +49,20 @@ private:
     bool m_TargetLock;
 
     void AddCbodyNode(const CelestialBody *body);
+	void AddSurfBaseNode(const CelestialBody *cbody);
+
+	bool SystemHasBases(const CelestialBody *cbody);
+
     void ApplyObserver();
     void SetCurrentGroundpos();
-	
+
+	// Set camera mode to "Ground observer", tied to "planet".
+	// If no planet is specified use the closest planet.
+	bool SetGroundObserverView(const Planet* planet = nullptr);
+
+	// Just a wrapper for the ImGui::BeginCombo that avoids the tabbing at the right
+	bool BeginWideCombo(const char* label, const char* preview_value, ImGuiComboFlags flags = 0);
+
 	struct CameraTab {
 		const char *name;
 		const char *helptopic;

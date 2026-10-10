@@ -23,6 +23,7 @@
 
 class Body;
 class Planet;
+class Base;
 class VObject;
 class CameraMode;
 
@@ -279,6 +280,10 @@ public:
 
 	inline const Planet *ProxyPlanet () const { return planet_proxy; }
 	inline double ProxyAlt () const { return alt_proxy; }
+
+	const Base* ProxyBase(const Planet *planet = 0) const;
+	// find the surface base closest to the camera, either on a specific celestial body
+	// or by default across the entire system
 
 	void InitState (const char *scn, Body *default_target);
 	// init camera state from scenario scn

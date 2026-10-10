@@ -3,12 +3,17 @@
 #include "Orbiter.h"
 #include "Celbody.h"
 #include "Psys.h"
+#include "Pane.h"
+#include "Panel.h"
+#include "Panel2D.h"
 #include "imgui.h"
 #include "imgui_extras.h"
+#include "imgui_internal.h"
 #include "IconsFontAwesome6.h"
 
 extern PlanetarySystem *g_psys;
 extern Camera *g_camera;
+extern Pane *g_pane;
 extern TimeData td;
 extern Orbiter *g_pOrbiter;
 extern Vessel *g_focusobj;
@@ -28,6 +33,34 @@ void DlgCamera::OnDraw() {
     if(followterrain[0]=='\0')
       	sprintf (followterrain, "%0.0lf", g_camera->GroundObserver_TerrainLimit());
 
+	static char* mode_label[] = { "Cockpit", "Track", "Ground" };
+	char *curr_mode = (extcam ? extmode == CAMERA_GROUNDOBSERVER ? mode_label[2] : mode_label[1] : mode_label[0]);
+
+	ImGui::PushID("mode");
+	ImGui::SeparatorText("Camera mode");
+	if (BeginWideCombo("##mode", curr_mode, ImGuiComboFlags_HeightSmall)) {
+		bool is_selected = false;
+		if (ImGui::Selectable("Cockpit", is_selected))
+			g_pOrbiter->SetView(g_focusobj, 0);
+		if (ImGui::Selectable("Track", is_selected)) {
+			g_pOrbiter->SetView(g_focusobj, 1);
+			g_camera->SetTrackMode(CAMERA_TARGETRELATIVE);
+		}
+		if (ImGui::Selectable("Ground", is_selected))
+			SetGroundObserverView();
+		ImGui::EndCombo();
+	}
+	ImGui::PopID();
+
+	int mode = g_camera->GetMode();
+	if (mode == CAM_COCKPIT) {
+		DrawCockpitMode();
+	} else if (mode == CAM_GROUNDOBSERVER) {
+	} else {
+		DrawTrackMode();
+	}
+
+#ifdef UNDEF
     ImGuiTabBarFlags tab_bar_flags = ImGuiTabBarFlags_None;
     if (ImGui::BeginTabBar("CameraTabBar", tab_bar_flags))
     {
@@ -40,6 +73,343 @@ void DlgCamera::OnDraw() {
         }
         ImGui::EndTabBar();
     }
+#endif
+}
+
+void DlgCamera::DrawCockpitMode()
+{
+	ImGui::Text(g_focusobj->Name());
+
+	ImGui::PushID("mode");
+	ImGui::SeparatorText("Cockpit view");
+	const char* cockpit_mode_label[] = { "Glass cockpit", "Panel view", "Virtual cockpit" };
+	IntCamMode mode = g_camera->GetIntMode();
+	if (BeginWideCombo("##cockpit_mode", cockpit_mode_label[mode - CAMERA_GENERICCOCKPIT], ImGuiComboFlags_HeightSmall)) {
+		bool is_selected = false;
+		for (int i = CAMERA_GENERICCOCKPIT; i <= CAMERA_VIRTUALCOCKPIT; i++) {
+			if (ImGui::Selectable(cockpit_mode_label[i - CAMERA_GENERICCOCKPIT], is_selected)) {
+				g_pane->SetPanelMode(i - CAMERA_GENERICCOCKPIT + 1);
+				mode = (IntCamMode)i;
+			}
+		}
+		ImGui::EndCombo();
+	}
+	ImGui::PopID();
+
+	if (mode == CAMERA_2DPANELCOCKPIT) {
+		ImVec2 area = ImGui::GetContentRegionAvail();
+		if (ImGui::BeginChild("ChildL", ImVec2(area.x / 2, 0))) {
+			ImGui::PushID("switch_panel");
+			ImGui::SeparatorText("Switch panel");
+			bool has_neighbour[4] = { false, false, false, false };
+			Panel2D* panel = g_pane->GetPanel2D();
+			if (panel) {
+				for (int i = 0; i < 4; i++)
+					has_neighbour[i] = (panel->Connect(i) >= 0);
+			} else {
+				Panel* panel = g_pane->GetPanel2D_old();
+					if (panel) {
+						for (int i = 0; i < 4; i++)
+							has_neighbour[i] = (panel->Connect(i) >= 0);
+					}
+			}
+			if (ImGui::BeginChild("##switch_panel", ImVec2(0, 50))) {
+				ImVec2 area = ImGui::GetContentRegionAvail();
+				float xcnt = area.x * 0.5f;
+				ImGui::SetCursorPos(ImVec2(xcnt - 12.5f, 0));
+				if (!has_neighbour[2])
+					ImGui::BeginDisabled();
+				if (ImGui::ArrowButton("##up", ImGuiDir_Up))
+					g_pane->SwitchPanel(2);
+				if (!has_neighbour[2])
+					ImGui::EndDisabled();
+				ImGui::SetCursorPos(ImVec2(xcnt - 12.5f, 25));
+				if (!has_neighbour[3])
+					ImGui::BeginDisabled();
+				if (ImGui::ArrowButton("##down", ImGuiDir_Down))
+					g_pane->SwitchPanel(3);
+				if (!has_neighbour[3])
+					ImGui::EndDisabled();
+				ImGui::SetCursorPos(ImVec2(xcnt - 37.5f, 12));
+				if (!has_neighbour[0])
+					ImGui::BeginDisabled();
+				if (ImGui::ArrowButton("##left", ImGuiDir_Left))
+					g_pane->SwitchPanel(0);
+				if (!has_neighbour[0])
+					ImGui::EndDisabled();
+				ImGui::SetCursorPos(ImVec2(xcnt + 12.5f, 12));
+				if (!has_neighbour[1])
+					ImGui::BeginDisabled();
+				if (ImGui::ArrowButton("##right", ImGuiDir_Right))
+					g_pane->SwitchPanel(1);
+				if (!has_neighbour[1])
+					ImGui::EndDisabled();
+				ImGui::EndChild();
+			}
+			ImGui::PopID();
+			ImGui::EndChild();
+			ImGui::SameLine();
+			if (ImGui::BeginChild("ChildR")) {
+				ImGui::PushID("scroll_panel");
+				ImGui::SeparatorText("Scroll panel");
+				if (ImGui::BeginChild("##scroll_panel", ImVec2(0, 50))) {
+					ImVec2 area = ImGui::GetContentRegionAvail();
+					float xcnt = area.x * 0.5f;
+					ImGui::SetCursorPos(ImVec2(xcnt - 12.5f, 0));
+					ImGui::ArrowButton("##up", ImGuiDir_Up);
+					if (ImGui::IsItemActive())
+						g_pane->ShiftPanel(2);
+					ImGui::SetCursorPos(ImVec2(xcnt - 12.5f, 25));
+					ImGui::ArrowButton("##down", ImGuiDir_Down);
+					if (ImGui::IsItemActive())
+						g_pane->ShiftPanel(3);
+					ImGui::SetCursorPos(ImVec2(xcnt - 37.5f, 12));
+					ImGui::ArrowButton("##left", ImGuiDir_Left);
+					if (ImGui::IsItemActive())
+						g_pane->ShiftPanel(0);
+					ImGui::SetCursorPos(ImVec2(xcnt + 12.5f, 12));
+					ImGui::ArrowButton("##right", ImGuiDir_Right);
+					if (ImGui::IsItemActive())
+						g_pane->ShiftPanel(1);
+					ImGui::EndChild();
+				}
+				ImGui::PopID();
+				ImGui::EndChild();
+			}
+		}
+	} else if (mode == CAMERA_VIRTUALCOCKPIT) {
+		ImGui::PushID("posture");
+		ImGui::SeparatorText("Posture");
+		if (ImGui::BeginChild("##posture", ImVec2(0, 50))) {
+			ImVec2 size(60, 20);
+			ImGui::SetCursorPos(ImVec2(65, 0));
+			if (ImGui::Button("Forward", size))
+				g_focusobj->LeanCamera(1);
+			ImGui::SetCursorPos(ImVec2(0, 25));
+			if (ImGui::Button("To left", size))
+				g_focusobj->LeanCamera(2);
+			ImGui::SetCursorPos(ImVec2(65, 25));
+			if (ImGui::Button("Default", size))
+				g_focusobj->LeanCamera(0);
+			ImGui::SetCursorPos(ImVec2(130, 25));
+			if (ImGui::Button("To right", size))
+				g_focusobj->LeanCamera(3);
+			ImGui::EndChild();
+		}
+		ImGui::PopID();
+	}
+}
+
+void DlgCamera::DrawTrackMode()
+{
+	ImGui::PushID("track_target");
+	ImGui::SeparatorText("Tracking target");
+	const Body* target = g_camera->Target();
+	int type = OBJTP_INVALID;
+	if (target)
+		type = target->Type();
+	int category = 0, new_category = 0;
+	switch (type) {
+	case OBJTP_VESSEL:
+		category = 1;
+		break;
+	case OBJTP_CBODY:
+	case OBJTP_STAR:
+	case OBJTP_PLANET:
+		category = 2;
+		break;
+	case OBJTP_SURFBASE:
+		category = 3;
+		break;
+	}
+	const char* catName[] = { "none", "Vessel", "Celestial body", "Surface base" };
+	if (BeginWideCombo("##category", catName[category], ImGuiComboFlags_HeightSmall)) {
+		bool is_selected = false;
+		for (int i = 1; i < 4; i++)
+			if (ImGui::Selectable(catName[i], is_selected))
+				new_category = i;
+		ImGui::EndCombo();
+	}
+	if (new_category && new_category != category) {
+		Body* body = nullptr;
+		switch (new_category) {
+		case 1:
+			body = g_focusobj; // default to tracking the focus vessel
+			break;
+		case 2:
+			body = (Body*)g_camera->ProxyPlanet(); // default to tracking the closest celestial body
+			break;
+		case 3:
+			body = (Body*)g_camera->ProxyBase(g_camera->ProxyPlanet()); // default to tracking closest base on closest planet
+			if (!body)
+				body = (Body*)g_camera->ProxyBase(); // failing that, at least find the closest base on any planet
+			break;
+		}
+		if (body)
+			g_camera->Attach(body, 1);
+		category = new_category;
+	}
+
+	switch (category) {
+	case 1:
+		DrawTrackMode_Vessel();
+		break;
+	case 2:
+		DrawTrackMode_CBody();
+		break;
+	case 3:
+		DrawTrackMode_Base();
+		break;
+	}
+	ImGui::PopID();
+
+	ImGui::PushID("track_frame");
+	ImGui::SeparatorText("Camera reference frame");
+	DrawTrackMode_Frame();
+	ImGui::PopID();
+}
+
+void DlgCamera::DrawTrackMode_Vessel()
+{
+	Body* body = g_camera->Target();
+	if (body->Type() != OBJTP_VESSEL)
+		return; // something went wrong
+
+	Vessel* vessel = (Vessel*)body;
+
+	if (BeginWideCombo("##vessel", vessel->Name(), ImGuiComboFlags_HeightRegular)) {
+		bool is_selected = false;
+		for (int i = 0; i < g_psys->nVessel(); i++) {
+			Vessel* v = g_psys->GetVessel(i);
+			if (ImGui::Selectable(v->Name(), is_selected)) {
+				vessel = v;
+				g_camera->Attach(v, 1);
+			}
+		}
+		ImGui::EndCombo();
+	}
+}
+
+void DlgCamera::DrawTrackMode_CBody()
+{
+	Body* body = g_camera->Target();
+	m_SelectedTarget = body;
+	CelestialBody * cbody = (CelestialBody*)body;
+	if (BeginWideCombo("##cbody", cbody->Name(), ImGuiComboFlags_HeightRegular)) {
+		for (int i = 0; i < g_psys->nStar(); i++)
+			AddCbodyNode(g_psys->GetStar(i));
+		if (m_SelectedTarget && m_SelectedTarget != body) {
+			g_camera->Attach((Body*)m_SelectedTarget, 1);
+			ImGui::CloseCurrentPopup();
+		}
+		ImGui::EndCombo();
+	}
+}
+
+void DlgCamera::DrawTrackMode_Base()
+{
+	Body* body = g_camera->Target();
+	if (body->Type() != OBJTP_SURFBASE)
+		return; // something went wrong
+
+	Base* base = (Base*)body;
+	m_SelectedTarget = base;
+
+	if (BeginWideCombo("##base", base->Name(), ImGuiComboFlags_HeightRegular)) {
+		for (int i = 0; i < g_psys->nStar(); i++)
+			AddSurfBaseNode(g_psys->GetStar(i));
+		if (m_SelectedTarget && m_SelectedTarget != base) {
+			g_camera->Attach((Body*)m_SelectedTarget, 1);
+			ImGui::CloseCurrentPopup();
+		}
+		ImGui::EndCombo();
+	}
+}
+
+void DlgCamera::DrawTrackMode_Frame()
+{
+	ImGuiTreeNodeFlags node_flags = ImGuiTreeNodeFlags_OpenOnArrow | ImGuiTreeNodeFlags_SpanAvailWidth | ImGuiTreeNodeFlags_DefaultOpen;
+	const char* frame_label[] = { "target-relative", "absolute direction", "global frame",
+		"target to ...", "target from ..."};
+	int mode = g_camera->GetExtMode();
+	int new_mode = mode;
+	if (mode < CAMERA_TARGETRELATIVE || mode > CAMERA_TARGETFROMOBJECT)
+		return; // something went wrong
+	if (BeginWideCombo("##trackframe", frame_label[mode - CAMERA_TARGETRELATIVE], ImGuiComboFlags_HeightRegular)) {
+		bool is_selected = false;
+		if (ImGui::TreeNodeEx("Movable:", node_flags)) {
+			for (int i = CAMERA_TARGETRELATIVE; i <= CAMERA_GLOBALFRAME; i++) {
+				ImGui::TreeNodeEx(frame_label[i - CAMERA_TARGETRELATIVE], node_flags | ImGuiTreeNodeFlags_Leaf | ImGuiTreeNodeFlags_NoTreePushOnOpen);
+				if (ImGui::IsItemClicked() && !ImGui::IsItemToggledOpen())
+					new_mode = i;
+			}
+			ImGui::TreePop();
+		}
+		if (ImGui::TreeNodeEx("Fixed:", node_flags)) {
+			for (int i = CAMERA_TARGETTOOBJECT; i <= CAMERA_TARGETFROMOBJECT; i++) {
+				ImGui::TreeNodeEx(frame_label[i - CAMERA_TARGETRELATIVE], node_flags | ImGuiTreeNodeFlags_Leaf | ImGuiTreeNodeFlags_NoTreePushOnOpen);
+				if (ImGui::IsItemClicked() && !ImGui::IsItemToggledOpen())
+					new_mode = i;
+			}
+			ImGui::TreePop();
+		}
+		if (new_mode != mode) {
+			const Body* dirref = g_camera->GetDirRef();
+			if (!dirref && new_mode >= CAMERA_TARGETTOOBJECT)
+				dirref = g_psys->GetStar(0); // fallback
+			g_camera->SetTrackMode((ExtCamMode)new_mode, dirref);
+			mode = new_mode;
+			ImGui::CloseCurrentPopup();
+		}
+		ImGui::EndCombo();
+	}
+
+	if (mode >= CAMERA_TARGETTOOBJECT) {
+		const Body* dirref = g_camera->GetDirRef();
+		if (!dirref)
+			return; // something went wrong
+		m_SelectedTarget = dirref;
+		if (BeginWideCombo("##trackref", dirref->Name(), ImGuiComboFlags_HeightRegular)) {
+			bool is_selected = false;
+			if (ImGui::TreeNodeEx("Celestial bodies", node_flags & !ImGuiTreeNodeFlags_DefaultOpen)) {
+				for (int i = 0; i < g_psys->nStar(); i++)
+					AddCbodyNode(g_psys->GetStar(i));
+				ImGui::TreePop();
+			}
+			if (ImGui::TreeNodeEx("Vessels", node_flags & !ImGuiTreeNodeFlags_DefaultOpen)) {
+				for (int i = 0; i < g_psys->nVessel(); i++) {
+					Vessel *vessel = g_psys->GetVessel(i);
+					if (vessel != g_camera->Target()) {
+						ImGui::TreeNodeEx(vessel->Name(), node_flags | ImGuiTreeNodeFlags_Leaf | ImGuiTreeNodeFlags_NoTreePushOnOpen);
+						if (ImGui::IsItemClicked() && !ImGui::IsItemToggledOpen())
+							m_SelectedTarget = vessel;
+					}
+				}
+				ImGui::TreePop();
+			}
+			if (m_SelectedTarget != dirref && m_SelectedTarget != g_camera->Target()) {
+				g_camera->SetTrackMode((ExtCamMode)mode, m_SelectedTarget);
+				ImGui::CloseCurrentPopup();
+			}
+			ImGui::EndCombo();
+		}
+	}
+}
+
+bool DlgCamera::SetGroundObserverView(const Planet* planet)
+{
+	if (!planet)
+		planet = g_camera->ProxyPlanet();
+	if (!planet)
+		return false;
+
+	// map current camera position into ground-relative location
+	double lng, lat, rad, alt;
+	planet->GlobalToEquatorial(g_camera->GPos(), lng, lat, rad);
+	alt = rad - planet->Size();
+
+	g_camera->SetGroundMode(CAMERA_GROUNDOBSERVER, planet, lng, lat, alt, NULL);
+	return true;
 }
 
 void DlgCamera::DrawControl() {
@@ -130,14 +500,14 @@ void DlgCamera::DrawControl() {
 }
 
 void DlgCamera::AddCbodyNode(const CelestialBody *cbody) {
-    ImGuiTreeNodeFlags node_flags = ImGuiTreeNodeFlags_OpenOnArrow | ImGuiTreeNodeFlags_SpanAvailWidth;
-    const bool is_selected = m_SelectedTarget == cbody->Name();
+    ImGuiTreeNodeFlags node_flags = ImGuiTreeNodeFlags_OpenOnArrow | ImGuiTreeNodeFlags_SpanAvailWidth | ImGuiTreeNodeFlags_DefaultOpen;
+    const bool is_selected = m_SelectedTarget == cbody;
     if (is_selected)
         node_flags |= ImGuiTreeNodeFlags_Selected;
     if(cbody->nSecondary()) {
         bool node_open = ImGui::TreeNodeEx(cbody->Name(), node_flags);
         if (ImGui::IsItemClicked() && !ImGui::IsItemToggledOpen())
-            m_SelectedTarget = cbody->Name();
+            m_SelectedTarget = cbody;
         if(node_open) {
             for (int i = 0; i < cbody->nSecondary(); i++) {
                 AddCbodyNode (cbody->Secondary(i));
@@ -147,8 +517,50 @@ void DlgCamera::AddCbodyNode(const CelestialBody *cbody) {
     } else {
         ImGui::TreeNodeEx(cbody->Name(), node_flags | ImGuiTreeNodeFlags_Leaf | ImGuiTreeNodeFlags_NoTreePushOnOpen);
         if (ImGui::IsItemClicked() && !ImGui::IsItemToggledOpen())
-            m_SelectedTarget = cbody->Name();
+            m_SelectedTarget = cbody;
     }
+}
+
+bool DlgCamera::SystemHasBases(const CelestialBody *cbody)
+{
+	if (cbody->Type() == OBJTP_PLANET) {
+		Planet* planet = (Planet*)cbody;
+		if (planet->nBase())
+			return true;
+	}
+	for (int i = 0; i < cbody->nSecondary(); i++) {
+		if (SystemHasBases(cbody->Secondary(i)))
+			return true;
+	}
+	return false;
+}
+
+void DlgCamera::AddSurfBaseNode(const CelestialBody *cbody)
+{
+	ImGuiTreeNodeFlags node_flags = ImGuiTreeNodeFlags_OpenOnArrow | ImGuiTreeNodeFlags_SpanAvailWidth | ImGuiTreeNodeFlags_DefaultOpen;
+	if (SystemHasBases(cbody)) {
+		// grey out the cbody headers - bit of a hack
+		ImGuiContext &g = *GImGui;
+		g.DisabledAlphaBackup = g.Style.Alpha;
+		g.Style.Alpha *= g.Style.DisabledAlpha; // PushStyleVar(ImGuiStyleVar_Alpha, g.Style.Alpha * g.Style.DisabledAlpha);
+		bool node_open = ImGui::TreeNodeEx(cbody->Name(), node_flags);
+		g.Style.Alpha = g.DisabledAlphaBackup; //PopStyleVar();
+		if (node_open) {
+			if (cbody->Type() == OBJTP_PLANET) {
+				Planet* planet = (Planet*)cbody;
+				for (int i = 0; i < planet->nBase(); i++) {
+					Base* base = planet->GetBase(i);
+					ImGui::TreeNodeEx(base->Name(), node_flags | ImGuiTreeNodeFlags_Leaf | ImGuiTreeNodeFlags_NoTreePushOnOpen);
+					if (ImGui::IsItemClicked() && !ImGui::IsItemToggledOpen())
+						m_SelectedTarget = base;
+				}
+			}
+			for (int i = 0; i < cbody->nSecondary(); i++) {
+				AddSurfBaseNode(cbody->Secondary(i));
+			}
+			ImGui::TreePop();
+		}
+	}
 }
 
 void DlgCamera::DrawTarget() {
@@ -168,13 +580,14 @@ void DlgCamera::DrawTarget() {
                     if (g_psys->nBase(planet) > 0) {
 						if(ImGui::TreeNode(planet->Name())) {
 							for (int j = 0; j < g_psys->nBase(planet); j++) {
-								const char *name = g_psys->GetBase (planet,j)->Name();
-								const bool is_selected = m_SelectedTarget == name;
+								Base *base = g_psys->GetBase(planet, j);
+								const char *name = base->Name();
+								const bool is_selected = m_SelectedTarget == base;
 								ImGuiTreeNodeFlags node_flags = ImGuiTreeNodeFlags_Leaf | ImGuiTreeNodeFlags_NoTreePushOnOpen;
 								if(is_selected) node_flags |= ImGuiTreeNodeFlags_Selected;
 								ImGui::TreeNodeEx(name, node_flags);
 								if (ImGui::IsItemClicked() && !ImGui::IsItemToggledOpen())
-									m_SelectedTarget = name;
+									m_SelectedTarget = base;
 							}
 							ImGui::TreePop();
 						}
@@ -184,13 +597,14 @@ void DlgCamera::DrawTarget() {
         }
         if (ImGui::TreeNode("Vessels")) {
             for (int i = 0; i < g_psys->nVessel(); i++) {
-                const char *name = g_psys->GetVessel(i)->Name();
-                const bool is_selected = m_SelectedTarget == name;
+				Vessel* vessel = g_psys->GetVessel(i);
+                const char *name = vessel->Name();
+                const bool is_selected = m_SelectedTarget == vessel;
                 ImGuiTreeNodeFlags node_flags = ImGuiTreeNodeFlags_Leaf | ImGuiTreeNodeFlags_NoTreePushOnOpen;
                 if(is_selected) node_flags |= ImGuiTreeNodeFlags_Selected;
                 ImGui::TreeNodeEx(name, node_flags | ImGuiTreeNodeFlags_Leaf | ImGuiTreeNodeFlags_NoTreePushOnOpen);
                 if (ImGui::IsItemClicked() && !ImGui::IsItemToggledOpen())
-                    m_SelectedTarget = name;
+                    m_SelectedTarget = vessel;
             }
             ImGui::TreePop();
         }
@@ -200,10 +614,11 @@ void DlgCamera::DrawTarget() {
     ImGui::BeginChild("ChildR");
         ImGui::SeparatorText("Selected target");
         ImVec2 button_sz(ImVec2(ImGui::GetContentRegionAvail().x, 20));
-        ImGui::TextUnformatted(m_SelectedTarget.c_str());
+        ImGui::TextUnformatted(m_SelectedTarget->Name());
         if(ImGui::Button("Apply", button_sz)) {
-            Body *obj = g_psys->GetObj (m_SelectedTarget.c_str(), true);
-            if (!obj) obj = g_psys->GetBase (m_SelectedTarget.c_str(), true);
+			Body* obj = (Body*)m_SelectedTarget;
+            //Body *obj = g_psys->GetObj (m_SelectedTarget->Name(), true);
+            //if (!obj) obj = g_psys->GetBase (m_SelectedTarget->Name(), true);
             if ( obj) g_pOrbiter->SetView (obj, 1);
         }
         if(ImGui::Button("Focus Cockpit", button_sz)) {
@@ -238,14 +653,16 @@ void DlgCamera::DrawTrack() {
         ImVec2 button_sz(ImVec2(ImGui::GetContentRegionAvail().x, 20));
 
         if(ImGui::Button("Target From...", button_sz)) {
-			Body *obj = g_psys->GetObj (m_SelectedTarget.c_str(), true);
-			if (!obj) obj = g_psys->GetBase (m_SelectedTarget.c_str(), true);
+			Body* obj = (Body*)m_SelectedTarget;
+			//Body *obj = g_psys->GetObj (m_SelectedTarget.c_str(), true);
+			//if (!obj) obj = g_psys->GetBase (m_SelectedTarget.c_str(), true);
 			if (obj && obj != g_camera->Target())
 				g_camera->SetTrackMode (CAMERA_TARGETFROMOBJECT, obj);
         }
         if(ImGui::Button("Target To...", button_sz)) {
-			Body *obj = g_psys->GetObj (m_SelectedTarget.c_str(), true);
-			if (!obj) obj = g_psys->GetBase (m_SelectedTarget.c_str(), true);
+			Body* obj = (Body*)m_SelectedTarget;
+			//Body *obj = g_psys->GetObj (m_SelectedTarget.c_str(), true);
+			//if (!obj) obj = g_psys->GetBase (m_SelectedTarget.c_str(), true);
 			if (obj && obj != g_camera->Target())
 				g_camera->SetTrackMode (CAMERA_TARGETTOOBJECT, obj);
         }
@@ -260,13 +677,14 @@ void DlgCamera::DrawTrack() {
                 if (g_psys->nBase(planet) > 0) {
 					if(ImGui::TreeNode(planet->Name())) {
 						for (int j = 0; j < g_psys->nBase(planet); j++) {
-							const char *name = g_psys->GetBase (planet,j)->Name();
-							const bool is_selected = m_SelectedTarget == name;
+							Base* base = g_psys->GetBase(planet, j);
+							const char *name = base->Name();
+							const bool is_selected = m_SelectedTarget == base;
 							ImGuiTreeNodeFlags node_flags = ImGuiTreeNodeFlags_Leaf | ImGuiTreeNodeFlags_NoTreePushOnOpen;
 							if(is_selected) node_flags |= ImGuiTreeNodeFlags_Selected;
 							ImGui::TreeNodeEx(name, node_flags);
 							if (ImGui::IsItemClicked() && !ImGui::IsItemToggledOpen())
-								m_SelectedTarget = name;
+								m_SelectedTarget = base;
 						}
 			            ImGui::TreePop();
 					}
@@ -276,13 +694,14 @@ void DlgCamera::DrawTrack() {
         }
         if (ImGui::TreeNode("Vessels")) {
             for (int i = 0; i < g_psys->nVessel(); i++) {
-                const char *name = g_psys->GetVessel(i)->Name();
-                const bool is_selected = m_SelectedTarget == name;
+				Vessel* vessel = g_psys->GetVessel(i);
+                const char *name = vessel->Name();
+                const bool is_selected = m_SelectedTarget == vessel;
                 ImGuiTreeNodeFlags node_flags = ImGuiTreeNodeFlags_Leaf | ImGuiTreeNodeFlags_NoTreePushOnOpen;
                 if(is_selected) node_flags |= ImGuiTreeNodeFlags_Selected;
                 ImGui::TreeNodeEx(name, node_flags | ImGuiTreeNodeFlags_Leaf | ImGuiTreeNodeFlags_NoTreePushOnOpen);
                 if (ImGui::IsItemClicked() && !ImGui::IsItemToggledOpen())
-                    m_SelectedTarget = name;
+                    m_SelectedTarget = vessel;
             }
             ImGui::TreePop();
         }
@@ -436,4 +855,10 @@ void DlgCamera::DrawPreset() {
 
     ImGui::EndChild();
 
+}
+
+bool DlgCamera::BeginWideCombo(const char* label, const char* preview_value, ImGuiComboFlags flags)
+{
+	ImGui::SetNextItemWidth(ImGui::GetContentRegionAvail().x);
+	return ImGui::BeginCombo(label, preview_value, flags);
 }

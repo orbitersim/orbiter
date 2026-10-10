@@ -1295,6 +1295,40 @@ void Camera::UpdateProjectionMatrix ()
     //pDev->SetTransform (D3DTRANSFORMSTATE_PROJECTION, &proj_mat);
 }
 
+const Base* Camera::ProxyBase(const Planet* planet) const
+{
+	double min_dst2 = 1e10;
+	const Base* closestBase = nullptr;
+
+	if (!planet) { // loop over all bases in the system
+
+		for (int i = 0; i < g_psys->nPlanet(); i++) {
+			Planet* planet = g_psys->GetPlanet(i);
+			if (planet->nBase()) {
+				const Base* base = ProxyBase(planet);
+				double dst2 = gpos.dist2(base->GPos());
+				if (!i || dst2 < min_dst2) {
+					min_dst2 = dst2;
+					closestBase = base;
+				}
+			}
+		}
+
+	} else { // go over specified celestial body
+
+		for (int i = 0; i < planet->nBase(); i++) {
+			const Base* base = ((Planet*)planet)->GetBase(i);
+			double dst2 = gpos.dist2(base->GPos());
+			if (!i || dst2 < min_dst2) {
+				min_dst2 = dst2;
+				closestBase = base;
+			}
+		}
+
+	}
+	return closestBase;
+}
+
 void Camera::InitState (const char *scn, Body *default_target)
 {
 	// set defaults
