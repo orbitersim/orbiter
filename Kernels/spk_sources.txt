@@ -1,0 +1,5 @@
+https://ssd.jpl.nasa.gov/sats/ephem/
+https://ssd.jpl.nasa.gov/ftp/eph/satellites/bsp/
+https://ssd.jpl.nasa.gov/ftp/eph/small_bodies/asteroids_de441/
+https://naif.jpl.nasa.gov/pub/naif/generic_kernels/spk/planets/
+https://naif.jpl.nasa.gov/pub/naif/generic_kernels/spk/satellites/

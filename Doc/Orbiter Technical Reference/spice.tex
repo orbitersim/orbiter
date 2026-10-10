@@ -1,0 +1,220 @@
+\documentclass[Orbiter Technical Reference.tex]{subfiles}
+\usepackage{verbatim}
+\begin{document}
+
+\section{Support for SPICE Ephemerides}
+\textbf{Alex Frost and Matthew Hume}\\
+\textbf{September 27, 2026}
+
+
+\subsection{Introduction}
+This document describes the addition, implimentation details, and usage of a SPICE-based ephemerides module, derived from Orbiter's CELBODY2 class.
+This module was introduced as a replacement for Orbiter's VSOP87, ELP82, and custom planetary satelite ephemerides.
+SPICE ephemerides offer significantly increased accuracy over VSOP87 etc.
+Beyond this, the new spice-module allows ephemerides to be updated, and custom ephemerides to be added without the need to recompile Orbiter, since all spice-bodies share a common module (spice.dll/spice.so).
+
+\subsection{Theory of Operation}
+SPICE\cite{SPICE} is set of tools developed by NASA JPL's Navigation and Ancillary Information Facility, intended to furnish data, with a broad range of applications for space-born and simulation functions.
+SPICE works with datasets called "Kernels", which allow data for various bodies, spacecraft, or ground stations to be combined into a structured set of records and be accessed by a common set of tools.
+The implimentation of SPICE data in Orbiter, is permitted by creating creating a custom spice module called SpiceBody which, like the VSOP87 modules, is simply an overloaded CELBODY class, with a custom implimentation of clbkEphemeris.
+clbkEphemeris, in turn interacts with the internal CSPICE dataset and the modules to which it is linked.
+
+\subsection{Configuration File Options}
+The following parameters may be set in Orbiter's celestial body configuration files.
+\subsubsection{Example from Sun.cfg}
+The following is an example of the SpiceBody options set in sun.cfg.
+\begin{verbatim}
+Name = Sun                                                                  
+Module = spice
+Body = SUN
+Kernel = Kernels\naif0012.tls,Kernels\pck00011.tpc,Kernels\orbiter.bsp
+Origin = SSB
+Barycenter = SSB
+ParentBarycenter = SSB
+Interval = 100000 ; Error < 0.005m
+\end{verbatim}
+
+\paragraph{Name}
+Specifies the celestial body name in Orbiter. Required, but not a SpiceBody parameter.
+
+\paragraph{Module = spice}
+This must be in all SpiceBody config files. This tells Orbiter to load the dynamic library \(spice.dll or spice.so\) that contains the SpiceBody object. SpiceBodies can exist in a simulation alongside any other CELBODY class.
+
+\paragraph{Body}
+This command tells CSPICE which body name \(NAIF body name\) to look for in the kernel pool, and what data to load for this specific celestial body for querying ephemerides.
+
+\paragraph{Kernel}
+Load a kernel or multiple kerneks into the kernel pool. Note that at a minimum, for all bodies in the simulation binary SPK kernels and a leapsecond kernel must be loaded,
+however, module config files do not need to individually specify the SPK kernel files associated with the Orbiter body. Kernels are loaded into a kernel pool by SPICE and are accessed as needed during the simulation.
+To making loading of kernel files easier, Orbiter is shipped with a single merged kernel file \texttt{orbiter.bsp}, consisting of the datasets shown in Table \ref{tab:spicedata}.
+
+\paragraph{Origin}
+Specifies the origin of the reference from for the given body, in this case it is \texttt{SSB} or the solar system barycenter.
+
+\paragraph{Barycenter}
+Specifies the barycenter for the given body.
+
+\paragraph{ParentBarycenter}
+Specifies the bary center of the parent body.
+
+\paragraph{Interval}
+Specifies the interpolation interval in seconds.
+
+\subsubsection{Example for Europa}
+Note the difference from the sun, specificially ParentBarycenter.
+\begin{verbatim}
+Name = Europa
+Module = spice
+Body = 	EUROPA
+Origin = JUPITER
+Barycenter = EUROPA
+ParentBarycenter = JUPITER BARYCENTER
+Interval = 1100 ; Error < 0.5m
+\end{verbatim}
+
+
+\subsection{Data Sources}
+
+Spice kernels for the default Orbiter installation are distributed in a merged archive \texttt{orbiter.bsp} which combines the following archives, and covers the dates 1 January 1800, through 31 December 2199
+
+\begin{table}[]
+\begin{tabular}{|l|l|}
+\hline
+$Kernel$             & $Bodies$                                                                \\ \hline
+DE442\cite{DE440}\cite{DE442}     & Sun, all Planets and Earth's Moon                          \\ \hline
+MAR099\cite{MAR099}  & Phobos, Deimos                                                          \\ \hline
+JUP365\cite{JUP365}  & Io, Europa, Ganymede, Callisto, Amalthea                                \\ \hline
+JUP344\cite{JUP344}  & Himalia                                                                 \\ \hline
+SAT441\cite{SAT441}  & Mimas, Enceladus, Tethys, Dione, Rhea, Titan, Hyperion, Iapetus, Phoebe \\ \hline
+URA182\cite{URA182}  & Miranda, Ariel, Umbriel, Titania, Oberon                                \\ \hline
+NEP098\cite{NEP098}  & Triton, Proteus, Nereid                                                 \\ \hline
+PLU060\cite{PLU060}  & Charon, Nix, Hydra                                                      \\ \hline
+SSB441-N16\cite{SSB441-N16}    & Ceres, Vesta                                                  \\ \hline
+\end{tabular}
+\caption{Default included kernel data with the current release of Orbiter.}
+\label{tab:spicedata}
+\end{table}
+
+\subsection{Error and Orbiter Log Messages}
+
+These messages appear in the \texttt{orbiter.log} file.
+
+%% messages
+
+\subsubsection{Messages}
+
+The following informing the user about the module loading process are not errors.\\
+
+\paragraph{}
+\begin{verbatim}
+spice.dll: Kernel <kernel name> - OK.
+\end{verbatim}
+The spice module loaded a kernel successfully.
+
+\paragraph{}
+\begin{verbatim}
+spice.dll: <kernel name> (MJD <MJD Start> - <MJD END>) - OK.
+\end{verbatim}
+Kernel \texttt{kernel name} has valid data for \texttt{MJD Start} to \texttt{MJD Start}. Scenerios within these MJDs will load successfully.
+Scenerios outside these MJDs will require spice kernels with longer valid date ranges.
+
+\subsubsection{Configuration Errors}
+
+\paragraph{}
+\begin{verbatim}
+spice.dll: Error in <body_name> - Module_Atm is wrong!
+\end{verbatim}
+Incorrectly specified atmosphere module in \texttt{<body name>.cfg}
+
+\paragraph{}
+\begin{verbatim}
+spice.dll: Error in <body_name> - Kernel parameter is wrong!
+\end{verbatim}
+Incorrectly specified kernel module in \texttt{<body name>.cfg}
+
+\paragraph{}
+\begin{verbatim}
+spice.dll: Error in <body_name>- Not specified: body name!
+\end{verbatim}
+Incorrectly specified or missing SPICE body name in \texttt{<body name>.cfg}
+
+\paragraph{}
+\begin{verbatim}
+spice.dll: Error in <body_name> - Not specified: barycenter name!
+\end{verbatim}
+Incorrectly specified or missing SPICE barycenter name in \texttt{<body name>.cfg}
+
+\paragraph{}
+\begin{verbatim}
+spice.dll: Error in <body_name> - Not specified the ParentBarycenter!
+\end{verbatim}
+Incorrectly specified or missing SPICE parent barycenter in \texttt{<body name>.cfg}
+
+\paragraph{}
+\begin{verbatim}
+spice.dll: Couldn't find SPICE ID for <body_name>
+\end{verbatim}
+The function \texttt{get\_id} failed when looking up parent barycenter name. This is likely due to missing data in the kernel files. Double check data sources if you are creating a custom merged kernel.
+
+\paragraph{}
+\begin{verbatim}
+spice.dll: Error in <body_name> - Not specified the origin name!
+\end{verbatim}
+Incorrectly specified or missing SPICE origin name in \texttt{<body name>.cfg}
+
+
+\subsubsection{Kernel Errors}
+
+\paragraph{}
+\begin{verbatim}
+spice.dll: <body name> - Couldn't load kernel: <kernel name>
+\end{verbatim}
+\texttt{<body name>} was unable to load \texttt{<kernel name>}. Check the \texttt{SPICE.ERR} file in the Orbiter directory.
+
+\paragraph{}
+\begin{verbatim}
+spice.dll: Couldn't find SPICE ID for <body_name>
+\end{verbatim}
+The function \texttt{get\_id} could not find the specified spice body ID. This could be due to missing or corrupt data for that partular body in the specified kernel.
+
+\paragraph{}
+\begin{verbatim}
+spice.dll: Couldn't find SPICE ID for <origin_name>
+\end{verbatim}
+The function \texttt{get\_id} could not find the specified spice origin name. This could be due to missing or corrupt data for that partular body in the specified kernel.
+
+\paragraph{}
+\begin{verbatim}
+spice.dll: Couldn't find SPICE ID for <barycentre_name>
+\end{verbatim}
+The function \texttt{get\_id} could not find the specified spice barycenter name. This could be due to missing or corrupt data for that partular body in the specified kernel.
+
+\paragraph{}
+\begin{verbatim}
+spice.dll: Couldn't find object <body name> in SPICE kernel pool!
+\end{verbatim}
+Spice could not find any intervals for \texttt{<body name>} in the kernel pool. Orbiter will exit. Check the \texttt{SPICE.ERR} file in the Orbiter directory.
+
+\paragraph{}
+\begin{verbatim}
+spice.dll: Specified time interval for target <body_name> not available.
+\end{verbatim}
+The spice function \texttt(wnincd\_c) could not find an interval at the required time.
+
+\paragraph{}
+\begin{verbatim}
+spice.dll, ERROR in failed_c() during init for <body name>: <SPICE ERROR>
+\end{verbatim}
+The spice function \texttt{failed\_c} reported an error.Check the \texttt{SPICE.ERR} file in the Orbiter directory.
+
+\paragraph{}
+\begin{verbatim}
+spice.dll: Scenerio MJD for <body_name> is outside loaded kernel data.
+Closing Simulation Use kernel with longer date range \\
+or remove <body_name> from sol.cfg
+\end{verbatim}
+The scenerio date that was loaded is not between the kernel begin and kernel end date and time for at least one body.
+If you are trying to run a scenerio that is far in the future or past you may need to make a custom kernel 
+
+
+\end{document}

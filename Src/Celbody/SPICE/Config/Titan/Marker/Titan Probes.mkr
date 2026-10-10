@@ -1,0 +1,9 @@
+; Landing coordinate points of probes on Titan
+
+BEGIN_HEADER
+InitialState on
+ColourIdx 2
+END_HEADER
+
+BEGIN_DATA
++170 -10        : Cassini-Huygens : Huygens lander

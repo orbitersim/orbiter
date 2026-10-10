@@ -1,0 +1,14 @@
+BEGIN_HEADER
+InitialState on
+ColourIdx 2
+END_HEADER
+
+BEGIN_DATA
++42.20	-48.00	:	Argos Planum
++102.60	-22.70	:	Danube Planum
++12.50	-58.80	:	Dodona Planum
++335.40	-45.30	:	Ethiopia Planum
++341.50	-54.40	:	Hybristes Planum
++27.30	-35.30	:	Iopolis Planum
++91.20	-41.90	:	Lyrcea Planum
++92.30	-72.80	:	Nemea Planum
