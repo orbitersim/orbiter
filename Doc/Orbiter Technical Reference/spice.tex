@@ -41,7 +41,7 @@ Specifies the celestial body name in Orbiter. Required, but not a SpiceBody para
 This must be in all SpiceBody config files. This tells Orbiter to load the dynamic library \(spice.dll or spice.so\) that contains the SpiceBody object. SpiceBodies can exist in a simulation alongside any other CELBODY class.
 
 \paragraph{Body}
-This command tells CSPICE which body name \(NAIF body name\) to look for in the kernal pool, and what data to load for this specific celestial body for querying ephemerides.
+This command tells CSPICE which body name \(NAIF body name\) to look for in the kernel pool, and what data to load for this specific celestial body for querying ephemerides.
 
 \paragraph{Kernel}
 Load a kernel or multiple kerneks into the kernel pool. Note that at a minimum, for all bodies in the simulation binary SPK kernels and a leapsecond kernel must be loaded,
@@ -91,7 +91,7 @@ NEP098\cite{NEP098}  & Triton, Proteus, Nereid                                  
 PLU060\cite{PLU060}  & Charon, Nix, Hydra                                                      \\ \hline
 SSB441-N16\cite{SSB441-N16}    & Ceres, Vesta                                                  \\ \hline
 \end{tabular}
-\caption{Default included kernal data with the current release of Orbiter.}
+\caption{Default included kernel data with the current release of Orbiter.}
 \label{tab:spicedata}
 \end{table}
 
@@ -175,25 +175,25 @@ spice.dll: <body name> - Couldn't load kernel: <kernel name>
 \begin{verbatim}
 spice.dll: Couldn't find SPICE ID for <body_name>
 \end{verbatim}
-The function \texttt{get\_id} could not find the specified spice body ID. This could be due to missing or currupt data for that partular body in the specified kernal.
+The function \texttt{get\_id} could not find the specified spice body ID. This could be due to missing or currupt data for that partular body in the specified kernel.
 
 \paragraph{}
 \begin{verbatim}
 spice.dll: Couldn't find SPICE ID for <origin_name>
 \end{verbatim}
-The function \texttt{get\_id} could not find the specified spice origin name. This could be due to missing or currupt data for that partular body in the specified kernal.
+The function \texttt{get\_id} could not find the specified spice origin name. This could be due to missing or currupt data for that partular body in the specified kernel.
 
 \paragraph{}
 \begin{verbatim}
 spice.dll: Couldn't find SPICE ID for <barycentre_name>
 \end{verbatim}
-The function \texttt{get\_id} could not find the specified spice barycenter name. This could be due to missing or currupt data for that partular body in the specified kernal.
+The function \texttt{get\_id} could not find the specified spice barycenter name. This could be due to missing or currupt data for that partular body in the specified kernel.
 
 \paragraph{}
 \begin{verbatim}
 spice.dll: Couldn't find object <body name> in SPICE kernel pool!
 \end{verbatim}
-Spice could not find any intervals for \texttt{<body name>} in the kernal pool. Orbiter will exit. Check the \texttt{SPICE.ERR} file in the Orbiter directory.
+Spice could not find any intervals for \texttt{<body name>} in the kernel pool. Orbiter will exit. Check the \texttt{SPICE.ERR} file in the Orbiter directory.
 
 \paragraph{}
 \begin{verbatim}
@@ -213,8 +213,8 @@ spice.dll: Scenerio MJD for <body_name> is outside loaded kernel data.
 Closing Simulation Use kernel with longer date range \\
 or remove <body_name> from sol.cfg
 \end{verbatim}
-The scenerio date that was loaded is not between the kernal begin and kernal end date and time for at least one body.
-If you are trying to run a scenerio that is far in the future or past you may need to make a custom kernal 
+The scenerio date that was loaded is not between the kernel begin and kernel end date and time for at least one body.
+If you are trying to run a scenerio that is far in the future or past you may need to make a custom kernel 
 
 
 \end{document}
