@@ -20,6 +20,7 @@ public:
 private:
 	void DrawCockpitMode();
 	void DrawTrackMode();
+	void DrawGroundMode();
 	void DrawTrackMode_Vessel();
 	void DrawTrackMode_CBody();
 	void DrawTrackMode_Base();
@@ -58,7 +59,7 @@ private:
 
 	// Set camera mode to "Ground observer", tied to "planet".
 	// If no planet is specified use the closest planet.
-	bool SetGroundObserverView(const Planet* planet = nullptr);
+	bool SetGroundObserverView(const CelestialBody* planet = nullptr);
 
 	// Just a wrapper for the ImGui::BeginCombo that avoids the tabbing at the right
 	bool BeginWideCombo(const char* label, const char* preview_value, ImGuiComboFlags flags = 0);

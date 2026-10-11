@@ -58,9 +58,6 @@ Camera::Camera (double _nearplane, double _farplane)
 	SetCockpitDir (0,0);
 	SetCatchAngle (RAD*5.0);
 	memset (&cockpitprm, 0, sizeof(cockpitprm));
-	go.panspeed = g_pOrbiter->Cfg()->CfgCameraPrm.Panspeed;
-	go.tgtlock = true;
-	go.terrain_limit = g_pOrbiter->Cfg()->CfgCameraPrm.TerrainLimit;
 	gos.planet[0] = gos.site[0] = gos.addr[0] = '\0';
 	planet_proxy = 0;
 	npreset = 0;
@@ -152,8 +149,8 @@ void Camera::UpdateMouse ()
 
 		if (external_view) {
 			if (extmode == CAMERA_GROUNDOBSERVER) {
-				if (go.tgtlock) {
-					GroundObserverShift (dx*go.panspeed * -0.005, dy*go.panspeed * -0.005, 0.0);
+				if (go.LockedOnTarget()) {
+					GroundObserverShift (dx*go.PanSpeed() * -0.005, dy*go.PanSpeed() * -0.005, 0.0);
 				} else
 					GroundObserverTilt (dx * -0.005, dy * -0.005);
 			} else {
@@ -278,16 +275,18 @@ void Camera::SetCMode (const CameraMode *cm)
 		} break;
 	case CameraMode::CM_GROUND: {
 		const CameraMode_Ground *cmg = (const CameraMode_Ground*)cm;
-		const Body *ref;
+		const CelestialBody *ref;
 		double lng, lat, alt;
 		cmg->GetPosition (&lng, &lat, &alt, (OBJHANDLE*)&ref);
-		if (!ref) ref = dirref;
+		if (!ref)
+			ref = (go.RefBody() ? go.RefBody() : planet_proxy);
 		SetGroundMode (CAMERA_GROUNDOBSERVER, ref, lng, lat, alt, 0, cmg->GetAltMode());
 		SetGroundObserver_TargetLock (cmg->GetTgtLock());
-		if (!go.tgtlock) {
+		if (!go.LockedOnTarget()) {
 			double ph, th;
 			cmg->GetOrientation (&ph, &th);
-			go.phi = ph, go.tht = th;
+			go.TiltTo(ph, th);
+			go.LocalRot(rrot);
 		}
 		} break;
 	}
@@ -335,8 +334,8 @@ CameraMode *Camera::GetCMode () const
 		case CAMERA_GROUNDOBSERVER: {
 			cm = new CameraMode_Ground; TRACENEW
 			CameraMode_Ground *cmg = (CameraMode_Ground*)cm;
-			cmg->SetPosition (go.lng, go.lat, go.alt, (OBJHANDLE)dirref);
-			if (!go.tgtlock) cmg->SetOrientation (go.phi, go.tht);
+			cmg->SetPosition (go.Lng(), go.Lat(), go.Alt(), (OBJHANDLE)dirref);
+			if (!go.LockedOnTarget()) cmg->SetOrientation (go.Phi(), go.Tht());
 			} break;
 		default: cm = new CameraMode_Cockpit; TRACENEW
 		}
@@ -448,7 +447,7 @@ void Camera::AddPhi (double dphi)
 {
 	if (external_view) {
 		if (extmode == CAMERA_GROUNDOBSERVER) {
-			GroundObserverShift (dphi*go.panspeed, 0, 0);
+			GroundObserverShift (dphi*go.PanSpeed(), 0, 0);
 		} else {
 			SetRelPos (rdist, ephi+dphi*0.5, etheta);
 			if (extmode == CAMERA_ABSDIRECTION)
@@ -461,7 +460,7 @@ void Camera::AddTheta (double dtheta)
 {
 	if (external_view) {
 		if (extmode == CAMERA_GROUNDOBSERVER) {
-			GroundObserverShift (0, -dtheta*go.panspeed, 0);
+			GroundObserverShift (0, -dtheta*go.PanSpeed(), 0);
 		} else {
 			SetRelPos (rdist, ephi, etheta+dtheta*0.5);
 			if (extmode == CAMERA_ABSDIRECTION)
@@ -474,7 +473,7 @@ void Camera::Rotate (double _dphi, double _dtht, bool smooth)
 {
 	// change the camera direction
 	if (external_view) {
-		if (extmode == CAMERA_GROUNDOBSERVER && !go.tgtlock)
+		if (extmode == CAMERA_GROUNDOBSERVER && !go.LockedOnTarget())
 			GroundObserverTilt (_dphi*0.5, _dtht*0.5);
 	} else { // cockpit view
 		dphi = _dphi*vmax, dtht = _dtht*vmax;
@@ -533,7 +532,7 @@ void Camera::ChangeDist (double fact)
 {
 	if (external_view) {
 		if (extmode == CAMERA_GROUNDOBSERVER) {
-			GroundObserverShift (0, 0, (fact > 1 ? fact-1 : -1/fact+1)*go.panspeed);
+			GroundObserverShift (0, 0, (fact > 1 ? fact-1 : -1/fact+1)*go.PanSpeed());
 		} else {
 			SetRelPos (rdist*fact, ephi, etheta);
 			rshift = false;
@@ -735,37 +734,26 @@ double Camera::GroundElevation (const Planet *ref, double lng, double lat, doubl
 	double elev = 0.0;
 	ElevationManager *emgr = ref->ElevMgr();
 	if (emgr) {
-		int reslvl = (int)(32.0-log(max(go.alt,100.0))*LOG2);
+		int reslvl = (int)(32.0-log(max(alt, 100.0))*LOG2);
 		elev = emgr->Elevation (lat, lng, reslvl, &etile);
 	}
 	return elev;
 }
 
-void Camera::SetGroundMode (ExtCamMode mode, const Body *ref, double lng, double lat, double alt, const GroundObserverSite *_gos, bool alt_above_ground)
+void Camera::SetGroundMode (ExtCamMode mode, const CelestialBody *ref, double lng, double lat, double alt, const GroundObserverSite *_gos, bool alt_above_ground)
 {
 	if (!ref) return;
+
+	extmode = mode;
 	SetViewExternal();
-	if (ref != dirref) {
-		dirref = ref;
+	if (go.SetRefBody(ref)) {
 		for (int i = 0; i < etile.size(); i++)
 			etile[i].Clear();
 	}
-	go.lng = lng;
-	go.lat = lat;
-	double elev = GroundElevation ((const Planet*)ref, lng, lat, alt);
-	if (alt_above_ground) { // measure altitude from elevated ground
-		go.alt = alt;
-		go.alt0 = alt+elev;
-	} else {				// measure altitude from mean radius
-		go.alt0 = alt;
-		go.alt = alt-elev;
-	}
-	double clng = cos(go.lng), slng = sin(go.lng);
-	double clat = cos(go.lat), slat = sin(go.lat);
-	go.R.Set ( clng*slat, clng*clat, -slng,   // rotate from local
-	          -clat,      slat,       0,      // observer to local
-		       slng*slat, slng*clat,  clng);  // planet coords
-	extmode = mode;
+	go.MoveTo(this, lng, lat, alt, alt_above_ground);
+	go.LocalRot(rrot);
+
+	//SetGroundObserver_TargetLock(go.LockedOnTarget()); // update camera tilt settings
 
 	if (!_gos) gos.planet[0] = gos.site[0] = gos.addr[0] = '\0';
 	else {
@@ -775,71 +763,42 @@ void Camera::SetGroundMode (ExtCamMode mode, const Body *ref, double lng, double
 	}
 }
 
-//bool Camera::GetGroundMode (const Body **ref, double *lng, double *lat, double *alt)
-//{
-//	if (!external_view || extmode != CAMERA_GROUNDOBSERVER)
-//		return false;
-//
-//	*ref = dirref;
-//	*lng = go_lng;
-//	*lat = go_lat;
-//	*alt = go_alt;
-//}
-
 void Camera::SetGroundObserver_PanSpeed (double speed)
 {
-	go.panspeed = max (0.1, min (1e5, speed));
-	g_pOrbiter->Cfg()->CfgCameraPrm.Panspeed = go.panspeed;
+	if (go.SetPanSpeed(max(0.1, min(1e5, speed))))
+		g_pOrbiter->Cfg()->CfgCameraPrm.Panspeed = go.PanSpeed();
 }
 
 void Camera::SetGroundObserver_TargetLock (bool lock)
 {
-	if (lock != go.tgtlock) {
-		go.tgtlock = lock;
-
-		if (go.tgtlock && external_view && extmode == CAMERA_GROUNDOBSERVER) {
-			gdir.Set ((target->GPos()-gpos).unit());
-			Vector hdir = tmul (go.R, tmul (dirref->GRot(), gdir));
-			go.tht = asin (hdir.y);
-			go.phi = atan2 (-hdir.x, hdir.z);
-		}
+	if (external_view && extmode == CAMERA_GROUNDOBSERVER && target) {
+		Vector cam_dir;
+		if (lock)
+			cam_dir.Set((target->GPos() - gpos).unit());     // look at target
+		else
+			cam_dir = Vector(grot.m13, grot.m23, grot.m33);  // keep current view direction
+		go.SetDirection(cam_dir);
+		go.LocalRot(rrot);
 	}
+	go.SetTargetLock(lock); // if lock is on, keep looking at the target
 }
 
 void Camera::SetGroundObserver_TerrainLimit (double altlimit)
 {
-	if (altlimit != go.terrain_limit) {
-		if (go.alt < go.terrain_limit && go.alt >= altlimit) { // switching from terrain mode to flat mode
-			double elev = GroundElevation (planet_proxy, go.lng, go.lat, go.alt);
-			go.alt0 = elev + go.alt; // recalibrate target alt0 to current pos
-		}
-		go.terrain_limit = altlimit;
-		g_pOrbiter->Cfg()->CfgCameraPrm.TerrainLimit = go.terrain_limit;
-	}
+	if (go.SetTerrainLimit(altlimit))
+		g_pOrbiter->Cfg()->CfgCameraPrm.TerrainLimit = altlimit;
 }
 
 void Camera::GroundObserverShift (double dx, double dz, double dh)
 {
-	if (!external_view || extmode != CAMERA_GROUNDOBSERVER) return;
-	double r;
-	
-	Vector dsz (grot.m13, grot.m23, grot.m33); // dz: go forward/backward w.r.t. camera view direction
-	Vector dsx (grot.m11, grot.m21, grot.m31); // dx: go sideways w.r.t. camera view direction
-	dirref->GlobalToEquatorial (gpos + dsz*dz + dsx*dx, go.lng, go.lat, r);
-	double new_alt = max (1.0, go.alt+dh);
-	go.alt0 += new_alt-go.alt;
-	go.alt = new_alt;
-	double clng = cos(go.lng), slng = sin(go.lng);
-	double clat = cos(go.lat), slat = sin(go.lat);
-	go.R.Set ( clng*slat, clng*clat, -slng,   // rotate from local
-	          -clat,      slat,       0,      // observer to local
-		       slng*slat, slng*clat,  clng);  // planet coords
+	if (external_view && extmode == CAMERA_GROUNDOBSERVER)
+		go.MoveBy(this, dz, dx, dh);
 }
 
 void Camera::GroundObserverTilt (double dphi, double dtht)
 {
-	go.phi += dphi;
-	go.tht += dtht;
+	go.TiltBy(dphi, dtht);
+	go.LocalRot(rrot);
 }
 
 void Camera::ResizeViewport (int w, int h)
@@ -861,8 +820,8 @@ DWORD Camera::UpdateExternalControl (ExternalCameraControl *ecc)
 			if (cmode & CAMMODE_GROUND) {
 				ExternalCameraControl::CamData data;
 				if (ECC->clbkPoll (&data)) {
-					go.phi = data.yaw;
-					go.tht = data.pitch;
+					go.TiltTo(data.yaw, data.pitch);
+					go.LocalRot(rrot);
 				}	
 			}
 		} else { // track mode
@@ -1051,36 +1010,14 @@ void Camera::Update ()
 			grot.Set (rrot);
 			break;
 		case CAMERA_GROUNDOBSERVER: {
-			double rad, elev = 0.0;
-			if (dirref->Type() == OBJTP_PLANET)
-				elev = GroundElevation((Planet*)dirref, go.lng, go.lat, go.alt);
-			if (go.alt0-elev >= go.terrain_limit) { // flat mode
-				rad = dirref->Size() + go.alt0;
-				go.alt = go.alt0 - elev;
-			} else { // terrain-hugging mode
-				rad = dirref->Size() + elev + go.alt;
-			}
-			dirref->EquatorialToGlobal (go.lng, go.lat, rad, gpos);
-			GPOS = MakeVECTOR3 (gpos);
+			go.GlobalPos(gpos);        // update camera position from ground mode data
+			GPOS = MakeVECTOR3 (gpos); // format used by API
 			gspos.Set (gpos - target->GPos());
-			if (go.tgtlock) {
-				gdir.Set ((target->GPos()-gpos).unit());
-				Vector hdir = tmul (go.R, tmul (dirref->GRot(), gdir));
-				if (fabs (hdir.y) < 0.999999) {
-					go.tht = asin (hdir.y);
-					go.phi = atan2 (-hdir.x, hdir.z);
-				} else {
-					go.tht = (hdir.y > 0 ? Pi05 : -Pi05);
-					go.phi = 0.0;
-				}
-				//OutputGroundObserverParams();
+			if (go.LockedOnTarget()) {
+				go.SetDirection((target->GPos() - gpos).unit());
+				go.LocalRot(rrot);
 			}
-			double sinph = sin(go.phi), cosph = cos(go.phi);
-			double sinth = sin(go.tht), costh = cos(go.tht);
-			rrot.Set (cosph,  sinph*sinth, -sinph*costh,
-				      0.0,    costh,        sinth,
-					  sinph, -cosph*sinth,  cosph*costh);
-			grot.Set (dirref->GRot() * go.R * rrot);
+			go.GlobalRot(rrot, grot);
 			} break;
 		}
 		if (has_tref) {
@@ -1346,7 +1283,7 @@ void Camera::InitState (const char *scn, Body *default_target)
 	int mode = (external_view ? 1:0); external_view = true;
 	Attach (newtgt, mode);
 	if (extmode == CAMERA_GROUNDOBSERVER)
-		SetGroundMode (CAMERA_GROUNDOBSERVER, dirref, go.lng, go.lat, go.alt);
+		SetGroundMode (CAMERA_GROUNDOBSERVER, go.RefBody(), go.Lng(), go.Lat(), go.Alt());
 	SetAperture (*ap, true, true);
 }
 
@@ -1408,7 +1345,7 @@ bool Camera::Read (ifstream &ifs)
 	Body *tg = 0;
 	double rd = 4.0, ph = 0.0, th = 0.0;
 	int n = 0;
-	go.tgtlock = true;
+	bool is_groundmode = false, is_targetlocked = true;
 
 	if (!FindLine (ifs, "BEGIN_CAMERA")) return false;
 	for (;;) {
@@ -1436,12 +1373,17 @@ bool Camera::Read (ifstream &ifs)
 		} else if (!_strnicmp (pc, "TRACKMODE", 9)) {
 			n = sscanf (pc+9, "%s%s", ctrackmode, cdirref);
 		} else if (!_strnicmp (pc, "GROUNDLOCATION", 14)) {
-			n = sscanf (pc+14, "%lf%lf%lf", &go.lng, &go.lat, &go.alt);
-			go.lng *= RAD, go.lat *= RAD;
+			double lng, lat, alt;
+			n = sscanf (pc+14, "%lf%lf%lf", &lng, &lat, &alt);
+			lng *= RAD, lat *= RAD;
+			go.MoveTo(this, lng, lat, alt);
 		} else if (!_strnicmp (pc, "GROUNDDIRECTION", 15)) {
-			n = sscanf (pc+15, "%lf%lf", &go.phi, &go.tht);
-			go.phi *= RAD, go.tht *= RAD;
-			go.tgtlock = false;
+			double phi, tht;
+			n = sscanf (pc+15, "%lf%lf", &phi, &tht);
+			phi *= RAD, tht *= RAD;
+			go.TiltTo(phi, tht);
+			is_targetlocked = false;
+			go.SetTargetLock(false);
 		} else if (!_strnicmp (pc, "BEGIN_PRESET", 12)) {
 			for (;;) {
 				if (!ifs.getline (cbuf, 256)) break;
@@ -1454,19 +1396,27 @@ bool Camera::Read (ifstream &ifs)
 	if (tg && external_view) target = tg;
 	if (external_view) {
 		rdist = rd, ephi = ph, etheta = th;
-		if (!_stricmp (ctrackmode, "AbsoluteDirection"))
+		if (!_stricmp(ctrackmode, "AbsoluteDirection"))
 			extmode = CAMERA_ABSDIRECTION;
-		else if (!_stricmp (ctrackmode, "GlobalFrame"))
+		else if (!_stricmp(ctrackmode, "GlobalFrame"))
 			extmode = CAMERA_GLOBALFRAME;
-		else if (!_stricmp (ctrackmode, "TargetTo") && (dirref = g_psys->GetObj (cdirref, true)))
+		else if (!_stricmp(ctrackmode, "TargetTo") && (dirref = g_psys->GetObj(cdirref, true)))
 			extmode = CAMERA_TARGETTOOBJECT;
-		else if (!_stricmp (ctrackmode, "TargetFrom") && (dirref = g_psys->GetObj (cdirref, true)))
+		else if (!_stricmp(ctrackmode, "TargetFrom") && (dirref = g_psys->GetObj(cdirref, true)))
 			extmode = CAMERA_TARGETFROMOBJECT;
-		else if (!_stricmp (ctrackmode, "Ground") && (dirref = g_psys->GetObj (cdirref, true)))
-			extmode = CAMERA_GROUNDOBSERVER;
-		else 
+		else if (!_stricmp(ctrackmode, "Ground")) {
+			CelestialBody *ref = (CelestialBody*)g_psys->GetObj(cdirref, true);
+			if (ref && go.SetRefBody(ref)) {
+				extmode = CAMERA_GROUNDOBSERVER;
+				is_groundmode = true;
+			}
+		}  else
 			extmode = CAMERA_TARGETRELATIVE;
 	}
+
+	if (is_groundmode)
+		go.SetTargetLock(is_targetlocked);
+
 	return true;
 }
 
@@ -1493,12 +1443,12 @@ void Camera::Write (ostream &ofs) const
 			ofs << "TargetFrom " << dirref->Name() << endl;
 			break;
 		case CAMERA_GROUNDOBSERVER:
-			ofs << "Ground " << dirref->Name() << endl;
+			ofs << "Ground " << go.RefBody()->Name() << endl;
 			ofs << setprecision(5) << "  GROUNDLOCATION "
-				<< go.lng*DEG << ' ' << go.lat*DEG << ' '
-				<< setprecision(2) << go.alt << endl;
-			if (!go.tgtlock)
-				ofs << "  GROUNDDIRECTION " << go.phi*DEG << ' ' << go.tht*DEG << endl;
+				<< go.Lng()*DEG << ' ' << go.Lat()*DEG << ' '
+				<< setprecision(2) << go.Alt() << endl;
+			if (!go.LockedOnTarget())
+				ofs << "  GROUNDDIRECTION " << go.Phi()*DEG << ' ' << go.Tht()*DEG << endl;
 			break;
 		default:
 			ofs << "TargetRelative\n";
@@ -1542,6 +1492,159 @@ bool Camera::UnregisterExternalControl ()
 	}
 }
 
+Camera::GroundObserver::GroundObserver()
+{
+	refbody = 0;
+	lng = lat = 0.0;
+	alt = alt0 = 100.0;
+	elev = 0.0;
+	rad = 0.0;
+	terrain_limit = g_pOrbiter->Cfg()->CfgCameraPrm.TerrainLimit;
+	phi = tht = 0.0;
+	R = IMatrix();
+	lock_dir = Vector(1, 0, 0);
+	panspeed = g_pOrbiter->Cfg()->CfgCameraPrm.Panspeed;
+	tgtlock = false;
+
+	refbody_prev = 0;
+	lng_prev = lat_prev = NAN;
+}
+
+bool Camera::GroundObserver::SetRefBody(const CelestialBody *body)
+{
+	if (body != refbody) {
+		refbody = body;
+		return true;
+	}
+	return false;
+}
+
+void Camera::GroundObserver::RegisterMove(const Camera* cam)
+{
+	if (!refbody)
+		return;
+
+	if (refbody != refbody_prev || lng != lng_prev || lat != lat_prev) {
+		Planet *planet = (refbody->Type() == OBJTP_PLANET ? (Planet*)refbody : 0);
+		elev = (planet ? cam->GroundElevation(planet, lng, lat, alt) : 0.0);
+		if (alt0 - elev >= terrain_limit) { // flat mode
+			rad = refbody->Size() + alt0;
+			alt = alt0 - elev;
+		} else { // terrain-hugging mode
+			rad = refbody->Size() + elev + alt;
+		}
+
+		double clng = cos(lng), slng = sin(lng);
+		double clat = cos(lat), slat = sin(lat);
+		R.Set( clng*slat, clng*clat, -slng,   // rotate from local
+			  -clat,      slat,       0,      // observer to local
+			   slng*slat, slng*clat,  clng);  // planet coords
+
+		lng_prev = lng; lat_prev = lat;
+	}
+}
+
+bool Camera::GroundObserver::SetTerrainLimit(double altLimit)
+{
+	if (altLimit != terrain_limit) {
+		if (alt < terrain_limit && alt >= altLimit) // switch from terrain-hugging to flat movement
+			alt0 = elev + alt;
+		terrain_limit = altLimit;
+		return true;
+	}
+	return false;
+}
+
+bool Camera::GroundObserver::SetPanSpeed(double speed)
+{
+	if (speed != panspeed) {
+		panspeed = speed;
+		return true;
+	}
+	return false;
+}
+
+bool Camera::GroundObserver::SetTargetLock(bool lock)
+{
+	if (lock != tgtlock) {
+		tgtlock = lock;
+		return true;
+	}
+	return false;
+}
+
+void Camera::GroundObserver::GlobalPos(Vector &gpos)
+{
+	if (refbody)
+		refbody->EquatorialToGlobal(lng, lat, rad, gpos);
+}
+
+void Camera::GroundObserver::LocalRot(Matrix &rrot)
+{
+	double sinph = sin(phi), cosph = cos(phi);
+	double sinth = sin(tht), costh = cos(tht);
+	rrot.Set(cosph,  sinph*sinth, -sinph*costh,
+		     0.0,    costh,        sinth,
+		     sinph, -cosph*sinth,  cosph*costh);
+}
+
+void Camera::GroundObserver::GlobalRot(const Matrix &rrot, Matrix &grot)
+{
+	grot.Set(refbody->GRot() * R * rrot);
+}
+
+void Camera::GroundObserver::SetDirection(const Vector& dir)
+{
+	lock_dir = dir;
+	Vector hdir = tmul(R, tmul(refbody->GRot(), dir));
+	if (fabs(hdir.y) < 0.999999) {
+		TiltTo(atan2(-hdir.x, hdir.z), asin(hdir.y));
+	} else {
+		// avoid instabilities at poles
+		TiltTo(0.0, (hdir.y > 0 ? Pi05 : -Pi05));
+	}
+}
+
+void Camera::GroundObserver::TiltTo(double _phi, double _tht)
+{
+	phi = _phi; tht = _tht;
+}
+
+void Camera::GroundObserver::TiltBy(double dphi, double dtht)
+{
+	phi += dphi; tht += dtht;
+}
+
+void Camera::GroundObserver::MoveTo(const Camera* cam, double _lng, double _lat, double _alt, bool alt_above_terrain)
+{
+	const Planet *planet = (refbody && refbody->Type() == OBJTP_PLANET ? (const Planet*)refbody : 0);
+	elev = (planet ? cam->GroundElevation(planet, _lng, _lat, _alt) : 0.0);
+	if (alt_above_terrain) { // measure altitude from elevated ground
+		alt = _alt;
+		alt0 = _alt + elev;
+	} else {				// measure altitude from mean radius
+		alt0 = _alt;
+		alt = _alt - elev;
+	}
+	lng = _lng;
+	lat = _lat;
+	RegisterMove(cam);
+}
+
+void Camera::GroundObserver::MoveBy(Camera* cam, double dz, double dx, double dh)
+{
+	Matrix &grot = cam->grot;
+	Vector &gpos = cam->gpos;
+	double r;
+
+	Vector dsz(grot.m13, grot.m23, grot.m33); // dz: go forward/backward w.r.t. camera view direction
+	Vector dsx(grot.m11, grot.m21, grot.m31); // dx: go sideways w.r.t. camera view direction
+	refbody->GlobalToEquatorial(gpos + dsz * dz + dsx * dx, lng, lat, r);
+	double new_alt = max(1.0, alt + dh);
+	alt0 += new_alt - alt;
+	alt = new_alt;
+	RegisterMove(cam);
+}
 
 // ============================================================
 // ============================================================

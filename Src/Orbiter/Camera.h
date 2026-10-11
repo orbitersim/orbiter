@@ -179,6 +179,7 @@ public:
 
 	void GroundObserverShift (double dx, double dz, double dh);
 	// Move camera position on a planet surface
+	// // dz: forward/backward [m], dx: left/right [m], dh: up/down [m]
 	// Only used if mode is CAMERA_GROUNDOBSERVER
 
 	void GroundObserverTilt (double dphi, double dtht);
@@ -188,7 +189,7 @@ public:
 	inline const Vector &GPos() const { return gpos; }
 	inline const Matrix &GRot() const { return grot; }
 
-	double GroundAltitude() const { return go.alt; }
+	double GroundAltitude() const { return go.Alt(); }
 
 	inline double TanAperture() const { return tan_ap; }
 	double Aperture() const { return *ap; }
@@ -221,19 +222,20 @@ public:
 	inline ExtCamMode GetExtMode () const { return extmode; }
 	inline IntCamMode GetIntMode () const { return intmode; }
 	inline const Body *GetDirRef () const { return dirref; }
+	inline const CelestialBody *GetGroundRef() const { return go.RefBody(); }
 
 	void SetIntMode (IntCamMode mode);
 	void SetTrackMode (ExtCamMode mode, const Body *ref = 0);
-	void SetGroundMode (ExtCamMode mode, const Body *ref, double lng, double lat, double alt,
+	void SetGroundMode (ExtCamMode mode, const CelestialBody *ref, double lng, double lat, double alt,
 		const GroundObserverSite *_gos = 0, bool alt_above_ground = true);
 	const GroundObserverSite *GetGroundObserverSite() const { return &gos; }
 	// get/set camera tracking mode for external views
 
-	double GroundObserver_PanSpeed() const { return go.panspeed; }
+	double GroundObserver_PanSpeed() const { return go.PanSpeed(); }
 	void SetGroundObserver_PanSpeed (double speed);
-	bool GroundObserver_TargetLock() const { return go.tgtlock; }
+	bool GroundObserver_TargetLock() const { return go.LockedOnTarget(); }
 	void SetGroundObserver_TargetLock (bool lock);
-	double GroundObserver_TerrainLimit() const { return go.terrain_limit; }
+	double GroundObserver_TerrainLimit() const { return go.TerrainLimit(); }
 	void SetGroundObserver_TerrainLimit (double alt);
 
 	bool ProcessMouse (UINT event, DWORD state, DWORD x, DWORD y, const char *kstate);
@@ -305,6 +307,8 @@ private:
 
 	double GroundElevation (const Planet *ref, double lng, double lat, double alt) const;
 	// ground elevation at specified point
+	// alt is used to determine required resolution level
+	// TODO: This should really be a method of Planet
 
 	void UpdateProjectionMatrix ();
 	// recalculate proj_mat
@@ -374,15 +378,48 @@ private:
 	bool movehead;         // move head in cockpit mode
 	Vector tgtp;           // cockpit camera target position (to implement 'leaning')
 
-	struct GroundObserver {// ground observer camera parameters
-		double lng, lat;       // position
-		double alt;            // altitude above terrain (if below threshold)
-		double alt0;           // target altitude above mean radius (if above threshold)
-		double terrain_limit;  // altitude limit for terrain-following mode
-		double phi, tht;	   // camera direction in local horizon frame (for free mode)
+	struct GroundObserver {// ground observer camera parameters and methods
+		GroundObserver();
+		bool SetRefBody(const CelestialBody *body);
+		const CelestialBody *RefBody() const { return refbody; }
+		double Lng() const { return lng; }
+		double Lat() const { return lat; }
+		double Alt() const { return alt; }
+		double AltAboveMeanRad() const { return alt0; }
+		bool SetTerrainLimit(double altLimit);
+		double TerrainLimit() const { return terrain_limit; }
+		double Phi() const { return phi; }
+		double Tht() const { return tht; }
+		bool SetPanSpeed(double speed);
+		double PanSpeed() const { return panspeed; }
+		bool SetTargetLock(bool lock);
+		bool LockedOnTarget() const { return tgtlock; }
+		void GlobalPos(Vector &gpos);                      // ground observer position in global frame
+		void LocalRot(Matrix &rrot);                       // construct local rotation matrix from current tilt angles
+		void GlobalRot(const Matrix &rrot, Matrix &grot);  // map from local to global rotation matrix
+		void SetDirection(const Vector& dir);
+		void MoveTo(const Camera* cam, double _lng, double _lat, double _alt, bool alt_above_terrain = true);
+		void MoveBy(Camera* cam, double dz, double dx, double dh);
+		void TiltTo(double _phi, double _tht);
+		void TiltBy(double dphi, double dtht);
+
+	private:
+		void RegisterMove(const Camera* cam);              // Update after a position change
+		const CelestialBody *refbody; // celestial body reference
+		double lng, lat;       // ground observer position [rad]
+		double alt;            // altitude above terrain [m] (used below terrain_limit threshold for terrain-hugging movement)
+		double alt0;           // altitude above mean refbody radius [m] (used above terrain_limit threshold)
+		double elev;           // ground elevation at current position [m]
+		double rad;            // radius length from refbody centre [m]
+		double terrain_limit;  // altitude limit for terrain-following mode [m]
+		double phi, tht;	   // camera direction in local horizon frame [rad]
 		Matrix R;              // rotation matrix local horizon at ground observer pos -> local planet
-		double panspeed;       // speed at which the ground observer moves with arrow keys (m/s)
+		Vector lock_dir;       // camera direction in global frame (only updated if tgtlock)
+		double panspeed;       // speed at which the ground observer moves with arrow keys [m/s]
 		bool tgtlock;          // flag for ground observer locked to target
+		const CelestialBody *refbody_prev; // celestial body reference at last update
+		double lng_prev, lat_prev;         // position at last update
+
 	} go;
 
 	CameraMode **preset;           // list of preset camera modes

@@ -56,6 +56,7 @@ void DlgCamera::OnDraw() {
 	if (mode == CAM_COCKPIT) {
 		DrawCockpitMode();
 	} else if (mode == CAM_GROUNDOBSERVER) {
+		DrawGroundMode();
 	} else {
 		DrawTrackMode();
 	}
@@ -269,6 +270,30 @@ void DlgCamera::DrawTrackMode()
 	ImGui::PopID();
 }
 
+void DlgCamera::DrawGroundMode()
+{
+	const CelestialBody *ref = g_camera->GetGroundRef();
+	if (!ref)
+		ref = g_camera->ProxyPlanet();
+	if (!ref)
+		return; // something went wrong
+	m_SelectedTarget = ref;
+
+	ImGui::PushID("ground_view");
+	ImGui::SeparatorText("Reference body");
+	if (BeginWideCombo("##ground_ref", ref->Name(), ImGuiComboFlags_HeightRegular)) {
+		for (int i = 0; i < g_psys->nStar(); i++)
+			AddCbodyNode(g_psys->GetStar(i));
+		if (m_SelectedTarget && m_SelectedTarget != ref) {
+			ref = (const CelestialBody*)m_SelectedTarget;
+			SetGroundObserverView(ref);
+			ImGui::CloseCurrentPopup();
+		}
+		ImGui::EndCombo();
+	}
+	ImGui::PopID();
+}
+
 void DlgCamera::DrawTrackMode_Vessel()
 {
 	Body* body = g_camera->Target();
@@ -396,19 +421,25 @@ void DlgCamera::DrawTrackMode_Frame()
 	}
 }
 
-bool DlgCamera::SetGroundObserverView(const Planet* planet)
+bool DlgCamera::SetGroundObserverView(const CelestialBody* ref)
 {
-	if (!planet)
-		planet = g_camera->ProxyPlanet();
-	if (!planet)
+	const CelestialBody *proxy = g_camera->ProxyPlanet();
+	if (!ref)
+		ref = g_camera->GetGroundRef();
+	if (!ref)
+		ref = proxy;
+	if (!ref)
 		return false;
 
 	// map current camera position into ground-relative location
 	double lng, lat, rad, alt;
-	planet->GlobalToEquatorial(g_camera->GPos(), lng, lat, rad);
-	alt = rad - planet->Size();
+	proxy->GlobalToEquatorial(g_camera->GPos(), lng, lat, rad);
+	alt = rad - proxy->Size();
+	if (alt < 0.0)
+		alt = 5.0;
 
-	g_camera->SetGroundMode(CAMERA_GROUNDOBSERVER, planet, lng, lat, alt, NULL);
+	g_camera->SetGroundMode(CAMERA_GROUNDOBSERVER, ref, lng, lat, alt, nullptr, false);
+	g_camera->SetGroundObserver_TargetLock(g_camera->GroundObserver_TargetLock());
 	return true;
 }
 
