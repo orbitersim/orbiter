@@ -291,7 +291,7 @@ public:
 	// init camera state from scenario scn
 
 	bool Read (std::ifstream &ifs);
-	void Write (std::ostream &ofs) const;
+	void Write (std::ostream &os) const;
 	// read/write camera status from/to stream
 
 	// Interface for external camera control
@@ -395,16 +395,18 @@ private:
 		bool SetTargetLock(bool lock);
 		bool LockedOnTarget() const { return tgtlock; }
 		void GlobalPos(Vector &gpos);                      // ground observer position in global frame
-		void LocalRot(Matrix &rrot);                       // construct local rotation matrix from current tilt angles
-		void GlobalRot(const Matrix &rrot, Matrix &grot);  // map from local to global rotation matrix
-		void SetDirection(const Vector& dir);
-		void MoveTo(const Camera* cam, double _lng, double _lat, double _alt, bool alt_above_terrain = true);
-		void MoveBy(Camera* cam, double dz, double dx, double dh);
+		//void LocalRot(Matrix &rrot);                       // construct local rotation matrix from current tilt angles
+		void GlobalRot(Matrix &grot);                      // Update grot to map from camera frame to global frame
+		void SetDirection(const Vector &dir);
+		void MoveTo(const Camera *cam, double _lng, double _lat, double _alt, bool alt_above_terrain = true);
+		void MoveBy(Camera *cam, double dz, double dx, double dh);
 		void TiltTo(double _phi, double _tht);
 		void TiltBy(double dphi, double dtht);
+		void Write(std::ostream &os) const;    // write state to stream
 
 	private:
-		void RegisterMove(const Camera* cam);              // Update after a position change
+		void RegisterMove(const Camera *cam);              // Update after a position change
+		void RegisterTilt();                               // Update after a tilt change
 		const CelestialBody *refbody; // celestial body reference
 		double lng, lat;       // ground observer position [rad]
 		double alt;            // altitude above terrain [m] (used below terrain_limit threshold for terrain-hugging movement)
@@ -412,8 +414,9 @@ private:
 		double elev;           // ground elevation at current position [m]
 		double rad;            // radius length from refbody centre [m]
 		double terrain_limit;  // altitude limit for terrain-following mode [m]
-		double phi, tht;	   // camera direction in local horizon frame [rad]
-		Matrix R;              // rotation matrix local horizon at ground observer pos -> local planet
+		double phi, tht;	   // camera tilt angles in local horizon frame [rad]
+		Matrix R0;             // rotation matrix encoding camera tilt in local horizon frame. Built from phi, tht
+		Matrix R1;             // rotation matrix local horizon at ground observer pos -> local planet
 		Vector lock_dir;       // camera direction in global frame (only updated if tgtlock)
 		double panspeed;       // speed at which the ground observer moves with arrow keys [m/s]
 		bool tgtlock;          // flag for ground observer locked to target
@@ -422,7 +425,7 @@ private:
 
 	} go;
 
-	CameraMode **preset;           // list of preset camera modes
+	CameraMode** preset;           // list of preset camera modes
 	DWORD npreset;                 // list length
 
 	// mouse parameters
