@@ -205,68 +205,23 @@ void DlgCamera::DrawTrackMode()
 {
 	ImGui::PushID("track_target");
 	ImGui::SeparatorText("Tracking target");
+
 	const Body* target = g_camera->Target();
-	int type = OBJTP_INVALID;
-	if (target)
-		type = target->Type();
-	int category = 0, new_category = 0;
-	switch (type) {
-	case OBJTP_VESSEL:
-		category = 1;
-		break;
-	case OBJTP_CBODY:
-	case OBJTP_STAR:
-	case OBJTP_PLANET:
-		category = 2;
-		break;
-	case OBJTP_SURFBASE:
-		category = 3;
-		break;
-	}
-	const char* catName[] = { "none", "Vessel", "Celestial body", "Surface base" };
-	if (BeginWideCombo("##category", catName[category], ImGuiComboFlags_HeightSmall)) {
-		bool is_selected = false;
-		for (int i = 1; i < 4; i++)
-			if (ImGui::Selectable(catName[i], is_selected))
-				new_category = i;
-		ImGui::EndCombo();
-	}
-	if (new_category && new_category != category) {
-		Body* body = nullptr;
-		switch (new_category) {
-		case 1:
-			body = g_focusobj; // default to tracking the focus vessel
-			break;
-		case 2:
-			body = (Body*)g_camera->ProxyPlanet(); // default to tracking the closest celestial body
-			break;
-		case 3:
-			body = (Body*)g_camera->ProxyBase(g_camera->ProxyPlanet()); // default to tracking closest base on closest planet
-			if (!body)
-				body = (Body*)g_camera->ProxyBase(); // failing that, at least find the closest base on any planet
-			break;
+
+	if (ObjectSelector("##tracktgt", target, OBJ_ALL, 0, ImGuiComboFlags_HeightRegular)) {
+		if (m_SelectedTarget && m_SelectedTarget != target) {
+			g_camera->Attach((Body*)m_SelectedTarget, 1);
 		}
-		if (body)
-			g_camera->Attach(body, 1);
-		category = new_category;
 	}
 
-	switch (category) {
-	case 1:
-		DrawTrackMode_Vessel();
-		break;
-	case 2:
-		DrawTrackMode_CBody();
-		break;
-	case 3:
-		DrawTrackMode_Base();
-		break;
-	}
 	ImGui::PopID();
+
 
 	ImGui::PushID("track_frame");
 	ImGui::SeparatorText("Camera reference frame");
+
 	DrawTrackMode_Frame();
+
 	ImGui::PopID();
 }
 
@@ -277,78 +232,24 @@ void DlgCamera::DrawGroundMode()
 		ref = g_camera->ProxyPlanet();
 	if (!ref)
 		return; // something went wrong
-	m_SelectedTarget = ref;
 
 	ImGui::PushID("ground_view");
 	ImGui::SeparatorText("Reference body");
-	if (BeginWideCombo("##ground_ref", ref->Name(), ImGuiComboFlags_HeightRegular)) {
-		for (int i = 0; i < g_psys->nStar(); i++)
-			AddCbodyNode(g_psys->GetStar(i));
+	if (ObjectSelector("##ground_ref", ref, OBJ_CELBODY, SEL_NOCAT | SEL_ALLOPEN, ImGuiComboFlags_HeightRegular)) {
 		if (m_SelectedTarget && m_SelectedTarget != ref) {
 			ref = (const CelestialBody*)m_SelectedTarget;
 			SetGroundObserverView(ref);
-			ImGui::CloseCurrentPopup();
 		}
-		ImGui::EndCombo();
 	}
 	ImGui::PopID();
-}
 
-void DlgCamera::DrawTrackMode_Vessel()
-{
-	Body* body = g_camera->Target();
-	if (body->Type() != OBJTP_VESSEL)
-		return; // something went wrong
+	ImGui::PushID("tgt_lock");
+	ImGui::SeparatorText("View target");
+	bool tgtlock = g_camera->GroundObserver_TargetLock();
+	if (ImGui::Checkbox("Lock view on target", &tgtlock))
+		g_camera->SetGroundObserver_TargetLock(tgtlock);
 
-	Vessel* vessel = (Vessel*)body;
-
-	if (BeginWideCombo("##vessel", vessel->Name(), ImGuiComboFlags_HeightRegular)) {
-		bool is_selected = false;
-		for (int i = 0; i < g_psys->nVessel(); i++) {
-			Vessel* v = g_psys->GetVessel(i);
-			if (ImGui::Selectable(v->Name(), is_selected)) {
-				vessel = v;
-				g_camera->Attach(v, 1);
-			}
-		}
-		ImGui::EndCombo();
-	}
-}
-
-void DlgCamera::DrawTrackMode_CBody()
-{
-	Body* body = g_camera->Target();
-	m_SelectedTarget = body;
-	CelestialBody * cbody = (CelestialBody*)body;
-	if (BeginWideCombo("##cbody", cbody->Name(), ImGuiComboFlags_HeightRegular)) {
-		for (int i = 0; i < g_psys->nStar(); i++)
-			AddCbodyNode(g_psys->GetStar(i));
-		if (m_SelectedTarget && m_SelectedTarget != body) {
-			g_camera->Attach((Body*)m_SelectedTarget, 1);
-			ImGui::CloseCurrentPopup();
-		}
-		ImGui::EndCombo();
-	}
-}
-
-void DlgCamera::DrawTrackMode_Base()
-{
-	Body* body = g_camera->Target();
-	if (body->Type() != OBJTP_SURFBASE)
-		return; // something went wrong
-
-	Base* base = (Base*)body;
-	m_SelectedTarget = base;
-
-	if (BeginWideCombo("##base", base->Name(), ImGuiComboFlags_HeightRegular)) {
-		for (int i = 0; i < g_psys->nStar(); i++)
-			AddSurfBaseNode(g_psys->GetStar(i));
-		if (m_SelectedTarget && m_SelectedTarget != base) {
-			g_camera->Attach((Body*)m_SelectedTarget, 1);
-			ImGui::CloseCurrentPopup();
-		}
-		ImGui::EndCombo();
-	}
+	ImGui::PopID();
 }
 
 void DlgCamera::DrawTrackMode_Frame()
@@ -393,30 +294,12 @@ void DlgCamera::DrawTrackMode_Frame()
 		const Body* dirref = g_camera->GetDirRef();
 		if (!dirref)
 			return; // something went wrong
-		m_SelectedTarget = dirref;
-		if (BeginWideCombo("##trackref", dirref->Name(), ImGuiComboFlags_HeightRegular)) {
-			bool is_selected = false;
-			if (ImGui::TreeNodeEx("Celestial bodies", node_flags & !ImGuiTreeNodeFlags_DefaultOpen)) {
-				for (int i = 0; i < g_psys->nStar(); i++)
-					AddCbodyNode(g_psys->GetStar(i));
-				ImGui::TreePop();
-			}
-			if (ImGui::TreeNodeEx("Vessels", node_flags & !ImGuiTreeNodeFlags_DefaultOpen)) {
-				for (int i = 0; i < g_psys->nVessel(); i++) {
-					Vessel *vessel = g_psys->GetVessel(i);
-					if (vessel != g_camera->Target()) {
-						ImGui::TreeNodeEx(vessel->Name(), node_flags | ImGuiTreeNodeFlags_Leaf | ImGuiTreeNodeFlags_NoTreePushOnOpen);
-						if (ImGui::IsItemClicked() && !ImGui::IsItemToggledOpen())
-							m_SelectedTarget = vessel;
-					}
-				}
-				ImGui::TreePop();
-			}
+
+		if (ObjectSelector("##trackref", dirref, OBJ_ALL, SEL_EXCLUDE_CAMTGT, ImGuiComboFlags_HeightRegular)) {
 			if (m_SelectedTarget != dirref && m_SelectedTarget != g_camera->Target()) {
 				g_camera->SetTrackMode((ExtCamMode)mode, m_SelectedTarget);
 				ImGui::CloseCurrentPopup();
 			}
-			ImGui::EndCombo();
 		}
 	}
 }
@@ -581,7 +464,11 @@ void DlgCamera::AddSurfBaseNode(const CelestialBody *cbody)
 				Planet* planet = (Planet*)cbody;
 				for (int i = 0; i < planet->nBase(); i++) {
 					Base* base = planet->GetBase(i);
-					ImGui::TreeNodeEx(base->Name(), node_flags | ImGuiTreeNodeFlags_Leaf | ImGuiTreeNodeFlags_NoTreePushOnOpen);
+					const bool is_selected = m_SelectedTarget == base;
+					ImGuiTreeNodeFlags leaf_flags = node_flags | ImGuiTreeNodeFlags_Leaf | ImGuiTreeNodeFlags_NoTreePushOnOpen;
+					if (is_selected)
+						leaf_flags |= ImGuiTreeNodeFlags_Selected;
+					ImGui::TreeNodeEx(base->Name(), leaf_flags);
 					if (ImGui::IsItemClicked() && !ImGui::IsItemToggledOpen())
 						m_SelectedTarget = base;
 				}
@@ -892,4 +779,58 @@ bool DlgCamera::BeginWideCombo(const char* label, const char* preview_value, ImG
 {
 	ImGui::SetNextItemWidth(ImGui::GetContentRegionAvail().x);
 	return ImGui::BeginCombo(label, preview_value, flags);
+}
+
+bool DlgCamera::ObjectSelector(const char* label, const Body *body, DWORD objtypes, DWORD selector_flags, ImGuiComboFlags flags)
+{
+	m_SelectedTarget = body;
+	bool showcat = !(selector_flags & SEL_NOCAT);
+
+	ImGuiTreeNodeFlags node_flags = ImGuiTreeNodeFlags_SpanAvailWidth;
+	if (selector_flags & SEL_ALLOPEN)
+		node_flags |= ImGuiTreeNodeFlags_DefaultOpen;
+
+	if (BeginWideCombo(label, body ? body->Name() : "", flags)) {
+
+		if (objtypes & OBJ_VESSEL) {
+			if (showcat ? ImGui::TreeNodeEx("Vessels", node_flags) : 1) {
+				for (int i = 0; i < g_psys->nVessel(); i++) {
+					Vessel *vessel = g_psys->GetVessel(i);
+					if (vessel != g_camera->Target() || !(selector_flags & SEL_EXCLUDE_CAMTGT)) {
+						ImGuiTreeNodeFlags leaf_flags = node_flags | ImGuiTreeNodeFlags_Leaf | ImGuiTreeNodeFlags_NoTreePushOnOpen;
+						if (vessel == m_SelectedTarget)
+							leaf_flags |= ImGuiTreeNodeFlags_Selected;
+						ImGui::TreeNodeEx(vessel->Name(), leaf_flags);
+						if (ImGui::IsItemClicked() && !ImGui::IsItemToggledOpen())
+							m_SelectedTarget = vessel;
+					}
+				}
+				if (showcat) ImGui::TreePop();
+			}
+		}
+
+		if (objtypes & OBJ_CELBODY) {
+			if (showcat ? ImGui::TreeNodeEx("Celestial bodies", node_flags) : 1) {
+				for (int i = 0; i < g_psys->nStar(); i++)
+					AddCbodyNode(g_psys->GetStar(i));
+				if (showcat) ImGui::TreePop();
+			}
+		}
+
+		if (objtypes & OBJ_SURFBASE) {
+			if (showcat ? ImGui::TreeNodeEx("Surface bases", node_flags) : 1) {
+				for (int i = 0; i < g_psys->nStar(); i++)
+					AddSurfBaseNode(g_psys->GetStar(i));
+				if (showcat) ImGui::TreePop();
+			}
+		}
+
+		if (m_SelectedTarget != body)
+			ImGui::CloseCurrentPopup();
+
+		ImGui::EndCombo();
+
+		return true;
+	}
+	return false;
 }

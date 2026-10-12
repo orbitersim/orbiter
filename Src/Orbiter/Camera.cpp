@@ -80,10 +80,13 @@ Camera::Camera (double _nearplane, double _farplane)
 	SetFrustumLimits (nearplane, farplane);
 	ECC = 0;
 	etile.resize(8);
+
+	go = new GroundObserver(this);
 }
 
 Camera::~Camera ()
 {
+	delete go;
 	ClearPresets();
 }
 
@@ -149,8 +152,8 @@ void Camera::UpdateMouse ()
 
 		if (external_view) {
 			if (extmode == CAMERA_GROUNDOBSERVER) {
-				if (go.LockedOnTarget()) {
-					GroundObserverShift (dx*go.PanSpeed() * -0.005, dy*go.PanSpeed() * -0.005, 0.0);
+				if (go->LockedOnTarget()) {
+					GroundObserverShift (dx*go->PanSpeed() * -0.005, dy*go->PanSpeed() * -0.005, 0.0);
 				} else
 					GroundObserverTilt (dx * -0.005, dy * -0.005);
 			} else {
@@ -279,13 +282,13 @@ void Camera::SetCMode (const CameraMode *cm)
 		double lng, lat, alt;
 		cmg->GetPosition (&lng, &lat, &alt, (OBJHANDLE*)&ref);
 		if (!ref)
-			ref = (go.RefBody() ? go.RefBody() : planet_proxy);
+			ref = (go->RefBody() ? go->RefBody() : planet_proxy);
 		SetGroundMode (CAMERA_GROUNDOBSERVER, ref, lng, lat, alt, 0, cmg->GetAltMode());
 		SetGroundObserver_TargetLock (cmg->GetTgtLock());
-		if (!go.LockedOnTarget()) {
+		if (!go->LockedOnTarget()) {
 			double ph, th;
 			cmg->GetOrientation (&ph, &th);
-			go.TiltTo(ph, th);
+			go->TiltTo(ph, th);
 		}
 		} break;
 	}
@@ -333,8 +336,8 @@ CameraMode *Camera::GetCMode () const
 		case CAMERA_GROUNDOBSERVER: {
 			cm = new CameraMode_Ground; TRACENEW
 			CameraMode_Ground *cmg = (CameraMode_Ground*)cm;
-			cmg->SetPosition (go.Lng(), go.Lat(), go.Alt(), (OBJHANDLE)dirref);
-			if (!go.LockedOnTarget()) cmg->SetOrientation (go.Phi(), go.Tht());
+			cmg->SetPosition (go->Lng(), go->Lat(), go->Alt(), (OBJHANDLE)dirref);
+			if (!go->LockedOnTarget()) cmg->SetOrientation (go->Phi(), go->Tht());
 			} break;
 		default: cm = new CameraMode_Cockpit; TRACENEW
 		}
@@ -446,7 +449,7 @@ void Camera::AddPhi (double dphi)
 {
 	if (external_view) {
 		if (extmode == CAMERA_GROUNDOBSERVER) {
-			GroundObserverShift (dphi*go.PanSpeed(), 0, 0);
+			GroundObserverShift (dphi * go->PanSpeed(), 0, 0);
 		} else {
 			SetRelPos (rdist, ephi+dphi*0.5, etheta);
 			if (extmode == CAMERA_ABSDIRECTION)
@@ -459,9 +462,9 @@ void Camera::AddTheta (double dtheta)
 {
 	if (external_view) {
 		if (extmode == CAMERA_GROUNDOBSERVER) {
-			GroundObserverShift (0, -dtheta*go.PanSpeed(), 0);
+			GroundObserverShift (0, -dtheta * go->PanSpeed(), 0);
 		} else {
-			SetRelPos (rdist, ephi, etheta+dtheta*0.5);
+			SetRelPos (rdist, ephi, etheta+dtheta * 0.5);
 			if (extmode == CAMERA_ABSDIRECTION)
 				gdir = mul (target->GRot(), mul (rrot, Vector (0,0,1)));
 		}
@@ -472,7 +475,7 @@ void Camera::Rotate (double _dphi, double _dtht, bool smooth)
 {
 	// change the camera direction
 	if (external_view) {
-		if (extmode == CAMERA_GROUNDOBSERVER && !go.LockedOnTarget())
+		if (extmode == CAMERA_GROUNDOBSERVER && !go->LockedOnTarget())
 			GroundObserverTilt (_dphi*0.5, _dtht*0.5);
 	} else { // cockpit view
 		dphi = _dphi*vmax, dtht = _dtht*vmax;
@@ -531,7 +534,7 @@ void Camera::ChangeDist (double fact)
 {
 	if (external_view) {
 		if (extmode == CAMERA_GROUNDOBSERVER) {
-			GroundObserverShift (0, 0, (fact > 1 ? fact-1 : -1/fact+1)*go.PanSpeed());
+			GroundObserverShift (0, 0, (fact > 1 ? fact-1 : -1/fact+1) * go->PanSpeed());
 		} else {
 			SetRelPos (rdist*fact, ephi, etheta);
 			rshift = false;
@@ -745,11 +748,11 @@ void Camera::SetGroundMode (ExtCamMode mode, const CelestialBody *ref, double ln
 
 	extmode = mode;
 	SetViewExternal();
-	if (go.SetRefBody(ref)) {
+	if (go->SetRefBody(ref)) {
 		for (int i = 0; i < etile.size(); i++)
 			etile[i].Clear();
 	}
-	go.MoveTo(this, lng, lat, alt, alt_above_ground);
+	go->MoveTo(lng, lat, alt, alt_above_ground);
 
 	if (!_gos) gos.planet[0] = gos.site[0] = gos.addr[0] = '\0';
 	else {
@@ -761,8 +764,8 @@ void Camera::SetGroundMode (ExtCamMode mode, const CelestialBody *ref, double ln
 
 void Camera::SetGroundObserver_PanSpeed (double speed)
 {
-	if (go.SetPanSpeed(max(0.1, min(1e5, speed))))
-		g_pOrbiter->Cfg()->CfgCameraPrm.Panspeed = go.PanSpeed();
+	if (go->SetPanSpeed(max(0.1, min(1e5, speed))))
+		g_pOrbiter->Cfg()->CfgCameraPrm.Panspeed = go->PanSpeed();
 }
 
 void Camera::SetGroundObserver_TargetLock (bool lock)
@@ -773,26 +776,26 @@ void Camera::SetGroundObserver_TargetLock (bool lock)
 			cam_dir.Set((target->GPos() - gpos).unit());     // look at target
 		else
 			cam_dir = Vector(grot.m13, grot.m23, grot.m33);  // keep current view direction
-		go.SetDirection(cam_dir);
+		go->SetDirection(cam_dir);
 	}
-	go.SetTargetLock(lock); // if lock is on, keep looking at the target
+	go->SetTargetLock(lock); // if lock is on, keep looking at the target
 }
 
 void Camera::SetGroundObserver_TerrainLimit (double altlimit)
 {
-	if (go.SetTerrainLimit(altlimit))
+	if (go->SetTerrainLimit(altlimit))
 		g_pOrbiter->Cfg()->CfgCameraPrm.TerrainLimit = altlimit;
 }
 
 void Camera::GroundObserverShift (double dx, double dz, double dh)
 {
 	if (external_view && extmode == CAMERA_GROUNDOBSERVER)
-		go.MoveBy(this, dz, dx, dh);
+		go->MoveBy(dz, dx, dh);
 }
 
 void Camera::GroundObserverTilt (double dphi, double dtht)
 {
-	go.TiltBy(dphi, dtht);
+	go->TiltBy(dphi, dtht);
 }
 
 void Camera::ResizeViewport (int w, int h)
@@ -814,7 +817,7 @@ DWORD Camera::UpdateExternalControl (ExternalCameraControl *ecc)
 			if (cmode & CAMMODE_GROUND) {
 				ExternalCameraControl::CamData data;
 				if (ECC->clbkPoll (&data)) {
-					go.TiltTo(data.yaw, data.pitch);
+					go->TiltTo(data.yaw, data.pitch);
 				}	
 			}
 		} else { // track mode
@@ -1003,12 +1006,12 @@ void Camera::Update ()
 			grot.Set (rrot);
 			break;
 		case CAMERA_GROUNDOBSERVER:
-			go.GlobalPos(gpos);        // update camera position from ground mode data
+			go->GlobalPos(gpos);        // update camera position from ground mode data
 			GPOS = MakeVECTOR3 (gpos); // format used by API
 			gspos.Set (gpos - target->GPos());
-			if (go.LockedOnTarget())
-				go.SetDirection((target->GPos() - gpos).unit());
-			go.GlobalRot(grot);
+			if (go->LockedOnTarget())
+				go->SetDirection((target->GPos() - gpos).unit());
+			go->GlobalRot(grot);
 			break;
 		}
 		if (has_tref) {
@@ -1274,7 +1277,7 @@ void Camera::InitState (const char *scn, Body *default_target)
 	int mode = (external_view ? 1:0); external_view = true;
 	Attach (newtgt, mode);
 	if (extmode == CAMERA_GROUNDOBSERVER)
-		SetGroundMode (CAMERA_GROUNDOBSERVER, go.RefBody(), go.Lng(), go.Lat(), go.Alt());
+		SetGroundMode (CAMERA_GROUNDOBSERVER, go->RefBody(), go->Lng(), go->Lat(), go->Alt());
 	SetAperture (*ap, true, true);
 }
 
@@ -1343,6 +1346,9 @@ bool Camera::Read (ifstream &ifs)
 		if (!ifs.getline (cbuf, 256)) break;
 		pc = trim_string (cbuf);
 		if (!_strnicmp (pc, "END_CAMERA", 10)) break;
+
+		go->ParseLine(pc);  // offer the line to the ground observer
+
 		if (!_strnicmp (pc, "TARGET", 6)) {
 			pc = trim_string (pc+6);
 			if (!(tg = g_psys->GetObj (pc, true)))
@@ -1362,19 +1368,23 @@ bool Camera::Read (ifstream &ifs)
 			a *= RAD*0.5;
 			ap_int = ap_ext = a;
 		} else if (!_strnicmp (pc, "TRACKMODE", 9)) {
-			n = sscanf (pc+9, "%s%s", ctrackmode, cdirref);
-		} else if (!_strnicmp (pc, "GROUNDLOCATION", 14)) {
-			double lng, lat, alt;
-			n = sscanf (pc+14, "%lf%lf%lf", &lng, &lat, &alt);
-			lng *= RAD, lat *= RAD;
-			go.MoveTo(this, lng, lat, alt);
-		} else if (!_strnicmp (pc, "GROUNDDIRECTION", 15)) {
-			double phi, tht;
-			n = sscanf (pc+15, "%lf%lf", &phi, &tht);
-			phi *= RAD, tht *= RAD;
-			go.TiltTo(phi, tht);
-			is_targetlocked = false;
-			go.SetTargetLock(false);
+			n = sscanf (pc+9, "%s", ctrackmode);
+			if (n) {
+				// need to do it like this because in rare cases, the track target name can contain spaces ("Cape Canaveral")
+				strncpy(cdirref, pc + 11 + strlen(ctrackmode), 63);
+			}
+//		} else if (!_strnicmp (pc, "GROUNDLOCATION", 14)) {
+//			double lng, lat, alt;
+//			n = sscanf (pc+14, "%lf%lf%lf", &lng, &lat, &alt);
+//			lng *= RAD, lat *= RAD;
+//			go.MoveTo(this, lng, lat, alt);
+//		} else if (!_strnicmp (pc, "GROUNDDIRECTION", 15)) {
+//			double phi, tht;
+//			n = sscanf (pc+15, "%lf%lf", &phi, &tht);
+//			phi *= RAD, tht *= RAD;
+//			go.TiltTo(phi, tht);
+//			is_targetlocked = false;
+//			go.SetTargetLock(false);
 		} else if (!_strnicmp (pc, "BEGIN_PRESET", 12)) {
 			for (;;) {
 				if (!ifs.getline (cbuf, 256)) break;
@@ -1393,20 +1403,18 @@ bool Camera::Read (ifstream &ifs)
 			extmode = CAMERA_GLOBALFRAME;
 		else if (!_stricmp(ctrackmode, "TargetTo") && (dirref = g_psys->GetObj(cdirref, true)))
 			extmode = CAMERA_TARGETTOOBJECT;
-		else if (!_stricmp(ctrackmode, "TargetFrom") && (dirref = g_psys->GetObj(cdirref, true)))
-			extmode = CAMERA_TARGETFROMOBJECT;
+		else if (!_stricmp(ctrackmode, "TargetFrom"))
+			if ((dirref = g_psys->GetBase(cdirref, true)) || (dirref = g_psys->GetBase(cdirref, true)))
+				extmode = CAMERA_TARGETFROMOBJECT;
 		else if (!_stricmp(ctrackmode, "Ground")) {
-			CelestialBody *ref = (CelestialBody*)g_psys->GetObj(cdirref, true);
-			if (ref && go.SetRefBody(ref)) {
+			if (go->RefBody())
 				extmode = CAMERA_GROUNDOBSERVER;
-				is_groundmode = true;
-			}
 		}  else
 			extmode = CAMERA_TARGETRELATIVE;
 	}
 
 	if (is_groundmode)
-		go.SetTargetLock(is_targetlocked);
+		go->SetTargetLock(is_targetlocked);
 
 	return true;
 }
@@ -1434,7 +1442,7 @@ void Camera::Write (std::ostream &os) const
 			os << "TargetFrom " << dirref->Name() << endl;
 			break;
 		case CAMERA_GROUNDOBSERVER:
-			go.Write(os);
+			go->Write(os);
 			break;
 		default:
 			os << "TargetRelative\n";
@@ -1478,7 +1486,8 @@ bool Camera::UnregisterExternalControl ()
 	}
 }
 
-Camera::GroundObserver::GroundObserver()
+Camera::GroundObserver::GroundObserver(Camera *camera)
+	: cam(camera)
 {
 	refbody = 0;
 	lng = lat = 0.0;
@@ -1506,7 +1515,7 @@ bool Camera::GroundObserver::SetRefBody(const CelestialBody *body)
 	return false;
 }
 
-void Camera::GroundObserver::RegisterMove(const Camera* cam)
+void Camera::GroundObserver::RegisterMove()
 {
 	if (!refbody)
 		return;
@@ -1613,7 +1622,7 @@ void Camera::GroundObserver::TiltBy(double dphi, double dtht)
 	RegisterTilt();
 }
 
-void Camera::GroundObserver::MoveTo(const Camera* cam, double _lng, double _lat, double _alt, bool alt_above_terrain)
+void Camera::GroundObserver::MoveTo(double _lng, double _lat, double _alt, bool alt_above_terrain)
 {
 	const Planet *planet = (refbody && refbody->Type() == OBJTP_PLANET ? (const Planet*)refbody : 0);
 	elev = (planet ? cam->GroundElevation(planet, _lng, _lat, _alt) : 0.0);
@@ -1626,10 +1635,10 @@ void Camera::GroundObserver::MoveTo(const Camera* cam, double _lng, double _lat,
 	}
 	lng = _lng;
 	lat = _lat;
-	RegisterMove(cam);
+	RegisterMove();
 }
 
-void Camera::GroundObserver::MoveBy(Camera* cam, double dz, double dx, double dh)
+void Camera::GroundObserver::MoveBy(double dz, double dx, double dh)
 {
 	Matrix &grot = cam->grot;
 	Vector &gpos = cam->gpos;
@@ -1641,7 +1650,7 @@ void Camera::GroundObserver::MoveBy(Camera* cam, double dz, double dx, double dh
 	double new_alt = max(1.0, alt + dh);
 	alt0 += new_alt - alt;
 	alt = new_alt;
-	RegisterMove(cam);
+	RegisterMove();
 }
 
 void Camera::GroundObserver::Write(std::ostream &os) const
@@ -1650,6 +1659,36 @@ void Camera::GroundObserver::Write(std::ostream &os) const
 	os << setprecision(5) << "  GROUNDLOCATION " << lng * DEG << ' ' << lat * DEG << ' ' << setprecision(2) << alt << endl;
 	if (!tgtlock)
 		os << "  GROUNDDIRECTION " << phi * DEG << ' ' << tht * DEG << endl;
+}
+
+bool Camera::GroundObserver::ParseLine(const char *line)
+{
+	char cmode[64], cref[64];
+	int n;
+
+	if (!_strnicmp(line, "TRACKMODE", 9)) {
+		n = sscanf(line + 9, "%s%s", cmode, cref);
+		if (n == 2 && !_stricmp(cmode, "Ground")) {
+			refbody = (CelestialBody*)g_psys->GetObj(cref, true);
+			tgtlock = true; // default until GROUNDDIRECTION is parsed
+			return true;
+		}
+	} else if (!_strnicmp(line, "GROUNDLOCATION", 14)) {
+		double deg_lng, deg_lat, _alt;
+		n = sscanf(line + 14, "%lf%lf%lf", &deg_lng, &deg_lat, &_alt);
+		if (n == 3)
+			MoveTo(deg_lng * RAD, deg_lat * RAD, _alt);
+		return true;
+	} else if (!_strnicmp(line, "GROUNDDIRECTION", 15)) {
+		double deg_phi, deg_tht;
+		n = sscanf(line + 15, "%lf%lf", &deg_phi, &deg_tht);
+		if (n == 2) {
+			TiltTo(deg_phi * RAD, deg_tht * RAD);
+			tgtlock = false;
+		}
+		return true;
+	}
+	return false;
 }
 
 // ============================================================
