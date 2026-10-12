@@ -752,6 +752,8 @@ void Camera::SetGroundMode (ExtCamMode mode, const CelestialBody *ref, double ln
 		for (int i = 0; i < etile.size(); i++)
 			etile[i].Clear();
 	}
+	if (!go->ViewTarget())
+		go->SetViewTarget(target);
 	go->MoveTo(lng, lat, alt, alt_above_ground);
 
 	if (!_gos) gos.planet[0] = gos.site[0] = gos.addr[0] = '\0';
@@ -1010,7 +1012,7 @@ void Camera::Update ()
 			GPOS = MakeVECTOR3 (gpos); // format used by API
 			gspos.Set (gpos - target->GPos());
 			if (go->LockedOnTarget())
-				go->SetDirection((target->GPos() - gpos).unit());
+				go->SetDirection((go->ViewTarget()->GPos() - gpos).unit());
 			go->GlobalRot(grot);
 			break;
 		}
@@ -1403,13 +1405,13 @@ bool Camera::Read (ifstream &ifs)
 			extmode = CAMERA_GLOBALFRAME;
 		else if (!_stricmp(ctrackmode, "TargetTo") && (dirref = g_psys->GetObj(cdirref, true)))
 			extmode = CAMERA_TARGETTOOBJECT;
-		else if (!_stricmp(ctrackmode, "TargetFrom"))
+		else if (!_stricmp(ctrackmode, "TargetFrom")) {
 			if ((dirref = g_psys->GetBase(cdirref, true)) || (dirref = g_psys->GetBase(cdirref, true)))
 				extmode = CAMERA_TARGETFROMOBJECT;
-		else if (!_stricmp(ctrackmode, "Ground")) {
+		} else if (!_stricmp(ctrackmode, "Ground")) {
 			if (go->RefBody())
 				extmode = CAMERA_GROUNDOBSERVER;
-		}  else
+		} else
 			extmode = CAMERA_TARGETRELATIVE;
 	}
 
@@ -1490,6 +1492,7 @@ Camera::GroundObserver::GroundObserver(Camera *camera)
 	: cam(camera)
 {
 	refbody = 0;
+	viewtarget = 0;
 	lng = lat = 0.0;
 	alt = alt0 = 100.0;
 	elev = 0.0;
@@ -1506,10 +1509,19 @@ Camera::GroundObserver::GroundObserver(Camera *camera)
 	lng_prev = lat_prev = NAN;
 }
 
-bool Camera::GroundObserver::SetRefBody(const CelestialBody *body)
+bool Camera::GroundObserver::SetRefBody(const CelestialBody *cbody)
 {
-	if (body != refbody) {
-		refbody = body;
+	if (cbody != refbody) {
+		refbody = cbody;
+		return true;
+	}
+	return false;
+}
+
+bool Camera::GroundObserver::SetViewTarget(const Body *body)
+{
+	if (body != viewtarget) {
+		viewtarget = body;
 		return true;
 	}
 	return false;
@@ -1571,6 +1583,9 @@ bool Camera::GroundObserver::SetPanSpeed(double speed)
 
 bool Camera::GroundObserver::SetTargetLock(bool lock)
 {
+	if (!viewtarget)
+		lock = false; // can't lock if we have no target
+
 	if (lock != tgtlock) {
 		tgtlock = lock;
 		return true;
@@ -1583,15 +1598,6 @@ void Camera::GroundObserver::GlobalPos(Vector &gpos)
 	if (refbody)
 		refbody->EquatorialToGlobal(lng, lat, rad, gpos);
 }
-
-//void Camera::GroundObserver::LocalRot(Matrix &rrot)
-//{
-//	double sinph = sin(phi), cosph = cos(phi);
-//	double sinth = sin(tht), costh = cos(tht);
-//	rrot.Set(cosph,  sinph*sinth, -sinph*costh,
-//		     0.0,    costh,        sinth,
-//		     sinph, -cosph*sinth,  cosph*costh);
-//}
 
 void Camera::GroundObserver::GlobalRot(Matrix &grot)
 {
@@ -1657,7 +1663,9 @@ void Camera::GroundObserver::Write(std::ostream &os) const
 {
 	os << "Ground " << refbody->Name() << endl;
 	os << setprecision(5) << "  GROUNDLOCATION " << lng * DEG << ' ' << lat * DEG << ' ' << setprecision(2) << alt << endl;
-	if (!tgtlock)
+	if (tgtlock)
+		os << "  GROUNDVIEWTARGET " << viewtarget->Name() << endl;
+	else
 		os << "  GROUNDDIRECTION " << phi * DEG << ' ' << tht * DEG << endl;
 }
 
@@ -1687,6 +1695,11 @@ bool Camera::GroundObserver::ParseLine(const char *line)
 			tgtlock = false;
 		}
 		return true;
+	} else if (!_strnicmp(line, "GROUNDVIEWTARGET", 16)) {
+		const Body *tgt;
+		if ((tgt = g_psys->GetObj(line + 17, true)) || (tgt = g_psys->GetBase(line + 17, true))) {
+			viewtarget = tgt;
+		}
 	}
 	return false;
 }

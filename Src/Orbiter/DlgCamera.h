@@ -35,7 +35,6 @@ private:
 	bool ground_lock;
 	bool rot_is_tilt, rot_is_pan;
 	const Body* m_SelectedTarget;
-    //std::string m_SelectedTarget;
     std::string m_SelectedSite;
     std::string m_SitePlanet;
     int m_SelectedPreset;

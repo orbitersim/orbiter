@@ -230,7 +230,7 @@ void DlgCamera::DrawGroundMode()
 	const CelestialBody *ref = g_camera->GetGroundRef();
 	if (!ref)
 		ref = g_camera->ProxyPlanet();
-	if (!ref)
+	if (!ref || ref->Type() != OBJTP_PLANET)
 		return; // something went wrong
 
 	ImGui::PushID("ground_view");
@@ -241,13 +241,51 @@ void DlgCamera::DrawGroundMode()
 			SetGroundObserverView(ref);
 		}
 	}
+
 	ImGui::PopID();
+
+
+	ImGui::PushID("location");
+	ImGui::SeparatorText("Location");
+
+	ImVec2 button_sz(ImVec2(ImGui::GetContentRegionAvail().x, 20));
+	double lng, lat, alt;
+	g_camera->GroundObserverLocation(lng, lat, alt);
+	sprintf(longitude, "%+0.6f", lng * DEG);
+	sprintf(latitude, "%+0.6f", lat * DEG);
+	sprintf(altitude, "%0.5g", alt);
+	ImGui::InputText("Longitude [°]", longitude, 64, ImGuiInputTextFlags_CharsDecimal);
+	ImGui::InputText("Latitude [°]", latitude, 64, ImGuiInputTextFlags_CharsDecimal);
+	ImGui::InputText("Altitude [m]", altitude, 64, ImGuiInputTextFlags_CharsDecimal);
+
+	if (ImGui::Button("Apply", button_sz)) {
+		double lng, lat, alt;
+		bool ok;
+		ok = (sscanf(longitude, "%lf", &lng) == 1);
+		ok = ok && (sscanf(latitude, "%lf", &lat) == 1);
+		ok = ok && (sscanf(altitude, "%lf", &alt) == 1);
+		if (ok)
+			g_camera->SetGroundMode(CAMERA_GROUNDOBSERVER, g_camera->GroundObserverReference(), lng * RAD, lat * RAD, alt, NULL);
+	}
+
+	ImGui::PopID();
+
 
 	ImGui::PushID("tgt_lock");
 	ImGui::SeparatorText("View target");
 	bool tgtlock = g_camera->GroundObserver_TargetLock();
 	if (ImGui::Checkbox("Lock view on target", &tgtlock))
 		g_camera->SetGroundObserver_TargetLock(tgtlock);
+
+
+	ImGui::BeginDisabled(!tgtlock);
+	const Body *viewtgt = g_camera->GroundObserver_ViewTarget();
+	if (ObjectSelector("##view_tgt", viewtgt, OBJ_ALL, 0, ImGuiComboFlags_HeightRegular)) {
+		if (m_SelectedTarget && m_SelectedTarget != viewtgt) {
+			g_camera->SetGroundObserver_ViewTarget(m_SelectedTarget);
+		}
+	}
+	ImGui::EndDisabled();
 
 	ImGui::PopID();
 }
