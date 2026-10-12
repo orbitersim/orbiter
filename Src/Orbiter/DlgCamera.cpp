@@ -18,7 +18,7 @@ extern TimeData td;
 extern Orbiter *g_pOrbiter;
 extern Vessel *g_focusobj;
 
-DlgCamera::DlgCamera() : ImGuiDialog(ICON_FA_VIDEO " Orbiter: Camera", {512,359}) {
+DlgCamera::DlgCamera() : ImGuiDialog(ICON_FA_VIDEO " Orbiter: Camera", {280,359}) {
     m_SelectedPreset = -1;
 }
 
@@ -925,9 +925,6 @@ void DlgCamera::SetCurrentGroundpos() {
 
 void DlgCamera::DrawPreset() {
 	ImGuiWindowFlags window_flags = 0; // ImGuiChildFlags_ResizeX;;;
-    //static float sz1 = 0.0;
-    //float sz2;
-   // ImGui::Splitter(true, 0.5f, 8.0f, &sz1, &sz2, 8, 8, ImGui::GetContentRegionAvail().y);
 	float listw = std::max(ImGui::GetContentRegionAvail().x - 80.0f, 10.0f);
     ImGui::BeginChild("ChildL", ImVec2(listw, 0), window_flags);
     {
@@ -939,33 +936,33 @@ void DlgCamera::DrawPreset() {
 
                 const bool is_selected = (m_SelectedPreset == i);
                 ImGui::PushID(i);
-                if (ImGui::Selectable(buf, is_selected))
-                    m_SelectedPreset = i;
+				if (ImGui::Selectable(buf, is_selected)) {
+					m_SelectedPreset = i;
+					g_camera->RecallPreset(m_SelectedPreset);
+				}
                 ImGui::PopID();
                 // Set the initial focus when opening the combo (scrolling + keyboard navigation focus)
                 if (is_selected)
                     ImGui::SetItemDefaultFocus();
             }
             ImGui::EndListBox();
-            //ImGui::Text("Selected %d", m_SelectedPreset);
         }
     }
     ImGui::EndChild();
-    ImGui::SameLine();
-    ImGui::BeginChild("ChildR");
-        ImVec2 button_sz(ImVec2(ImGui::GetContentRegionAvail().x, 20));
-        if(ImGui::Button("Add", button_sz)) {
-            g_camera->AddPreset();
-        }
-        if(ImGui::Button("Delete", button_sz)) {
-            g_camera->DelPreset(m_SelectedPreset);
-        }
-        if(ImGui::Button("Clear", button_sz)) {
-            g_camera->ClearPresets();
-        }
-        if(ImGui::Button("Recall", button_sz)) {
-            g_camera->RecallPreset (m_SelectedPreset);
-        }
+
+	ImGui::SameLine();
+
+	ImGui::BeginChild("ChildR");
+    ImVec2 button_sz(ImVec2(ImGui::GetContentRegionAvail().x, 20));
+    if(ImGui::Button("Add", button_sz)) {
+        g_camera->AddPreset();
+    }
+    if(ImGui::Button("Delete", button_sz)) {
+        g_camera->DelPreset(m_SelectedPreset);
+    }
+    if(ImGui::Button("Clear", button_sz)) {
+        g_camera->ClearPresets();
+    }
 
     ImGui::EndChild();
 
