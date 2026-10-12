@@ -87,12 +87,11 @@ private:
 
 	static inline CameraTab tabs[] = {
 		{"Mode", "", &DlgCamera::DrawMode},
-		{"Control", "", &DlgCamera::DrawControl}
-		//{"Control", "/cam_control.htm", &DlgCamera::DrawControl},
+		{"Control", "/cam_control.htm", &DlgCamera::DrawControl},
 		//{"Target",  "/cam_target.htm",  &DlgCamera::DrawTarget},
 		//{"Track",   "/cam_track.htm",   &DlgCamera::DrawTrack},
 		//{"Ground",  "/cam_ground.htm",  &DlgCamera::DrawGround},
-		//{"Preset",  "/cam_preset.htm",  &DlgCamera::DrawPreset},
+		{"Preset",  "/cam_preset.htm",  &DlgCamera::DrawPreset}
 	};
 
 };

@@ -924,11 +924,12 @@ void DlgCamera::SetCurrentGroundpos() {
 }
 
 void DlgCamera::DrawPreset() {
-    ImGuiWindowFlags window_flags = ImGuiChildFlags_ResizeX;;;
-    static float sz1 = 0.0;
-    float sz2;
+	ImGuiWindowFlags window_flags = 0; // ImGuiChildFlags_ResizeX;;;
+    //static float sz1 = 0.0;
+    //float sz2;
    // ImGui::Splitter(true, 0.5f, 8.0f, &sz1, &sz2, 8, 8, ImGui::GetContentRegionAvail().y);
-    ImGui::BeginChild("ChildL", ImVec2(250, 0), window_flags);
+	float listw = std::max(ImGui::GetContentRegionAvail().x - 80.0f, 10.0f);
+    ImGui::BeginChild("ChildL", ImVec2(listw, 0), window_flags);
     {
         if (ImGui::BeginListBox("##listbox preset", ImVec2(ImGui::GetContentRegionAvail().x*0.99, ImGui::GetContentRegionAvail().y*0.99)))
         {
