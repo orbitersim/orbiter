@@ -18,11 +18,13 @@ public:
     void OnDraw() override;
 
 private:
+	void DrawMode();
 	void DrawCockpitMode();
 	void DrawTrackMode();
 	void DrawGroundMode();
 
     void DrawControl();
+
     void DrawTarget();
     void DrawTrack();
     void DrawGround();
@@ -84,11 +86,13 @@ private:
 	};
 
 	static inline CameraTab tabs[] = {
-		{"Control", "/cam_control.htm", &DlgCamera::DrawControl},
-		{"Target",  "/cam_target.htm",  &DlgCamera::DrawTarget},
-		{"Track",   "/cam_track.htm",   &DlgCamera::DrawTrack},
-		{"Ground",  "/cam_ground.htm",  &DlgCamera::DrawGround},
-		{"Preset",  "/cam_preset.htm",  &DlgCamera::DrawPreset},
+		{"Mode", "", &DlgCamera::DrawMode},
+		{"Control", "", &DlgCamera::DrawControl}
+		//{"Control", "/cam_control.htm", &DlgCamera::DrawControl},
+		//{"Target",  "/cam_target.htm",  &DlgCamera::DrawTarget},
+		//{"Track",   "/cam_track.htm",   &DlgCamera::DrawTrack},
+		//{"Ground",  "/cam_ground.htm",  &DlgCamera::DrawGround},
+		//{"Preset",  "/cam_preset.htm",  &DlgCamera::DrawPreset},
 	};
 
 };

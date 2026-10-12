@@ -33,6 +33,22 @@ void DlgCamera::OnDraw() {
     if(followterrain[0]=='\0')
       	sprintf (followterrain, "%0.0lf", g_camera->GroundObserver_TerrainLimit());
 
+    ImGuiTabBarFlags tab_bar_flags = ImGuiTabBarFlags_None;
+    if (ImGui::BeginTabBar("CameraTabBar", tab_bar_flags))
+    {
+        for(size_t i = 0; i < sizeof(tabs)/sizeof(tabs[0]); i++) {
+            if(ImGui::BeginTabItem(tabs[i].name)) {
+				SetHelp("html/orbiter.chm", tabs[i].helptopic);
+                (this->*tabs[i].func)();
+                ImGui::EndTabItem();
+            }
+        }
+        ImGui::EndTabBar();
+    }
+}
+
+void DlgCamera::DrawMode()
+{
 	static char* mode_label[] = { "Cockpit", "Track", "Ground" };
 	char *curr_mode = (extcam ? extmode == CAMERA_GROUNDOBSERVER ? mode_label[2] : mode_label[1] : mode_label[0]);
 
@@ -60,21 +76,6 @@ void DlgCamera::OnDraw() {
 	} else {
 		DrawTrackMode();
 	}
-
-#ifdef UNDEF
-    ImGuiTabBarFlags tab_bar_flags = ImGuiTabBarFlags_None;
-    if (ImGui::BeginTabBar("CameraTabBar", tab_bar_flags))
-    {
-        for(size_t i = 0; i < sizeof(tabs)/sizeof(tabs[0]); i++) {
-            if(ImGui::BeginTabItem(tabs[i].name)) {
-				SetHelp("html/orbiter.chm", tabs[i].helptopic);
-                (this->*tabs[i].func)();
-                ImGui::EndTabItem();
-            }
-        }
-        ImGui::EndTabBar();
-    }
-#endif
 }
 
 void DlgCamera::DrawCockpitMode()
@@ -209,41 +210,6 @@ void DlgCamera::DrawTrackMode()
 	ImGui::PopID();
 
 
-	ImGui::PushID("track_dist");
-	ImGui::SeparatorText("Target distance");
-
-	strcpy(distance, DistStr(g_camera->Distance())+1);
-	ImGui::SetNextItemWidth(std::max(ImGui::GetContentRegionAvail().x - 71.0f, 10.0f));
-	if (ImGui::InputText("m", distance, 64, ImGuiInputTextFlags_EnterReturnsTrue)) {
-		double dst;
-		if (sscanf(distance, "%lf", &dst) == 1) {
-			// scan for magnitude suffix
-			switch (distance[strlen(distance) - 1]) {
-			case 'k':
-				dst *= 1e3;
-				break;
-			case 'M':
-				dst *= 1e6;
-				break;
-			case 'G':
-				dst *= 1e9;
-				break;
-			}
-			g_camera->ChangeDist(dst / g_camera->Distance());
-		}
-	}
-	ImGui::SameLine();
-	ImGui::ArrowButton("##down", ImGuiDir_Down);
-	if (ImGui::IsItemActive())
-		g_camera->ChangeDist(1.0 / (1.0 + td.SysDT));
-	ImGui::SameLine();
-	ImGui::ArrowButton("##up", ImGuiDir_Up);
-	if (ImGui::IsItemActive())
-		g_camera->ChangeDist(1.0 + td.SysDT);
-
-	ImGui::PopID();
-
-
 	ImGui::PushID("track_frame");
 	ImGui::SeparatorText("Camera reference frame");
 
@@ -309,6 +275,7 @@ void DlgCamera::DrawGroundMode()
 
 	ImGui::PushID("ground_view");
 	ImGui::SeparatorText("Reference body");
+
 	if (ObjectSelector("##ground_ref", ref, OBJ_CELBODY, SEL_NOCAT | SEL_ALLOPEN, ImGuiComboFlags_HeightRegular)) {
 		if (m_SelectedTarget && m_SelectedTarget != ref) {
 			ref = (const CelestialBody*)m_SelectedTarget;
@@ -369,6 +336,7 @@ void DlgCamera::DrawGroundMode()
 
 	ImGui::PushID("tgt_lock");
 	ImGui::SeparatorText("View target");
+
 	bool tgtlock = g_camera->GroundObserver_TargetLock();
 	if (ImGui::Checkbox("Lock view on target", &tgtlock))
 		g_camera->SetGroundObserver_TargetLock(tgtlock);
@@ -382,6 +350,149 @@ void DlgCamera::DrawGroundMode()
 		}
 	}
 	ImGui::EndDisabled();
+
+	ImGui::PopID();
+}
+
+void DlgCamera::DrawControl()
+{
+	char label[64];
+	double dt = td.SysDT;
+
+	bool have_move = (extcam && extmode == CAMERA_GROUNDOBSERVER);
+	bool have_dist = (extcam && extmode != CAMERA_GROUNDOBSERVER);
+	bool have_pane2 = (have_move || have_dist);
+	bool have_fwdbt = !extcam;
+	bool disable_rot = ((extcam && (extmode == CAMERA_TARGETTOOBJECT || extmode == CAMERA_TARGETFROMOBJECT)) ||
+		                (extcam && extmode == CAMERA_GROUNDOBSERVER && g_camera->GroundObserver_TargetLock()));
+	float ctrlw = std::max((have_pane2 ? ImGui::GetContentRegionAvail().x * 0.5f - 5.0f : ImGui::GetContentRegionAvail().x), 75.0f);
+
+	ImGui::PushID("ctrl_rot");
+	ImGuiWindowFlags window_flags = 0;  // ImGuiChildFlags_ResizeX;
+	ImGui::BeginChild("ChildL", ImVec2(ctrlw, 150), window_flags);
+	sprintf(label, "%s view", rot_is_tilt ? "Tilt" : "Rotate");
+	ImGui::SeparatorText(label);
+
+	ImGui::BeginDisabled(disable_rot);
+	ImVec2 cnt(ImGui::GetContentRegionAvail().x/2 - 10, 75);
+	ImGui::SetCursorPos(ImVec2(cnt.x, cnt.y - 25));
+	ImGui::ArrowButton("##up", ImGuiDir_Up);
+	if (ImGui::IsItemActive()) {
+		if (rot_is_tilt) g_camera->Rotate(0, dt);
+		else             g_camera->ShiftTheta(-dt);
+	}
+	ImGui::SetCursorPos(ImVec2(cnt.x, cnt.y + 25));
+	ImGui::ArrowButton("##down", ImGuiDir_Down);
+	if (ImGui::IsItemActive()) {
+		if (rot_is_tilt) g_camera->Rotate(0, -dt);
+		else             g_camera->ShiftTheta(dt);
+	}
+	ImGui::SetCursorPos(ImVec2(cnt.x - 25, cnt.y));
+	ImGui::ArrowButton("##left", ImGuiDir_Left);
+	if (ImGui::IsItemActive()) {
+		if (rot_is_tilt) g_camera->Rotate(dt, 0);
+		else             g_camera->ShiftPhi(-dt);
+	}
+	ImGui::SetCursorPos(ImVec2(cnt.x + 25, cnt.y));
+	ImGui::ArrowButton("##right", ImGuiDir_Right);
+	if (ImGui::IsItemActive()) {
+		if (rot_is_tilt) g_camera->Rotate(-dt, 0);
+		else             g_camera->ShiftPhi(dt);
+	}
+	ImGui::EndDisabled();
+	if (have_fwdbt) {
+		ImGui::SetCursorPos(ImVec2(cnt.x - 20, cnt.y + 50));
+		ImGui::Button("Forward", ImVec2(60, 20));
+		if (ImGui::IsItemActive())
+			g_camera->ResetCockpitDir();
+	}
+	ImGui::EndChild();
+
+	if (have_move) {
+		ImGui::SameLine();
+		ImGui::BeginChild("ChildR", ImVec2(ctrlw, 150), window_flags);
+		ImGui::SeparatorText("Move view");
+		ImVec2 cnt(ImGui::GetContentRegionAvail().x / 2 - 10, 75);
+		ImGui::SetCursorPos(ImVec2(cnt.x, cnt.y - 25));
+		ImGui::ArrowButton("##up", ImGuiDir_Up);
+		if (ImGui::IsItemActive())
+			g_camera->ShiftTheta(-dt);
+		ImGui::SetCursorPos(ImVec2(cnt.x, cnt.y + 25));
+		ImGui::ArrowButton("##down", ImGuiDir_Down);
+		if (ImGui::IsItemActive())
+			g_camera->ShiftTheta(dt);
+		ImGui::SetCursorPos(ImVec2(cnt.x - 25, cnt.y));
+		ImGui::ArrowButton("##left", ImGuiDir_Left);
+		if (ImGui::IsItemActive())
+			g_camera->AddPhi(-dt);
+		ImGui::SetCursorPos(ImVec2(cnt.x + 25, cnt.y));
+		ImGui::ArrowButton("##right", ImGuiDir_Right);
+		if (ImGui::IsItemActive())
+			g_camera->AddPhi(dt);
+		ImGui::SetCursorPos(ImVec2(cnt.x - 10, cnt.y - 50));
+		ImGui::Button("Up", ImVec2(40, 20));
+		if (ImGui::IsItemActive())
+			g_camera->ChangeDist(1.0 + dt);
+		ImGui::SetCursorPos(ImVec2(cnt.x - 10, cnt.y + 50));
+		ImGui::Button("Down", ImVec2(40, 20));
+		if (ImGui::IsItemActive())
+			g_camera->ChangeDist(1.0 / (1.0 + dt));
+		ImGui::EndChild();
+
+	} else if (have_dist) {
+
+		ImGui::SameLine();
+		ImGui::BeginChild("ChildR", ImVec2(ctrlw, 150), window_flags);
+		ImGui::SeparatorText("Distance");
+
+		strcpy(distance, DistStr(g_camera->Distance()) + 1);
+		ImGui::SetNextItemWidth(std::max(ImGui::GetContentRegionAvail().x - 71.0f, 10.0f));
+		if (ImGui::InputText("m", distance, 64, ImGuiInputTextFlags_EnterReturnsTrue)) {
+			double dst;
+			if (sscanf(distance, "%lf", &dst) == 1) {
+				// scan for magnitude suffix
+				switch (distance[strlen(distance) - 1]) {
+				case 'k':
+					dst *= 1e3;
+					break;
+				case 'M':
+					dst *= 1e6;
+					break;
+				case 'G':
+					dst *= 1e9;
+					break;
+				}
+				g_camera->ChangeDist(dst / g_camera->Distance());
+			}
+		}
+		ImGui::SameLine();
+		ImGui::ArrowButton("##down", ImGuiDir_Down);
+		if (ImGui::IsItemActive())
+			g_camera->ChangeDist(1.0 / (1.0 + td.SysDT));
+		ImGui::SameLine();
+		ImGui::ArrowButton("##up", ImGuiDir_Up);
+		if (ImGui::IsItemActive())
+			g_camera->ChangeDist(1.0 + td.SysDT);
+
+		ImGui::EndChild();
+	}
+
+	ImGui::PopID();
+
+
+	ImGui::PushID("fov");
+
+	bool isCockpit = g_camera->GetMode() == CAM_COCKPIT;
+	sprintf(label, "Field of view [%s]", isCockpit ? "Cockpit" : "External");
+	ImGui::SeparatorText(label);
+
+	float fov = oapiCameraAperture() * DEG * 2.0;
+	ImGui::SetNextItemWidth(ImGui::GetContentRegionAvail().x);
+	if (ImGui::SliderFloat("", &fov, 10.0, 90.0, "%.1f")) {
+		if (fov < 10.0f) fov = 10.0f;
+		else if (fov > 90.0f) fov = 90.0f;
+		oapiCameraSetAperture(fov * RAD * 0.5);
+	}
 
 	ImGui::PopID();
 }
@@ -408,6 +519,7 @@ bool DlgCamera::SetGroundObserverView(const CelestialBody* ref)
 	return true;
 }
 
+#ifdef UNDEF
 void DlgCamera::DrawControl() {
     ImGuiWindowFlags window_flags = ImGuiChildFlags_ResizeX;
     ImGui::BeginChild("ChildL", ImVec2(250, 0), window_flags);
@@ -494,6 +606,7 @@ void DlgCamera::DrawControl() {
     }
     ImGui::EndChild();
 }
+#endif
 
 void DlgCamera::AddCbodyNode(const CelestialBody *cbody) {
     ImGuiTreeNodeFlags node_flags = ImGuiTreeNodeFlags_OpenOnArrow | ImGuiTreeNodeFlags_SpanAvailWidth | ImGuiTreeNodeFlags_DefaultOpen;
