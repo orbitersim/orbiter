@@ -118,33 +118,25 @@ void DlgCamera::DrawCockpitMode()
 				ImVec2 area = ImGui::GetContentRegionAvail();
 				float xcnt = area.x * 0.5f;
 				ImGui::SetCursorPos(ImVec2(xcnt - 12.5f, 0));
-				if (!has_neighbour[2])
-					ImGui::BeginDisabled();
+				ImGui::BeginDisabled(!has_neighbour[2]);
 				if (ImGui::ArrowButton("##up", ImGuiDir_Up))
 					g_pane->SwitchPanel(2);
-				if (!has_neighbour[2])
-					ImGui::EndDisabled();
+				ImGui::EndDisabled();
 				ImGui::SetCursorPos(ImVec2(xcnt - 12.5f, 25));
-				if (!has_neighbour[3])
-					ImGui::BeginDisabled();
+				ImGui::BeginDisabled(!has_neighbour[3]);
 				if (ImGui::ArrowButton("##down", ImGuiDir_Down))
 					g_pane->SwitchPanel(3);
-				if (!has_neighbour[3])
-					ImGui::EndDisabled();
+				ImGui::EndDisabled();
 				ImGui::SetCursorPos(ImVec2(xcnt - 37.5f, 12));
-				if (!has_neighbour[0])
-					ImGui::BeginDisabled();
+				ImGui::BeginDisabled(!has_neighbour[0]);
 				if (ImGui::ArrowButton("##left", ImGuiDir_Left))
 					g_pane->SwitchPanel(0);
-				if (!has_neighbour[0])
-					ImGui::EndDisabled();
+				ImGui::EndDisabled();
 				ImGui::SetCursorPos(ImVec2(xcnt + 12.5f, 12));
-				if (!has_neighbour[1])
-					ImGui::BeginDisabled();
+				ImGui::BeginDisabled(!has_neighbour[1]);
 				if (ImGui::ArrowButton("##right", ImGuiDir_Right))
 					g_pane->SwitchPanel(1);
-				if (!has_neighbour[1])
-					ImGui::EndDisabled();
+				ImGui::EndDisabled();
 				ImGui::EndChild();
 			}
 			ImGui::PopID();
@@ -217,10 +209,92 @@ void DlgCamera::DrawTrackMode()
 	ImGui::PopID();
 
 
+	ImGui::PushID("track_dist");
+	ImGui::SeparatorText("Target distance");
+
+	strcpy(distance, DistStr(g_camera->Distance())+1);
+	ImGui::SetNextItemWidth(std::max(ImGui::GetContentRegionAvail().x - 71.0f, 10.0f));
+	if (ImGui::InputText("m", distance, 64, ImGuiInputTextFlags_EnterReturnsTrue)) {
+		double dst;
+		if (sscanf(distance, "%lf", &dst) == 1) {
+			// scan for magnitude suffix
+			switch (distance[strlen(distance) - 1]) {
+			case 'k':
+				dst *= 1e3;
+				break;
+			case 'M':
+				dst *= 1e6;
+				break;
+			case 'G':
+				dst *= 1e9;
+				break;
+			}
+			g_camera->ChangeDist(dst / g_camera->Distance());
+		}
+	}
+	ImGui::SameLine();
+	ImGui::ArrowButton("##down", ImGuiDir_Down);
+	if (ImGui::IsItemActive())
+		g_camera->ChangeDist(1.0 / (1.0 + td.SysDT));
+	ImGui::SameLine();
+	ImGui::ArrowButton("##up", ImGuiDir_Up);
+	if (ImGui::IsItemActive())
+		g_camera->ChangeDist(1.0 + td.SysDT);
+
+	ImGui::PopID();
+
+
 	ImGui::PushID("track_frame");
 	ImGui::SeparatorText("Camera reference frame");
 
-	DrawTrackMode_Frame();
+	int mode = g_camera->GetExtMode();
+	int new_mode = mode;
+	if (mode >= CAMERA_TARGETRELATIVE || mode <= CAMERA_TARGETFROMOBJECT) {
+		const char* frame_label[] = { "target-relative", "absolute direction", "global frame",
+			"target to ...", "target from ..." };
+		if (BeginWideCombo("##trackframe", frame_label[mode - CAMERA_TARGETRELATIVE], ImGuiComboFlags_HeightRegular)) {
+			ImGuiTreeNodeFlags node_flags = ImGuiTreeNodeFlags_OpenOnArrow | ImGuiTreeNodeFlags_SpanAvailWidth | ImGuiTreeNodeFlags_DefaultOpen;
+			bool is_selected = false;
+			if (ImGui::TreeNodeEx("Movable:", node_flags)) {
+				for (int i = CAMERA_TARGETRELATIVE; i <= CAMERA_GLOBALFRAME; i++) {
+					ImGui::TreeNodeEx(frame_label[i - CAMERA_TARGETRELATIVE], node_flags | ImGuiTreeNodeFlags_Leaf | ImGuiTreeNodeFlags_NoTreePushOnOpen);
+					if (ImGui::IsItemClicked() && !ImGui::IsItemToggledOpen())
+						new_mode = i;
+				}
+				ImGui::TreePop();
+			}
+			if (ImGui::TreeNodeEx("Fixed:", node_flags)) {
+				for (int i = CAMERA_TARGETTOOBJECT; i <= CAMERA_TARGETFROMOBJECT; i++) {
+					ImGui::TreeNodeEx(frame_label[i - CAMERA_TARGETRELATIVE], node_flags | ImGuiTreeNodeFlags_Leaf | ImGuiTreeNodeFlags_NoTreePushOnOpen);
+					if (ImGui::IsItemClicked() && !ImGui::IsItemToggledOpen())
+						new_mode = i;
+				}
+				ImGui::TreePop();
+			}
+			if (new_mode != mode) {
+				const Body* dirref = g_camera->GetDirRef();
+				if (!dirref && new_mode >= CAMERA_TARGETTOOBJECT)
+					dirref = g_psys->GetStar(0); // fallback
+				g_camera->SetTrackMode((ExtCamMode)new_mode, dirref);
+				mode = new_mode;
+				ImGui::CloseCurrentPopup();
+			}
+			ImGui::EndCombo();
+		}
+
+		if (mode >= CAMERA_TARGETTOOBJECT) {
+			const Body* dirref = g_camera->GetDirRef();
+			if (!dirref)
+				return; // something went wrong
+
+			if (ObjectSelector("##trackref", dirref, OBJ_ALL, SEL_EXCLUDE_CAMTGT, ImGuiComboFlags_HeightRegular)) {
+				if (m_SelectedTarget != dirref && m_SelectedTarget != g_camera->Target()) {
+					g_camera->SetTrackMode((ExtCamMode)mode, m_SelectedTarget);
+					ImGui::CloseCurrentPopup();
+				}
+			}
+		}
+	}
 
 	ImGui::PopID();
 }
@@ -248,25 +322,47 @@ void DlgCamera::DrawGroundMode()
 	ImGui::PushID("location");
 	ImGui::SeparatorText("Location");
 
-	ImVec2 button_sz(ImVec2(ImGui::GetContentRegionAvail().x, 20));
 	double lng, lat, alt;
+	static double plng = NAN, plat = NAN, palt = NAN;
+	static bool modified = false;
 	g_camera->GroundObserverLocation(lng, lat, alt);
-	sprintf(longitude, "%+0.6f", lng * DEG);
-	sprintf(latitude, "%+0.6f", lat * DEG);
-	sprintf(altitude, "%0.5g", alt);
-	ImGui::InputText("Longitude [°]", longitude, 64, ImGuiInputTextFlags_CharsDecimal);
-	ImGui::InputText("Latitude [°]", latitude, 64, ImGuiInputTextFlags_CharsDecimal);
-	ImGui::InputText("Altitude [m]", altitude, 64, ImGuiInputTextFlags_CharsDecimal);
-
-	if (ImGui::Button("Apply", button_sz)) {
-		double lng, lat, alt;
-		bool ok;
-		ok = (sscanf(longitude, "%lf", &lng) == 1);
-		ok = ok && (sscanf(latitude, "%lf", &lat) == 1);
-		ok = ok && (sscanf(altitude, "%lf", &alt) == 1);
-		if (ok)
-			g_camera->SetGroundMode(CAMERA_GROUNDOBSERVER, g_camera->GroundObserverReference(), lng * RAD, lat * RAD, alt, NULL);
+	if (lng != plng) {
+		sprintf(longitude, "%+0.6f", lng * DEG);
+		modified = false;
+		plng = lng;
 	}
+	if (lat != plat) {
+		sprintf(latitude, "%+0.6f", lat * DEG);
+		modified = false;
+		plat = lat;
+	}
+	if (alt != palt) {
+		sprintf(altitude, "%0.5g", alt);
+		modified = false;
+		palt = alt;
+	}
+
+	ImGui::PushItemWidth(std::min(std::max(ImGui::GetContentRegionAvail().x - 90.0f, 50.0f), 200.0f));
+	if (ImGui::InputText("Longitude [°]", longitude, 64, ImGuiInputTextFlags_CharsDecimal))
+		modified = true;
+	if (ImGui::InputText("Latitude [°]", latitude, 64, ImGuiInputTextFlags_CharsDecimal))
+		modified = true;
+	if (ImGui::InputText("Altitude [m]", altitude, 64, ImGuiInputTextFlags_CharsDecimal))
+		modified = true;
+	ImGui::PopItemWidth();
+
+	float button_w = std::min(100.0f, ImGui::GetContentRegionAvail().x);
+	ImVec2 button_sz(ImVec2(button_w, 20));
+	ImGui::BeginDisabled(!modified);
+	if (ImGui::Button("Apply", button_sz)) {
+		double deg_lng, deg_lat, _alt;
+		if (sscanf(longitude, "%lf", &deg_lng) == 1 &&
+			sscanf(latitude, "%lf", &deg_lat) == 1 &&
+			sscanf(altitude, "%lf", &_alt) == 1) {
+			g_camera->SetGroundMode(CAMERA_GROUNDOBSERVER, g_camera->GroundObserverReference(), deg_lng * RAD, deg_lat * RAD, _alt, NULL);
+		}
+	}
+	ImGui::EndDisabled();
 
 	ImGui::PopID();
 
@@ -288,58 +384,6 @@ void DlgCamera::DrawGroundMode()
 	ImGui::EndDisabled();
 
 	ImGui::PopID();
-}
-
-void DlgCamera::DrawTrackMode_Frame()
-{
-	ImGuiTreeNodeFlags node_flags = ImGuiTreeNodeFlags_OpenOnArrow | ImGuiTreeNodeFlags_SpanAvailWidth | ImGuiTreeNodeFlags_DefaultOpen;
-	const char* frame_label[] = { "target-relative", "absolute direction", "global frame",
-		"target to ...", "target from ..."};
-	int mode = g_camera->GetExtMode();
-	int new_mode = mode;
-	if (mode < CAMERA_TARGETRELATIVE || mode > CAMERA_TARGETFROMOBJECT)
-		return; // something went wrong
-	if (BeginWideCombo("##trackframe", frame_label[mode - CAMERA_TARGETRELATIVE], ImGuiComboFlags_HeightRegular)) {
-		bool is_selected = false;
-		if (ImGui::TreeNodeEx("Movable:", node_flags)) {
-			for (int i = CAMERA_TARGETRELATIVE; i <= CAMERA_GLOBALFRAME; i++) {
-				ImGui::TreeNodeEx(frame_label[i - CAMERA_TARGETRELATIVE], node_flags | ImGuiTreeNodeFlags_Leaf | ImGuiTreeNodeFlags_NoTreePushOnOpen);
-				if (ImGui::IsItemClicked() && !ImGui::IsItemToggledOpen())
-					new_mode = i;
-			}
-			ImGui::TreePop();
-		}
-		if (ImGui::TreeNodeEx("Fixed:", node_flags)) {
-			for (int i = CAMERA_TARGETTOOBJECT; i <= CAMERA_TARGETFROMOBJECT; i++) {
-				ImGui::TreeNodeEx(frame_label[i - CAMERA_TARGETRELATIVE], node_flags | ImGuiTreeNodeFlags_Leaf | ImGuiTreeNodeFlags_NoTreePushOnOpen);
-				if (ImGui::IsItemClicked() && !ImGui::IsItemToggledOpen())
-					new_mode = i;
-			}
-			ImGui::TreePop();
-		}
-		if (new_mode != mode) {
-			const Body* dirref = g_camera->GetDirRef();
-			if (!dirref && new_mode >= CAMERA_TARGETTOOBJECT)
-				dirref = g_psys->GetStar(0); // fallback
-			g_camera->SetTrackMode((ExtCamMode)new_mode, dirref);
-			mode = new_mode;
-			ImGui::CloseCurrentPopup();
-		}
-		ImGui::EndCombo();
-	}
-
-	if (mode >= CAMERA_TARGETTOOBJECT) {
-		const Body* dirref = g_camera->GetDirRef();
-		if (!dirref)
-			return; // something went wrong
-
-		if (ObjectSelector("##trackref", dirref, OBJ_ALL, SEL_EXCLUDE_CAMTGT, ImGuiComboFlags_HeightRegular)) {
-			if (m_SelectedTarget != dirref && m_SelectedTarget != g_camera->Target()) {
-				g_camera->SetTrackMode((ExtCamMode)mode, m_SelectedTarget);
-				ImGui::CloseCurrentPopup();
-			}
-		}
-	}
 }
 
 bool DlgCamera::SetGroundObserverView(const CelestialBody* ref)

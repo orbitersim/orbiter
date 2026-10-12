@@ -21,7 +21,6 @@ private:
 	void DrawCockpitMode();
 	void DrawTrackMode();
 	void DrawGroundMode();
-	void DrawTrackMode_Frame();
 
     void DrawControl();
     void DrawTarget();
@@ -42,6 +41,7 @@ private:
     char longitude[64]="";
     char latitude[64]="";
     char altitude[64]="";
+	char distance[64] = "";
     char followterrain[64]="";
     bool m_TargetLock;
 
