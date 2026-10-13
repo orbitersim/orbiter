@@ -336,7 +336,7 @@ CameraMode *Camera::GetCMode () const
 		case CAMERA_GROUNDOBSERVER: {
 			cm = new CameraMode_Ground; TRACENEW
 			CameraMode_Ground *cmg = (CameraMode_Ground*)cm;
-			cmg->SetPosition (go->Lng(), go->Lat(), go->Alt(), (OBJHANDLE)dirref);
+			cmg->SetPosition (go->Lng(), go->Lat(), go->Alt(), (OBJHANDLE)go->RefBody());
 			if (!go->LockedOnTarget()) cmg->SetOrientation (go->Phi(), go->Tht());
 			} break;
 		default: cm = new CameraMode_Cockpit; TRACENEW
