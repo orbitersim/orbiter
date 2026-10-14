@@ -71,42 +71,21 @@ Note that only vessels which accept user input focus appear in the list. Vessels
 
 \subsection{Camera control}
 \label{ssec:menu_camera}
-The \textit{Camera} dialog offers various ways to select viewpoints, camera targets or movement modes. It can be accessed via the \textit{camera} button on the main menu (keyboard shortcut \Ctrl\keystroke{F1}).\\
+The \textit{Camera} dialog offers various ways to select viewpoints, camera targets or movement modes. It can be accessed via the \textit{Camera} button on the main menu (keyboard shortcut \Ctrl\keystroke{F1}).\\
 \\
-\textbf{Control tab:}\\
-This tab contains controls for moving and tilting the viewer camera. The available options depend on the current camera mode.
+\noindent
+\textbf{Mode tab:}
+Select a camera mode here. You can pick a cockpit view or an external tracking or ground observer view.
 
 \begin{figure}[H]
 	\centering
-	\subfigure{\includegraphics[width=0.35\textwidth]{tab_control.png}}
+	\subfigure{\includegraphics[width=0.35\textwidth]{cam_tab_mode.png}}
 \end{figure}
 
 \noindent
-In internal (cockpit) views, the camera can be rotated to allow the pilot to look around (keyboard shortcuts \Alt\DArrow\UArrow\RArrow\LArrow$_{Cur}$, or alternatively right-click and drag the mouse). The view direction can be re-centred with the Forward button (shortcut \Home$_{Cur}$).\\
-In external views the camera can be rotated around the target (keyboard shortcuts \Ctrl\DArrow\UArrow\RArrow\LArrow$_{Cur}$ or right-click and drag the mouse). It can also be moved towards or away from the target (shortcuts \keystroke{PageUp}\keystroke{PageDown}$_{Cur}$ or mouse wheel).\\
-In ground-based views, the camera can be tilted (shortcuts \DArrow\UArrow\RArrow\LArrow$_{Cur}$), panned (shortcuts \Ctrl\DArrow\UArrow\RArrow\LArrow$_{Cur}$) or raised and lowered (shortcuts \keystroke{PageUp}\keystroke{PageDown}$_{Cur}$) unless locked onto a target, in which case it can only be rotated around the target (shortcuts \Ctrl\RArrow\LArrow$_{Cur}$), moved towards or away from the target (shortcuts \Ctrl\DArrow\UArrow$_{Cur}$). Raising and lowering the camera is also possible in target-locked mode.\\
-The Sensitivity slider can be used to adjust the speed of movement.\\
+\textit{Cockpit} mode puts you at the controls of the spacecraft you are piloting. Orbiter provides different cockpit modes (see section \ref{sec:cockpit_views}), which can be selected here. Available cockpit modes can also be cycled with the \keystroke{F8} key.\\
 \\
-\textbf{Target tab:}\\
-This tab provides a list of potential camera targets (vessels, celestial bodies, spaceports). Click on an object in the list and Apply to set a new camera target. Note that setting a new vessel target does not automatically switch the input focus. To do that, use the \textit{Vessel selection} dialog (see section \ref{ssec:menu_vessel_sel}). You can switch the camera back to the vessel you are controlling by pressing the Focus cockpit or Focus extern buttons (shortcut \keystroke{F1}).\\
-
-\begin{figure}[H]
-	\centering
-	\subfigure{\includegraphics[width=0.35\textwidth]{tab_target.png}}
-\end{figure}
-
-\noindent
-Note that after selecting a new camera target, you may need to adjust the distance (\keystroke{PageUp}\keystroke{PageDown}$_{Num}$).\\
-\\
-\textbf{Track tab:}\\
-Allows to select different camera track modes which determine how the camera moves around and follows the target.\\
-
-\begin{figure}[H]
-	\centering
-	\subfigure{\includegraphics[width=0.35\textwidth]{tab_track.png}}
-\end{figure}
-
-\noindent
+\textit{Track} mode lets you follow your vessel or any other object in the solar system, in an external view. You can move the camera around the target in one of several reference frames:
 
 \begin{itemize}
 \item \textbf{Target-relative:} camera maintains its position and orientation relative to the target. Camera movement is aligned with the vessel axes.
@@ -118,28 +97,34 @@ Allows to select different camera track modes which determine how the camera mov
 
 \noindent
 A keyboard shortcut for cycling between the first three track modes is \keystroke{F2}.\\
+
+\noindent
+\textit{Ground} mode allows setting the camera into a surface-relative position and orientation. Unlike the track modes, the camera doesn't follow the target, but stays fixed relative to the planet surface. It can be set up either in \textit{free} mode, or in \textit{target lock} mode, where it keeps looking in the direction of the target. Use the Target lock check box to choose between the two modes.
+
+\noindent
+The current location (longitude/latitude) and altitude are displayed. You can jump to a different
+location by entering new coordinates and pressing \textit{Apply}.\\
+
+\noindent
+\textbf{Control tab:}
+This tab contains controls for moving and tilting the viewer camera. The available options depend on the current camera mode.
+
+\begin{figure}[H]
+	\centering
+	\subfigure{\includegraphics[width=0.35\textwidth]{cam_tab_control.png}}
+\end{figure}
+
+\noindent
+In internal (cockpit) views, the camera can be rotated to allow the pilot to look around (keyboard
+shortcuts \Alt\DArrow\UArrow\RArrow\LArrow$_{Cur}$, or alternatively right-click and drag the mouse).
+The view direction can be re-centred with the reset button X (shortcut \Home$_{Cur}$).\\
+In track views the camera can be rotated around the target (keyboard shortcuts \Ctrl\DArrow\UArrow\RArrow\LArrow$_{Cur}$ or right-click and drag the mouse). It can also be moved towards or away from the target (shortcuts \keystroke{PageUp}\keystroke{PageDown}$_{Cur}$ or mouse wheel).\\
+In ground-based views, the camera can be tilted (shortcuts \DArrow\UArrow\RArrow\LArrow$_{Cur}$), panned (shortcuts \Ctrl\DArrow\UArrow\RArrow\LArrow$_{Cur}$) or raised and lowered (shortcuts \keystroke{PageUp}\keystroke{PageDown}$_{Cur}$) unless locked onto a target, in which case it can only be rotated around the target (shortcuts \Ctrl\RArrow\LArrow$_{Cur}$), moved towards or away from the target (shortcuts \Ctrl\DArrow\UArrow$_{Cur}$). Raising and lowering the camera is also possible in target-locked mode.\\
 \\
-\textbf{Ground tab:}\\
-This page allows setting the camera into a surface-relative position and orientation. Unlike the track modes, the camera doesn't follow the target, but stays fixed relative to the planet surface. It can be set up either in \textit{free} mode, or in \textit{target lock} mode, where it keeps looking in the direction of the target. Use the Target lock check box to choose between the two modes.
-
-\begin{figure}[H]
-	\centering
-	\subfigure{\includegraphics[width=0.35\textwidth]{tab_ground.png}}
-\end{figure}
-
 \noindent
-You can either manually set the surface location (latitude/longitude) and altitude on a reference planet and press Apply, or just press Current to put the camera into ground mode at its current location relative to the reference planet.
-
-\infobox{When the camera is in free ground mode, it is no longer linked to a target object, so picking targets in the \textit{Target} tab will not have an effect in this mode, but the new target will be used when switching back to a target-tracking mode.}
-
-\noindent
-\textbf{FoV tab:}\\
-This page allows adjustment of the camera field of view (FoV), i.e. the camera zoom setting. The FoV can be set in discrete steps by clicking the buttons (30°-70°) or continuously by moving the slider, in the range 10°-90°. The FoV is measured between the top and bottom edges of the view window.
-
-\begin{figure}[H]
-	\centering
-	\subfigure{\includegraphics[width=0.35\textwidth]{tab_fov.png}}
-\end{figure}
+You can also adjust the camera field of view (FoV) here (the camera zoom). The FoV can be
+set in the range 10°---90° by moving the slider, or a precise value can be entered by Ctrl-clicking the
+slider. Note that in Orbiter the FoV is measured between the top and bottom edges of the view window.\\
 
 \noindent
 Keyboard shortcuts: \keystroke{Z}/\keystroke{X} for continuous FoV adjustment, or \Ctrl+\keystroke{Z}/\keystroke{X} for discrete adjustments in steps of 10°.
@@ -148,16 +133,22 @@ Keyboard shortcuts: \keystroke{Z}/\keystroke{X} for continuous FoV adjustment, o
 
 \noindent
 \textbf{Preset tab:}\\
-Orbiter provides an easy method to store and recall camera modes in a preset list. Click on the \textit{Preset} tab in the camera dialog. Any available modes are listed here. To activate a mode, double-click it in the list, or select the mode and click Recall.
+Orbiter provides an easy method to store and recall camera modes in a preset list. Click on the
+\textit{Preset} tab in the camera dialog. Any available modes are listed here. To activate a mode,
+double-click it in the list.
 
 \begin{figure}[H]
 	\centering
-	\subfigure{\includegraphics[width=0.35\textwidth]{tab_preset.png}}
+	\subfigure{\includegraphics[width=0.35\textwidth]{cam_tab_preset.png}}
 \end{figure}
 
 \noindent
-To store the current camera mode as a new preset in the list, simply click Add. This will produce a new entry with a short description. To delete a mode, click Delete, or Clear to clear the whole list.\\
-Each entry remembers its track mode, position, target and FoV. The preset list is a good way to prepare a set of camera angles beforehand (for example to follow a launch) and then activate them quickly without having to adjust the positions manually. The preset list is stored together with the simulation state, so it can be shared via a scenario file.
+To store the current camera mode as a new preset in the list, simply click Add. This will produce a
+new entry with a short description. To delete a mode, click Delete, or Clear to clear the whole list.\\
+Each entry remembers its track mode, position, target and FoV. The preset list is a good way to prepare
+a set of camera angles beforehand (for example to follow a launch) and then activate them quickly without
+having to adjust the positions manually. The preset list is stored together with the simulation state,
+so it can be shared via a scenario file.
 
 
 \subsection{Time acceleration}

@@ -80,7 +80,7 @@ private:
 	};
 
 	static inline CameraTab tabs[] = {
-		{"Mode", "" /* TODO*/, &DlgCamera::DrawMode},
+		{"Mode", "/cam_mode.htm", &DlgCamera::DrawMode},
 		{"Control", "/cam_control.htm", &DlgCamera::DrawControl},
 		{"Preset",  "/cam_preset.htm",  &DlgCamera::DrawPreset}
 	};
