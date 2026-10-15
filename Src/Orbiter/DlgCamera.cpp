@@ -412,26 +412,26 @@ void DlgCamera::DrawControl()
 		if (ImGui::IsItemActive())
 			g_camera->ShiftTheta(-dt);
 		ImGui::SetCursorPos(ImVec2(cnt.x, cnt.y + 25));
-ImGui::ArrowButton("##down", ImGuiDir_Down);
-if (ImGui::IsItemActive())
-g_camera->ShiftTheta(dt);
-ImGui::SetCursorPos(ImVec2(cnt.x - 25, cnt.y));
-ImGui::ArrowButton("##left", ImGuiDir_Left);
-if (ImGui::IsItemActive())
-g_camera->AddPhi(-dt);
-ImGui::SetCursorPos(ImVec2(cnt.x + 25, cnt.y));
-ImGui::ArrowButton("##right", ImGuiDir_Right);
-if (ImGui::IsItemActive())
-g_camera->AddPhi(dt);
-ImGui::SetCursorPos(ImVec2(cnt.x + 50, cnt.y - 25));
-ImGui::Button("Up", ImVec2(40, 20));
-if (ImGui::IsItemActive())
-g_camera->ChangeDist(1.0 + dt);
-ImGui::SetCursorPos(ImVec2(cnt.x + 50, cnt.y + 25));
-ImGui::Button("Down", ImVec2(40, 20));
-if (ImGui::IsItemActive())
-g_camera->ChangeDist(1.0 / (1.0 + dt));
-ImGui::EndChild();
+		ImGui::ArrowButton("##down", ImGuiDir_Down);
+		if (ImGui::IsItemActive())
+			g_camera->ShiftTheta(dt);
+		ImGui::SetCursorPos(ImVec2(cnt.x - 25, cnt.y));
+		ImGui::ArrowButton("##left", ImGuiDir_Left);
+		if (ImGui::IsItemActive())
+			g_camera->AddPhi(-dt);
+		ImGui::SetCursorPos(ImVec2(cnt.x + 25, cnt.y));
+		ImGui::ArrowButton("##right", ImGuiDir_Right);
+		if (ImGui::IsItemActive())
+			g_camera->AddPhi(dt);
+		ImGui::SetCursorPos(ImVec2(cnt.x + 50, cnt.y - 25));
+		ImGui::Button("Up", ImVec2(40, 20));
+		if (ImGui::IsItemActive())
+			g_camera->ChangeDist(1.0 + dt);
+		ImGui::SetCursorPos(ImVec2(cnt.x + 50, cnt.y + 25));
+		ImGui::Button("Down", ImVec2(40, 20));
+		if (ImGui::IsItemActive())
+			g_camera->ChangeDist(1.0 / (1.0 + dt));
+		ImGui::EndChild();
 
 	} else if (have_dist) {
 
