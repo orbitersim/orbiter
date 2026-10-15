@@ -409,7 +409,7 @@ private:
 		void GlobalRot(Matrix &grot);                      // Update grot to map from camera frame to global frame
 		void SetDirection(const Vector &dir);
 		void MoveTo(double _lng, double _lat, double _alt, bool alt_above_terrain = true);
-		void MoveBy(double dz, double dx, double dh);
+		void MoveBy(double dz, double dx, double dh);      // moves the camera by dz [m] forward, dx [m] right and dh [m] up
 		void TiltTo(double _phi, double _tht);
 		void TiltBy(double dphi, double dtht);
 

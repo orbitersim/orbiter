@@ -84,6 +84,7 @@ void DlgCamera::DrawMode()
 void DlgCamera::DrawCockpitMode()
 {
 	ImGui::Text(g_focusobj->Name());
+	Spacer();
 
 	ImGui::PushID("mode");
 	ImGui::SeparatorText("Cockpit view");
@@ -354,6 +355,8 @@ void DlgCamera::DrawControl()
 	bool disable_rot = ((extcam && (extmode == CAMERA_TARGETTOOBJECT || extmode == CAMERA_TARGETFROMOBJECT)) ||
 		                (extcam && extmode == CAMERA_GROUNDOBSERVER && g_camera->GroundObserver_TargetLock()));
 
+	ImGuiStyle& style = ImGui::GetStyle();
+
 	ImGui::BeginChild("CtrlPanel", ImVec2(ImGui::GetContentRegionAvail().x, 100.0f));
 	float ctrlw = std::max(ImGui::GetContentRegionAvail().x * 0.5f - 4.0f, 75.0f);
 
@@ -390,10 +393,12 @@ void DlgCamera::DrawControl()
 	}
 	ImGui::EndDisabled();
 	if (have_fwdbt) {
+		ImGui::BeginDisabled(g_camera->IsCockpitDefaultDir());
 		ImGui::SetCursorPos(ImVec2(cnt.x, cnt.y));
 		ImGui::Button("X", ImVec2(20, 20));
 		if (ImGui::IsItemActive())
 			g_camera->ResetCockpitDir();
+		ImGui::EndDisabled();
 	}
 	ImGui::EndChild();
 
@@ -407,26 +412,26 @@ void DlgCamera::DrawControl()
 		if (ImGui::IsItemActive())
 			g_camera->ShiftTheta(-dt);
 		ImGui::SetCursorPos(ImVec2(cnt.x, cnt.y + 25));
-		ImGui::ArrowButton("##down", ImGuiDir_Down);
-		if (ImGui::IsItemActive())
-			g_camera->ShiftTheta(dt);
-		ImGui::SetCursorPos(ImVec2(cnt.x - 25, cnt.y));
-		ImGui::ArrowButton("##left", ImGuiDir_Left);
-		if (ImGui::IsItemActive())
-			g_camera->AddPhi(-dt);
-		ImGui::SetCursorPos(ImVec2(cnt.x + 25, cnt.y));
-		ImGui::ArrowButton("##right", ImGuiDir_Right);
-		if (ImGui::IsItemActive())
-			g_camera->AddPhi(dt);
-		ImGui::SetCursorPos(ImVec2(cnt.x + 50, cnt.y - 25));
-		ImGui::Button("Up", ImVec2(40, 20));
-		if (ImGui::IsItemActive())
-			g_camera->ChangeDist(1.0 + dt);
-		ImGui::SetCursorPos(ImVec2(cnt.x + 50, cnt.y + 25));
-		ImGui::Button("Down", ImVec2(40, 20));
-		if (ImGui::IsItemActive())
-			g_camera->ChangeDist(1.0 / (1.0 + dt));
-		ImGui::EndChild();
+ImGui::ArrowButton("##down", ImGuiDir_Down);
+if (ImGui::IsItemActive())
+g_camera->ShiftTheta(dt);
+ImGui::SetCursorPos(ImVec2(cnt.x - 25, cnt.y));
+ImGui::ArrowButton("##left", ImGuiDir_Left);
+if (ImGui::IsItemActive())
+g_camera->AddPhi(-dt);
+ImGui::SetCursorPos(ImVec2(cnt.x + 25, cnt.y));
+ImGui::ArrowButton("##right", ImGuiDir_Right);
+if (ImGui::IsItemActive())
+g_camera->AddPhi(dt);
+ImGui::SetCursorPos(ImVec2(cnt.x + 50, cnt.y - 25));
+ImGui::Button("Up", ImVec2(40, 20));
+if (ImGui::IsItemActive())
+g_camera->ChangeDist(1.0 + dt);
+ImGui::SetCursorPos(ImVec2(cnt.x + 50, cnt.y + 25));
+ImGui::Button("Down", ImVec2(40, 20));
+if (ImGui::IsItemActive())
+g_camera->ChangeDist(1.0 / (1.0 + dt));
+ImGui::EndChild();
 
 	} else if (have_dist) {
 
@@ -501,6 +506,49 @@ void DlgCamera::DrawControl()
 
 	ImGui::PopID();
 	ImGui::EndChild();
+
+
+	// speed slider
+	if (have_move) {
+		const double min_speed = 1.0, max_speed = 1e10;
+		double speed = g_camera->GroundObserver_PanSpeed();
+		double pspeed = speed;
+		ImGui::PushID("##speed");
+		ImGui::SeparatorText("Speed");
+
+		ImGui::PushItemFlag(ImGuiItemFlags_ButtonRepeat, true);
+		if (ImGui::ArrowButton("##left", ImGuiDir_Left)) {
+			double logspd = log10(speed);
+			double step = pow(10, ceil(logspd) - 1);
+			speed = std::max(min_speed, speed - step);
+			speed = (ceil)(speed / step) * step;  // rounding
+		}
+		ImGui::SameLine();
+		ImVec2 label_sz = ImGui::CalcTextSize("[m/s]");
+		ImGui::SetNextItemWidth(ImGui::GetContentRegionAvail().x - label_sz.x - style.FramePadding.x * 4.0f - 20);
+		float fspeed = (float)speed;
+		// convert this to SliderDouble once ImGui supports logarithmic mode for them
+		if (ImGui::SliderFloat("", &fspeed, min_speed, max_speed, "% .3g", ImGuiSliderFlags_Logarithmic | ImGuiSliderFlags_NoRoundToFormat))
+			speed = fspeed;
+		ImGui::SameLine();
+
+		if (ImGui::ArrowButton("##right", ImGuiDir_Right)) {
+			double logspd = log10(speed);
+			double step = pow(10, floor(logspd));
+			speed = std::min(max_speed, speed + step);
+			speed = (floor)(speed / step) * step;  // rounding
+		}
+
+		ImGui::SameLine();
+		ImGui::Text("[m/s]");
+
+		if (speed != pspeed)
+			g_camera->SetGroundObserver_PanSpeed(speed);
+		ImGui::PopItemFlag();
+
+		ImGui::PopID();
+		Spacer();
+	}
 
 
 	ImGui::PushID("fov");

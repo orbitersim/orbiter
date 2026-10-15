@@ -766,7 +766,7 @@ void Camera::SetGroundMode (ExtCamMode mode, const CelestialBody *ref, double ln
 
 void Camera::SetGroundObserver_PanSpeed (double speed)
 {
-	if (go->SetPanSpeed(max(0.1, min(1e5, speed))))
+	if (go->SetPanSpeed(max(0.1, min(1e10, speed))))
 		g_pOrbiter->Cfg()->CfgCameraPrm.Panspeed = go->PanSpeed();
 }
 
@@ -1650,9 +1650,9 @@ void Camera::GroundObserver::MoveBy(double dz, double dx, double dh)
 	Vector &gpos = cam->gpos;
 	double r;
 
-	Vector dsz(grot.m13, grot.m23, grot.m33); // dz: go forward/backward w.r.t. camera view direction
-	Vector dsx(grot.m11, grot.m21, grot.m31); // dx: go sideways w.r.t. camera view direction
-	refbody->GlobalToEquatorial(gpos + dsz * dz + dsx * dx, lng, lat, r);
+	Vector dsz(grot.m13, grot.m23, grot.m33); // unit vector in camera forward direction
+	Vector dsx(grot.m11, grot.m21, grot.m31); // unit vector in camera right direction
+	refbody->GlobalToEquatorial(gpos + dsz * dz + dsx * dx, lng, lat, r); // update lng,lat to new position
 	double new_alt = max(1.0, alt + dh);
 	alt0 += new_alt - alt;
 	alt = new_alt;

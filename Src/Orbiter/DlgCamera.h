@@ -71,7 +71,7 @@ private:
 	// "selector_flags" are bitflags from the SEL_XXX consts
 	bool ObjectSelector(const char* label, const Body *body, DWORD objtypes, DWORD selector_flags = 0, ImGuiComboFlags flags = 0);
 
-	void Spacer() { ImGui::Dummy(ImVec2(10, 0)); }
+	void Spacer() { ImGui::Dummy(ImVec2(0, 3)); }
 
 	struct CameraTab {
 		const char *name;
