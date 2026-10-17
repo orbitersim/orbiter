@@ -15,7 +15,7 @@
 \usepackage{subfiles}
 \usepackage{tabularx}
 \usepackage{threeparttable}
-\usepackage{caption}
+\usepackage[font={small,it}]{caption}
 \usepackage{longtable}
 \usepackage[table]{xcolor}
 \usepackage{tcolorbox}
@@ -35,11 +35,13 @@
 \usepackage{setspace}
 \usepackage{times}
 \usepackage{wasysym}
+\usepackage{parskip}
+\usepackage{ragged2e}
+\usepackage{array}
 
 %\usepackage{graphicx}
 %\usepackage[dvips]{graphics}
 %\usepackage{epstopdf}
-
 
 \newcommand{\vR}[1]{\ensuremath{\vec{R}_{#1}}}
 \newcommand{\nR}[1]{\ensuremath{|\vR{#1}|}}
@@ -51,11 +53,28 @@
 \newcommand{\Euler}{\ensuremath\mathrm{E}}
 \newcommand{\Kelvin}{\ensuremath{\mathrm{K}}}
 
+\newcommand{\cur}{{$_\textit{Cur}$}}
+\newcommand{\num}{{$_\textit{Num}$}}
+\newcommand{\Arrows}{\keystroke{$\updownarrow\leftrightarrow$}}
+\newcommand{\UDArrow}{\keystroke{$\updownarrow$}}
+\newcommand{\LRArrow}{\keystroke{$\leftrightarrow$}}
+
+\newcommand{\textsup}[1]{\ensuremath{^\textrm{#1}}}
+\newcommand{\textsub}[1]{\ensuremath{_\textrm{#1}}}
+\renewcommand{\deg}{\ensuremath{^\circ}}
+
+\newcommand{\prograde}{\ensuremath{\oplus}}
+\newcommand{\retrograde}{\ensuremath{\odot}}
 
 \newcommand{\alertbox}[1]{\begin{tcolorbox}[colback=red!5!white,colframe=red!75!black,title=Alert]#1\end{tcolorbox}}
 
 \newcommand{\infobox}[1]{\begin{tcolorbox}[colback=blue!5!white,colframe=blue!75!black,title=Information]#1\end{tcolorbox}}
 
+\renewcommand{\arraystretch}{1.5}
+
+% remove ugly wide spaces around keystroke symbols
+\let\pkeystroke\keystroke
+\renewcommand{\keystroke}[1]{\!\pkeystroke{#1}\!}
 
 % code block
 \definecolor{darkorange}{rgb}{0.99,0.91,0.85}
@@ -96,6 +115,10 @@
 	keywords = {}
 }
 
+% Increase the maths font sizes, since they seem to be too small in comparison with the text fonts used.
+% Use 10.95 to match LaTeX's internal 11pt size.
+% Syntax: \DeclareMathSizes{text-size}{math-size}{script-size}{scriptscript-size}
+\DeclareMathSizes{10.95}{13}{8}{6}
 
 % HACK to center char in key box (https://tex.stackexchange.com/questions/634917/center-align-the-items-in-the-keystroke-package)
 \usepackage{xpatch}

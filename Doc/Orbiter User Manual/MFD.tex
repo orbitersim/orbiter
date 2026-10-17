@@ -20,7 +20,7 @@ The MFDs can be operated either by left-clicking the buttons with the mouse, or 
 The PWR button activates and deactivates the MFD display (keyboard shortcut: \Shift\keystroke{Esc}). In glass cockpit mode, turning off the MFD also hides the buttons (except the power button, so it can be turned on again).\\
 \\
 \textbf{Mode selection}\\
-The SEL button activates the \textit{mode selection screen} (keyboard shortcut: \Shift\keystroke{F1}). Each MFD mode provides information for a different navigation or avionics situation (orbital parameters, surface parameters, docking and landing aids, etc.) The default modes are described below in this section. Many additional modes are available via 3$^{rd}$ party add-ons.\\
+The SEL button activates the \textit{mode selection screen} (keyboard shortcut: \Shift\keystroke{F1}). Each MFD mode provides information for a different navigation or avionics situation (orbital parameters, surface parameters, docking and landing aids, etc.) The default modes are described below in this section. Many additional modes are available via 3$^\textrm{rd}$ party add-ons.\\
 The mode selection screen shows the available modes in the display area, one mode next to each function button. To select a mode, simply click the corresponding button. For selection with the keyboard, press the \Shift key together with the mode selection key displayed in grey with each of the listed modes (for example, \Shift\keystroke{O} for Orbit mode).
 
 \begin{figure}[H]
@@ -148,11 +148,21 @@ The \textit{Surface} MFD mode provides avionics data useful in flight situations
 The display contains an attitude indicator (AI) with horizon line and pitch ladder indicating pitch and bank attitude (including numerical readouts). Above is a compass ribbon with a heading readout. To the left of the AI is the speed readout which can be set to different modes with the MFD buttons:
 
 \begin{itemize}
-\item TAS (true airspeed): The speed of the spacecraft relative to the surrounding atmosphere. Airspeed is usually measured with a pitot tube in the airstream recording the difference between free-stream and stagnation point pressure. The TAS mode is only available if the free-stream pressure $p_{1}$ > 10$^{-3}$ Pa (on Earth, this corresponds to approx. 140 km altitude). If TAS cannot be measured, the speed tape is reset to 0 and the readout shows "-{}-{}-{}-".
-\item IAS (indicated airspeed): Commonly used in conventional aircraft. IAS is calibrated to atmospheric density and speed of sound at sea level. IAS and TAS are similar at low altitude, but start to diverge at higher altitudes, with IAS < TAS. The limit $p_{1}$ > 10$^{-3}$ Pa also applies to IAS availability.
-\item GS (ground-relative speed): The magnitude of the vessel's velocity vector in the rotating planet reference frame. This is similar to TAS at lower altitudes, but diverges at higher altitudes. Usually, TAS is no longer available where the differences would become significant.
-\infobox{For an object in geostationary orbit, GS would be zero since it is stationary relative to the rotating planet frame.}
-\item OS (orbital speed): The magnitude of the vessel's velocity relative to the planet's centre in a non-rotating frame. This is identical to the Vel readout in the \textit{Orbit} MFD. Note: OS is usually non-zero for a vessel at rest on the planet surface, because the planet itself is rotating.
+\item TAS (true airspeed): The speed of the spacecraft relative to the surrounding atmosphere. Airspeed is usually
+measured with a pitot tube in the airstream recording the difference between free-stream and stagnation point pressure.
+The TAS mode is only available if the free-stream pressure $p_{1}$ > 10\textsup{-3}\,Pa (on Earth, this corresponds to
+approx. 140\,km altitude). If TAS cannot be measured, the speed tape is reset to 0 and the readout shows "-{}-{}-{}-".
+\item IAS (indicated airspeed): Commonly used in conventional aircraft. IAS is calibrated to atmospheric density and
+speed of sound at sea level. IAS and TAS are similar at low altitude, but start to diverge at higher altitudes, with
+IAS < TAS. The limit $p_{1}$ > 10\textsup{-3}\,Pa also applies to IAS availability.
+\item GS (ground-relative speed): The magnitude of the vessel's velocity vector in the rotating planet reference frame.
+This is similar to TAS at lower altitudes, but diverges at higher altitudes. Usually, TAS is no longer available where
+the differences would become significant.
+\infobox{For an object in geostationary orbit, GS would be zero since it is stationary relative to the rotating planet
+frame.}
+\item OS (orbital speed): The magnitude of the vessel's velocity relative to the planet's centre in a non-rotating
+frame. This is identical to the Vel readout in the \textit{Orbit} MFD. Note: OS is usually non-zero for a vessel at
+rest on the planet surface, because the planet itself is rotating.
 \end{itemize}
 
 \begin{figure}[H]
@@ -161,9 +171,14 @@ The display contains an attitude indicator (AI) with horizon line and pitch ladd
 \end{figure}
 
 \noindent
-To the right of the IA is the altitude tape showing the vessel altitude [km] above the surface (ALT-R) at altitudes < 10 km, or altitude above mean planet radius (ALT) otherwise. To the right of the altitude tape is the vertical speed tape (VS) [m/s].\\
-In the lower part of the display are the acceleration tape (ACC) [m/s$^{2}$] (left), and the AOA (angle of attack) and vertical acceleration (VACC) [m/s$^{2}$] tapes (right).\\
-Below the AI are atmospheric data readouts: atmospheric density (DNS), static pressure (STP), dynamic pressure (DNP), outside air temperature (OAT) and Mach number (M). In the block below are vessel's equatorial position (longitude, latitude) [deg] and their rates [deg/s].
+To the right of the IA is the altitude tape showing the vessel altitude [km] above the surface (ALT-R)
+at altitudes < 10\,km, or altitude above mean planet radius (ALT) otherwise. To the right of the altitude
+tape is the vertical speed tape (VS) [m/s].\\
+In the lower part of the display are the acceleration tape (ACC) [m/s\textsup{2}] (left), and the AOA (angle of
+attack) and vertical acceleration (VACC) [m/s\textsup{2}] tapes (right).\\
+Below the AI are atmospheric data readouts: atmospheric density (DNS), static pressure (STP), dynamic pressure
+(DNP), outside air temperature (OAT) and Mach number (M). In the block below are vessel's equatorial position
+(longitude, latitude) [\deg] and their rates [\deg/s].
 
 
 \subsection{Map}
@@ -186,7 +201,7 @@ The \textit{Map} MFD mode shows the surface of a celestial body in a cylindrical
 	\hline\rule{0pt}{2ex}
 	ZM- & \Shift\keystroke{X} & Zoom out by factor 2 down to 1x (global view)\\
 	\hline\rule{0pt}{2ex}
-	ZM+ & \Shift\keystroke{Z} & Zoom in by factor 2 up to 128x (2.8° x 2.8° cover)\\
+	ZM+ & \Shift\keystroke{Z} & Zoom in by factor 2 up to 128x (2.8\deg{} $\times$ 2.8\deg{} cover)\\
 	\hline\rule{0pt}{2ex}
 	TRK & \Shift\keystroke{K} & Toggle automatic vessel track mode on/off\\
 	\hline\rule{0pt}{2ex}
@@ -580,7 +595,7 @@ If the MFD is used in Orbit mode while the vessel is located on the surface, som
 \subsection{Synchronise orbit}
 The \textit{Synchronise Orbit} MFD mode assists in catching up with an orbiting body once the orbital planes have been aligned (see section \ref{ssec:mfd_align}).\\
 The display shows the ship's and target body's orbits, together with a reference axis. It lists the times it will take both objects to reach this axis for a series of orbits.\\
-For this mode to work properly, the orbital planes of both objects' orbits should be closely matched. The relative inclination between the two planes is shown in the lower left corner (RInc). If this becomes too large (e.g. > 1°), re-align the planes with the \textit{Align Orbital Planes} mode. Plane alignment and orbit synchronisation manoeuvres tend to take place at different positions of the orbit (plane alignment at the nodes, synchronisation at apoapsis/periapsis, so they can usually be queued without interfering with each other. Plane alignment burns are out-of-plane, while synchronisation burns are in-plane.\\
+For this mode to work properly, the orbital planes of both objects' orbits should be closely matched. The relative inclination between the two planes is shown in the lower left corner (RInc). If this becomes too large (e.g. > 1\deg{}), re-align the planes with the \textit{Align Orbital Planes} mode. Plane alignment and orbit synchronisation manoeuvres tend to take place at different positions of the orbit (plane alignment at the nodes, synchronisation at apoapsis/periapsis, so they can usually be queued without interfering with each other. Plane alignment burns are out-of-plane, while synchronisation burns are in-plane.\\
 \\
 \textbf{Key options:}
 
@@ -704,8 +719,8 @@ The left part of the display shows a circular aiming reticle which contains a vi
 \begin{itemize}
 \item \textbf{Approach path indicator:} The upright cross (+) indicates the position of the approach path relative to the ship (at the centre of the reticle). When the indicator is centred in the display, the ship is located on the approach path. The radial scale is logarithmic in the range 0.1-1000 m (coarse) or 0.01-100 m (fine). Tangential alignment is performed with attitude thrusters in \textit{linear} mode (see section \ref{ssec:control_att}).
 \item \textbf{Transversal velocity vector:} The yellow arrow indicates the relative tangential velocity of your vessel with respect to the target. The radial scale is logarithmic in the range 0.01-100 m/s (coarse) or 0.001-10 m/s (fine). If the relative velocity is below the lower range limits, the arrow is not shown. To move the vessel onto the approach path, engage RCS thrusters in linear configuration so that the arrow points towards the approach path indicator.
-\item \textbf{Attitude alignment indicator:} The white or red $\times$ symbol indicates the alignment of the ship's docking port orientation with the approach path direction. When centred, the docking ports on the local and remote vessels are aligned in yaw and pitch. The symbol turns red if the misalignment is > 2.5°. The radial scale is linear in the range 0-20° (coarse) or 0-4° (fine). Rotational alignment is performed with RCS in rotational configuration (see section \ref{ssec:control_att}).
-\item \textbf{Bank rotation indicator:} This arrow moves along the circumference of the reticle to indicate the ship's longitudinal (bank) alignment with the docking port. To align, the indicator must be moved into the 12 o'clock position (0°) by rotating the ship around its longitudinal axis, engaging bank attitude thrusters in rotational configuration (see section \ref{ssec:control_att}).When alignment is achieved, the indicator turns white (misalignment < 2.5°). Note that this indicator is only displayed when directional alignment (see above) is within 5°. The tick marks at the top of the aiming reticle represent 10° (coarse) or 1° (fine) misalignments.
+\item \textbf{Attitude alignment indicator:} The white or red $\times$ symbol indicates the alignment of the ship's docking port orientation with the approach path direction. When centred, the docking ports on the local and remote vessels are aligned in yaw and pitch. The symbol turns red if the misalignment is > 2.5\deg{}. The radial scale is linear in the range 0--20\deg{} (coarse) or 0--4\deg{} (fine). Rotational alignment is performed with RCS in rotational configuration (see section \ref{ssec:control_att}).
+\item \textbf{Bank rotation indicator:} This arrow moves along the circumference of the reticle to indicate the ship's longitudinal (bank) alignment with the docking port. To align, the indicator must be moved into the 12 o'clock position (0\deg{}) by rotating the ship around its longitudinal axis, engaging bank attitude thrusters in rotational configuration (see section \ref{ssec:control_att}).When alignment is achieved, the indicator turns white (misalignment < 2.5\deg{}). Note that this indicator is only displayed when directional alignment (see above) is within 5\deg{}. The tick marks at the top of the aiming reticle represent 10\deg{} (coarse) or 1\deg{} (fine) misalignments.
 \item \textbf{Approach cone:} The concentric green or red circle indicates the size of the approach cone at the current distance to the target dock. The ship should approach the dock so that the approach path indicator is always inside the approach cone (green). The approach cone cross section becomes smaller as the ship approaches the dock.
 \end{itemize}
 
@@ -879,8 +894,8 @@ Docking alignment mode is cancelled if the IDS transmitter goes out of range, or
 Docking alignment also works for docking ports not oriented in the vessel's forward (+z) axis.\\
 \\
 \textbf{Pre-multiplying an angular offset}\\
-Sometimes it is useful to apply an angular offset to all attitude modes. For example, the Space Shuttle's OMS engines are tilted by 15° against the longitudinal axis. The resulting thrust vector therefore points to -15° pitch. For a prograde OMS burn, the Shuttle needs to pitch up by 15° against the orbital velocity vector. This constant offset due to engine arrangement can be taken into account with the Attitude MFD.\\
-Open the Configuration page by pressing CFG from the main page. You can now add angular offsets by pressing the ADD button. You can then set the rotation axis and angle similar to the attitude mode setup. For example for the Shuttle, add a pitch rotation of +15°. When done, press RTN to return to the main page. The additional offset will be added to all attitude modes, except for the docking alignment mode.
+Sometimes it is useful to apply an angular offset to all attitude modes. For example, the Space Shuttle's OMS engines are tilted by 15\deg{} against the longitudinal axis. The resulting thrust vector therefore points to -15\deg{} pitch. For a prograde OMS burn, the Shuttle needs to pitch up by 15\deg{} against the orbital velocity vector. This constant offset due to engine arrangement can be taken into account with the Attitude MFD.\\
+Open the Configuration page by pressing CFG from the main page. You can now add angular offsets by pressing the ADD button. You can then set the rotation axis and angle similar to the attitude mode setup. For example for the Shuttle, add a pitch rotation of +15\deg{}. When done, press RTN to return to the main page. The additional offset will be added to all attitude modes, except for the docking alignment mode.
 
 
 \subsection{Transfer}
@@ -971,7 +986,7 @@ A number of parameters is shown when the HTO is active:
 If the source orbit (or, if shown, the HTO) intersects the target orbit, the intersect point is marked by a grey line, and the intersect longitude is displayed (TLi). The position of the target at the time when the ship reaches the intersect point is marked by a dashed yellow line. To plan an encounter with the target body, the objective is to adjust the HTO so that the grey and dashed yellow lines coincide (ship and target arrive at the intersect point simultaneously) by adjusting the ejection time and $\Delta$v.\\
 \\
 \textbf{Hohmann transfer orbit}\\
-A transfer orbit which just touches the target orbit, and where ejection and intersect longitudes are 180° apart, is called a Hohmann minimum energy transfer orbit, because it minimises the amount of fuel used during the orbit ejection and insertion burns. Transfer orbits with larger major axis require more fuel, but are faster than Hohmann orbits.\\
+A transfer orbit which just touches the target orbit, and where ejection and intersect longitudes are 180\deg{} apart, is called a Hohmann minimum energy transfer orbit, because it minimises the amount of fuel used during the orbit ejection and insertion burns. Transfer orbits with larger major axis require more fuel, but are faster than Hohmann orbits.\\
 \\
 \textbf{Ejection burn}\\
 Once the HTO has been set up, the ejection burn takes place when the ejection longitude is reached (when the solid and dashed green lines coincide). The ejection burn is prograde (or retrograde) given the orbit w.r.t. the current orbit reference. As the burn takes place, the current orbit (solid green line) will approach the HTO. The burn is terminated when the orbit coincides with the HTO and Dv has reached zero. After ejection the HTO should be turned off so that the intercept parameters are displayed for the actual transfer orbit.\\
@@ -1142,7 +1157,7 @@ TransX divides all flights into stages, in which different central bodies are do
 	\hline\rule{0pt}{2ex}
 	Pe Distance (Escape Plan view) & Periapsis of planned orbit & Number [m]\\
 	\hline\rule{0pt}{2ex}
-	Ej Orientation (Escape Plan view) & Use to rotate planned orbit around axis of departure direction & Number [°]\\
+	Ej Orientation (Escape Plan view) & Use to rotate planned orbit around axis of departure direction & Number [\deg]\\
 	\hline\rule{0pt}{2ex}
 	Draw Base (Encounter view) & Choose to draw the base and show miss distance & "Off", "On"\\
 	\hline\rule{0pt}{2ex}
@@ -1186,13 +1201,13 @@ The process above establishes the Earth departure trajectory, which is shown in 
 Switch to "Escape Plan" view, to access variables that control that display and the departure trajectory. The display is controlled with variable "Equatorial view", which determines if an equatorial (North pole at the top) or polar view (from the North pole) of the Earth will be presented.\\
 The final control over the departure trajectory is provided in 2 ways: (1) periapsis distance and (2) the orientation of the departure trajectory.\\
 For best performance, the periapsis ("Pe Distance") should be a low value (still outside the atmosphere), so 200km altitude is a good value. This is also the altitude of the parking orbit.\\
-The "Ej Orientation" variable controls the rotation of the departure hyperbola plane around the departure vector. You can launch at any time by rotating the departure plane such that it intersects with the launch site, and the required launch azimuth to the parking orbit is shown in "Heading", on the lower left of the display. In theory, the departure plane can be rotated such that it requires the vessel to be launched into a polar orbit, but in practice, the launch azimuth should be close to 90°, which is the most efficient azimuth to launch.\\
-The best time to launch is just before the "Man. date", set back in the "Eject Plan" view in Stage 2. Find a time and an "Ej Orientation" angle that results in a "Heading" close to 90° (a value between 80° and 100° should be good enough). Also, the launch site should be co-planar with the departure plane, which occurs when the vessel (green line) is over the gray line. Once these conditions are met, you are go for launch!\\
+The "Ej Orientation" variable controls the rotation of the departure hyperbola plane around the departure vector. You can launch at any time by rotating the departure plane such that it intersects with the launch site, and the required launch azimuth to the parking orbit is shown in "Heading", on the lower left of the display. In theory, the departure plane can be rotated such that it requires the vessel to be launched into a polar orbit, but in practice, the launch azimuth should be close to 90\deg{}, which is the most efficient azimuth to launch.\\
+The best time to launch is just before the "Man. date", set back in the "Eject Plan" view in Stage 2. Find a time and an "Ej Orientation" angle that results in a "Heading" close to 90\deg{} (a value between 80\deg{} and 100\deg{} should be good enough). Also, the launch site should be co-planar with the departure plane, which occurs when the vessel (green line) is over the gray line. Once these conditions are met, you are go for launch!\\
 Take-off, and turn to the indicated heading. Note that once airborne, "Heading" parameter is replaced with "Rel Inc", showing the angle between the vessel and departure planes. Try to minimize this value as you make your way to orbit. Once in orbit, the plane error can be nulled by thrusting normal to the orbit, when the vessel is crossing the departure plane (gray line).\\
 The departure burn is mostly performed in a prograde direction, so the usual "Target" view is not used, instead continue using the "Escape Plan" view. As in the "Target" view, time to ignition (both instantaneous and factoring main engine performance) is shown. This is updated every orbit to allow for more departure opportunities. Also in the same way as the "Target" view, shut the engines down when "Delta V" decreases to zero (or a very small value).\\
 Some active manual control will be needed during the burn, to achieve the planned departure trajectory. Soon after the burn starts, the parameter "S.maj diff" will be displayed on the bottom left of the display, indicating the angular difference between the semi-major axes of the departure hyperbola and the vessel. Carefully pitch up or down (in-plane) during the burn to make this error as small as possible. Another parameter which should be a minimal as possible is the "Rel Inc". Control this by carefully pointing the vessel out-of-plane.\\
 The Earth-departure burn will almost certainly have errors, so target a mid-course correction maneuver for about 2-4 weeks after leaving Earth. By this point, the original Earth-centered Stage 1 should already have replaced with the Sun-centered stage, so go to "Manoevre" view in this "new" Stage 1, and setup a maneuver to reduce the encounter distance. After that, enjoy the next few months of interplanetary travel... or use time acceleration to skip that part.\\
-About one month before arrival is a good time to adjust the trajectory again, not only to take out errors but also to start targeting the Olympus surface base. Perform another mid-course correction maneuver, targeting a surface impact at around 12.74° North latitude, which is the latitude of the Olympus base. Because Mars has an atmosphere, a shallow approach trajectory (periapsis not that far below the surface) is recommended. Targeting the correct longitude (135.43° West, shown as a negative value in TransX) is a bit more tricky, but some adjustments to the arrival time will put the surface base close to the our trajectory, as it rotates around Mars.\\
+About one month before arrival is a good time to adjust the trajectory again, not only to take out errors but also to start targeting the Olympus surface base. Perform another mid-course correction maneuver, targeting a surface impact at around 12.74\deg{} North latitude, which is the latitude of the Olympus base. Because Mars has an atmosphere, a shallow approach trajectory (periapsis not that far below the surface) is recommended. Targeting the correct longitude (135.43\deg{} West, shown as a negative value in TransX) is a bit more tricky, but some adjustments to the arrival time will put the surface base close to the our trajectory, as it rotates around Mars.\\
 More similar corrections might be needed as the vessel approaches Mars, and the trajectory estimate gets more accurate. A few hours before landing open MapMFD, and select Olympus surface base, so TransX will use it as a target and replace the impact coordinates with the parameter "L.site dist to Base", displaying the distance between the base and the vessel surface impact. This selection process might have to be repeated, as the target base is "forgotten" when the vessel is closer to another body (e.g., a moon) than to the target body. You can then use the RCS to make small trajectory changes and get closer to Olympus.\\
 Trajectory changes get more expensive as the vessel approaches Mars, so eventually whatever errors exist will remain. Better prepare for atmospheric entry, and then landing at the Olympus base!\\
 Can you now get back to Earth?\\
@@ -1208,7 +1223,7 @@ Stage 3 is Jupiter-centered, slingshots the vessel on to Saturn. Of note is the 
 Stage 4 is again Sun-centered, and covers the flight from the Jupiter slingshot to Saturn. The "Sling Direct" view has variables that control the required slingshot in the previous stage. "Eject date" is the slingshot date, or the periapsis date from the previous stage. "Outward angle" controls how much the trajectory is going to be bent. "Inc. angle" is the inclination change, usually a small angle as the orbital plane of planets are close to each other.\\
 Stage 5 is Saturn-centered encounter, similar to what was used before in previous sections.\\
 The scenario starts about 2 days before the planned launch time, so you can take your time reviewing the plan. You'll notice that the Jupiter aim isn't as good as it could be, but in fact it is just targeted for the actual launch time.\\
-Once you are done, fast-forward to the time of launch. Switch to "Eject Plan" view in stage 1, and launch on 1977/08/20 at 14:29 (MJD 43375.603472), and turn to a heading of 123° and get into a circular orbit of 200km. During ascent and in orbit, take care to null the plane error, so there you don't have to worry too much about it during the ejection burn. Perform the ejection burn on the first orbit, about 1 hour after launch.\\
+Once you are done, fast-forward to the time of launch. Switch to "Eject Plan" view in stage 1, and launch on 1977/08/20 at 14:29 (MJD 43375.603472), and turn to a heading of 123\deg{} and get into a circular orbit of 200km. During ascent and in orbit, take care to null the plane error, so there you don't have to worry too much about it during the ejection burn. Perform the ejection burn on the first orbit, about 1 hour after launch.\\
 As you fly away from Earth, stage 1 will eventually be deleted, and then at about October 1977 perform a correction burn to correct for ejection burn errors. Open a second TransX instance, set up a maneuver in stage 1 in one MFD, and in the second MFD go to stage 2, to use the information displayed in views "Setup" and "Slingshot" to correct the trajectory. The parameters of interest are "Pe MJD" in the "Setup" view, and "R. Inc" and "Pe Ratio" in the "Slingshot" view. Drive "Pe MJD" to about MJD 44063.936806, "R. Inc" to a value near 0 and "Pe Ratio" close to 1. The target is still far away, which means the trajectory will be perturbed for a long time, thus absolute accuracy isn't required. To aid in nulling the errors in the mentioned variables: the main velocity component driver for parameter "R. Inc" (Slingshot view) is "Ch. plane vel.", variable "Outward vel." drives mostly "Pe Ratio" (Slingshot view) and "Focus PeD" (Setup view), and finally variable "Prograde vel." has the greatest effect on "Pe MJD" (Setup view). There is coupling between all those parameters, so several "passes" will be needed adjusting them.\\
 In May 1978 perform another course correction burn, using the same setup as previously.\\
 You can make the following course correction burn a year later, in late May 1979. By then, the vessel is close enough to Jupiter that the Sun-centered stage 1 has been deleted. This time, a "manual" correction will be performed: set the HUD reference (\Ctrl\keystroke{R}) to Jupiter, point the vessel prograde and use the RCS to null the trajectory errors.

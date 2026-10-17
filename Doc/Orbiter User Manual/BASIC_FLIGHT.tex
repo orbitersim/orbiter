@@ -205,14 +205,14 @@ Here is a checklist of the steps involved in the docking operation:
 \item Tune one of your NAV receivers to the station's long-range transponder (XPDR) frequency, using the COM/NAV MFD mode (\Shift\keystroke{F1}, \Shift\keystroke{C}). Tune a second receiver to the IDS (instrument docking system) frequency of the intended docking port. The transponder and IDS frequencies for all vessels are listed in the object info dialog (\Ctrl\keystroke{I}).
 \item Link the Docking MFD display to the XPDR signal by selecting the corresponding NAV receiver (\Shift\keystroke{N}).
 \item Copy the docking parameters to the HUD by pressing the HUD button of the Docking MFD (\Shift\keystroke{H}).
-\item If not done already, null out relative velocity with the target by rotating the ship to align it with the negative relative velocity marker ($\odot$) and fire main thrusters until the indicated velocity value (V) approaches zero.
+\item If not done already, null out relative velocity with the target by rotating the ship to align it with the negative relative velocity marker (\retrograde) and fire main thrusters until the indicated velocity value (V) approaches zero.
 \item Rotate the ship to face the station (D[ISS]$\vartriangleright$ marker).
 \item Approach the station to about 10 km and hold at that relative position. Switch the Docking MFD display over to the IDS receiver (\Shift\keystroke{N}) and copy to the HUD (\Shift\keystroke{H}). This will activate alignment indicators in the MFD display, and a visual representation of the approach path (rectangles) in the HUD.
 \item Move towards the approach path rectangle furthest from the station, and hold.
 \item Align the ship's orientation with the flight path direction using the '$\times$' indicator in the MFD. Use RCS thrusters in \textit{rotational} (ROT) mode for this.
 \item Align the ship's rotation along its longitudinal axis (bank angle) using the arrow indicator in the MFD display.
 \item Align the ship's position on the approach path using the '+' indicator in the MFD. Switch RCS to \textit{linear} (LIN) mode for this.
-\item Approach the station by using the longitudinal RCS thrusters in linear mode (\keystroke{6}/\keystroke{9}$_{Num}$). During approach correct your lateral deviation from approach path continuously with linear RCS. Correct rotational drift with rotational RCS.
+\item Approach the station by using the longitudinal RCS thrusters in linear mode (\keystroke{6}/\keystroke{9}\num{}). During approach correct your lateral deviation from approach path continuously with linear RCS. Correct rotational drift with rotational RCS.
 \item Slow down approach speed to less than 0.1 m/s before contact with the station's docking port.
 \item Wait until positive docking confirmation is reported.
 \item To disengage from the docking port, press \Ctrl\keystroke{D}.
@@ -242,7 +242,7 @@ Stations like Orbiter's fictional Luna-OB1 rotate to use centrifugal forces for 
 
 \begin{itemize}
 \item Initiate your ship's longitudinal rotation only immediately before docking (when past the last approach rectangle). Once you are rotating, linear adjustments become very difficult.
-\item Once the rotation is matched with the station, don't hit \textit{Kill Rot} (\keystroke{5}$_{Num}$) by accident, or you will have to start the rotation alignment again.
+\item Once the rotation is matched with the station, don't hit \textit{Kill Rot} (\keystroke{5}\num{}) by accident, or you will have to start the rotation alignment again.
 \end{itemize}
 
 
@@ -283,7 +283,7 @@ On arriving at the target body, an orbit injection burn is required to enter an 
 Some of Orbiter's spacecraft support powered or unpowered runway approaches, similar to normal aircraft. Examples are the Delta-glider and the Space Shuttle. The Shuttle Landing Facility (SLF) at Kennedy Space Center provides a good opportunity for exercising landing approaches.\\
 \\
 \textbf{Visual approach indicators}\\
-The visual approach aids at SLF are designed for Shuttle landings. They include a Precision Approach Path Indicator (PAPI) for long-range glide slope alignment, and a Visual Approach Slope Indicator (VASI) for short-range alignment. The PAPI is set up for a glide slope of 20° (about 6 times as steep as standard aircraft approach slopes!). The VASI is set up for a 1.5° slope during the final flare up prior to touchdown.\\
+The visual approach aids at SLF are designed for Shuttle landings. They include a Precision Approach Path Indicator (PAPI) for long-range glide slope alignment, and a Visual Approach Slope Indicator (VASI) for short-range alignment. The PAPI is set up for a glide slope of 20\deg{} (about 6 times as steep as standard aircraft approach slopes!). The VASI is set up for a 1.5\deg{} slope during the final flare up prior to touchdown.\\
 \\
 \textbf{Precision Approach Path Indicator:} The PAPI consists of an array of 4 lights, which appear white or red to the pilot depending on the approaching vessel's position above or below the glide slope. At the correct slope there will be 2 white and 2 red lights (see figure below). In Orbiter there are 2 PAPI units per approach direction at the SLF, located about 2000 m in front of the runway threshold.
 
