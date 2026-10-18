@@ -10,7 +10,7 @@ set(SDL_STATIC OFF)
 FetchContent_Declare(
         SDL3
         GIT_REPOSITORY https://github.com/libsdl-org/SDL.git
-        GIT_TAG release-3.4.0
+        GIT_TAG release-3.4.18
 		OVERRIDE_FIND_PACKAGE
 )
 FetchContent_MakeAvailable(SDL3)
@@ -38,11 +38,14 @@ install(TARGETS SDL3-shared RUNTIME DESTINATION ${ORBITER_INSTALL_ROOT_DIR})
 ###############
 
 set(BUILD_SHARED_LIBS ON)
+set(SDLMIXER_EXAMPLES OFF)
+set(SDLMIXER_TESTS OFF)
+set(SDLMIXER_MIDI OFF) # Conflicts with zlib
 
 FetchContent_Declare(
         SDL3_mixer
         GIT_REPOSITORY https://github.com/libsdl-org/SDL_mixer.git
-        GIT_TAG 732bbfe3f402d6a40797e73ff1783e655413fcc4
+        GIT_TAG ccb4670fe5bd6da3c9acb9132f77062fdd39425d
 )
 FetchContent_MakeAvailable(SDL3_mixer)
 

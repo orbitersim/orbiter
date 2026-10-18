@@ -21,8 +21,8 @@ ISoundEngine::ISoundEngine()
 		oapiWriteLogError("SDL3_mixer: Could not initialize mixer device: %s", SDL_GetError());
 	}
 
-	// The sounds fell saturated so we lower the master gain
-	MIX_SetMasterGain(m_mixer, 0.7f);
+	// The sounds feel saturated so we lower the master gain
+	MIX_SetMixerGain(m_mixer, 0.7f);
 }
 
 ISoundEngine::~ISoundEngine()
@@ -81,6 +81,9 @@ ISound::ISound(MIX_Track *track, bool looped, bool paused)
 	m_track = track;
 	m_options = SDL_CreateProperties();
     SDL_SetNumberProperty(m_options, MIX_PROP_PLAY_LOOPS_NUMBER, looped ? -1 : 0);
+//    SDL_SetNumberProperty(m_options, MIX_PROP_PLAY_FADE_IN_MILLISECONDS_NUMBER, 10.0f);
+//    SDL_SetNumberProperty(m_options, MIX_PROP_PLAY_FADE_IN_START_GAIN_FLOAT, 0.0f);
+
 	if(!paused) {
 		if(!MIX_PlayTrack(m_track, m_options)) {
 			oapiWriteLogError("SDL3_mixer: Failed to play track: %s", SDL_GetError());
