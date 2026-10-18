@@ -20,7 +20,14 @@ public:
            bool paused);
 	~ISound();
 	bool isFinished() { return m_started && !m_paused && !ma_sound_is_playing(&m_sound); }
-	void setVolume(float vol) { ma_sound_set_fade_in_milliseconds(&m_sound, -1, vol, 5); }
+	void setVolume(float vol) {
+		// XRSound usually creates a sound paused, then sets its volume according to its PlaybackType.
+		// We don't want any fading in that case.
+		if(m_started)
+			ma_sound_set_fade_in_milliseconds(&m_sound, -1, vol, 5);
+		else
+			ma_sound_set_volume(&m_sound, vol);
+	}
     void setIsLooped(bool looped);
     void setIsPaused(bool paused);
     void setPan(float pan);
