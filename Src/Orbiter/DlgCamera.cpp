@@ -32,9 +32,6 @@ void DlgCamera::OnDraw() {
 	rot_is_tilt = (!extcam || (extmode == CAMERA_GROUNDOBSERVER && !ground_lock));
 	rot_is_pan = (extcam && extmode == CAMERA_GROUNDOBSERVER);
     
-//    if(followterrain[0]=='\0')
-//      	sprintf (followterrain, "%0.0lf", g_camera->GroundObserver_TerrainLimit());
-
     ImGuiTabBarFlags tab_bar_flags = ImGuiTabBarFlags_None;
     if (ImGui::BeginTabBar("CameraTabBar", tab_bar_flags))
     {

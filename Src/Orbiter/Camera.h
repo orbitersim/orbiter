@@ -179,7 +179,7 @@ public:
 
 	void GroundObserverShift (double dx, double dz, double dh);
 	// Move camera position on a planet surface
-	// // dz: forward/backward [m], dx: left/right [m], dh: up/down [m]
+	// dz: forward/backward [m], dx: left/right [m], dh: up/down [m]
 	// Only used if mode is CAMERA_GROUNDOBSERVER
 
 	void GroundObserverTilt (double dphi, double dtht);

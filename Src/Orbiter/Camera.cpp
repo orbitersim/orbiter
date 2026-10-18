@@ -1230,7 +1230,7 @@ void Camera::UpdateProjectionMatrix ()
 
 const Base* Camera::ProxyBase(const Planet* planet) const
 {
-	double min_dst2 = 1e10;
+	double min_dst2 = 1e15;
 	const Base* closestBase = nullptr;
 
 	if (!planet) { // loop over all bases in the system
@@ -1375,18 +1375,6 @@ bool Camera::Read (ifstream &ifs)
 				// need to do it like this because in rare cases, the track target name can contain spaces ("Cape Canaveral")
 				strncpy(cdirref, pc + 11 + strlen(ctrackmode), 63);
 			}
-//		} else if (!_strnicmp (pc, "GROUNDLOCATION", 14)) {
-//			double lng, lat, alt;
-//			n = sscanf (pc+14, "%lf%lf%lf", &lng, &lat, &alt);
-//			lng *= RAD, lat *= RAD;
-//			go.MoveTo(this, lng, lat, alt);
-//		} else if (!_strnicmp (pc, "GROUNDDIRECTION", 15)) {
-//			double phi, tht;
-//			n = sscanf (pc+15, "%lf%lf", &phi, &tht);
-//			phi *= RAD, tht *= RAD;
-//			go.TiltTo(phi, tht);
-//			is_targetlocked = false;
-//			go.SetTargetLock(false);
 		} else if (!_strnicmp (pc, "BEGIN_PRESET", 12)) {
 			for (;;) {
 				if (!ifs.getline (cbuf, 256)) break;
