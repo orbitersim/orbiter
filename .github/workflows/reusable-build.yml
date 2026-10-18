@@ -149,8 +149,8 @@ jobs:
       working-directory: ${{ github.workspace }}/out/install/Orbiter
       shell: cmd
       run: |
-        7z x "${{ github.workspace }}/SPICE/Kernels.7z" -oKernels
-        7z x "${{ github.workspace }}/SPICE/Textures.7z" -oKernels
+        7z x "${{ github.workspace }}/SPICE/Kernels.7z" -oKernels -y
+        7z x "${{ github.workspace }}/SPICE/Textures.7z" -oKernels -y
         dir /S /B Kernels
 
     - name: Pack
