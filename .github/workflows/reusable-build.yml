@@ -109,8 +109,9 @@ jobs:
       if:   steps.spice-cache.outputs.cache-hit != 'true'
       shell: cmd
       run: |
-        curl -L https://cdn.openorbiter.space/spice/Kernels.7z -o Kernels.7z
-        curl -L https://cdn.openorbiter.space/spice/Textures.7z -o Textures.7z
+        mkdir SPICE
+        curl -L https://cdn.openorbiter.space/spice/Kernels.7z -o SPICE/Kernels.7z
+        curl -L https://cdn.openorbiter.space/spice/Textures.7z -o SPICE/Textures.7z
 
     - name: Configure
       run: cmake . --preset windows-${{ inputs.architecture }}-${{ inputs.configuration }}
