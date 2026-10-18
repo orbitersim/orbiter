@@ -16,7 +16,15 @@
 \usepackage{tabularx}
 \usepackage{threeparttable}
 \usepackage[font={small,it}]{caption}
+\usepackage{etoolbox}
+
 \usepackage{longtable}
+% Patch longtable to use finite shrink to eliminate the false-positive error
+\makeatletter
+\patchcmd{\LT@output}{\vss}{\vskip 0pt plus 1fill minus 1000pt}{}{}
+\patchcmd{\LT@output}{\vss}{\vskip 0pt plus 1fill minus 1000pt}{}{}
+\makeatother
+
 \usepackage[table]{xcolor}
 \usepackage{tcolorbox}
 \usepackage{listings}
@@ -62,6 +70,7 @@
 \newcommand{\textsup}[1]{\ensuremath{^\textrm{#1}}}
 \newcommand{\textsub}[1]{\ensuremath{_\textrm{#1}}}
 \renewcommand{\deg}{\ensuremath{^\circ}}
+\newcommand{\diffd}{\ensuremath{\mathrm{d}}}
 
 \newcommand{\prograde}{\ensuremath{\oplus}}
 \newcommand{\retrograde}{\ensuremath{\odot}}
