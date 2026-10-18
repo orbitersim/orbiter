@@ -110,9 +110,8 @@ jobs:
       shell: cmd
       run: |
         mkdir "${{ github.workspace }}/SPICE"
-        curl -vL https://cdn.openorbiter.space/spice/Kernels.7z -o "${{ github.workspace }}/SPICE/Kernels.7z"
-        curl -vL https://cdn.openorbiter.space/spice/Textures.7z -o "${{ github.workspace }}/SPICE/Textures.7z"
-        dir /S /B "${{ github.workspace }}"
+        curl -L https://cdn.openorbiter.space/spice/Kernels.7z -o "${{ github.workspace }}/SPICE/Kernels.7z"
+        curl -L https://cdn.openorbiter.space/spice/Textures.7z -o "${{ github.workspace }}/SPICE/Textures.7z"
         dir /S /B "${{ github.workspace }}/SPICE"
 
     - name: Configure
@@ -150,9 +149,8 @@ jobs:
       working-directory: ${{ github.workspace }}/out/install/Orbiter
       shell: cmd
       run: |
-        dir /S /B "${{ github.workspace }}/SPICE" 
-        7z x "${{ github.workspace }}/SPICE/Kernels.7z -oKernels
-        7z x "${{ github.workspace }}/SPICE/Textures.7z -oKernels
+        7z x "${{ github.workspace }}/SPICE/Kernels.7z" -oKernels
+        7z x "${{ github.workspace }}/SPICE/Textures.7z" -oKernels
         dir /S /B Kernels
 
     - name: Pack
