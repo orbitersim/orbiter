@@ -106,7 +106,7 @@ jobs:
         key: spice_assets
 
     - name: Download SPICE assets
-      if:   steps.spice-cache.outputs.cache-hit != 'true'
+      # if:   steps.spice-cache.outputs.cache-hit != 'true'
       shell: cmd
       run: |
         mkdir "${{ github.workspace }}/SPICE"
@@ -150,6 +150,7 @@ jobs:
       working-directory: ${{ github.workspace }}/out/install/Orbiter
       shell: cmd
       run: |
+        dir /S /B "${{ github.workspace }}/SPICE" 
         7z x "${{ github.workspace }}/SPICE/Kernels.7z -oKernels
         7z x "${{ github.workspace }}/SPICE/Textures.7z -oKernels
         dir /S /B Kernels
