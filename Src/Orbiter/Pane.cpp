@@ -192,6 +192,7 @@ bool Pane::SetPanelMode (int pmode, bool force)
 	if (pmode == panelmode && !force) return true; // nothing to do
 	panelmode = pmode;
 	
+	g_camera->ResetCockpitView();
 	Vessel::UnsetCameraMovement();
 
 	for (i = 0; i < MAXMFD; i++) {
@@ -325,8 +326,7 @@ int Pane::SelectVC (int id)
 	vcockpit = new VirtualCockpit (id, this); TRACENEW
 	if (g_focusobj->LoadVC (id)) {
 		vcid = id;
-		g_camera->ResetCockpitPos();
-		g_camera->ResetCockpitDir (false);
+		g_camera->ResetCockpitView();
 		for (i = 0; i < MAXMFD; i++) {
 			if (mfd[i].exist && mfd[i].active)
 				OpenMFD (i, mfd[i].lastmode);

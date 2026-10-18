@@ -71,7 +71,7 @@ public:
 
 	inline bool IsExternal () const { return external_view; }
 	inline bool IsInternal () const { return !external_view; }
-	
+
 	bool IsCockpitForward () const;
 	// Return true if we are in cockpit mode and the camera points forward (+z)
 
@@ -160,6 +160,9 @@ public:
 
 	void SetDistance(double rd);
 	// Set camera distance in 'unit' radius
+
+	void ResetCockpitView();
+	// Call ResetCockpitDir and ResetCockpitPos, and stop any transitional movement
 
 	void ResetCockpitPos ();
 	// Reset cockpit camera to default position
