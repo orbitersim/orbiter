@@ -81,10 +81,6 @@
 
 \renewcommand{\arraystretch}{1.5}
 
-% remove ugly wide spaces around keystroke symbols
-\let\pkeystroke\keystroke
-\renewcommand{\keystroke}[1]{\!\pkeystroke{#1}\!}
-
 % code block
 \definecolor{darkorange}{rgb}{0.99,0.91,0.85}
 \definecolor{gray}{rgb}{0.6,0.6,0.6}
@@ -140,6 +136,10 @@
   {\hbox to 0pt{\hbox to \@tempdimb{\hss\unhbox\suse@key\hss}\hss}}
   {}{\PatchFailed}
 \makeatother
+
+% HACK: remove ugly wide spaces around keystroke symbols
+\let\pkeystroke\keystroke
+\renewcommand{\keystroke}[1]{\!\pkeystroke{#1}\!}
 
 %fix gap in index between 10.10.10 and text
 \advance\cftsecnumwidth 0.5em\relax
