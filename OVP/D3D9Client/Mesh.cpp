@@ -3037,10 +3037,53 @@ void D3D9Mesh::RenderBoundingBox(const LPD3DXMATRIX pW)
 	if (flags&DBG_FLAGS_SPHERES) D3D9Effect::RenderBoundingSphere(pW, &mTransform, &BBox.bs, ptr(D3DXVECTOR4(0,0,1,0.75f)));
 }
 
+// ===========================================================================================
+// Render the mesh geometry as a wireframe
+//
+void D3D9Mesh::RenderWireframe(const LPD3DXMATRIX pW, D3DCOLOR color)
+{
+	if (!IsOK()) return;
+	if (!pBuf || !pBuf->pVBSys || !pBuf->pIBSys) return;
+
+	std::vector<D3DXVECTOR3> dbgVtx;
+	std::vector<WORD> dbgIdx;
+
+	for (DWORD g = 0; g < nGrp; g++) {
+		if (Grp[g].UsrFlag & 0x2) continue; // skip invisible groups
+
+		DWORD vOff = dbgVtx.size();
+		for (DWORD v = 0; v < Grp[g].nVert; v++) {
+			NMVERTEX *vtx = pBuf->pVBSys + Grp[g].VertOff + v;
+			D3DXVECTOR3 p(vtx->x, vtx->y, vtx->z);
+			if (Grp[g].bTransform) {
+				D3DXVec3TransformCoord(&p, &p, &Grp[g].Transform);
+			}
+			if (bGlobalTF) {
+				D3DXVec3TransformCoord(&p, &p, &mTransform);
+			}
+			dbgVtx.push_back(p);
+		}
+
+		for (DWORD f = 0; f < Grp[g].nFace; f++) {
+			WORD *iSys = pBuf->pIBSys + Grp[g].IdexOff + f * 3;
+			WORD i0 = vOff + iSys[0];
+			WORD i1 = vOff + iSys[1];
+			WORD i2 = vOff + iSys[2];
+
+			dbgIdx.push_back(i0); dbgIdx.push_back(i1);
+			dbgIdx.push_back(i1); dbgIdx.push_back(i2);
+			dbgIdx.push_back(i2); dbgIdx.push_back(i0);
+		}
+	}
+
+	if (!dbgVtx.empty() && !dbgIdx.empty()) {
+		D3D9Effect::RenderLines(dbgVtx.data(), dbgIdx.data(), dbgVtx.size(), dbgIdx.size(), pW, color);
+	}
+}
+
 
 // ===========================================================================================
 //
-
 void D3D9Mesh::BoundingBox(const NMVERTEX *vtx, DWORD n, D9BBox *box)
 {
 	XMVECTOR mi, mx;

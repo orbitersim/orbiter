@@ -154,6 +154,10 @@ public:
 	// restructure the object elements. Can be used for shadow projection
 	// calculations
 
+	void ExportCollisionMeshes (Mesh ***mesh_col, DWORD *nmesh_col) const;
+	// Export base structures marked with COLLISION as mesh lists for
+	// vessel-to-base collision detection
+
 	inline bool MapObjectsToSphere() const { return bObjmapsphere; }
 	// map base objects onto spherical planet surface?
 
@@ -193,11 +197,12 @@ private:
 	BaseObject **obj;              // list of base objects
 	DWORD nobj;                    // number of base objects
 
-	mutable Mesh *genmsh_os, *genmsh_us; // meshes for generic base structures (above/below shadows)
+	mutable Mesh *genmsh_os, *genmsh_us, *genmsh_col; // meshes for generic base structures (above/below shadows/collision)
 	mutable Mesh **objmsh_os, **objmsh_us; // meshes for base structures (above/below shadows)
 	mutable Mesh **objmsh_sh;              // meshes for shadow projection calculations
+	mutable Mesh **objmsh_col;             // meshes for collision
 	mutable double *sh_elev;               // object elevation (for shadow projection calculation)
-	mutable DWORD nobjmsh_os, nobjmsh_us, nobjmsh_sh; // list lenghts
+	mutable DWORD nobjmsh_os, nobjmsh_us, nobjmsh_sh, nobjmsh_col; // list lenghts
 	mutable bool objmsh_valid;
 
 	SurftileSpec *tile;            // list of surface tiles

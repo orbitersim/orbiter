@@ -45,6 +45,8 @@ CFG_PHYSICSPRM CfgPhysicsPrm_default = {
 	false,		// bNonsphericalGrav (no nonspherical gravity effects)
 	false,		// bRadiationPressure (no radiation pressure effects)
 	false,      // bAtmWind (enable wind effects)
+	true,       // bBaseCollision (enable surface base collision)
+	true,       // bVesselCollision (enable vessel collision)
 	true,		// bOrbitStabilise (use Encke orbit stabilisation)
 	0.05,		// Stabilise_PLimit (perturbation limit for stabilisation)
 	0.01,		// Stabilise_SLimit (step size limit for stabilisation)
@@ -588,6 +590,8 @@ bool Config::Load(const char *fname)
 	GetBool (ifs, "NonsphericalGravitySources", CfgPhysicsPrm.bNonsphericalGrav);
 	GetBool (ifs, "RadiationPressure", CfgPhysicsPrm.bRadiationPressure);
 	GetBool (ifs, "AtmosphericWind", CfgPhysicsPrm.bAtmWind);
+	GetBool (ifs, "BaseCollision", CfgPhysicsPrm.bBaseCollision);
+	GetBool (ifs, "VesselCollision", CfgPhysicsPrm.bVesselCollision);
 	GetBool (ifs, "StabiliseOrbits", CfgPhysicsPrm.bOrbitStabilise);
 	GetReal (ifs, "StabilisePLimit", CfgPhysicsPrm.Stabilise_PLimit);
 	GetReal (ifs, "StabiliseSLimit", CfgPhysicsPrm.Stabilise_SLimit);
@@ -1153,6 +1157,10 @@ BOOL Config::Write (const char *fname) const
 			ofs << "RadiationPressure = " << BoolStr (CfgPhysicsPrm.bRadiationPressure) << '\n';
 		if (CfgPhysicsPrm.bAtmWind != CfgPhysicsPrm_default.bAtmWind || bEchoAll)
 			ofs << "AtmosphericWind = " << BoolStr (CfgPhysicsPrm.bAtmWind) << '\n';
+		if (CfgPhysicsPrm.bBaseCollision != CfgPhysicsPrm_default.bBaseCollision || bEchoAll)
+			ofs << "BaseCollision = " << BoolStr (CfgPhysicsPrm.bBaseCollision) << '\n';
+		if (CfgPhysicsPrm.bVesselCollision != CfgPhysicsPrm_default.bVesselCollision || bEchoAll)
+			ofs << "VesselCollision = " << BoolStr (CfgPhysicsPrm.bVesselCollision) << '\n';
 		if (CfgPhysicsPrm.bOrbitStabilise != CfgPhysicsPrm_default.bOrbitStabilise || bEchoAll)
 			ofs << "StabiliseOrbits = " << BoolStr (CfgPhysicsPrm.bOrbitStabilise) << '\n';
 		if (CfgPhysicsPrm.Stabilise_PLimit != CfgPhysicsPrm_default.Stabilise_PLimit || bEchoAll)

@@ -266,6 +266,8 @@
 #define IDC_OPT_PHYS_RPRESSURE          1094
 #define IDC_OPT_PHYS_DISTMASS           1095
 #define IDC_OPT_PHYS_WIND               1096
+#define IDC_OPT_PHYS_BASECOLLISION      1403
+#define IDC_OPT_PHYS_VESSELCOLLISION    1404
 #define IDC_OPT_JOY_DEVICE              1097
 #define IDC_OPT_JOY_THROTTLE            1098
 #define IDC_OPT_JOY_INIT                1099
@@ -450,7 +452,7 @@
 #define _APS_3D_CONTROLS                     1
 #define _APS_NEXT_RESOURCE_VALUE        295
 #define _APS_NEXT_COMMAND_VALUE         40037
-#define _APS_NEXT_CONTROL_VALUE         1403
+#define _APS_NEXT_CONTROL_VALUE         1405
 #define _APS_NEXT_SYMED_VALUE           102
 #endif
 #endif
