@@ -30,7 +30,7 @@ ISoundEngine::~ISoundEngine()
     ma_engine_uninit(&m_engine);
 }
 
-ISound *ISoundEngine::play2D(const char *soundFileName, bool playLooped, bool startPaused, bool track)
+ISound *ISoundEngine::play2D(const char *soundFileName, const bool playLooped, const bool startPaused, const bool track)
 {
 	if(!m_initialized) return nullptr;
 
@@ -78,8 +78,8 @@ void ISoundEngine::CheckReleased()
 
 ISound::ISound(ma_engine* engine,
                const char* filename,
-               bool looped,
-               bool paused)
+               const bool looped,
+               const bool paused)
 {
     if (ma_result r = ma_sound_init_from_file(
             engine,
@@ -107,12 +107,12 @@ ISound::~ISound()
     ma_sound_uninit(&m_sound);
 }
 
-void ISound::setIsLooped(bool looped)
+void ISound::setIsLooped(const bool looped)
 {
     ma_sound_set_looping(&m_sound, looped);	
 }
 
-void ISound::setIsPaused(bool paused)
+void ISound::setIsPaused(const bool paused)
 {
     if (paused) {
          ma_sound_stop_with_fade_in_milliseconds(&m_sound, FADEOUT);
@@ -125,29 +125,26 @@ void ISound::setIsPaused(bool paused)
 	m_paused = paused;
 }
 
-void ISound::setPan(float pan)
+void ISound::setPan(const float pan)
 {
     // -1.0 = left, 0 = center, +1.0 = right
     ma_sound_set_pan(&m_sound, pan);
 	m_pan = pan;
 }
 
-bool ISound::setPlayPosition(unsigned int pos)
+bool ISound::setPlayPosition(const unsigned int pos)
 {
-    ma_uint64 sampleRate = ma_engine_get_sample_rate(
-        ma_sound_get_engine(&m_sound));
-
-    ma_uint64 frame = (sampleRate * pos) / 1000;
+    const ma_uint64 sampleRate = ma_engine_get_sample_rate(ma_sound_get_engine(&m_sound));
+    const ma_uint64 frame = (sampleRate * pos) / 1000;
     return ma_sound_seek_to_pcm_frame(&m_sound, frame) == MA_SUCCESS;
 }
 
-unsigned int ISound::getPlayPosition()
+unsigned int ISound::getPlayPosition() const
 {
     ma_uint64 frame;
     ma_sound_get_cursor_in_pcm_frames(&m_sound, &frame);
 
-    ma_uint64 sampleRate = ma_engine_get_sample_rate(
-        ma_sound_get_engine(&m_sound));
+    const ma_uint64 sampleRate = ma_engine_get_sample_rate(ma_sound_get_engine(&m_sound));
 
     return static_cast<unsigned int>((frame * 1000) / sampleRate);
 }
