@@ -14,7 +14,7 @@
 ISoundEngine::ISoundEngine()
 {
     if (ma_engine_init(nullptr, &m_engine) != MA_SUCCESS) {
-        //oapiAddNotification(OAPINOTIF_ERROR, "Error initialising miniaudio engine");
+		oapiWriteLog("Error initialising miniaudio engine");
 		return;
     }
 	m_initialized = true;
@@ -40,7 +40,8 @@ ISound *ISoundEngine::play2D(const char *soundFileName, const bool playLooped, c
 		snd = new ISound(&m_engine, soundFileName, playLooped, startPaused);
 	}
 	catch(...) {
-		//oapiAddNotification(OAPINOTIF_ERROR, "Error loading sound file", soundFileName);
+		std::string message = std::string("Error loading sound file: ") + soundFileName;
+		oapiWriteLog(message.data());
 		return nullptr;
 	}
 
