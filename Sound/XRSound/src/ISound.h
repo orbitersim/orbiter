@@ -23,7 +23,7 @@ public:
 	void setVolume(const float vol) {
 		// XRSound usually creates a sound paused, then sets its volume according to its PlaybackType.
 		// We don't want any fading in that case.
-		if(m_started)
+		if (m_started)
 			ma_sound_set_fade_in_milliseconds(&m_sound, -1, vol, 5);
 		else
 			ma_sound_set_volume(&m_sound, vol);

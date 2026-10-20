@@ -22,9 +22,9 @@ ISoundEngine::ISoundEngine()
 
 ISoundEngine::~ISoundEngine()
 {
-	if(!m_initialized) return;
+	if (!m_initialized) return;
 
-	for(auto &snd: releasedSounds) {
+	for (auto &snd: releasedSounds) {
 		delete snd;
 	}
     ma_engine_uninit(&m_engine);
@@ -32,14 +32,14 @@ ISoundEngine::~ISoundEngine()
 
 ISound *ISoundEngine::play2D(const char *soundFileName, const bool playLooped, const bool startPaused, const bool track)
 {
-	if(!m_initialized) return nullptr;
+	if (!m_initialized) return nullptr;
 
 	CheckReleased();
 	ISound *snd = nullptr;
 	try {
 		snd = new ISound(&m_engine, soundFileName, playLooped, startPaused);
 	}
-	catch(...) {
+	catch (...) {
 		std::string message = std::string("Error loading sound file: ") + soundFileName;
 		oapiWriteLog(message.data());
 		return nullptr;
@@ -54,11 +54,11 @@ ISound *ISoundEngine::play2D(const char *soundFileName, const bool playLooped, c
 
 void ISoundEngine::Release(ISound *snd)
 {
-	if(!m_initialized) return;
-	if(!snd) return;
+	if (!m_initialized) return;
+	if (!snd) return;
 
 	CheckReleased();
-	if(snd->isFinished())
+	if (snd->isFinished())
 		delete snd;
 	else
 		releasedSounds.push_back(snd);
@@ -66,8 +66,8 @@ void ISoundEngine::Release(ISound *snd)
 
 void ISoundEngine::CheckReleased()
 {
-	for(auto it = releasedSounds.begin(); it != releasedSounds.end();) {
-		if((*it)->isFinished()) {
+	for (auto it = releasedSounds.begin(); it != releasedSounds.end();) {
+		if ((*it)->isFinished()) {
 			delete *it;
 			it = releasedSounds.erase(it);
 		} else {
