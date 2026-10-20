@@ -26,7 +26,7 @@
 \makeatother
 
 \usepackage[table]{xcolor}
-\usepackage{tcolorbox}
+\usepackage[breakable]{tcolorbox}
 \usepackage{listings}
 \usepackage{color}
 \usepackage{hyperref}
@@ -76,8 +76,8 @@
 \newcommand{\retrograde}{\ensuremath{\odot}}
 
 \newcommand{\alertbox}[1]{\begin{tcolorbox}[colback=red!5!white,colframe=red!75!black,title=Alert]#1\end{tcolorbox}}
-
 \newcommand{\infobox}[1]{\begin{tcolorbox}[colback=blue!5!white,colframe=blue!75!black,title=Information]#1\end{tcolorbox}}
+\newcommand{\longinfobox}[1]{\begin{tcolorbox}[breakable,colback=blue!5!white,colframe=blue!75!black,title=Information]#1\end{tcolorbox}}
 
 \renewcommand{\arraystretch}{1.5}
 
