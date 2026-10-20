@@ -253,7 +253,7 @@ SPICE_ASSETS = {
     "SPICE Textures": {
         "url": "https://cdn.openorbiter.space/spice/Textures.7z",
         "archive": "Textures.7z",
-        "targetSubdir": "Kernels"
+        "targetSubdir": "Textures"
     }
 }
 
@@ -475,7 +475,10 @@ def buildAndInstall(targetDirectory):
     runCommand(cmakeInstallCommand, workingDirectory=targetDirectory, quiet=True)
     
     gameInstallDirectory = os.path.abspath(os.path.join(targetDirectory, 'install'))
-    installSpiceAssets(gameInstallDirectory)
+    orbiterRootDirectory = os.path.join(gameInstallDirectory, 'Orbiter')
+    if not os.path.isdir(orbiterRootDirectory):
+        orbiterRootDirectory = gameInstallDirectory
+    installSpiceAssets(orbiterRootDirectory)
     
     tsPrint("\n" + "="*60)
     tsPrint(f"{Colors.SUCCESS}SUCCESS: Orbiter built successfully!{Colors.RESET}")
