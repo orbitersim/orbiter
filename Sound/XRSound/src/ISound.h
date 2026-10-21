@@ -10,20 +10,34 @@
 #include "miniaudio.h"
 #include <list>
 
+#ifndef NDEBUG
+#include <string>
+#endif
+
 #define FADEOUT 75
 
 class ISound {
 public:
-    ISound(ma_engine* engine,
+	enum class State {
+		PAUSED,
+		PLAYING,
+		STOPPED
+	};
+
+	ISound(ma_engine* engine,
            const char* filename,
            const bool looped,
            const bool paused);
 	~ISound();
-	bool isFinished() const { return m_started && !m_paused && !ma_sound_is_playing(&m_sound); }
+
+	// We will garbage collect an ISound object in 2 cases :
+	// - stop() was called and the fade out is finished
+	// - the sound has played to its end
+	bool isFinished() const { return m_state != State::PAUSED && !ma_sound_is_playing(&m_sound); }
 	void setVolume(const float vol) {
 		// XRSound usually creates a sound paused, then sets its volume according to its PlaybackType.
 		// We don't want any fading in that case.
-		if (m_started)
+		if (m_state == State::PLAYING)
 			ma_sound_set_fade_in_milliseconds(&m_sound, -1, vol, 5);
 		else
 			ma_sound_set_volume(&m_sound, vol);
@@ -36,15 +50,22 @@ public:
 	float getPlaybackSpeed() const { return ma_sound_get_pitch(&m_sound); }
     bool setPlayPosition(const unsigned int pos);
     unsigned int getPlayPosition() const;
-	void stop() { ma_sound_stop_with_fade_in_milliseconds(&m_sound, FADEOUT); }
-private:
+	void stop() { 
+		if(m_state == State::PLAYING)
+			ma_sound_stop_with_fade_in_milliseconds(&m_sound, FADEOUT);
+		m_state = State::STOPPED;
+	}
+
+#ifndef NDEBUG
+	std::string m_filename;
+#endif
+	State m_state;
 	ma_sound m_sound;
-	bool m_paused;
-	bool m_started;
 };
 
 // Basic sound engine
 // It must be instanciated only once
+class ISoundDialog;
 class ISoundEngine {
 public:
     ISoundEngine();
@@ -57,4 +78,8 @@ private:
 	bool m_initialized = false;
 	std::list<ISound *> releasedSounds;
 	void CheckReleased();
+#ifndef NDEBUG
+	ISoundDialog *m_dbgWin;
+	DWORD m_dwdbgWin;
+#endif
 };
