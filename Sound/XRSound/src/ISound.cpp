@@ -130,7 +130,6 @@ void ISound::setPan(const float pan)
 {
     // -1.0 = left, 0 = center, +1.0 = right
     ma_sound_set_pan(&m_sound, pan);
-	m_pan = pan;
 }
 
 bool ISound::setPlayPosition(const unsigned int pos)

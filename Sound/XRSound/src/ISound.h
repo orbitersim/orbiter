@@ -31,7 +31,7 @@ public:
     void setIsLooped(const bool looped);
     void setIsPaused(const bool paused);
     void setPan(const float pan);
-	float getPan() const { return m_pan; }
+	float getPan() const { return ma_sound_get_pan(&m_sound); }
 	bool setPlaybackSpeed(const float speed) { ma_sound_set_pitch(&m_sound, speed); return true; }
 	float getPlaybackSpeed() const { return ma_sound_get_pitch(&m_sound); }
     bool setPlayPosition(const unsigned int pos);
@@ -39,7 +39,6 @@ public:
 	void stop() { ma_sound_stop_with_fade_in_milliseconds(&m_sound, FADEOUT); }
 private:
 	ma_sound m_sound;
-	float m_pan;
 	bool m_paused;
 	bool m_started;
 };
