@@ -1283,6 +1283,27 @@ void Camera::InitState (const char *scn, Body *default_target)
 	SetAperture (*ap, true, true);
 }
 
+void Camera::BodyDeleted(const Body* body)
+{
+	// celestial bodies cannot be deleted from a running simulation, so we don't check for this
+
+	if (body == target) {
+		if (body != g_focusobj)
+			Attach(g_focusobj, 1);
+		else {
+			// a focus object must always exist, so this is not allowed to happen
+			exit(1);
+		}
+	}
+	if (body == dirref) {
+		if (external_view && extmode == CAMERA_TARGETFROMOBJECT || extmode == CAMERA_TARGETTOOBJECT) {
+			SetTrackMode(CAMERA_TARGETRELATIVE, target);
+			dirref = nullptr;
+		}
+	}
+	go->BodyDeleted(body);
+}
+
 void Camera::ClearPresets ()
 {
 	if (npreset) {
@@ -1690,6 +1711,16 @@ bool Camera::GroundObserver::ParseLine(const char *line)
 		}
 	}
 	return false;
+}
+
+void Camera::GroundObserver::BodyDeleted(const Body* body)
+{
+	// celestial bodies must not be deleted, so we don't check against refbody here
+	if (body == viewtarget) {
+		// switch to free camera mode
+		SetTargetLock(false);
+		viewtarget = cam->Target();
+	}
 }
 
 // ============================================================

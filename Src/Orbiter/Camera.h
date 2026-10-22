@@ -296,6 +296,9 @@ public:
 	void InitState (const char *scn, Body *default_target);
 	// init camera state from scenario scn
 
+	void BodyDeleted(const Body* body);
+	// called if body is about to be deleted (usually a vessel deleted with ScenarioEditor)
+
 	bool Read (std::ifstream &ifs);
 	void Write (std::ostream &os) const;
 	// read/write camera status from/to stream
@@ -418,6 +421,7 @@ private:
 		void RegisterTilt();                   // update after a tilt change
 		void Write(std::ostream &os) const;    // write state to stream
 		bool ParseLine(const char *line);      // parse a line read from stream
+		void BodyDeleted(const Body* body);
 
 		Camera *cam;           // pointer to camera instance
 		const CelestialBody *refbody; // celestial body reference

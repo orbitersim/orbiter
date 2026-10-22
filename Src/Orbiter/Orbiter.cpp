@@ -1293,8 +1293,12 @@ bool Orbiter::KillVessels ()
 				g_pfocusobj = 0; // clear previous focus (for Ctrl-F3 fast-switching)
 
 			// switch to new camera target
-			if (vessel == g_camera->Target())
-				SetView (g_focusobj, 1);
+			if (g_camera) {
+				if (vessel == g_camera->Target())
+					SetView(g_focusobj, 1); // this should be handled by Camera::BodyDeleted
+
+				g_camera->BodyDeleted(vessel);
+			}
 
 			// broadcast vessel destruction to plugins
 			for (auto it = m_Plugin.begin(); it != m_Plugin.end(); it++)
