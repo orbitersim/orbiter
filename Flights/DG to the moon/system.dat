@@ -1,9 +1,10 @@
 0 CAMERA SET Ground:GL-01:30.00:Earth -80.68282 28.59708 7.64 -0.66 -0.13
-0 NOTESIZE 1.05
+0 NOTESIZE 1.2
 0 NOTECOL 0.9 0.5 0.2
-0 NOTEPOS 0.3 0.05 0.7 0.9
-1 NOTE Fly me to the Moon! This flight recreates a complete lunar transfer with the Delta-glider from takeoff at the Kennedy Space Center to touchdown at Landing pad 1 of Brighton Beach Spaceport on the Moon.
+0 NOTEPOS 0.25 0.03 0.75 0.9
+1 NOTE Fly me to the Moon! This flight recreates a complete lunar transfer with the Delta-glider from takeoff at the Kennedy Space Center to touchdown at Brighton Beach Spaceport on the Moon.
 15 CAMERA SET Track:GL-01:30.00:RELATIVE 27.134 -0.002 -0.214
+15 NOTESIZE 1.05
 15 NOTECOL 1 0.95 0.9
 15 NOTEPOS 0.3 0.15 0.7 0.9
 15 NOTE The entire flight is replayed for you and doesn't require manual control, but the various manouvers will be explained along the way, together with the operation of the essential flight instruments.
@@ -17,7 +18,7 @@
 60 NOTEPOS 0.3 0.25 0.7 0.9
 60 NOTE The MFD instruments will play an important role during all phases of the flight. The camera is therefore set to "glass cockpit" view with the two onscreen MFDs projected onto the head-up display. If you prefer the panel or virtual cockpit views, you can select them by pressing F8.
 85 NOTEPOS 0.3 0.14 0.7 0.9
-85 NOTE The glider is fully fuelled and ready for takeoff at KSC SLF Runway 33, waiting for its launch window.
+85 NOTE Your Glider is fully fuelled and ready for takeoff at KSC SLF Runway 33, waiting for its launch window.
 95 NOTE We want to launch into the orbital plane of the Moon to minimise the need for expensive plane changes later on.
 105 NOTEPOS 0.67 0.22 0.98 0.9
 105 NOTE Look at the map on the right MFD display. The green cross over Florida labelled 'GL-01' represents your current position. The green curve represents the projection of your orbital plane onto the surface, the red curve that of the Moon.
@@ -25,13 +26,13 @@
 135 NOTE Because the northern latitude of your location is slightly higher than the inclination of the Moon's orbit, the optimal launch time is the instant when the northernmost point of the Moon's orbit plane is just south of Florida (launching due east).
 150 NOTE For launch sites closer to the equator, it is best to launch when the Moon's orbit plane crosses the site. Launch heading is then North-east or South-east, to match the orbital plane.
 165 NOTEPOS 0.39 0.14 0.7 0.9
-165 NOTE Fast-forwarding to launch window...
+165 NOTE Fast-forwarding to launch window ...
 165 TACC 500.000000 1.000000
 5000 NOTEPOS 0.67 0.22 0.98 0.9
 5000 NOTE Earth is rotating east with respect to the Moon's orbital plane and the two orbit lines are moving towards alignment in the map display. The 'RInc' indicator in the left MFD display is counting down ...
 14415 TACC 1.000000 1.000000
 14635 NOTE The Moon's orbital plane has now reached its optimum alignment with your position, and the relative inclination is at minimum - the 'R' (rate) readout in the left MFD display shows zero. Now is the time to launch.
-14650 NOTEPOS 0.35 0.14 0.65 0.9
+14650 NOTEPOS 0.30 0.14 0.65 0.9
 14650 NOTE Ready for takeoff - main engines powering up to maximum thrust.
 14656 CAMERA SET Ground:GL-01:30.00:Earth -80.69235 28.61085 8.51
 14656 NOTEOFF
@@ -53,13 +54,13 @@
 14748 CAMERA SET Cockpit:GL-01:50.00
 14748 NOTE During ascent, the pitch angle can be adjusted with trim or manual elevator controls. From the initial 30°, it should slowly turn towards the horizontal.
 14763 NOTE We are aiming to reach orbital velocity and a horizontal flight path vector at an initial altitude of about 60km.
-14778 NOTE As you leave the denser parts of the atmosphere behind, the spaceplane no longer generates enough lift to maintain the initial pitch angle. The flight path marker (the circle with a cross) will start to move down, indicating that the ascent slope is decreasing.
+14778 NOTE As you leave the denser parts of the atmosphere behind, the spaceplane no longer generates enough lift to maintain the initial pitch angle. The flight path marker (the circle with a cross) will start to move down the pitch ladder, indicating that the ascent slope is decreasing.
 14793 NOTEPOS 0.67 0.22 0.98 0.9
 14793 NOTE Now is a good time to switch to Orbit MFD mode to see how the orbital ascent is progressing.
 14807 NOTE On the right MFD, click 'SEL', 'Orbit'. Then click 'PRJ' to select your current orbit as the projection plane, and 'DST' to switch to altitude readout mode.
-14828 NOTE You have reached orbit when the green ellipse (your orbital trajectory) rises above the grey circle (representing the surface of the Earth), and the periapsis altitude readout (PeA, the lowest point of the orbit) is positive and sufficiently high above the denser part of the atmosphere.
-14848 NOTEPOS 0.37 0.14 0.7 0.9
-14848 NOTE Fast-forwarding to orbit insertion ...
+14828 NOTE You have reached orbit when the green ellipse (your orbital trajectory) rises above the grey circle (representing the surface of Earth) and the periapsis altitude readout (PeA, lowest point of the orbit) is positive and sufficiently clear of the lower atmosphere layers.
+14848 NOTEPOS 0.34 0.14 0.7 0.9
+14848 NOTE Fast-forwarding through the ascent phase ...
 14848 TACC 10.000000 1.000000
 15200 NOTEPOS 0.3 0.14 0.7 0.9
 15200 NOTE (By the way, the bright object left of centre on your screen is Saturn. You can display labels for celestial objects by pressing Alt-F9).
@@ -71,14 +72,14 @@
 15325 NOTEPOS 0.3 0.14 0.7 0.9
 15325 NOTE Because we have left the denser layers of the atmosphere behind us, attitude control is switched from the now ineffective aerodynamic control surfaces to the reaction control system.
 15340 NOTEPOS 0.67 0.22 0.98 0.9
-15340 NOTE The current orbit has a very low perigee altitude (PeA). To stabilise it, we will have to perform a circularisation burn at the next apogee passage.
+15340 NOTE The current orbit has a very low perigee altitude (PeA). To stabilise it, we will have to perform a circularisation burn when reaching apogee.
 15355 NOTEPOS 0.02 0.22 0.33 0.9
 15355 NOTE The first manoever will however be a plane alignment with the Moon's orbital plane. This will be performed at the next node passage.
 15370 NOTEPOS 0.3 0.14 0.7 0.9
 15370 NOTE You should now switch the HUD display from 'Surface' to 'Orbit' mode. Orbit mode is more useful for orbital and interplanetary operations. It displays a pitch ladder and direction tape relative to the orbital plane, while the Surface HUD indicators are relative to the local horizon.
 15390 NOTEPOS 0.67 0.22 0.98 0.9
 15390 NOTE The easiest way to select the Orbit HUD is by clicking the 'HUD' button on the Orbit MFD. Using this method also copies the orbit reference body (Earth in this case) to the HUD.
-15405 NOTEPOS 0.36 0.14 0.7 0.9
+15405 NOTEPOS 0.37 0.14 0.7 0.9
 15405 NOTE Fast-forwarding to node encounter ...
 15405 TACC 30.000000 1.000000
 15965 TACC 1.000000 1.000000
@@ -91,37 +92,37 @@
 16030 NOTE Activating the 'Normal+' attitude program.
 16050 NOTEPOS 0.3 0.14 0.7 0.9
 16050 NOTE Remember - for a plane alignment burn (with main engines), turn 'NML+' at descending note (DN), and 'NML-' at ascending node (AN).
-16070 NOTEPOS 0.4 0.14 0.7 0.9
+16070 NOTEPOS 0.41 0.14 0.7 0.9
 16070 NOTE Main engines engaged.
 16085 NOTEPOS 0.02 0.22 0.33 0.9
 16085 NOTE Note how the RInc readout is counting down.
-16104 NOTEPOS 0.4 0.14 0.7 0.9
+16104 NOTEPOS 0.42 0.14 0.7 0.9
 16104 NOTE Main engine cut-off.
 16114 NOTEPOS 0.02 0.22 0.33 0.9
 16114 NOTE The relative inclination ('RInc') with the Moon's orbital plane is now down to 0.06°. That's just about good enough!
 16125 NOTEPOS 0.3 0.14 0.7 0.9
 16125 NOTE In preparation for the next maneuver, we are turning into the flight path (by activating the 'Prograde' attitude mode).
-16165 NOTEPOS 0.33 0.14 0.7 0.9
+16165 NOTEPOS 0.34 0.14 0.7 0.9
 16165 NOTE Fast-forwarding to orbit circularisation burn ...
 16165 TACC 30.000000 1.000000
 16870 TACC 1.000000 1.000000
 16887 NOTEOFF
 16890 NOTEPOS 0.67 0.22 0.98 0.9
 16890 NOTE You are now approaching apogee - the highest point of the orbit.
-16900 NOTE This is location for the orbit circularisation burn, required to raise the perigee (lowest point of the orbit) for a stable orbit configuration.
+16900 NOTE This is the location for the orbit circularisation burn, required to raise perigee (lowest point of the orbit) for a stable orbit configuration.
 16915 NOTEPOS 0.3 0.14 0.7 0.9
 16915 NOTE This will be a short prograde burn, adding a velocity component in the direction of the flight path.
-16938 NOTEPOS 0.33 0.14 0.7 0.9
+16938 NOTEPOS 0.34 0.14 0.7 0.9
 16938 NOTE Re-aligning attitude with flight path vector.
 16963 NOTEOFF
-16965 NOTEPOS 0.4 0.14 0.7 0.9
+16965 NOTEPOS 0.41 0.14 0.7 0.9
 16965 NOTE Main engines engaged.
 16976 NOTEPOS 0.32 0.14 0.7 0.9
 16976 NOTE Main engine cut-off (this was a low Delta-V burn).
 16990 NOTEPOS 0.67 0.22 0.98 0.9
-16990 NOTE The perigee altitude has now increased to about 250km, and the orbit eccentricty value of 0.0007 indicates a nearly circular orbit.
+16990 NOTE Perigee altitude has now increased to about 250km, and the orbit eccentricty value of 0.0007 indicates a nearly circular orbit.
 17005 NOTEPOS 0.3 0.14 0.7 0.9
-17005 NOTE You now have to prepare for the next maneuver - the insertion into the trans-lunar orbit (TLI), which will bring you all the way to the moon.
+17005 NOTE You now have to prepare for the next maneuver - the injection into the trans-lunar orbit (TLI), which will bring you all the way to the moon.
 17020 NOTEPOS 0.02 0.22 0.33 0.9
 17020 NOTE Bring up the Transfer MFD mode on the left display: Press 'SEL' and 'Transfer'.
 17035 NOTE First, you need to select the target body. Press 'TGT', click 'By name', type 'moon', <Enter>.
@@ -133,18 +134,18 @@
 17175 NOTE This is done by adjusting the time of the ejection burn, using the 'EJ-' and 'EJ+' buttons.
 17190 NOTE Press 'EJ-' and 'EJ+' until the lines match. The 'TLe' readout should read approximately 11°.
 17220 NOTE The dashed green line now indicates the position of the orbit ejection burn. As soon as your current position (solid green line) matches it, the ejection burn will be performed.
-17235 NOTEPOS 0.38 0.14 0.7 0.9
+17235 NOTEPOS 0.39 0.14 0.7 0.9
 17235 NOTE Fast-forwarding to ejection burn ...
 17235 TACC 100.000000 1.000000
 18300 NOTEPOS 0.41 0.14 0.7 0.9
 18300 NOTE Sunrise over Australia ...
 19250 TACC 1.000000 1.000000
 19260 NOTEOFF
-19305 NOTEPOS 0.31 0.14 0.7 0.9
+19305 NOTEPOS 0.33 0.14 0.7 0.9
 19305 NOTE Main engines engaged for orbit ejection burn.
 19320 NOTEPOS 0.02 0.22 0.33 0.9
 19320 NOTE The Dv readout is counting down as the actual orbit velocity approaches that of the planned transfer orbit.
-19335 NOTE As soon as Dv reaches zero, translunar orbit insertion will be complete, and the engines will be cut.
+19335 NOTE As soon as Dv reaches zero, translunar orbit injection will be complete, and the engines will be cut.
 19350 NOTEOFF
 19350 CAMERA SET Track:GL-01:50.00:GLOBAL 4.480 3.002 0.507
 19360 CAMERA SET Track:GL-01:30.00:GLOBAL 8.843 -1.205 -1.897
@@ -159,18 +160,18 @@
 19465 TACC 1.000000 1.000000
 19470 NOTEPOS 0.02 0.22 0.33 0.9
 19470 NOTE Towards the end of the burn the orbit (solid green ellipse) starts growing rapidly, so you may want to reduce thrust to avoid overshooting.
-19490 NOTEPOS 0.4 0.14 0.7 0.9
+19490 NOTEPOS 0.42 0.14 0.7 0.9
 19490 NOTE Main engine cut-off.
 19500 NOTEPOS 0.02 0.22 0.33 0.9
 19500 NOTE Your orbit should now match the planned transfer orbit in the Transfer MFD display.
 19515 NOTE You can press 'HTO' again to turn off the hypothetical orbit. This will update the data readouts to refer to your actual orbit.
 19530 NOTEPOS 0.3 0.14 0.7 0.9
-19530 NOTE We are now en-route to the moon. This will be a long (and hopefully uneventful) coasting phase, so I am fast-forwarding to the mid-course correction maneuver.
-19545 NOTEPOS 0.42 0.14 0.7 0.9
+19530 NOTE We are now en-route to the Moon. This will be a long (and hopefully uneventful) coasting phase, so I am fast-forwarding to the mid-course correction maneuver.
+19545 NOTEPOS 0.43 0.14 0.7 0.9
 19545 NOTE Fast forwarding ...
 19545 TACC 5000.000000 10.000000
 19957.8 CAMERA SET Track:GL-01:50.00:GLOBAL 5.620 -2.096 0.020
-100000 CAMERA SET Cockpit:GL-01:50.00
+110000 CAMERA SET Cockpit:GL-01:50.00
 281090 TACC 1.000000 1.000000
 283200 NOTEOFF
 283255 TACC 1.000000
@@ -209,11 +210,11 @@
 304155 TACC 1.000000 1.000000
 304370 TACC 1.000000
 304370 NOTEPOS 0.67 0.22 0.98 0.9
-304370 NOTE The next maneuver is the lunar orbit insertion. This will be a retrograde burn at perilune, to close the orbit and lower the apoapsis distance.
-304390 NOTEPOS 0.42 0.14 0.7 0.9
+304370 NOTE The next maneuver is the lunar orbit injection. This will be a retrograde burn at perilune, to close the orbit and lower the apoapsis distance.
+304390 NOTEPOS 0.43 0.14 0.7 0.9
 304390 NOTE Turning retrograde.
-304440 NOTEPOS 0.32 0.14 0.7 0.9
-304440 NOTE Engaging main engines for lunar orbit insertion.
+304440 NOTEPOS 0.33 0.14 0.7 0.9
+304440 NOTE Engaging main engines for lunar orbit injection.
 304494 NOTEPOS 0.67 0.22 0.98 0.9
 304494 NOTE Engine cut-off. The orbit is now approximately circular, with an altitude of 120km.
 304520 NOTEOFF
@@ -222,7 +223,7 @@
 304580 NOTEPOS 0.37 0.14 0.7 0.9
 304580 NOTE Fast-forwarding to base approach ...
 304580 TACC 50.000000 1.000000
-305136 NOTEPOS 0.34 0.14 0.7 0.9
+305136 NOTEPOS 0.35 0.14 0.7 0.9
 305136 NOTE Passing the terminator into the lunar day.
 305378 CAMERA SET Track:GL-01:50.00:GLOBAL 5.620 -2.199 0.498
 305800 NOTEOFF
@@ -230,6 +231,7 @@
 307380 CAMERA SET Cockpit:GL-01:50.00
 307380 TACC 1.000000 1.000000
 307400 TACC 1.000000
+305136 NOTEPOS 0.3 0.14 0.7 0.9
 307400 NOTE Dropping out of warp for the final part of the journey.
 307410 NOTEPOS 0.02 0.22 0.33 0.9
 307410 NOTE You are now about 1000km from your landing site. Time for a few preparations.
@@ -242,6 +244,8 @@
 307485 NOTEPOS 0.3 0.14 0.7 0.9
 307500 NOTE Turning retrograde, having a good look at the lunar surface as we go.
 307530 NOTEOFF
+307538 CAMERA SET Track:GL-01:49.71:GLOBAL 12.607 2.064 -0.132
+307558 CAMERA SET Cockpit:GL-01:50.00
 307580 TACC 10.000000 1.000000
 307656 TACC 1.000000 1.000000
 307660 NOTEPOS 0.35 0.14 0.7 0.9
@@ -260,9 +264,11 @@
 307800 NOTE The direction of the base is indicated by the green line (it's behind you). Your velocity vector is the yellow arrow.
 307810 NOTE The flight path is not perfectly aligned, so we perform an adjustment burn.
 307820 NOTE We turn the craft so that applying main thrust will push the flight path vector towards the base direction.
-307830 NOTEPOS 0.3 0.14 0.7 0.9
+307830 NOTEPOS 0.32 0.14 0.7 0.9
 307830 NOTE Engaging main engines for flight path correction.
-307860 NOTEPOS 0.37 0.14 0.7 0.9
+307839 NOTEPOS 0.02 0.22 0.33 0.9
+307839 NOTE Check how the trajectory bends towards the base marker in the Map display.
+307860 NOTEPOS 0.38 0.14 0.7 0.9
 307860 NOTE Done, rotating back to retrograde.
 307893 NOTEOFF
 307900 NOTEPOS 0.02 0.22 0.33 0.9
@@ -284,29 +290,32 @@
 308130 NOTE Distance to base 100km, altitude 56km. Another deceleration burn.
 308162 CAMERA SET Track:GL-01:40.00:RELATIVE 5.018 1.815 0.016
 308162 NOTEPOS 0.35 0.14 0.7 0.9
-308162 NOTE Adding hover thrust to reduce sink rate.
+308162 NOTE Adding hover thrust to reduce descent rate.
 308187 CAMERA SET Track:GL-01:30.00:GLOBAL 17.455 1.158 -0.815
 308187 NOTEOFF
 308190 NOTEPOS 0.3 0.14 0.7 0.9
 308190 NOTE At last we are turning towards the base for final approach.
 308204 CAMERA SET Cockpit:GL-01:50.00
 308215 NOTEPOS 0.67 0.22 0.98 0.9
-308215 NOTE The target marker is rotating into 12 o'clock position in the VTOL MFD, and the target bug in the HUD compass ribbon is centered, indicating that we are facing Brighton Beach moon base.
+308215 NOTE The target marker is rotating into 12 o'clock position in the VTOL MFD, and the target bug in the HUD compass ribbon is lining up, indicating that we are facing Brighton Beach moon base.
 308241 NOTEOFF
 308241 CAMERA SET Track:GL-01:10.00:RELATIVE 54.213 -0.015 -0.675
 308259 CAMERA SET Cockpit:GL-01:50.00
-308262 NOTEPOS 0.3 0.14 0.7 0.9
-308262 NOTE In the last phase of the base approach, you need to balance your horizontal and vertical velocity components. The flight path marker helps with this. Keep it above the base for correct approach slope.
-308277 NOTEPOS 0.35 0.14 0.7 0.9
-308277 NOTE If it drops too low, increase hover thrust.
-308294 NOTEOFF
-308308 CAMERA SET Track:GL-01:10.00:GLOBAL 119.848 1.906 0.423
+308259 NOTEPOS 0.3 0.14 0.7 0.9
+308259 NOTE In the last phase of the base approach, you need to balance your horizontal and vertical velocity components. The flight path marker helps with this. Keep it above the base for correct approach slope.
+308274 NOTEPOS 0.35 0.14 0.7 0.9
+308274 NOTE If it drops too low, increase hover thrust.
+308284 NOTEPOS 0.3 0.14 0.7 0.9
+308284 NOTE At current vessel mass of 16,000kg, setting hover engines to 26kN thrust will balance the Moon's gravitational acceleration (1.625m/s² at the surface), resulting in a constant vertical velocity (Newton's first law).
+308304 NOTE Reducing hover thrust below that will increase the descent rate, raising thrust will slow descent.
+308317 NOTEOFF
+308317 CAMERA SET Track:GL-01:10.00:GLOBAL 119.848 1.906 0.423
 308333 CAMERA SET Track:GL-01:10.00:TARGETFROMREF 115.312 2.716 1.532 Brighton Beach
 308346 CAMERA SET Track:GL-01:10.00:ABSDIR 17.455 3.128 -0.163
 308362 CAMERA SET Cockpit:GL-01:50.00
 308362 NOTEPOS 0.67 0.22 0.98 0.9
 308362 NOTE On the VTOL MFD, click 'NAV' to switch to Nav receiver 2. This is preset to the pad 1 transmitter frequency, your designated landing pad.
-308390 CAMERA SET Track:GL-01:10.00:RELATIVE 38.587 0.318 -1.348
+308390 CAMERA SET Track:GL-01:10.00:ABSDIR 38.587 0.318 -1.348
 308390 NOTEOFF
 308419 CAMERA SET Track:GL-01:10.00:GLOBAL 21.895 1.087 -0.712
 308434 CAMERA SET Cockpit:GL-01:50.00
@@ -318,13 +327,13 @@
 308485 NOTEOFF
 308493 CAMERA SET Track:GL-01:10.00:RELATIVE 21.895 -0.048 -1.572
 308543 CAMERA SET Track:GL-01:30.00:RELATIVE 5.620 -2.712 -0.015
-308543 NOTEPOS 0.4 0.14 0.7 0.9
+308543 NOTEPOS 0.43 0.14 0.7 0.9
 308543 NOTE Gear down.
 308557 CAMERA SET Ground:GL-01:30.00:Moon -33.43409 41.12264 1800.00 -1.89 -1.39
 308557 NOTEOFF
 308570 CAMERA SET Cockpit:GL-01:50.00
 308571 NOTEPOS 0.67 0.22 0.98 0.9
-308571 NOTE Altitude 1000m, horizontal displacement from pad 50m.
+308571 NOTE Altitude 1000m, lateral displacement from pad 50m.
 308584 CAMERA SET Ground:GL-01:15.68:Moon -33.40448 41.01243 185.90 1.83 -0.05
 308594 CAMERA SET Cockpit:GL-01:50.00
 308594 NOTEPOS 0.3 0.14 0.7 0.9
@@ -361,6 +370,6 @@
 308725 CAMERA SET Cockpit:GL-01:50.00
 308725 NOTEPOS 0.3 0.14 0.7 0.9
 308725 NOTE This completes the mission. After refuelling, you can now take over the controls. Try getting back to Earth, or even continue the tour with a flight to Mars!
-308740 NOTEPOS 0.4 0.14 0.7 0.9
-308740 NOTE Welcome to the Moon!
+308737 NOTEPOS 0.42 0.14 0.7 0.9
+308737 NOTE Welcome to the Moon!
 308760 NOTEOFF
