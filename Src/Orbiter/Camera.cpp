@@ -1415,7 +1415,7 @@ bool Camera::Read (ifstream &ifs)
 		else if (!_stricmp(ctrackmode, "TargetTo") && (dirref = g_psys->GetObj(cdirref, true)))
 			extmode = CAMERA_TARGETTOOBJECT;
 		else if (!_stricmp(ctrackmode, "TargetFrom")) {
-			if ((dirref = g_psys->GetBase(cdirref, true)) || (dirref = g_psys->GetBase(cdirref, true)))
+			if ((dirref = g_psys->GetObj(cdirref, true)) || (dirref = g_psys->GetBase(cdirref, true)))
 				extmode = CAMERA_TARGETFROMOBJECT;
 		} else if (!_stricmp(ctrackmode, "Ground")) {
 			if (go->RefBody())
