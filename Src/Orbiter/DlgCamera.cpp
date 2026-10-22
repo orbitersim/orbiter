@@ -141,8 +141,10 @@ void DlgCamera::DrawCockpitMode()
 			ImGui::EndDisabled();
 
 			ImGui::PopID();
-			ImGui::EndChild();
 		}
+		ImGui::EndChild();
+		// Note: According to ImGui documentation, EndChild must be called regardless of BeginChild result,
+		// but this behaviour might change in the future - keep track of this!
 
 		ImGui::SameLine();
 
@@ -167,8 +169,10 @@ void DlgCamera::DrawCockpitMode()
 			if (ImGui::IsItemActive())
 				g_pane->ShiftPanel(1);
 			ImGui::PopID();
-			ImGui::EndChild();
 		}
+		ImGui::EndChild();
+		// Note: According to ImGui documentation, EndChild must be called regardless of BeginChild result,
+		// but this behaviour might change in the future - keep track of this!
 	}
 }
 
