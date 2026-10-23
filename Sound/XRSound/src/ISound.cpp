@@ -183,6 +183,9 @@ void ISound::setIsPaused(const bool paused)
     switch(m_state) {
     case State::PAUSED:
         if (!paused) {
+            // Cancel the stop scheduled by the pause fade.
+            // MA_UINT64_MAX restores the default of no scheduled stop.
+			ma_sound_set_stop_time_in_pcm_frames(&m_sound, MA_UINT64_MAX);
             // Reset fader if the sound was previously paused
             ma_sound_set_fade_in_pcm_frames(&m_sound, -1.0f, 1.0f, 0);
             ma_sound_start(&m_sound);
