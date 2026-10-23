@@ -32,3 +32,4 @@ Sound/XRSound/**/Release-with-OrbiterRelease/
 Doc/**/*.log
 Doc/**/*.pdf
 Doc/**/*.gz
+/install
