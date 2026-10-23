@@ -34,14 +34,7 @@ public:
 	// - stop() was called and the fade out is finished
 	// - the sound has played to its end
 	bool isFinished() const { return m_state != State::PAUSED && !ma_sound_is_playing(&m_sound); }
-	void setVolume(const float vol) {
-		// XRSound usually creates a sound paused, then sets its volume according to its PlaybackType.
-		// We don't want any fading in that case.
-		if (m_state == State::PLAYING)
-			ma_sound_set_fade_in_milliseconds(&m_sound, -1, vol, 5);
-		else
-			ma_sound_set_volume(&m_sound, vol);
-	}
+	void setVolume(const float vol) { ma_sound_set_volume(&m_sound, vol); }
     void setIsLooped(const bool looped);
     void setIsPaused(const bool paused);
     void setPan(const float pan);

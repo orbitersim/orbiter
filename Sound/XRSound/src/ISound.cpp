@@ -62,8 +62,10 @@ ISoundEngine::ISoundEngine()
     m_dbgWin = new ISoundDialog();
     m_dwdbgWin = oapiRegisterCustomCmd((char*)"Audio debug", (char*)"This dialog allows to visualize active sound instances", OpenSoundDlgClbk, m_dbgWin);
 #endif
+    ma_engine_config engineConfig = ma_engine_config_init();
+    engineConfig.defaultVolumeSmoothTimeInPCMFrames = 4096;
 
-    if (ma_engine_init(nullptr, &m_engine) != MA_SUCCESS) {
+    if (ma_engine_init(&engineConfig, &m_engine) != MA_SUCCESS) {
         oapiWriteLog("XRSound: Error initialising miniaudio engine");
         return;
     }
@@ -181,6 +183,8 @@ void ISound::setIsPaused(const bool paused)
     switch(m_state) {
     case State::PAUSED:
         if (!paused) {
+            // Reset fader if the sound was previously paused
+            ma_sound_set_fade_in_pcm_frames(&m_sound, -1.0f, 1.0f, 0);
             ma_sound_start(&m_sound);
             m_state = State::PLAYING;
         }
@@ -192,7 +196,7 @@ void ISound::setIsPaused(const bool paused)
         }
         break;
     case State::STOPPED:
-        oapiWriteLog("XRSound: trying to pause a stopped sound");
+        oapiWriteLog("XRSound: trying to [un]pause a stopped sound");
         break;
     }
 }
