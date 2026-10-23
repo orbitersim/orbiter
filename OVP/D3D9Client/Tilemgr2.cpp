@@ -1075,7 +1075,7 @@ LPDIRECT3DTEXTURE9 TileManager2Base::hCloudMicroNorm = NULL;
 // -----------------------------------------------------------------------
 
 TileManager2Base::TileManager2Base (vPlanet *vplanet, int _maxres, int _gridres)
-: vp(vplanet), gridRes(_gridres), ElevMode(eElevMode::DontCare), ElevModeLvl(0)
+: vp(vplanet), gridRes(_gridres), ElevMode(eElevMode::DontCare), ElevModeLvl(0), elvstat{}, prevstat{}
 {
 	// set persistent parameters
 	TilesLoaded = 0;
