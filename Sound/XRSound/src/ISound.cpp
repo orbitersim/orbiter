@@ -20,28 +20,28 @@ class ISoundDialog: public ImGuiDialog
 public:
 	ISoundDialog():ImGuiDialog("Audio debug") {}
 	void OnDraw() override {
-		if (ImGui::BeginTable("table", 3, ImGuiTableFlags_SizingFixedFit | ImGuiTableFlags_Resizable))
-		{
+		if (ImGui::BeginTable("table", 3, ImGuiTableFlags_SizingFixedFit | ImGuiTableFlags_Resizable)) {
 			ImGui::TableSetupColumn("State", ImGuiTableColumnFlags_WidthFixed, 70.0f);
+			ImGui::TableSetupColumn("Type", ImGuiTableColumnFlags_WidthFixed, 70.0f);
 			ImGui::TableSetupColumn("Filename", ImGuiTableColumnFlags_WidthStretch);
 			for (const auto &sound: g_soundList) {
 				ImGui::TableNextRow();
 				ImGui::TableNextColumn();
 				switch (sound->m_state) {
-					case ISound::State::PLAYING: ImGui::Text("PLAYING"); break;
-					case ISound::State::PAUSED:  ImGui::Text("PAUSED"); break;
-					case ISound::State::STOPPED: ImGui::Text("STOPPED"); break;
+					case ISound::State::PLAYING: ImGui::TextUnformatted("PLAYING"); break;
+					case ISound::State::PAUSED:  ImGui::TextUnformatted("PAUSED"); break;
+					case ISound::State::STOPPED: ImGui::TextUnformatted("STOPPED"); break;
 				}
 
 				ImGui::TableNextColumn();
 				if (ma_sound_is_looping(&sound->m_sound)) {
-					ImGui::Text("Looping");
+					ImGui::TextUnformatted("Looping");
 				} else {
-					ImGui::Text("One shot");
+					ImGui::TextUnformatted("One shot");
 				}
 
 				ImGui::TableNextColumn();
-				ImGui::Text(sound->m_filename.c_str());
+				ImGui::TextUnformatted(sound->m_filename.c_str());
 			}
 			ImGui::EndTable();
 		}
@@ -72,6 +72,11 @@ ISoundEngine::ISoundEngine()
 
 ISoundEngine::~ISoundEngine()
 {
+#ifndef NDEBUG
+	if (m_dwdbgWin) oapiUnregisterCustomCmd(m_dwdbgWin);
+	delete m_dbgWin;
+#endif
+
 	if (!m_initialized) return;
 
 	for (auto &snd: releasedSounds) {
@@ -79,10 +84,6 @@ ISoundEngine::~ISoundEngine()
 	}
     ma_engine_uninit(&m_engine);
 
-#ifndef NDEBUG
-	if (m_dwdbgWin) oapiUnregisterCustomCmd(m_dwdbgWin);
-	delete m_dbgWin;
-#endif
 }
 
 ISound *ISoundEngine::play2D(const char *soundFileName, const bool playLooped, const bool startPaused, const bool track)
