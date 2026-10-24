@@ -261,6 +261,13 @@ void GraphicsClient::GetBaseShadowGeometry (OBJHANDLE hBase, MESHHANDLE **mesh_s
 
 // ======================================================================
 
+void GraphicsClient::GetBaseCollisionStructures (OBJHANDLE hBase, MESHHANDLE **mesh_col, DWORD *nmesh_col) const
+{
+	((Base*)hBase)->ExportCollisionMeshes ((Mesh***)mesh_col, nmesh_col);
+}
+
+// ======================================================================
+
 const void *GraphicsClient::GetConfigParam (DWORD paramtype) const
 {
 	return g_pOrbiter->Cfg()->GetParam (paramtype);

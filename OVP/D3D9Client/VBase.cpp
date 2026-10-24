@@ -82,8 +82,10 @@ vBase::vBase (OBJHANDLE _hObj, const Scene *scene, vPlanet *_vP): vObject (_hObj
 	
 	structure_bs	= NULL;
 	structure_as	= NULL;
+	structure_col	= NULL;
 	nstructure_bs	= 0;
 	nstructure_as	= 0;
+	nstructure_col	= 0;
 	tspec			= NULL;
 	tilemesh		= NULL;
 	numRunwayLights = 0;
@@ -161,6 +163,15 @@ vBase::vBase (OBJHANDLE _hObj, const Scene *scene, vPlanet *_vP): vObject (_hObj
 	if (nstructure_as = nsas) {
 		structure_as = new D3D9Mesh*[nsas];
 		for (i = 0; i < nsas; i++) structure_as[i] = new D3D9Mesh(sas[i]);
+	}
+
+	MESHHANDLE *scol;
+	DWORD nscol;
+	gc->GetBaseCollisionStructures (_hObj, &scol, &nscol);
+
+	if (nstructure_col = nscol) {
+		structure_col = new D3D9Mesh*[nscol];
+		for (i = 0; i < nscol; i++) structure_col[i] = new D3D9Mesh(scol[i]);
 	}
 
 	lights = false;
@@ -248,6 +259,11 @@ vBase::~vBase ()
 		for (i = 0; i < nstructure_as; i++)	delete structure_as[i];
 		delete []structure_as;
 		structure_as = NULL;
+	}
+	if (nstructure_col) {
+		for (i = 0; i < nstructure_col; i++)	delete structure_col[i];
+		delete []structure_col;
+		structure_col = NULL;
 	}
 
 	if (runwayLights) {
@@ -458,9 +474,14 @@ void vBase::RenderRunwayLights(LPDIRECT3DDEVICE9 dev)
 	if (DebugControls::IsActive()) {
 		DWORD flags = *(DWORD*)gc->GetConfigParam(CFGPRM_GETDEBUGFLAGS);
 		if (flags&DBG_FLAGS_SELVISONLY && this!=DebugControls::GetVisual()) return; // Used for debugging
-		if (flags&DBG_FLAGS_BOXES) {
-			D3DXMATRIX id;
-			D3D9Effect::RenderBoundingBox(&mWorld, D3DXMatrixIdentity(&id), &BBox.min, &BBox.max, ptr(D3DXVECTOR4(1,0,1,0.75f)));
+		if (flags&DBG_FLAGS_BOXES || Config->bShowBaseColliders) {
+			for (DWORD i = 0; i < nstructure_col; i++) {
+				if (structure_col[i]) structure_col[i]->RenderWireframe(&mWorld, D3DCOLOR_RGBA(50, 255, 50, 100));
+			}
+		}
+	} else if (Config->bShowBaseColliders) {
+		for (DWORD i = 0; i < nstructure_col; i++) {
+			if (structure_col[i]) structure_col[i]->RenderWireframe(&mWorld, D3DCOLOR_RGBA(50, 255, 50, 100));
 		}
 	}
 }
