@@ -83,7 +83,8 @@ private:
 	D3D9Mesh *tilemesh;
 	D3D9Mesh **structure_bs;
 	D3D9Mesh **structure_as;
-	DWORD nstructure_bs, nstructure_as;
+	D3D9Mesh **structure_col;
+	DWORD nstructure_bs, nstructure_as, nstructure_col;
 	bool lights;               // use nighttextures for base objects
 	//bool bLocalLight;          // true if lighting is modified
 	class vPlanet *vP;

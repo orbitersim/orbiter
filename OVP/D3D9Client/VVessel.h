@@ -122,6 +122,7 @@ public:
 	 * \param dev render device
 	 */
 	void RenderLightCone (LPD3DXMATRIX pWT);
+	void RenderColliders ();
 	void RenderBeacons (LPDIRECT3DDEVICE9 dev);
 	void RenderReentry (LPDIRECT3DDEVICE9 dev);
 	void RenderGrapplePoints (LPDIRECT3DDEVICE9 dev);
