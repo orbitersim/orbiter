@@ -278,8 +278,8 @@ ascending node (AN).
 \begin{itemize}
 	\item The \emph{Align orbital plane} MFD mode (see section
 		\ref{ssec:mfd_align}) is designed to aid in plane alignment. Make sure
-		the display is in Orbit mode (\Shift\keystroke{M}) and select the target
-		object (\Shift\keystroke{T}).
+		the display is in Orbit mode (\mfdkey{M}) and select the target object
+		(\mfdkey{T}).
 	\item The HUD should be in \emph{Orbit} mode. As the ship approaches a node
 		(intersection with the target plane), use the appropriate RCS attitude
 		mode to rotate to a normal (\keystroke{;}) at DN or anti-normal
@@ -314,7 +314,7 @@ ascending node (AN).
 The next step in a rendezvous manoeuvre after aligning the orbital planes (see
 previous chapter) is to modify the orbit in-plane such that it intercepts the
 target's orbit and both ship and target arrive simultaneously at the
-interception point. Use the \textit{Synchronise Orbit} MFD mode to calculate the
+interception point. Use the \emph{Synchronise Orbit} MFD mode to calculate the
 appropriate orbit changes.
 
 For simplicity we first assume that the ship and target are in a circular orbit
@@ -390,18 +390,17 @@ available docking ports. This requires
 Here is a checklist of the steps involved in the docking operation:
 
 \begin{itemize}
-	\item Select \emph{Docking} mode for one of the MFD instruments
-		(\Shift\keystroke{F1}, \Shift\keystroke{D}).
+	\item Select \emph{Docking} mode for one of the MFD instruments (\mfdkey{F1}
+		+ \mfdkey{D}).
 	\item Tune one of your NAV receivers to the station's long-range transponder
-		(XPDR) frequency, using the COM/NAV MFD mode (\Shift\keystroke{F1},
-		\Shift\keystroke{C}). Tune a second receiver to the IDS (instrument
-		docking system) frequency of the intended docking port. The transponder
-		and IDS frequencies for all vessels are listed in the object info dialog
-		(\Ctrl\keystroke{I}).
+		(XPDR) frequency, using the COM/NAV MFD mode (\mfdkey{F1} + \mfdkey{C}).
+		Tune a second receiver to the IDS (instrument docking system) frequency
+		of the intended docking port. The transponder and IDS frequencies for
+		all vessels are listed in the object info dialog (\keystroke{\ctrl,I}).
 	\item Link the Docking MFD display to the XPDR signal by selecting the
-		corresponding NAV receiver (\Shift\keystroke{N}).
+		corresponding NAV receiver (\mfdkey{N}).
 	\item Copy the docking parameters to the HUD by pressing the \mfdbtn{HUD}
-		button of the Docking MFD (\Shift\keystroke{H}).
+		button of the Docking MFD (\mfdkey{H}).
 	\item If not done already, null out relative velocity with the target by
 		rotating the ship to align it with the negative relative velocity marker
 		(\retrograde) and fire main thrusters until the indicated velocity value
@@ -410,9 +409,9 @@ Here is a checklist of the steps involved in the docking operation:
 		marker).
 	\item Approach the station to about 10 km and hold at that relative
 		position. Switch the Docking MFD display over to the IDS receiver
-		(\Shift\keystroke{N}) and copy to the HUD (\Shift\keystroke{H}). This
-		will activate alignment indicators in the MFD display, and a visual
-		representation of the approach path (rectangles) in the HUD.
+		(\mfdkey{N}) and copy to the HUD (\mfdkey{H}). This will activate
+		alignment indicators in the MFD display, and a visual representation of
+		the approach path (rectangles) in the HUD.
 	\item Move towards the approach path rectangle furthest from the station,
 		and hold.
 	\item Align the ship's orientation with the flight path direction using the
@@ -429,7 +428,7 @@ Here is a checklist of the steps involved in the docking operation:
 	\item Slow down approach speed to less than 0.1 m/s before contact with the
 		station's docking port.
 	\item Wait until positive docking confirmation is reported.
-	\item To disengage from the docking port, press \Ctrl\keystroke{D}.
+	\item To disengage from the docking port, press \keystroke{\ctrl,D}.
 \end{itemize}
 
 \begin{figure}[H]
@@ -443,7 +442,7 @@ Here is a checklist of the steps involved in the docking operation:
 
 \begin{itemize}
 	\item For precise attitude control with the keyboard, use the RCS thrusters
-		in low power mode (\Ctrl + Numpad key).
+		in low power mode (\Ctrl{} + Numpad key).
 	\item Rotational alignment is not currently enforced, but may be in future
 		versions.
 	\item Currently no collision tests are performed, so you might fly straight
@@ -560,15 +559,20 @@ located about 2000\,m in front of the runway threshold.
 	%\centering
 	\begin{longtable}{ p{0.12\textwidth} p{0.25\textwidth} }
 	\hline
-	\includegraphics[width=0.1\textwidth, margin=0pt 1ex 0pt 1ex, valign=m]{papi_1.png} & Above glide slope\\
+	\includegraphics[width=0.1\textwidth, margin=0pt 1ex 0pt 1ex, valign=m]
+		{papi_1.png} & Above glide slope\\
 	\hline
-	\includegraphics[width=0.1\textwidth, margin=0pt 1ex 0pt 1ex, valign=m]{papi_2.png} & Slightly above glide slope\\
+	\includegraphics[width=0.1\textwidth, margin=0pt 1ex 0pt 1ex, valign=m]
+		{papi_2.png} & Slightly above glide slope\\
 	\hline
-	\includegraphics[width=0.1\textwidth, margin=0pt 1ex 0pt 1ex, valign=m]{papi_3.png} & On glide slope\\
+	\includegraphics[width=0.1\textwidth, margin=0pt 1ex 0pt 1ex, valign=m]
+		{papi_3.png} & On glide slope\\
 	\hline
-	\includegraphics[width=0.1\textwidth, margin=0pt 1ex 0pt 1ex, valign=m]{papi_4.png} & Slightly below glide slope\\
+	\includegraphics[width=0.1\textwidth, margin=0pt 1ex 0pt 1ex, valign=m]
+		{papi_4.png} & Slightly below glide slope\\
 	\hline
-	\includegraphics[width=0.1\textwidth, margin=0pt 1ex 0pt 1ex, valign=m]{papi_5.png} & Below glide slope\\
+	\includegraphics[width=0.1\textwidth, margin=0pt 1ex 0pt 1ex, valign=m]
+		{papi_5.png} & Below glide slope\\
 	\hline
 	\end{longtable}
 %\end{table}
@@ -583,11 +587,14 @@ threshold.
 	%\centering
 	\begin{longtable}{ p{0.12\textwidth} p{0.25\textwidth} }
 	\hline
-	\includegraphics[width=0.1\textwidth, margin=0pt 1ex 0pt 1ex, valign=m]{vasi_1.png} & Above glide slope\\
+	\includegraphics[width=0.1\textwidth, margin=0pt 1ex 0pt 1ex, valign=m]
+		{vasi_1.png} & Above glide slope\\
 	\hline
-	\includegraphics[width=0.1\textwidth, margin=0pt 1ex 0pt 1ex, valign=m]{vasi_2.png} & On glide slope\\
+	\includegraphics[width=0.1\textwidth, margin=0pt 1ex 0pt 1ex, valign=m]
+		{vasi_2.png} & On glide slope\\
 	\hline
-	\includegraphics[width=0.1\textwidth, margin=0pt 1ex 0pt 1ex, valign=m]{vasi_3.png} & Below glide slope\\
+	\includegraphics[width=0.1\textwidth, margin=0pt 1ex 0pt 1ex, valign=m]
+		{vasi_3.png} & Below glide slope\\
 	\hline
 	\end{longtable}
 %\end{table}
@@ -605,7 +612,7 @@ the HSI MFD mode (see section \ref{ssec:mfd_hsi}) or in dedicated instruments
 such as the Delta-glider's VOR indicator instrument. To get ILS data, tune one
 of the NAV receivers to the desired ILS frequency and switch the HSI feed to
 that receiver. ILS frequencies can be found in the surface base info pages
-(\Ctrl\keystroke{I}).
+(\keystroke{\ctrl,I}).
 
 \begin{figure}[H]
 	\centering

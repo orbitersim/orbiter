@@ -6,11 +6,11 @@
 This section contains point-by-point checklists for some complete flights. The
 scenarios for the checklist flights can be found under the \emph{Checklists}
 folder in the Orbiter Launchpad dialog. While performing these missions, you may
-want to save regularly (\Ctrl\keystroke{S}), so you can pick up from a previous
+want to save regularly (\keystroke{\ctrl,S}), so you can pick up from a previous
 state if necessary.
 
 The checklists for these flights can also be accessed during the simulation by
-calling up help (\Alt\keystroke{F1}) and clicking the \emph{Scenario} button in
+calling up help (\keystroke{\alt,F1}) and clicking the \emph{Scenario} button in
 the help window. Other scenarios may also provide inline help.
 
 The flight challenges (under the \emph{Challenges} folder) consist of a set of
@@ -50,7 +50,7 @@ rendezvous and docking manoeuvre with the International Space Station.
 		right corner of the screen disappears.
 	\item Launch when the space station's orbital plane crosses your launch site
 		(to zoom into the MFD map display, press the \mfdbtn{ZM+} button
-		(\Shift\keystroke{Z}).
+		(\mfdkey{Z}).
 	\item Engage main engines at 100\% thrust: Press and hold
 		\keystroke{+}\num{}, then \Ctrl{} to lock thrust setting. You may also
 		use the sliders in the instrument panel or the throttle control on your
@@ -71,10 +71,9 @@ rendezvous and docking manoeuvre with the International Space Station.
 	\item Pitch down to about 20\deg{}. At this point we need to start gaining
 		tangential velocity to achieve orbit. Your flight path indicator (the
 		\prograde{} symbol in the HUD) should stay above 0\deg{}.
-	\item Switch the right MFD to \emph{Orbit} mode
-		(\Shift\keystroke{F1}+\Shift\keystroke{O}). Select the ship's orbit as
-		reference plane (\Shift\keystroke{P}) and select the ISS as target
-		(\Shift\keystroke{T}, \Enter, 'ISS', \Enter).
+	\item Switch the right MFD to \emph{Orbit} mode (\mfdkey{F1} + \mfdkey{O}).
+		Select the ship's orbit as reference plane (\mfdkey{P}) and select the
+		ISS as target (\mfdkey{T}, \Enter, 'ISS', \Enter).
 	\item Continue at 100\% main thrust and maintain your heading. Adjust pitch
 		angle so that the flight path vector remains slightly above 0\deg{}. As
 		the horizontal component of your velocity vector increases, the orbit
@@ -82,7 +81,7 @@ rendezvous and docking manoeuvre with the International Space Station.
 	\item Cut engines when the apogee radius (highest point of the orbit)
 		reaches 6.731M (the ApR entry in the left column of the Orbit MFD). This
 		corresponds to an altitude of 360\,km.
-	\item Switch to Orbit HUD mode (\keystroke{H}+\keystroke{H}, or press the
+	\item Switch to Orbit HUD mode (\keystroke{H} + \keystroke{H}, or press the
 		\mfdbtn{HUD} button in the Orbit MFD).
 	\item At the moment we are on a ballistic flight path that would eventually
 		bring us back to the surface. To enter orbit we need to perform a
@@ -96,8 +95,8 @@ rendezvous and docking manoeuvre with the International Space Station.
 		radius (PeR) approximately equals ApR. This will require only a short
 		burn!
 	\item Switch the left MFD to \emph{Plane Alignment} mode
-		(\Shift\keystroke{F1}+\Shift\keystroke{A}). Select ISS as target
-		(\Shift\keystroke{T}, \Enter, 'ISS', \Enter).
+		(\mfdkey{F1} + \mfdkey{A}). Select ISS as target (\mfdkey{T}, \Enter,
+		'ISS', \Enter).
 	\item Your orbital plane should already roughly match that of the ISS (RInc
 		$\leq$ 5\deg{}), thanks to the chosen launch time and azimuth. We now
 		need to fine-adjust the plane.
@@ -118,11 +117,11 @@ rendezvous and docking manoeuvre with the International Space Station.
 		manoeuvre (RInc within $\sim$0.5\deg{}), repeat the process at the next
 		node crossing.
 	\item Once the planes are aligned, the next step is intercepting the ISS.
-		Switch to \emph{Sync Orbit} MFD mode
-		(\Shift\keystroke{F1}+\Shift\keystroke{Y}). Select ISS as target
-		(\Shift\keystroke{T}, \Enter, 'ISS', \Enter), and switch the reference
-		point to \emph{Intersect 1} or \emph{Intersect 2} (\Shift\keystroke{M}).
-		If the orbits don't intersect, select \emph{Sh periapsis} instead.
+		Switch to \emph{Sync Orbit} MFD mode (\mfdkey{F1} + \mfdkey{Y}). Select
+		ISS as target (\mfdkey{T}, \Enter, 'ISS', \Enter), and switch the
+		reference point to \emph{Intersect 1} or \emph{Intersect 2}
+		(\mfdkey{M}). If the orbits don't intersect, select \emph{Sh periapsis}
+		instead.
 	\item The two columns on the right of the MFD display show the times it will
 		take you (Sh-ToR) and your target (Tg-ToR) to pass the reference
 		position during your current orbit (Ob 0) and the 4 subsequent orbits
@@ -135,16 +134,15 @@ rendezvous and docking manoeuvre with the International Space Station.
 		are close to zero, indicating that you are approaching the encounter
 		point.
 	\item On approach, tune your NAV receivers to the station's navigation radio
-		transmitters: Select \emph{NAV/COM} MFD mode
-		(\Shift\keystroke{F1}+\Shift\keystroke{C}), and tune NAV1 to 131.30\,MHz
-		(ISS XPDR frequency) and NAV2 to 137.40\,MHz (Dock 1 IDS frequency).
-	\item Switch to \emph{Docking} MFD mode
-		(\Shift\keystroke{F1}+\Shift\keystroke{D}). Make sure that the display
-		is fed from the NAV1 receiver. (Use \Shift\keystroke{N} to cycle through
-		the receiver inputs until NAV1 is selected.)
-	\item Copy docking information to the HUD (\Shift\keystroke{H}).
+		transmitters: Select \emph{NAV/COM} MFD mode (\mfdkey{F1} + \mfdkey{C}),
+		and tune NAV1 to 131.30\,MHz (ISS XPDR frequency) and NAV2 to
+		137.40\,MHz (Dock 1 IDS frequency).
+	\item Switch to \emph{Docking} MFD mode (\mfdkey{F1} + \mfdkey{D}). Make
+		sure that the display is fed from the NAV1 receiver. (Use \mfdkey{N} to
+		cycle through the receiver inputs until NAV1 is selected.)
+	\item Copy docking information to the HUD (\mfdkey{H}).
 	\item In Docking mode, the \prograde{} HUD symbol indicates your velocity
-		vector relative to the target, and \retrograde indicates the opposite
+		vector relative to the target, and \retrograde{} indicates the opposite
 		direction. Rotate the ship to centre the \retrograde{} marker in the HUD
 		and fire main engines until the relative velocity (-V[ISS]) is close to
 		zero.
@@ -152,12 +150,12 @@ rendezvous and docking manoeuvre with the International Space Station.
 		box) and move to within 5\,km of the station. You may want to use
 		attitude thrusters in linear (translational) mode for this. Switch
 		between linear and rotational mode with the \keystroke{/}\num{} key.
-	\item Switch the Docking MFD feed to NAV2 (\Shift\keystroke{N}) and route
-		the data to the HUD (\Shift\keystroke{H}). Once you are within range of
-		the IDS (\emph{Instrument Docking System}) transmitter ($\sim$10\,km),
-		you will receive docking approach data for docking port 1, providing
-		alignment information on the MFD display and a visual representation (a
-		series of rectangles) mapping a virtual approach path on the HUD.
+	\item Switch the Docking MFD feed to NAV2 (\mfdkey{N}) and route the data to
+		the HUD (\mfdkey{H}). Once you are within range of the IDS
+		(\emph{Instrument Docking System}) transmitter ($\sim$10\,km), you will
+		receive docking approach data for docking port 1, providing alignment
+		information on the MFD display and a visual representation (a series of
+		rectangles) mapping a virtual approach path on the HUD.
 	\item Manoeuvre your ship to the rectangle furthest away from the station,
 		using RCS, and hold relative position.
 	\item Align your ship's longitudinal axis with the approach path direction:
@@ -200,13 +198,12 @@ terms of fuel expenditure.
 	\item Launch Orbiter with the \emph{Checklists/ISS to Mir} scenario. The
 		mission starts with your glider docked at the ISS.
 	\item Press \keystroke{F1} to jump into the glider's cockpit.
-	\item Select target Mir in the Orbit MFD: Press Right-\Shift\keystroke{T},
-		\Enter, "mir".
+	\item Select target Mir in the Orbit MFD: Press Right-\mfdkey{T}, \Enter,
+		"mir".
 	\item To prepare for the high inclination orbit change, select the
-		\emph{Align plane} mode in the left MFD:
-		Left-\Shift\keystroke{F1}+\Shift\keystroke{A}, followed by
-		\Shift\keystroke{T}+\Enter, "mir".
-	\item Undock from the ISS (\Ctrl\keystroke{D}). Once clear of the dock,
+		\emph{Align plane} mode in the left MFD: Left-\mfdkey{F1} + \mfdkey{A},
+		followed by \mfdkey{T}, \Enter, "mir".
+	\item Undock from the ISS (\keystroke{\ctrl,D}). Once clear of the dock,
 		close the nose cone (\keystroke{K}).
 	\item Switch to Orbit HUD mode (\keystroke{H}).
 	\item The first burn will take place at the DN (descending node) point. Use
@@ -235,9 +232,9 @@ terms of fuel expenditure.
 	\item Tune your NAV1 receiver to Mir's transponder frequency of 132.10\,MHz,
 		and NAV2 to the IDS frequency of docking port 1 at 135.00\,MHz.
 	\item When the sync manoeuvre is complete, switch one of the MFD instruments
-		to \emph{Docking} mode (\Shift\keystroke{F1}+\Shift\keystroke{D}) and
-		make sure that NAV1 is selected for data input. Copy the setting to the
-		HUD (\Shift\keystroke{H}).
+		to \emph{Docking} mode (\mfdkey{F1} + \mfdkey{D}) and make sure that
+		NAV1 is selected for data input. Copy the setting to the HUD
+		(\mfdkey{H}).
 	\item Proceed with the docking manoeuvre to Mir in the same way as the ISS
 		approach in the previous mission. Do not forget to open the nose cone
 		before making contact.
@@ -266,8 +263,8 @@ Kennedy Space Center.
 		up where the previous mission ended, with the glider docked to the Mir
 		station. You are currently over the Pacific ocean, already in the
 		correct location for the de-orbit burn.
-	\item Undock (\Ctrl\keystroke{D}) and wait for sufficient clearance from the
-		station. You can use your retro engines (\keystroke{-}\num{}) to
+	\item Undock (\keystroke{\ctrl,D}) and wait for sufficient clearance from
+		the station. You can use your retro engines (\keystroke{-}\num{}) to
 		increase separation velocity after reaching a safe distance.
 	\item Close the nose cone (\keystroke{K}).
 	\item Turn retrograde (\keystroke{]}).
@@ -280,8 +277,8 @@ Kennedy Space Center.
 	\item When attitude has stabilised, roll the glider level with the horizon
 		(\keystroke{L}).
 	\item Switch to \emph{Surface} HUD mode (\keystroke{H}).
-	\item Switch the left MFD instrument to \emph{Surface} mode
-		(\Shift\keystroke{F1}+\Shift\keystroke{D}).
+	\item Switch the left MFD instrument to \emph{Surface} mode (\mfdkey{F1} +
+		\mfdkey{D}).
 	\item You should reach 100\,km altitude about 4000\,km from the target
 		(Dst: 4000M in the bottom line of the Map MFD). At this stage,
 		aerodynamic forces will become noticeable.
@@ -305,22 +302,21 @@ Kennedy Space Center.
 		Shuttle, because the glider can use its engines for a powered approach.
 	\item When the distance to target drops below 500\,km, tune your NAV1
 		receiver to frequency 112.70 (KSCX VOR) and NAV2 to frequency 134.20
-		(Rwy 33 ILS) using the NAV/COM MFD mode
-		(\Shift\keystroke{F1}+\Shift\keystroke{C}).
+		(Rwy 33 ILS) using the NAV/COM MFD mode (\mfdkey{F1} + \mfdkey{C}).
 	\item Switch an MFD to \emph{Horizontal Situation Indicator} (HSI) mode
-		(\Shift\keystroke{F1}+\Shift\keystroke{H}). Leave the left HSI dial feed
-		on NAV1, and flip the right dial to NAV2
-		(\Shift\keystroke{F}+\Shift\keystroke{N}).
+		(\mfdkey{F1} + \mfdkey{H}). Leave the left HSI dial feed on NAV1, and
+		flip the right dial to NAV2 (\mfdkey{F} + \mfdkey{N}).
 	\item Use the left dial for initial approach to KSC. Once in range of the
 		ILS transmitter, use the course deviation and glide slope indicators on
 		the right dial to line up your approach path to SLF runway 33. The HSI
 		dials work like standard aircraft instruments.
 	\item Deploy airbrakes as required (\keystroke{B} to deploy by 1/2 step,
-		\Ctrl\keystroke{B} to retract by 1/2 step). Lower landing gear at
+		\keystroke{\ctrl,B} to retract by 1/2 step). Lower landing gear at
 		airspeed < 300\,m/s. Touchdown speed is 200\,m/s.
-	\item After touchdown, deploy airbrakes fully (\keystroke{B}+\keystroke{B}).
-		Use wheel brakes at ground speed < 100\,m/s (\keystroke{.} and
-		\keystroke{,} \emph{simultaneously}), until you come to a halt.
+	\item After touchdown, deploy airbrakes fully (\keystroke{B} +
+		\keystroke{B}). Use wheel brakes at ground speed < 100\,m/s
+		(\keystroke{.} and \keystroke{{,}} \emph{simultaneously}), until you
+		come to a halt.
 	\item Welcome back to Earth, commander!
 \end{itemize}
 

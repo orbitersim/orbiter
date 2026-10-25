@@ -29,20 +29,20 @@ configuration dialog, which can be accessed by right-clicking on the menu bar.
 	\item \emph{camera:} Open the Camera dialog which allows to configure the
 		observer camera, including camera target selection, positioning, field
 		of view and track mode (see section \ref{ssec:menu_camera}). Keyboard
-		shortcut: \Ctrl\keystroke{F1}.
+		shortcut: \keystroke{\ctrl,F1}.
 	\item \emph{speed:} Open the Simulation speed dialog, which provides access
 		to time acceleration settings, and allows pausing/resuming the
 		simulation (see section \ref{ssec:menu_time}). Keyboard shortcut:
-		\Ctrl\keystroke{F2}.
+		\keystroke{\ctrl,F2}.
 	\item \emph{pause:} pause/resume the simulation. Keyboard shortcut:
-		\Ctrl\keystroke{P}.
+		\keystroke{\ctrl,P}.
 	\item \emph{info:} Open the Object info dialog which displays live
 		information for all simulation objects (see section
-		\ref{ssec:menu_info}). Keyboard shortcut: \Ctrl\keystroke{I}.
+		\ref{ssec:menu_info}). Keyboard shortcut: \keystroke{\ctrl,I}.
 	\item \emph{function:} Open the Custom function dialog which lists all
 		accessible functions provided by active external modules, if available
 		(see section \ref{ssec:menu_cust_func}). Keyboard shortcut:
-		\Ctrl\keystroke{F4}.
+		\keystroke{\ctrl,F4}.
 	\item \emph{options:} Open the Options dialog which allows to configure
 		functional and visual simulation parameters, such as MFD parameters,
 		joystick settings, celestial sphere background rendering settings, or
@@ -51,17 +51,17 @@ configuration dialog, which can be accessed by right-clicking on the menu bar.
 	\item \emph{map:} Open the Map window for a planetary body, including
 		day/night terminator lines, orbital planes or ground tracks and
 		planetary surface markers (see section \ref{ssec:menu_map}). Keyboard
-		shortcut: \Ctrl\keystroke{M}.
+		shortcut: \keystroke{\ctrl,M}.
 	\item \emph{record:} Open the Record/playback dialog which allows to record
 		a simulation session, or configure the playback parameters during a
 		replay (see section \ref{sec:flight_rec}). Keyboard shortcut:
-		\Ctrl\keystroke{F5}.
+		\keystroke{\ctrl,F5}.
 	\item \emph{help:} Open the inline Help dialog window (see section
-		\ref{ssec:menu_help}). Keyboard shortcut: \Alt\keystroke{F1}.
+		\ref{ssec:menu_help}). Keyboard shortcut: \keystroke{\alt,F1}.
 	\item \emph{save:} Saves the current simulation state to the Quicksave
-		scenario folder. Keyboard shortcut: \Ctrl\keystroke{S}.
+		scenario folder. Keyboard shortcut: \keystroke{\ctrl,S}.
 	\item \emph{exit:} Quit the simulation session and return to the Launchpad
-		dialog. Keyboard shortcuts: \Ctrl\keystroke{Q} or \Alt\keystroke{F4}.
+		dialog. Keyboard shortcuts: \keystroke{\ctrl,Q} or \keystroke{\alt,F4}.
 \end{itemize}
 
 \textbf{Additional info panels:}
@@ -99,7 +99,7 @@ spacecraft in the simulation session, if available. It is opened with the
 
 You can pick a vessel from the list and click Apply to jump into a new
 spacecraft. Clicking Previous puts you back into the original ship.
-(\Ctrl\keystroke{F3} is a shortcut to switch between the two most recent
+(\keystroke{\ctrl,F3} is a shortcut to switch between the two most recent
 vessels.)
 
 The tab pages (All, Nearby, Location, Class) present the vessel list sorted
@@ -130,7 +130,7 @@ Shuttle orbiter, are omitted.
 
 The \emph{Camera} dialog offers various ways to select viewpoints, camera
 targets or movement modes. It can be accessed via the \emph{camera} button on
-the main menu (keyboard shortcut \Ctrl\keystroke{F1}).
+the main menu (keyboard shortcut \keystroke{\ctrl,F1}).
 
 \textbf{\emph{Control} tab:}
 This tab contains controls for moving and tilting the viewer camera. The
@@ -142,21 +142,22 @@ available options depend on the current camera mode.
 \end{figure}
 
 In internal (cockpit) views, the camera can be rotated to allow the pilot to
-look around (keyboard shortcuts \Alt\Arrows\cur{}, or alternatively right-click
-and drag the mouse). The view direction can be re-centred with the Forward
-button (shortcut \Home\cur{}).
+look around (keyboard shortcuts \keystroke{\alt,\arrows}\cur{}, or alternatively
+right-click and drag the mouse). The view direction can be re-centred with the
+Forward button (shortcut \Home\cur{}).
 
 In external views the camera can be rotated around the target (keyboard
-shortcuts \Ctrl\Arrows\cur{} or right-click and drag the mouse). It can also be
-moved towards or away from the target (shortcuts
-\keystroke{PgUp}\keystroke{PgDn}\cur{} or mouse wheel).
+shortcuts \keystroke{\ctrl,\arrows}\cur{} or right-click and drag the mouse). It
+can also be moved towards or away from the target (shortcuts
+\keystroke{PgUp}/\keystroke{PgDn}\cur{} or mouse wheel).
 
 In ground-based views, the camera can be tilted (shortcuts \Arrows\cur{}),
-panned (shortcuts \Ctrl\Arrows\cur{}) or raised and lowered (shortcuts
-\keystroke{PgUp}\keystroke{PgDn}\cur{}) unless locked onto a target, in which
-case it can only be rotated around the target (shortcuts \Ctrl\LRArrow\cur{}),
-moved towards or away from the target (shortcuts \Ctrl\UDArrow\cur{}). Raising
-and lowering the camera is also possible in target-locked mode.
+panned (shortcuts \keystroke{\ctrl,\arrows}\cur{}) or raised and lowered
+(shortcuts \keystroke{PgUp}/\keystroke{PgDn}\cur{}) unless locked onto a target,
+in which case it can only be rotated around the target (shortcuts
+\keystroke{\ctrl,\lrarrow}\cur{}), moved towards or away from the target
+(shortcuts \keystroke{\ctrl,\udarrow}\cur{}). Raising and lowering the camera is
+also possible in target-locked mode.
 
 The Sensitivity slider can be used to adjust the speed of movement.
 
@@ -175,7 +176,7 @@ buttons (shortcut \keystroke{F1}).
 \end{figure}
 
 Note that after selecting a new camera target, you may need to adjust the
-distance (\keystroke{PgUp}\keystroke{PgDn}\num{}).
+distance (\keystroke{PgUp}/\keystroke{PgDn}\num{}).
 
 \textbf{\emph{Track} tab:}
 Allows to select different camera track modes which determine how the camera
@@ -244,7 +245,7 @@ view window.
 \end{figure}
 
 Keyboard shortcuts: \keystroke{Z}/\keystroke{X} for continuous FoV adjustment,
-or \Ctrl+\keystroke{Z}/\keystroke{X} for discrete adjustments in steps of
+or \keystroke{\ctrl,Z}/\keystroke{\ctrl,X} for discrete adjustments in steps of
 10\deg{}.
 
 \infobox{Separate FoV settings are used for internal (cockpit) and external
@@ -287,7 +288,7 @@ through coasting phases where nothing much is happening.
 \end{figure}
 
 Open the \emph{Time acceleration} dialog with the speed button on the main menu
-(keyboard shortcut: \Ctrl\keystroke{F2}). Time can be accelerated up to
+(keyboard shortcut: \keystroke{\ctrl,F2}). Time can be accelerated up to
 1000$\times$ in discrete steps with the buttons, or continuously with the
 slider. It can also be slowed town to one tenth of real time. Keyboard shortcuts
 are \keystroke{T} for speeding up by a factor of 10, and \keystroke{R} for
@@ -306,7 +307,7 @@ minutes.
 	to make it practical during manual manoeuvres.}
 
 The dialog also provides a button for pausing/resuming the simulation (shortcut:
-\Ctrl\keystroke{P}). This function is also directly available from the main
+\keystroke{\ctrl,P}). This function is also directly available from the main
 menu.
 
 
@@ -315,7 +316,7 @@ menu.
 
 The \emph{Object info} window displays data about spacecraft, celestial bodies
 and spaceports. It can be opened with the \emph{info} button on the main menu
-(keyboard shortcut \Ctrl\keystroke{I}).
+(keyboard shortcut \keystroke{\ctrl,I}).
 
 After opening, the window shows data for the focus vessel currently controlled
 by the user. Different objects can be selected from the drop-down lists at the
@@ -418,7 +419,7 @@ The \emph{Map} window shows a planetary surface represented by coastlines and
 contours in cylindrical projection. It contains the locations of surface bases
 and navigation radio transmitters, as well as the location and ground track of
 orbiting objects. The Map window is opened with the map button in the main menu
-(shortcut: \Ctrl\keystroke{M}).
+(shortcut: \keystroke{\ctrl,M}).
 
 \begin{figure}[H]
 	\centering
@@ -481,7 +482,8 @@ the options available in the Launchpad Options page (see section
 \ref{ssec:options_tab}), excluding parameters which must be defined before
 launching an Orbiter session, such as the physics and graphics settings.
 
-The "Visual helpers" page can be accessed directly via keys \Ctrl\keystroke{F9}.
+The "Visual helpers" page can be accessed directly via keys
+\keystroke{\ctrl,F9}.
 
 \begin{figure}[H]
 	\centering
@@ -492,7 +494,7 @@ The "Visual helpers" page can be accessed directly via keys \Ctrl\keystroke{F9}.
 \subsection{Inline help}
 \label{ssec:menu_help}
 
-The \emph{help} button on the main menu (shortcut: \Ctrl\keystroke{F1}) opens
+The \emph{help} button on the main menu (shortcut: \keystroke{\ctrl,F1}) opens
 the inline help window accessible during a simulation session. The help window
 can also be called up from the Orbiter Launchpad by clicking the Help button.
 
@@ -538,7 +540,7 @@ downloadable as 3\textsup{rd} party contributions from the Orbiter add-on
 repositories) may provide a user interface using a dialog or window that can be
 opened inside an Orbiter session. The \emph{Custom functions} dialog lists all
 active modules that allow opening an interface dialog box. It can be opened with
-the main menu \emph{function} button (shortcut: \Ctrl\keystroke{F4}).
+the main menu \emph{function} button (shortcut: \keystroke{\ctrl,F4}).
 
 \begin{figure}[H]
 	\centering

@@ -18,7 +18,7 @@ extent the Lua-Orbiter interface replicates the Orbiter C++ API interface.
 For script examples and a list of available functions, see the
 \emph{Orbiter Scripting User Manual} section of the Orbiter inline help pages,
 available from the \emph{Help} button in the Orbiter Launchpad or with
-\Alt\keystroke{H} during a running simulation session. From a terminal (console
+\keystroke{\alt,H} during a running simulation session. From a terminal (console
 window or Terminal MFD) the scripting documentation can be opened by typing
 help(api).
 
@@ -30,26 +30,26 @@ launch scripts controlling various aspects of spacecraft behaviour (see section
 \ref{ssec:lua_console}). Make sure that the \emph{LuaConsole} module is
 activated in the \emph{Modules} tab of the Orbiter Launchpad. Open the console
 with the \emph{Lua console window} option from the function list
-(\Ctrl\keystroke{F4}).
+(\keystroke{\ctrl,F4}).
 
 The console is a simple text terminal. User input is shown in black, program
 responses are shown in green. The window can be resized. The font size can be
 adjusted under the \emph{Console configuration} option in the \emph{Extras} tab
 of the Orbiter Launchpad. The console allows simple command line editing and
-scrolling through the command history with the \UArrow key.
+scrolling through the command history with the \UArrow{} key.
 
 \textbf{Terminal MFD:}
 If the \emph{LuaMFD} module has been activated in the Modules tab of the Orbiter
 Launchpad, an additional \emph{Terminal MFD} mode is available in every
 spacecraft.
 
-Commands can be entered by pressing the INP (input) button
-(\Shift\keystroke{I}), typing the command, and pressing \Enter.
+Commands can be entered by pressing the \mfdbtn{INP} (input) button
+(\mfdkey{I}), typing the command, and pressing \Enter.
 
 The MFD allows to open multiple command interpreters simultaneously. To open a
-new terminal page, press NEW (\Shift\keystroke{N}). To switch between pages,
-press PG> (\Shift\keystroke{.}) or <PG (\Shift\keystroke{,}). To close a
-terminal page, press DEL (\Shift\keystroke{D}).
+new terminal page, press \mfdbtn{NEW} (\mfdkey{N}). To switch between pages,
+press \mfdbtn{PG>} (\mfdkey{.}) or \mfdbtn{<PG} (\mfdkey{,}). To close a
+terminal page, press \mfdbtn{DEL} (\mfdkey{D}).
 
 \textbf{Run a script on scenario launch:}
 To run a script automatically when a scenario starts, the scenario file must

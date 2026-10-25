@@ -12,13 +12,13 @@ operating instructions of your vessel, if available.
 \subsection{Main, retro and hover engines}
 Main thrusters accelerate the ship forward, \emph{retro thrusters} (if
 installed) accelerate it backward. Main and retro thrusters can be adjusted
-with \Ctrl\keystroke{+}\num{} (to increase main thrust or decrease retro
-thrust) and \Ctrl\keystroke{-}\num{} (to decrease main thrust or increase
+with \keystroke{\ctrl,+}\num{} (to increase main thrust or decrease retro
+thrust) and \keystroke{\ctrl,-}\num{} (to decrease main thrust or increase
 retro thrust). Main and retro thrusters can be killed with
-\Ctrl\keystroke{*}\num{}. The permanent setting can be temporarily overridden
+\keystroke{\ctrl,*}\num{}. The permanent setting can be temporarily overridden
 with \keystroke{+}\num{} (set main thrusters to 100\%) and
 \keystroke{-}\num{} (set retro thrusters to 100\%). To set permanent full main
-thrust directly, press and hold \keystroke{+}\num{}, followed by \Ctrl to lock
+thrust directly, press and hold \keystroke{+}\num{}, followed by \Ctrl{} to lock
 the setting. If available, a joystick throttle control can be used to set the
 main thrusters.
 
@@ -28,21 +28,24 @@ main thrusters.
 	\hline
 	\textbf{Main} & \textbf{Retro} & \textbf{Hover}\\
 	\hline
-		\includegraphics[width=0.3\textwidth, margin=0pt 1ex 0pt 1ex, valign=m]{control_main.png}
+		\includegraphics[width=0.3\textwidth, margin=0pt 1ex 0pt 1ex, valign=m]
+			{control_main.png}
 	&
-		\includegraphics[width=0.3\textwidth, margin=0pt 1ex 0pt 1ex, valign=m]{control_retro.png}
+		\includegraphics[width=0.3\textwidth, margin=0pt 1ex 0pt 1ex, valign=m]
+			{control_retro.png}
 	&
-		\includegraphics[width=0.3\textwidth, margin=0pt 1ex 0pt 1ex, valign=m]{control_hover.png}
+		\includegraphics[width=0.3\textwidth, margin=0pt 1ex 0pt 1ex, valign=m]
+			{control_hover.png}
 	\\
 	\hline
 		\begin{itemize}[leftmargin=*, nosep, before=\vspace{-0.7\baselineskip}]
-		\item \Ctrl\keystroke{+}\num{} (permanent)
+		\item \keystroke{\ctrl,+}\num{} (permanent)
 		\item \keystroke{+}\num{} (temp. 100\%)
 		\item Joystick throttle control
 		\end{itemize}
 	&
 		\begin{itemize}[leftmargin=*, nosep, before=\vspace{-0.7\baselineskip}]
-		\item \Ctrl\keystroke{-}\num{} (permanent)
+		\item \keystroke{\ctrl,-}\num{} (permanent)
 		\item \keystroke{-}\num{} (temp. 100\%)
 		\end{itemize}
 	&
@@ -75,7 +78,8 @@ For a fixed thruster setting $\vec{F}$ the acceleration will slowly increase as
 fuel is consumed, resulting in a reduction of the ship's mass $m$. This
 situation is described by the \emph{rocket equation}:
 
-\[ m(t) \frac{\diffd\vec{v}(t)}{\diffd t} = - \vec{c} \frac{\diffd m(t)}{\diffd t} \]
+\[ m(t) \frac{\diffd\vec{v}(t)}{\diffd t} = - \vec{c}
+	\frac{\diffd m(t)}{\diffd t} \]
 
 \noindent
 where thrust $\vec{F} = -\vec{c} \diffd m/\diffd t$ is given by the product of
@@ -105,7 +109,7 @@ own indicators for engine status displays.
 
 The maximum vacuum thrust ratings for main, retro and hover thrusters, as well
 as the current spacecraft mass, are displayed in the vessel's info sheet
-(\Ctrl\keystroke{I}). Values are in Newton (1\,N = 1\,kg\,m\,s\textsup{-2}).
+(\keystroke{\ctrl,I}). Values are in Newton (1\,N = 1\,kg\,m\,s\textsup{-2}).
 Note that the actual generated thrust may be lower in the presence of ambient
 atmospheric pressure. At extremely high atmospheric pressures, e.g. on the
 surface of Venus, the spacecraft engines may not produce any thrust at all.
@@ -123,7 +127,7 @@ acceleration along its principal axes without changing the vessel's orientation.
 
 In Orbiter, the RCS mode is set to either rotational (ROT) or linear (LIN) with
 \keystroke{/}\num{}. The RCS can also be disabled (OFF) with
-\Ctrl\keystroke{/}\num{}, for example during launch, where attitude is more
+\keystroke{\ctrl,/}\num{}, for example during launch, where attitude is more
 commonly controlled by gimballing the main engines, or during reentry, where
 body shape or aerodynamic surfaces control flight attitude. The current mode is
 shown in the engine display block in the top left of the glass cockpit view.
@@ -137,11 +141,14 @@ mode:
 	\hline
 	\textbf{Rotate: yaw} & \textbf{Rotate: pitch} & \textbf{Rotate: roll}\\
 	\hline
-		\includegraphics[width=0.3\textwidth, margin=0pt 1ex 0pt 1ex, valign=m]{control_yaw.png}
+		\includegraphics[width=0.3\textwidth, margin=0pt 1ex 0pt 1ex, valign=m]
+			{control_yaw.png}
 	&
-		\includegraphics[width=0.3\textwidth, margin=0pt 1ex 0pt 1ex, valign=m]{control_pitch.png}
+		\includegraphics[width=0.3\textwidth, margin=0pt 1ex 0pt 1ex, valign=m]
+			{control_pitch.png}
 	&
-		\includegraphics[width=0.3\textwidth, margin=0pt 1ex 0pt 1ex, valign=m]{control_roll.png}
+		\includegraphics[width=0.3\textwidth, margin=0pt 1ex 0pt 1ex, valign=m]
+			{control_roll.png}
 	\\
 	\hline
 		\begin{itemize}[leftmargin=*, nosep, before=\vspace{-0.7\baselineskip}]
@@ -170,13 +177,17 @@ and in linear (translational) mode:
 	\centering
 	\begin{tabular}{ p{0.3\textwidth} p{0.3\textwidth} p{0.3\textwidth} }
 	\hline
-	\textbf{Translate: forward/back} & \textbf{Translate: left/right} & \textbf{Translate: up/down}\\
+	\textbf{Translate: forward/back} & \textbf{Translate: left/right} &
+		\textbf{Translate: up/down}\\
 	\hline\rule{0pt}{2ex}
-		\includegraphics[width=0.3\textwidth, margin=0pt 1ex 0pt 1ex, valign=m]{control_fwd_back.png}
+		\includegraphics[width=0.3\textwidth, margin=0pt 1ex 0pt 1ex, valign=m]
+			{control_fwd_back.png}
 	&
-		\includegraphics[width=0.3\textwidth, margin=0pt 1ex 0pt 1ex, valign=m]{control_left_right.png}
+		\includegraphics[width=0.3\textwidth, margin=0pt 1ex 0pt 1ex, valign=m]
+			{control_left_right.png}
 	&
-		\includegraphics[width=0.3\textwidth, margin=0pt 1ex 0pt 1ex, valign=m]{control_up_down.png}
+		\includegraphics[width=0.3\textwidth, margin=0pt 1ex 0pt 1ex, valign=m]
+			{control_up_down.png}
 	\\
 	\hline
 		\begin{itemize}[leftmargin=*, nosep, before=\vspace{-0.7\baselineskip}]

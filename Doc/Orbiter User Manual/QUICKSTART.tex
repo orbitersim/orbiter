@@ -17,7 +17,7 @@ Make sure you have configured Orbiter before launching your first simulation, in
 particular the video and joystick parameters (see section \ref{sec:launchpad}).
 Once you have started the Quickstart scenario, you can get the following
 scenario instructions also on-screen by opening the \emph{Help} window with
-\Alt\keystroke{F1}.
+\keystroke{\alt,F1}.
 
 \textbf{Starting:}
 \begin{itemize}
@@ -29,8 +29,8 @@ scenario instructions also on-screen by opening the \emph{Help} window with
 		Center, Cape Canaveral, Florida.
 	\item You are in control of a Delta-glider, a powerful futuristic
 		spacecraft, aligned with the runway centreline and ready for take-off.
-	\item You can always exit the simulation by pressing \Ctrl\keystroke{Q} or
-		\Alt\keystroke{F4}, or by clicking \emph{Exit} on the main menu
+	\item You can always exit the simulation by pressing \keystroke{\ctrl,Q} or
+		\keystroke{\alt,F4}, or by clicking \emph{Exit} on the main menu
 		(\keystroke{F4}). Orbiter saves the current simulation status in the
 		"(Current status)" scenario, so you can continue your flight later by
 		selecting this scenario.
@@ -41,17 +41,17 @@ You are in an external camera mode, looking towards your ship.
 
 \begin{itemize}
 	\item You can rotate the camera around your ship by pressing and holding
-		down the \Ctrl{} key and pressing a cursor key (\Arrows\cur{}) on the
-		cursor keypad of your keyboard. Alternatively you can press the right
-		button on your mouse and drag the mouse to rotate the camera. Or, if you
-		have a joystick with a direction controller ("coolie hat") you can use
-		that as well.
+		down the \Ctrl{} key and pressing a cursor key on the cursor keypad of
+		your keyboard (represented by the shortcut \Arrows\cur{}).
+		Alternatively you can press the right button on your mouse and drag the
+		mouse to rotate the camera. Or, if you have a joystick with a direction
+		controller ("coolie hat") you can use that as well.
 	\item To jump into the cockpit of your glider, press \keystroke{F1}.
 		(\keystroke{F1} always toggles between cockpit and external view of the
 		spacecraft you are controlling).
 	\item In the cockpit, you can look around by rotating the camera with
-		\Alt\Arrows\cur{}, or with the right mouse button or the joystick coolie
-		hat.
+		\keystroke{\alt,\arrows}\cur{}, or with the right mouse button or the
+		joystick coolie hat.
 	\item To look straight ahead, press the \Home{} button.
 	\item To learn more about camera modes have a look at section
 		\ref{ssec:menu_camera}.
@@ -59,15 +59,15 @@ You are in an external camera mode, looking towards your ship.
 
 \textbf{Cockpit modes:}
 \begin{itemize}
-	\item At the moment, you are in \textit{virtual cockpit} mode -- that is,
-		you are inside a three-dimensional representation of the glider cockpit,
+	\item At the moment, you are in \emph{virtual cockpit} mode -- that is, you
+		are inside a three-dimensional representation of the glider cockpit,
 		with the glass pane of the head-up display (HUD) in front of you, and
 		the instruments and controls arranged around you. If you look back, you
 		can even get a glimpse of your passengers in the cabin behind you!
 	\item You can switch to a different cockpit mode by pressing \keystroke{F8}.
 		Pressing \keystroke{F8} once will open the generic \emph{glass cockpit}
 		mode with only the HUD and two on-screen multifunctional displays.
-		Pressing \keystroke{F8} again will open a \textit{2-D panel} mode.
+		Pressing \keystroke{F8} again will open a \emph{2-D panel} mode.
 	\item The 2-D control panel can be scrolled by pressing a cursor key
 		(\Arrows\cur{}) on the cursor keypad. To scroll the panel out of the
 		way, press \UArrow{}. You should now be able to see the runway
@@ -80,9 +80,9 @@ You are in an external camera mode, looking towards your ship.
 		(this feature may not be supported by all spacecraft types).
 	\item Some spacecraft have more than a single panel which can be accessed by
 		pressing \Ctrl{} in combination
-		with a cursor key. If you press \Ctrl\UArrow{}, you will see the
-		glider's overhead panel with some additional controls. Pressing
-		\Ctrl\DArrow{} switches back to the main panel.
+		with a cursor key. If you press \keystroke{\ctrl,\uarrow}, you will see
+		the glider's overhead panel with some additional controls. Pressing
+		\keystroke{\ctrl,\darrow} switches back to the main panel.
 	\item Not all spacecraft types support 2-D panels or 3-D virtual cockpits,
 		but the generic \emph{glass cockpit} mode is always available.
 	\item You can find more information on cockpit modes in section
@@ -97,7 +97,7 @@ square LCD screen and buttons along the left, right and bottom edges.
 \begin{itemize}
 	\item MFDs can be set to different modes: With the mouse, left-click the
 		\mfdbtn{SEL} button at the bottom edge of one of the MFDs.
-		(Alternatively, you can press \Shift\keystroke{F1}. MFD keyboard
+		(Alternatively, you can press \mfdkey{F1}. MFD keyboard
 		interfaces always use \Shift{} key combinations, where the left \Shift{}
 		key controls the left MFD, and the right \Shift{} key controls the right
 		MFD). You will see a list of available modes.
@@ -105,7 +105,7 @@ square LCD screen and buttons along the left, right and bottom edges.
 		corresponding mode. If you click the top-left button, the MFD switches
 		to \emph{Orbit} mode.
 	\item If you want to select a mode via keyboard, press
-		\Shift\keystroke{F1}+\Shift{} [letter], where [letter] is the keyboard
+		\mfdkey{F1} + \Shift{} [letter], where [letter] is the keyboard
 		character listed in grey next to the MFD mode in the selection page.
 	\item Most modes have additional settings and parameters that can be
 		controlled with the buttons as well. The button labels change to
@@ -117,7 +117,7 @@ square LCD screen and buttons along the left, right and bottom edges.
 		the International Space Station in the MFD display.
 	\item To see a short description of the available mode functions, click the
 		\mfdbtn{MNU} button at the bottom of the MFD (alternatively, use
-		\Shift\keystroke{'}).
+		\mfdkey{'}).
 	\item A description of standard MFD modes can be found in section
 		\ref{sec:mfd}. Orbiter can also be extended with add-on MFD modes, so
 		you may see additional modes in the list.
@@ -166,8 +166,8 @@ powerful rocket engines, but their performance depends on atmospheric pressure
 (at very low altitudes, it will not even go supersonic).
 
 This is a good time to try different camera modes. Open the \emph{Camera} dialog
-(\Ctrl\keystroke{F1}) and check the effect of different track modes and field of
-view (FoV) settings.
+(\keystroke{\ctrl,F1}) and check the effect of different track modes and field
+of view (FoV) settings.
 
 \textbf{Landing:}
 \begin{itemize}
@@ -183,11 +183,11 @@ view (FoV) settings.
 		The PAPI is of limited use here, because it is adjusted to the Space
 		Shuttle's steep descent slope of 20\deg{}.
 	\item Throttle back and engage airbrakes (\keystroke{B} to engage by 1/2
-		step, \Ctrl\keystroke{B} to retract by 1/2 step) to reduce speed. Lower
+		step, \keystroke{\ctrl,B} to retract by 1/2 step) to reduce speed. Lower
 		the landing gear (\keystroke{G}) at speed < 300\,m/s.
-	\item After touchdown, engage left and right wheel brakes (\keystroke{,} and
-		\keystroke{.} simultaneously) once below 150\,m/s until you come to a
-		full stop.
+	\item After touchdown, engage left and right wheel brakes (\keystroke{{,}}
+		and \keystroke{.} simultaneously) once below 150\,m/s until you come to
+		a full stop.
 \end{itemize}
 
 \textbf{Space flight:}
@@ -211,7 +211,7 @@ time to aim a bit higher \ldots
 		flight path drops too low and you start to lose altitude, it is time to
 		activate the RCS (Reaction Control System) by clicking on the right of
 		the \emph{RCS Mode} dial (on the right side of the instrument panel) or
-		by pressing \Ctrl\keystroke{/}\num{}. You are now controlling your craft
+		by pressing \keystroke{\ctrl,/}\num{}. You are now controlling your craft
 		with attitude thrusters. The controls for pitch, yaw and roll remain the
 		same, but the handling will feel different - without atmospheric
 		friction, your craft will continue rotating until an opposite force is

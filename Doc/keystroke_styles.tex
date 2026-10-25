@@ -1,17 +1,20 @@
 % this replaces the keystroke symbols from the keystroke package
-\usepackage{menukeys}
+\usepackage[os=win]{menukeys}
 
 % create a macro for keyboard keys
 \newmenumacro\key{roundedkeys}
 
 % map it to \keystroke commands so we don't need to change the sources after migrating from
 % the keystroke package
-\newcommand{\keystroke}[1]{\raisebox{-1pt}{\key{{#1}}}}
+\newcommand{\keystroke}[1]{\raisebox{-1pt}{\key{#1}}}
 
 % redefine the commands for common keys
-\newcommand{\Ctrl}{\keystroke{Ctrl}}
-\renewcommand{\Alt}{\keystroke{Alt}}
-\newcommand{\Shift}{\keystroke{Shift \shift}}
+\newcommand{\Ctrl}{\keystroke{\ctrl}}
+\let\alt\Alt
+\renewcommand{\Alt}{\keystroke{\alt}}
+\let\oldshift\shift
+\renewcommand{\shift}{Shift\,\oldshift}
+\newcommand{\Shift}{\keystroke{\shift}}
 \newcommand{\Home}{\keystroke{Home}}
 \newcommand{\UArrow}{\keystroke{\arrowkeyup}}
 \newcommand{\DArrow}{\keystroke{\arrowkeydown}}
@@ -19,6 +22,9 @@
 \newcommand{\LArrow}{\keystroke{\arrowkeyleft}}
 \newcommand{\Enter}{\keystroke{Enter}}
 \newcommand{\Spacebar}{\keystroke{Space}}
+
+% prepend a key with Shift (encoding for MFD button shortcuts)
+\newcommand{\mfdkey}[1]{\keystroke{\shift,{#1}}}
 
 % patch the roundedkeys style so that keystroke symbols appearing in
 % two consecutive lines of running text don't stretch the line spacing
@@ -29,6 +35,18 @@
     text depth=0.67ex       % Modify the inner depth spacing
   }
 }
+\makeatother
+
+% patch to replace the '+' key separator used for comma-separated
+% arguments with a thin space
+\makeatletter
+\tw@declare@style@simple*{roundedkeys}{%
+  \tikz[baseline={($(tw@node.base)+(0,-0.2ex)$)}]{%
+    \node(tw@node)[tw@roundedkeys@base]%
+    {\strut\color{\usemenucolor{txt}}\CurrentMenuElement};}%
+}[%
+  \kern 0.08em
+]{gray}
 \makeatother
 
 % Now for MFD buttons. First, define a colour theme to distinguish

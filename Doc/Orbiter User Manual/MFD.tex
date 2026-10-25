@@ -34,31 +34,30 @@ according to the current operation modus of the instrument. The three buttons
 along the bottom edge are static and perform mode-independent system functions.
 The MFDs can be operated either by left-clicking the buttons with the mouse, or
 via the keyboard. All MFD keyboard functions are \Shift-key combinations, where
-the left and right \Shift keys operate the left and right MFD, respectively. For
-instrument panels with more than two MFD displays, only two can be operated with
-the keyboard; the others are limited to mouse control.
+the left and right \Shift{} keys operate the left and right MFD, respectively.
+For instrument panels with more than two MFD displays, only two can be operated
+with the keyboard; the others are limited to mouse control.
 
 \infobox{In this document, MFD buttons are represented by a box symbol
 	containing the button label, for example \mfdbtn{PWR}.}
 
 \textbf{Turning the MFD on and off:}
 The \mfdbtn{PWR} button activates and deactivates the MFD display (keyboard
-shortcut: \Shift\keystroke{Esc}). In glass cockpit mode, turning off the MFD
-also hides the buttons (except the power button, so it can be turned on again).
+shortcut: \mfdkey{\esc}). In glass cockpit mode, turning off the MFD also hides
+the buttons (except the power button, so it can be turned on again).
 
 \textbf{Mode selection:}
 The \mfdbtn{SEL} button activates the \emph{mode selection screen} (keyboard
-shortcut: \Shift\keystroke{F1}). Each MFD mode provides information for a
-different navigation or avionics situation (orbital parameters, surface
-parameters, docking and landing aids, etc.) The default modes are described
-below in this section. Many additional modes are available via 3\textsup{rd}
-party add-ons.
+shortcut: \mfdkey{F1}). Each MFD mode provides information for a different
+navigation or avionics situation (orbital parameters, surface parameters,
+docking and landing aids, etc.) The default modes are described below in this
+section. Many additional modes are available via 3\textsup{rd} party add-ons.
 
 The mode selection screen shows the available modes in the display area, one
 mode next to each function button. To select a mode, simply click the
-corresponding button. For selection with the keyboard, press the \Shift key
+corresponding button. For selection with the keyboard, press the \Shift{} key
 together with the mode selection key displayed in grey with each of the listed
-modes (for example, \Shift\keystroke{O} for Orbit mode).
+modes (for example, \mfdkey{O} for Orbit mode).
 
 \begin{figure}[H]
   \centering
@@ -66,10 +65,10 @@ modes (for example, \Shift\keystroke{O} for Orbit mode).
 \end{figure}
 
 If there are more modes than can be displayed in a single page, pressing
-\mfdbtn{SEL} (or \Shift\keystroke{F1}) repeatedly cycles through all mode pages.
-Pressing \mfdbtn{SEL} on the last mode page returns to the previously selected
-MFD mode. Note that mode selection with keyboard shortcuts works from any of the
-mode selection pages, even if the requested mode is not displayed on the current
+\mfdbtn{SEL} (or \mfdkey{F1}) repeatedly cycles through all mode pages. Pressing
+\mfdbtn{SEL} on the last mode page returns to the previously selected MFD mode.
+Note that mode selection with keyboard shortcuts works from any of the mode
+selection pages, even if the requested mode is not displayed on the current
 page.
 
 \textbf{Function buttons:}
@@ -88,8 +87,8 @@ continuously to adjust a parameter.
 
 Function buttons for the two main MFD instruments can also be activated with
 \Shift-key combinations. On pressing the \mfdbtn{MNU} button below the bottom
-edge of the screen (keyboard shortcut: \Shift\keystroke{`}) a short description
-of all function buttons for this mode is displayed, together with the keyboard
+edge of the screen (keyboard shortcut: \mfdkey{`}) a short description of all
+function buttons for this mode is displayed, together with the keyboard
 shortcuts to activate them. Pressing \mfdbtn{MNU} again, or pressing a function
 button, restores the display.
 
@@ -111,32 +110,31 @@ The \emph{COM/NAV setup} MFD mode provides an interface to the ship's navigation
 radio receivers which feed data into the navigation instruments. It also allows
 to select the frequency of the ship's long-range transponder which emits a
 signal identifying the vessel and its position. The mode is activated via the
-COM/NAV entry from the MFD mode selection page (shortcut: \Shift\keystroke{,}
-+ \Shift\keystroke{.}).
+COM/NAV entry from the MFD mode selection page (shortcut: \mfdkey{,} +
+\mfdkey{.}).
 
 \textbf{Key options:}
-
 %\begin{table}[H]
 	%\centering
 	\begin{longtable}{ p{0.15\textwidth} p{0.15\textwidth} p{0.6\textwidth} }
 	\hline
 	\textbf{Button} & \textbf{Shortcut} & \textbf{Action}\\
 	\hline
-	\mfdbtn{SL-} & \Shift\keystroke{,} & Move selection up\\
+	\mfdbtn{SL-} & \mfdkey{,} & Move selection up\\
 	\hline
-	\mfdbtn{SL+} & \Shift\keystroke{.} & Move selection down\\
+	\mfdbtn{SL+} & \mfdkey{.} & Move selection down\\
 	\hline
-	\mfdbtn{<} & \Shift\keystroke{[} & Step frequency down 0.05\,MHz\\
+	\mfdbtn{<} & \mfdkey{[} & Step frequency down 0.05\,MHz\\
 	\hline
-	\mfdbtn{<{}<} & \Shift\keystroke{-} & Step frequency down 1\,MHz\\
+	\mfdbtn{<{}<} & \mfdkey{-} & Step frequency down 1\,MHz\\
 	\hline
-	\mfdbtn{>} & \Shift\keystroke{]} & Step frequency up 0.05\,MHz\\
+	\mfdbtn{>} & \mfdkey{]} & Step frequency up 0.05\,MHz\\
 	\hline
-	\mfdbtn{>{}>} & \Shift\keystroke{=} & Step frequency up 1\,MHz\\
+	\mfdbtn{>{}>} & \mfdkey{=} & Step frequency up 1\,MHz\\
 	\hline
-	\mfdbtn{SC<} & \Shift\keystroke{Z} & Scan frequency downward\\
+	\mfdbtn{SC<} & \mfdkey{Z} & Scan frequency downward\\
 	\hline
-	\mfdbtn{SC>} & \Shift\keystroke{X} & Scan frequency upward\\
+	\mfdbtn{SC>} & \mfdkey{X} & Scan frequency upward\\
 	\hline
 	\end{longtable}
 %\end{table}
@@ -155,16 +153,15 @@ identification of the received signal (if any) and a field strength indicator.
 The lower part of the display shows the transponder (XPDR) frequency.
 
 The currently selected entry is highlighted in yellow. The selection can be
-moved up and down with the \mfdbtn{SL-} (or \Shift\keystroke{,}) and
-\mfdbtn{SL+} (or \Shift\keystroke{.}) buttons.
+moved up and down with the \mfdbtn{SL-} (or \mfdkey{,}) and \mfdbtn{SL+} (or
+\mfdkey{.}) buttons.
 
 The frequency of the selected receiver or transmitter can be tuned in steps of
-1\,MHz with \Shift\keystroke{-} and \Shift\keystroke{=}, and in steps of
-0.05\,MHz with \Shift\keystroke{[} and \Shift\keystroke{]}, in the range from
-108.00--140.00\,MHz. You can sweep the frequency range down or up with
-\Shift\keystroke{Z} and \Shift\keystroke{X} until a signal is detected. If a
-compatible NAV transmitter is within range, the instrument displays information
-about the signal source and strength.
+1\,MHz with \mfdkey{-} and \mfdkey{=}, and in steps of 0.05\,MHz with \mfdkey{[}
+and \mfdkey{]}, in the range from 108.00--140.00\,MHz. You can sweep the
+frequency range down or up with \mfdkey{Z} and \mfdkey{X} until a signal is
+detected. If a compatible NAV transmitter is within range, the instrument
+displays information about the signal source and strength.
 
 \begin{figure}[H]
   \centering
@@ -178,8 +175,8 @@ system). Each transmitter type provides information which can be fed to other
 MFD modes or avionics instrumentation to provide situational awareness to the
 pilot.
 
-The \emph{Object info} (\Ctrl\keystroke{I}, see section \ref{ssec:menu_info})
-and \emph{Map} (\Ctrl\keystroke{M}, see \ref{ssec:menu_map}) windows are useful
+The \emph{Object info} (\keystroke{\ctrl,I}, see section \ref{ssec:menu_info})
+and \emph{Map} (\keystroke{\ctrl,M}, see \ref{ssec:menu_map}) windows are useful
 tools to obtain surface or vessel-based transmitter frequencies.
 
 \begin{figure}[H]
@@ -191,7 +188,7 @@ tools to obtain surface or vessel-based transmitter frequencies.
 
 The positions and frequencies of VOR stations in your vicinity can also be
 displayed directly in the simulation window via the VOR Markers option in the
-\emph{Visual helpers} dialog box (\Ctrl\keystroke{F9}).
+\emph{Visual helpers} dialog box (\keystroke{\ctrl,F9}).
 
 
 \subsection{Surface}
@@ -208,17 +205,15 @@ position, pressure and temperature data.
 	\hline
 	\textbf{Button} & \textbf{Shortcut} & \textbf{Action}\\
 	\hline
-	\mfdbtn{IAS} & \Shift\keystroke{I} & Switch speed readout to indicated
-		airspeed\\
+	\mfdbtn{IAS} & \mfdkey{I} & Switch speed readout to indicated airspeed\\
 	\hline
-	\mfdbtn{TAS} & \Shift\keystroke{T} & Switch speed readout to true airspeed\\
+	\mfdbtn{TAS} & \mfdkey{T} & Switch speed readout to true airspeed\\
 	\hline
-	\mfdbtn{GS} & \Shift\keystroke{G} & Switch speed readout to ground-relative
-		speed\\
+	\mfdbtn{GS} & \mfdkey{G} & Switch speed readout to ground-relative speed\\
 	\hline
-	\mfdbtn{OS} & \Shift\keystroke{O} & Switch speed readout to orbital speed\\
+	\mfdbtn{OS} & \mfdkey{O} & Switch speed readout to orbital speed\\
 	\hline
-	\mfdbtn{HUD} & \Shift\keystroke{H} & Set HUD to Surface mode\\
+	\mfdbtn{HUD} & \mfdkey{H} & Set HUD to Surface mode\\
 	\hline
 	\end{longtable}
 %\end{table}
@@ -299,43 +294,40 @@ the \emph{Map} dialog (see section \ref{ssec:menu_map}).
 	\hline
 	\multicolumn{3}{ c }{\textbf{\textit{Map view:}}}\\
 	\hline
-	\mfdbtn{REF} & \Shift\keystroke{R} & Select a celestial body for map
-		display\\
+	\mfdbtn{REF} & \mfdkey{R} & Select a celestial body for map display\\
 	\hline
-	\mfdbtn{TGT} & \Shift\keystroke{T} & Select a target object\\
+	\mfdbtn{TGT} & \mfdkey{T} & Select a target object\\
 	\hline
-	\mfdbtn{ZM-} & \Shift\keystroke{X} & Zoom out by factor 2 down to 1$\times$
-		(global view)\\
+	\mfdbtn{ZM-} & \mfdkey{X} & Zoom out by factor 2 down to 1$\times$ (global
+		view)\\
 	\hline
-	\mfdbtn{ZM+} & \Shift\keystroke{Z} & Zoom in by factor 2 up to 128$times$
-		(2.8\deg{} $\times$ 2.8\deg{} cover)\\
+	\mfdbtn{ZM+} & \mfdkey{Z} & Zoom in by factor 2 up to 128$\times$ (2.8\deg{}
+		$\times$ 2.8\deg{} cover)\\
 	\hline
-	\mfdbtn{TRK} & \Shift\keystroke{K} & Toggle automatic vessel track mode
-		on/off\\
+	\mfdbtn{TRK} & \mfdkey{K} & Toggle automatic vessel track mode on/off\\
 	\hline
-	\mfdbtn{DSP} & \Shift\keystroke{D} & Display parameter configuration page\\
+	\mfdbtn{DSP} & \mfdkey{D} & Display parameter configuration page\\
 	\hline
-	\mfdbtn{UP} & \Shift\keystroke{-} & Scroll map display up (disabled in track
+	\mfdbtn{UP} & \mfdkey{-} & Scroll map display up (disabled in track
 		mode)\\
 	\hline
-	\mfdbtn{DN} & \Shift\keystroke{=} & Scroll map display down (disabled in
-		track mode)\\
+	\mfdbtn{DN} & \mfdkey{=} & Scroll map display down (disabled in track
+		mode)\\
 	\hline
-	\mfdbtn{<} & \Shift\keystroke{[} & Scroll map display left (disabled in
-		track mode)\\
+	\mfdbtn{<} & \mfdkey{[} & Scroll map display left (disabled in track mode)\\
 	\hline
-	\mfdbtn{>} & \Shift\keystroke{]} & Scroll map display right (disabled in
-		track mode)\\
+	\mfdbtn{>} & \mfdkey{]} & Scroll map display right (disabled in track
+		mode)\\
 	\hline
 	\multicolumn{3}{ c }{\textbf{\textit{Parameter selection view:}}}\\
 	\hline
-	\mfdbtn{UP} & \Shift\keystroke{-} & Move selection marker up\\
+	\mfdbtn{UP} & \mfdkey{-} & Move selection marker up\\
 	\hline
-	\mfdbtn{DN} & \Shift\keystroke{=} & Move selection marker down\\
+	\mfdbtn{DN} & \mfdkey{=} & Move selection marker down\\
 	\hline
-	\mfdbtn{MOD} & \Shift\keystroke{M} & Modify the currently selected option\\
+	\mfdbtn{MOD} & \mfdkey{M} & Modify the currently selected option\\
 	\hline
-	\mfdbtn{OK} & \Shift\keystroke{O} & Return to map view\\
+	\mfdbtn{OK} & \mfdkey{O} & Return to map view\\
 	\hline
 	\end{longtable}
 %\end{table}
@@ -387,10 +379,9 @@ marked surface features are shown.
 \end{figure}
 
 Display options can be selected from the configuration page with \mfdbtn{DSP}
-(\Shift\keystroke{D}). Select an item with the \mfdbtn{UP} (\Shift\keystroke{-})
-and \mfdbtn{DN} (\Shift\keystroke{=}) buttons, then cycle its settings with
-\mfdbtn{MOD} (\Shift\keystroke{M}). Return to the map screen with \mfdbtn{OK}
-(\Shift\keystroke{O}).
+(\mfdkey{D}). Select an item with the \mfdbtn{UP} (\mfdkey{-}) and \mfdbtn{DN}
+(\mfdkey{=}) buttons, then cycle its settings with \mfdbtn{MOD} (\mfdkey{M}).
+Return to the map screen with \mfdbtn{OK} (\mfdkey{O}).
 
 \begin{figure}[H]
   \centering
@@ -418,8 +409,8 @@ This MFD mode can be linked to one of the ship's NAV receivers. The current
 receiver and frequency are shown in the upper right corner of the display. If a
 signal is received, the transmitter ID is displayed in the second line. If the
 ship is equipped with more than a single NAV receiver, the receiver stack can be
-cycled with \Shift\keystroke{N}. To set the receiver frequencies, use the
-COM/NAV MFD mode (see section \ref{ssec:mfd_comnav}).
+cycled with \mfdkey{N}. To set the receiver frequencies, use the COM/NAV MFD
+mode (see section \ref{ssec:mfd_comnav}).
 
 \textbf{Key options:}
 %\begin{table}[H]
@@ -428,8 +419,8 @@ COM/NAV MFD mode (see section \ref{ssec:mfd_comnav}).
 	\hline
 	\textbf{Button} & \textbf{Shortcut} & \textbf{Action}\\
 	\hline
-	\mfdbtn{NAV} & \Shift\keystroke{N} & Select navigation (NAV) receiver for
-		VOR or VTOL information input.\\
+	\mfdbtn{NAV} & \mfdkey{N} & Select navigation (NAV) receiver for VOR or VTOL
+		information input.\\
 	\hline
 	\end{longtable}
 %\end{table}
@@ -485,9 +476,9 @@ aircraft.
 Each display represents a gyro-compass indicating the current heading at the 12
 o'clock position. The yellow arrow in the centre of the display is the
 \emph{course arrow} or \emph{Omni Bearing Selector} (OBS). When the linked NAV
-receiver is tuned to a VOR transmitter, the OBS can be adjusted with the OB-
-(\Shift\keystroke{[}) and OB+ (\Shift\keystroke{]}) keys. For ILS transmitters,
-the OBS is automatically fixed to the approach direction.
+receiver is tuned to a VOR transmitter, the OBS can be adjusted with the
+\mfdbtn{OB-} (\mfdkey{[}) and \mfdbtn{OB+} (\mfdkey{]}) buttons. For ILS
+transmitters, the OBS is automatically fixed to the approach direction.
 
 The middle section of the course arrow is the \emph{Course Deviation Indicator}
 (CDI). It can deflect to the left and right to show the deviation of the OBS
@@ -517,14 +508,13 @@ Launchpad dialog, whichever is higher.
 	\hline
 	\textbf{Button} & \textbf{Shortcut} & \textbf{Action}\\
 	\hline
-	\mfdbtn{L/R} & \Shift\keystroke{F} & Switch focus between left/right HSI
-		display\\
+	\mfdbtn{L/R} & \mfdkey{F} & Switch focus between left/right HSI display\\
 	\hline
-	\mfdbtn{NAV} & \Shift\keystroke{N} & Cycle through NAV receiver stack\\
+	\mfdbtn{NAV} & \mfdkey{N} & Cycle through NAV receiver stack\\
 	\hline
-	\mfdbtn{OB-} & \Shift\keystroke{[} & Rotate OBS left\\
+	\mfdbtn{OB-} & \mfdkey{[} & Rotate OBS left\\
 	\hline
-	\mfdbtn{OB+} & \Shift\keystroke{]} & Rotate OBS right\\
+	\mfdbtn{OB+} & \mfdkey{]} & Rotate OBS right\\
 	\hline
 	\end{longtable}
 %\end{table}
@@ -544,11 +534,11 @@ Launchpad dialog, whichever is higher.
 \textbf{To use the HSI for surface navigation:}
 \begin{itemize}
 	\item Determine the frequency of the VOR station you want to use (e.g. from
-		the Map \Ctrl\keystroke{M} or spaceport info dialog \Ctrl\keystroke{I})
-		and tune one of your NAV receivers to that frequency, using the COM/NAV
-		MFD mode (see section \ref{ssec:mfd_comnav}).
-	\item Link one of the HSI displays to that receiver with
-		\Shift\keystroke{N}.
+		the Map \keystroke{\ctrl,M} or spaceport info dialog
+		\keystroke{\ctrl,I}) and tune one of your NAV receivers to that
+		frequency, using the COM/NAV MFD mode (see section
+		\ref{ssec:mfd_comnav}).
+	\item Link one of the HSI displays to that receiver with \mfdkey{N}.
 	\item To fly directly towards the transmitter, turn the OBS indicator until
 		the CDI aligns with the OBS arrow, and the TO/FROM indicator shows "TO".
 	\item Turn the spacecraft until the OBS indicator points to the 12 o'clock
@@ -562,7 +552,7 @@ Launchpad dialog, whichever is higher.
 \textbf{To use the HSI for instrument landing:}\nopagebreak
 \begin{itemize}
 	\item Make sure the runway is equipped with ILS (use the spaceport info
-		dialog, \Ctrl\keystroke{I}), and tune one of your NAV receivers to the
+		dialog, \keystroke{\ctrl,I}), and tune one of your NAV receivers to the
 		appropriate frequency.
 	\item As soon as the ILS transmitter is in range, the OBS indicator turns to
 		the approach direction and can be used as a localiser indicator for
@@ -580,8 +570,7 @@ characterise the ship's orbit around a central body, as well as a graphical
 representation. In addition, a target object (ship, orbital station or moon)
 orbiting the same central body can be selected, whose orbital track and
 parameters will then be displayed as well. The mode is selected via the Orbit
-entry from the MFD mode selection page (shortcut:
-\Shift\keystroke{F1}+\Shift\keystroke{O}).
+entry from the MFD mode selection page (shortcut: \mfdkey{F1}+\mfdkey{O}).
 
 The display shows the \emph{osculating orbits} at the current epoch, that is,
 the unperturbed 2-body orbit corresponding to the vessel's current state vectors
@@ -593,8 +582,8 @@ shape, atmospheric drag, thruster action, etc.)
 The celestial body to which the data in the MFD are referenced is shown in the
 title line. This is automatically set to the dominant gravitational source at
 the current spacecraft location. The reference body can be changed manually with
-\mfdbtn{REF} (\Shift\keystroke{R}) and reset to the default with \mfdbtn{AR}
-(\Shift\keystroke{A}).
+\mfdbtn{REF} (\mfdkey{R}) and reset to the default with \mfdbtn{AR}
+(\mfdkey{A}).
 
 The orbital elements can be displayed with respect to one of two frames of
 reference: \emph{ecliptic} or \emph{equatorial}. The plane of the ecliptic is
@@ -602,25 +591,24 @@ defined by the Earth's mean orbital plane at a reference date (in Orbiter this
 is J2000.0), and is useful for interplanetary flights, because most planets
 orbit close to the ecliptic. The equatorial plane is defined by the equator of
 the current reference body, and is useful for low orbital and surface-to-orbit
-operations. Use \mfdbtn{FRM} (\Shift\keystroke{F}) to switch between the two
-frames of reference. The current frame is displayed in the top line of the
-display (Frm).
+operations. Use \mfdbtn{FRM} (\mfdkey{F}) to switch between the two frames of
+reference. The current frame is displayed in the top line of the display (Frm).
 
 The plane into which the graphical display of the orbit is projected can be
-selected with \mfdbtn{PRJ} (\Shift\keystroke{P}). The current projection plane
-is indicated in the top right corner of the display (Prj). In addition to
+selected with \mfdbtn{PRJ} (\mfdkey{P}). The current projection plane is
+indicated in the top right corner of the display (Prj). In addition to
 projecting into the principal plane of the selected reference frame (ECL or EQU,
 depending on the frame setting), you can project into the current orbital plane
 of your spacecraft (SHP) or of the target (TGT), if defined.
 
-Target objects can be specified with \mfdbtn{TGT} (\Shift\keystroke{T}). Only
-targets orbiting the current reference body will be accepted. The target can be
-deselected with \mfdbtn{NT} (\Shift\keystroke{N}).
+Target objects can be specified with \mfdbtn{TGT} (\mfdkey{T}). Only targets
+orbiting the current reference body will be accepted. The target can be
+deselected with \mfdbtn{NT} (\mfdkey{N}).
 
-Pressing \mfdbtn{HUD} (\Shift\keystroke{H}) switches the vessel's
-head-up-display to Orbit mode and copies the reference body from the MFD to the
-HUD. This is often more convenient than selecting the HUD reference directly
-with \Ctrl\keystroke{R}.
+Pressing \mfdbtn{HUD} (\mfdkey{H}) switches the vessel's head-up-display to
+Orbit mode and copies the reference body from the MFD to the HUD. This is often
+more convenient than selecting the HUD reference directly with
+\keystroke{\ctrl,R}.
 
 \textbf{Key options:}
 %\begin{table}[H]
@@ -629,30 +617,29 @@ with \Ctrl\keystroke{R}.
 	\hline
 	\textbf{Button} & \textbf{Shortcut} & \textbf{Action}\\
 	\hline
-	\mfdbtn{REF} & \Shift\keystroke{R} & Select new reference celestial body for
-		element calculation\\
+	\mfdbtn{REF} & \mfdkey{R} & Select new reference celestial body for element
+		calculation\\
 	\hline
-	\mfdbtn{AR} & \Shift\keystroke{A} & Auto-select the reference body\\
+	\mfdbtn{AR} & \mfdkey{A} & Auto-select the reference body\\
 	\hline
-	\mfdbtn{TGT} & \Shift\keystroke{T} & Select orbit target\\
+	\mfdbtn{TGT} & \mfdkey{T} & Select orbit target\\
 	\hline
-	\mfdbtn{NT} & \Shift\keystroke{N} & Disable target orbit display\\
+	\mfdbtn{NT} & \mfdkey{N} & Disable target orbit display\\
 	\hline
-	\mfdbtn{MOD} & \Shift\keystroke{M} & Cycle display mode (list only, graphics
-		only and both)\\
+	\mfdbtn{MOD} & \mfdkey{M} & Cycle display mode (list only, graphics only and
+		both)\\
 	\hline
-	\mfdbtn{FRM} & \Shift\keystroke{F} & Toggle frame of reference (ecliptic,
-		equator of reference body)\\
+	\mfdbtn{FRM} & \mfdkey{F} & Toggle frame of reference (ecliptic, equator of
+		reference body)\\
 	\hline
-	\mfdbtn{PRJ} & \Shift\keystroke{P} & Cycle orbit projection mode (reference
-		plane, ship's or target's orbital plane)\\
+	\mfdbtn{PRJ} & \mfdkey{P} & Cycle orbit projection mode (reference plane,
+		ship's or target's orbital plane)\\
 	\hline
-	\mfdbtn{DST} & \Shift\keystroke{D} & Toggle radius, apoapsis and periapsis
-		data between planetocentric distance and altitude above mean planet
-		radius\\
+	\mfdbtn{DST} & \mfdkey{D} & Toggle radius, apoapsis and periapsis data
+		between planetocentric distance and altitude above mean planet radius\\
 	\hline
-	\mfdbtn{HUD} & \Shift\keystroke{H} & Set HUD to Orbit mode and copy current
-		reference body\\
+	\mfdbtn{HUD} & \mfdkey{H} & Set HUD to Orbit mode and copy current reference
+		body\\
 	\hline
 	\end{longtable}
 %\end{table}
@@ -741,8 +728,8 @@ resulting in a change of the osculating elements over time.
 
 As a warning indicator, the G display will turn yellow for contributions < 0.8,
 and red if the selected reference body is not the dominant contributor to the
-gravity field. In that case, \mfdbtn{AR} (\Shift\keystroke{A}) will select the
-dominant body.
+gravity field. In that case, \mfdbtn{AR} (\mfdkey{A}) will select the dominant
+body.
 
 
 \subsection{Align Orbital Plane}
@@ -769,18 +756,18 @@ frame of reference).
 	\hline
 	\textbf{Button} & \textbf{Shortcut} & \textbf{Action}\\
 	\hline
-	\mfdbtn{REF} & \Shift\keystroke{R} & Select reference body\\
+	\mfdbtn{REF} & \mfdkey{R} & Select reference body\\
 	\hline
-	\mfdbtn{AR} & \Shift\keystroke{A} & Auto-reference\\
+	\mfdbtn{AR} & \mfdkey{A} & Auto-reference\\
 	\hline
-	\mfdbtn{TGT} & \Shift\keystroke{T} & Input a new target orbit or target
-		orbital parameters\\
+	\mfdbtn{TGT} & \mfdkey{T} & Input a new target orbit or target orbital
+		parameters\\
 	\hline
-	\mfdbtn{ELS} & \Shift\keystroke{E} & Input target plane as ecliptic
-		inclination and longitude of ascending node\\
+	\mfdbtn{ELS} & \mfdkey{E} & Input target plane as ecliptic inclination and
+		longitude of ascending node\\
 	\hline
-	\mfdbtn{MOD} & \Shift\keystroke{M} & Cycle display modes auto $\rightarrow$
-		orbit $\rightarrow$ ballistic $\rightarrow$ surface\\
+	\mfdbtn{MOD} & \mfdkey{M} & Cycle display modes auto $\rightarrow$ orbit
+		$\rightarrow$ ballistic $\rightarrow$ surface\\
 	\hline
 	\end{longtable}
 %\end{table}
@@ -926,20 +913,20 @@ in-plane.
 	\hline
 	\textbf{Button} & \textbf{Shortcut} & \textbf{Action}\\
 	\hline
-	\mfdbtn{TGT} & \Shift\keystroke{T} & Select target object. Only objects
-		orbiting the same body will be accepted.\\
+	\mfdbtn{TGT} & \mfdkey{T} & Select target object. Only objects orbiting the
+		same body will be accepted.\\
 	\hline
-	\mfdbtn{MOD} & \Shift\keystroke{M} & Select reference axis mode.
-		Intersection 1 and 2 are only available if the orbits intersect.\\
+	\mfdbtn{MOD} & \mfdkey{M} & Select reference axis mode. Intersection 1 and 2
+		are only available if the orbits intersect.\\
 	\hline
-	\mfdbtn{LEN} & \Shift\keystroke{N} & Select number of lines in the orbit
-		timing list\\
+	\mfdbtn{LEN} & \mfdkey{N} & Select number of lines in the orbit timing
+		list\\
 	\hline
-	\mfdbtn{R-} & \Shift\keystroke{,} & Rotate the reference axis
-		counter-clockwise (manual mode only)\\
-	\hline
-	\mfdbtn{R+} & \Shift\keystroke{.} & Rotate the reference axis clockwise
+	\mfdbtn{R-} & \mfdkey{,} & Rotate the reference axis counter-clockwise
 		(manual mode only)\\
+	\hline
+	\mfdbtn{R+} & \mfdkey{.} & Rotate the reference axis clockwise (manual mode
+		only)\\
 	\hline
 	\end{longtable}
 %\end{table}
@@ -958,12 +945,12 @@ in-plane.
 
 \begin{itemize}
 	\item \emph{Target object:} The synchronisation target is displayed in the
-		title line. It can be selected with \Shift\keystroke{T}.
+		title line. It can be selected with \mfdkey{T}.
 	\item \emph{Reference axis:} A selectable axis for which the rendezvous
-		timings are computed. Can be selected with \Shift\keystroke{M} from one
-		of the following: orbit intersection 1 and 2 (if applicable), ship and
-		target apoapsis and periapsis, and manual. The manual axis can be
-		rotated \Shift\keystroke{,} and \Shift\keystroke{.}.
+		timings are computed. Can be selected with \mfdkey{M} from one of the
+		following: orbit intersection 1 and 2 (if applicable), ship and target
+		apoapsis and periapsis, and manual. The manual axis can be rotated
+		\mfdkey{,} and \mfdkey{.}.
 	\item \emph{True anomaly of ref. Axis (RAnm):} The angle between the
 		reference axis and the ship's periapsis direction.
 	\item \emph{Longitude difference (DLng):} The angle between ship and target
@@ -978,7 +965,7 @@ in-plane.
 		target's orbital planes.
 	\item \emph{Time-to-reference lists (Sh-ToR and Tg-ToR):} A list of time
 		intervals for the ship and target to reach the reference axis for the
-		next n orbits. (\textit{n} can be selected with \Shift\keystroke{N}).
+		next n orbits. (\textit{n} can be selected with \mfdkey{N}).
 		The closest matched pair of timings is indicated in yellow. The DTmin
 		value refers to this pair.
 \end{itemize}
@@ -1001,18 +988,17 @@ the target vessel. Approach data can be acquired in three different modes:
 		docking target. The IDS (Instrument Docking System) signal is obtained
 		by tuning a NAV receiver to the appropriate frequency and linking the
 		Docking MFD to that receiver. The typical range for IDS is $\sim$20\,km.
-		To select a NAV receiver, press \Shift\keystroke{N}. The selected
-		frequency is displayed in the upper right corner of the MFD.
+		To select a NAV receiver, press \mfdkey{N}. The selected frequency is
+		displayed in the upper right corner of the MFD.
 	\item Visual mode: Docking parameters are required from onboard visual
 		systems (typically video cameras mounted in the docking port). The
 		visual system aids in docking with targets that do not provide IDS. The
 		typical range for visual mode is $\sim$100\,m. To switch to visual mode,
-		press \Shift\keystroke{V}.
+		press \mfdkey{V}.
 	\item Direct target selection: If you want to avoid the need to tune into a
 		navigation transmitter signal, you can select a target directly
-		(\Shift\keystroke{T}) by entering the target name and optional docking
-		port index $\geq$ 1. (This shortcut method may be dropped in a future
-		version.)
+		(\mfdkey{T}) by entering the target name and optional docking port index
+		$\geq$ 1. (This shortcut method may be dropped in a future version.)
 \end{itemize}
 
 Apart from their different operational range, the three modes provide identical
@@ -1029,22 +1015,20 @@ of 1000\,km, but only provides distance data, no alignment information.
 	\hline
 	\textbf{Button} & \textbf{Shortcut} & \textbf{Action}\\
 	\hline
-	\mfdbtn{DCK} & \Shift\keystroke{D} & Select local docking port. Only
-		available if the vessel has more than one docking port.\\
+	\mfdbtn{DCK} & \mfdkey{D} & Select local docking port. Only available if the
+		vessel has more than one docking port.\\
 	\hline
-	\mfdbtn{NAV} & \Shift\keystroke{N} & Select NAV receiver for data input\\
+	\mfdbtn{NAV} & \mfdkey{N} & Select NAV receiver for data input\\
 	\hline
-	\mfdbtn{VIS} & \Shift\keystroke{V} & Switch to visual docking data
-		acquisition mode\\
+	\mfdbtn{VIS} & \mfdkey{V} & Switch to visual docking data acquisition mode\\
 	\hline
-	\mfdbtn{TGT} & \Shift\keystroke{T} & Direct target and docking port
-		selection\\
+	\mfdbtn{TGT} & \mfdkey{T} & Direct target and docking port selection\\
 	\hline
-	\mfdbtn{SCL} & \Shift\keystroke{S} & Toggle display resolution (coarse/fine)
-		in the aiming reticle and radial scales.\\
+	\mfdbtn{SCL} & \mfdkey{S} & Toggle display resolution (coarse/fine) in the
+		aiming reticle and radial scales.\\
 	\hline
-	\mfdbtn{HUD} & \Shift\keystroke{H} & Set HUD to Docking mode and copy data
-		from MFD to HUD\\
+	\mfdbtn{HUD} & \mfdkey{H} & Set HUD to Docking mode and copy data from MFD
+		to HUD\\
 	\hline
 	\end{longtable}
 %\end{table}
@@ -1258,94 +1242,87 @@ again. To return to the main page, press \mfdbtn{RTN}.
 	\hline
 	\multicolumn{3}{ c }{\textbf{\emph{Main page:}}}\\
 	\hline
-	\mfdbtn{SET} & \Shift\keystroke{S} & Set/adjust attitude mode\\
+	\mfdbtn{SET} & \mfdkey{S} & Set/adjust attitude mode\\
 	\hline
-	\mfdbtn{DCK} & \Shift\keystroke{D} & Switch to docking alignment mode\\
+	\mfdbtn{DCK} & \mfdkey{D} & Switch to docking alignment mode\\
 	\hline
-	\mfdbtn{SUS} & \Shift\keystroke{P} & Suspend/activate attitude mode\\
+	\mfdbtn{SUS} & \mfdkey{P} & Suspend/activate attitude mode\\
 	\hline
-	\mfdbtn{END} & \Shift\keystroke{X} & Cancel active attitude mode\\
+	\mfdbtn{END} & \mfdkey{X} & Cancel active attitude mode\\
 	\hline
-	\mfdbtn{CFG} & \Shift\keystroke{C} & Define offset angles for default attitude
+	\mfdbtn{CFG} & \mfdkey{C} & Define offset angles for default attitude
 		modes\\
 	\hline
 	\multicolumn{3}{ c }{\textbf{\emph{Attitude definition page:}}}\\
 	\hline
-	\mfdbtn{BAS} & \Shift\keystroke{B} & Cycle through attitude base modes\\
+	\mfdbtn{BAS} & \mfdkey{B} & Cycle through attitude base modes\\
 	\hline
-	\mfdbtn{INV} & \Shift\keystroke{I} & Invert current base mode\\
+	\mfdbtn{INV} & \mfdkey{I} & Invert current base mode\\
 	\hline
-	\mfdbtn{CUR} & \Shift\keystroke{K} & Bind target mode to current attitude\\
+	\mfdbtn{CUR} & \mfdkey{K} & Bind target mode to current attitude\\
 	\hline
-	\mfdbtn{+R} & \Shift\keystroke{A} & Add a rotation to the base mode\\
+	\mfdbtn{+R} & \mfdkey{A} & Add a rotation to the base mode\\
 	\hline
-	\mfdbtn{-R} & \Shift\keystroke{X} & Delete the currently selected rotation\\
+	\mfdbtn{-R} & \mfdkey{X} & Delete the currently selected rotation\\
 	\hline
-	\mfdbtn{+V} & \Shift\keystroke{.} & Increase the angle of the currently
+	\mfdbtn{+V} & \mfdkey{.} & Increase the angle of the currently selected
+		rotation\\
+	\hline
+	\mfdbtn{-V} & \mfdkey{,} & Decrease the angle of the currently selected
+		rotation\\
+	\hline
+	\mfdbtn{AX} & \mfdkey{C} & Cycle through rotation axes for currently
 		selected rotation\\
 	\hline
-	\mfdbtn{-V} & \Shift\keystroke{,} & Decrease the angle of the currently
-		selected rotation\\
+	\mfdbtn{UP} & \mfdkey{U} & Switch to the previous rotation\\
 	\hline
-	\mfdbtn{AX} & \Shift\keystroke{C} & Cycle through rotation axes for
-		currently selected rotation\\
+	\mfdbtn{DN} & \mfdkey{D} & Switch to the next rotation\\
 	\hline
-	\mfdbtn{UP} & \Shift\keystroke{U} & Switch to the previous rotation\\
+	\mfdbtn{GO} & \mfdkey{Q} & Activate the attitude mode\\
 	\hline
-	\mfdbtn{DN} & \Shift\keystroke{D} & Switch to the next rotation\\
-	\hline
-	\mfdbtn{GO} & \Shift\keystroke{Q} & Activate the attitude mode\\
-	\hline
-	\mfdbtn{RTN} & \Shift\keystroke{R} & Return to main page\\
+	\mfdbtn{RTN} & \mfdkey{R} & Return to main page\\
 	\hline
 	\multicolumn{3}{ c }{\textbf{\emph{Docking alignment page:}}}\\
 	\hline
-	\mfdbtn{NAV} & \Shift\keystroke{N} & Cycle through NAV receiver stack\\
+	\mfdbtn{NAV} & \mfdkey{N} & Cycle through NAV receiver stack\\
 	\hline
-	\mfdbtn{ACT} & \Shift\keystroke{A} & Activate dock alignment mode\\
+	\mfdbtn{ACT} & \mfdkey{A} & Activate dock alignment mode\\
 	\hline
-	\mfdbtn{CNC} & \Shift\keystroke{X} & Cancel docking alignment mode\\
+	\mfdbtn{CNC} & \mfdkey{X} & Cancel docking alignment mode\\
 	\hline
-	\mfdbtn{RTN} & \Shift\keystroke{R} & Return to main page\\
+	\mfdbtn{RTN} & \mfdkey{R} & Return to main page\\
 	\hline
 	\multicolumn{3}{ c }{\textbf{\emph{Offset configuration page:}}}\\
 	\hline
-	\mfdbtn{+R} & \Shift\keystroke{A} & Add a new rotation offset\\
+	\mfdbtn{+R} & \mfdkey{A} & Add a new rotation offset\\
 	\hline
-	\mfdbtn{-R} & \Shift\keystroke{X} & Delete the currently selected rotation
-		offset\\
+	\mfdbtn{-R} & \mfdkey{X} & Delete the currently selected rotation offset\\
 	\hline
-	\mfdbtn{AX} & \Shift\keystroke{C} & Cycle through rotation axes for
-		currently selected rotation\\
+	\mfdbtn{AX} & \mfdkey{C} & Cycle through rotation axes for currently
+		selected rotation\\
 	\hline
-	\mfdbtn{+V} & \Shift\keystroke{.} & Increase angle for currently selected
-		rotation\\
+	\mfdbtn{+V} & \mfdkey{.} & Increase angle for currently selected rotation\\
 	\hline
-	\mfdbtn{-V} & \Shift\keystroke{,} & Decrease angle for currently selected
-		rotation\\
+	\mfdbtn{-V} & \mfdkey{,} & Decrease angle for currently selected rotation\\
 	\hline
-	\mfdbtn{UP} & \Shift\keystroke{U} & Switch to previous rotation\\
+	\mfdbtn{UP} & \mfdkey{U} & Switch to previous rotation\\
 	\hline
-	\mfdbtn{DN} & \Shift\keystroke{D} & Switch to next rotation\\
+	\mfdbtn{DN} & \mfdkey{D} & Switch to next rotation\\
 	\hline
-	\mfdbtn{GO} & \Shift\keystroke{Q} & Activate offset configuration\\
+	\mfdbtn{GO} & \mfdkey{Q} & Activate offset configuration\\
 	\hline
-	\mfdbtn{RTN} & \Shift\keystroke{R} & Return to main page\\
+	\mfdbtn{RTN} & \mfdkey{R} & Return to main page\\
 	\hline
 	\end{longtable}
 %\end{table}
 
-\noindent
 \textbf{MFD control layout (main page):}
-
 \begin{figure}[H]
   \centering
   \includegraphics[width=0.75\hsize]{rcs_input.png}
 \end{figure}
 
-\noindent
 \textbf{MFD display components (main page):}
-
 \begin{figure}[H]
   \centering
   \includegraphics[width=0.99\hsize]{rcs_layout.png}
@@ -1400,45 +1377,41 @@ section \ref{ssec:mfd_transx}).
 	\hline
 	\textbf{Button} & \textbf{Shortcut} & \textbf{Action}\\
 	\hline
-	\mfdbtn{REF} & \Shift\keystroke{R} & Select the reference celestial body\\
+	\mfdbtn{REF} & \mfdkey{R} & Select the reference celestial body\\
 	\hline
-	\mfdbtn{SRC} & \Shift\keystroke{S} & Select the source object\\
+	\mfdbtn{SRC} & \mfdkey{S} & Select the source object\\
 	\hline
-	\mfdbtn{TGT} & \Shift\keystroke{T} & Select target\\
+	\mfdbtn{TGT} & \mfdkey{T} & Select target\\
 	\hline
-	\mfdbtn{NT} & \Shift\keystroke{N} & Unselect target\\
+	\mfdbtn{NT} & \mfdkey{N} & Unselect target\\
 	\hline
-	\mfdbtn{HTO} & \Shift\keystroke{X} & Toggle HTO (hypothetical transfer
-		orbit) display on/off\\
+	\mfdbtn{HTO} & \mfdkey{X} & Toggle HTO (hypothetical transfer orbit) display
+		on/off\\
 	\hline
-	\mfdbtn{NUM} & \Shift\keystroke{M} & Toggle numerical multi-body trajectory
+	\mfdbtn{NUM} & \mfdkey{M} & Toggle numerical multi-body trajectory
 		calculation\\
 	\hline
-	\mfdbtn{UPD} & \Shift\keystroke{U} & Refresh numerical trajectory if
-		displayed\\
+	\mfdbtn{UPD} & \mfdkey{U} & Refresh numerical trajectory if displayed\\
 	\hline
-	\mfdbtn{STP} & \Shift\keystroke{Z} & Set up time step length\\
+	\mfdbtn{STP} & \mfdkey{Z} & Set up time step length\\
 	\hline
-	\mfdbtn{EJ-} & \Shift\keystroke{,} & Rotate transfer orbit ejection point
+	\mfdbtn{EJ-} & \mfdkey{,} & Rotate transfer orbit ejection point
 		counter-clockwise\\
 	\hline
-	\mfdbtn{EJ+} & \Shift\keystroke{.} & Rotate transfer orbit ejection point
-		clockwise\\
+	\mfdbtn{EJ+} & \mfdkey{.} & Rotate transfer orbit ejection point clockwise\\
 	\hline
-	\mfdbtn{DV-} & \Shift\keystroke{-} & Decrease ejection velocity difference\\
+	\mfdbtn{DV-} & \mfdkey{-} & Decrease ejection velocity difference\\
 	\hline
-	\mfdbtn{DV+} & \Shift\keystroke{=} & Increase ejection velocity difference\\
+	\mfdbtn{DV+} & \mfdkey{=} & Increase ejection velocity difference\\
 	\hline
-	\mfdbtn{ST-} & \Shift\keystroke{F} & Decrease step scale\\
+	\mfdbtn{ST-} & \mfdkey{F} & Decrease step scale\\
 	\hline
-	\mfdbtn{ST+} & \Shift\keystroke{G} & Increase step scale\\
+	\mfdbtn{ST+} & \mfdkey{G} & Increase step scale\\
 	\hline
 	\end{longtable}
 %\end{table}
 
-\noindent
 \textbf{MFD control layout:}
-
 \begin{figure}[H]
   \centering
   \includegraphics[width=0.99\hsize]{transfer_input_1.png}
@@ -1449,9 +1422,7 @@ section \ref{ssec:mfd_transx}).
   \includegraphics[width=0.75\hsize]{transfer_input_2.png}
 \end{figure}
 
-\noindent
 \textbf{MFD display components:}
-
 \begin{figure}[H]
   \centering
   \includegraphics[width=0.99\hsize]{transfer_layout.png}
@@ -1485,13 +1456,12 @@ burn should take place when the direction indicator points away from the sun
 To plan the transfer, a hypothetical transfer orbit (HTO) can be plotted given
 an ejection time and velocity difference (Dv), which allows to set up "what if"
 scenarios, before changing the actual orbit. The HTO display is toggled on/off
-with \Shift\keystroke{X}. It is calculated assuming that somewhere along the
-current source orbit a prograde or retrograde orbit ejection burn occurs. The
-HTO has two parameters: the longitude at which the ejection burn takes place
-(adjusted with \Shift \keystroke{,}/\keystroke{.}), and the velocity change
-during the burn (adjusted with \Shift \keystroke{-}/\keystroke{=}). The HTO is
-displayed as a dashed green curve. The position of the ejection burn is
-indicated by a dashed green radius vector.
+with \mfdkey{X}. It is calculated assuming that somewhere along the current
+source orbit a prograde or retrograde orbit ejection burn occurs. The HTO has
+two parameters: the longitude at which the ejection burn takes place (adjusted
+with \mfdkey{,}/\mfdkey{.}), and the velocity change during the burn (adjusted
+with \mfdkey{-}/\mfdkey{=}). The HTO is displayed as a dashed green curve. The
+position of the ejection burn is indicated by a dashed green radius vector.
 
 A number of parameters is shown when the HTO is active:
 \begin{itemize}
@@ -1532,16 +1502,16 @@ the intercept parameters are displayed for the actual transfer orbit.
 The source, target and transfer orbits discussed above are analytic 2-body
 solutions. The Transfer MFD however also supports a numerical trajectory
 calculation to account for the effect of multiple gravitational sources. The
-display of the numerical trajectory is toggled with \Shift\keystroke{M}. The
-trajectory is displayed as a solid bright yellow line. The calculation is
-performed in discrete time steps, starting from the current source position, or
-(if active) from the HTO ejection point. Since the calculation of the
-trajectory can be time-consuming, it is not automatically updated, but can be
-refreshed with \Shift\keystroke{U}. The interval between time steps is
-automatically adjusted to provide consistent accuracy. The number of time steps,
-and the total time interval covered by the trajectory segment, can be selected
-with \Shift\keystroke{Z}. The number of time steps and the total time interval,
-are displayed under \emph{Num orbit} in the MFD.
+display of the numerical trajectory is toggled with \mfdkey{M}. The trajectory
+is displayed as a solid bright yellow line. The calculation is performed in
+discrete time steps, starting from the current source position, or (if active)
+from the HTO ejection point. Since the calculation of the trajectory can be
+time-consuming, it is not automatically updated, but can be refreshed with
+\mfdkey{U}. The interval between time steps is automatically adjusted to provide
+consistent accuracy. The number of time steps, and the total time interval
+covered by the trajectory segment, can be selected with \mfdkey{Z}. The number
+of time steps and the total time interval, are displayed under \emph{Num orbit}
+in the MFD.
 
 \textbf{Interplanetary transfers:}
 Using the Transfer MFD for Earth to Moon orbits should be straightforward. For
@@ -1570,50 +1540,48 @@ The TransX MFD mode allows for the planning and execution of plan of maneuvers,
 designed to get a vessel to a target, either directly or via a "gravity-assist"
 fly-by of celestial bodies.
 
-The TransX MFD is called up by pressing \Shift\keystroke{J}, but you can define
-another key, by writing in file "Config\textbackslash MFD\textbackslash
-TransX.cfg" the ASCII code (between 65 and 90) corresponding to the desired key.
+The TransX MFD is called up by pressing \mfdkey{J}, but you can define another
+key, by writing in file "Config\textbackslash MFD\textbackslash TransX.cfg" the
+ASCII code (between 65 and 90) corresponding to the desired key.
 
 \infobox{To make the TransX MFD mode available in the simulation, the TransX
 	module must be enabled in the Launchpad (see section
 	\ref{ssec:launchpad_modules})}
 
 \textbf{Key options:}
-
 %\begin{table}[H]
 	%\centering
 	\begin{longtable}{ p{0.15\textwidth} p{0.15\textwidth} p{0.6\textwidth} }
 	\hline
 	\textbf{Button} & \textbf{Shortcut} & \textbf{Action}\\
 	\hline
-	\mfdbtn{HLP} & \Shift\keystroke{H} & Shows a help screen\\
+	\mfdbtn{HLP} & \mfdkey{H} & Shows a help screen\\
 	\hline
-	\mfdbtn{FWD} & \Shift\keystroke{F} & Move to next stage (also creates a new
-		stage if a target has been set in a previous stage)\\
+	\mfdbtn{FWD} & \mfdkey{F} & Move to next stage (also creates a new stage if
+		a target has been set in a previous stage)\\
 	\hline
-	\mfdbtn{BCK} & \Shift\keystroke{R} & Move to previous stage\\
+	\mfdbtn{BCK} & \mfdkey{R} & Move to previous stage\\
 	\hline
-	\mfdbtn{VW} & \Shift\keystroke{W} & Cycle between views (Setup $\rightarrow$
+	\mfdbtn{VW} & \mfdkey{W} & Cycle between views (Setup $\rightarrow$
 		Manoeuvre $\rightarrow$ Target)\\
 	\hline
-	\mfdbtn{VAR} & \Shift\keystroke{.} & Move up through list of variables\\
+	\mfdbtn{VAR} & \mfdkey{.} & Move up through list of variables\\
 	\hline
-	\mfdbtn{-VR} & \Shift\keystroke{,} & Move down through list of variables\\
+	\mfdbtn{-VR} & \mfdkey{,} & Move down through list of variables\\
 	\hline
-	\mfdbtn{ADJ} & \Shift\keystroke{\{} & Increase the sensitivity of the
-		\mfdbtn{++} and \mfdbtn{-{}-} commands (coarse -- medium -- fine --
-		super -- ultra)\\
+	\mfdbtn{ADJ} & \mfdkey{\{} & Increase the sensitivity of the \mfdbtn{++} and
+		\mfdbtn{-{}-} commands (coarse -- medium -- fine -- super -- ultra)\\
 	\hline
-	\mfdbtn{AJ-} & \Shift\keystroke{\}} & Decrease the sensitivity of the
-		\mfdbtn{++} and \mfdbtn{-{}-} commands\\
+	\mfdbtn{AJ-} & \mfdkey{\}} & Decrease the sensitivity of the \mfdbtn{++} and
+		\mfdbtn{-{}-} commands\\
 	\hline
-	\mfdbtn{++} & \Shift\keystroke{=} & Increase the value of the variables\\
+	\mfdbtn{++} & \mfdkey{=} & Increase the value of the variables\\
 	\hline
-	\mfdbtn{-{}-} & \Shift\keystroke{-} & Decrease the value of the variables\\
+	\mfdbtn{-{}-} & \mfdkey{-} & Decrease the value of the variables\\
 	\hline
-	\mfdbtn{EXE} & \Shift\keystroke{X} & Execute command\\
+	\mfdbtn{EXE} & \mfdkey{X} & Execute command\\
 	\hline
-	\mfdbtn{ENT} & \Shift\keystroke{E} & Enter variable\\
+	\mfdbtn{ENT} & \mfdkey{E} & Enter variable\\
 	\hline
 	\end{longtable}
 %\end{table}
@@ -1779,28 +1747,28 @@ an Hohmann transfer orbit, as a means to send a vessel from Low-Earth orbit to
 the Moon, and then entering lunar orbit.
 
 Start the scenario "Navigation\textbackslash Transx\textbackslash Earth to
-Moon", open the TransX MFD (\Shift\keystroke{J}) and the view "Setup" will be
-presented, showing the current orbit of the vessel around Earth.
+Moon", open the TransX MFD (\mfdkey{J}) and the view "Setup" will be presented,
+showing the current orbit of the vessel around Earth.
 
 The variable "Select Target" is already selected, so we can change it with the
-button \mfdbtn{++} or \Shift\keystroke{=}, and select "Moon" as the target. At
-his point, the display changes to also show the Moon's orbit.
+button \mfdbtn{++} or \mfdkey{=}, and select "Moon" as the target. At this
+point, the display changes to also show the Moon's orbit.
 
-Now, a second stage is available (button \mfdbtn{FWD} or \Shift\keystroke{F}),
-which initially will only show the Moon. Later, when a plan exists that will
-bring the vessel close to the Moon, its trajectory will also be shown.
+Now, a second stage is available (button \mfdbtn{FWD} or \mfdkey{F}), which
+initially will only show the Moon. Later, when a plan exists that will bring the
+vessel close to the Moon, its trajectory will also be shown.
 
-Return to stage 1 (button \mfdbtn{BCK} or \Shift\keystroke{R}), so a maneuver
-can be configured. Switch to view "Manoevre" (button \mfdbtn{VW} or
-\Shift\keystroke{W}), and set the variable "Manoeuvre mode" to "On". This will
-enable the maneuver variables, so they can be edited.
+Return to stage 1 (button \mfdbtn{BCK} or \mfdkey{R}), so a maneuver can be
+configured. Switch to view "Manoevre" (button \mfdbtn{VW} or \mfdkey{W}), and
+set the variable "Manoeuvre mode" to "On". This will enable the maneuver
+variables, so they can be edited.
 
 Select the variable "Prograde vel.", and increment its value to around 3.14K
 (3.14\,km/s). When setting a numerical variable, the rate of change is
-controlled with the buttons \mfdbtn{ADJ} (\Shift\keystroke{\{}) and
-\mfdbtn{AJ-} (\Shift\keystroke{\}}). This velocity increment will raise the
-altitude of the vessel's apoapsis close to the lunar orbit, setting up a Hohmann
-transfer orbit, so an encounter can take place.
+controlled with the buttons \mfdbtn{ADJ} (\mfdkey{\{}) and \mfdbtn{AJ-}
+(\mfdkey{\}}). This velocity increment will raise the altitude of the vessel's
+apoapsis close to the lunar orbit, setting up a Hohmann transfer orbit, so an
+encounter can take place.
 
 The time of the maneuver needs to be set, which is done by editing the variable
 "Man. date". Initially it holds the current time, but it should be set to a time
@@ -1877,23 +1845,22 @@ Mars, and a third stage for the arrival at Mars.
 Load the scenario "Navigation\textbackslash Transx\textbackslash Earth to Mars",
 open TransX, which will display the now familiar "Setup" view in Stage 1. Set
 the variable "Select Target" to "Escape", and then press \mfdbtn{FWD}
-(\Shift\keystroke{F}) to create Stage 2, centered on the Sun. In this stage,
-the variable "Select Target" now has a list of planets to choose from. Using
-\mfdbtn{++} (\Shift\keystroke{=}) or \mfdbtn{-{}-} (\Shift\keystroke{-}) select
-"Mars", and you can then press \mfdbtn{FWD} again to create a Mars-centered
-stage.
+(\mfdkey{F}) to create Stage 2, centered on the Sun. In this stage, the variable
+"Select Target" now has a list of planets to choose from. Using \mfdbtn{++}
+(\mfdkey{=}) or \mfdbtn{-{}-} (\mfdkey{-}) select "Mars", and you can then press
+\mfdbtn{FWD} again to create a Mars-centered stage.
 
 With the stages determined, we need to define the Earth/Mars Hohmann transfer
 orbit, which is done in Stage 2. Switch to "Eject Plan" view (\mfdbtn{VW} or
-\Shift\keystroke{W}), and increase the value of the "Prograde vel." variable
-until the apoapsis is near the orbit of Mars. Then, increase the "Man. date"
-variable until the intersection of the orbits is at the plane intersection
-(gray line). Fine-tuning these 2 variables should provide a fairly close
-approach (the buttons \mfdbtn{ADJ} (\Shift\keystroke{\{}) and \mfdbtn{AJ-}
-(\Shift\keystroke{\}}) control the rate of change of the variables). Some
-out-of-plane $\Delta v$ might be needed, in the "Ch. plane vel." variable, but
-it should be small. On the lower-right corner of the display, the Time-Of-Flight
-(TOF) and Total DeltaV for the Hohmann transfer orbit are shown.
+\mfdkey{W}), and increase the value of the "Prograde vel." variable until the
+apoapsis is near the orbit of Mars. Then, increase the "Man. date" variable
+until the intersection of the orbits is at the plane intersection (gray line).
+Fine-tuning these 2 variables should provide a fairly close approach (the
+buttons \mfdbtn{ADJ} (\mfdkey{\{}) and \mfdbtn{AJ-} (\mfdkey{\}}) control the
+rate of change of the variables). Some out-of-plane $\Delta v$ might be needed,
+in the "Ch. plane vel." variable, but it should be small. On the lower-right
+corner of the display, the Time-Of-Flight (TOF) and Total DeltaV for the Hohmann
+transfer orbit are shown.
 
 You can of course choose the encounter to occur at another place in the orbit
 besides the Earth/Mars plane intersection, by adding velocity to the variable
@@ -2072,8 +2039,8 @@ previously.
 You can make the following course correction burn a year later, in late May
 1979. By then, the vessel is close enough to Jupiter that the Sun-centered stage
 1 has been deleted. This time, a "manual" correction will be performed: set the
-HUD reference (\Ctrl\keystroke{R}) to Jupiter, point the vessel prograde and use
-the RCS to null the trajectory errors.
+HUD reference (\keystroke{\ctrl,R}) to Jupiter, point the vessel prograde and
+use the RCS to null the trajectory errors.
 %TODO what is displayed there?
 As before, there is some coupling between the variables, but for the most part,
 to change "Pe MJD" thrust forward or back, "R. Inc" is up or down, and "Pe
