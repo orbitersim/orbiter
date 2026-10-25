@@ -99,17 +99,17 @@ particular when transporting a heavy payload, or if the mission requires a a hig
 manually (unlike the real shuttle), but it is easier (and more realistic) to leave the launch and ascent to the automatic systems.
 
 The interface to the ascent autopilot is implemented as an MFD mode (AscentAP, \Shift\keystroke{B}). The AP mode has
-four pages which can be cycled with the \texttt{PG-} and \texttt{PG+} buttons. Only the first two pages are currently implemented.
+four pages which can be cycled with the \mfdbtn{PG-} and \mfdbtn{PG+} buttons. Only the first two pages are currently implemented.
 
 Page 1 is the AP configuration page where some of the target orbit parameters can be specified before launch. The launch azimuth
-angle can be adjusted with the \texttt{AZ-} and \texttt{AZ+} buttons. The selected azimuth, as well as the resulting orbit
+angle can be adjusted with the \mfdbtn{AZ-} and \mfdbtn{AZ+} buttons. The selected azimuth, as well as the resulting orbit
 inclination, are displayed on the page. When launching from Cape Canaveral, the allowed launch azimuth range is
 35\deg{}--120\deg{}, although in practice the Shuttle always launched in north-eastern direction. Remember that the further you
 deviate from a western (90\deg) azimuth, the less the trajectory will benefit from Earth's rotation in terms of initial velocity,
 and the tighter your fuel budget will be. If the mission calls for a very inclined orbit, you may not be able to load the Shuttle
 to full payload capacity (30t).
 
-The second configurable parameter is the target orbit altitude, adjusted with \texttt{AL-} and \texttt{AL+}. Reaching higher orbits
+The second configurable parameter is the target orbit altitude, adjusted with \mfdbtn{AL-} and \mfdbtn{AL+}. Reaching higher orbits
 requires more fuel, so if you specify a higher orbit than can be achieved with the available fuel load, the engines will cut out
 before the trajectory reaches the target apoapsis distance, and there won't be any reserves for the orbit circularisation burn.
 

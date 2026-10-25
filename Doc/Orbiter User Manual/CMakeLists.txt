@@ -3,6 +3,7 @@ set(name "Orbiter User Manual")
 file(GLOB TexSources
 	*tex
 	../common_definitions.tex
+	../keystroke_styles.tex
 	../orbiterlogo.png
 	Images/*.png
 	Images/*.jpg

@@ -31,7 +31,6 @@
 \usepackage{color}
 \usepackage{hyperref}
 \usepackage{xurl}
-\usepackage{keystroke}
 \usepackage{wrapfig}
 \usepackage{multicol}
 \usepackage{enumitem}
@@ -47,9 +46,17 @@
 \usepackage{ragged2e}
 \usepackage{array}
 
+% This is a replacement for the keystroke package
+% If you want the original keystroke style back, comment the
+% following line and uncomment the two lines after
+\input{..//keystroke_styles}
+%\usepackage{keystroke}
+%\newcommand{\mfdbtn}[1]{#1}
+
 %\usepackage{graphicx}
 %\usepackage[dvips]{graphics}
 %\usepackage{epstopdf}
+
 
 \newcommand{\vR}[1]{\ensuremath{\vec{R}_{#1}}}
 \newcommand{\nR}[1]{\ensuremath{|\vR{#1}|}}
@@ -126,20 +133,20 @@
 \DeclareMathSizes{10.95}{13}{8}{6}
 
 % HACK to center char in key box (https://tex.stackexchange.com/questions/634917/center-align-the-items-in-the-keystroke-package)
-\usepackage{xpatch}
+%\usepackage{xpatch}
 
-\makeatletter
-\xpatchcmd\suse@keystr@ke
-  {\hbox to 0pt{\unhbox\suse@key\hss}}
-  % \suse@key = \hbox{{\keystroke@font\strut#1}}
-  % \@tempdimb = max(\wd\suse@key, \dp\suse@key)
-  {\hbox to 0pt{\hbox to \@tempdimb{\hss\unhbox\suse@key\hss}\hss}}
-  {}{\PatchFailed}
-\makeatother
+%\makeatletter
+%\xpatchcmd\suse@keystr@ke
+%  {\hbox to 0pt{\unhbox\suse@key\hss}}
+%  % \suse@key = \hbox{{\keystroke@font\strut#1}}
+%  % \@tempdimb = max(\wd\suse@key, \dp\suse@key)
+%  {\hbox to 0pt{\hbox to \@tempdimb{\hss\unhbox\suse@key\hss}\hss}}
+%  {}{\PatchFailed}
+%\makeatother
 
-% HACK: remove ugly wide spaces around keystroke symbols
-\let\pkeystroke\keystroke
-\renewcommand{\keystroke}[1]{\!\pkeystroke{#1}\!}
+% % HACK: remove ugly wide spaces around keystroke symbols
+%\let\pkeystroke\keystroke
+%\renewcommand{\keystroke}[1]{\!\pkeystroke{#1}\!}
 
 %fix gap in index between 10.10.10 and text
 \advance\cftsecnumwidth 0.5em\relax
