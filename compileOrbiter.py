@@ -8,6 +8,7 @@ import stat
 import time
 import json
 import ssl
+import hashlib
 import threading
 import concurrent.futures
 
@@ -247,11 +248,13 @@ TOOLS_CONFIG = {
 SPICE_ASSETS = {
     "SPICE Kernels": {
         "url": "https://cdn.openorbiter.space/spice/Kernels.7z",
+        "checksumUrl": "https://cdn.openorbiter.space/spice/Kernels.7z.sha256sum",
         "archive": "Kernels.7z",
         "targetSubdir": "Kernels"
     },
     "SPICE Textures": {
         "url": "https://cdn.openorbiter.space/spice/Textures.7z",
+        "checksumUrl": "https://cdn.openorbiter.space/spice/Textures.7z.sha256sum",
         "archive": "Textures.7z",
         "targetSubdir": "Textures"
     }
@@ -360,17 +363,60 @@ def getSystemTar():
         return systemTar
     return shutil.which("tar") or "tar.exe"
 
+def calculateSha256(filePath):
+    sha256Hash = hashlib.sha256()
+    with open(filePath, "rb") as file:
+        for chunk in iter(lambda: file.read(1024 * 1024), b""):
+            sha256Hash.update(chunk)
+    return sha256Hash.hexdigest().lower()
+
+def fetchRemoteSha256(checksumUrl, assetName):
+    try:
+        req = urllib.request.Request(
+            checksumUrl,
+            headers={'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)'}
+        )
+        with urllib.request.urlopen(req, timeout=10) as response:
+            content = response.read().decode('utf-8-sig', errors='replace').strip()
+            if content:
+                # Supports both "<hash>  <filename>" (standard sha256sum output) and raw "<hash>"
+                remoteHash = content.split()[0].lower()
+                if len(remoteHash) == 64 and all(c in '0123456789abcdef' for c in remoteHash):
+                    return remoteHash
+            printWarning(f"[{assetName}] Invalid checksum format received from {checksumUrl}.")
+    except Exception as error:
+        printWarning(f"[{assetName}] Could not fetch remote checksum from {checksumUrl}: {error}")
+    return None
+
 def installSpiceAssets(gameInstallDirectory):
     printHeader("Setting up SPICE Kernels and Textures")
     
-    missingArchives = [
-        name for name, cfg in SPICE_ASSETS.items()
-        if not os.path.exists(cfg["archive"])
-    ]
+    archivesToDownload = []
+    remoteChecksums = {}
+
+    for name, cfg in SPICE_ASSETS.items():
+        archivePath = cfg["archive"]
+        checksumUrl = cfg.get("checksumUrl", f"{cfg['url']}.sha256sum")
+        remoteHash = fetchRemoteSha256(checksumUrl, name)
+        remoteChecksums[name] = remoteHash
+
+        if not os.path.exists(archivePath):
+            printInfo(f"[{name}] Local archive '{archivePath}' not found. Queuing download...")
+            archivesToDownload.append(name)
+        elif remoteHash:
+            printInfo(f"[{name}] Checking SHA-256 checksum for '{archivePath}'...")
+            localHash = calculateSha256(archivePath)
+            if localHash != remoteHash:
+                printWarning(f"[{name}] Checksum mismatch (local: {localHash[:12]}..., remote: {remoteHash[:12]}...). Queuing update...")
+                archivesToDownload.append(name)
+            else:
+                printSuccess(f"[{name}] Local archive '{archivePath}' checksum verified and up to date.")
+        else:
+            printWarning(f"[{name}] Remote checksum unavailable; using cached '{archivePath}'.")
     
-    if missingArchives:
+    if archivesToDownload:
         printInfo("Downloading required SPICE assets...")
-        with concurrent.futures.ThreadPoolExecutor(max_workers=len(missingArchives)) as executor:
+        with concurrent.futures.ThreadPoolExecutor(max_workers=len(archivesToDownload)) as executor:
             futureToAsset = {
                 executor.submit(
                     downloadWithRetry,
@@ -379,12 +425,20 @@ def installSpiceAssets(gameInstallDirectory):
                     name,
                     SPICE_ASSETS[name].get("expectedSize")
                 ): name
-                for name in missingArchives
+                for name in archivesToDownload
             }
             for future in concurrent.futures.as_completed(futureToAsset):
                 assetName = futureToAsset[future]
                 try:
                     future.result()
+                    expectedHash = remoteChecksums.get(assetName)
+                    if expectedHash:
+                        downloadedHash = calculateSha256(SPICE_ASSETS[assetName]["archive"])
+                        if downloadedHash != expectedHash:
+                            raise RuntimeError(
+                                f"SHA-256 mismatch after download (expected {expectedHash}, got {downloadedHash})"
+                            )
+                        printSuccess(f"[{assetName}] SHA-256 checksum verified.")
                 except Exception as exc:
                     printError(f"[{assetName}] Asset download failed: {exc}")
                     raise RuntimeError(f"Failed to download {assetName}")
@@ -402,6 +456,13 @@ def installSpiceAssets(gameInstallDirectory):
             if os.path.exists(archivePath):
                 os.remove(archivePath)
             downloadWithRetry(cfg["url"], cfg["archive"], name, cfg.get("expectedSize"))
+            expectedHash = remoteChecksums.get(name)
+            if expectedHash:
+                downloadedHash = calculateSha256(archivePath)
+                if downloadedHash != expectedHash:
+                    raise RuntimeError(
+                        f"[{name}] SHA-256 mismatch after re-download (expected {expectedHash}, got {downloadedHash})"
+                    )
             runCommand([tarExe, "-xf", archivePath, "-C", extractDir], quiet=True)
 
         # Guard against double-nested Kernels/Kernels directory if the archive contains a top-level folder
