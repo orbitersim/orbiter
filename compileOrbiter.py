@@ -24,6 +24,52 @@ class Colors:
     ERROR = '\033[91m'     # Red
     RESET = '\033[0m'      # Reset
 
+class URLContract:
+    def __init__(self, servers=None, basePath="spice", checksumSuffix=".sha256sum"):
+        self.servers = servers or ["https://cdn.openorbiter.space"]
+        self.basePath = basePath.strip("/")
+        self.checksumSuffix = checksumSuffix
+        self.activeServer = None
+
+    def selectServer(self):
+        if self.activeServer:
+            return self.activeServer
+
+        # If only one server is configured, use it directly without extra network overhead
+        if len(self.servers) == 1:
+            self.activeServer = self.servers[0].rstrip("/")
+            return self.activeServer
+
+        # If multiple mirrors exist, probe them in order and pick the first reachable one
+        for server in self.servers:
+            candidate = server.rstrip("/")
+            probeUrl = f"{candidate}/{self.basePath}" if self.basePath else candidate
+            try:
+                req = urllib.request.Request(
+                    probeUrl,
+                    method="HEAD",
+                    headers={'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)'}
+                )
+                with urllib.request.urlopen(req, timeout=5):
+                    self.activeServer = candidate
+                    return self.activeServer
+            except Exception:
+                continue
+
+        # Fallback to primary server if all probes fail
+        self.activeServer = self.servers[0].rstrip("/")
+        return self.activeServer
+
+    def getBaseUrl(self):
+        server = self.selectServer()
+        return f"{server}/{self.basePath}" if self.basePath else server
+
+    def getAssetUrl(self, fileName):
+        return f"{self.getBaseUrl()}/{fileName}"
+
+    def getChecksumUrl(self, fileName):
+        return f"{self.getAssetUrl(fileName)}{self.checksumSuffix}"
+
 printLock = threading.Lock()
 
 def tsPrint(*args, **kwargs):
@@ -245,16 +291,18 @@ TOOLS_CONFIG = {
     }
 }
 
+SPICE_URL_CONTRACT = URLContract(
+    servers=["https://cdn.openorbiter.space"],
+    basePath="spice",
+    checksumSuffix=".sha256sum"
+)
+
 SPICE_ASSETS = {
     "SPICE Kernels": {
-        "url": "https://cdn.openorbiter.space/spice/Kernels.7z",
-        "checksumUrl": "https://cdn.openorbiter.space/spice/Kernels.7z.sha256sum",
         "archive": "Kernels.7z",
         "targetSubdir": "Kernels"
     },
     "SPICE Textures": {
-        "url": "https://cdn.openorbiter.space/spice/Textures.7z",
-        "checksumUrl": "https://cdn.openorbiter.space/spice/Textures.7z.sha256sum",
         "archive": "Textures.7z",
         "targetSubdir": "Textures"
     }
@@ -388,31 +436,31 @@ def fetchRemoteSha256(checksumUrl, assetName):
         printWarning(f"[{assetName}] Could not fetch remote checksum from {checksumUrl}: {error}")
     return None
 
-def installSpiceAssets(gameInstallDirectory):
+def installSpiceAssets(gameInstallDirectory, urlContract=SPICE_URL_CONTRACT):
     printHeader("Setting up SPICE Kernels and Textures")
     
     archivesToDownload = []
     remoteChecksums = {}
 
     for name, cfg in SPICE_ASSETS.items():
-        archivePath = cfg["archive"]
-        checksumUrl = cfg.get("checksumUrl", f"{cfg['url']}.sha256sum")
+        archiveName = cfg["archive"]
+        checksumUrl = urlContract.getChecksumUrl(archiveName)
         remoteHash = fetchRemoteSha256(checksumUrl, name)
         remoteChecksums[name] = remoteHash
 
-        if not os.path.exists(archivePath):
-            printInfo(f"[{name}] Local archive '{archivePath}' not found. Queuing download...")
+        if not os.path.exists(archiveName):
+            printInfo(f"[{name}] Local archive '{archiveName}' not found. Queuing download...")
             archivesToDownload.append(name)
         elif remoteHash:
-            printInfo(f"[{name}] Checking SHA-256 checksum for '{archivePath}'...")
-            localHash = calculateSha256(archivePath)
+            printInfo(f"[{name}] Checking SHA-256 checksum for '{archiveName}'...")
+            localHash = calculateSha256(archiveName)
             if localHash != remoteHash:
                 printWarning(f"[{name}] Checksum mismatch (local: {localHash[:12]}..., remote: {remoteHash[:12]}...). Queuing update...")
                 archivesToDownload.append(name)
             else:
-                printSuccess(f"[{name}] Local archive '{archivePath}' checksum verified and up to date.")
+                printSuccess(f"[{name}] Local archive '{archiveName}' checksum verified and up to date.")
         else:
-            printWarning(f"[{name}] Remote checksum unavailable; using cached '{archivePath}'.")
+            printWarning(f"[{name}] Remote checksum unavailable; using cached '{archiveName}'.")
     
     if archivesToDownload:
         printInfo("Downloading required SPICE assets...")
@@ -420,7 +468,7 @@ def installSpiceAssets(gameInstallDirectory):
             futureToAsset = {
                 executor.submit(
                     downloadWithRetry,
-                    SPICE_ASSETS[name]["url"],
+                    urlContract.getAssetUrl(SPICE_ASSETS[name]["archive"]),
                     SPICE_ASSETS[name]["archive"],
                     name,
                     SPICE_ASSETS[name].get("expectedSize")
@@ -445,17 +493,18 @@ def installSpiceAssets(gameInstallDirectory):
 
     tarExe = getSystemTar()
     for name, cfg in SPICE_ASSETS.items():
-        archivePath = os.path.abspath(cfg["archive"])
+        archiveName = cfg["archive"]
+        archivePath = os.path.abspath(archiveName)
         extractDir = os.path.join(gameInstallDirectory, cfg["targetSubdir"])
         os.makedirs(extractDir, exist_ok=True)
         
-        printInfo(f"[{name}] Extracting {cfg['archive']} into {extractDir}...")
+        printInfo(f"[{name}] Extracting {archiveName} into {extractDir}...")
         res = runCommand([tarExe, "-xf", archivePath, "-C", extractDir], ignoreExitCode=True, quiet=True)
         if res != 0:
-            printWarning(f"[{name}] Archive extraction failed; re-downloading {cfg['archive']}...")
+            printWarning(f"[{name}] Archive extraction failed; re-downloading {archiveName}...")
             if os.path.exists(archivePath):
                 os.remove(archivePath)
-            downloadWithRetry(cfg["url"], cfg["archive"], name, cfg.get("expectedSize"))
+            downloadWithRetry(urlContract.getAssetUrl(archiveName), archiveName, name, cfg.get("expectedSize"))
             expectedHash = remoteChecksums.get(name)
             if expectedHash:
                 downloadedHash = calculateSha256(archivePath)
