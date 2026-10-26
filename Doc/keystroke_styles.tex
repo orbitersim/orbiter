@@ -1,0 +1,114 @@
+% this replaces the keystroke symbols from the keystroke package
+\usepackage[os=win]{menukeys}
+
+% create a macro for keyboard keys
+\newmenumacro\key{roundedkeys}
+
+% map it to \keystroke commands so we don't need to change the sources after migrating from
+% the keystroke package
+\newcommand{\keystroke}[1]{\raisebox{-1pt}{\key{#1}}}
+
+% redefine the commands for common keys
+\newcommand{\Ctrl}{\keystroke{\ctrl}}
+\let\alt\Alt
+\renewcommand{\Alt}{\keystroke{\alt}}
+\let\oldshift\shift
+\renewcommand{\shift}{Shift\,\oldshift}
+\newcommand{\Shift}{\keystroke{\shift}}
+\newcommand{\Home}{\keystroke{Home}}
+\newcommand{\UArrow}{\keystroke{\arrowkeyup}}
+\newcommand{\DArrow}{\keystroke{\arrowkeydown}}
+\newcommand{\RArrow}{\keystroke{\arrowkeyright}}
+\newcommand{\LArrow}{\keystroke{\arrowkeyleft}}
+\newcommand{\Enter}{\keystroke{Enter}}
+\newcommand{\Spacebar}{\keystroke{Space}}
+
+% prepend a key with Shift (encoding for MFD button shortcuts)
+\newcommand{\mfdkey}[1]{\keystroke{\shift,{#1}}}
+
+% patch the roundedkeys style so that keystroke symbols appearing in
+% two consecutive lines of running text don't stretch the line spacing
+\makeatletter
+\tikzset{
+  tw@roundedkeys@base/.append style={
+    text height=1.74ex,     % Modify the inner height spacing
+    text depth=0.67ex       % Modify the inner depth spacing
+  }
+}
+\makeatother
+
+% patch to replace the '+' key separator used for comma-separated
+% arguments with a thin space
+\makeatletter
+\tw@declare@style@simple*{roundedkeys}{%
+  \tikz[baseline={($(tw@node.base)+(0,-0.2ex)$)}]{%
+    \node(tw@node)[tw@roundedkeys@base]%
+    {\strut\color{\usemenucolor{txt}}\CurrentMenuElement};}%
+}[%
+  \kern 0.08em
+]{gray}
+\makeatother
+
+% Now for MFD buttons. First, define a colour theme to distinguish
+% from keyboard key symbols
+\newmenucolortheme{mfdcol}{rgb}{0.97,1,0.97}{0.3,0.3,0.3}{0,0,0}
+
+% Define a new menukeys style to represent MFD button labels
+% Arguments for \newmenustyle are:
+% {name}[pre]{first}[sep]{mid}{last}{single}[post]{theme}
+\newmenustyle{monofixedkeys}{%
+  % TikZ styling applied to the key node
+  draw=\usemenucolor{br},
+  fill=\usemenucolor{bg},
+  rounded corners=1pt,
+  font=\relsize{-0.8}\ttfamily,
+  % Force a minimum width to cleanly fit 3 monospaced characters
+  minimum width=2.2em, 
+  align=center,
+  % Maintain a uniform box height and depth regardless of descenders
+  text height=1.74ex,
+  text depth=0.67ex,
+  inner sep=0pt,
+  inner xsep=2pt
+}{%
+  % Style for sequences: reuse the single style for mid, last, single elements
+  draw=\usemenucolor{br},
+  fill=\usemenucolor{bg},
+  rounded corners=1pt,
+  font=\relsize{-0.8}\ttfamily,
+  minimum width=2.2em,
+  align=center,
+  text height=1.74ex,
+  text depth=0.67ex,
+  inner sep=0pt,
+  inner xsep=2pt
+}{%
+  draw=\usemenucolor{br},
+  fill=\usemenucolor{bg},
+  rounded corners=1pt,
+  font=\relsize{-0.8}\ttfamily,
+  minimum width=2.2em,
+  align=center,
+  text height=1.74ex,
+  text depth=0.67ex,
+  inner sep=0pt,
+  inner xsep=2pt
+}{%
+  draw=\usemenucolor{br},
+  fill=\usemenucolor{bg},
+  rounded corners=1pt,
+  font=\relsize{-0.8}\ttfamily,
+  minimum width=2.2em,
+  align=center,
+  text height=1.74ex,
+  text depth=0.67ex,
+  inner sep=0pt,
+  inner xsep=2pt
+}{gray}
+% Bind the style to the mfdbtn macro
+
+% create the new macro for the MFD buttons from the style defined above
+\newmenumacro{\mfdbtn}{monofixedkeys}
+
+% and apply the colour theme
+\changemenucolortheme{monofixedkeys}{mfdcol}

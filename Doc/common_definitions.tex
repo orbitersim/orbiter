@@ -15,15 +15,22 @@
 \usepackage{subfiles}
 \usepackage{tabularx}
 \usepackage{threeparttable}
-\usepackage{caption}
+\usepackage[font={small,it}]{caption}
+\usepackage{etoolbox}
+
 \usepackage{longtable}
+% Patch longtable to use finite shrink to eliminate the false-positive error
+\makeatletter
+\patchcmd{\LT@output}{\vss}{\vskip 0pt plus 1fill minus 1000pt}{}{}
+\patchcmd{\LT@output}{\vss}{\vskip 0pt plus 1fill minus 1000pt}{}{}
+\makeatother
+
 \usepackage[table]{xcolor}
-\usepackage{tcolorbox}
+\usepackage[breakable]{tcolorbox}
 \usepackage{listings}
 \usepackage{color}
 \usepackage{hyperref}
 \usepackage{xurl}
-\usepackage{keystroke}
 \usepackage{wrapfig}
 \usepackage{multicol}
 \usepackage{enumitem}
@@ -35,6 +42,16 @@
 \usepackage{setspace}
 \usepackage{times}
 \usepackage{wasysym}
+\usepackage{parskip}
+\usepackage{ragged2e}
+\usepackage{array}
+
+% This is a replacement for the keystroke package
+% If you want the original keystroke style back, comment the
+% following line and uncomment the two lines after
+\input{..//keystroke_styles}
+%\usepackage{keystroke}
+%\newcommand{\mfdbtn}[1]{#1}
 
 %\usepackage{graphicx}
 %\usepackage[dvips]{graphics}
@@ -51,11 +68,33 @@
 \newcommand{\Euler}{\ensuremath\mathrm{E}}
 \newcommand{\Kelvin}{\ensuremath{\mathrm{K}}}
 
+\newcommand{\cur}{{$_\textit{Cur}$}}
+\newcommand{\num}{{$_\textit{Num}$}}
+\newcommand{\arrows}{$\updownarrow\leftrightarrow$}
+\newcommand{\Arrows}{\keystroke{\arrows}}
+\newcommand{\uarrow}{$\uparrow$}
+\newcommand{\darrow}{$\downarrow$}
+\newcommand{\larrow}{$\leftarrow$}
+\newcommand{\rarrow}{$\rightarrow$}
+\newcommand{\lrarrow}{$\leftrightarrow$}
+\newcommand{\udarrow}{$\updownarrow$}
+\newcommand{\UDArrow}{\keystroke{\udarrow}}
+\newcommand{\LRArrow}{\keystroke{\lrarrow}}
+\newcommand{\spacebar}{Space}
+
+\newcommand{\textsup}[1]{\ensuremath{^\textrm{#1}}}
+\newcommand{\textsub}[1]{\ensuremath{_\textrm{#1}}}
+\renewcommand{\deg}{\ensuremath{^\circ}}
+\newcommand{\diffd}{\ensuremath{\mathrm{d}}}
+
+\newcommand{\prograde}{\ensuremath{\oplus}}
+\newcommand{\retrograde}{\ensuremath{\odot}}
 
 \newcommand{\alertbox}[1]{\begin{tcolorbox}[colback=red!5!white,colframe=red!75!black,title=Alert]#1\end{tcolorbox}}
-
 \newcommand{\infobox}[1]{\begin{tcolorbox}[colback=blue!5!white,colframe=blue!75!black,title=Information]#1\end{tcolorbox}}
+\newcommand{\longinfobox}[1]{\begin{tcolorbox}[breakable,colback=blue!5!white,colframe=blue!75!black,title=Information]#1\end{tcolorbox}}
 
+\renewcommand{\arraystretch}{1.5}
 
 % code block
 \definecolor{darkorange}{rgb}{0.99,0.91,0.85}
@@ -96,18 +135,31 @@
 	keywords = {}
 }
 
+% Change the font and textcolour for URLs
+\definecolor{urlcol}{rgb}{0,0,0.8}
+\DeclareUrlCommand\url{\urlstyle{same}\color{urlcol}}
+%\urlstyle{rm}
+
+% Increase the maths font sizes, since they seem to be too small in comparison with the text fonts used.
+% Use 10.95 to match LaTeX's internal 11pt size.
+% Syntax: \DeclareMathSizes{text-size}{math-size}{script-size}{scriptscript-size}
+\DeclareMathSizes{10.95}{13}{8}{6}
 
 % HACK to center char in key box (https://tex.stackexchange.com/questions/634917/center-align-the-items-in-the-keystroke-package)
-\usepackage{xpatch}
+%\usepackage{xpatch}
 
-\makeatletter
-\xpatchcmd\suse@keystr@ke
-  {\hbox to 0pt{\unhbox\suse@key\hss}}
-  % \suse@key = \hbox{{\keystroke@font\strut#1}}
-  % \@tempdimb = max(\wd\suse@key, \dp\suse@key)
-  {\hbox to 0pt{\hbox to \@tempdimb{\hss\unhbox\suse@key\hss}\hss}}
-  {}{\PatchFailed}
-\makeatother
+%\makeatletter
+%\xpatchcmd\suse@keystr@ke
+%  {\hbox to 0pt{\unhbox\suse@key\hss}}
+%  % \suse@key = \hbox{{\keystroke@font\strut#1}}
+%  % \@tempdimb = max(\wd\suse@key, \dp\suse@key)
+%  {\hbox to 0pt{\hbox to \@tempdimb{\hss\unhbox\suse@key\hss}\hss}}
+%  {}{\PatchFailed}
+%\makeatother
+
+% % HACK: remove ugly wide spaces around keystroke symbols
+%\let\pkeystroke\keystroke
+%\renewcommand{\keystroke}[1]{\!\pkeystroke{#1}\!}
 
 %fix gap in index between 10.10.10 and text
 \advance\cftsecnumwidth 0.5em\relax

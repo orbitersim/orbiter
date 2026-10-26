@@ -4,187 +4,235 @@
 \section{What is new}
 
 \subsection{New features}
-$\blacktriangleright$ Added option PlanetTexDir to Orbiter.cfg to redirect planetary texture directories\\
-$\blacktriangleright$ \textbf{Collision and Physics Engine:}\\
-$\circ$ \textbf{GJK/EPA convex hull collisions (primary):} Implemented a high-performance collision detection system based on the Gilbert--Johnson--Keerthi (GJK) algorithm for intersection testing and the Expanding Polytope Algorithm (EPA) for penetration depth computation. Vessel meshes are densely sampled and spatially clustered into convex sub-hulls, enabling fast and accurate collision detection between vessels, and between vessels and planetary surface objects. This is the default collision path for all vessels.\\
-$\circ$ \textbf{Point-to-triangle fallback:} A point-to-triangle intersection path using M\"oller-Trumbore ray-triangle tests is retained as a fallback for non-convex vessel pairs, supporting both static barycentric containment and continuous collision detection (CCD) for through-penetration on thin geometry.\\
-$\circ$ \textbf{Rigid-body dynamics:} Collisions are resolved using a Newtonian rigid-body impulse solver, calculating both normal and tangential (friction) impulses for realistic physics interactions.\\
-$\circ$ \textbf{Docking exclusion zones:} Collision detection is automatically suppressed near docking ports during approach to allow the docking mechanism to engage without triggering false collisions.\\
-$\circ$ \textbf{Base Configuration:} Added support for the \texttt{COLLISION} marker in base \texttt{.cfg} files to enable/disable collision detection on a per-mesh basis.\\
-\begin{sloppypar}% for large words
-$\blacktriangleright$ D3D9Client:\\
-$\circ$ D3D9Client with full development history added\\
-$\circ$ All D3D9-relevant items have been moved to OVP/D3D9Client except for gcCoreAPI.h and gcGUI.h\\
-$\circ$ D3D9Client remains licensed under LGPL, added note to README\\
-$\blacktriangleright$ Implemented a use of D3D9on12 driver to address issues on some intel graphics chips such as (Iris Xe Graphics)\\
-$\blacktriangleright$ added XRSound:\\
-$\circ$ implemented six more sound manipulation methods for XRSound 3.0\\
-$\circ$ Added SetPan, GetPan, SetPlaybackSpeed, GetPlaybackSpeed, SetPlayPosition, GetPlayPosition functions for XRSound 3.0\\
-$\circ$ Fixed some post-build event copy commands.\\
-$\circ$ Fixed the copyright year in a few files.\\
-$\circ$ Cleaned up the code in a few places.\\
-$\circ$ Added User Engine (THGROUP\_USER) Sound to XRSound\\
-$\blacktriangleright$ D3D7client::clbkBlt now tries Blt if BltFast fails\\
-$\blacktriangleright$ API:\\
-$\circ$ added function oapiSimulateBufferedKey and oapiSimulateImmediateKey (C++) and oapi.simulatebufferedkey and oapisimulateimmediatekey (Lua)\\
-$\circ$ new function oapiGetGbodyParent and oapiGetGbodyChild\\
-$\circ$ Add general purpose VESSEL::CreateAirfoil4 and AirfoilCoeffFuncEx2 functions to vessel API\\
-$\circ$ Expose force vector and object axis display options, allows access to the vessel force vector and object frame axis display dialog options via GetConfigParam\\
-$\circ$ Implements force vector and frame axis display in D3D7 client\\
-$\circ$ Updates D3D9Client to retrieve the display options from the default GraphicsClient interface. Removes the workaround of hooking into the visual helpers dialog message loop from OapiExtension.\\
-$\blacktriangleright$ Lua API: proc.wait\_xxx functions extended to accept an optional function argument\\
-$\blacktriangleright$ Elevation system: now provides support for non-unity scaling factors\\
-$\blacktriangleright$ Planet config files: now parse ElevationResolution tag for rescaling elevation data to a target resolution (exposed to graphics clients via oapiGetObjectParam)\\
-$\blacktriangleright$ Earth and moon config: switched default elevation resolution to 0.5\\
-$\blacktriangleright$ DG: Thermal subsystem implemented\\
-$\blacktriangleright$ Flight recorder: default stepsize reduced from 4 to 2s\\
-$\blacktriangleright$ PanelElement::Reset2D() now has panelid parameter so that instances can decide if they need to reset.\\
-$\blacktriangleright$ Backport fixes from TransX V2014.04.26\\
-$\blacktriangleright$ Implement Tesseral Gravity Perturbations\\
-$\circ$ C++ version of Pine's singularity-free harmonic gravity.\\
-$\circ$ Models included for: Mercury, Venus, Earth, Mars, Vesta\\
-$\circ$ Default coefficient cutoff is 10x10, configurable in the celestial body's config file\\
-$\circ$ Added section to gravity technote\\
-$\blacktriangleright$ NG version: allow proper work from interactive console\\
-$\circ$ Server version of Orbiter changed to use CONSOLE subsystem\\
-$\circ$ will now reuse existing console if launched from one\\
-$\circ$ Allows proper stdout logging for tests\\
-$\circ$ Allows running/interacting with NG version directly in Visual Studio console\\
-$\circ$ Downside: flicker of console window on launch (visual only)\\
-$\blacktriangleright$ Pick graphics client directly from video page.\\
-$\blacktriangleright$ Orbiter now searches for graphics client plugins within an optional module subfolder\\
-$\blacktriangleright$ Update video tab dialog elements to reflect selected client.\\
-$\circ$ Rescan video devices on switch.\\
-$\blacktriangleright$ Scene:\\
-$\circ$ emit warnings if data files (stars, constellations) are missing\\
-$\circ$ Missing data files for celestial sphere visuals (Star.bin, Constell.bin, Constell2.bin) are currently skipped silently.\\
-$\circ$ Issue a warning in the log file to make it easier to debug.\\
-$\circ$ Also fix potential memory leaks on load failures.\\
-$\blacktriangleright$ Hipparcos spectral type:\\
-$\circ$ added spectral type information to star database (Star.bin)\\
-$\circ$ graphics clients read spectral data and convert it into colour variations for rendering\\
-$\circ$ default star visualisation parameters adjusted for increased brightness\\
-$\blacktriangleright$ constellation boundaries:\\
-$\circ$ Added data file for constellation boundaries\\
-$\circ$ Added support for rendering of constellation boundaries to inline/D3D7/D3D9 clients\\
-$\circ$ Moved data files out of root directory to clean up the root\\
-$\blacktriangleright$ stellar background:\\
-$\circ$ Adds the option to render background stars as a texture map in addition to pixel rendering. This has been implemented for inline and D3D7 clients. Still to do: D3D9 client.\\
-$\circ$ Celestial sphere display options can now be hot-changed during a simulation session via the Options dialog (F6).\\
-$\blacktriangleright$ Added planetarium option for displaying local (camera) horizon grid (azimuth/elevation), effectively an artificial horizon projected onto the celestial sphere.\\
-$\blacktriangleright$ Provides tick labels for coordinate grids projected on the celestial sphere:\\
-$\circ$ local horizon grid: azimuth and elevation scales\\
-$\circ$ celestial grid: right ascension and declination\\
-$\circ$ ecliptic grid: ecliptic longitude and latitude\\
-$\circ$ galactic grid: galactic longitude and latitude\\
-$\blacktriangleright$ Command Line:\\
-$\circ$ Parsing is now done in a separate singleton class\\
-$\circ$ a new Config structure (CfgCmdlinePrm) holds the command line parameters\\
-$\circ$ options have precedence over interactive settings in case of conflicts\\
-$\circ$ additional command line parameters have been added\\
-$\circ$ Enforce loading of plugins\\
-$\circ$ Enforce specific parameters (e.g. fixed time step length)\\
-$\circ$ Terminate simulation run after a fixed time\\
-$\blacktriangleright$ Launchpad "Parameters" and "Visual effects" tabs merged into "Settings".\\
-\end{sloppypar}
+\begin{itemize}
+	\setlist[2]{noitemsep}
+	\begin{sloppypar}% for large words
+	\item Added option PlanetTexDir to Orbiter.cfg to redirect planetary texture directories
+	\item \textbf{Collision and Physics Engine:}
+	\begin{itemize}
+		\item \textbf{GJK/EPA convex hull collisions (primary):} Implemented a high-performance collision detection system based on the Gilbert--Johnson--Keerthi (GJK) algorithm for intersection testing and the Expanding Polytope Algorithm (EPA) for penetration depth computation. Vessel meshes are densely sampled and spatially clustered into convex sub-hulls, enabling fast and accurate collision detection between vessels, and between vessels and planetary surface objects. This is the default collision path for all vessels.
+		\item \textbf{Point-to-triangle fallback:} A point-to-triangle intersection path using M\"oller-Trumbore ray-triangle tests is retained as a fallback for non-convex vessel pairs, supporting both static barycentric containment and continuous collision detection (CCD) for through-penetration on thin geometry.
+		\item \textbf{Rigid-body dynamics:} Collisions are resolved using a Newtonian rigid-body impulse solver, calculating both normal and tangential (friction) impulses for realistic physics interactions.
+		\item \textbf{Docking exclusion zones:} Collision detection is automatically suppressed near docking ports during approach to allow the docking mechanism to engage without triggering false collisions.
+		\item \textbf{Base Configuration:} Added support for the \texttt{COLLISION} marker in base \texttt{.cfg} files to enable/disable collision detection on a per-mesh basis.
+	\end{itemize}
+	\item D3D9Client:
+	\begin{itemize}
+		\item D3D9Client with full development history added
+		\item All D3D9-relevant items have been moved to OVP/D3D9Client except for gcCoreAPI.h and gcGUI.h
+		\item D3D9Client remains licensed under LGPL, added note to README
+		\item Implemented a use of D3D9on12 driver to address issues on some intel graphics chips such as (Iris Xe Graphics)
+	\end{itemize}
+	\item added XRSound:
+	\begin{itemize}
+		\item implemented six more sound manipulation methods for XRSound 3.0
+		\item Added SetPan, GetPan, SetPlaybackSpeed, GetPlaybackSpeed, SetPlayPosition, GetPlayPosition functions for XRSound 3.0
+		\item Fixed some post-build event copy commands.
+		\item Fixed the copyright year in a few files.
+		\item Cleaned up the code in a few places.
+		\item Added User Engine (THGROUP\_USER) Sound to XRSound
+	\end{itemize}
+	\item D3D7client::clbkBlt now tries Blt if BltFast fails
+	\item API:
+	\begin{itemize}
+		\item added function oapiSimulateBufferedKey and oapiSimulateImmediateKey (C++) and oapi.simulatebufferedkey and oapisimulateimmediatekey (Lua)
+		\item new function oapiGetGbodyParent and oapiGetGbodyChild
+		\item Add general purpose VESSEL::CreateAirfoil4 and AirfoilCoeffFuncEx2 functions to vessel API
+		\item Expose force vector and object axis display options, allows access to the vessel force vector and object frame axis display dialog options via GetConfigParam
+		\item Implements force vector and frame axis display in D3D7 client
+		\item Updates D3D9Client to retrieve the display options from the default GraphicsClient interface. Removes the workaround of hooking into the visual helpers dialog message loop from OapiExtension.
+	\end{itemize}
+	\item Lua API: proc.wait\_xxx functions extended to accept an optional function argument
+	\item Elevation system: now provides support for non-unity scaling factors
+	\item Planet config files: now parse ElevationResolution tag for rescaling elevation data to a target resolution (exposed to graphics clients via oapiGetObjectParam)
+	\item Earth and moon config: switched default elevation resolution to 0.5
+	\item DG: Thermal subsystem implemented
+	\item Flight recorder: default stepsize reduced from 4 to 2s
+	\item PanelElement::Reset2D() now has panelid parameter so that instances can decide if they need to reset.
+	\item Backport fixes from TransX V2014.04.26
+	\item Implement Tesseral Gravity Perturbations
+	\begin{itemize}
+		\item C++ version of Pine's singularity-free harmonic gravity.
+		\item Models included for: Mercury, Venus, Earth, Mars, Vesta
+		\item Default coefficient cutoff is 10x10, configurable in the celestial body's config file
+		\item Added section to gravity technote
+	\end{itemize}
+	\item NG version: allow proper work from interactive console
+	\begin{itemize}
+		\item Server version of Orbiter changed to use CONSOLE subsystem
+		\item will now reuse existing console if launched from one
+		\item Allows proper stdout logging for tests
+		\item Allows running/interacting with NG version directly in Visual Studio console
+		\item Downside: flicker of console window on launch (visual only)
+	\end{itemize}
+	\item Pick graphics client directly from video page.
+	\item Orbiter now searches for graphics client plugins within an optional module subfolder
+	\item Update video tab dialog elements to reflect selected client.
+	\begin{itemize}
+		\item Rescan video devices on switch.
+	\end{itemize}
+	\item Scene:
+	\begin{itemize}
+		\item emit warnings if data files (stars, constellations) are missing
+		\item Missing data files for celestial sphere visuals (Star.bin, Constell.bin, Constell2.bin) are currently skipped silently.
+		\item Issue a warning in the log file to make it easier to debug.
+		\item Also fix potential memory leaks on load failures.
+	\end{itemize}
+	\item Hipparcos spectral type:
+	\begin{itemize}
+		\item added spectral type information to star database (Star.bin)
+		\item graphics clients read spectral data and convert it into colour variations for rendering
+		\item default star visualisation parameters adjusted for increased brightness
+	\end{itemize}
+	\item constellation boundaries:
+	\begin{itemize}
+		\item Added data file for constellation boundaries
+		\item Added support for rendering of constellation boundaries to inline/D3D7/D3D9 clients
+		\item Moved data files out of root directory to clean up the root
+	\end{itemize}
+	\item stellar background:
+	\begin{itemize}
+		\item Adds the option to render background stars as a texture map in addition to pixel rendering. This has been implemented for inline and D3D7 clients. Still to do: D3D9 client.
+		\item Celestial sphere display options can now be hot-changed during a simulation session via the Options dialog (F6).
+	\end{itemize}
+	\item Added planetarium option for displaying local (camera) horizon grid (azimuth/elevation), effectively an artificial horizon projected onto the celestial sphere.
+	\item Provides tick labels for coordinate grids projected on the celestial sphere:
+	\begin{itemize}
+		\item local horizon grid: azimuth and elevation scales
+		\item celestial grid: right ascension and declination
+		\item ecliptic grid: ecliptic longitude and latitude
+		\item galactic grid: galactic longitude and latitude
+	\end{itemize}
+	\item Command Line:
+	\begin{itemize}
+		\item Parsing is now done in a separate singleton class
+		\item a new Config structure (CfgCmdlinePrm) holds the command line parameters
+		\item options have precedence over interactive settings in case of conflicts
+		\item additional command line parameters have been added
+		\item Enforce loading of plugins
+		\item Enforce specific parameters (e.g. fixed time step length)
+		\item Terminate simulation run after a fixed time
+	\end{itemize}
+	\item Launchpad "Parameters" and "Visual effects" tabs merged into "Settings".
+	\end{sloppypar}
+\end{itemize}
 
 
 \subsection{Bug fixes}
-$\blacktriangleright$ VESSEL::GetStatus and VESSEL::GetStatusEx now respect the modified meaning of the arot and vrot vessel parameters for landed vessels (arot: rotation angles relative to planet frame, vrot.x: vessel CoG altitude above elevated ground).\\
-$\blacktriangleright$ Log error message DDERR\_BLTFASTCANTCLIP resolved.\\
-$\blacktriangleright$ Atlantis:\\
-$\circ$ AscentAP: turn off RCS thrusters on AP disengage [issue \#1238]\\
-$\circ$ modified mass and thrust parameters [issue \#1300]\\
-$\circ$ slight modification to AP launch profile to account for new specs\\
-$\circ$ payload attachment mass is now added to orbiter mass\\
-$\circ$ airfoil activation now separated from RCS activation. Automatic switch from RCS to airfoils at dynamic pressure > 1kPa during entry\\
-$\circ$ Fixed autopilot demo and a few other scenarios\\
-$\circ$ Launch autopilot: implemented SSME throttle-down for max dynamic pressure between MET 35s and MET 77s, and throttle-down for 3g max acceleration at the end of the burn. Adjusted launch attitude profile to account for modified thrust values. [issue \#1300]\\
-$\circ$ HST launch scenario: now uses correct launch date. AP parameters preset for correct target orbit insertion\\
-$\blacktriangleright$ DeltaGlider:\\
-$\circ$ Command dialog (Ctrl-Space) not working correctly [issue \#1266]\\
-$\circ$ glass cockpit fuel mass readout used scram tank instead of main tank\\
-$\circ$ Airfoil selector dial in VC didn't react to keyboard shortcuts [issue \#1263]\\
-$\circ$ landing/docking light switch anomaly in VC\\
-$\circ$ Insignia: layout geometry slightly altered and smaller font for winglet markings so that lower-case characters extending below baseline are not clipped [issue \#1361]\\
-$\circ$ creating a new DeltaGlider or DG-S instance in a simulation that already contained a DeltaGlider(non-scram) instance would corrupt the fuel display, and prevent the scram throttle levers from showing. This was caused by mesh edits that were not cleared before the new instance was initialised, leading to cumulative mesh modifications. [issue \#1323]\\
-$\circ$ fuel level indicators and fuel readouts corrupted in 2D panel mode when switching between vessel instances[issue \#1323]\\
-$\circ$ airbrake status indicator blinking together with retro door indicator when airbrake set at 1/2 position[issue \#1322]\\
-$\circ$ Fix for wrong visors being hidden when hiding a passenger.\\
-$\circ$ Corrected position of RCS exhausts to match the mesh.\\
-$\circ$ Fixed flickering "doors" in planetarium mode.\\
-$\blacktriangleright$ Shuttle-A:\\
-$\circ$ outer airlock hatch now opens inward, hinged on the side\\
-$\circ$ inner airlock hatch is now functional (operated with Ctrl-O)\\
-$\circ$ some mesh adjustments\\
-$\circ$ fixed the vessel name in the crew module being overwritten, when more than 1 instance of the vessel was present\\
-$\circ$ corrected position of docking port, pod attachments and thrusters\\
-$\circ$ mesh is now scanned with meshc to extract labeled mesh group indices\\
-$\circ$ now deletes sketchpad resources on exit (omission caused log file warnings).\\
-$\circ$ replaced all remaining GDI drawing calls with Sketchpad versions and removed GDI resources.\\
-$\circ$ fixed propellant display drawing\\
-$\circ$ fixed payload attachment not working from 2D panel\\
-$\circ$ increased max payload attach distance (to handle terrain)\\
-$\circ$ fixed scenario with dock open in atmospheric flight\\
-$\circ$ deleted unused code\\
-$\blacktriangleright$ config texture dir now respected by new-style planetary texture and elevation maps. Addresses this problem, although the HTexDir value is still not being used.\\
-$\blacktriangleright$ API:\\
-$\circ$ New flag recognised by oapiGetObjectParam: OBJPRM\_PLANET\_MINELEVATION (exposes new MinElevation config tag)\\
-$\circ$ oapiWriteLogV: all output now prepends timestamp (issue \#1339)\\
-$\circ$ new function oapiWriteLogError() for consistent error output to log file\\
-$\circ$ General cleanup of force vector and object axis rendering code in inline client.\\
-$\blacktriangleright$ D3D9Client: apply tgt\_res to the rescale and offset values of elevation mod tiles.\\
-$\blacktriangleright$ visual artefact with rendered horizon haze on Mars (lower edge visible from hellas plantita).\\
-$\blacktriangleright$ time acceleration keyboard commands (R, T) are now copied to the Time acceleration dialog if open.\\
-$\blacktriangleright$ SetAttitudeRotLevel: would have no effect in some circumstances [issue \#1271]\\
-$\blacktriangleright$ Scenario Editor:\\
-$\circ$ Editing state vectors for landed vessel caused spurious orientation and angular velocity\\
-$\circ$ Prevent deletion of the last focusable vessel\\
-$\blacktriangleright$ SurfTile: rescaling bug for elevation mod tiles with scale factor != 1\\
-$\blacktriangleright$ Vessel: transient thruster level was reset erroneously on IncThrusterGroupLevel\\
-$\blacktriangleright$ Surface MFD: now uses airspeed instead of groundspeed vector for AOA calculation\\
-$\blacktriangleright$ meshc: now allows parameters specified on command line ("meshc /H" for help). Quoted paths should work\\
-$\blacktriangleright$ Surface-relative parameters (including position, altitude, ground and airspeed, atmospheric parameters) for each component of a SuperVessel immediately after assembly of the SuperVessel. For docked assemblies at simulation start this means that the surface parameters are up to date at the first clbkPreStep [issue \#1374]\\
-$\blacktriangleright$ vessels landed at simulation start did not scan for gravity sources and therefore returned a zero weight vector [issue \#1318]\\
-$\blacktriangleright$ Mesh: group is re-initialised after edit with Mesh::EditGroup so that visibility volume is updated (issue \#1356)\\
-$\blacktriangleright$ Inconsistent save/load of vessel AF mode to/from scenario file. Default mode for both saving and loading is now "disabled" (0) [issue \#268]\\
-$\blacktriangleright$ Local light sources: sources with VIS\_COCKPIT visibility flag are now skipped in external views, and sources with VIS\_EXTERNAL are skipped in cockpit views to avoid filling the available slots with inactive lights [issue \#1319]\\
-$\blacktriangleright$ Orbiter server now runs without a 2d graphics surface: Fixes usage of g\_pane without testing pointer validity.\\
-$\blacktriangleright$ SetClickZone\_Quadrilateral: checking for coplanar 4th point, and offsetting along plane normal if required.\\
-$\blacktriangleright$ Added missing normalization to vertex normals in Shipedit.\\
-$\blacktriangleright$ Added logic to reset scenario variables to avoid, e.g., the context value being carried over from one scenario run to the next one.\\
-$\blacktriangleright$ fix ShiftCG() in out-of-focus vessel shifting the vc click areas of the in-focus vessel, as reported in \url{https://www.orbiter-forum.com/threads/orbiter-beta-r90-suspected-bug-with-shiftcg-call-and-vc-click-spots.40308/}\\
-$\blacktriangleright$ Fixed typos in .scn files\\
-$\blacktriangleright$ Inconsistent graphics/physics elevation above LVL 14\\
-$\blacktriangleright$ Vessel sunlight bug near sun\\
-$\blacktriangleright$ Max mesh resolution set to 32 to avoid out of video memory\\
-$\blacktriangleright$ Fixed TerrainToolKit multi-byte text display issue.\\
-$\blacktriangleright$ Added warning for missing planetary textures. Popup window if gravity-ref is missing textures.\\
-$\blacktriangleright$ Fixed sun-glare visibility near sun.\\
-$\blacktriangleright$ Fixed sunlight occlusion by body other than the closest one\\
-$\blacktriangleright$ Fixed a problem of moon being lit in a shadow of a planet by adding (accurate) support for eclipses.\\
-$\blacktriangleright$ Fixed Shift+Ctrl+Arrow crash\\
-$\blacktriangleright$ Fix hover status on default HUD\\
-$\blacktriangleright$ Enabled first 32 charters to support special fonts.\\
-$\blacktriangleright$ Disabled MSAA if mesh flag 0x20 in use to avoid "edge glow".\\
-$\blacktriangleright$ Fixed Neptune lighting issue.\\
-$\blacktriangleright$ Made a tile name appear on red in TerrainToolKit if the tile doesn't exists.\\
-$\blacktriangleright$ Fix SolarSail dynamic geometry with DX9\\
-$\blacktriangleright$ Rotation mode now takes mouse priority over panel buttons\\
-$\blacktriangleright$ Alt-Tab mouse disappearing fix\\
-$\blacktriangleright$ Corrected key labels in Sync and Transfer MFDs\\
-$\blacktriangleright$ Fix unchecked thruster level\\
-$\blacktriangleright$ Corrected normals and materials of Mir model\\
-$\blacktriangleright$ Scenarios: removed other position parameters from vessel entries which specify surface base pad\\
-$\blacktriangleright$ Replaced non-existing Galileo vessel with Delta-Glider in Jupiter flybys scenarios\\
-$\blacktriangleright$ Quadcopter:\\
-$\circ$ corrected install path for mesh\\
-$\circ$ added scenario\\
-$\circ$ small mesh improvement in legs\\
-$\blacktriangleright$ Lua\\
-$\circ$ Return nil instead of bogus userdata when functions fail\\
-$\circ$ Harden vessel dereferencing\\
-$\blacktriangleright$ Replaced old MapMFD scenario parameters with current ones\\
-$\blacktriangleright$ Corrected config file and scenarios of Carina, Leonardo and SolarSail vessels\\
-$\blacktriangleright$ Converted (most of) the scattered documentation into LaTex format and organized it into 3 pdf files: "Orbiter User Manual", "Orbiter Developer Manual" and "Orbiter Technical Reference".\\
+
+\begin{itemize}
+\setlist[2]{noitemsep}
+	\item VESSEL::GetStatus and VESSEL::GetStatusEx now respect the modified meaning of the arot and vrot vessel parameters for landed vessels (arot: rotation angles relative to planet frame, vrot.x: vessel CoG altitude above elevated ground).
+	\item Log error message DDERR\_BLTFASTCANTCLIP resolved.
+	\item Atlantis:
+	\begin{itemize}
+		\item AscentAP: turn off RCS thrusters on AP disengage [issue \#1238]
+		\item modified mass and thrust parameters [issue \#1300]
+		\item slight modification to AP launch profile to account for new specs
+		\item payload attachment mass is now added to orbiter mass
+		\item airfoil activation now separated from RCS activation. Automatic switch from RCS to airfoils at dynamic pressure > 1kPa during entry
+		\item Fixed autopilot demo and a few other scenarios
+		\item Launch autopilot: implemented SSME throttle-down for max dynamic pressure between MET 35s and MET 77s, and throttle-down for 3g max acceleration at the end of the burn. Adjusted launch attitude profile to account for modified thrust values. [issue \#1300]
+		\item HST launch scenario: now uses correct launch date. AP parameters preset for correct target orbit insertion
+	\end{itemize}
+	\item DeltaGlider:
+	\begin{itemize}
+		\item Command dialog (Ctrl-Space) not working correctly [issue \#1266]
+		\item glass cockpit fuel mass readout used scram tank instead of main tank
+		\item Airfoil selector dial in VC didn't react to keyboard shortcuts [issue \#1263]
+		\item landing/docking light switch anomaly in VC
+		\item Insignia: layout geometry slightly altered and smaller font for winglet markings so that lower-case characters extending below baseline are not clipped [issue \#1361]
+		\item creating a new DeltaGlider or DG-S instance in a simulation that already contained a DeltaGlider(non-scram) instance would corrupt the fuel display, and prevent the scram throttle levers from showing. This was caused by mesh edits that were not cleared before the new instance was initialised, leading to cumulative mesh modifications. [issue \#1323]
+		\item fuel level indicators and fuel readouts corrupted in 2D panel mode when switching between vessel instances[issue \#1323]
+		\item airbrake status indicator blinking together with retro door indicator when airbrake set at 1/2 position[issue \#1322]
+		\item Fix for wrong visors being hidden when hiding a passenger.
+		\item Corrected position of RCS exhausts to match the mesh.
+		\item Fixed flickering "doors" in planetarium mode.
+	\end{itemize}
+	\item Shuttle-A:
+	\begin{itemize}
+		\item outer airlock hatch now opens inward, hinged on the side
+		\item inner airlock hatch is now functional (operated with Ctrl-O)
+		\item some mesh adjustments
+		\item fixed the vessel name in the crew module being overwritten, when more than 1 instance of the vessel was present
+		\item corrected position of docking port, pod attachments and thrusters
+		\item mesh is now scanned with meshc to extract labeled mesh group indices
+		\item now deletes sketchpad resources on exit (omission caused log file warnings).
+		\item replaced all remaining GDI drawing calls with Sketchpad versions and removed GDI resources.
+		\item fixed propellant display drawing
+		\item fixed payload attachment not working from 2D panel
+		\item increased max payload attach distance (to handle terrain)
+		\item fixed scenario with dock open in atmospheric flight
+		\item deleted unused code
+	\end{itemize}
+	\item config texture dir now respected by new-style planetary texture and elevation maps. Addresses this problem, although the HTexDir value is still not being used.
+	\item API:
+	\begin{itemize}
+		\item New flag recognised by oapiGetObjectParam: OBJPRM\_PLANET\_MINELEVATION (exposes new MinElevation config tag)
+		\item oapiWriteLogV: all output now prepends timestamp (issue \#1339)
+		\item new function oapiWriteLogError() for consistent error output to log file
+		\item General cleanup of force vector and object axis rendering code in inline client.
+	\end{itemize}
+	\item D3D9Client: apply tgt\_res to the rescale and offset values of elevation mod tiles.
+	\item visual artefact with rendered horizon haze on Mars (lower edge visible from hellas plantita).
+	\item time acceleration keyboard commands (R, T) are now copied to the Time acceleration dialog if open.
+	\item SetAttitudeRotLevel: would have no effect in some circumstances [issue \#1271]
+	\item Scenario Editor:
+	\begin{itemize}
+		\item Editing state vectors for landed vessel caused spurious orientation and angular velocity
+		\item Prevent deletion of the last focusable vessel
+	\end{itemize}
+	\item SurfTile: rescaling bug for elevation mod tiles with scale factor != 1
+	\item Vessel: transient thruster level was reset erroneously on IncThrusterGroupLevel
+	\item Surface MFD: now uses airspeed instead of groundspeed vector for AOA calculation
+	\item meshc: now allows parameters specified on command line ("meshc /H" for help). Quoted paths should work
+	\item Surface-relative parameters (including position, altitude, ground and airspeed, atmospheric parameters) for each component of a SuperVessel immediately after assembly of the SuperVessel. For docked assemblies at simulation start this means that the surface parameters are up to date at the first clbkPreStep [issue \#1374]
+	\item vessels landed at simulation start did not scan for gravity sources and therefore returned a zero weight vector [issue \#1318]
+	\item Mesh: group is re-initialised after edit with Mesh::EditGroup so that visibility volume is updated (issue \#1356)
+	\item Inconsistent save/load of vessel AF mode to/from scenario file. Default mode for both saving and loading is now "disabled" (0) [issue \#268]
+	\item Local light sources: sources with VIS\_COCKPIT visibility flag are now skipped in external views, and sources with VIS\_EXTERNAL are skipped in cockpit views to avoid filling the available slots with inactive lights [issue \#1319]
+	\item Orbiter server now runs without a 2d graphics surface: Fixes usage of g\_pane without testing pointer validity.
+	\item SetClickZone\_Quadrilateral: checking for coplanar 4th point, and offsetting along plane normal if required.
+	\item Added missing normalization to vertex normals in Shipedit.
+	\item Added logic to reset scenario variables to avoid, e.g., the context value being carried over from one scenario run to the next one.
+	\item fix ShiftCG() in out-of-focus vessel shifting the vc click areas of the in-focus vessel, as reported in \url{https://www.orbiter-forum.com/threads/orbiter-beta-r90-suspected-bug-with-shiftcg-call-and-vc-click-spots.40308/}
+	\item Fixed typos in .scn files
+	\item Inconsistent graphics/physics elevation above LVL 14
+	\item Vessel sunlight bug near sun
+	\item Max mesh resolution set to 32 to avoid out of video memory
+	\item Fixed TerrainToolKit multi-byte text display issue.
+	\item Added warning for missing planetary textures. Popup window if gravity-ref is missing textures.
+	\item Fixed sun-glare visibility near sun.
+	\item Fixed sunlight occlusion by body other than the closest one
+	\item Fixed a problem of moon being lit in a shadow of a planet by adding (accurate) support for eclipses.
+	\item Fixed Shift+Ctrl+Arrow crash
+	\item Fix hover status on default HUD
+	\item Enabled first 32 charters to support special fonts.
+	\item Disabled MSAA if mesh flag 0x20 in use to avoid "edge glow".
+	\item Fixed Neptune lighting issue.
+	\item Made a tile name appear on red in TerrainToolKit if the tile doesn't exists.
+	\item Fix SolarSail dynamic geometry with DX9
+	\item Rotation mode now takes mouse priority over panel buttons
+	\item Alt-Tab mouse disappearing fix
+	\item Corrected key labels in Sync and Transfer MFDs
+	\item Fix unchecked thruster level
+	\item Corrected normals and materials of Mir model
+	\item Scenarios: removed other position parameters from vessel entries which specify surface base pad
+	\item Replaced non-existing Galileo vessel with Delta-Glider in Jupiter flybys scenarios
+	\item Quadcopter:
+	\begin{itemize}
+		\item corrected install path for mesh
+		\item added scenario
+		\item small mesh improvement in legs
+	\end{itemize}
+	\item Lua:
+	\begin{itemize}
+		\item Return nil instead of bogus userdata when functions fail
+		\item Harden vessel dereferencing
+	\end{itemize}
+	\item Replaced old MapMFD scenario parameters with current ones
+	\item Corrected config file and scenarios of Carina, Leonardo and SolarSail vessels
+	\item Converted (most of) the scattered documentation into LaTex format and organized it into 3 pdf files: "Orbiter User Manual", "Orbiter Developer Manual" and "Orbiter Technical Reference".
+\end{itemize}
+
 \end{document}
