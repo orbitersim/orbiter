@@ -237,9 +237,7 @@ public:
 	void SetGroundObserver_TargetLock (bool lock);
 	double GroundObserver_TerrainLimit() const { return go->TerrainLimit(); }
 	void SetGroundObserver_TerrainLimit (double alt);
-	void SetGroundObserver_ViewTarget(const Body *body) { go->SetViewTarget(body); }
 	const CelestialBody *GroundObserverReference() const { return go->RefBody(); }
-	const Body *GroundObserver_ViewTarget() const { return go->ViewTarget(); }
 	void GroundObserverLocation(double &lng, double &lat, double &alt)
 	{
 		lng = go->Lng(), lat = go->Lat(), alt = go->Alt();
@@ -394,8 +392,6 @@ private:
 		GroundObserver(Camera *camera);
 		bool SetRefBody(const CelestialBody *cbody);
 		const CelestialBody *RefBody() const { return refbody; }
-		bool SetViewTarget(const Body *body);
-		const Body *ViewTarget() const { return viewtarget; }
 		double Lng() const { return lng; }
 		double Lat() const { return lat; }
 		double Alt() const { return alt; }
@@ -425,7 +421,6 @@ private:
 
 		Camera *cam;           // pointer to camera instance
 		const CelestialBody *refbody; // celestial body reference
-		const Body *viewtarget;       // target object for "locked view" mode
 		double lng, lat;       // ground observer position [rad]
 		double alt;            // altitude above terrain [m] (used below terrain_limit threshold for terrain-hugging movement)
 		double alt0;           // altitude above mean refbody radius [m] (used above terrain_limit threshold)

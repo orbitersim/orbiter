@@ -63,7 +63,7 @@ void DlgCamera::DrawMode()
 		}
 		if (ImGui::Selectable("Ground", is_selected))
 			SetGroundObserverView();
-		ImGui::EndCombo();
+		ImGui::EndCombo(); 
 	}
 	ImGui::PopID();
 	Spacer();
@@ -333,10 +333,10 @@ void DlgCamera::DrawGroundMode()
 
 
 	ImGui::BeginDisabled(!tgtlock);
-	const Body *viewtgt = g_camera->GroundObserver_ViewTarget();
+	const Body *viewtgt = g_camera->Target();
 	if (ObjectSelector("##view_tgt", viewtgt, OBJ_ALL, 0, ImGuiComboFlags_HeightRegular)) {
 		if (m_SelectedTarget && m_SelectedTarget != viewtgt) {
-			g_camera->SetGroundObserver_ViewTarget(m_SelectedTarget);
+			g_camera->Attach((Body*)m_SelectedTarget, 2);
 		}
 	}
 	ImGui::EndDisabled();

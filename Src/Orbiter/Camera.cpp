@@ -752,8 +752,6 @@ void Camera::SetGroundMode (ExtCamMode mode, const CelestialBody *ref, double ln
 		for (int i = 0; i < etile.size(); i++)
 			etile[i].Clear();
 	}
-	if (!go->ViewTarget())
-		go->SetViewTarget(target);
 	go->MoveTo(lng, lat, alt, alt_above_ground);
 
 	if (!_gos) gos.planet[0] = gos.site[0] = gos.addr[0] = '\0';
@@ -1012,7 +1010,7 @@ void Camera::Update ()
 			GPOS = MakeVECTOR3 (gpos); // format used by API
 			gspos.Set (gpos - target->GPos());
 			if (go->LockedOnTarget())
-				go->SetDirection((go->ViewTarget()->GPos() - gpos).unit());
+				go->SetDirection((target->GPos() - gpos).unit());
 			go->GlobalRot(grot);
 			break;
 		}
@@ -1501,7 +1499,6 @@ Camera::GroundObserver::GroundObserver(Camera *camera)
 	: cam(camera)
 {
 	refbody = 0;
-	viewtarget = 0;
 	lng = lat = 0.0;
 	alt = alt0 = 100.0;
 	elev = 0.0;
@@ -1522,15 +1519,6 @@ bool Camera::GroundObserver::SetRefBody(const CelestialBody *cbody)
 {
 	if (cbody != refbody) {
 		refbody = cbody;
-		return true;
-	}
-	return false;
-}
-
-bool Camera::GroundObserver::SetViewTarget(const Body *body)
-{
-	if (body != viewtarget) {
-		viewtarget = body;
 		return true;
 	}
 	return false;
@@ -1592,7 +1580,7 @@ bool Camera::GroundObserver::SetPanSpeed(double speed)
 
 bool Camera::GroundObserver::SetTargetLock(bool lock)
 {
-	if (!viewtarget)
+	if (!cam->Target())
 		lock = false; // can't lock if we have no target
 
 	if (lock != tgtlock) {
@@ -1672,9 +1660,7 @@ void Camera::GroundObserver::Write(std::ostream &os) const
 {
 	os << "Ground " << refbody->Name() << endl;
 	os << setprecision(5) << "  GROUNDLOCATION " << lng * DEG << ' ' << lat * DEG << ' ' << setprecision(2) << alt << endl;
-	if (tgtlock)
-		os << "  GROUNDVIEWTARGET " << viewtarget->Name() << endl;
-	else
+	if (!tgtlock)
 		os << "  GROUNDDIRECTION " << phi * DEG << ' ' << tht * DEG << endl;
 }
 
@@ -1704,11 +1690,6 @@ bool Camera::GroundObserver::ParseLine(const char *line)
 			tgtlock = false;
 		}
 		return true;
-	} else if (!_strnicmp(line, "GROUNDVIEWTARGET", 16)) {
-		const Body *tgt;
-		if ((tgt = g_psys->GetObj(line + 17, true)) || (tgt = g_psys->GetBase(line + 17, true))) {
-			viewtarget = tgt;
-		}
 	}
 	return false;
 }
@@ -1716,10 +1697,9 @@ bool Camera::GroundObserver::ParseLine(const char *line)
 void Camera::GroundObserver::BodyDeleted(const Body* body)
 {
 	// celestial bodies must not be deleted, so we don't check against refbody here
-	if (body == viewtarget) {
+	if (body == cam->Target()) {
 		// switch to free camera mode
 		SetTargetLock(false);
-		viewtarget = cam->Target();
 	}
 }
 
