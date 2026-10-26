@@ -135,6 +135,11 @@
 	keywords = {}
 }
 
+% Change the font and textcolour for URLs
+\definecolor{urlcol}{rgb}{0,0,0.8}
+\DeclareUrlCommand\url{\urlstyle{same}\color{urlcol}}
+%\urlstyle{rm}
+
 % Increase the maths font sizes, since they seem to be too small in comparison with the text fonts used.
 % Use 10.95 to match LaTeX's internal 11pt size.
 % Syntax: \DeclareMathSizes{text-size}{math-size}{script-size}{scriptscript-size}
