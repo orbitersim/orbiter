@@ -11,6 +11,7 @@ add_library(XRSound_dll SHARED
 	Resource.rc
 	Utils/ConfigFileParser.cpp
 	Utils/FileList.cpp
+	ISound.cpp
 )
 
 set_target_properties(XRSound_dll PROPERTIES
@@ -22,18 +23,18 @@ set_target_properties(XRSound_dll PROPERTIES
 target_include_directories(XRSound_dll PUBLIC
 	${ORBITER_SOURCE_SDK_INCLUDE_DIR}
 	${CMAKE_CURRENT_SOURCE_DIR}/Utils
-	${IRRKLANG_DIR}/include
 )
 
 target_link_libraries(XRSound_dll
 	${ORBITER_LIB}
 	${ORBITER_SDK_LIB}
-	${IRRKLANG_LIB}
+	imgui
 )
 
 add_dependencies(XRSound_dll
 	${OrbiterTgt}
 	Orbitersdk
+	imgui
 )
 
 install(TARGETS XRSound_dll
@@ -54,6 +55,7 @@ set_target_properties(XRSound_lib
 
 target_include_directories(XRSound_lib PUBLIC
 	${ORBITER_SOURCE_SDK_INCLUDE_DIR}
+	imgui
 )
 
 install(TARGETS XRSound_lib

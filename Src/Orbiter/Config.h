@@ -62,6 +62,8 @@ struct CFG_PHYSICSPRM {
 	bool   bNonsphericalGrav;	// take into account nonspherical planet shapes for gravity calculations
 	bool   bRadiationPressure;	// take into account radiation pressure effects
 	bool   bAtmWind;            // nonzero wind speeds
+	bool   bBaseCollision;      // surface base collision
+	bool   bVesselCollision;    // vessel-to-vessel collision
 	bool   bOrbitStabilise;		// use Encke orbit stabilisation at high time accelerations
 	double Stabilise_PLimit;	// perturbation limit for stabilisation
 	double Stabilise_SLimit;	// step size limit for stabilisation

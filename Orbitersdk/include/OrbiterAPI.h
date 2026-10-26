@@ -2884,6 +2884,25 @@ OAPIFUNC OBJHANDLE oapiCreateVesselEx (const char *name, const char *classname, 
  * \sa oapiCreateVessel, oapiCreateVesselEx
  */
 OAPIFUNC bool oapiDeleteVessel (OBJHANDLE hVessel, OBJHANDLE hAlternativeCameraTarget = 0);
+
+/**
+ * \brief Returns the number of vessel pairs that currently have collision
+ *   detection disabled due to overlapping at spawn or after a state edit.
+ * \return Number of collision-disabled vessel pairs.
+ * \sa oapiGetDisabledCollisionPair
+ */
+OAPIFUNC DWORD oapiGetDisabledCollisionPairCount ();
+
+/**
+ * \brief Returns a pair of vessels that currently have collision detection
+ *   disabled due to overlapping at spawn or after a state edit.
+ * \param index pair index (0 <= index < oapiGetDisabledCollisionPairCount())
+ * \param[out] hVessel1 pointer receiving handle of the first vessel in the pair
+ * \param[out] hVessel2 pointer receiving handle of the second vessel in the pair
+ * \return \e true if index is valid and handles were written, \e false otherwise.
+ * \sa oapiGetDisabledCollisionPairCount
+ */
+OAPIFUNC bool oapiGetDisabledCollisionPair (DWORD index, OBJHANDLE *hVessel1, OBJHANDLE *hVessel2);
 //@}
 
 /**

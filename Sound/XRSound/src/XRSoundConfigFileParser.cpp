@@ -208,7 +208,7 @@ bool XRSoundConfigFileParser::ParseLine(const char *pSection, const char *pPrope
             goto invalid_property_name;
         }
     }
-    else if(SECTION_MATCHES("SOUND_FILES"))
+    else if (SECTION_MATCHES("SOUND_FILES"))
     {
         // the PARSE_STRING_PROPERTY macro evaluates out an if block, so don't use a semicolon on the end of each line
         PARSE_STRING_PROPERTY(AirConditioning)

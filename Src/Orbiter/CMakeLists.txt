@@ -69,6 +69,7 @@ set(common_src
 	Star.cpp
 # Vessel classes
 	FlightRecorder.cpp
+	CollisionCore.cpp
 	SuperVessel.cpp
 	Vessel.cpp
 	Vesselbase.cpp

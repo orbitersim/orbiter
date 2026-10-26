@@ -88,6 +88,20 @@ You can also set the planetary texture directory after building
 Orbiter by setting the `PlanetTexDir` entry in `Orbiter.cfg`.
 
 
+SPICE KERNEL MODULES AND ASSETS
+===============================
+
+Orbiter relies on additional SPICE kernel files and textures which are loaded at runtime.
+These are included in the base package within the Kernels subdirectory; there is an automatic
+packaging step which downloads and extracts them from their hosted sources.
+
+If you are building manually, you will need to obtain these files yourself and extract them into
+the Kernels directory. They are offered in 7-zip format:
+
+- https://cdn.openorbiter.space/spice/Kernels.7z
+- https://cdn.openorbiter.space/spice/Textures.7z
+
+
 TROUBLESHOOTING
 ===============
 * If you get errors during the build, in particular when building documentation (PDF from

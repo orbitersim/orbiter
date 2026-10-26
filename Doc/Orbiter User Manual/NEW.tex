@@ -4,18 +4,25 @@
 \section{What is new}
 
 \subsection{New features}
-
 \begin{itemize}
 	\setlist[2]{noitemsep}
 	\begin{sloppypar}% for large words
 	\item Added option PlanetTexDir to Orbiter.cfg to redirect planetary texture directories
+	\item \textbf{Collision and Physics Engine:}
+	\begin{itemize}
+		\item \textbf{GJK/EPA convex hull collisions (primary):} Implemented a high-performance collision detection system based on the Gilbert--Johnson--Keerthi (GJK) algorithm for intersection testing and the Expanding Polytope Algorithm (EPA) for penetration depth computation. Vessel meshes are densely sampled and spatially clustered into convex sub-hulls, enabling fast and accurate collision detection between vessels, and between vessels and planetary surface objects. This is the default collision path for all vessels.
+		\item \textbf{Point-to-triangle fallback:} A point-to-triangle intersection path using M\"oller-Trumbore ray-triangle tests is retained as a fallback for non-convex vessel pairs, supporting both static barycentric containment and continuous collision detection (CCD) for through-penetration on thin geometry.
+		\item \textbf{Rigid-body dynamics:} Collisions are resolved using a Newtonian rigid-body impulse solver, calculating both normal and tangential (friction) impulses for realistic physics interactions.
+		\item \textbf{Docking exclusion zones:} Collision detection is automatically suppressed near docking ports during approach to allow the docking mechanism to engage without triggering false collisions.
+		\item \textbf{Base Configuration:} Added support for the \texttt{COLLISION} marker in base \texttt{.cfg} files to enable/disable collision detection on a per-mesh basis.
+	\end{itemize}
 	\item D3D9Client:
 	\begin{itemize}
 		\item D3D9Client with full development history added
 		\item All D3D9-relevant items have been moved to OVP/D3D9Client except for gcCoreAPI.h and gcGUI.h
 		\item D3D9Client remains licensed under LGPL, added note to README
+		\item Implemented a use of D3D9on12 driver to address issues on some intel graphics chips such as (Iris Xe Graphics)
 	\end{itemize}
-	\item Implemented a use of D3D9on12 driver to address issues on some intel graphics chips such as (Iris Xe Graphics)
 	\item added XRSound:
 	\begin{itemize}
 		\item implemented six more sound manipulation methods for XRSound 3.0
@@ -107,7 +114,7 @@
 		\item Terminate simulation run after a fixed time
 	\end{itemize}
 	\item Launchpad "Parameters" and "Visual effects" tabs merged into "Settings".
-\end{sloppypar}
+	\end{sloppypar}
 \end{itemize}
 
 

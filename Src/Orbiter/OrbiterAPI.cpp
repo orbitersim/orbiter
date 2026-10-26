@@ -174,6 +174,16 @@ DLLEXPORT bool oapiIsVessel (OBJHANDLE hVessel)
 	return (g_psys ? g_psys->isVessel ((const Vessel*)hVessel) : false);
 }
 
+DLLEXPORT DWORD oapiGetDisabledCollisionPairCount ()
+{
+	return Vessel::GetDisabledCollisionPairCount ();
+}
+
+DLLEXPORT bool oapiGetDisabledCollisionPair (DWORD index, OBJHANDLE *hVessel1, OBJHANDLE *hVessel2)
+{
+	return Vessel::GetDisabledCollisionPair (index, hVessel1, hVessel2);
+}
+
 DLLEXPORT OBJHANDLE oapiGetStationByName (char *name)
 {
 	static bool bWarning = true;

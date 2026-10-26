@@ -910,6 +910,7 @@ void Interpreter::LoadAPI ()
 
 		// planet functions
 		{"get_planetperiod", oapi_get_planetperiod},
+		{"get_planetatmconstants", oapi_get_planetatmconstants},
 		{"get_objecttype", oapi_get_objecttype},
 		{"get_gbody", oapi_get_gbody},
 		{"get_gbodycount", oapi_get_gbodycount},

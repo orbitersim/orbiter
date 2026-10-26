@@ -35,6 +35,8 @@ add_library(lua SHARED ${LUA_SRC_FILES})
 
 if(MSVC)
   target_compile_definitions(lua PUBLIC LUA_BUILD_AS_DLL)
+  target_link_options(lua-exe PRIVATE "/ILK:${CMAKE_CURRENT_BINARY_DIR}/lua-exe.ilk")
+  target_link_options(lua PRIVATE "/ILK:${CMAKE_CURRENT_BINARY_DIR}/lua-lib.ilk")
 else()
   target_link_libraries(lua-exe PUBLIC m)
   target_link_libraries(lua PUBLIC m)

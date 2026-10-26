@@ -1,0 +1,15 @@
+BEGIN_HEADER
+InitialState on
+ColourIdx 5
+END_HEADER
+
+BEGIN_DATA
++238.40	-16.50	:	Capaneus Mensa
++4.40	-80.00	:	Echo Mensa
++120.00	-53.00	:	Epaphus Mensa
++113.70	-43.50	:	Hermes Mensa
++56.00	-62.20	:	Iynx Mensa
++328.20	-50.90	:	Pan Mensa
++208.10	-1.90	:	Prometheus Mensa
++244.10	-53.30	:	Telegonus Mensae
++240.10	+61.60	:	Tvashtar Mensae

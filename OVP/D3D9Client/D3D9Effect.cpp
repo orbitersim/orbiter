@@ -911,7 +911,14 @@ void D3D9Effect::RenderLines(const D3DXVECTOR3 *pVtx, const WORD *pIdx, int nVtx
 	FX->SetTechnique(eTBBTech);
 	FX->Begin(&numPasses, D3DXFX_DONOTSAVESTATE);
 	FX->BeginPass(0);
-	pDev->DrawIndexedPrimitiveUP(D3DPT_LINELIST, 0, nVtx, nIdx/2, pIdx, D3DFMT_INDEX16, pVtx, sizeof(D3DXVECTOR3));
+	int idxOffset = 0;
+	while (idxOffset < nIdx) {
+		int chunkIdx = min(nIdx - idxOffset, 65534);
+		chunkIdx &= ~1; // Must be even for LINELIST
+		if (chunkIdx <= 0) break;
+		pDev->DrawIndexedPrimitiveUP(D3DPT_LINELIST, 0, nVtx, chunkIdx/2, pIdx + idxOffset, D3DFMT_INDEX16, pVtx, sizeof(D3DXVECTOR3));
+		idxOffset += chunkIdx;
+	}
 	FX->EndPass();
 	FX->End();
 }
@@ -1020,3 +1027,45 @@ void D3D9Effect::RenderArrow(OBJHANDLE hObj, const VECTOR3 *ofs, const VECTOR3 *
     HR(FX->End()); 
 }
 
+
+// ===========================================================================================
+// This is a special rendering routine used to render solid cubes
+//
+void D3D9Effect::RenderSolidCube(const LPD3DXMATRIX pW, float size, const LPD3DXCOLOR pColor)
+{
+	static D3DVECTOR cube[36] = {
+		// Front
+		{-0.5, -0.5, -0.5}, {-0.5, 0.5, -0.5}, {0.5, 0.5, -0.5},
+		{-0.5, -0.5, -0.5}, {0.5, 0.5, -0.5}, {0.5, -0.5, -0.5},
+		// Back
+		{0.5, -0.5, 0.5}, {0.5, 0.5, 0.5}, {-0.5, 0.5, 0.5},
+		{0.5, -0.5, 0.5}, {-0.5, 0.5, 0.5}, {-0.5, -0.5, 0.5},
+		// Top
+		{-0.5, 0.5, -0.5}, {-0.5, 0.5, 0.5}, {0.5, 0.5, 0.5},
+		{-0.5, 0.5, -0.5}, {0.5, 0.5, 0.5}, {0.5, 0.5, -0.5},
+		// Bottom
+		{-0.5, -0.5, 0.5}, {-0.5, -0.5, -0.5}, {0.5, -0.5, -0.5},
+		{-0.5, -0.5, 0.5}, {0.5, -0.5, -0.5}, {0.5, -0.5, 0.5},
+		// Left
+		{-0.5, -0.5, 0.5}, {-0.5, 0.5, 0.5}, {-0.5, 0.5, -0.5},
+		{-0.5, -0.5, 0.5}, {-0.5, 0.5, -0.5}, {-0.5, -0.5, -0.5},
+		// Right
+		{0.5, -0.5, -0.5}, {0.5, 0.5, -0.5}, {0.5, 0.5, 0.5},
+		{0.5, -0.5, -0.5}, {0.5, 0.5, 0.5}, {0.5, -0.5, 0.5}
+	};
+
+	D3DXMATRIX W;
+	D3DXMatrixScaling(&W, size, size, size);
+	D3DXMatrixMultiply(&W, &W, pW);
+
+	UINT numPasses = 0;
+	HR(pDev->SetVertexDeclaration(pPositionDecl));
+	HR(FX->SetTechnique(eArrowTech));
+	HR(FX->SetValue(eColor, pColor, sizeof(D3DXCOLOR)));
+	HR(FX->SetMatrix(eW, &W));
+	HR(FX->Begin(&numPasses, D3DXFX_DONOTSAVESTATE));
+	HR(FX->BeginPass(0));
+	HR(pDev->DrawPrimitiveUP(D3DPT_TRIANGLELIST, 12, &cube, sizeof(D3DVECTOR)));
+	HR(FX->EndPass());
+	HR(FX->End());
+}

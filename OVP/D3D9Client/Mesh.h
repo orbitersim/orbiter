@@ -289,6 +289,7 @@ public:
 	void			RenderGroup(int idx);
 	void			RenderBaseTile(const LPD3DXMATRIX pW);
 	void			RenderBoundingBox(const LPD3DXMATRIX pW);
+	void			RenderWireframe(const LPD3DXMATRIX pW, D3DCOLOR color);
 	void			Render(const LPD3DXMATRIX pW, int iTech=RENDER_VESSEL, LPDIRECT3DCUBETEXTURE9 *pEnv=NULL, int nEnv=0);
 	void			RenderFast(const LPD3DXMATRIX pW, int iTech);
 	void			RenderShadowMap(const LPD3DXMATRIX pW, const LPD3DXMATRIX pVP, int flags);
