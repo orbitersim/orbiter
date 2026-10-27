@@ -952,8 +952,11 @@ float Scene::ComputeNearClipPlane()
 			vObject *obj = pv->vobj;
 
 			if (pv->type==OBJTP_PLANET) {
-				if (obj->Object()==hObj) pl = (vPlanet*)obj;
 				obj->GetMinMaxDistance(&nr, &fr, &dn);
+				if (obj->Object() == hObj) {
+					pl = (vPlanet*)obj;
+					dn = nr = GetCameraElevation();
+				}
 				if (dn<neardist) neardist = dn;
 				if (nr<nearpoint) nearpoint = nr;
 				if (fr>farpoint) farpoint = fr;
