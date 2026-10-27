@@ -38,8 +38,8 @@ public:
 // {XXX} UPDATE THIS FOR THE CURRENT BUILD VERSION; DO NOT REMOVE THIS {XXX} COMMENT
 // Note: set XRSOUND_BETA to empty string if this is not a beta build.
 // If beta build, remember to add a trailing space to the string; e.g., "Beta-1 "; otherwise, make it "".
-#define XRSOUND_ENGINE_VERSION 3.0f
-#define XRSOUND_BETA_STR "RC2 "
+#define XRSOUND_ENGINE_VERSION 4.0f
+#define XRSOUND_BETA_STR ""
 
 // for use by build version strings
 #ifdef _WIN64

@@ -11,7 +11,7 @@
 
 #include "OrbiterAPI.h"
 
-#ifndef NDEBUG
+#ifdef XRSOUND_DEBUG_GUI
 #include <imgui.h>
 static std::list<ISound *> g_soundList;
 
@@ -58,7 +58,7 @@ static void OpenSoundDlgClbk(void *context)
 
 ISoundEngine::ISoundEngine()
 {
-#ifndef NDEBUG
+#ifdef XRSOUND_DEBUG_GUI
     m_dbgWin = new ISoundDialog();
     m_dwdbgWin = oapiRegisterCustomCmd((char*)"Audio debug", (char*)"This dialog allows to visualize active sound instances", OpenSoundDlgClbk, m_dbgWin);
 #endif
@@ -74,7 +74,7 @@ ISoundEngine::ISoundEngine()
 
 ISoundEngine::~ISoundEngine()
 {
-#ifndef NDEBUG
+#ifdef XRSOUND_DEBUG_GUI
     if (m_dwdbgWin) oapiUnregisterCustomCmd(m_dwdbgWin);
     delete m_dbgWin;
 #endif
@@ -159,7 +159,7 @@ ISound::ISound(ma_engine* engine,
         m_state = State::PLAYING;
         ma_sound_start(&m_sound);
     }
-#ifndef NDEBUG
+#ifdef XRSOUND_DEBUG_GUI
     m_filename = filename;
     g_soundList.push_back(this);
 #endif
@@ -168,7 +168,7 @@ ISound::ISound(ma_engine* engine,
 ISound::~ISound()
 {
     ma_sound_uninit(&m_sound);
-#ifndef NDEBUG
+#ifdef XRSOUND_DEBUG_GUI
     g_soundList.remove(this);
 #endif
 }
