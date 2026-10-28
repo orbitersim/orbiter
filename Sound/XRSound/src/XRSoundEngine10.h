@@ -38,7 +38,9 @@ public:
 // {XXX} UPDATE THIS FOR THE CURRENT BUILD VERSION; DO NOT REMOVE THIS {XXX} COMMENT
 // Note: set XRSOUND_BETA to empty string if this is not a beta build.
 // If beta build, remember to add a trailing space to the string; e.g., "Beta-1 "; otherwise, make it "".
-#define XRSOUND_ENGINE_VERSION 4.0f
+// Resource.rc also reads XRSOUND_VERSION_NUMBER and XRSOUND_BETA_STR for the module description in Orbiter's Modules tab.
+#define XRSOUND_VERSION_NUMBER 4.0
+#define XRSOUND_ENGINE_VERSION ((float)XRSOUND_VERSION_NUMBER)
 #define XRSOUND_BETA_STR ""
 
 // for use by build version strings
