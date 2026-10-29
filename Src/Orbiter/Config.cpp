@@ -106,7 +106,8 @@ CFG_VISUALPRM CfgVisualPrm_default = {
 	true,       // bUseBgImage (render celestial sphere background image)
 	"csphere\\milkyway_2020",   // CSphereBgPath (path to celestial background images)
 	0.3,		// CSphereBgIntens (intensity of celestial sphere background image)
-	2			// ElevMode (cubic spline)
+	2,			// ElevMode (cubic spline)
+	true		// bFlats (enable terrain flattening)
 };
 
 CFG_CAPTUREPRM CfgCapturePrm_default = {
@@ -660,6 +661,7 @@ bool Config::Load(const char *fname)
 		CfgVisualPrm.LightBrightness = max (0.0, min (1.0, d));
 	if (GetInt (ifs, "ElevationMode", i) && i >= 0 && i <= 1)
 		CfgVisualPrm.ElevMode = i;
+	GetBool (ifs, "EnableTerrainFlats", CfgVisualPrm.bFlats);
 	GetBool(ifs, "EnableBackgroundStars", CfgVisualPrm.bUseStarDots);
 	if (GetString(ifs, "StarPrm", cbuf)) {
 		sscanf(cbuf, "%lf%lf%lf%d", &CfgVisualPrm.StarPrm.mag_hi, &CfgVisualPrm.StarPrm.mag_lo, &CfgVisualPrm.StarPrm.brt_min, &i);
@@ -926,6 +928,8 @@ const void *Config::GetParam (DWORD paramtype) const
 		return (void*)&CfgDebugPrm.bWireframeMode;
 	case CFGPRM_ELEVATIONMODE:
 		return (void*)&CfgVisualPrm.ElevMode;
+	case CFGPRM_TERRAINFLATS:
+		return (void*)&CfgVisualPrm.bFlats;
 	case CFGPRM_TILELOADFLAGS:
 		return (void*)&CfgPRenderPrm.TileLoadFlags;
 	case CFGPRM_PANELMFDHUDSIZE:
@@ -1074,6 +1078,8 @@ BOOL Config::Write (const char *fname) const
 			ofs << "CSphereBgIntensity = " << CfgVisualPrm.CSphereBgIntens << '\n';
 		if (CfgVisualPrm.ElevMode != CfgVisualPrm_default.ElevMode || bEchoAll)
 			ofs << "ElevationMode = " << CfgVisualPrm.ElevMode << '\n';
+		if (CfgVisualPrm.bFlats != CfgVisualPrm_default.bFlats || bEchoAll)
+			ofs << "EnableTerrainFlats = " << BoolStr(CfgVisualPrm.bFlats) << '\n';
 	}
 
 	if (memcmp (&CfgCapturePrm, &CfgCapturePrm_default, sizeof(CFG_CAPTUREPRM)) || bEchoAll) {

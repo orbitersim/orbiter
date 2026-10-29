@@ -1665,6 +1665,10 @@ bool D3D9Client::clbkGetRenderParam(DWORD prm, DWORD *value) const
 		case RP_REQUIRETEXPOW2:
 			*value = 0;
 			return true;
+
+		case RP_TERRAINFLATS:
+			*value = Config->bFlats ? 1 : 0;
+			return true;
 	}
 	return false;
 }
@@ -2721,11 +2725,6 @@ void D3D9Client::clbkReleaseSurfaceDC(SURFHANDLE surf, HDC hDC)
 
 // =======================================================================
 
-bool D3D9Client::clbkFilterElevation(OBJHANDLE hPlanet, int ilat, int ilng, int lvl, double elev_res, INT16* elev)
-{
-	_TRACE;
-	return FilterElevationPhysics(hPlanet, lvl, ilat, ilng, elev_res, elev);
-}
 void D3D9Client::clbkImGuiNewFrame()
 {
 	_TRACE;
