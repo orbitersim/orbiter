@@ -1597,6 +1597,19 @@ protected:
 	virtual void clbkUpdate (bool running) {}
 
 	/**
+	 * \brief Begin per-frame rendering bracket
+	 *
+	 * Called at the start of Orbiter::Render3DEnvironment(), prior to ImGui
+	 * new-frame processing and clbkRenderScene(). Explicit-command-buffer
+	 * clients (such as Vulkan) can use this callback to synchronize frame
+	 * fences, flush offscreen surface barriers, acquire the swapchain image,
+	 * and open the primary frame command buffer.
+	 * \default None.
+	 * \sa clbkRenderScene, clbkEndFrame, clbkDisplayFrame
+	 */
+	virtual void clbkBeginFrame () {}
+
+	/**
 	 * \brief Per-frame render notification
 	 *
 	 * Called once per frame, after the logical world state has been updated,
@@ -1609,6 +1622,19 @@ protected:
 	 *   panel, HUD, etc.)
 	 */
 	virtual void clbkRenderScene () = 0;
+
+	/**
+	 * \brief End per-frame rendering bracket
+	 *
+	 * Called at the end of Orbiter::Render3DEnvironment(), after clbkRenderScene(),
+	 * 2-D HUD/annotation overlays, and clbkImGuiRenderDrawData() have all been
+	 * recorded, immediately prior to clbkDisplayFrame(). Explicit-command-buffer
+	 * clients can use this callback to finalize the main render pass and close
+	 * the frame command buffer before presentation.
+	 * \default None.
+	 * \sa clbkBeginFrame, clbkRenderScene, clbkDisplayFrame
+	 */
+	virtual void clbkEndFrame () {}
 
 	/**
 	 * \brief Display a scene on screen after rendering it.
