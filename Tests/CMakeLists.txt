@@ -42,8 +42,9 @@ function(add_test_file test_name)
 	set_tests_properties(${test_name} PROPERTIES TIMEOUT 30)
 endfunction()
 
-# Utility function for self-contained tests that only need a few core source
-# files (listed after the test name) and neither the Orbiter library nor Lua
+# Utility function for self-contained tests that only need a few source files
+# (listed after the test name) and no Lua; it links only Catch2, so a test whose
+# sources need more (e.g., the Orbiter import library) adds it after the call
 function(add_core_test_file test_name)
 	add_executable(${test_name} "${test_name}.cpp" ${ARGN})
 
@@ -70,6 +71,24 @@ add_core_test_file(Collision.CollisionCore
 	${ORBITER_SOURCE_ROOT_DIR}/Src/Orbiter/CollisionCore.cpp
 	${ORBITER_SOURCE_ROOT_DIR}/Src/Orbiter/Vecmat.cpp
 )
+
+# XRSound config file parser: needs no sound card and no running Orbiter, and never touches the audio engine
+if(ORBITER_BUILD_XRSOUND)
+	add_core_test_file(XRSound.Config
+		${ORBITER_SOURCE_ROOT_DIR}/Sound/XRSound/src/XRSoundConfigFileParser.cpp
+		${ORBITER_SOURCE_ROOT_DIR}/Sound/XRSound/src/Utils/ConfigFileParser.cpp
+	)
+	target_include_directories(XRSound.Config
+		PRIVATE ${ORBITER_SOURCE_ROOT_DIR}/Sound/XRSound/src
+		PRIVATE ${ORBITER_SOURCE_ROOT_DIR}/Sound/XRSound/src/Utils
+	)
+	# same definition the XRSound DLL itself is built with (the parser sources use fopen/sprintf)
+	target_compile_definitions(XRSound.Config PRIVATE _CRT_SECURE_NO_WARNINGS)
+	# XRSoundConfigFileParser::ParseVesselSoundConfig calls VESSEL::GetName / GetClassName, which Orbiter exports, so the
+	# link needs the Orbiter import library (the tests themselves never call into Orbiter)
+	target_link_libraries(XRSound.Config ${ORBITER_LIB})
+	add_dependencies(XRSound.Config ${OrbiterTgt})
+endif()
 
 if (BUILD_ORBITER_SERVER)
 

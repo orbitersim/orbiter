@@ -1148,6 +1148,17 @@ protected:
 	static int xrsound_get_playbackspeed(lua_State *L);
 	static int xrsound_set_playposition(lua_State *L);
 	static int xrsound_get_playposition(lua_State *L);
+	static int xrsound_set_volume(lua_State *L);
+	static int xrsound_get_volume(lua_State *L);
+	static int xrsound_set_soundvolume(lua_State *L);
+	static int xrsound_get_soundvolume(lua_State *L);
+	static int xrsound_set_playbacktype(lua_State *L);
+	static int xrsound_get_playbacktype(lua_State *L);
+	static int xrsound_get_duration(lua_State *L);
+	static int xrsound_set_setting(lua_State *L);
+	static int xrsound_get_setting(lua_State *L);
+	static int xrsound_get_defaultvolume(lua_State *L);
+	static int xrsound_get_defaultsetting(lua_State *L);
 	static int xrsound_collect(lua_State *L);
 #endif
 

@@ -1,7 +1,7 @@
 // ==============================================================
 // XRSound static library main source file.
 // 
-// Copyright (c) 2018-2026 Douglas Beachy
+// Copyright (c) 2018-2026 Douglas Beachy and contributors
 // Licensed under the MIT License
 //
 // This software is FREEWARE and may not be sold!
@@ -49,7 +49,7 @@ bool XRSoundImpl::Initialize(VESSEL *pVessel)
         {
             // Log both this vessel's XRSound.lib version and the XRSound.dll version
             // Note: in order to maximize cross-compiler version linking compatibility, we don't want to use any msvcrt functions in this library, so we can't use sprintf here.
-            // Also, Orbiter's oapiWriteLog takes a char * instead of const char *, which I presume is just a bug, so we can safely (?) assume that is just a typo in the method signature.
+            // Orbiter's oapiWriteLog signature takes a mutable char *.
             const float dllVersion = GetVersion();
             _ASSERTE(dllVersion > 0);
             char messageBuf[512];
@@ -158,7 +158,7 @@ bool XRSoundImpl::LoadWav(const int soundID, const char *pSoundFilename, const P
 // Play the wav file with the specified ID.
 //   soundID: unique sound ID originally passed  to LoadWav
 //   bLoop: true to loop sound continuously until StopWav called, false to play only once
-//   volume: 0 (mute) to 1.0 (loudest)
+//   volume: 0 (mute) to 1.0 (loudest), or XRSound::UseStoredVolume (the default) to play at the volume stored for this sound ID
 //
 // Returns true on success, false if invalid sound ID or if XRSound.dll not present.
 bool XRSoundImpl::PlayWav(const int soundID, const bool bLoop, const float volume)
@@ -169,7 +169,13 @@ bool XRSoundImpl::PlayWav(const int soundID, const bool bLoop, const float volum
     if (IsDefaultSoundOrGroup(soundID))
         return false;    // cannot manually affect default sounds or group sounds from client code side
 
-    return m_pEngine->PlayWav(soundID, bLoop, volume);
+    // An XRSound.dll older than 4.1 does not know about UseStoredVolume (it would treat -1.0 as a volume), and the callers that omitted the volume argument before
+    // 4.1 always got 1.0, so pass 1.0 in that case.  Note: use the float literal 4.1f here (see HaveMinDLLVersion).
+    float effectiveVolume = volume;
+    if ((volume == UseStoredVolume) && !HaveMinDLLVersion(4.1f))
+        effectiveVolume = 1.0f;
+
+    return m_pEngine->PlayWav(soundID, bLoop, effectiveVolume);
 }
 
 // Stop playing the wav file with the specified ID.
@@ -353,6 +359,135 @@ int XRSoundImpl::GetPlayPosition(const int soundID)
         return 0;
 
     return m_pEngine->GetPlayPosition(soundID);
+}
+
+//===========================================================================================
+// Methods added in XRSound API version 4.1
+//
+// NOTE: each of these fails safely (returns false and leaves any output parameter unchanged) on an XRSound.dll older than 4.1, including the 3.0 DLL
+// that shipped with Orbiter 2024 and the 4.0 DLL.  Always use the float literal 4.1f in version comparisons: 4.1f promoted to double is less than the double 4.1.
+//===========================================================================================
+
+bool XRSoundImpl::SetVolume(const VolumeType type, const float level)
+{
+    if (!HaveMinDLLVersion(4.1f))
+        return false;
+
+    return m_pEngine->SetVolumeByType(type, level);
+}
+
+bool XRSoundImpl::GetVolume(const VolumeType type, float &level) const
+{
+    if (!HaveMinDLLVersion(4.1f))
+        return false;
+
+    return m_pEngine->GetVolumeByType(type, level);
+}
+
+// Note: unlike PlayWav / StopWav / SetPaused, this is allowed for default sound IDs and group IDs (it sets their item level), so we do not block those here.
+bool XRSoundImpl::SetVolume(const int soundID, const float volume)
+{
+    if (!HaveMinDLLVersion(4.1f))
+        return false;
+
+    return m_pEngine->SetSoundVolume(soundID, volume);
+}
+
+bool XRSoundImpl::GetVolume(const int soundID, float &volume) const
+{
+    if (!HaveMinDLLVersion(4.1f))
+        return false;
+
+    return m_pEngine->GetSoundVolume(soundID, volume);
+}
+
+bool XRSoundImpl::SetPlaybackType(const int soundID, const PlaybackType playbackType)
+{
+    if (!HaveMinDLLVersion(4.1f))
+        return false;
+
+    return m_pEngine->SetSoundPlaybackType(soundID, playbackType);
+}
+
+bool XRSoundImpl::GetPlaybackType(const int soundID, PlaybackType &playbackType) const
+{
+    if (!HaveMinDLLVersion(4.1f))
+        return false;
+
+    return m_pEngine->GetSoundPlaybackType(soundID, playbackType);
+}
+
+bool XRSoundImpl::GetDuration(const int soundID, unsigned int &durationMillis)
+{
+    if (!HaveMinDLLVersion(4.1f))
+        return false;
+
+    return m_pEngine->GetSoundDuration(soundID, durationMillis);
+}
+
+bool XRSoundImpl::SetSetting(const Setting setting, const double value)
+{
+    if (!HaveMinDLLVersion(4.1f))
+        return false;
+
+    return m_pEngine->SetSettingNumber(setting, value);
+}
+
+bool XRSoundImpl::GetSetting(const Setting setting, double &value) const
+{
+    if (!HaveMinDLLVersion(4.1f))
+        return false;
+
+    return m_pEngine->GetSettingNumber(setting, value);
+}
+
+bool XRSoundImpl::SetSetting(const Setting setting, const char *pValue)
+{
+    if (!pValue)
+        return false;       // the value may not be nullptr; an empty string is passed through to the engine, where it means "no custom-engine thrusters"
+
+    if (!HaveMinDLLVersion(4.1f))
+        return false;
+
+    return m_pEngine->SetSettingString(setting, pValue);
+}
+
+bool XRSoundImpl::GetSetting(const Setting setting, char *pBuffer, const int bufferLength) const
+{
+    if (!pBuffer || (bufferLength <= 0))
+        return false;
+
+    if (!HaveMinDLLVersion(4.1f))
+        return false;
+
+    return m_pEngine->GetSettingString(setting, pBuffer, bufferLength);
+}
+
+bool XRSoundImpl::GetDefaultVolume(const VolumeType type, float &level) const
+{
+    if (!HaveMinDLLVersion(4.1f))
+        return false;
+
+    return m_pEngine->GetDefaultVolumeByType(type, level);
+}
+
+bool XRSoundImpl::GetDefaultSetting(const Setting setting, double &value) const
+{
+    if (!HaveMinDLLVersion(4.1f))
+        return false;
+
+    return m_pEngine->GetDefaultSettingNumber(setting, value);
+}
+
+bool XRSoundImpl::GetDefaultSetting(const Setting setting, char *pBuffer, const int bufferLength) const
+{
+    if (!pBuffer || (bufferLength <= 0))
+        return false;
+
+    if (!HaveMinDLLVersion(4.1f))
+        return false;
+
+    return m_pEngine->GetDefaultSettingString(setting, pBuffer, bufferLength);
 }
 
 //===========================================================================================

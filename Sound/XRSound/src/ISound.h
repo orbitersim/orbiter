@@ -74,6 +74,11 @@ public:
     ISound *play2D(const char *soundFileName, const bool playLooped=false, const bool startPaused=false, const bool track=false);
 	void Release(ISound *);
 	const char *getDriverName() { return "miniaudio"; }
+
+	// Obtains the length of a sound file in milliseconds without playing it (opens a decoder, reads the length, and closes it).
+	// Note: for some compressed formats (e.g., a long .mp3) miniaudio may have to scan the file, so this can take a moment.
+	// Returns true and sets lengthMillis on success, false if the file could not be decoded or reports an unknown or zero length (lengthMillis is unchanged).
+	bool getSoundLengthMillis(const char *soundFileName, unsigned int &lengthMillis) const;
 private:
     ma_engine m_engine;
 	bool m_initialized = false;

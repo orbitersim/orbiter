@@ -1,7 +1,7 @@
 // ==============================================================
 // Defines the default sounds for XRSound.
 // 
-// Copyright (c) 2018-2026 Douglas Beachy
+// Copyright (c) 2018-2026 Douglas Beachy and contributors
 // Licensed under the MIT License
 // ==============================================================
 
@@ -24,10 +24,19 @@ public:
         _ASSERTE(pEngine); 
     }
 
+    // This engine's configuration (the configured defaults, including the sound file paths).  Read-only in practice: only the parser ever writes it.
+    // Use it for the configured sound file and folder paths; read every volume level and setting from GetActive() instead.
     XRSoundConfigFileParser &GetConfig()
     {
         _ASSERTE(m_pEngine);
         return m_pEngine->GetConfig();
+    }
+
+    // This vessel's active volume levels and settings, which the XRSound API can change. Every live read of a setting goes through here.
+    const XRSoundEngine::ActiveValues &GetActive() const
+    {
+        _ASSERTE(m_pEngine);
+        return m_pEngine->GetActive();
     }
 
     bool HasFocus() const
@@ -62,6 +71,11 @@ protected:
     bool LoadWav(const int soundID, const char *pSoundFilename, const XRSound::PlaybackType playbackType);
     bool PlayWav(const int soundID, const bool bLoop = false, const float volume = 1.0);
     bool LoadAndPlayWavUsingID(const int soundID, const std::string &pWavFile, const bool bLoop, const XRSound::PlaybackType playbackType, const float volume = 1.0);
+
+    // Plays the sound in a default sound slot: loads the configured file (pConfiguredWavFile) only if the slot has no file loaded; otherwise plays the existing file,
+    // preserving a client's XRSound::LoadWav override. Unlike LoadAndPlayWavUsingID, this never reloads the slot.
+    // Returns true if nothing is loaded and no file is configured (the sound is disabled; nothing played), true if the sound was played, false if the load or play failed.
+    bool PlayDefaultWavUsingID(const int soundID, const std::string &pConfiguredWavFile, const bool bLoop, const XRSound::PlaybackType playbackType, const float volume = 1.0);
     bool StopWav(const int soundID);
 
     VesselXRSoundEngine *m_pEngine;
@@ -76,9 +90,11 @@ public:
 
     bool IsInitialized() const { return (m_soundID > 0); }
     // Do not override 'GetSoundID()': some subclasses use more than a single sound ID, so we cannot reliably search for them
+    // (the one exception is DefaultSoundGroupPreStep, which has exactly one slot and overrides it so that VesselXRSoundEngine::FindDefaultSoundGroupPreStep works)
 
     // Default implementation; if you override this, make sure to set m_soundID from soundID.
-    // Returns true if initialization successful, false if sound is disabled or file load failed (the sound will not play)
+    // Returns true if initialization succeeds, false if the sound is disabled or its file cannot be loaded. The caller keeps this prestep registered either way;
+    // it stays silent and inactive until a client supplies a file via LoadWav (see IsWavLoaded).
     virtual bool Initialize(const int soundID, const char *pSoundFilename, const XRSound::PlaybackType playbackType);
 
 protected:
@@ -86,13 +102,16 @@ protected:
     XRSound::PlaybackType m_playbackType;
     bool m_bWavPresent;
 
+    // Returns true if a sound file is loaded in our sound slot: either we loaded it (m_bWavPresent), or a client loaded one via XRSound::LoadWav. If false, the sound is silent and inactive.
+    bool IsWavLoaded() const;
+
     // this is invoked at every timestep; subclasses should decide when to play or stop their sound
     virtual void clbkPreStep(const double simt, const double simdt, const double mjd) = 0;
 
     // methods that act on our m_soundID
     bool LoadWav(const char *pSoundFilename);
     bool LoadAndPlayWav(const char *pSoundFilename, float volume = 1.0); // plays non-looped
-    virtual bool PlayWav(const bool bLoop = false, float volume = 1.0);  // virtual so child subclasses can hook it and override the volume set by superclass call
+    virtual bool PlayWav(const bool bLoop = false, float volume = 1.0);  // virtual so child subclasses can hook it
     bool StopWav();
     bool IsWavPlaying() const;
     bool SetPaused(const bool bPause);

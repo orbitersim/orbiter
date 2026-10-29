@@ -1,7 +1,7 @@
 // ==============================================================
 // XRSoundConfigFileParser.cpp : Parses XRSound.cfg
 //
-// Copyright (c) 2018-2026 Douglas Beachy
+// Copyright (c) 2018-2026 Douglas Beachy and contributors
 // Licensed under the MIT License
 //
 // This software is FREEWARE and may not be sold!e
@@ -15,16 +15,91 @@
 // Constructor
 XRSoundConfigFileParser::XRSoundConfigFileParser(const char *pConfigFile) :
     ConfigFileParser(pConfigFile, XRSOUND_LOG_FILE),
-    EnableVerboseLogging(false), LogVesselAnimations(false), LogThrusterData(false), MasterVolume(1.0), CabinAmbienceMin(7), CabinAmbienceMax(35), MusicVolume(1.0),
-    ATCVolume(1.0), ATCMinDelay(15), ATCMaxDelay(120), ATCAllowWhileLanded(true), ATCAllowDuringReentry(false), ATCAllowInAtmosphere(true),
-    ATCDelayPlanetDistance(400.0), ATCDelayPlanetMultiplier(5.0), LandingGearAnimationID(-1),
-    MusicOrder(SeqRandom::Random), MusicPlayInternal(MusicPlay::Off), MusicPlayExternal(MusicPlay::Space), UpdateInterval(0.05), SilenceOfSpace(true),
-    WarningGearIsUpAltitude(275), DisableAutopilotsTimeAccThreshold(100), MinThrusterLevelForRCSSoundEffects(0.05)
+    // Note: the [SYSTEM] settings are all initialized by ResetSystemSettingsToDefaults() below, so they are not in this list.
+    LandingGearAnimationID(-1), CabinAmbienceMin(CABIN_AMBIENCE_MIN_DEFAULT), CabinAmbienceMax(CABIN_AMBIENCE_MAX_DEFAULT),
+    ATCVolume(ATC_VOLUME_DEFAULT), ATCMinDelay(ATC_MIN_DELAY_DEFAULT), ATCMaxDelay(ATC_MAX_DELAY_DEFAULT),
+    ATCAllowWhileLanded(true), ATCAllowDuringReentry(false), ATCAllowInAtmosphere(true),
+    ATCDelayPlanetDistance(ATC_DELAY_PLANET_DISTANCE_DEFAULT), ATCDelayPlanetMultiplier(ATC_DELAY_PLANET_MULTIPLIER_DEFAULT),
+    WarningGearIsUpAltitude(WARNING_GEAR_IS_UP_ALTITUDE_DEFAULT),
+    MusicPlayInternal(MusicPlay::Off), MusicPlayExternal(MusicPlay::Space)
 {
     // No prefix: SetLogPrefix(XRSOUND_CONFIG_FILE);  // will show "<timestamp> [Sound\XRSound.cfg] <log message>" in log file
+    ResetSystemSettingsToDefaults();
+}
+
+// Resets every [SYSTEM] setting to its built-in default; see the comment in the header.
+void XRSoundConfigFileParser::ResetSystemSettingsToDefaults()
+{
+    SupportedSoundFileTypes.clear();    // no built-in default: comes from XRSound.cfg
+    MusicFolder.clear();                // ditto (empty == music disabled)
+
+    MasterVolume = MASTER_VOLUME_DEFAULT;
+    MusicVolume = MUSIC_VOLUME_DEFAULT;
+    MusicOrder = SeqRandom::Random;
+
+    EnableVerboseLogging = false;
 #ifdef _DEBUG
     EnableVerboseLogging = true;        // always default to true for debug builds
 #endif
+    LogVesselAnimations = false;
+    LogThrusterData = false;
+    SilenceOfSpace = true;
+
+    UpdateInterval = UPDATE_INTERVAL_DEFAULT;
+    DisableAutopilotsTimeAccThreshold = DISABLE_AUTOPILOTS_TIME_ACC_THRESHOLD_DEFAULT;
+    MinThrusterLevelForRCSSoundEffects = MIN_THRUSTER_LEVEL_FOR_RCS_SOUND_EFFECTS_DEFAULT;
+}
+
+// Explicit mappings between the internal MusicOrder / MusicPlay enums and the public XRSound::MusicOrder / XRSound::MusicPlay enums.
+bool XRSoundConfigFileParser::MusicOrderToInternal(const int publicValue, SeqRandom &internalValue)
+{
+    switch (publicValue)
+    {
+    case static_cast<int>(XRSound::MusicOrder::Sequential):
+        internalValue = SeqRandom::Sequential;
+        return true;
+    case static_cast<int>(XRSound::MusicOrder::Random):
+        internalValue = SeqRandom::Random;
+        return true;
+    default:
+        return false;
+    }
+}
+
+int XRSoundConfigFileParser::MusicOrderToPublic(const SeqRandom internalValue)
+{
+    return static_cast<int>((internalValue == SeqRandom::Sequential) ? XRSound::MusicOrder::Sequential : XRSound::MusicOrder::Random);
+}
+
+bool XRSoundConfigFileParser::MusicPlayToInternal(const int publicValue, MusicPlay &internalValue)
+{
+    switch (publicValue)
+    {
+    case static_cast<int>(XRSound::MusicPlay::Off):
+        internalValue = MusicPlay::Off;
+        return true;
+    case static_cast<int>(XRSound::MusicPlay::Space):
+        internalValue = MusicPlay::Space;
+        return true;
+    case static_cast<int>(XRSound::MusicPlay::On):
+        internalValue = MusicPlay::On;
+        return true;
+    default:
+        return false;
+    }
+}
+
+int XRSoundConfigFileParser::MusicPlayToPublic(const MusicPlay internalValue)
+{
+    switch (internalValue)
+    {
+    case MusicPlay::Off:
+        return static_cast<int>(XRSound::MusicPlay::Off);
+    case MusicPlay::Space:
+        return static_cast<int>(XRSound::MusicPlay::Space);
+    default:
+        return static_cast<int>(XRSound::MusicPlay::On);
+    }
 }
 
 // Destructor
@@ -129,6 +204,8 @@ bool XRSoundConfigFileParser::ParseLine(const char *pSection, const char *pPrope
     char csMsg[256];      // used for constructing log messages
 
     // parse [SYSTEM] settings
+    // NOTE: this parser is the only code that writes these (configured default) values.  Each engine copies them into its own active values when it is created
+    // (see XRSoundEngine::InitializeActiveValues), and the XRSound API changes only those copies.
     if (SECTION_MATCHES("SYSTEM"))
     {
         // cannot override [SYSTEM] settings via vessel class override file, so check that here
@@ -149,7 +226,7 @@ bool XRSoundConfigFileParser::ParseLine(const char *pSection, const char *pPrope
         else if (PNAME_MATCHES("MasterVolume"))
         {
             SSCANF1("%f", &MasterVolume);
-            VALIDATE_FLOAT(&MasterVolume, 0, 1.0f, 1.0f);
+            VALIDATE_FLOAT(&MasterVolume, MASTER_VOLUME_MIN, MASTER_VOLUME_MAX, MASTER_VOLUME_DEFAULT);
         }
         else if (PNAME_MATCHES("LogVesselAnimations"))
         {
@@ -166,19 +243,19 @@ bool XRSoundConfigFileParser::ParseLine(const char *pSection, const char *pPrope
         else if (PNAME_MATCHES("UpdateInterval"))
         {
             SSCANF1("%lf", &UpdateInterval);
-            VALIDATE_DOUBLE(&UpdateInterval, 0.02, 1.0, 0.05);
+            VALIDATE_DOUBLE(&UpdateInterval, UPDATE_INTERVAL_MIN, UPDATE_INTERVAL_MAX, UPDATE_INTERVAL_DEFAULT);
         }
         else if (PNAME_MATCHES("DisableAutopilotsTimeAccThreshold"))
         {
             SSCANF1("%lf", &DisableAutopilotsTimeAccThreshold);
-            VALIDATE_DOUBLE(&DisableAutopilotsTimeAccThreshold, 0, 10000, 100);
+            VALIDATE_DOUBLE(&DisableAutopilotsTimeAccThreshold, DISABLE_AUTOPILOTS_TIME_ACC_THRESHOLD_MIN, DISABLE_AUTOPILOTS_TIME_ACC_THRESHOLD_MAX, DISABLE_AUTOPILOTS_TIME_ACC_THRESHOLD_DEFAULT);
         }
         else PARSE_STRING_PROPERTY(SupportedSoundFileTypes)
         else PARSE_STRING_PROPERTY(MusicFolder)
         else if (PNAME_MATCHES("MusicVolume"))
         {
             SSCANF1("%f", &MusicVolume);
-            VALIDATE_FLOAT(&MusicVolume, 0, 1.0f, 1.0f);
+            VALIDATE_FLOAT(&MusicVolume, MUSIC_VOLUME_MIN, MUSIC_VOLUME_MAX, MUSIC_VOLUME_DEFAULT);
         }
         else if (PNAME_MATCHES("MusicOrder"))
         {
@@ -201,7 +278,7 @@ bool XRSoundConfigFileParser::ParseLine(const char *pSection, const char *pPrope
         else if (PNAME_MATCHES("MinThrusterLevelForRCSSoundEffects"))
         {
             SSCANF1("%lf", &MinThrusterLevelForRCSSoundEffects);
-            VALIDATE_DOUBLE(&MinThrusterLevelForRCSSoundEffects, 0, 1.0, 0);
+            VALIDATE_DOUBLE(&MinThrusterLevelForRCSSoundEffects, MIN_THRUSTER_LEVEL_FOR_RCS_SOUND_EFFECTS_MIN, MIN_THRUSTER_LEVEL_FOR_RCS_SOUND_EFFECTS_MAX, MIN_THRUSTER_LEVEL_FOR_RCS_SOUND_EFFECTS_DEFAULT);
         }
         else
         {
@@ -288,7 +365,7 @@ bool XRSoundConfigFileParser::ParseLine(const char *pSection, const char *pPrope
         else if (PNAME_MATCHES("WarningGearIsUpAltitude"))
         {
             SSCANF1("%lf", &WarningGearIsUpAltitude);
-            VALIDATE_DOUBLE(&WarningGearIsUpAltitude, 0, 1000, 275);
+            VALIDATE_DOUBLE(&WarningGearIsUpAltitude, WARNING_GEAR_IS_UP_ALTITUDE_MIN, WARNING_GEAR_IS_UP_ALTITUDE_MAX, WARNING_GEAR_IS_UP_ALTITUDE_DEFAULT);
         }
         else
         {
@@ -302,12 +379,12 @@ bool XRSoundConfigFileParser::ParseLine(const char *pSection, const char *pPrope
         else if (PNAME_MATCHES("CabinAmbienceMin"))
         {
             SSCANF1("%d", &CabinAmbienceMin);
-            VALIDATE_INT(&CabinAmbienceMin, 7, 300, 7);
+            VALIDATE_INT(&CabinAmbienceMin, CABIN_AMBIENCE_DELAY_MIN, CABIN_AMBIENCE_DELAY_MAX, CABIN_AMBIENCE_MIN_DEFAULT);
         }
         else if (PNAME_MATCHES("CabinAmbienceMax"))
         {
             SSCANF1("%d", &CabinAmbienceMax);
-            VALIDATE_INT(&CabinAmbienceMax, 7, 300, 35);
+            VALIDATE_INT(&CabinAmbienceMax, CABIN_AMBIENCE_DELAY_MIN, CABIN_AMBIENCE_DELAY_MAX, CABIN_AMBIENCE_MAX_DEFAULT);
         }
         else PARSE_STRING_PROPERTY(AltitudeCalloutsGroup)
         else PARSE_STRING_PROPERTY(DockingDistanceCalloutsGroup)
@@ -327,17 +404,17 @@ bool XRSoundConfigFileParser::ParseLine(const char *pSection, const char *pPrope
         else if (PNAME_MATCHES("Volume"))
         {
             SSCANF1("%f", &ATCVolume);
-            VALIDATE_FLOAT(&ATCVolume, 0, 1.0f, 1.0f);
+            VALIDATE_FLOAT(&ATCVolume, ATC_VOLUME_MIN, ATC_VOLUME_MAX, ATC_VOLUME_DEFAULT);
         }
         else if (PNAME_MATCHES("MinDelay"))
         {
             SSCANF1("%d", &ATCMinDelay);
-            VALIDATE_INT(&ATCMinDelay, 10, 900, 15);
+            VALIDATE_INT(&ATCMinDelay, ATC_DELAY_MIN, ATC_DELAY_MAX, ATC_MIN_DELAY_DEFAULT);
         }
         else if (PNAME_MATCHES("MaxDelay"))
         {
             SSCANF1("%d", &ATCMaxDelay);
-            VALIDATE_INT(&ATCMaxDelay, 10, 900, 120);
+            VALIDATE_INT(&ATCMaxDelay, ATC_DELAY_MIN, ATC_DELAY_MAX, ATC_MAX_DELAY_DEFAULT);
         }
         else if (PNAME_MATCHES("AllowWhileLanded"))
         {
@@ -354,12 +431,12 @@ bool XRSoundConfigFileParser::ParseLine(const char *pSection, const char *pPrope
         else if (PNAME_MATCHES("DelayPlanetDistance"))
         {
             SSCANF1("%lf", &ATCDelayPlanetDistance);
-            VALIDATE_DOUBLE(&ATCDelayPlanetDistance, 0, 1e6, 400);
+            VALIDATE_DOUBLE(&ATCDelayPlanetDistance, ATC_DELAY_PLANET_DISTANCE_MIN, ATC_DELAY_PLANET_DISTANCE_MAX, ATC_DELAY_PLANET_DISTANCE_DEFAULT);
         }
         else if (PNAME_MATCHES("DelayPlanetMultiplier"))
         {
             SSCANF1("%lf", &ATCDelayPlanetMultiplier);
-            VALIDATE_DOUBLE(&ATCDelayPlanetMultiplier, 1, 100, 5);
+            VALIDATE_DOUBLE(&ATCDelayPlanetMultiplier, ATC_DELAY_PLANET_MULTIPLIER_MIN, ATC_DELAY_PLANET_MULTIPLIER_MAX, ATC_DELAY_PLANET_MULTIPLIER_DEFAULT);
         }
         else
         {
@@ -506,6 +583,28 @@ bool XRSoundConfigFileParser::AddOrUpdateAnimationState(const int animationID, c
         // playback type is valid!
         pAnimationSounds->SetPlaybackType(type);
     }
+    else if (_stricmp(pName, "Volume") == 0)
+    {
+        // play volume for every sound of this animation: 0 (silent) to 1.0 (full); optional, defaults to 1.0
+        // Note: we validate here instead of via SSCANF1 / VALIDATE_FLOAT so the ERROR line names the bad value and the valid range.  "!(>= && <=)" also rejects NaN.
+        float volume = XRSoundConfigFileParser::ANIMATION_VOLUME_DEFAULT;
+        if ((sscanf(pValue, "%f", &volume) < 1) ||
+            !((volume >= ANIMATION_VOLUME_MIN) && (volume <= ANIMATION_VOLUME_MAX)))
+        {
+            char msg[256];
+            snprintf(msg, 256, "ERROR: Invalid Volume '%s' for animation ID %d.  Volume must be a number from %.1f to %.1f; using the default of %.1f.",
+                pValue, animationID, ANIMATION_VOLUME_MIN, ANIMATION_VOLUME_MAX, ANIMATION_VOLUME_DEFAULT);
+            WriteLog(msg);
+            pAnimationSounds->SetVolume(ANIMATION_VOLUME_DEFAULT);
+            return false;
+        }
+
+        // volume is valid!
+        pAnimationSounds->SetVolume(volume);
+        char msg[256];
+        snprintf(msg, 256, "XRSoundConfigFileParser: animation ID %d volume = %.3f", animationID, volume);
+        WriteLog(msg);
+    }
     else if (_stricmp(pName, "IsLandingGear") == 0)
     { 
         bool bIsLandingGear = false;
@@ -590,7 +689,7 @@ std::vector<const AnimationSounds *> XRSoundConfigFileParser::GetAllAnimationSou
 
 // Constructor
 AnimationSounds::AnimationSounds(const int animationID) :
-    m_animationID(animationID), m_playbackType(XRSound::PlaybackType::BothViewClose),
+    m_animationID(animationID), m_playbackType(XRSound::PlaybackType::BothViewClose), m_volume(XRSoundConfigFileParser::ANIMATION_VOLUME_DEFAULT),
     m_openCloseSoundID(-1), m_movingSoundID(-1)
 {
 }
@@ -655,7 +754,7 @@ int AnimationSounds::GetSoundIDForAnimationState(AnimationState::StateType state
         break;
 
     case AnimationState::StateType::Moving:
-        animationID = GetOpenCloseSoundID();
+        animationID = GetMovingSoundID();
         break;
 
     default:

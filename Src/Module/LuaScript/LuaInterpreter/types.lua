@@ -330,6 +330,56 @@
 -- @field Global Full volume in both internal and external views, not faded, and does *not* require focus.  This is designed for cross-vessel sounds like music playback; normally, vessels should not use this playback type.
 -- @table PlaybackType
 
+--- VolumeType.
+-- The active volume categories on one vessel or module proxy. Each proxy keeps its own levels; Main scales all its output.
+-- @field Main Overall level, initially the configured MasterVolume.
+-- @field Engines Engine sounds.
+-- @field RCS RCS sounds.
+-- @field Effects Sound effects and animation sounds.
+-- @field Callouts Spoken callouts.
+-- @field CabinAmbience Cabin ambience sounds.
+-- @field ATC ATC chatter, initially the configured ATC Volume.
+-- @field Music Music while this vessel has focus, initially the configured MusicVolume.
+-- @field Custom Sounds loaded with client-defined IDs.
+-- @table VolumeType
+
+--- Setting.
+-- XRSound configuration settings read or changed for one proxy. Booleans accept true/false or 1/0; other numeric settings use numbers, and string settings use strings.
+-- @field SilenceOfSpace Boolean; applies at the next vessel sound update.
+-- @field MusicOrder MusicOrder value; applies on the next track selection.
+-- @field UpdateInterval Seconds, 0.02 to 1.0; controls vessel update frequency.
+-- @field EnableVerboseLogging Boolean; takes effect immediately.
+-- @field LogVesselAnimations Boolean; takes effect immediately.
+-- @field LogThrusterData Boolean; takes effect immediately.
+-- @field DisableAutopilotsTimeAccThreshold Number, 0 to 10000.
+-- @field MinThrusterLevelForRCSSoundEffects Number, 0 to 1.
+-- @field ATCMinDelay Integer seconds, 10 to 900.
+-- @field ATCMaxDelay Integer seconds, 10 to 900.
+-- @field ATCAllowWhileLanded Boolean.
+-- @field ATCAllowInAtmosphere Boolean.
+-- @field ATCAllowDuringReentry Boolean.
+-- @field ATCDelayPlanetDistance Kilometers, 0 to 1,000,000.
+-- @field ATCDelayPlanetMultiplier Number, 1 to 100.
+-- @field CabinAmbienceMin Integer seconds, 7 to 300.
+-- @field CabinAmbienceMax Integer seconds, 7 to 300.
+-- @field MusicPlayInternal MusicPlay value.
+-- @field MusicPlayExternal MusicPlay value.
+-- @field WarningGearIsUpAltitude Meters, 0 to 1000.
+-- @field CustomEnginesThrusterIndexes String of space-separated non-negative indices; empty means none.
+-- @field LandingGearAnimationID Integer animation ID, or -1 for no landing gear.
+-- @table Setting
+
+--- MusicOrder values used by the `MusicOrder` setting.
+-- @field Sequential Play tracks in folder order.
+-- @field Random Select tracks randomly.
+-- @table MusicOrder
+
+--- MusicPlay values used by the `MusicPlayInternal` and `MusicPlayExternal` settings.
+-- @field Off Never play music.
+-- @field Space Play music only in space, outside an atmosphere.
+-- @field On Always play music.
+-- @table MusicPlay
+
 --- DefaultSoundID.
 --
 -- Defines vessel-unique sound IDs for each default sound; you can disable, enable, or change each of these default
@@ -384,6 +434,12 @@
 -- @field RCSAttackMinusX
 -- @field RCSAttackMinusY
 -- @field RCSAttackMinusZ
+-- @field RCSClosePlusX
+-- @field RCSClosePlusY
+-- @field RCSClosePlusZ
+-- @field RCSCloseMinusX
+-- @field RCSCloseMinusY
+-- @field RCSCloseMinusZ
 -- @field RadioATCGroup
 -- @field CabinAmbienceGroup
 -- @field MachCalloutsGroup

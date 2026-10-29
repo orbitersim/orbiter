@@ -1,13 +1,14 @@
 // ==============================================================
 // Implements default sounds handlers for XRSound.
 // 
-// Copyright (c) 2018-2026 Douglas Beachy
+// Copyright (c) 2018-2026 Douglas Beachy and contributors
 // Licensed under the MIT License
 // ==============================================================
 
 #include "SoundPreSteps.h"
 #include "XRSoundDLL.h"     // for GetSystemUptime
 #include <string>
+#include <sstream>
 
 // Plays a switch sound: On (high click), or Off (low click)
 bool SoundPreStep::PlaySwitch(const bool bOn, const float volume)
@@ -61,6 +62,27 @@ bool SoundPreStep::LoadAndPlayWavUsingID(const int soundID, const std::string &p
     return bSuccess;
 }
 
+// Plays a default sound slot, loading the configured file only if the slot is empty; see the header comment.
+bool SoundPreStep::PlayDefaultWavUsingID(const int soundID, const std::string &pConfiguredWavFile, const bool bLoop, const XRSound::PlaybackType playbackType, const float volume)
+{
+    if (soundID < 0)
+        return true;
+
+    const char *pLoadedFile = m_pEngine->GetWavFilename(soundID);
+    const bool bSlotEmpty = (!pLoadedFile || !*pLoadedFile);     // a placeholder context (no file loaded yet) has an empty filename
+    if (bSlotEmpty)
+    {
+        if (pConfiguredWavFile.empty())
+            return true;    // disabled in the configuration, and no client supplied a file: nothing to play (not an error)
+
+        if (!m_pEngine->LoadWav(soundID, pConfiguredWavFile.c_str(), playbackType))
+            return false;
+    }
+    // else a file is already loaded in the slot (ours from an earlier play, or a client's via LoadWav): play it as-is
+
+    return m_pEngine->PlayWav(soundID, bLoop, volume);
+}
+
 // ------------------------------------------------------------------------
 
 // Constructor
@@ -74,7 +96,8 @@ DefaultSoundPreStep::DefaultSoundPreStep(VesselXRSoundEngine *pEngine) :
 // Destructor
 DefaultSoundPreStep::~DefaultSoundPreStep()
 {
-    if (IsInitialized())
+    // MusicFolder is shared globally; destroying a vessel's prestep must not stop it.
+    if (IsInitialized() && (m_soundID != XRSound::MusicFolder))
         StopWav();
 }
 
@@ -83,19 +106,35 @@ DefaultSoundPreStep::~DefaultSoundPreStep()
 //   pSoundfilename: may be nullptr or empty
 //   playbackType: type of sound (fade, etc.)
 // 
-// Returns true if initialization successful, false if pSoundFilename is present bu the sound file load failed: the sound will not play
+// Returns true if initialization succeeds, false if a supplied sound file cannot be loaded. The caller keeps this prestep registered either way, so a client
+// can supply a usable file via LoadWav later.
+// If pSoundFilename is nullptr or empty the sound is disabled: nothing is loaded and this still returns true.
 bool DefaultSoundPreStep::Initialize(const int soundID, const char *pSoundFilename, const XRSound::PlaybackType playbackType)
 {
     m_soundID = soundID;
     m_playbackType = playbackType;
 
+    bool bSuccess = IsInitialized();
     if (pSoundFilename && *pSoundFilename)
     {
         if (LoadWav(pSoundFilename))
             m_bWavPresent = true;       // we have a valid wav file loaded
+        else
+            bSuccess = false;
     }
 
-    return IsInitialized();
+    return bSuccess;
+}
+
+// Returns true if a sound file is loaded in our sound slot (see the header comment).
+bool DefaultSoundPreStep::IsWavLoaded() const
+{
+    if (m_bWavPresent)
+        return true;
+
+    // A placeholder context (created by SetVolume, SetPlaybackType, SetDefaultSoundEnabled, etc. before any file was loaded) has an empty filename
+    const char *pLoadedFile = m_pEngine->GetWavFilename(m_soundID);
+    return (pLoadedFile && *pLoadedFile);
 }
 
 // Load a new sound into our sound ID slot; this will stop any existing sound in this slot that is currently playing, as well.
@@ -129,7 +168,7 @@ bool DefaultSoundPreStep::PlayWav(const bool bLoop, float volume)
     _ASSERTE(IsInitialized());
     bool bSuccess = false;
 
-    if (m_bWavPresent)
+    if (IsWavLoaded())      // if no sound is loaded (e.g., disabled in the configuration), stay silent without logging anything
         bSuccess = m_pEngine->PlayWav(m_soundID, bLoop, volume);  // this logs a message on success or failure
 
     return bSuccess;
@@ -143,7 +182,7 @@ bool DefaultSoundPreStep::StopWav()
     _ASSERTE(IsInitialized());
     bool bSuccess = false;
 
-    if (m_bWavPresent)
+    if (IsWavLoaded())
         bSuccess = m_pEngine->StopWav(m_soundID);   // this logs a message on success or failure
 
     return bSuccess;
@@ -155,7 +194,7 @@ bool DefaultSoundPreStep::IsWavPlaying() const
     _ASSERTE(IsInitialized());
     bool bSuccess = false;
 
-    if (m_bWavPresent)
+    if (IsWavLoaded())
         bSuccess = m_pEngine->IsWavPlaying(m_soundID);
 
     return bSuccess;
@@ -168,7 +207,7 @@ bool DefaultSoundPreStep::SetPaused(const bool bPause)
     _ASSERTE(IsInitialized());
     bool bSuccess = false;
 
-    if (m_bWavPresent)
+    if (IsWavLoaded())
         bSuccess = m_pEngine->SetPaused(m_soundID, bPause);
 
     return bSuccess;
@@ -179,7 +218,7 @@ bool DefaultSoundPreStep::IsPaused() const
     _ASSERTE(IsInitialized());
     bool bSuccess = false;
 
-    if (m_bWavPresent)
+    if (IsWavLoaded())
         bSuccess = m_pEngine->IsPaused(m_soundID);   // this logs a message on success or failure
 
     return bSuccess;
@@ -226,16 +265,18 @@ void AnimationSoundPreStep::clbkPreStep(const double simt, const double simdt, c
         case AnimationState::StateType::Closed:
         {
             const char *wavefile = m_animationSounds.GetWavForAnimationState(stateType);
+            // volume = the animation's configured Volume (1.0 if not set); this is XRSound's automatic volume, which the per-sound item level scales further
             if (wavefile)
-                LoadAndPlayWavUsingID(m_animationSounds.GetOpenCloseSoundID(), wavefile, false, m_animationSounds.GetPlaybackType());
+                LoadAndPlayWavUsingID(m_animationSounds.GetOpenCloseSoundID(), wavefile, false, m_animationSounds.GetPlaybackType(), m_animationSounds.GetVolume());
             break;
         }
 
         case AnimationState::StateType::Moving:
         {
             const char *wavefile = m_animationSounds.GetWavForAnimationState(stateType);
+            // volume = the animation's configured Volume (1.0 if not set); see the open/close case above
             if (wavefile)
-                LoadAndPlayWavUsingID(m_animationSounds.GetMovingSoundID(), wavefile, true, m_animationSounds.GetPlaybackType());
+                LoadAndPlayWavUsingID(m_animationSounds.GetMovingSoundID(), wavefile, true, m_animationSounds.GetPlaybackType(), m_animationSounds.GetVolume());
             break;
         }
 
@@ -392,10 +433,14 @@ bool RCSDefaultSoundPreStep::Initialize(const int soundID, const char *pSoundFil
 // this is invoked at every timestep.  This code was moved here / ported from the EngineSoundsPreStep class in the XR codebase.
 void RCSDefaultSoundPreStep::clbkPreStep(const double simt, const double simdt, const double mjd)
 {
+    // If RCSSustain is disabled in the configuration and no client supplied a file via LoadWav, RCSAttack and RCSClose are disabled too, as documented in XRSound.cfg.
+    if (!IsWavLoaded())
+        return;
+
     // these sounds play even if the ship is not in focus
     VESSEL *pVessel = GetVessel();
     if (!pVessel)
-        return;     // sanity check 
+        return;     // sanity check
 
     // Add up all the RCS thrusters for *both* modes, since an autopilot can fire in any mode even if the pilot has them in another mode 
     // or switched off. if TOTAL thrust >= 1.0, use full volume on RCS sustain.
@@ -419,7 +464,7 @@ void RCSDefaultSoundPreStep::clbkPreStep(const double simt, const double simdt, 
     // Play or halt the RCS sustain sound
     // tweaked per user feedback: do not play thruster sound if total thrust level is under a certain minimum threshold; 
     // e.g., when Prograde or Retrograde autopilot is enabled and firing thrusters at very low levels.
-    if (totalThrustLevel > GetConfig().MinThrusterLevelForRCSSoundEffects)   // should sound be playing?
+    if (totalThrustLevel > GetActive().MinThrusterLevelForRCSSoundEffects)   // should sound be playing?  (this vessel's own active value)
     {
         const float volume = XRSoundEngine::ComputeVariableVolume(s_minThrustLevelForSound, 1.0, totalThrustLevel / maxTotalThrustLevel);
 
@@ -517,17 +562,17 @@ void RCSModeDefaultSoundPreStep::clbkPreStep(const double simt, const double sim
         // Note: we use XRSound::Radio mode for these so the pilot can hear them even in external view (e.g., when they switch modes via the keyboard)
         case RCS_ROT:
             PlaySwitch(true);  // "On" click sound
-            LoadAndPlayWavUsingID(XRSound::Rotation, GetConfig().RCSRotation.c_str(), false, XRSound::PlaybackType::Radio);
+            PlayDefaultWavUsingID(XRSound::Rotation, GetConfig().RCSRotation, false, XRSound::PlaybackType::Radio);
             break;
 
         case RCS_LIN:
             PlaySwitch(true);  // "On" click sound
-            LoadAndPlayWavUsingID(XRSound::Translation, GetConfig().RCSTranslation.c_str(), false, XRSound::PlaybackType::Radio);
+            PlayDefaultWavUsingID(XRSound::Translation, GetConfig().RCSTranslation, false, XRSound::PlaybackType::Radio);
             break;
 
         case RCS_NONE:
             PlaySwitch(false);  // "Off" click sound
-            LoadAndPlayWavUsingID(XRSound::Off, GetConfig().RCSOff.c_str(), false, XRSound::PlaybackType::Radio);
+            PlayDefaultWavUsingID(XRSound::Off, GetConfig().RCSOff, false, XRSound::PlaybackType::Radio);
             break;
 
         default:
@@ -579,17 +624,17 @@ void AFCtrlModeDefaultSoundPreStep::clbkPreStep(const double simt, const double 
         // Note: we use XRSound::Radio mode for these so the pilot can hear them even in external view (e.g., when he switches modes via the keyboard)
         case 0:
             PlaySwitch(false);  // "Off" click sound
-            LoadAndPlayWavUsingID(XRSound::AFOff, GetConfig().AFOff, false, XRSound::PlaybackType::Radio);
+            PlayDefaultWavUsingID(XRSound::AFOff, GetConfig().AFOff, false, XRSound::PlaybackType::Radio);
             break;
 
         case 1:
             PlaySwitch(true);  // "On" click sound
-            LoadAndPlayWavUsingID(XRSound::AFPitch, GetConfig().AFPitch, false, XRSound::PlaybackType::Radio);
+            PlayDefaultWavUsingID(XRSound::AFPitch, GetConfig().AFPitch, false, XRSound::PlaybackType::Radio);
             break;
 
         case 2:
             PlaySwitch(true);  // "On" click sound
-            LoadAndPlayWavUsingID(XRSound::AFOn, GetConfig().AFOn, false, XRSound::PlaybackType::Radio);
+            PlayDefaultWavUsingID(XRSound::AFOn, GetConfig().AFOn, false, XRSound::PlaybackType::Radio);
             break;
 
         default:
@@ -611,7 +656,7 @@ LogThrusterDataPreStep::LogThrusterDataPreStep(VesselXRSoundEngine *pEngine)
 // Invoked n times per second 
 void LogThrusterDataPreStep::clbkPreStep(const double simt, const double simdt, const double mjd)
 {
-    if (GetConfig().LogThrusterData && simt >= m_simtNextLog)
+    if (GetActive().LogThrusterData && simt >= m_simtNextLog)    // this vessel's own active value
     {
         m_simtNextLog = simt + 1.0;     // log once per second
 
@@ -651,18 +696,29 @@ void CustomEnginesDefaultSoundPreStep::clbkPreStep(const double simt, const doub
 {
     _ASSERTE(IsInitialized());      // wav should be present if we were invoked
 
+    // If no custom engine sound is loaded (it is disabled in the configuration and no client supplied one via LoadWav), stay silent and inactive.
+    if (!IsWavLoaded())
+        return;
+
     VESSEL *pVessel = GetVessel();
     if (!pVessel)
         return;     // sanity check
 
     const int soundID = XRSound::CustomEngines;
-    vector<int> customThrusterIndexes = GetConfig().CustomEnginesThrusterIndexesAsVector();
+    // read this vessel's active list of thruster indexes (it may be empty, which means no custom-engine thrusters)
+    vector<int> customThrusterIndexes;
+    {
+        std::istringstream iss(GetActive().CustomEnginesThrusterIndexes);
+        std::string token;
+        while (iss >> token)
+            customThrusterIndexes.push_back(std::atoi(token.c_str()));
+    }
 
     if (m_bFirstRun)
     {
         m_bFirstRun = false;
 
-        // we want to show the actual integers here, not SupportedSoundFileTypes string, in case of parse errors resulting in unexpected 0 values
+        // we want to show the actual integers here, not the CustomEnginesThrusterIndexes string, in case of parse errors resulting in unexpected 0 values
         std::string thrusterIdxStr;
         for (unsigned int i = 0; i < customThrusterIndexes.size(); i++)
         {
@@ -678,16 +734,24 @@ void CustomEnginesDefaultSoundPreStep::clbkPreStep(const double simt, const doub
         WriteLog(msg);
     }
 
-    // figure out total engine thrust for all the thrusters in customThrusterIndexes
+    // Figure out total engine thrust for the configured thrusters in customThrusterIndexes.
     double totalThrustLevel = 0;
-    const int thrusterCount = static_cast<int>(customThrusterIndexes.size());
-    for (int i = 0; i < thrusterCount; i++)
+    int thrusterCount = 0;      // the number of configured thrusters that actually exist on this vessel
+    for (unsigned int i = 0; i < customThrusterIndexes.size(); i++)
     {
-        const THRUSTER_HANDLE th = pVessel->GetThrusterHandleByIndex(i);
+        const int thrusterIndex = customThrusterIndexes[i];
+        if ((thrusterIndex < 0) || (static_cast<DWORD>(thrusterIndex) >= pVessel->GetThrusterCount()))
+            continue;       // no such thruster on this vessel: skip it
+
+        const THRUSTER_HANDLE th = pVessel->GetThrusterHandleByIndex(static_cast<DWORD>(thrusterIndex));
+        if (!th)
+            continue;       // no thruster handle for this index: skip it
+
         totalThrustLevel += pVessel->GetThrusterLevel(th);
+        thrusterCount++;
     }
 
-    if (totalThrustLevel > 0)   // should sound be playing?
+    if ((totalThrustLevel > 0) && (thrusterCount > 0))   // should sound be playing?
     {
         // divide total thrust level by # of thrusters so we get an accurate thrust level for all thrusters in the group
         const double level = totalThrustLevel / thrusterCount;
@@ -723,13 +787,10 @@ TakeoffAndLandingCalloutsAndCrashPreStep::TakeoffAndLandingCalloutsAndCrashPreSt
     LOAD_SOUND(OneHundredKnots, Radio);
     LOAD_SOUND(Liftoff,         Radio);
 
-    // slight optimization: only load these sounds if this vessel has gear
-    if (pEngine->HasLandingGear())
-    {
-        LOAD_SOUND(WheelChirp,   BothViewMedium);
-        LOAD_SOUND(WheelStop,    Radio);
-        LOAD_SOUND(TiresRolling, BothViewClose);
-    }
+    // Always load the wheel sounds: a vessel can set LandingGearAnimationID at runtime. Playback is gated by the gear state in clbkPreStep.
+    LOAD_SOUND(WheelChirp,   BothViewMedium);
+    LOAD_SOUND(WheelStop,    Radio);
+    LOAD_SOUND(TiresRolling, BothViewClose);
 }
 
 void TakeoffAndLandingCalloutsAndCrashPreStep::clbkPreStep(const double simt, const double simdt, const double mjd)
@@ -1091,7 +1152,7 @@ DisableAutopilotsForTimeAccPreStep::DisableAutopilotsForTimeAccPreStep(VesselXRS
 // this is invoked at every timestep
 void DisableAutopilotsForTimeAccPreStep::clbkPreStep(const double simt, const double simdt, const double mjd)
 {
-    const double maxTimeAccForAP = GetConfig().DisableAutopilotsTimeAccThreshold;
+    const double maxTimeAccForAP = GetActive().DisableAutopilotsTimeAccThreshold;   // this vessel's own active value
     if (maxTimeAccForAP <= 0)
         return;     // feature disabled
 

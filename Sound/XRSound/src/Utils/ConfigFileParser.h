@@ -1,7 +1,7 @@
 // ==============================================================
 // From the XR Vessel Framework
 //
-// Copyright (c) 2006-2026 Douglas Beachy
+// Copyright (c) 2006-2026 Douglas Beachy and contributors
 // Licensed under the MIT License
 //
 // ConfigFileParser.h
@@ -74,7 +74,7 @@ protected:
     // the subclass must implement this method
     virtual bool ParseLine(const char *pSection, const char *pName, const char *pValue, const bool bParsingOverrideFile) = 0;
 
-    bool m_parseFailed;     // true if parse failed, false if it succeeded
+    bool m_parseFailed;     // true if any parse since the last parse of the default file failed (parsing the default file clears it)
     FILE *m_pLogFile;
     std::string m_csDefaultFilename;          // e.g,. "Config\XR2RavenstarPrefs.cfg"
     char m_buffer[MAX_LINE_LENGTH];

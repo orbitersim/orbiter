@@ -8,6 +8,7 @@ add_library(XRSound_dll SHARED
 	XRSoundDLL.cpp
 	XRSoundEngine.cpp
 	XRSoundEngine30.cpp
+	XRSoundEngine41.cpp
 	Resource.rc
 	Utils/ConfigFileParser.cpp
 	Utils/FileList.cpp

@@ -1,7 +1,7 @@
 // ==============================================================
 // XRSoundEngine30.h : Defines the XRSoundEngine version 2.x interface.
 //
-// Copyright (c) 2021-2026 Douglas Beachy
+// Copyright (c) 2021-2026 Douglas Beachy and contributors
 // Licensed under the MIT License
 // ==============================================================
 

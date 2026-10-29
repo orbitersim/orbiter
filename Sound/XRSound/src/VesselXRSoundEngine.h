@@ -2,7 +2,7 @@
 // XRSoundEngine class that is bound to an Orbiter vessel; this file is not distributed with XRSound.
 // The code for this exists in XRSound.dll.
 // 
-// Copyright (c) 2018-2026 Douglas Beachy
+// Copyright (c) 2018-2026 Douglas Beachy and contributors
 // Licensed under the MIT License
 // ==============================================================
 
@@ -56,6 +56,20 @@ public:
 
     virtual bool SetDefaultSoundGroupFolder(const XRSound::DefaultSoundID groupSoundID, const char *pSubfolderPath) override;
     virtual const char *GetDefaultSoundGroupFolder(const XRSound::DefaultSoundID groupSoundID) const override;
+
+    // Returns true if soundID is one of this vessel's animation ("door") sound IDs (the open/close or moving sound ID of any [animation_*] section)
+    virtual bool IsAnimationSoundID(const int soundID) const override;
+
+    // Returns the volume to set on the sound's ISound: the mix volume followed by the fades for the sound's effective playback type (distance, pressure, view, and focus)
+    virtual float ComputeFinalVolume(const WavContext &context) override;
+
+    // This vessel plays the shared music slot while it has focus (see XRSoundEngine::PlaysMusicSlot).
+    virtual bool PlaysMusicSlot() const override;
+
+    // Per-vessel update scheduling: XRSoundDLL::clbkPreStep refreshes this vessel when IsRefreshDue returns true and then calls ScheduleNextRefresh, which uses THIS vessel's
+    // active UpdateInterval, so a vessel's UpdateInterval setting affects only that vessel.  A new vessel is due immediately.
+    bool IsRefreshDue(const double simt) const { return (simt >= m_nextRefreshSimt); }
+    void ScheduleNextRefresh(const double simt) { m_nextRefreshSimt = simt + m_active.UpdateInterval; }
 
     void LoadGlobalSounds();
     virtual void LoadDefaultSounds();  // subclasses, if there ever are any, would probably want to override this method
@@ -142,6 +156,13 @@ protected:
     virtual void UpdateSoundState(WavContext &context) override;
 
     void UpdateAllSoundStates();   // invoked every frame from clbkPreStep
+
+    // Applies the vessel-only side effects of a setting that was just changed in this vessel's active values (rescheduling random groups)
+    virtual void OnSettingChanged(const XRSound::Setting setting) override;
+
+    // Reschedules the next clip of the supplied random group (RadioATCGroup or CabinAmbienceGroup) using the current delay settings, measured from now.
+    void RescheduleRandomGroup(const int groupSoundID);
+
     void PollAllAnimationStates();
     void FadeVolumeForDistanceAndPressure(float &volume, const double maxLoudnessDistance);
     void FadeVolumeForPressure(float &volume);
@@ -170,6 +191,7 @@ private:
     VesselXRSoundEngine(const OBJHANDLE hVessel);
     virtual ~VesselXRSoundEngine() override;
 
+    double m_nextRefreshSimt = 0;      // absolute sim time at which XRSoundDLL::clbkPreStep next refreshes this vessel (see IsRefreshDue)
     std::string m_csCachedVesselName;  // used by GetVesselName
     std::string m_csCachedVesselClass;
 };

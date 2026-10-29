@@ -1,7 +1,7 @@
 // ==============================================================
 // XRSound engine class bound to a vessel.
 // 
-// Copyright (c) 2018-2026 Douglas Beachy
+// Copyright (c) 2018-2026 Douglas Beachy and contributors
 // Licensed under the MIT License
 // ==============================================================
 
@@ -72,6 +72,10 @@ VesselXRSoundEngine::VesselXRSoundEngine(const OBJHANDLE hVessel) :
         m_pConfig->WriteLog(msg);
     }
 
+    // This vessel's active volume levels and settings start from its own configuration (just parsed above); from here on the XRSound API changes only
+    // the active values, never m_pConfig.
+    InitializeActiveValues();
+
     InitializeCachedData();
     LoadGlobalSounds();
 }
@@ -82,40 +86,70 @@ VesselXRSoundEngine::~VesselXRSoundEngine()
     // our base class cleans up m_pConfig
 }
 
-// Enable or disable a default sound or group.  This can also be done globally via the configuration file; however, this option 
+// Returns true if soundID is one of this vessel's animation ("door") sound IDs: the open/close or the moving sound ID of any [animation_*] section.
+bool VesselXRSoundEngine::IsAnimationSoundID(const int soundID) const
+{
+    if ((soundID < 0) || !m_pConfig)    // unset animation sound IDs are -1
+        return false;
+
+    const vector<const AnimationSounds *> allAnimationSounds = m_pConfig->GetAllAnimationSounds();
+    for (const AnimationSounds *pSounds : allAnimationSounds)
+    {
+        if ((pSounds->GetOpenCloseSoundID() == soundID) || (pSounds->GetMovingSoundID() == soundID))
+            return true;
+    }
+    return false;
+}
+
+// Enable or disable a default sound or group.  This can also be done globally via the configuration file; however, this option
 // is useful if you want to disable some sound effects at runtime.
 //   soundID: which default sound to enable or disable
 //   bEnabled: true to enable default sound, false to disable it
 //
-// Returns true on success, false if XRSound.dll not present this default sound is disabled via config file (i.e., this default sound is not loaded).
+// Returns true if the enabled flag was applied, false if XRSound.dll not present or soundID is not a default sound or group.
+//
+// MusicFolder is special: music is one slot shared by all vessels, so turning music off is per vessel and never touches the shared slot's bEnabled flag (that would silence the music for
+// every vessel).  The flag is this vessel's own (m_active.bMusicEnabled); this vessel's music prestep consults it while this vessel has focus (see MusicDefaultSoundGroupPreStep).
 bool VesselXRSoundEngine::SetDefaultSoundEnabled(const XRSound::DefaultSoundID soundID, const bool bEnabled)
 {
     if (!IsSoundEngineInitialized())
         return false;
+
+    if (soundID == XRSound::MusicFolder)
+    {
+        const bool bWasEnabled = m_active.bMusicEnabled;
+        m_active.bMusicEnabled = bEnabled;
+
+        // If this vessel is the one playing the shared music right now, disabling must silence it at once instead of waiting for the next prestep.  (A vessel without focus has no
+        // effect on the music that the focus vessel is playing; when focus later moves to this vessel, its prestep stops the track while this flag is false.)
+        const bool bPlaysMusicSlot = PlaysMusicSlot();
+        bool bStopped = false;
+        if (!bEnabled && bPlaysMusicSlot)
+            bStopped = StopWav(XRSound::MusicFolder);   // StopWav returns true when the slot is valid; the call is a no-op if no track is playing
+        VERBOSE_LOG(this, "VesselXRSoundEngine::SetDefaultSoundEnabled: MusicFolder is per vessel: bMusicEnabled %d => %d, PlaysMusicSlot = %d, stop requested = %d", bWasEnabled, bEnabled, bPlaysMusicSlot, bStopped);
+        return true;
+    }
 
     bool bSuccess = false;
 
     // this works for both default sounds and defaults groups (which still only have one slot per group)
     if (IsDefaultSoundOrGroup(soundID))
     {
-        WavContext *pContext = FindWavContext(soundID);
-
-        // NOTE: it is possible for a vessel to disable a default sound before we have loaded it, so we have to handle that here
-        if (!pContext)
-        {
-            // create an empty WavContext to hold the enabled status; this will be propagated later as the WavContext is updated with a real LoadWav
-            WavContext wavContext(soundID, "", XRSound::PlaybackType::InternalOnly, bEnabled);
-            m_allWavsMap.insert(soundID_WavContext_Pair(soundID, wavContext));   // copied by value
-            pContext = FindWavContext(soundID);     // must get the persisted copy in our map; should always succeed now
-        }
-
+        // NOTE: it is possible for a vessel to disable a default sound before we have loaded it (or when it is disabled in the configuration, so it never will be loaded
+        // by XRSound), so this creates an empty WavContext to hold the enabled status if necessary; it will be propagated later as the WavContext is updated with a real LoadWav.
+        WavContext *pContext = FindOrCreateSlotContext(soundID);
         _ASSERTE(pContext);
+        if (pContext)
+        {
+            // TOO VERBOSE -- keeps alternating when two or more XR1s are in the scenario: VERBOSE_LOG(this, "XRSoundEngine::SetDefaultSoundEnabled: setting default sound %s bEnabled = %d", pContext->ToStr(), bEnabled);
 
-        // TOO VERBOSE -- keeps alternating when two or more XR1s are in the scenario: VERBOSE_LOG(this, "XRSoundEngine::SetDefaultSoundEnabled: setting default sound %s bEnabled = %d", pContext->ToStr(), bEnabled);
-
-        pContext->bEnabled = bEnabled;
-        UpdateSoundState(*pContext);    // disable or enable it immediately instead of waiting for the next timestep
+            pContext->bEnabled = bEnabled;
+            UpdateSoundState(*pContext);    // disable or enable it immediately instead of waiting for the next timestep
+            bSuccess = true;
+        }
     }
+    else
+        VERBOSE_LOG(this, "XRSoundEngine::SetDefaultSoundEnabled WARNING: sound ID %d is not a default sound or group; ignored (bEnabled = %d)", static_cast<int>(soundID), bEnabled);
 
     return bSuccess;
 }
@@ -126,6 +160,10 @@ bool VesselXRSoundEngine::GetDefaultSoundEnabled(const XRSound::DefaultSoundID s
 {
     if (!IsSoundEngineInitialized())
         return false;
+
+    // music on/off is this vessel's own flag (see SetDefaultSoundEnabled), not the shared music slot's
+    if (soundID == XRSound::MusicFolder)
+        return m_active.bMusicEnabled;
 
     bool bEnabled = false;
 
@@ -159,17 +197,71 @@ bool VesselXRSoundEngine::SetDefaultSoundGroupFolder(const XRSound::DefaultSound
         if (!pPreStep)
         {
             VERBOSE_LOG(this, "XRSoundEngine::SetDefaultSoundGroupFolder WARNING: no default sounds loaded for sound ID %d; cannot set default sound folder '%s'",
-                defaultSoundID, pSubfolderPath);
+                defaultSoundID, pSubfolderPath ? pSubfolderPath : "<null>");
             return false;
         }
 
-        // this logs a message on success or failure
+        // this logs a message on success or failure; on failure the previous folder and file list remain in effect
+        // Note: this changes only THIS vessel's group prestep, for every group including MusicFolder (each vessel's music prestep plays from its own folder when that vessel has focus).
+        // The configuration (including the configured MusicFolder that new vessels start with) is never changed.
         bSuccess = pPreStep->SetFolder(pSubfolderPath);
+        VERBOSE_LOG(this, "XRSoundEngine::SetDefaultSoundGroupFolder: group ID %d folder '%s' => %s", static_cast<int>(defaultSoundID), pSubfolderPath ? pSubfolderPath : "<null>", bSuccess ? "success" : "failed");
     }
     return bSuccess;
 }
 
-// Returns the default subfolder path for a default sound group, relative to $ORBITER_ROOT, 
+// Applies the vessel-only side effects of a setting that was just changed in this vessel's active values (the value itself was already stored by XRSoundEngine::SetSettingNumber /
+// SetSettingString).  Settings that the presteps read live (and every setting that has no side effect) take effect at the next update without any action here.
+void VesselXRSoundEngine::OnSettingChanged(const XRSound::Setting setting)
+{
+    switch (setting)
+    {
+    // Some settings reschedule the next clip of a random group now (measured from now), so the new delay range applies immediately instead of after the clip that was already scheduled.
+    // A clip that is already playing finishes.
+    case XRSound::Setting::ATCMinDelay:
+    case XRSound::Setting::ATCMaxDelay:
+    case XRSound::Setting::ATCDelayPlanetDistance:
+    case XRSound::Setting::ATCDelayPlanetMultiplier:
+        RescheduleRandomGroup(XRSound::RadioATCGroup);
+        break;
+
+    case XRSound::Setting::CabinAmbienceMin:
+    case XRSound::Setting::CabinAmbienceMax:
+        RescheduleRandomGroup(XRSound::CabinAmbienceGroup);
+        break;
+
+    default:
+        break;
+    }
+}
+
+// This vessel plays the shared music slot while it has focus (see MusicDefaultSoundGroupPreStep).
+bool VesselXRSoundEngine::PlaysMusicSlot() const
+{
+    return HasFocus();
+}
+
+// Reschedules the next clip of the supplied random group (RadioATCGroup or CabinAmbienceGroup) now, using the current delay settings (the new wait is measured from now).
+// A clip that is already playing finishes.  Invoked when one of the delay settings is changed at runtime (see VesselXRSoundEngine::OnSettingChanged).
+void VesselXRSoundEngine::RescheduleRandomGroup(const int groupSoundID)
+{
+    _ASSERTE((groupSoundID == XRSound::RadioATCGroup) || (groupSoundID == XRSound::CabinAmbienceGroup));
+    if ((groupSoundID != XRSound::RadioATCGroup) && (groupSoundID != XRSound::CabinAmbienceGroup))
+        return;     // only these two groups play at random intervals
+
+    DefaultSoundGroupPreStep *pPreStep = FindDefaultSoundGroupPreStep(groupSoundID);
+    if (!pPreStep)
+    {
+        VERBOSE_LOG(this, "VesselXRSoundEngine::RescheduleRandomGroup WARNING: no prestep found for sound group ID %d; nothing rescheduled", groupSoundID);
+        return;
+    }
+
+    // safe to cast here: the ATC and cabin ambience group presteps are both RandomDefaultSoundGroupPreSteps
+    static_cast<RandomDefaultSoundGroupPreStep *>(pPreStep)->ResetTimer();
+    VERBOSE_LOG(this, "VesselXRSoundEngine::RescheduleRandomGroup: rescheduled the next clip of sound group ID %d using the current delay settings", groupSoundID);
+}
+
+// Returns the default subfolder path for a default sound group, relative to $ORBITER_ROOT,
 // or nullptr if no default sounds loaded for the supplied defaultSoundID or XRSoundDLL not present.
 //   groupdefaultSoundID: which default XRSound group to update (only DefaultSoundIDs that end in "Group" are valid for this call)
 const char *VesselXRSoundEngine::GetDefaultSoundGroupFolder(const XRSound::DefaultSoundID defaultSoundID) const
@@ -181,8 +273,8 @@ const char *VesselXRSoundEngine::GetDefaultSoundGroupFolder(const XRSound::Defau
 
     // safe to cast here because we verified the defaultSoundID above
     const DefaultSoundGroupPreStep *pPreStep = static_cast<DefaultSoundGroupPreStep *>(FindDefaultSoundGroupPreStep(defaultSoundID));
-    if (pPreStep)
-        pSoundFolder = pPreStep->GetFolder();   // will never be nullptr here
+    if (pPreStep && *pPreStep->GetFolder())     // a disabled group has an empty folder and is reported as nullptr
+        pSoundFolder = pPreStep->GetFolder();
 
     return pSoundFolder;
 }
@@ -223,12 +315,70 @@ void VesselXRSoundEngine::UpdateAllSoundStates()
         UpdateSoundState(it->second);
 }
 
-// Update the playback state & volume of a single sound based on the camera mode, 
+// Returns true if the supplied playback type is one of the defined XRSound::PlaybackType values
+static bool IsValidPlaybackType(const XRSound::PlaybackType playbackType)
+{
+    const int value = static_cast<int>(playbackType);
+    return ((value >= static_cast<int>(XRSound::PlaybackType::InternalOnly)) && (value <= static_cast<int>(XRSound::PlaybackType::Global)));
+}
+
+// Returns the volume to set on the sound's ISound: the mix volume (requested * item level * this vessel's category level * this vessel's main volume) followed by the fades for the sound's *effective* playback type (the SetPlaybackType override, if any, otherwise the
+// type supplied by LoadWav): camera mode, distance from the camera to this vessel, focus, and atmospheric pressure.
+// This is what UpdateSoundState applies, and also what ReapplyVolume applies when a volume or playback type is changed at runtime.
+float VesselXRSoundEngine::ComputeFinalVolume(const WavContext &context)
+{
+    float volume = ComputeMixVolume(context);
+
+    switch (EffectivePlaybackTypeFor(context))
+    {
+    case XRSound::PlaybackType::InternalOnly:     // full volume, but in cockpit view only
+        if (!InCockpitView())
+            volume = 0;     // should not play
+        break;
+
+    case XRSound::PlaybackType::Radio:  // full volume in both internal and external view; requires focus
+        if (!HasFocus())
+            volume = 0;
+        break;
+
+    case XRSound::PlaybackType::BothViewFar:
+        FadeVolumeForDistanceAndPressure(volume, 125.0);
+        break;
+
+    case XRSound::PlaybackType::BothViewMedium:
+        FadeVolumeForDistanceAndPressure(volume, 50.0);
+        break;
+
+    case XRSound::PlaybackType::BothViewClose:
+        FadeVolumeForDistanceAndPressure(volume, 20.0);
+        break;
+
+    case XRSound::PlaybackType::Wind:
+        FadeVolumeForPressure(volume);
+        break;
+
+    case XRSound::PlaybackType::Global:
+        break;      // not faded by distance or pressure, and does not require focus
+
+    default:
+        _ASSERTE(false);    // unknown sound type -- should never happen!  (UpdateSoundState releases such a sound.)
+        volume = 0;
+        break;
+    }
+
+    return volume;
+}
+
+// Update the playback state & volume of a single sound based on the camera mode,
 // the distance from the camera to this vessel (i.e., the sound is generated by its vessel), and atmospheric pressure
 // if the sound is external.  If there is no atmosphere around this vessel, external sound volume will be zero.
 void VesselXRSoundEngine::UpdateSoundState(WavContext &context)
 {
     // NOTE: If you update this method, check/update the same method in ModuleXRSoundEngine as well.
+
+    // The shared music slot belongs to the engine that plays it (the focus vessel's, see PlaysMusicSlot). Other vessels must not apply their levels, fades, or paused state to it.
+    if (IsMusicSlotContext(context) && !PlaysMusicSlot())
+        return;
 
     ISound *pISound = context.pISound;  // will be nullptr if sound was never played yet, or was stopped before finishing
     if (pISound)    // sound was marked to play or is playing now?
@@ -243,51 +393,30 @@ void VesselXRSoundEngine::UpdateSoundState(WavContext &context)
                 return;
             }
 
-            float volume = context.volume;  // Note: context.volume has already been adjusted for MasterVolume setting in config
-            switch (context.playbackType)
+            // An unknown playback type should never happen (SetPlaybackType validates its argument; a client's LoadWav type is not validated, though)
+            if (!IsValidPlaybackType(EffectivePlaybackTypeFor(context)))
             {
-            case XRSound::PlaybackType::InternalOnly:     // full volume, but in cockpit view only
-                if (!InCockpitView())
-                    volume = 0;     // should not play
-                break;
-
-            case XRSound::PlaybackType::Radio:  // full volume in both internal and external view; requires focus
-                if (!HasFocus())
-                    volume = 0;
-                break;
-
-            case XRSound::PlaybackType::BothViewFar:
-                FadeVolumeForDistanceAndPressure(volume, 125.0);
-                break;
-
-            case XRSound::PlaybackType::BothViewMedium:
-                FadeVolumeForDistanceAndPressure(volume, 50.0);
-                break;
-
-            case XRSound::PlaybackType::BothViewClose:
-                FadeVolumeForDistanceAndPressure(volume, 20.0);
-                break;
-
-            case XRSound::PlaybackType::Wind:
-                FadeVolumeForPressure(volume);
-                break;
-
-            case XRSound::PlaybackType::Global:
-                break;      // not faded by distance or pressure, and does not require focus
-
-            default:
-                _ASSERTE(false);    // unknown sound type -- should never happen!
-                goto release_sound;
+                _ASSERTE(false);
+                // Stop it (and release it) rather than only releasing it: ISoundEngine::Release keeps an unfinished sound alive, so a release alone left it
+                // playing with no way to stop it.
+                StopWavImpl(&context, this);
+                return;
             }
 
             // update the state for this sound
-            pISound->setVolume(volume);
+            // Note: ComputeFinalVolume is the mix volume (requested * item level * this vessel's category level * this vessel's main volume) followed by the fades for the effective playback type.
+            pISound->setVolume(ComputeFinalVolume(context));
             pISound->setIsLooped(context.bLoop);
-            pISound->setIsPaused(context.bPaused);
+
+            // While the simulation is paused, never un-pause a sound that already exists: clbkPause pauses each ISound directly and leaves context.bPaused alone, so
+            // setting it from the context here would resume the sound during the pause (e.g., from SetPaused or SetDefaultSoundEnabled).  Each vessel sound is
+            // restored to its own context.bPaused state by the first UpdateAllSoundStates after the sim resumes.  Pausing a sound is always allowed.
+            // (PlayWav un-pauses a sound that it *newly starts* during a pause itself.)
+            if (context.bPaused || !oapiGetPause())
+                pISound->setIsPaused(context.bPaused);
         }
         else
         {
-        release_sound:
             // sound has finished, so release its resources
             s_SoundEngine->Release(pISound);
             context.pISound = nullptr;
@@ -357,7 +486,7 @@ void VesselXRSoundEngine::PollAllAnimationStates()
             (pPrevAnimationState->State != state)
             );
 
-        if (bStateTransitioned && GetConfig().LogVesselAnimations)
+        if (bStateTransitioned && m_active.LogVesselAnimations)    // this vessel's own active value
         {
             char csMsg[256];
             snprintf(csMsg, 256, "  >> LogVesselAnimations: [%s][animation ID = %d, state = %s]", GetVesselClassName().c_str(), animID, animationState.ToStr());
@@ -374,7 +503,7 @@ void VesselXRSoundEngine::FadeVolumeForDistanceAndPressure(float &volume, const 
 {
     if (!InCockpitView())   // should be full volume in internal view, so don't change volume
     {
-        if (InAtmosphere() || !GetConfig().SilenceOfSpace)
+        if (InAtmosphere() || !m_active.SilenceOfSpace)    // this vessel's own active SilenceOfSpace value
         {
             const float orgVolume = volume;
 
@@ -414,7 +543,7 @@ void VesselXRSoundEngine::FadeVolumeForDistanceAndPressure(float &volume, const 
 //   volume: 0..1.0 volume to be adjusted
 void VesselXRSoundEngine::FadeVolumeForPressure(float &volume)
 {
-    if (!GetConfig().SilenceOfSpace)
+    if (!m_active.SilenceOfSpace)      // this vessel's own active SilenceOfSpace value
         return;
 
     const float orgVolume = volume;
@@ -467,9 +596,8 @@ bool VesselXRSoundEngine::IsLanded()
     const VESSEL *pVessel = GetVessel();
     if (pVessel)
     {
-        // check below is for max meters-per-second the ship can be moving and still be considered wheel-stop (vessels never stop moving in Orbiter 2016 [until restart] due to core bug)
+        // Gear compression can cause a small startup groundspeed bump, so allow a small tolerance when testing for wheel-stop.
         bIsLanded = (pVessel->GroundContact() && (pVessel->GetGroundspeed() < 0.04));
-        // NOTE: used to compare speed to 0, but Orbiter 2016 causes a very slight airspeed bump on startup when landed because of gear compression physics in the core
     }
 
     return bIsLanded;
@@ -526,7 +654,7 @@ double VesselXRSoundEngine::GetLandingGearAnimationState()
     VESSEL *pVessel = GetVessel();
     if (pVessel)
     {
-        const int gearAnimID = GetConfig().LandingGearAnimationID;
+        const int gearAnimID = m_active.LandingGearAnimationID;
         if (gearAnimID >= 0)
             doorState = pVessel->GetAnimation(gearAnimID);
     }
@@ -536,7 +664,7 @@ double VesselXRSoundEngine::GetLandingGearAnimationState()
 // Returns true if this vessel has landing gear, or false if landing gear state is undefined (i.e., .cfg file for this vessel does not specify any gear)
 bool VesselXRSoundEngine::HasLandingGear()
 {
-    return (GetConfig().LandingGearAnimationID >= 0);
+    return (m_active.LandingGearAnimationID >= 0);
 }
 
 // returns true if the ship is docked
@@ -607,6 +735,7 @@ void VesselXRSoundEngine::LoadDefaultSounds()
     AddDefaultSound(new AltitudeCalloutsDefaultSoundGroupPreStep(this), XRSound::AltitudeCalloutsGroup, GetConfig().AltitudeCalloutsGroup.c_str(), XRSound::PlaybackType::Radio);
     AddDefaultSound(new DockingCalloutsDefaultSoundGroupPreStep(this), XRSound::DockingDistanceCalloutsGroup, GetConfig().DockingDistanceCalloutsGroup.c_str(), XRSound::PlaybackType::Radio);
     AddDefaultSound(new MachCalloutsDefaultSoundGroupPreStep(this), XRSound::MachCalloutsGroup, GetConfig().MachCalloutsGroup.c_str(), XRSound::PlaybackType::Radio);
+    // MusicFolder starts from the configured value like every other group; this vessel's music prestep plays from this vessel's own folder (SetDefaultSoundGroupFolder changes only this vessel's)
     AddDefaultSound(new MusicDefaultSoundGroupPreStep(this), XRSound::MusicFolder, GetConfig().MusicFolder.c_str(), XRSound::PlaybackType::Radio);
 
     // Loop through each AnimationSounds object defined for this vessel and add an AnimationSoundPreStep for each.
@@ -638,26 +767,33 @@ void VesselXRSoundEngine::AddSoundPreStep(SoundPreStep *pPreStep)
 //   pSoundfilename: may not be nullptr, but may be empty.  Relative to $ORBITER_ROOT.  If empty or contains the special value of "none", a message is logged and the default sound is NOT loaded.
 //   playbackType: type of sound (fade, etc.)
 //
-// Returns true on success, false if the supplied pWavFilename is empty (i.e., sound is disabled) or could not be loaded.
+// The prestep stays registered if the sound is disabled in the configuration or its file or folder cannot be loaded or scanned. It remains silent and inactive
+// until a client supplies a usable file or folder through the API.
+//
+// Returns true if the sound or group is usable now, false if the supplied pWavFilename is empty (i.e., sound is disabled) or could not be loaded.
 bool VesselXRSoundEngine::AddDefaultSound(DefaultSoundPreStep *pPreStep, const int soundID, const char *pSoundFileOrFolderName, const XRSound::PlaybackType playbackType)
 {
+    _ASSERTE(pPreStep);
     _ASSERTE(pSoundFileOrFolderName);
 
     // see if this sound is disabled
-    if (!(*pSoundFileOrFolderName) || (_stricmp(pSoundFileOrFolderName, "none") == 0))
+    const bool bDisabled = (!(*pSoundFileOrFolderName) || (_stricmp(pSoundFileOrFolderName, "none") == 0));
+    if (bDisabled)
     {
         // no sound filename set, so sound was disabled by the user in XRSound.cfg (or vessel class .cfg override)
-        VERBOSE_LOG(this, "XRSoundEngine::AddDefaultSound INFO: default sound ID %d disabled via config file.", soundID);
-        return false;
+        VERBOSE_LOG(this, "XRSoundEngine::AddDefaultSound INFO: default sound ID %d disabled via config file (it stays inactive until a file or folder is supplied via the API).", soundID);
     }
 
-    const bool bSuccess = pPreStep->Initialize(soundID, pSoundFileOrFolderName, playbackType);
-    if (bSuccess)
-        AddSoundPreStep(pPreStep);
-    else
-        delete pPreStep;    // can't use this sound
+    // a disabled sound is initialized with an empty file or folder, which sets the sound ID but loads nothing
+    const bool bSuccess = pPreStep->Initialize(soundID, (bDisabled ? "" : pSoundFileOrFolderName), playbackType);
+    if (!bSuccess && !bDisabled)
+    {
+        // Initialize already logged why, if it is a group; either way the prestep is kept so that the API can supply a usable file or folder later
+        VERBOSE_LOG(this, "XRSoundEngine::AddDefaultSound INFO: default sound ID %d could not be loaded from '%s'; it stays inactive until a usable file or folder is supplied via the API.", soundID, pSoundFileOrFolderName);
+    }
 
-    return bSuccess;
+    AddSoundPreStep(pPreStep);
+    return (bSuccess && !bDisabled);
 }
 
 // Free all our default sounds (sound groups, which are subclasses); invoked just before this engine is destroyed

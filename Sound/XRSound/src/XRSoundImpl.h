@@ -1,7 +1,7 @@
 // ==============================================================
 // XRSoundImpl.h : Defines the XRSound API implementation; this file is not distributed with XRSound.
 // 
-// Copyright (c) 2018-2026 Douglas Beachy
+// Copyright (c) 2018-2026 Douglas Beachy and contributors
 // Licensed under the MIT License
 // ==============================================================
 
@@ -29,7 +29,7 @@ public:
     virtual bool IsPresent() const override { return (m_pEngine != nullptr); }
     virtual float GetVersion() const override;
     virtual bool LoadWav(const int soundID, const char *pSoundFilename, const PlaybackType playbackType) override;
-    virtual bool PlayWav(const int soundID, const bool bLoop = false, const float volume = 1.0) override;
+    virtual bool PlayWav(const int soundID, const bool bLoop = false, const float volume = UseStoredVolume) override;   // NOTE: 4.1 changed this default from 1.0
     virtual bool StopWav(const int soundID) override;
     virtual bool IsWavPlaying(const int soundID) const override;
     virtual bool SetPaused(const int soundID, const bool bPause) override;
@@ -53,6 +53,25 @@ public:
 
     virtual bool  SetPlayPosition(const int soundID, const unsigned int positionMillis);
     virtual int   GetPlayPosition(const int soundID);
+
+    // Added in XRSound 4.1
+    // NOTE: the non-virtual inline SetSetting(const Setting, const int) overload lives in the XRSound base class.  Overriding two of the SetSetting overloads here
+    // hides it when calling through an XRSoundImpl pointer, which nothing in XRSound does (clients always hold an XRSound pointer), so we re-expose it for completeness.
+    using XRSound::SetSetting;
+    virtual bool SetVolume(const VolumeType type, const float level) override;
+    virtual bool GetVolume(const VolumeType type, float &level) const override;
+    virtual bool SetVolume(const int soundID, const float volume) override;
+    virtual bool GetVolume(const int soundID, float &volume) const override;
+    virtual bool SetPlaybackType(const int soundID, const PlaybackType playbackType) override;
+    virtual bool GetPlaybackType(const int soundID, PlaybackType &playbackType) const override;
+    virtual bool GetDuration(const int soundID, unsigned int &durationMillis) override;
+    virtual bool SetSetting(const Setting setting, const double value) override;
+    virtual bool GetSetting(const Setting setting, double &value) const override;
+    virtual bool SetSetting(const Setting setting, const char *pValue) override;
+    virtual bool GetSetting(const Setting setting, char *pBuffer, const int bufferLength) const override;
+    virtual bool GetDefaultVolume(const VolumeType type, float &level) const override;
+    virtual bool GetDefaultSetting(const Setting setting, double &value) const override;
+    virtual bool GetDefaultSetting(const Setting setting, char *pBuffer, const int bufferLength) const override;
 
     //========================================================================================================================
     // NOTE: methods below here are not part of the public API; however, we call these DLL methods from here on the impl side

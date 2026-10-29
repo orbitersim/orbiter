@@ -1,7 +1,7 @@
 // ==============================================================
 // From the XR Vessel Framework
 // 
-// Copyright (c) 2006-2026 Douglas Beachy
+// Copyright (c) 2006-2026 Douglas Beachy and contributors
 // Licensed under the MIT License
 //
 // ConfigFileParser.cpp
@@ -65,6 +65,11 @@ bool ConfigFileParser::ParseFile(const char *pFilename)
         pFilename = GetDefaultFilename();
 
     const bool bParsingOverrideFile = (_stricmp(pFilename, GetDefaultFilename()) != 0);  // true if we are parsing an override file
+
+    // Parsing the default file starts a new parse cycle (default file + optional override files), so forget any failure from an earlier cycle.
+    // An override file parse never clears the flag, so a failure in the default file is still reported after the override is parsed.
+    if (!bParsingOverrideFile)
+        m_parseFailed = false;
 
     static char temp[256]; // reused for messages
 
@@ -266,7 +271,7 @@ void ConfigFileParser::WriteLog(const char *pMsg) const
     if ((pMsg == nullptr) || (m_pLogFile == nullptr)) 
         return;
 
-	char csMsg[256];
+	char csMsg[4096];
     // get and format the current time
     auto now = std::chrono::system_clock::now();
     std::time_t t = std::chrono::system_clock::to_time_t(now);
@@ -282,7 +287,7 @@ void ConfigFileParser::WriteLog(const char *pMsg) const
     if (!GetLogPrefix().empty())
         snprintf(csPrefix, 256, "[%s] ", GetLogPrefix().c_str());
 
-    snprintf(csMsg, 256, "%02d.%02d.%04d %02d:%02d:%02d.%03d - %s%s\n", 
+    snprintf(csMsg, sizeof(csMsg), "%02d.%02d.%04d %02d:%02d:%02d.%03d - %s%s\n",
         tm.tm_mon + 1, tm.tm_mday, tm.tm_year + 1900, 
         tm.tm_hour, tm.tm_min, tm.tm_sec, (int)ms.count(),
         csPrefix, pMsg);

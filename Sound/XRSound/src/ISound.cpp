@@ -110,6 +110,34 @@ ISound *ISoundEngine::play2D(const char *soundFileName, const bool playLooped, c
     return nullptr;
 }
 
+bool ISoundEngine::getSoundLengthMillis(const char *soundFileName, unsigned int &lengthMillis) const
+{
+    if (!soundFileName || !*soundFileName) return false;
+
+    // zero format/channels/sample rate in the default config means "use the file's native values", so outputSampleRate below
+    // is the rate that the length in PCM frames is expressed in.
+    ma_decoder_config config = ma_decoder_config_init_default();
+    ma_decoder decoder;
+    if (ma_decoder_init_file(soundFileName, &config, &decoder) != MA_SUCCESS) {
+        std::string message = std::string("XRSound: could not open sound file to get its length: ") + soundFileName;
+        oapiWriteLog(message.data());
+        return false;
+    }
+
+    ma_uint64 lengthInFrames = 0;
+    const ma_result result = ma_decoder_get_length_in_pcm_frames(&decoder, &lengthInFrames);
+    const ma_uint32 sampleRate = decoder.outputSampleRate;
+    ma_decoder_uninit(&decoder);
+
+    if (result != MA_SUCCESS || lengthInFrames == 0 || sampleRate == 0) {
+        return false;   // length is unknown (e.g., a format that cannot report it) or zero
+    }
+
+    const ma_uint64 millis = (lengthInFrames * 1000) / sampleRate;
+    lengthMillis = (millis > 0xFFFFFFFFull) ? 0xFFFFFFFFu : static_cast<unsigned int>(millis);
+    return true;
+}
+
 void ISoundEngine::Release(ISound *snd)
 {
     if (!m_initialized) return;

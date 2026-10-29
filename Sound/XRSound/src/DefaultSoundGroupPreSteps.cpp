@@ -1,9 +1,12 @@
 // ==============================================================
 // Implements default group sound handlers for XRSound.
 // 
-// Copyright (c) 2018-2026 Douglas Beachy
+// Copyright (c) 2018-2026 Douglas Beachy and contributors
 // Licensed under the MIT License
 // ==============================================================
+
+#include <memory>
+#include <exception>
 
 #include "XRSoundDLL.h"
 #include "DefaultSoundGroupPreSteps.h"
@@ -25,7 +28,8 @@ DefaultSoundGroupPreStep::~DefaultSoundGroupPreStep()
     delete m_pSoundFilesList;
 }
 
-// Returns true if initialization successful, false if sound is disabled or folder parse failed (the sound will not play)
+// Returns true if initialization succeeds, false if the group is disabled or its folder scan fails. The caller keeps this prestep registered either way;
+// it stays silent and inactive until SetFolder succeeds, so an API call can supply a usable folder later.
 bool DefaultSoundGroupPreStep::Initialize(const int soundID, const char *pFolderSubpath, const XRSound::PlaybackType playbackType)
 {
     m_soundID = soundID;
@@ -34,42 +38,60 @@ bool DefaultSoundGroupPreStep::Initialize(const int soundID, const char *pFolder
     return SetFolder(pFolderSubpath);
 }
 
-// Set the active folder and recursively (re)scan its contents.
+// Set the active folder and scan its contents.
+// The folder is scanned into a temporary list that replaces the current list only if the scan succeeds and finds at least one supported file. On failure,
+// the current folder and file list remain in use.
 //
-// Returns true on success, or false if folder parse failed (i.e., folder does not exist or is empty)
+// Returns true on success, or false if the folder does not exist or contains no supported sound files.
 bool DefaultSoundGroupPreStep::SetFolder(const char *pFolderSubpath)
 {
     // Note: we never reset m_bWavPresent = false here: if this call fails, the *previous* folder remains set
 
     _ASSERTE(pFolderSubpath);
-    if (!*pFolderSubpath)
+    if (!pFolderSubpath || !*pFolderSubpath)
         return false;       // empty
 
-    delete m_pSoundFilesList;       // in case we are calling this multiple times
-
     // do not recurse subfolders
-    m_pSoundFilesList = new FileList(pFolderSubpath, false, m_pEngine->GetValidSoundFileExtensions());
-    const bool bSuccess = m_pSoundFilesList->Scan();
-    char msg[256];
+    std::unique_ptr<FileList> pNewList(new FileList(pFolderSubpath, false, m_pEngine->GetValidSoundFileExtensions()));
+    bool bSuccess = false;
+    char msg[1024];
+    try
+    {
+        bSuccess = pNewList->Scan();
+    }
+    catch (const std::exception &e)     // e.g., std::filesystem::filesystem_error if the folder cannot be read; log it and keep the previous list
+    {
+        snprintf(msg, sizeof(msg), "DefaultSoundGroupPreStep::SetFolder ERROR: exception while scanning folder path '%s' set for soundID %d: %s",
+            pFolderSubpath, m_soundID, e.what());
+        WriteLog(msg);
+        return false;
+    }
+
     if (!bSuccess)
     {
-        snprintf(msg, 256, "DefaultSoundGroupPreStep::SetFolder ERROR: folder path '%s' set for soundID %d does not exist.",
+        snprintf(msg, sizeof(msg), "DefaultSoundGroupPreStep::SetFolder ERROR: folder path '%s' set for soundID %d does not exist.",
             pFolderSubpath, m_soundID);
         WriteLog(msg);
         return false;
     }
 
-    if (m_pSoundFilesList->IsEmpty())
+    if (pNewList->IsEmpty())
     {
-        snprintf(msg, 256, "DefaultSoundGroupPreStep::SetFolder ERROR: folder path '%s' set for soundID %d exists, but no supported sound file types found.",
+        snprintf(msg, sizeof(msg), "DefaultSoundGroupPreStep::SetFolder ERROR: folder path '%s' set for soundID %d exists, but no supported sound file types found.",
             pFolderSubpath, m_soundID);
         WriteLog(msg);
         return false;
     }
 
-    // if we reach here, folder is valid and contains at least one valid sound file
-    VERBOSE_LOG(m_pEngine, "DefaultSoundGroupPreStep::SetFolder: successfully scanned folder path '%s' for soundID %d: %d sound file(s) found with extensions [%s].",
-        pFolderSubpath, m_soundID, m_pSoundFilesList->GetScannedFileCount(), GetConfig().SupportedSoundFileTypes.c_str());
+    // if we reach here, folder is valid and contains at least one valid sound file, so swap in the new list
+    const bool bFolderChanged = (m_csFolderSubpath != pFolderSubpath);
+    delete m_pSoundFilesList;
+    m_pSoundFilesList = pNewList.release();
+    if (bFolderChanged || (m_currentSoundFileIndex >= m_pSoundFilesList->GetScannedFileCount()))
+        m_currentSoundFileIndex = 0;    // the old index no longer applies to the new list
+
+    VERBOSE_LOG(m_pEngine, "DefaultSoundGroupPreStep::SetFolder: successfully scanned folder path '%s' for soundID %d: %d sound file(s) found with configured extensions [%s].",
+        pFolderSubpath, m_soundID, m_pSoundFilesList->GetScannedFileCount(), m_pEngine->GetConfig().SupportedSoundFileTypes.c_str());
     m_bWavPresent = true;
     m_csFolderSubpath = pFolderSubpath;  // success; e.g., "Default\Cabin Ambience"
 
@@ -180,6 +202,10 @@ void RandomDefaultSoundGroupPreStep::ResetTimer()
 
 void RandomDefaultSoundGroupPreStep::clbkPreStep(const double simt, const double simdt, const double mjd)
 {
+    // a group that is disabled in the configuration (no folder) stays silent and inactive until SetFolder supplies one
+    if (!HasSoundFiles())
+        return;
+
     double m_systemUptime = XRSoundDLL::GetSystemUptime();
 
     if (m_nextPlayTime < 0)
@@ -226,7 +252,7 @@ bool AmbientDefaultSoundGroupPreStep::ShouldPlayNow(const double simt, const dou
 
 RandomDefaultSoundGroupPreStep::MinMaxDelay AmbientDefaultSoundGroupPreStep::GetMinMaxDelay()
 {
-    return RandomDefaultSoundGroupPreStep::MinMaxDelay(GetConfig().CabinAmbienceMin, GetConfig().CabinAmbienceMax);
+    return RandomDefaultSoundGroupPreStep::MinMaxDelay(GetActive().CabinAmbienceMin, GetActive().CabinAmbienceMax);
 }
 
 // ------------------------------------------------------------------------
@@ -245,11 +271,11 @@ bool ATCDefaultSoundGroupPreStep::ShouldPlayNow(const double simt, const double 
     if (HasFocus())
     {
         if (m_pEngine->IsLanded())
-            bShouldPlay = GetConfig().ATCAllowWhileLanded;
+            bShouldPlay = GetActive().ATCAllowWhileLanded;
         else if (m_pEngine->InReentry())
-            bShouldPlay = GetConfig().ATCAllowDuringReentry;
+            bShouldPlay = GetActive().ATCAllowDuringReentry;
         else if (m_pEngine->InAtmosphere())
-            bShouldPlay = GetConfig().ATCAllowInAtmosphere;
+            bShouldPlay = GetActive().ATCAllowInAtmosphere;
         else
             bShouldPlay = true;   // normal flight
     }
@@ -260,8 +286,8 @@ bool ATCDefaultSoundGroupPreStep::ShouldPlayNow(const double simt, const double 
 // returns next minimum and maximum delay times in seconds
 RandomDefaultSoundGroupPreStep::MinMaxDelay ATCDefaultSoundGroupPreStep::GetMinMaxDelay()
 {
-    double min = GetConfig().ATCMinDelay;
-    double max = GetConfig().ATCMaxDelay;
+    double min = GetActive().ATCMinDelay;
+    double max = GetActive().ATCMaxDelay;
     
     // see if the user disabled these sounds by setting min or max to zero
     if ((min <= 0) || (max <= 0))
@@ -271,11 +297,11 @@ RandomDefaultSoundGroupPreStep::MinMaxDelay ATCDefaultSoundGroupPreStep::GetMinM
     if (pVessel)  // sanity check in case Orbiter deleted it out from under us as the other checks missed it
     {
         const double distInKm = GetVessel()->GetAltitude() / 1000.0;
-        if (distInKm >= GetConfig().ATCDelayPlanetDistance)
+        if (distInKm >= GetActive().ATCDelayPlanetDistance)
         {
             // delay ATC per config
-            min *= GetConfig().ATCDelayPlanetMultiplier;  // Note: ATCDelayPlanetMultiplier was validated to minimum of 1.0
-            max *= GetConfig().ATCDelayPlanetMultiplier;
+            min *= GetActive().ATCDelayPlanetMultiplier;  // Note: ATCDelayPlanetMultiplier was validated to minimum of 1.0
+            max *= GetActive().ATCDelayPlanetMultiplier;
         }
     }
     // DEV DEBUGGING ONLY: if (IsDG()) sprintf(oapiDebugString(), "Next ATC min=%.1lf, max=%.1lf", min, max); 
@@ -283,11 +309,8 @@ RandomDefaultSoundGroupPreStep::MinMaxDelay ATCDefaultSoundGroupPreStep::GetMinM
     return RandomDefaultSoundGroupPreStep::MinMaxDelay(min, max);
 }
 
-// hook the base class method so we can override the volume
-bool ATCDefaultSoundGroupPreStep::PlayWav(const bool bLoop, float volume)
-{
-    return DefaultSoundPreStep::PlayWav(bLoop, GetConfig().ATCVolume);
-}
+// The engine applies this vessel's ATC category level during mixing. It starts at the configured ATC Volume and can be changed via
+// XRSound::SetVolume(VolumeType::ATC, ...), so this prestep uses the default requested volume of 1.0.
 
 // ------------------------------------------------------------------------
 
@@ -301,6 +324,10 @@ AltitudeCalloutsDefaultSoundGroupPreStep::AltitudeCalloutsDefaultSoundGroupPreSt
 // invoked at every timestep.  This code was (mostly) cloned from AltitudeCalloutsPreStep::clbkPrePostStep
 void AltitudeCalloutsDefaultSoundGroupPreStep::clbkPreStep(const double simt, const double simdt, const double mjd)
 {
+    // A group that is disabled in the configuration (no folder) stays silent and inactive until SetFolder supplies one.
+    if (!HasSoundFiles())
+        return;
+
     VESSEL *pVessel = GetVessel();
     if (!pVessel)
         return;     // sanity check
@@ -318,11 +345,11 @@ void AltitudeCalloutsDefaultSoundGroupPreStep::clbkPreStep(const double simt, co
         // Also, we do not check or reset the m_nextMinimumCalloutTime here because this should play independently of the altitude callouts.
         if (m_pEngine->HasLandingGear())
         {
-            if ((altitude < m_previousFrameAltitude) && (altitude < GetConfig().WarningGearIsUpAltitude) && (m_pEngine->GetLandingGearAnimationState() != 1.0) &&  // gear not fully deployed?
+            if ((altitude < m_previousFrameAltitude) && (altitude < GetActive().WarningGearIsUpAltitude) && (m_pEngine->GetLandingGearAnimationState() != 1.0) &&  // gear not fully deployed?
                 (currentDescentRate <= -0.25) && (altitude > 0))
             {
                 // NOTE: we do not just use LoadAndPlayWav here because we need to load this into the correct slot in case the user disabled it via code!
-                LoadAndPlayWavUsingID(XRSound::WarningGearIsUp, GetConfig().WarningGearIsUp, false, XRSound::PlaybackType::Radio);
+                PlayDefaultWavUsingID(XRSound::WarningGearIsUp, GetConfig().WarningGearIsUp, false, XRSound::PlaybackType::Radio);
                 goto exit;
             }
         }
@@ -339,7 +366,7 @@ void AltitudeCalloutsDefaultSoundGroupPreStep::clbkPreStep(const double simt, co
                 if (currentDescentRate > -150)   // vertical speed is in NEGATIVE m/s
                 {
                     // NOTE: we do not just use LoadAndPlayWav here because we need to load this into the correct slot in case the user disabled it via code!
-                    if (LoadAndPlayWavUsingID(XRSound::YouAreClearedToLand, GetConfig().YouAreClearedToLand, false, XRSound::PlaybackType::Radio))
+                    if (PlayDefaultWavUsingID(XRSound::YouAreClearedToLand, GetConfig().YouAreClearedToLand, false, XRSound::PlaybackType::Radio))
                         SetNextMinimumCalloutTime(simt);
                 }
                     
@@ -393,6 +420,10 @@ DockingCalloutsDefaultSoundGroupPreStep::DockingCalloutsDefaultSoundGroupPreStep
 // This is based on the XR vessels' DockingCalloutsPreStep method
 void DockingCalloutsDefaultSoundGroupPreStep::clbkPreStep(const double simt, const double simdt, const double mjd)
 {
+    // a group that is disabled in the configuration (no folder) stays silent and inactive until SetFolder supplies one
+    if (!HasSoundFiles())
+        return;
+
     VESSEL *pVessel = GetVessel();
     if (!pVessel)
         return;     // sanity check
@@ -405,8 +436,8 @@ void DockingCalloutsDefaultSoundGroupPreStep::clbkPreStep(const double simt, con
         {
             m_bJustDocked = true;       // so we play our follow-up callout shortly
             // NOTE: we do not just use LoadAndPlayWav here because we need to load this into the correct slot in case the user disabled it via code!
-            LoadAndPlayWavUsingID(XRSound::DockingCallout, GetConfig().DockingCallout, false, XRSound::PlaybackType::Radio);     // e.g., "Contact!" voice callout
-            LoadAndPlayWavUsingID(XRSound::Docking, GetConfig().Docking, false, XRSound::PlaybackType::InternalOnly);
+            PlayDefaultWavUsingID(XRSound::DockingCallout, GetConfig().DockingCallout, false, XRSound::PlaybackType::Radio);     // e.g., "Contact!" voice callout
+            PlayDefaultWavUsingID(XRSound::Docking, GetConfig().Docking, false, XRSound::PlaybackType::InternalOnly);
 
             m_previousFrameDistance = -1;    // reset
         }
@@ -421,13 +452,13 @@ void DockingCalloutsDefaultSoundGroupPreStep::clbkPreStep(const double simt, con
         if ((m_previousSimt >= 0) && m_previousWasDocked)
         {
             // NOTE: we do not just use LoadAndPlayWav here because we need to load this into the correct slot in case the user disabled it via code!
-            LoadAndPlayWavUsingID(XRSound::Undocking, GetConfig().Undocking, false, XRSound::PlaybackType::InternalOnly);
+            PlayDefaultWavUsingID(XRSound::Undocking, GetConfig().Undocking, false, XRSound::PlaybackType::InternalOnly);
             m_undockingMsgTime = simt + 0.667;    // wait 2/3-second before playing confirmation
         }
         else if ((m_undockingMsgTime > 0) && (simt >= m_undockingMsgTime))
         {
             // NOTE: we do not just use LoadAndPlayWav here because we need to load this into the correct slot in case the user disabled it via code!
-            LoadAndPlayWavUsingID(XRSound::UndockingCallout, GetConfig().UndockingCallout, false, XRSound::PlaybackType::Radio);   // e.g., "Undocking confirmed" voice callout
+            PlayDefaultWavUsingID(XRSound::UndockingCallout, GetConfig().UndockingCallout, false, XRSound::PlaybackType::Radio);   // e.g., "Undocking confirmed" voice callout
             m_undockingMsgTime = -1;    // reset
         }
 
@@ -525,6 +556,10 @@ MachCalloutsDefaultSoundGroupPreStep::MachCalloutsDefaultSoundGroupPreStep(Vesse
 // This is based on the XR vessels' MachCalloutsPreStep method
 void MachCalloutsDefaultSoundGroupPreStep::clbkPreStep(const double simt, const double simdt, const double mjd)
 {
+    // a group that is disabled in the configuration (no folder) stays silent and inactive until SetFolder supplies one
+    if (!HasSoundFiles())
+        return;
+
     VESSEL *pVessel = GetVessel();
     if (!pVessel)
         return;     // sanity check
@@ -606,6 +641,22 @@ void MusicDefaultSoundGroupPreStep::clbkPreStep(const double simt, const double 
     if (!HasFocus())
         return;
 
+    // Music on/off is per vessel: SetDefaultSoundEnabled(MusicFolder, ...) changes only this vessel's bMusicEnabled. While the focus vessel has music disabled,
+    // the shared track stops here; when focus moves to a vessel with music enabled, the normal path below starts it again.
+    if (!GetActive().bMusicEnabled)
+    {
+        if (IsWavPlaying())
+        {
+            StopWav();
+            VERBOSE_LOG(m_pEngine, "MusicDefaultSoundGroupPreStep::clbkPreStep: this vessel has music disabled; stopped the shared music track");
+        }
+        return;
+    }
+
+    // music that is disabled in the configuration (no MusicFolder) stays silent and inactive until SetDefaultSoundGroupFolder(MusicFolder, ...) supplies a folder
+    if (!HasSoundFiles())
+        return;
+
     // To prevent intermittent music stuttering on Orbiter startup, 
     // don't play any music until two seconds after simulation start.
     if (simt < 2.0)
@@ -621,16 +672,16 @@ void MusicDefaultSoundGroupPreStep::clbkPreStep(const double simt, const double 
     if (m_pEngine->InAtmosphere()) 
     {
         if (bInternalView)
-            bPlayMusic = (GetConfig().MusicPlayInternal == XRSoundConfigFileParser::MusicPlay::On);
+            bPlayMusic = (GetActive().MusicPlayInternal == XRSound::MusicPlay::On);
         else
-            bPlayMusic = (GetConfig().MusicPlayExternal == XRSoundConfigFileParser::MusicPlay::On);
+            bPlayMusic = (GetActive().MusicPlayExternal == XRSound::MusicPlay::On);
     }
     else   // we're in space
     {
         if (bInternalView)
-            bPlayMusic = (GetConfig().MusicPlayInternal == XRSoundConfigFileParser::MusicPlay::Space) || (GetConfig().MusicPlayInternal == XRSoundConfigFileParser::MusicPlay::On);
+            bPlayMusic = (GetActive().MusicPlayInternal == XRSound::MusicPlay::Space) || (GetActive().MusicPlayInternal == XRSound::MusicPlay::On);
         else
-            bPlayMusic = (GetConfig().MusicPlayExternal == XRSoundConfigFileParser::MusicPlay::Space) || (GetConfig().MusicPlayExternal == XRSoundConfigFileParser::MusicPlay::On);
+            bPlayMusic = (GetActive().MusicPlayExternal == XRSound::MusicPlay::Space) || (GetActive().MusicPlayExternal == XRSound::MusicPlay::On);
     }
 
     // We don't want to constantly keep replaying the song from the beginning each time the song shouldn't play, so instead we pause / unpause the song
@@ -659,14 +710,21 @@ void MusicDefaultSoundGroupPreStep::clbkPreStep(const double simt, const double 
             {
                 // time to start the next song
                 m_startNextSongRealtime = -1;        // reset
-                std::string csMusicFile = ((GetConfig().MusicOrder == XRSoundConfigFileParser::SeqRandom::Sequential) ? GetNextSoundFile() : GetRandomSoundFile());
+                // MusicOrder is this vessel's own active value.  The music is played at the default requested volume of 1.0: the volume of the playing (focus) vessel's
+                // Music and Main levels (which start at the configured MusicVolume and MasterVolume) is applied by the engine's mix, so the configured level applies exactly once.
+                std::string csMusicFile = ((GetActive().MusicOrder == XRSound::MusicOrder::Sequential) ? GetNextSoundFile() : GetRandomSoundFile());
 
                 if (!csMusicFile.empty())
-                    LoadAndPlayWav(csMusicFile.c_str(), GetConfig().MusicVolume);
+                    LoadAndPlayWav(csMusicFile.c_str(), 1.0f);
                 // else list is empty or file could not be played, so we will restart the timer to try the next song, if any, in the next frame since the sound is not playing
             }
         }
-        // else song is already playing, so nothing more to do
+        else
+        {
+            // Song is already playing.  The music slot is shared by all vessels, so make sure it plays at the levels of the vessel that has focus now (this vessel):
+            // when focus moves to another vessel, that vessel's levels take over here without restarting the song.
+            m_pEngine->ReapplyMusicVolume();
+        }
     }
 }
 

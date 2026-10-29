@@ -5,6 +5,7 @@
 
 #include "Interpreter.h"
 #include "XRSound.h"
+#include <vector>
 
 void Interpreter::LoadXRSoundAPI ()
 {
@@ -28,6 +29,17 @@ void Interpreter::LoadXRSoundAPI ()
 		{"get_playbackspeed", xrsound_get_playbackspeed},
 		{"set_playposition", xrsound_set_playposition},
 		{"get_playposition", xrsound_get_playposition},
+		{"set_volume", xrsound_set_volume},
+		{"get_volume", xrsound_get_volume},
+		{"set_soundvolume", xrsound_set_soundvolume},
+		{"get_soundvolume", xrsound_get_soundvolume},
+		{"set_playbacktype", xrsound_set_playbacktype},
+		{"get_playbacktype", xrsound_get_playbacktype},
+		{"get_duration", xrsound_get_duration},
+		{"set_setting", xrsound_set_setting},
+		{"get_setting", xrsound_get_setting},
+		{"get_defaultvolume", xrsound_get_defaultvolume},
+		{"get_defaultsetting", xrsound_get_defaultsetting},
 		{"__gc", xrsound_collect},
 		{NULL, NULL}
 	};
@@ -48,7 +60,55 @@ void Interpreter::LoadXRSoundAPI ()
 	lua_pushnumber (L, (int)XRSound::PlaybackType::Global); lua_setfield (L, -2, "Global");
 	lua_setglobal (L, "PlaybackType");
 
-	lua_createtable (L, 0, 51);
+	lua_createtable (L, 0, 9);
+	lua_pushnumber (L, (int)XRSound::VolumeType::Main); lua_setfield (L, -2, "Main");
+	lua_pushnumber (L, (int)XRSound::VolumeType::Engines); lua_setfield (L, -2, "Engines");
+	lua_pushnumber (L, (int)XRSound::VolumeType::RCS); lua_setfield (L, -2, "RCS");
+	lua_pushnumber (L, (int)XRSound::VolumeType::Effects); lua_setfield (L, -2, "Effects");
+	lua_pushnumber (L, (int)XRSound::VolumeType::Callouts); lua_setfield (L, -2, "Callouts");
+	lua_pushnumber (L, (int)XRSound::VolumeType::CabinAmbience); lua_setfield (L, -2, "CabinAmbience");
+	lua_pushnumber (L, (int)XRSound::VolumeType::ATC); lua_setfield (L, -2, "ATC");
+	lua_pushnumber (L, (int)XRSound::VolumeType::Music); lua_setfield (L, -2, "Music");
+	lua_pushnumber (L, (int)XRSound::VolumeType::Custom); lua_setfield (L, -2, "Custom");
+	lua_setglobal(L, "VolumeType");
+
+	lua_createtable(L, 0, 22);
+	lua_pushnumber (L, (int)XRSound::Setting::SilenceOfSpace); lua_setfield (L, -2, "SilenceOfSpace");
+	lua_pushnumber (L, (int)XRSound::Setting::MusicOrder); lua_setfield (L, -2, "MusicOrder");
+	lua_pushnumber (L, (int)XRSound::Setting::UpdateInterval); lua_setfield (L, -2, "UpdateInterval");
+	lua_pushnumber (L, (int)XRSound::Setting::EnableVerboseLogging); lua_setfield (L, -2, "EnableVerboseLogging");
+	lua_pushnumber (L, (int)XRSound::Setting::LogVesselAnimations); lua_setfield (L, -2, "LogVesselAnimations");
+	lua_pushnumber (L, (int)XRSound::Setting::LogThrusterData); lua_setfield (L, -2, "LogThrusterData");
+	lua_pushnumber (L, (int)XRSound::Setting::DisableAutopilotsTimeAccThreshold); lua_setfield (L, -2, "DisableAutopilotsTimeAccThreshold");
+	lua_pushnumber (L, (int)XRSound::Setting::MinThrusterLevelForRCSSoundEffects); lua_setfield (L, -2, "MinThrusterLevelForRCSSoundEffects");
+	lua_pushnumber (L, (int)XRSound::Setting::ATCMinDelay); lua_setfield (L, -2, "ATCMinDelay");
+	lua_pushnumber (L, (int)XRSound::Setting::ATCMaxDelay); lua_setfield (L, -2, "ATCMaxDelay");
+	lua_pushnumber (L, (int)XRSound::Setting::ATCAllowWhileLanded); lua_setfield (L, -2, "ATCAllowWhileLanded");
+	lua_pushnumber (L, (int)XRSound::Setting::ATCAllowInAtmosphere); lua_setfield (L, -2, "ATCAllowInAtmosphere");
+	lua_pushnumber (L, (int)XRSound::Setting::ATCAllowDuringReentry); lua_setfield (L, -2, "ATCAllowDuringReentry");
+	lua_pushnumber (L, (int)XRSound::Setting::ATCDelayPlanetDistance); lua_setfield (L, -2, "ATCDelayPlanetDistance");
+	lua_pushnumber (L, (int)XRSound::Setting::ATCDelayPlanetMultiplier); lua_setfield (L, -2, "ATCDelayPlanetMultiplier");
+	lua_pushnumber (L, (int)XRSound::Setting::CabinAmbienceMin); lua_setfield (L, -2, "CabinAmbienceMin");
+	lua_pushnumber (L, (int)XRSound::Setting::CabinAmbienceMax); lua_setfield (L, -2, "CabinAmbienceMax");
+	lua_pushnumber (L, (int)XRSound::Setting::MusicPlayInternal); lua_setfield (L, -2, "MusicPlayInternal");
+	lua_pushnumber (L, (int)XRSound::Setting::MusicPlayExternal); lua_setfield (L, -2, "MusicPlayExternal");
+	lua_pushnumber (L, (int)XRSound::Setting::WarningGearIsUpAltitude); lua_setfield (L, -2, "WarningGearIsUpAltitude");
+	lua_pushnumber (L, (int)XRSound::Setting::CustomEnginesThrusterIndexes); lua_setfield (L, -2, "CustomEnginesThrusterIndexes");
+	lua_pushnumber (L, (int)XRSound::Setting::LandingGearAnimationID); lua_setfield (L, -2, "LandingGearAnimationID");
+	lua_setglobal(L, "Setting");
+
+	lua_createtable(L, 0, 2);
+	lua_pushnumber (L, (int)XRSound::MusicOrder::Sequential); lua_setfield (L, -2, "Sequential");
+	lua_pushnumber (L, (int)XRSound::MusicOrder::Random); lua_setfield (L, -2, "Random");
+	lua_setglobal(L, "MusicOrder");
+
+	lua_createtable(L, 0, 3);
+	lua_pushnumber (L, (int)XRSound::MusicPlay::Off); lua_setfield (L, -2, "Off");
+	lua_pushnumber (L, (int)XRSound::MusicPlay::Space); lua_setfield (L, -2, "Space");
+	lua_pushnumber (L, (int)XRSound::MusicPlay::On); lua_setfield (L, -2, "On");
+	lua_setglobal(L, "MusicPlay");
+
+	lua_createtable (L, 0, 57);
 	lua_pushnumber (L, (int)XRSound::DefaultSoundID::AirConditioning); lua_setfield (L, -2, "AirConditioning");
 	lua_pushnumber (L, (int)XRSound::DefaultSoundID::LandedWind); lua_setfield (L, -2, "LandedWind");
 	lua_pushnumber (L, (int)XRSound::DefaultSoundID::AudioGreeting); lua_setfield (L, -2, "AudioGreeting");
@@ -93,6 +153,12 @@ void Interpreter::LoadXRSoundAPI ()
 	lua_pushnumber (L, (int)XRSound::DefaultSoundID::RCSAttackMinusX); lua_setfield (L, -2, "RCSAttackMinusX");
 	lua_pushnumber (L, (int)XRSound::DefaultSoundID::RCSAttackMinusY); lua_setfield (L, -2, "RCSAttackMinusY");
 	lua_pushnumber (L, (int)XRSound::DefaultSoundID::RCSAttackMinusZ); lua_setfield (L, -2, "RCSAttackMinusZ");
+	lua_pushnumber (L, (int)XRSound::DefaultSoundID::RCSClosePlusX); lua_setfield (L, -2, "RCSClosePlusX");
+	lua_pushnumber (L, (int)XRSound::DefaultSoundID::RCSClosePlusY); lua_setfield (L, -2, "RCSClosePlusY");
+	lua_pushnumber (L, (int)XRSound::DefaultSoundID::RCSClosePlusZ); lua_setfield (L, -2, "RCSClosePlusZ");
+	lua_pushnumber (L, (int)XRSound::DefaultSoundID::RCSCloseMinusX); lua_setfield (L, -2, "RCSCloseMinusX");
+	lua_pushnumber (L, (int)XRSound::DefaultSoundID::RCSCloseMinusY); lua_setfield (L, -2, "RCSCloseMinusY");
+	lua_pushnumber (L, (int)XRSound::DefaultSoundID::RCSCloseMinusZ); lua_setfield (L, -2, "RCSCloseMinusZ");
 	lua_pushnumber (L, (int)XRSound::DefaultSoundID::LastDefaultSound); lua_setfield (L, -2, "LastDefaultSound");
 	lua_pushnumber (L, (int)XRSound::DefaultSoundID::RadioATCGroup); lua_setfield (L, -2, "RadioATCGroup");
 	lua_pushnumber (L, (int)XRSound::DefaultSoundID::CabinAmbienceGroup); lua_setfield (L, -2, "CabinAmbienceGroup");
@@ -167,6 +233,8 @@ int Interpreter::xrsound_create_instance (lua_State *L)
 /***
 xrsound class: Lua access to XRSound objects
 @classmod xrsound
+
+XRSound 4.1 volume and setting calls read or change only the proxy for this object. They never change the configuration defaults or another vessel's or module's values. A getter returns nil when the corresponding C++ API call fails, including when the loaded XRSound.dll does not support 4.1.
 */
 
 /***
@@ -214,7 +282,7 @@ Note: for module sounds, you should pass PlaybackType.Global for this since othe
 @tparam number soundID sound ID to be assigned to this sound file (vessel-instance unique)
 @tparam string filename path relatve to $ORBITER_ROOT of sound file to load
 @tparam number playbackType denotes how sound will be faded. See @{types.PlaybackType|PlaybackType}
-@treturn boolean true on success, false if file not found or XRSound.dll not present.
+@treturn boolean true on success, false if file not found, playbackType is not a valid PlaybackType, or XRSound.dll not present.
 @usage
 function clbk_postcreation()
 	snd = xrsound.create_instance(vi)
@@ -228,6 +296,11 @@ int Interpreter::xrsound_load_wav(lua_State *L)
 	int ID = luaL_checkinteger(L, 2);
 	const char *filename = luaL_checkstring(L, 3);
 	int type = luaL_checkinteger(L, 4);
+	if ((type < (int)XRSound::PlaybackType::InternalOnly) || (type > (int)XRSound::PlaybackType::Global)) {
+		// an out-of-range type would be loaded and later trip an assert in XRSound; report failure like any other failed load
+		lua_pushboolean(L, false);
+		return 1;
+	}
 	lua_pushboolean(L, snd->LoadWav(ID, filename, (XRSound::PlaybackType)type));
 	return 1;
 }
@@ -237,10 +310,12 @@ Play wav file.
 
 Play the sound file with the specified ID. If the sound is already playing, this call will only alter its loop or volume settings.
 
+When volume is omitted or nil, XRSound uses the value stored for this sound ID. A newly loaded sound starts at 1.0, and an explicit volume supplied to this call becomes the stored value for later calls that omit it. XRSound.dll versions older than 4.1 use 1.0 for the omitted-volume default.
+
 @function play_wav
 @tparam number soundID vessel-instance-unique sound ID originally passed to LoadWav
 @tparam[opt=false] boolean loop true to loop sound continuously until stop_wav called, false to play only once
-@tparam[opt=1.0] number volume 0 (muted) - 1.0 (loudest)
+@tparam[opt=XRSound::UseStoredVolume] number volume 0 (muted) - 1.0 (loudest); omitted or nil uses the volume stored for this sound ID. It starts at 1.0 and each explicit PlayWav volume is stored for later calls without a volume. Older XRSound.dll versions use 1.0 for this default.
 @treturn boolean true on success, false if invalid sound ID or if XRSound.dll not present.
 @usage
 function clbk_consumebufferedkey(key, down, kstate)
@@ -255,13 +330,13 @@ end
 int Interpreter::xrsound_play_wav(lua_State *L)
 {
 	bool loop = false;
-	float volume = 1.0f;
+	float volume = XRSound::UseStoredVolume;
 
 	XRSound *snd = lua_toxrsound(L, 1);
 	int ID = luaL_checkinteger(L, 2);
 	if(lua_gettop(L)>=3)
 		loop = lua_toboolean(L, 3);
-	if(lua_gettop(L)>=4)
+	if(lua_gettop(L)>=4 && !lua_isnil(L, 4))
 		volume = luaL_checknumber(L, 4);
 
 	lua_pushboolean(L, snd->PlayWav(ID, loop, volume));
@@ -346,10 +421,12 @@ is useful if you want to disable some sound effects at runtime for a specific ve
 
 Not supported for module sounds.
 
+For MusicFolder, this changes only this vessel's music enabled flag. The track is shared and played by whichever vessel has focus; disabling MusicFolder here never affects another vessel.
+
 @function set_defaultsoundenabled
 @tparam number which default sound to enable or disable. See @{types.DefaultSoundID|DefaultSoundID}
 @tparam boolean enabled true to enable default sound, false to disable it
-@treturn boolean true on success, false if XRSound.dll not present or this default sound is disabled via config file (i.e., no sound file specified for this).
+@treturn boolean true on success, false if XRSound.dll is unavailable or soundID is not a default sound or group. XRSound 4.1 and newer also return true when disabled by configuration.
 */
 int Interpreter::xrsound_set_defaultsoundenabled(lua_State *L)
 {
@@ -429,12 +506,12 @@ Pan configuration.
 
 Sets the pan (left/right balance) of the sound with the specified  ID.
 
-Note: the sound must have already started playing via PlayWav for this to have any effect.
+XRSound 4.1 and newer remembers pan set on a loaded sound that is not playing and applies it once, the next time it starts. Older DLL versions require playback to have started. A remembered value cannot be read with get_pan until the sound is playing. For MusicFolder, this works only for the focused vessel while music is playing; it is not remembered for a later track.
 
 @function set_pan
 @tparam number soundID unique sound ID originally passed to LoadWav and PlayWav
 @tparam number pan range is from -1.0 (full left) to 1.0 (full right). Zero is the center.
-@treturn boolean true on success, false if sound ID is invalid or is not currently playing.
+@treturn boolean true on success, false if the sound ID or pan is invalid, or if the sound is not playing on older XRSound versions.
 */
 int Interpreter::xrsound_set_pan(lua_State *L)
 {
@@ -450,7 +527,7 @@ Pan status.
 
 Returns the pan of the sound with the specified ID, from -1.0 (full left) to 1.0 (full right). Zero is the center.
 
-Note: the sound must have already started playing via PlayWav.
+The sound must already be playing; a pan remembered for its next start is not readable. For MusicFolder, the focused vessel's currently playing track is required.
 
 @function get_pan
 @tparam number soundID unique sound ID originally passed to LoadWav and PlayWav
@@ -469,14 +546,14 @@ Speed configuration.
 
 Sets the playback speed of the sound with the specified ID.
 
-Note: the sound must have already started playing via PlayWav for this to have any effect.
+XRSound 4.1 and newer remembers speed set on a loaded sound that is not playing and applies it once, the next time it starts. Older DLL versions require playback to have started. A remembered value cannot be read with get_playbackspeed until the sound is playing. For MusicFolder, this works only for the focused vessel while music is playing; it is not remembered for a later track.
 
 Plays the sound at a higher or lower speed, increasing or decreasing its frequency, which makes it sound lower or higher.
 
 @function set_playbackspeed
 @tparam number soundID unique sound ID originally passed to LoadWav and PlayWav
 @tparam[opt=1.0] number speed factor of the speed increase or decrease; 2 is twice as fast, 0.5 is only half as fast. The default is 1.0.
-@treturn boolean true on success, false if sound ID is invalid or is not currently playing.
+@treturn boolean true on success, false if the sound ID or speed is invalid, or if the sound is not playing on older XRSound versions.
 */
 int Interpreter::xrsound_set_playbackspeed(lua_State *L)
 {
@@ -495,7 +572,7 @@ Speed status.
 
 Returns the playback speed of the sound with the specified ID.
 
-Note: the sound must have already started playing via PlayWav.
+The sound must already be playing; a speed remembered for its next start is not readable.
 
 @function get_playbackspeed
 @tparam number soundID unique sound ID originally passed to LoadWav and PlayWav
@@ -514,12 +591,12 @@ Play position configuration.
 
 Sets the playback position of the sound with the specified ID.
 
-Note: the sound must have already started playing via PlayWav for this to have any effect.
+XRSound 4.1 and newer remembers a position set on a loaded sound that is not playing and seeks once when the sound next starts. Older DLL versions require playback to have started. A remembered value cannot be read with get_playposition until the sound is playing. For MusicFolder, this works only for the focused vessel while music is playing; it is not remembered for a later track.
 
 @function set_playposition
 @tparam number soundID unique sound ID originally passed to LoadWav and PlayWav
 @tparam number positionMillis  must be between zero (the start of the file) and the length of the file, in milliseconds
-@treturn boolean true on success, false if positionMillis is invalid or if sound ID is invalid or is not currently playing.
+@treturn boolean true on success, false if the position or sound ID is invalid, or if the sound is not playing on older XRSound versions.
 */
 int Interpreter::xrsound_set_playposition(lua_State *L)
 {
@@ -536,7 +613,7 @@ Play position status.
 
 Returns the playback position of the sound in milliseconds with the specified ID.
 
-Note: the sound must have already started playing via PlayWav.
+The sound must already be playing; a position remembered for its next start is not readable.
 
 @function get_playposition
 @tparam number soundID unique sound ID originally passed to LoadWav and PlayWav
@@ -547,6 +624,214 @@ int Interpreter::xrsound_get_playposition(lua_State *L)
 	XRSound *snd = lua_toxrsound(L, 1);
 	int ID = luaL_checkinteger(L, 2);
 	lua_pushnumber(L, snd->GetPlayPosition(ID));
+	return 1;
+}
+
+/***
+Set one of this proxy's active volume levels.
+@function set_volume
+@tparam number volumeType See @{types.VolumeType|VolumeType}.
+@tparam number level Absolute level from 0 to 1.
+@treturn boolean true on success; false if the level or type is invalid, or XRSound 4.1 is unavailable.
+*/
+int Interpreter::xrsound_set_volume(lua_State *L)
+{
+	XRSound *snd = lua_toxrsound(L, 1);
+	int type = luaL_checkinteger(L, 2);
+	float level = (float)luaL_checknumber(L, 3);
+	lua_pushboolean(L, snd->SetVolume((XRSound::VolumeType)type, level));
+	return 1;
+}
+
+/***
+Read one of this proxy's active volume levels: its configured starting level or most recent value set in this session.
+@function get_volume
+@tparam number volumeType See @{types.VolumeType|VolumeType}.
+@treturn number|nil Current level, or nil if the type is invalid or XRSound 4.1 is unavailable.
+*/
+int Interpreter::xrsound_get_volume(lua_State *L)
+{
+	XRSound *snd = lua_toxrsound(L, 1);
+	int type = luaL_checkinteger(L, 2);
+	float value;
+	if (snd->GetVolume((XRSound::VolumeType)type, value))
+		lua_pushnumber(L, value);
+	else
+		lua_pushnil(L);
+	return 1;
+}
+
+/***
+Set the volume of one loaded, default, group, or animation sound. For a client-loaded sound this is its stored playback volume, initially 1.0 and reset to 1.0 when a different file is loaded for that ID. For default, group, or animation sounds it is an item-level multiplier on XRSound's automatic volume, retained if the sound file is replaced. Both take effect immediately.
+@function set_soundvolume
+@tparam number soundID
+@tparam number volume Level from 0 to 1.
+@treturn boolean true on success; false if the value or ID is invalid, or XRSound 4.1 is unavailable.
+*/
+int Interpreter::xrsound_set_soundvolume(lua_State *L)
+{
+	XRSound *snd = lua_toxrsound(L, 1);
+	int ID = luaL_checkinteger(L, 2);
+	float value = (float)luaL_checknumber(L, 3);
+	lua_pushboolean(L, snd->SetVolume(ID, value));
+	return 1;
+}
+
+/***
+Read the stored volume for a client-loaded sound or the item-level multiplier for a default, group, or animation sound.
+@function get_soundvolume
+@tparam number soundID
+@treturn number|nil Volume, or nil if the ID is unsupported or XRSound 4.1 is unavailable.
+*/
+int Interpreter::xrsound_get_soundvolume(lua_State *L)
+{
+	XRSound *snd = lua_toxrsound(L, 1);
+	int ID = luaL_checkinteger(L, 2);
+	float value;
+	if (snd->GetVolume(ID, value))
+		lua_pushnumber(L, value);
+	else
+		lua_pushnil(L);
+	return 1;
+}
+
+/***
+Override a sound's playback type. This takes effect immediately and can be set before a default or animation sound is loaded; the override is retained when XRSound reloads its file. A later load_wav of another sound replaces it. Module proxies store the type, but module sounds always play as Global.
+@function set_playbacktype
+@tparam number soundID
+@tparam number playbackType See @{types.PlaybackType|PlaybackType}.
+@treturn boolean true on success; false if the type or ID is invalid, or XRSound 4.1 is unavailable.
+*/
+int Interpreter::xrsound_set_playbacktype(lua_State *L)
+{
+	XRSound *snd = lua_toxrsound(L, 1);
+	int ID = luaL_checkinteger(L, 2);
+	int type = luaL_checkinteger(L, 3);
+	lua_pushboolean(L, snd->SetPlaybackType(ID, (XRSound::PlaybackType)type));
+	return 1;
+}
+
+/***
+Read a sound's effective playback type: its override, if set, or the most recently supplied load_wav type.
+@function get_playbacktype
+@tparam number soundID
+@treturn number|nil Playback type, or nil if the ID is unsupported or XRSound 4.1 is unavailable.
+*/
+int Interpreter::xrsound_get_playbacktype(lua_State *L)
+{
+	XRSound *snd = lua_toxrsound(L, 1);
+	int ID = luaL_checkinteger(L, 2);
+	XRSound::PlaybackType type;
+	if (snd->GetPlaybackType(ID, type))
+		lua_pushnumber(L, (int)type);
+	else
+		lua_pushnil(L);
+	return 1;
+}
+
+/***
+Measure a loaded sound's duration without playing it. The first call measures the file and caches the result until a different file is loaded for that ID.
+@function get_duration
+@tparam number soundID
+@treturn number|nil Duration in milliseconds, or nil if the file cannot be measured, the ID is unsupported, or XRSound 4.1 is unavailable.
+*/
+int Interpreter::xrsound_get_duration(lua_State *L)
+{
+	XRSound *snd = lua_toxrsound(L, 1);
+	int ID = luaL_checkinteger(L, 2);
+	unsigned int duration;
+	if (snd->GetDuration(ID, duration))
+		lua_pushnumber(L, duration);
+	else
+		lua_pushnil(L);
+	return 1;
+}
+
+/***
+Set a setting on this proxy without changing configuration defaults or another proxy's value. Strings select the string overload; booleans become 0 or 1 and numbers select the numeric overload. Getters return boolean settings as numbers.
+@function set_setting
+@tparam number setting See @{types.Setting|Setting}.
+@param value Number or boolean for numeric settings; string for string settings.
+@treturn boolean true on success; false if the setting type or value is invalid, or XRSound 4.1 is unavailable.
+*/
+int Interpreter::xrsound_set_setting(lua_State *L)
+{
+	XRSound *snd = lua_toxrsound(L, 1);
+	int setting = luaL_checkinteger(L, 2);
+	bool result;
+	if (lua_type(L, 3) == LUA_TSTRING)
+		result = snd->SetSetting((XRSound::Setting)setting, luaL_checkstring(L, 3));
+	else if (lua_type(L, 3) == LUA_TBOOLEAN)
+		result = snd->SetSetting((XRSound::Setting)setting, lua_toboolean(L, 3) ? 1.0 : 0.0);
+	else
+		result = snd->SetSetting((XRSound::Setting)setting, luaL_checknumber(L, 3));
+	lua_pushboolean(L, result);
+	return 1;
+}
+
+// Try the numeric setting form first, then bounded string buffers; the bool result cannot distinguish a too-small buffer from other string failures.
+static void xrsound_push_setting(lua_State *L, XRSound *snd, XRSound::Setting setting, bool isDefault)
+{
+	double number;
+	if (isDefault ? snd->GetDefaultSetting(setting, number) : snd->GetSetting(setting, number)) {
+		lua_pushnumber(L, number);
+		return;
+	}
+	// The API reports buffer-too-small and other string failures identically. Include room for the terminator and stop at 64 KB.
+	for (int size = 256; size <= 65536; size *= 2) {
+		std::vector<char> buffer(size);
+		bool ok = isDefault ? snd->GetDefaultSetting(setting, buffer.data(), size) : snd->GetSetting(setting, buffer.data(), size);
+		if (ok) {
+			lua_pushstring(L, buffer.data());
+			return;
+		}
+	}
+	lua_pushnil(L);
+}
+
+/***
+Read a setting from this proxy. Numeric and boolean settings return numbers (booleans are 0 or 1); string settings return strings. This reads the active value, not its configured default.
+@function get_setting
+@tparam number setting See @{types.Setting|Setting}.
+@treturn number|string|nil Value, or nil if unsupported or XRSound 4.1 is unavailable.
+*/
+int Interpreter::xrsound_get_setting(lua_State *L)
+{
+	XRSound *snd = lua_toxrsound(L, 1);
+	int setting = luaL_checkinteger(L, 2);
+	xrsound_push_setting(L, snd, (XRSound::Setting)setting, false);
+	return 1;
+}
+
+/***
+Read a configured starting volume level. This value is read-only and does not change when the active level changes.
+@function get_defaultvolume
+@tparam number volumeType See @{types.VolumeType|VolumeType}.
+@treturn number|nil Configured level, or nil if the type is invalid or XRSound 4.1 is unavailable.
+*/
+int Interpreter::xrsound_get_defaultvolume(lua_State *L)
+{
+	XRSound *snd = lua_toxrsound(L, 1);
+	int type = luaL_checkinteger(L, 2);
+	float value;
+	if (snd->GetDefaultVolume((XRSound::VolumeType)type, value))
+		lua_pushnumber(L, value);
+	else
+		lua_pushnil(L);
+	return 1;
+}
+
+/***
+Read a configured starting setting. Numeric and boolean settings return numbers (booleans are 0 or 1); string settings return strings. This value is read-only and does not change when the active setting changes.
+@function get_defaultsetting
+@tparam number setting See @{types.Setting|Setting}.
+@treturn number|string|nil Configured value, or nil if unsupported or XRSound 4.1 is unavailable.
+*/
+int Interpreter::xrsound_get_defaultsetting(lua_State *L)
+{
+	XRSound *snd = lua_toxrsound(L, 1);
+	int setting = luaL_checkinteger(L, 2);
+	xrsound_push_setting(L, snd, (XRSound::Setting)setting, true);
 	return 1;
 }
 

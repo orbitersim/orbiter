@@ -1,7 +1,7 @@
 // ==============================================================
 // XRSoundEngine10.h : Defines the XRSoundEngine version 1.x interface.
 //
-// Copyright (c) 2018-2026 Douglas Beachy
+// Copyright (c) 2018-2026 Douglas Beachy and contributors
 // Licensed under the MIT License
 // ==============================================================
 
@@ -39,7 +39,7 @@ public:
 // Note: set XRSOUND_BETA to empty string if this is not a beta build.
 // If beta build, remember to add a trailing space to the string; e.g., "Beta-1 "; otherwise, make it "".
 // Resource.rc also reads XRSOUND_VERSION_NUMBER and XRSOUND_BETA_STR for the module description in Orbiter's Modules tab.
-#define XRSOUND_VERSION_NUMBER 4.0
+#define XRSOUND_VERSION_NUMBER 4.1
 #define XRSOUND_ENGINE_VERSION ((float)XRSOUND_VERSION_NUMBER)
 #define XRSOUND_BETA_STR ""
 

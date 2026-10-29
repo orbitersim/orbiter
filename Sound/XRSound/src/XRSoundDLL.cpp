@@ -1,7 +1,7 @@
 // ==============================================================
 // XRSoundDLL.cpp : Main class file for XRSound Orbiter module.
 //
-// Copyright (c) 2018-2026 Douglas Beachy
+// Copyright (c) 2018-2026 Douglas Beachy and contributors
 // Licensed under the MIT License
 // ==============================================================
 
@@ -185,17 +185,10 @@ DLLCLBK void InitModule(HINSTANCE hDLL)
 }
 
 // parse (or re-parse) our global XRSound.cfg file (this parse is vessel-independent)
+// Note: the one implementation of the global parse lives in XRSoundEngine so that InitializeSoundEngine can share it.
 void XRSoundDLL::ParseGlobalConfigFile()
 {
-    // parse XRSound.log
-    XRSoundConfigFileParser &globalConfig = XRSoundDLL::GetGlobalConfig();
-    globalConfig.ParseFile();
-    if (globalConfig.ParseFailed())
-    {
-        char msg[256];
-        snprintf(msg, 256, "Error parsing configuration file '%s' -- see above error messages for details.", globalConfig.GetDefaultFilename());
-        globalConfig.WriteLog(msg);
-    }
+    XRSoundEngine::ParseGlobalConfigFile();
 }
 
 //==============================================================
@@ -233,8 +226,12 @@ XRSoundDLL::~XRSoundDLL()
 // states set according to the scenario data) and the render window has been opened (if applicable).
 void XRSoundDLL::clbkSimulationStart(RenderMode mode)
 {
-    // reparse our global (i.e., vessel-independent) config file in case the user dropped to the launchpad and restarted
-    XRSoundDLL::ParseGlobalConfigFile();
+    // Reparse the global (vessel-independent) configuration if no client has initialized the sound engine yet this session. InitializeSoundEngine parses it when the first
+    // engine is created, so there is nothing new to read after that.
+    if (!XRSoundEngine::IsSoundEngineInitialized())
+        XRSoundDLL::ParseGlobalConfigFile();
+    else
+        WriteLog("XRSoundDLL::clbkSimulationStart: sound engine is already initialized this session, so the global config file was not re-parsed");
 
     // NOTE: this is too late to invoke XRSoundEngine::InitializeSoundEngine, since vessels need the engine to be available
     // before clbkSetClassCaps.
@@ -394,24 +391,38 @@ void XRSoundDLL::clbkPreStep(double simtDoNotUse, double simdt, double mjd)
     // use our simt that is not affected by MDJ changes
     const double simt = GetAbsoluteSimTime();
 
-    // for performance reasons, only update all the sound engines for all vessels n times per second, NOT every frame
+    // For performance reasons, only update the vessel list n times per second (the configured UpdateInterval), and update each vessel's sounds at most
+    // once per THAT VESSEL's own UpdateInterval (a setting that a vessel's client can change for itself via XRSound::SetSetting), NOT every frame.
+    // The vessel list is only needed to add new vessels and drop deleted ones, so it uses the configured interval; a new vessel's first refresh is due immediately.
     if (simt >= m_nextSoundEnginesRefreshSimt)
     {
         UpdateAllVesselsMap();
-
-        // loop through each sound-enabled vessel and update the volume / playback state of each
-        for (auto it = m_allVesselsMap.begin(); it != m_allVesselsMap.end(); it++)
-        {
-            const OBJHANDLE hVessel = it->first;
-            // The vessel should still be valid: UpdateAllVesselsMap removes deleted vessels.
-            if (!PreStepVesselWithSEH(hVessel, it->second, simt, simdt, mjd))
-            {
-                char csMsg[256];
-                snprintf(csMsg, 256, "XRSoundDLL::clbkPreStep ERROR: Access Violation in VesselXRSoundEngine::clbkPreStep for vessel %s", oapiIsVessel(hVessel) ? oapiGetVesselInterface(hVessel)->GetName() : "<invalid>");
-                WriteLog(csMsg);
-            }
-        }
         m_nextSoundEnginesRefreshSimt = simt + GetGlobalConfig().UpdateInterval;
+    }
+
+    // loop through each sound-enabled vessel and update the volume / playback state of each vessel whose own refresh is due
+    for (auto it = m_allVesselsMap.begin(); it != m_allVesselsMap.end(); it++)
+    {
+        const OBJHANDLE hVessel = it->first;
+        VesselXRSoundEngine *pEngine = it->second;
+        if (!pEngine)       // entries may be null
+            continue;
+
+        // Check the refresh time first: it is cheap, while oapiIsVessel walks Orbiter's whole vessel list, and this loop runs every frame.
+        if (!pEngine->IsRefreshDue(simt))
+            continue;
+
+        // A vessel that Orbiter deleted since the last vessel-list update is dropped by the next UpdateAllVesselsMap; skip it until then.
+        if (!oapiIsVessel(hVessel))
+            continue;
+
+        if (!PreStepVesselWithSEH(hVessel, pEngine, simt, simdt, mjd))
+        {
+            char csMsg[256];
+            snprintf(csMsg, 256, "XRSoundDLL::clbkPreStep ERROR: Access Violation in VesselXRSoundEngine::clbkPreStep for vessel %s", oapiIsVessel(hVessel) ? oapiGetVesselInterface(hVessel)->GetName() : "<invalid>");
+            WriteLog(csMsg);
+        }
+        pEngine->ScheduleNextRefresh(simt);     // uses this vessel's own active UpdateInterval
     }
 }
 

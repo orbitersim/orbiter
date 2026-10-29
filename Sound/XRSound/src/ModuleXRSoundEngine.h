@@ -2,7 +2,7 @@
 // XRSoundEngine class that is bound to an Orbiter module (i.e., to a unique ID); this file is not distributed with XRSound.
 // The code for this exists in XRSound.dll.
 // 
-// Copyright (c) 2018-2026 Douglas Beachy
+// Copyright (c) 2018-2026 Douglas Beachy and contributors
 // Licensed under the MIT License
 // ==============================================================
 
