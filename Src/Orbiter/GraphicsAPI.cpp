@@ -921,3 +921,10 @@ DLLEXPORT bool oapiUnregisterGraphicsClient (GraphicsClient *gc)
 {
 	return g_pOrbiter->RemoveGraphicsClient (gc);
 }
+
+DLLEXPORT HMODULE oapiGetGraphicsClientModule ()
+{
+	if (!g_pOrbiter) return NULL;
+	GraphicsClient *gc = g_pOrbiter->GetGraphicsClient();
+	return gc ? gc->GetModule() : NULL;
+}
