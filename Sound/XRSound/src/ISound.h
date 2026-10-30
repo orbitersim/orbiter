@@ -9,6 +9,8 @@
 #include <stdio.h>
 #include "miniaudio.h"
 #include <list>
+#include <string>
+#include <unordered_set>
 
 // The "Audio debug" ImGui window uses Orbiter's ImGui dialog API, which Orbiter added after the
 // 2024 release; an XRSound.dll that contains it does not load in Orbiter 2024. CMake defines
@@ -84,6 +86,11 @@ private:
 	bool m_initialized = false;
 	std::list<ISound *> releasedSounds;
 	void CheckReleased();
+
+	// Writes a sound file error to Orbiter.log the first time it happens for that message and file in this session only.
+	// XRSound tries to start a sound again on every update while it should be playing, so a broken file would otherwise log the same line 20 times a second.
+	void LogFileErrorOnce(const char *pMessage, const char *soundFileName) const;
+	mutable std::unordered_set<std::string> m_loggedFileErrors;     // "<message><file name>" for each error already logged
 #ifdef XRSOUND_DEBUG_GUI
 	ISoundDialog *m_dbgWin;
 	DWORD m_dwdbgWin;

@@ -72,6 +72,13 @@ add_core_test_file(Collision.CollisionCore
 	${ORBITER_SOURCE_ROOT_DIR}/Src/Orbiter/Vecmat.cpp
 )
 
+# Orbiter's log file writer, built from its own sources (Log.cpp refers to the TimeData global, so TimeData.cpp comes along)
+add_core_test_file(Orbiter.Log
+	${ORBITER_SOURCE_ROOT_DIR}/Src/Orbiter/Log.cpp
+	${ORBITER_SOURCE_ROOT_DIR}/Src/Orbiter/TimeData.cpp
+)
+target_link_libraries(Orbiter.Log winmm version)   # timeGetTime for the log timestamps; file version info for PrintModules
+
 # XRSound config file parser: needs no sound card and no running Orbiter, and never touches the audio engine
 if(ORBITER_BUILD_XRSOUND)
 	add_core_test_file(XRSound.Config

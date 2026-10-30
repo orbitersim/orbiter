@@ -27,6 +27,7 @@ class ISound;
 class ISoundEngine;
 #ifdef XRSOUND_DLL_BUILD
 #include "XRSoundConfigFileParser.h"
+#include "Utils/FormatString.h"     // for VERBOSE_LOG; XRSound.lib never formats log text, so it never sees this header
 #else
 // we're compiling XRSoundLib, so all we need is a forward reference (and we don't want to include the full class definition on the .lib side!)
 class XRSoundConfigFileParser;
@@ -64,24 +65,8 @@ struct WavContext
         return (bHasPlaybackTypeOverride ? playbackTypeOverride : playbackType);
     }
 
-    // used for logging
-    std::string ToStr(const bool bShowLoopAndVolume = true) const
-    {
-		char cbuf[320];
-        const XRSound::PlaybackType effectiveType = EffectivePlaybackType();
-        if (bShowLoopAndVolume)
-        {
-            snprintf(cbuf, sizeof(cbuf), "[soundID = %d, playbackType = %s (%d), bLoop = %d, requestedVolume = %.2lf, itemLevel = %.2lf, bPaused = %d, bEnabled = %d, filename = '%s']",
-                soundID, PlaybackTypeToStr(effectiveType), static_cast<int>(effectiveType), bLoop, requestedVolume, itemLevel, bPaused, bEnabled, static_cast<const char *>(csSoundFilename.c_str()));
-        }
-        else
-        {
-            snprintf(cbuf, sizeof(cbuf), "[soundID = %d, playbackType = %s (%d), filename = '%s']",
-                soundID, PlaybackTypeToStr(effectiveType), static_cast<int>(effectiveType), static_cast<const char *>(csSoundFilename.c_str()));
-        }
-
-        return cbuf;
-    }
+    // used for logging; defined in XRSoundEngine.cpp because XRSound.lib never formats log text
+    std::string ToStr(const bool bShowLoopAndVolume = true) const;
 
     // Used for logging
     static const char* PlaybackTypeToStr(const XRSound::PlaybackType state)
@@ -438,13 +423,14 @@ private:
 };
 
 // this macro is designed to be use with an XRSoundEngine instance (reference)
-#define VERBOSE_LOG(pEngine, str, ...)              \
+// The format string is part of the variadic arguments so that a message with no arguments forwards cleanly to FormatString.
+#define VERBOSE_LOG(pEngine, ...)                   \
 {                                                   \
     if (pEngine->VerboseLogging())  /* this engine's active EnableVerboseLogging value */ \
     {                                               \
-        char msg[256];                              \
-		snprintf(msg, 256, str, __VA_ARGS__);       \
-        pEngine->WriteLog(msg);                     \
+        /* FormatString sizes the result to fit, so long file paths / sound descriptions are never truncated */ \
+        const std::string verboseLogMsg = FormatString(__VA_ARGS__); \
+        pEngine->WriteLog(verboseLogMsg.c_str());   \
     }                                               \
 }
 

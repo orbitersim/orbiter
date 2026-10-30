@@ -16,6 +16,20 @@
 #include "XRSoundDLL.h"   // for XRSoundDLL::GetAbsoluteSimTime()
 #include "ISound.h"
 
+// Returns a description of this sound for log messages.
+std::string WavContext::ToStr(const bool bShowLoopAndVolume) const
+{
+    const XRSound::PlaybackType effectiveType = EffectivePlaybackType();
+    if (bShowLoopAndVolume)
+    {
+        return FormatString("[soundID = %d, playbackType = %s (%d), bLoop = %d, requestedVolume = %.2lf, itemLevel = %.2lf, bPaused = %d, bEnabled = %d, filename = '%s']",
+            soundID, PlaybackTypeToStr(effectiveType), static_cast<int>(effectiveType), bLoop, requestedVolume, itemLevel, bPaused, bEnabled, static_cast<const char *>(csSoundFilename.c_str()));
+    }
+
+    return FormatString("[soundID = %d, playbackType = %s (%d), filename = '%s']",
+        soundID, PlaybackTypeToStr(effectiveType), static_cast<int>(effectiveType), static_cast<const char *>(csSoundFilename.c_str()));
+}
+
 // static data and methods
 
 ISoundEngine *XRSoundEngine::s_SoundEngine = nullptr;
@@ -39,9 +53,7 @@ void XRSoundEngine::ParseGlobalConfigFile()
     s_globalConfig.ParseFile();
     if (s_globalConfig.ParseFailed())
     {
-        char msg[256];
-        snprintf(msg, 256, "Error parsing configuration file '%s' -- see above error messages for details.", s_globalConfig.GetDefaultFilename());
-        s_globalConfig.WriteLog(msg);
+        s_globalConfig.WriteLog(FormatString("Error parsing configuration file '%s' -- see above error messages for details.", s_globalConfig.GetDefaultFilename()).c_str());
     }
 }
 
@@ -73,17 +85,19 @@ bool XRSoundEngine::InitializeSoundEngine()
 
         s_SoundEngine = new ISoundEngine();     // the sound engine's own output volume stays at its default of 1.0; the main volume of each XRSound engine is applied per sound
 
-        char logMsg[256];   // can't use CString easily here b/c Orbiter's oapiWriteLog takes a char * instead of const char * for some bizarre reason.
+        // Written to Orbiter.log with oapiWriteLogV("%s", ...), not oapiWriteLog: oapiWriteLog treats its text as a printf format in Orbiter 2024
+        // and older, so a '%' in the driver name would garble the line or crash Orbiter.  oapiWriteLogV exists in every Orbiter version XRSound supports.
+        std::string logMsg;
         if (s_SoundEngine)
-            sprintf_s(logMsg, "%s initialized using sound driver %s. XRSound UpdateInterval = %.03lf (%.1lf updates per second), MasterVolume = %.2f, MusicVolume = %.2f",
+            logMsg = FormatString("%s initialized using sound driver %s. XRSound UpdateInterval = %.03lf (%.1lf updates per second), MasterVolume = %.2f, MusicVolume = %.2f",
                 GetVersionStr(), XRSoundEngine::GetSoundDriverName(),
                 s_globalConfig.UpdateInterval, (1.0 / s_globalConfig.UpdateInterval), s_globalConfig.MasterVolume, s_globalConfig.MusicVolume);
         else
-            sprintf_s(logMsg, "%s ERROR: could not initialize default sound device.", GetVersionStr());
+            logMsg = FormatString("%s ERROR: could not initialize default sound device.", GetVersionStr());
 
-        oapiWriteLog(logMsg);
+        oapiWriteLogV("%s", logMsg.c_str());
         s_globalConfig.WriteLog("----------------------------------------------------------------------------");
-        s_globalConfig.WriteLog(logMsg);
+        s_globalConfig.WriteLog(logMsg.c_str());
 
         if (!XRSoundEngine::IsSoundEngineInitialized())
             return false;
@@ -100,11 +114,11 @@ bool XRSoundEngine::InitializeSoundEngine()
 // Perform one-time static cleanup of our ISoundEngine singleton.
 void XRSoundEngine::DestroySoundEngine()
 {
-    char logMsg[256];   // can't use CString easily here b/c Orbiter's oapiWriteLog takes a char * instead of const char * for some bizarre reason.
-    sprintf_s(logMsg, "%s terminating.", GetVersionStr());
+    // Written with oapiWriteLogV("%s", ...): see InitializeSoundEngine.
+    const std::string logMsg = FormatString("%s terminating.", GetVersionStr());
 
-    oapiWriteLog(logMsg);
-    s_globalConfig.WriteLog(logMsg);
+    oapiWriteLogV("%s", logMsg.c_str());
+    s_globalConfig.WriteLog(logMsg.c_str());
 
     // It is not an error to call this if the engine was never initialized, so we don't check for that here.
     if (XRSoundEngine::IsSoundEngineInitialized())
@@ -218,11 +232,9 @@ void XRSoundEngine::InitializeActiveValues()
 
     if (VerboseLogging())
     {
-        char csMsg[256];
-        snprintf(csMsg, sizeof(csMsg), "XRSoundEngine::InitializeActiveValues: initialized from config: main volume = %.3f, ATC volume = %.3f, music volume = %.3f, UpdateInterval = %.3f, SilenceOfSpace = %d, file types = [%s]",
+        WriteLog(FormatString("XRSoundEngine::InitializeActiveValues: initialized from config: main volume = %.3f, ATC volume = %.3f, music volume = %.3f, UpdateInterval = %.3f, SilenceOfSpace = %d, file types = [%s]",
             a.volumeLevels[static_cast<int>(XRSound::VolumeType::Main)], a.volumeLevels[static_cast<int>(XRSound::VolumeType::ATC)], a.volumeLevels[static_cast<int>(XRSound::VolumeType::Music)],
-            a.UpdateInterval, a.SilenceOfSpace, m_pConfig->SupportedSoundFileTypes.c_str());
-        WriteLog(csMsg);
+            a.UpdateInterval, a.SilenceOfSpace, m_pConfig->SupportedSoundFileTypes.c_str()).c_str());
     }
 }
 
@@ -640,8 +652,7 @@ void XRSoundEngine::WriteLog(const char *pMsg)
     _ASSERTE(m_pConfig);
 
     // prefix the vessel ID to the log message if we can get it
-    char msg[2048];
-    snprintf(msg, sizeof(msg), "[%s][%.03lf] %s", GetLogID(), XRSoundDLL::GetAbsoluteSimTime(), pMsg);
+    const std::string msg = FormatString("[%s][%.03lf] %s", GetLogID(), XRSoundDLL::GetAbsoluteSimTime(), pMsg);
 
     // Hopefully we won't need this check, but it's here as a sanity check in case something unexpected happens in the field.
     // reduce log verbosity by not re-logging the exact same message (ever) 
@@ -650,7 +661,7 @@ void XRSoundEngine::WriteLog(const char *pMsg)
     {
         m_lastLogLine = msg;
         // m_nextDuplicateLogLineSimt = simt + 1.0;
-        m_pConfig->WriteLog(msg);
+        m_pConfig->WriteLog(msg.c_str());
     }
 }
 
@@ -718,9 +729,7 @@ double XRSoundEngine::ComputeVariableLevel(const double min, const double max, d
 const char *XRSoundEngine::GetVersionStr()
 {
     if (s_csVersion.empty()) {
-		char cbuf[256];
-		snprintf(cbuf, 256, "XRSound %.2f %s[%s %s], Build Date : %s", XRSOUND_ENGINE_VERSION, XRSOUND_BETA_STR, ARCH_TYPE, BUILD_TYPE, __DATE__);
-        s_csVersion = cbuf;
+        s_csVersion = FormatString("XRSound %.2f %s[%s %s], Build Date : %s", XRSOUND_ENGINE_VERSION, XRSOUND_BETA_STR, ARCH_TYPE, BUILD_TYPE, __DATE__);
 	}
     return s_csVersion.c_str();
 }
@@ -756,18 +765,18 @@ bool XRSoundEngine::PauseOrReumseMusic(const bool bPause)
             // If *pausing*, don't change the state in the WavContext of the sound here: 1) we don't need to because Orbiter will no longer call our PreStep while it
             // is paused, and 2) We want to preserve the current state of each sounds's bPaused flag anyway so that each will be unpaused or remain paused 
             // as desired when Orbiter unpauses and this method is called again.
-            char msg[256];
+            std::string msg;
             if (bPause)
             {
-                snprintf(msg, 256, "Pausing global music slot %s", static_cast<const char *>(s_pMusicFolderWavContext->ToStr().c_str()));
+                msg = FormatString("Pausing global music slot %s", static_cast<const char *>(s_pMusicFolderWavContext->ToStr().c_str()));
                 pISound->setIsPaused(true);
             }
             else
             {
-                snprintf(msg, 256, "Unpausing global music slot %s", static_cast<const char*>(s_pMusicFolderWavContext->ToStr().c_str()));
+                msg = FormatString("Unpausing global music slot %s", static_cast<const char*>(s_pMusicFolderWavContext->ToStr().c_str()));
                 pISound->setIsPaused(false);
             }
-            XRSoundDLL::WriteLog(msg);
+            XRSoundDLL::WriteLog(msg.c_str());
         }
     }
 
@@ -998,10 +1007,8 @@ void XRSoundEngine::ApplyPendingStartValues(WavContext &context)
         else
         {
             // The seek failed (e.g., position is beyond the end of the file); play from the beginning.  Always log this since it means a client's request was not honored.
-            char msg[256];
-            snprintf(msg, 256, "XRSoundEngine::ApplyPendingStartValues WARNING: could not seek to pending play position %u ms for %s; playing from the beginning",
-                context.pendingPositionMillis, context.ToStr(false).c_str());
-            WriteLog(msg);
+            WriteLog(FormatString("XRSoundEngine::ApplyPendingStartValues WARNING: could not seek to pending play position %u ms for %s; playing from the beginning",
+                context.pendingPositionMillis, context.ToStr(false).c_str()).c_str());
         }
         context.bHasPendingPosition = false;
     }
@@ -1214,9 +1221,7 @@ bool XRSoundEngine::GetSoundDuration(const int soundID, unsigned int &durationMi
         unsigned int lengthMillis = 0;
         if (!s_SoundEngine->getSoundLengthMillis(pContext->csSoundFilename.c_str(), lengthMillis) || (lengthMillis == 0))
         {
-            char msg[256];
-            snprintf(msg, 256, "XRSoundEngine::GetSoundDuration WARNING: could not determine the length of %s (lengthMillis = %u)", pContext->ToStr(false).c_str(), lengthMillis);
-            WriteLog(msg);
+            WriteLog(FormatString("XRSoundEngine::GetSoundDuration WARNING: could not determine the length of %s (lengthMillis = %u)", pContext->ToStr(false).c_str(), lengthMillis).c_str());
             return false;
         }
 

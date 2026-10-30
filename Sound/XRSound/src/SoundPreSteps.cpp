@@ -674,9 +674,7 @@ void LogThrusterDataPreStep::clbkPreStep(const double simt, const double simdt, 
                 double thrusterMax = pVessel->GetThrusterMax(thHandle, 0);
                 const double thrust = thrusterMax * thLevel / 1000;  // in kilonewtons
 
-                char msg[256];
-                snprintf(msg, 256, "LogThrusterData: [thruster index %u] thrust level = %lf, thrust = %lf kN", i, thLevel, thrust);
-                WriteLog(msg);
+                WriteLog(FormatString("LogThrusterData: [thruster index %u] thrust level = %lf, thrust = %lf kN", i, thLevel, thrust).c_str());
             }
         }
     }
@@ -729,9 +727,7 @@ void CustomEnginesDefaultSoundPreStep::clbkPreStep(const double simt, const doub
         }
 
         // log which custom thruster IDs we are using
-        char msg[256];
-        snprintf(msg, 256, "CustomEnginesDefaultSoundPreStep: using custom engine sound '%s' for thrusters w/indexes [%s]", m_pEngine->GetWavFilename(soundID), thrusterIdxStr.c_str());
-        WriteLog(msg);
+        WriteLog(FormatString("CustomEnginesDefaultSoundPreStep: using custom engine sound '%s' for thrusters w/indexes [%s]", m_pEngine->GetWavFilename(soundID), thrusterIdxStr.c_str()).c_str());
     }
 
     // Figure out total engine thrust for the configured thrusters in customThrusterIndexes.
@@ -1168,10 +1164,8 @@ void DisableAutopilotsForTimeAccPreStep::clbkPreStep(const double simt, const do
         {
             if (pVessel->GetNavmodeState(i))
             {
-                char msg[256];
-                snprintf(msg, 256, "DisableAutopilotsForTimeAccPreStep: auto-disabling autopilot w/navmode %d due to time acceleration (%dx) [configured max time acc threshold for autopilots is %dx]",
-                    i, static_cast<int>(currentTimeACC), static_cast<int>(maxTimeAccForAP));
-                WriteLog(msg);
+                WriteLog(FormatString("DisableAutopilotsForTimeAccPreStep: auto-disabling autopilot w/navmode %d due to time acceleration (%dx) [configured max time acc threshold for autopilots is %dx]",
+                    i, static_cast<int>(currentTimeACC), static_cast<int>(maxTimeAccForAP)).c_str());
                 pVessel->DeactivateNavmode(i);
                 // Note: either this frame or the next will play our AutopilotOff sound, so we don't need to do that here.
             }

@@ -49,7 +49,8 @@ bool XRSoundImpl::Initialize(VESSEL *pVessel)
         {
             // Log both this vessel's XRSound.lib version and the XRSound.dll version
             // Note: in order to maximize cross-compiler version linking compatibility, we don't want to use any msvcrt functions in this library, so we can't use sprintf here.
-            // Orbiter's oapiWriteLog signature takes a mutable char *.
+            // The messages go through oapiWriteLogV("%s", ...) because oapiWriteLog treats its text as a printf format in Orbiter 2024 and older,
+            // so a '%' in a vessel or module name would garble the line or crash Orbiter.
             const float dllVersion = GetVersion();
             _ASSERTE(dllVersion > 0);
             char messageBuf[512];
@@ -61,7 +62,7 @@ bool XRSoundImpl::Initialize(VESSEL *pVessel)
 
                 StringCchPrintf(messageBuf, sizeof(messageBuf), "[XRSound INFO] %s '%s' built with XRSound API version %.2f", 
                     pEngineType, pVesselOrModuleName, XRSOUND_ENGINE_VERSION);
-                oapiWriteLog(messageBuf);
+                oapiWriteLogV("%s", messageBuf);
             }
 
             if (dllVersion < XRSOUND_ENGINE_VERSION)
@@ -69,7 +70,7 @@ bool XRSoundImpl::Initialize(VESSEL *pVessel)
                 // user is running with an older XRSound.dll version than this vessel was linked with
                 StringCchPrintf(messageBuf, sizeof(messageBuf), "[XRSOUND WARNING] XRSound.dll version %0.2f is installed, but an active Orbiter vessel or module was built with XRSound version %.2f.  Please install the latest XRSound version from https://www.alteaaerospace.com.",
                     dllVersion, XRSOUND_ENGINE_VERSION);
-                oapiWriteLog(messageBuf);
+                oapiWriteLogV("%s", messageBuf);
             }
         }
     }

@@ -20,10 +20,8 @@
 // Only invoked by our base class's static DestroyInstance method
 void VesselXRSoundEngine::FreeResources()
 {
-    char msg[256];
-    snprintf(msg, 256, "XRSoundEngine::FreeResources: freeing XRSound engine resources for vessel '%s'",
-        GetVesselName().c_str());
-    s_globalConfig.WriteLog(msg);
+    s_globalConfig.WriteLog(FormatString("XRSoundEngine::FreeResources: freeing XRSound engine resources for vessel '%s'",
+        GetVesselName().c_str()).c_str());
 
     // stop all of this vessel's sounds and free all resources for them
     StopAllWav();
@@ -67,9 +65,7 @@ VesselXRSoundEngine::VesselXRSoundEngine(const OBJHANDLE hVessel) :
     m_pConfig->ParseVesselSoundConfig(pVessel);
     if (m_pConfig->ParseFailed())
     {
-        char msg[256];
-        snprintf(msg, 256, "Error parsing configuration file(s) '%s' -- see above error messages for details.", m_pConfig->GetConfigFilenames());
-        m_pConfig->WriteLog(msg);
+        m_pConfig->WriteLog(FormatString("Error parsing configuration file(s) '%s' -- see above error messages for details.", m_pConfig->GetConfigFilenames()).c_str());
     }
 
     // This vessel's active volume levels and settings start from its own configuration (just parsed above); from here on the XRSound API changes only
@@ -488,9 +484,7 @@ void VesselXRSoundEngine::PollAllAnimationStates()
 
         if (bStateTransitioned && m_active.LogVesselAnimations)    // this vessel's own active value
         {
-            char csMsg[256];
-            snprintf(csMsg, 256, "  >> LogVesselAnimations: [%s][animation ID = %d, state = %s]", GetVesselClassName().c_str(), animID, animationState.ToStr());
-            WriteLog(csMsg);
+            WriteLog(FormatString("  >> LogVesselAnimations: [%s][animation ID = %d, state = %s]", GetVesselClassName().c_str(), animID, animationState.ToStr()).c_str());
         }
     }
 }

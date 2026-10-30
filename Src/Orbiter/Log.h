@@ -5,6 +5,8 @@
 #define __LOG_H
 
 #include <stdio.h>
+#include <stdlib.h>   // free, for CHECKCWD
+#include <direct.h>   // _getcwd and _chdir, for CHECKCWD
 #include <windows.h>
 
 // comment the following line to suppress log file output
@@ -16,13 +18,25 @@ typedef void (*LogOutFunc)(const char* msg);
 void InitLog (const char *logfile, bool append);   // Set log file name and clear if exists
 void SetLogVerbosity (bool verbose);
 void SetLogOutFunc(LogOutFunc func); // clone log output to a function
-void LogOut (const char *msg, ...);   // Write a message to the log file
+void LogOutText(const char *msg);   // Write a message to the log file as plain text (never read as a format)
+void LogOutFormat(const char *format, ...);   // Write a printf-formatted message to the log file
+// LogOut with only a message writes it as plain text, so a '%' in it (e.g., in a file name) is printed as is; with arguments,
+// the message is the printf format for them.  (A template, because overloading on a C variadic function is ambiguous.)
+inline void LogOut(const char *msg) { LogOutText(msg); }
+template<typename... Args> void LogOut(const char *format, Args... args) { LogOutFormat(format, args...); }
 void LogOutVA(const char *format, va_list ap);
 void LogOutFine (const char *msg, ...);   // Write a message to the log file if fine-grain output enabled
-void LogOut ();                       // Write current message to log file
-void LogOut_Error (const char *func, const char *file, int line, const char *msg, ...);  // Write error message to log file
+// Write error message to log file.  As with LogOut, a message with no arguments is plain text; with arguments, it is their printf format.
+void LogOut_ErrorText(const char *func, const char *file, int line, const char *msg);
+void LogOut_ErrorFormat(const char *func, const char *file, int line, const char *format, ...);
+inline void LogOut_Error(const char *func, const char *file, int line, const char *msg) { LogOut_ErrorText(func, file, line, msg); }
+template<typename... Args> void LogOut_Error(const char *func, const char *file, int line, const char *format, Args... args) { LogOut_ErrorFormat(func, file, line, format, args...); }
 void LogOut_ErrorVA(const char *func, const char *file, int line, const char *msg, va_list ap);
-void LogOut_Warning(const char* func, const char* file, int line, const char* msg, ...);  // Write general warning to log file
+// Write general warning to log file; one-argument messages are plain text, as for LogOut_Error.
+void LogOut_WarningText(const char* func, const char* file, int line, const char* msg);
+void LogOut_WarningFormat(const char* func, const char* file, int line, const char* format, ...);
+inline void LogOut_Warning(const char* func, const char* file, int line, const char* msg) { LogOut_WarningText(func, file, line, msg); }
+template<typename... Args> void LogOut_Warning(const char* func, const char* file, int line, const char* format, Args... args) { LogOut_WarningFormat(func, file, line, format, args...); }
 void LogOut_WarningVA(const char* func, const char* file, int line, const char* msg, va_list ap);
 void LogOut_Obsolete(const char* func, const char* msg = 0);      // Write obsolete-function warning to log file
 void LogOut_LastError (const char *func, const char *file, int line);             // Write formatted string from GetLastError
@@ -105,11 +119,9 @@ void PrintModules();
 #define dCHECK(test,msg,...)
 #endif
 
-#define CHECKCWD(cwd,name) { char c[512]; _getcwd(c,512); if(strcmp(c,cwd)) { _chdir(cwd); sprintf (c,"CWD modified by module %s - Fixing.",name); LOGOUT_WARN(c); } }
-
-#ifndef __LOG_CPP
-extern char logs[256];
-#endif
+// _getcwd(nullptr, 0) allocates a buffer of whatever length the folder needs; a fixed 512-char buffer returned null for a longer
+// folder, and strcmp then crashed on it.
+#define CHECKCWD(cwd,name) { char *c = _getcwd(nullptr, 0); if(c && strcmp(c,cwd)) { _chdir(cwd); LOGOUT_WARN("CWD modified by module %s - Fixing.",name); } free(c); }
 
 // trace memory allocation
 //#define TRACE_MEMALLOC

@@ -59,10 +59,8 @@ ModuleXRSoundEngine::~ModuleXRSoundEngine()
 // Only invoked by our base class's static DestroyInstance method
 void ModuleXRSoundEngine::FreeResources()
 {
-    char msg[256];
-    snprintf(msg, 256, "ModuleXRSoundEngine::FreeResources: freeing XRSound engine resources for module '%s'",
-        m_csModuleName.c_str());
-    s_globalConfig.WriteLog(msg);
+    s_globalConfig.WriteLog(FormatString("ModuleXRSoundEngine::FreeResources: freeing XRSound engine resources for module '%s'",
+        m_csModuleName.c_str()).c_str());
 
     // stop all of this module's sounds and free all sound resources for them
     StopAllWav();

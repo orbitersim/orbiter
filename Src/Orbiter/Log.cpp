@@ -1,9 +1,8 @@
 // Copyright (c) Martin Schweiger
 // Licensed under the MIT License
 
-#define __LOG_CPP
-
 #include <string.h>
+#include <string>
 #include <fstream>
 #include <Windows.h>
 #include <Psapi.h>
@@ -15,8 +14,14 @@ using namespace std;
 extern char DBG_MSG[256];
 extern TimeData td;
 
-static char logname[256] = "Orbiter.log";
-static char logs[256] = "";
+// The log file name, any length (a fixed char buffer here used to be filled with an unchecked strcpy).  Created on first use and
+// never destroyed: exit() destroys static objects before plugin DLLs unload, and a plugin may still log while it unloads.
+static std::string &LogName()
+{
+	static std::string *name = new std::string("Orbiter.log");
+	return *name;
+}
+
 static bool finelog = false;
 static DWORD t0 = 0;
 
@@ -24,9 +29,9 @@ static LogOutFunc logOut = 0;
 
 void InitLog (const char *logfile, bool append)
 {
-	strcpy (logname, logfile);
-	ofstream ofs (logname, append ? ios::app : ios::out);
-	ofs << "**** " << logname << endl;
+	LogName() = logfile;
+	ofstream ofs (LogName(), append ? ios::app : ios::out);
+	ofs << "**** " << LogName() << endl;
 	t0 = timeGetTime();
 }
 
@@ -40,56 +45,69 @@ void SetLogVerbosity (bool verbose)
 	finelog = verbose;
 }
 
-void LogOut (const char *msg, ...)
+void LogOutFormat(const char *format, ...)
 {
 	va_list ap;
-	va_start (ap, msg);
-	LogOutVA(msg, ap);
-	va_end (ap);
+	va_start(ap, format);
+	LogOutVA(format, ap);
+	va_end(ap);
+}
+
+// A message with no arguments is written as plain text, never read as a printf format: callers such as oapiWriteLog pass
+// add-on text and file names that can contain '%', which a format would misread (or crash on, e.g. "%s" with no argument).
+void LogOutText(const char *msg)
+{
+	LogOutFormat("%s", msg);
 }
 
 void LogOutVA(const char *format, va_list ap)
 {
-	FILE *f = fopen(logname, "a+t");
-	fprintf(f, "%010.3f: ", (timeGetTime() - t0) * 1e-3);
-	vfprintf(f, format, ap);
-	fputc('\n', f);
-	fclose(f);
-	if (logOut) {
-		vsnprintf(logs, 255, format, ap);
-		(*logOut)(logs);
+	va_list apConsole;
+	va_copy(apConsole, ap);	// vfprintf consumes ap, so the console copy below needs its own
+	FILE *f = fopen(LogName().c_str(), "a+t");
+	if (f) {	// e.g., the log folder is read-only: skip the file but still copy the line to the console
+		fprintf(f, "%010.3f: ", (timeGetTime() - t0) * 1e-3);
+		vfprintf(f, format, ap);
+		fputc('\n', f);
+		fclose(f);
 	}
+	if (logOut) {
+		// Sized to fit, so the console shows the whole line, as the log file does.
+		va_list apMeasure;
+		va_copy(apMeasure, apConsole);
+		const int length = vsnprintf(nullptr, 0, format, apMeasure);
+		va_end(apMeasure);
+		if (length >= 0) {
+			std::string consoleLine(static_cast<size_t>(length) + 1, '\0');
+			vsnprintf(consoleLine.data(), consoleLine.size(), format, apConsole);
+			(*logOut)(consoleLine.c_str());
+		}
+	}
+	va_end(apConsole);
 }
 
 void LogOutFine (const char *msg, ...)
 {
 	if (finelog) {
 		va_list ap;
-		va_start (ap, msg);
-		FILE *f = fopen (logname, "a+t");
-		fprintf (f, "%010.3f: ", (timeGetTime() - t0) * 1e-3);
-		vfprintf (f, msg, ap);
-		fputc ('\n', f);
-		fclose (f);
-		if (logOut) {
-			vsnprintf (logs, 255, msg, ap);
-			(*logOut)(logs);
-		}
-		va_end (ap);
+		va_start(ap, msg);
+		LogOutVA(msg, ap);	// writes the same line as before; LogOutVA keeps a separate copy of the arguments for the console
+		va_end(ap);
 	}
 }
 
-void LogOut ()
-{
-	LogOut (logs);
-}
-
-void LogOut_Error (const char *func, const char *file, int line, const char *msg, ...)
+void LogOut_ErrorFormat(const char *func, const char *file, int line, const char *format, ...)
 {
 	va_list ap;
-	va_start (ap, msg);
-	LogOut_ErrorVA(func, file, line, msg, ap);
+	va_start(ap, format);
+	LogOut_ErrorVA(func, file, line, format, ap);
 	va_end(ap);
+}
+
+// Like LogOutText: a message with no arguments is plain text, never read as a printf format.
+void LogOut_ErrorText(const char *func, const char *file, int line, const char *msg)
+{
+	LogOut_ErrorFormat(func, file, line, "%s", msg);
 }
 
 void LogOut_Error_Start()
@@ -276,8 +294,7 @@ void LogOut_DDErr (HRESULT hr, const char *func, const char *file, int line) {
 	}
 	LogOut ("---------------------------------------------------------------");
 	LogOut (errmsg);
-	sprintf (logs, ">>> [%s | %s | %d]", func, file, line);
-	LogOut();
+	LogOut(">>> [%s | %s | %d]", func, file, line);
 	LogOut ("---------------------------------------------------------------");
 }
 
@@ -299,17 +316,22 @@ void LogOut_DIErr (HRESULT hr, const char *func, const char *file, int line) {
 	}
 	LogOut ("---------------------------------------------------------------");
 	LogOut (errmsg);
-	sprintf (logs, ">>> [%s | %s | %d]", func, file, line);
-	LogOut();
+	LogOut(">>> [%s | %s | %d]", func, file, line);
 	LogOut ("---------------------------------------------------------------");
 }
 
-void LogOut_Warning(const char* func, const char* file, int line, const char* msg, ...)
+void LogOut_WarningFormat(const char* func, const char* file, int line, const char* format, ...)
 {
 	va_list ap;
-	va_start(ap, msg);
-	LogOut_WarningVA(func, file, line, msg, ap);
+	va_start(ap, format);
+	LogOut_WarningVA(func, file, line, format, ap);
 	va_end(ap);
+}
+
+// Like LogOutText: a message with no arguments is plain text, never read as a printf format.
+void LogOut_WarningText(const char* func, const char* file, int line, const char* msg)
+{
+	LogOut_WarningFormat(func, file, line, "%s", msg);
 }
 
 void LogOut_Obsolete(const char* func, const char* msg)

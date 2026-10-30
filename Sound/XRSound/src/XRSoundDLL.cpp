@@ -74,9 +74,7 @@ VesselXRSoundEngine *XRSoundDLL::GetXRSoundEngineInstance(const OBJHANDLE hVesse
     if (!bIsValidVessel)
     {
         // should never happen!
-        char msg[256];
-        snprintf(msg, 256, "XRSoundDLL::GetXRSoundEngineInstance ERROR: vessel handle passed is invalid! bInvokedByClientVessel = %d", bInvokedByClientVessel);
-        WriteLog(msg);
+        WriteLog(FormatString("XRSoundDLL::GetXRSoundEngineInstance ERROR: vessel handle passed is invalid! bInvokedByClientVessel = %d", bInvokedByClientVessel).c_str());
         return nullptr;
     }
 
@@ -93,22 +91,20 @@ VesselXRSoundEngine *XRSoundDLL::GetXRSoundEngineInstance(const OBJHANDLE hVesse
         // if this ship has thrusters; it should have default sounds
         const DWORD dwThrusterCount = pVessel->GetThrusterCount();
         const bool bShouldHaveDefaultSounds = (dwThrusterCount > 0);
-        char csVesselDesc[256];
         const char *pName = pVessel->GetName();
         const char *pClassName = pVessel->GetClassName();
-        snprintf(csVesselDesc, 256, "'%s' [class name '%s'], bInvokedByClientVessel = %d, dwThrusterCount = %u, bShouldHaveDefaultSounds = %d",
+        const std::string csVesselDesc = FormatString("'%s' [class name '%s'], bInvokedByClientVessel = %d, dwThrusterCount = %u, bShouldHaveDefaultSounds = %d",
             pName ? pName : "<unknown>", pClassName ? pClassName : "<unknown>", bInvokedByClientVessel, dwThrusterCount, bShouldHaveDefaultSounds);
 
         // if the request for an engine came from a vessel, it should *always* succeed, even if it would not normally have default sounds
         if (bInvokedByClientVessel || bShouldHaveDefaultSounds)
         {
-            char msg[256];
-            snprintf(msg, 256, "XRSoundDLL::GetXRSoundEngineInstance: creating new XRSoundEngine instance for vessel %s", static_cast<const char *>(csVesselDesc));
+            const std::string msg = FormatString("XRSoundDLL::GetXRSoundEngineInstance: creating new XRSoundEngine instance for vessel %s", csVesselDesc.c_str());
 
             pEngine = VesselXRSoundEngine::CreateInstance(hVessel);
             if (pEngine)
                 s_pInstance->m_allVesselsMap.insert(vesselHandle_XRSoundEnginePtr_Pair(hVessel, pEngine));  // add the new engine to our master map for vessels
-            s_pInstance->WriteLog(msg);
+            s_pInstance->WriteLog(msg.c_str());
         }
     }
     return pEngine;   // may be nullptr
@@ -136,17 +132,14 @@ ModuleXRSoundEngine *XRSoundDLL::GetXRSoundEngineInstance(const char *pUniqueMod
     if (!bIsValidModuleID)
     {
         // should never happen!
-        char msg[256];
-        snprintf(msg, 256, "XRSoundDLL::GetXRSoundEngineInstance ERROR: pUniqueModuleName passed is nullptr or empty!");
-        WriteLog(msg);
+        WriteLog(FormatString("XRSoundDLL::GetXRSoundEngineInstance ERROR: pUniqueModuleName passed is nullptr or empty!").c_str());
         return nullptr;
     }
 
     ModuleXRSoundEngine *pEngine = s_pInstance->FindXRSoundEngineForModule(pUniqueModuleName);
     if (!pEngine)   // no existing engine found for this module
     {
-        char csMsg[256];
-        snprintf(csMsg, 256, "XRSoundDLL::GetXRSoundEngineInstance: creating new XRSoundEngine instance for module '%s'", pUniqueModuleName);
+        std::string csMsg = FormatString("XRSoundDLL::GetXRSoundEngineInstance: creating new XRSoundEngine instance for module '%s'", pUniqueModuleName);
         pEngine = ModuleXRSoundEngine::CreateInstance(pUniqueModuleName);
         if (pEngine)
         {
@@ -155,9 +148,9 @@ ModuleXRSoundEngine *XRSoundDLL::GetXRSoundEngineInstance(const char *pUniqueMod
         }
         else
         {
-            snprintf(csMsg, 256, "XRSoundDLL::GetXRSoundEngineInstance: WARNING: nullptr or empty module name supplied; returning nullptr.");
+            csMsg = FormatString("XRSoundDLL::GetXRSoundEngineInstance: WARNING: could not create XRSoundEngine instance for module '%s'; returning nullptr.", pUniqueModuleName);
         }
-        s_pInstance->WriteLog(csMsg);
+        s_pInstance->WriteLog(csMsg.c_str());
     }
     
     return pEngine;   // may be nullptr
@@ -418,9 +411,7 @@ void XRSoundDLL::clbkPreStep(double simtDoNotUse, double simdt, double mjd)
 
         if (!PreStepVesselWithSEH(hVessel, pEngine, simt, simdt, mjd))
         {
-            char csMsg[256];
-            snprintf(csMsg, 256, "XRSoundDLL::clbkPreStep ERROR: Access Violation in VesselXRSoundEngine::clbkPreStep for vessel %s", oapiIsVessel(hVessel) ? oapiGetVesselInterface(hVessel)->GetName() : "<invalid>");
-            WriteLog(csMsg);
+            WriteLog(FormatString("XRSoundDLL::clbkPreStep ERROR: Access Violation in VesselXRSoundEngine::clbkPreStep for vessel %s", oapiIsVessel(hVessel) ? oapiGetVesselInterface(hVessel)->GetName() : "<invalid>").c_str());
         }
         pEngine->ScheduleNextRefresh(simt);     // uses this vessel's own active UpdateInterval
     }

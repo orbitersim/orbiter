@@ -54,32 +54,28 @@ bool DefaultSoundGroupPreStep::SetFolder(const char *pFolderSubpath)
     // do not recurse subfolders
     std::unique_ptr<FileList> pNewList(new FileList(pFolderSubpath, false, m_pEngine->GetValidSoundFileExtensions()));
     bool bSuccess = false;
-    char msg[1024];
     try
     {
         bSuccess = pNewList->Scan();
     }
     catch (const std::exception &e)     // e.g., std::filesystem::filesystem_error if the folder cannot be read; log it and keep the previous list
     {
-        snprintf(msg, sizeof(msg), "DefaultSoundGroupPreStep::SetFolder ERROR: exception while scanning folder path '%s' set for soundID %d: %s",
-            pFolderSubpath, m_soundID, e.what());
-        WriteLog(msg);
+        WriteLog(FormatString("DefaultSoundGroupPreStep::SetFolder ERROR: exception while scanning folder path '%s' set for soundID %d: %s",
+            pFolderSubpath, m_soundID, e.what()).c_str());
         return false;
     }
 
     if (!bSuccess)
     {
-        snprintf(msg, sizeof(msg), "DefaultSoundGroupPreStep::SetFolder ERROR: folder path '%s' set for soundID %d does not exist.",
-            pFolderSubpath, m_soundID);
-        WriteLog(msg);
+        WriteLog(FormatString("DefaultSoundGroupPreStep::SetFolder ERROR: folder path '%s' set for soundID %d does not exist.",
+            pFolderSubpath, m_soundID).c_str());
         return false;
     }
 
     if (pNewList->IsEmpty())
     {
-        snprintf(msg, sizeof(msg), "DefaultSoundGroupPreStep::SetFolder ERROR: folder path '%s' set for soundID %d exists, but no supported sound file types found.",
-            pFolderSubpath, m_soundID);
-        WriteLog(msg);
+        WriteLog(FormatString("DefaultSoundGroupPreStep::SetFolder ERROR: folder path '%s' set for soundID %d exists, but no supported sound file types found.",
+            pFolderSubpath, m_soundID).c_str());
         return false;
     }
 
@@ -105,9 +101,7 @@ std::string DefaultSoundGroupPreStep::GetRandomSoundFile()
     std::string file = m_pSoundFilesList->GetRandomFile();
     if (file.empty())
     {
-        char msg[256];
-        snprintf(msg, 256, "DefaultSoundGroupPreStep::GetRandomSoundFile WARNING: sound files list is empty for soundID %d", m_soundID);
-        WriteLog(msg);
+        WriteLog(FormatString("DefaultSoundGroupPreStep::GetRandomSoundFile WARNING: sound files list is empty for soundID %d", m_soundID).c_str());
     }
     return file;
 }
@@ -123,9 +117,7 @@ std::string DefaultSoundGroupPreStep::GetNextSoundFile()
 
     if (file.empty())
     {
-		char msg[256];
-        snprintf(msg, 256, "DefaultSoundGroupPreStep::GetNextSoundFile WARNING: sound files list is empty for soundID %d", m_soundID);
-        WriteLog(msg);
+        WriteLog(FormatString("DefaultSoundGroupPreStep::GetNextSoundFile WARNING: sound files list is empty for soundID %d", m_soundID).c_str());
     }
     return file;
 }

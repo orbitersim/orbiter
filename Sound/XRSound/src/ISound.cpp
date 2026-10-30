@@ -88,6 +88,15 @@ ISoundEngine::~ISoundEngine()
 
 }
 
+void ISoundEngine::LogFileErrorOnce(const char *pMessage, const char *soundFileName) const
+{
+    if (!m_loggedFileErrors.insert(std::string(pMessage) + soundFileName).second)
+        return;     // already logged this session
+
+    // oapiWriteLogV("%s", ...) because oapiWriteLog treats its text as a printf format in Orbiter 2024 and older; a '%' in the file name would garble the line or crash Orbiter
+    oapiWriteLogV("%s%s (logged once per session)", pMessage, soundFileName);
+}
+
 ISound *ISoundEngine::play2D(const char *soundFileName, const bool playLooped, const bool startPaused, const bool track)
 {
     if (!m_initialized) return nullptr;
@@ -98,8 +107,7 @@ ISound *ISoundEngine::play2D(const char *soundFileName, const bool playLooped, c
         snd = new ISound(&m_engine, soundFileName, playLooped, startPaused);
     }
     catch (...) {
-        std::string message = std::string("XRSound: Error loading sound file: ") + soundFileName;
-        oapiWriteLog(message.data());
+        LogFileErrorOnce("XRSound: Error loading sound file: ", soundFileName);
         return nullptr;
     }
 
@@ -119,8 +127,7 @@ bool ISoundEngine::getSoundLengthMillis(const char *soundFileName, unsigned int 
     ma_decoder_config config = ma_decoder_config_init_default();
     ma_decoder decoder;
     if (ma_decoder_init_file(soundFileName, &config, &decoder) != MA_SUCCESS) {
-        std::string message = std::string("XRSound: could not open sound file to get its length: ") + soundFileName;
-        oapiWriteLog(message.data());
+        LogFileErrorOnce("XRSound: could not open sound file to get its length: ", soundFileName);
         return false;
     }
 

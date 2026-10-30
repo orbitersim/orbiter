@@ -16,6 +16,8 @@
 #include <fstream>      // for ifstream
 #include <string>
 
+#include "FormatString.h"   // builds the log messages in ConfigFileParser.cpp and its subclasses
+
 const int MAX_LINE_LENGTH = 1024;
 const int MAX_NAME_LENGTH = 256;
 const int MAX_VALUE_LENGTH = (MAX_LINE_LENGTH - MAX_NAME_LENGTH - 1);

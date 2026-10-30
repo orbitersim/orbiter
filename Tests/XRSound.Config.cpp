@@ -19,6 +19,7 @@
 #include <process.h>
 
 #include "XRSoundConfigFileParser.h"
+#include "FormatString.h"
 
 // these collide with std::min/max and Windows SDK macros
 #undef min
@@ -459,4 +460,56 @@ TEST_CASE("Music order and play enums map to the public enums and back", "[xrsou
         CHECK_FALSE(Parser::MusicPlayToInternal(-1, unchanged));
         CHECK(unchanged == Parser::MusicPlay::Space);
     }
+}
+
+TEST_CASE("FormatString formats printf-style into a string sized to fit", "[xrsound][formatstring]")
+{
+    SECTION("a short message formats exactly")
+    {
+        CHECK(FormatString("soundID = %d, name = '%s', level = %.2f", 7, "wind", 0.5) == "soundID = 7, name = 'wind', level = 0.50");
+    }
+
+    SECTION("a long %s argument comes back complete (a fixed 256-char buffer used to cut it off)")
+    {
+        std::string longPath(5000, 'x');
+        longPath.replace(0, 6, "Sound\\");
+        longPath.replace(longPath.size() - 4, 4, ".wav");
+
+        const std::string result = FormatString("filename = '%s' (soundID %d)", longPath.c_str(), 42);
+        const std::string expected = "filename = '" + longPath + "' (soundID 42)";
+        CHECK(result.size() == expected.size());
+        CHECK(result.size() == 5000 + std::string("filename = '' (soundID 42)").size());
+        CHECK(result.substr(result.size() - 18) == ".wav' (soundID 42)");
+        CHECK(result == expected);
+    }
+
+    SECTION("an empty format returns an empty string")
+    {
+        CHECK(FormatString("") == "");
+    }
+
+    SECTION("a format with no arguments is returned as is")
+    {
+        CHECK(FormatString("no arguments, 100%% literal") == "no arguments, 100% literal");
+    }
+}
+
+TEST_CASE("A sound file path far longer than 256 characters is logged complete", "[xrsound][config][animation][formatstring]")
+{
+    TempConfigFolder folder;
+    folder.Write(GLOBAL_CFG, "[SYSTEM]\nMasterVolume = 1.0\n");
+
+    // the file does not exist, so the parser logs the path in an ERROR line; that line used to be cut off at 256 characters
+    const std::string longPath = "Sound\\" + std::string(600, 'a') + "\\NoSuchFile.wav";
+    folder.Write(OVERRIDE_CFG, "[animation_4]\nOpening = " + longPath + "\n");
+
+    XRSoundConfigFileParser parser(GLOBAL_CFG);
+    CHECK(parser.ParseFile(GLOBAL_CFG));
+    CHECK_FALSE(parser.ParseFile(OVERRIDE_CFG));
+
+    const std::string log = folder.ReadLog();
+    CHECK(log.find("ERROR: Sound file does not exist or is not readable: '" + longPath + "' (remember that sound paths are relative to $ORBITER_ROOT)") != std::string::npos);
+
+    // the follow-up line quotes the whole config line; it used to be written with sprintf into a 256-byte buffer, overflowing it
+    CHECK(log.find("Line='Opening = " + longPath + "'.  Check the above log message for details.") != std::string::npos);
 }
