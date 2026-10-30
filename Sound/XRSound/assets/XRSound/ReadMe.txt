@@ -1,16 +1,16 @@
 ===========================================================================
-XRSound 3.0
+XRSound 4.0
 
-Version Date: 31-Jul-2021
+Version Date: 26-Oct-2026
   
-Copyright (c) 2018-2026 Douglas Beachy
+Copyright (c) 2018-2026 Douglas Beachy and contributors
 Licensed under the MIT license
 
 https://www.alteaaerospace.com
 mailto:doug.beachy@outlook.com
     
   Requirements:
-    Orbiter 2016 or newer; XRSound will *not* run under older Orbiter versions.
+    Orbiter 2024 or newer.
 ===========================================================================
 
 ---------
@@ -19,7 +19,7 @@ LICENSE
 
 MIT License
 
-Copyright (c) 2018-2026 Douglas Beachy
+Copyright (c) 2018-2026 Douglas Beachy and contributors
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -47,7 +47,7 @@ XRSound automatically adds default sounds to any Orbiter vessel that defines thr
 
 For information about the XRSound C++ API, refer to $ORBITER_ROOT\Orbitersdk\XRSound.h and $ORBITER_ROOT\Doc\XRSound User Manual.pdf.  
 
-Note for developers: the included XRSound.lib is for release builds and XRSoundD.lib is for debug builds.  You need likey need Visual Studio 2015 or newer in order to properly link with XRSound.lib or XRSoundD.lib: older Visual Studio versions have not been tested.
+Note for developers: link with the XRSound.lib from an Orbiter SDK built in the same configuration (Debug or Release) as your add-on, using the Visual Studio version that built that SDK or a newer one.
 
 XRSound includes a new ambient music track named `Solar Serenity` that plays in external views in space by default; it was created by and licensed from Grzegorz Lorens ("Loru" on Orbiter-Forum).  If you are interested in a lossless version of Solar Serenity, take a look here: https://loru.bandcamp.com/track/solar-serenity
 

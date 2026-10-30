@@ -10,7 +10,15 @@
 #include "miniaudio.h"
 #include <list>
 
-#ifndef NDEBUG
+// The "Audio debug" ImGui window uses Orbiter's ImGui dialog API, which Orbiter added after the
+// 2024 release; an XRSound.dll that contains it does not load in Orbiter 2024. CMake defines
+// XRSOUND_DEBUG_GUI for Debug builds only (configure with -DXRSOUND_DEBUG_GUI=OFF to leave it out
+// of a Debug build too). The window must never ship in a Release build.
+#if defined(XRSOUND_DEBUG_GUI) && defined(NDEBUG)
+#error "XRSOUND_DEBUG_GUI is for Debug builds only"
+#endif
+
+#ifdef XRSOUND_DEBUG_GUI
 #include <string>
 #endif
 
@@ -49,7 +57,7 @@ public:
 		m_state = State::STOPPED;
 	}
 
-#ifndef NDEBUG
+#ifdef XRSOUND_DEBUG_GUI
 	std::string m_filename;
 #endif
 	State m_state;
@@ -71,7 +79,7 @@ private:
 	bool m_initialized = false;
 	std::list<ISound *> releasedSounds;
 	void CheckReleased();
-#ifndef NDEBUG
+#ifdef XRSOUND_DEBUG_GUI
 	ISoundDialog *m_dbgWin;
 	DWORD m_dwdbgWin;
 #endif
