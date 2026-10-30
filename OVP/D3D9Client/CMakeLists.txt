@@ -125,6 +125,7 @@ set(APIHeaders
     ${INCLUDE_TARGET_DIR}/gcGUI.h
 	${INCLUDE_TARGET_DIR}/gcCoreAPI.h
 )
+set_source_files_properties(${APIHeaders} PROPERTIES GENERATED TRUE)
 
 set(ShaderFiles
 	${ShaderDir}/BeaconArray.fx
