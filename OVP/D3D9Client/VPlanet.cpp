@@ -1145,7 +1145,12 @@ void vPlanet::RenderSphere (LPDIRECT3DDEVICE9 dev)
 			}
 			else {
 				// Planet or Major Moon
-				if (cdist >= 1.6*size) {
+
+				// MS261030: Make the threshold for spherical rendering depend on relative elevation range
+				double rel_elev_range = (maxelev - minelev)/size;
+				double cutoff_dist_spherical = 1.0 + std::max(0.6, 4e2 * rel_elev_range); // Was: 1.6
+
+				if (cdist >= cutoff_dist_spherical * size) {
 					surfmgr2->ElevMode = eElevMode::Spherical;
 					bUseZBuf = false;
 				}
@@ -1157,7 +1162,7 @@ void vPlanet::RenderSphere (LPDIRECT3DDEVICE9 dev)
 							// If there are more than 3 spherical tiles render the body as spherical
 							if (rs.Sphe > 3) {
 								surfmgr2->ElevMode = eElevMode::Spherical; // Spherical body
-								bUseZBuf = cdist < (1.6*size);
+								bUseZBuf = cdist < (cutoff_dist_spherical * size);
 							}
 							else surfmgr2->ElevMode = eElevMode::Elevated; // Elevated body
 						}
