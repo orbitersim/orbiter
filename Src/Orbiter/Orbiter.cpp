@@ -46,6 +46,8 @@
 #include "imgui.h"
 #include "imgui_impl_win32.h"
 #include <filesystem>
+#include "VFSAPI.h"
+#include "VFS.h"
 
 #include "Tracy.hpp"
 
@@ -199,6 +201,8 @@ INT WINAPI WinMain (HINSTANCE hInstance, HINSTANCE, LPSTR strCmdLine, INT nCmdSh
 	LOGOUT("Build %s [v.%06d]", __DATE__, GetVersion());
 #endif
 
+	VFS::InitVFS();
+
 	// Initialise random number generator
 	//srand ((unsigned)time (NULL));
 	srand(12345);
@@ -335,6 +339,9 @@ Orbiter::Orbiter ()
 
 	memset (simkstate, 0, 256);
 
+	// parameter manager - parses from master config file
+	pConfig->Load(MasterConfigFile);
+	strcpy (cfgpath, pConfig->CfgDirPrm.ConfigDir);   cfglen = strlen (cfgpath);
 
 	RegisterMenuCmd("Ship",     "MenuInfoBar/ship.png",     [](void *) {g_pOrbiter->DlgMgr()->EnsureEntry<DlgFocus>();});
 	RegisterMenuCmd("Camera",   "MenuInfoBar/camera.png",   [](void *) {g_pOrbiter->DlgMgr()->EnsureEntry<DlgCamera>();});
@@ -379,10 +386,7 @@ HRESULT Orbiter::Create (HINSTANCE hInstance)
 	InitCommonControls();
 	LoadLibrary ("riched20.dll");
 
-	// parameter manager - parses from master config file
 	hInst = hInstance;
-	pConfig->Load(MasterConfigFile);
-	strcpy (cfgpath, pConfig->CfgDirPrm.ConfigDir);   cfglen = strlen (cfgpath);
 
 	if (FAILED (hr = pDI->Create (hInstance))) return hr;
 

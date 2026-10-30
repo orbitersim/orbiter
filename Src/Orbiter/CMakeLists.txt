@@ -106,6 +106,7 @@ set(common_src
 	MFDAPI.cpp
 	ModuleAPI.cpp
 	OrbiterAPI.cpp
+	VFS.cpp
 # Graphics utils
 	D3d7util.cpp
 	D3dmath.cpp
