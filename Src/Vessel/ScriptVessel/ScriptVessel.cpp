@@ -294,10 +294,10 @@ void ScriptVessel::clbkSetClassCaps (FILEHANDLE cfg)
 	auto globals = GetGlobalFunctions(L);
 
 	oapiReadItem_string (cfg, (char*)"Script", script);
-	fs::path script_path(script);
-	std::string parent_path = script_path.parent_path().u8string();
+	char parent_path[MAX_PATH];
+	VFS::dirname(parent_path, script);
 	// Add the script path to the package path so that we can "require" additional files
-	sprintf(cmd, "package.path = package.path .. ';Config/Vessels/%s/?.lua'", parent_path.c_str());
+	sprintf(cmd, "package.path = package.path .. ';Config/Vessels/%s/?.lua'", parent_path);
 	oapiExecScriptCmd(hInterp, cmd);
 
 	bool strictmode = false;

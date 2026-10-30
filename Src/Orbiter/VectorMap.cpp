@@ -7,6 +7,7 @@
 #include "Psys.h"
 #include "Mfd.h"
 #include "Util.h"
+#include "VFS.h"
 
 #include <cmath>
 #include <algorithm>
@@ -1319,7 +1320,7 @@ int PolyLineSet::Load (const char *path, int type_id)
 
 	Clear ();
 
-	ifstream ifs(path);
+	VFS::ifstream ifs(path);
 	if (!ifs) return 0;
 
 	ifs.getline (cbuf, 256);

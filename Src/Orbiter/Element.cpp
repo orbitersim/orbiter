@@ -4,9 +4,9 @@
 #include "Orbiter.h"
 #include "Element.h"
 #include "Config.h"
-#include <fstream>
 #include <windows.h>
 #include <stdio.h>
+#include "VFS.h"
 
 using namespace std;
 
@@ -59,7 +59,7 @@ Elements::Elements (const Elements &el)
 Elements::Elements (char *fname)
 {
 	double epoch;
-	ifstream ifs (g_pOrbiter->ConfigPath (fname));
+	VFS::ifstream ifs (g_pOrbiter->ConfigPath (fname));
 	if (!GetItemReal (ifs, "Epoch", epoch))           epoch  = 2000.0;
 	mjd_epoch = Jepoch2MJD (epoch);
 	t_epoch   = (mjd_epoch-td.MJD_ref)*86400.0;
@@ -521,7 +521,7 @@ void Elements::Calculate (const Vector &R, const Vector &V, double simt)
 	// DEBUG OUTPUT
 	if (!closed_orbit) {
 		double tra_limit = acos(-1.0/e);
-		sprintf (DBG_MSG, "tra=%f°, tra_limit=%f°, diff=%g°", priv_tra*DEG, tra_limit*DEG, (fabs(tra_limit)-fabs(priv_tra))*DEG);
+		sprintf (DBG_MSG, "tra=%fÂ°, tra_limit=%fÂ°, diff=%gÂ°", priv_tra*DEG, tra_limit*DEG, (fabs(tra_limit)-fabs(priv_tra))*DEG);
 	}
 #endif
 }

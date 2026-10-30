@@ -21,7 +21,7 @@ int main (void)
 
     cd2com();
 
-	ofstream ofs ("callisto.dat");
+	VFS::ofstream ofs ("callisto.dat");
 
     for (mjd = 53371; mjd < 53431; mjd += 0.1) {
 		galsat (r, rorb, mjd+2400000.5, ksat, kflag);

@@ -178,12 +178,7 @@ DLLCLBK void InitModule(HINSTANCE hDLL)
 	Config = new D3D9Config();
 
 	if (Config->ShaderCacheUse) {
-		DWORD fa = GetFileAttributesA("Cache");
-		if (fa == INVALID_FILE_ATTRIBUTES) CreateDirectoryA("Cache", NULL);
-		fa = GetFileAttributesA("Cache/D3D9Client");
-		if (fa == INVALID_FILE_ATTRIBUTES) CreateDirectoryA("Cache/D3D9Client", NULL);
-		fa = GetFileAttributesA("Cache/D3D9Client/Shaders");
-		if (fa == INVALID_FILE_ATTRIBUTES) CreateDirectoryA("Cache/D3D9Client/Shaders", NULL);
+		VFS::create_directories("Cache/D3D9Client/Shaders");
 	}
 
 	g_pConst = new gcConst();
@@ -470,7 +465,8 @@ HWND D3D9Client::clbkCreateRenderWindow()
 	g_pVtxmgr_vb = new Vtxmgr<LPDIRECT3DVERTEXBUFFER9>(pDevice, "TileVertex");
 	g_pIdxmgr_ib = new Idxmgr<LPDIRECT3DINDEXBUFFER9>(pDevice, "TileIndices");
 
-	HR(D3DXCreateTextureFromFileA(pDevice, "Textures/D3D9Noise.dds", &pNoiseTex));
+	char rpath[MAX_PATH];
+	HR(D3DXCreateTextureFromFileA(pDevice, VFS::resolve_path(rpath, "Textures/D3D9Noise.dds"), &pNoiseTex));
 
 	HR(pDevice->GetRenderTarget(0, &pBackBuffer));
 	HR(pDevice->GetDepthStencilSurface(&pDepthStencil));
@@ -2990,7 +2986,9 @@ void D3D9Client::SplashScreen()
 
 	if(pCustomSplashScreen != NULL) {
 		D3DXIMAGE_INFO info;
-		HR(D3DXGetImageInfoFromFile(pCustomSplashScreen, &info));
+		char splashscreenpath[MAX_PATH];
+		VFS::resolve_path(splashscreenpath, pCustomSplashScreen);
+		HR(D3DXGetImageInfoFromFile(splashscreenpath, &info));
 
 		double imageW = info.Width;
 		double imageH = info.Height;
@@ -3007,7 +3005,7 @@ void D3D9Client::SplashScreen()
 			static_cast<LONG>( round(_h + _t) )
 		};
 		HR(pDevice->ColorFill(pSplashScreen, NULL, D3DCOLOR_XRGB(0, 0, 0)));
-		HR(D3DXLoadSurfaceFromFile(pSplashScreen, NULL, &imgRect, pCustomSplashScreen, NULL, D3DX_FILTER_LINEAR, 0, NULL));
+		HR(D3DXLoadSurfaceFromFile(pSplashScreen, NULL, &imgRect, splashscreenpath, NULL, D3DX_FILTER_LINEAR, 0, NULL));
 	} else {
 		D3DXIMAGE_INFO Info;
 		HMODULE hOrbiter =  GetModuleHandleA("orbiter.exe");

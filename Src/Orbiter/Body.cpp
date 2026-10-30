@@ -6,13 +6,13 @@
 #define OAPI_IMPLEMENTATION
 
 #include <string.h>
-#include <fstream>
 #include "Orbiter.h"
 #include "Config.h"
 #include "Psys.h"
 #include "Body.h"
 #include "Element.h"
 #include "Log.h"
+#include "VFS.h"
 #include <stdio.h>
 #include <string>
 
@@ -55,7 +55,7 @@ Body::Body(char* fname)
 	//g_pOrbiter->OutputLoadStatus (fname, 0);
 	g_pOrbiter->OutputLoadStatus (cpath, 1);
 
-	ifstream ifs (cpath);
+	VFS::ifstream ifs (cpath);
 	if (!ifs) return;
 	
 	filename = cpath;

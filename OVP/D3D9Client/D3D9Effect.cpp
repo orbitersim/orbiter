@@ -346,8 +346,8 @@ void D3D9Effect::D3D9TechInit(D3D9Client *_gc, LPDIRECT3DDEVICE9 _pDev, const ch
 	if (Config->PostProcess == PP_DEFAULT) macro[m++].Name = "_LIGHTGLOW";
 	if (Config->bIrradiance && Config->EnvMapMode) macro[m++].Name = "_IRRADIANCE";
 	
-	
-	HR(D3DXCreateEffectFromFileA(pDev, name, macro, 0, D3DXSHADER_NO_PRESHADER|D3DXSHADER_PREFER_FLOW_CONTROL, 0, &FX, &errors));
+	char rpath[MAX_PATH];
+	HR(D3DXCreateEffectFromFileA(pDev, VFS::resolve_path(rpath, name), macro, 0, D3DXSHADER_NO_PRESHADER|D3DXSHADER_PREFER_FLOW_CONTROL, 0, &FX, &errors));
 	
 	delete []macro[0].Definition;
 	delete []macro[1].Definition;
@@ -377,7 +377,7 @@ void D3D9Effect::D3D9TechInit(D3D9Client *_gc, LPDIRECT3DDEVICE9 _pDev, const ch
 		LPD3DXBUFFER pBuffer = NULL;
 		if (D3DXDisassembleEffect(FX, true, &pBuffer) == S_OK) {
 			FILE *fp = NULL;
-			if (!fopen_s(&fp, "D9D9Effect_asm.html", "w")) {
+			if (!VFS::fopen_s(&fp, "D9D9Effect_asm.html", "w")) {
 				fwrite(pBuffer->GetBufferPointer(), 1, pBuffer->GetBufferSize(), fp);
 				fclose(fp);
 			}

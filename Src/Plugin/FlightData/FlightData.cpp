@@ -212,7 +212,7 @@ namespace oapi {
 		}
 
 		void StartRecording() {
-			m_LogFile = fopen(m_sLogfile.c_str(), m_bResetLog ? "wt" : "at");
+			m_LogFile = VFS::fopen(m_sLogfile.c_str(), m_bResetLog ? "wt" : "at");
 			if(!m_LogFile) {
 				std::string error = std::string("Cannot open file ") + m_sLogfile + " for writing";
 				oapiAddNotification(OAPINOTIF_ERROR, "Flight data recording error", error.c_str());
