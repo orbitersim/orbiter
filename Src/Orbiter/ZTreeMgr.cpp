@@ -4,6 +4,7 @@
 #include "ZTreeMgr.h"
 #include "zlib.h"
 #include "util.h"
+#include "VFS.h"
 
 // =======================================================================
 // File header for compressed tree files
@@ -124,7 +125,7 @@ bool ZTreeMgr::OpenArchive()
 	const char *name[6] = { "Surf", "Mask", "Elev", "Elev_mod", "Label", "Cloud" };
 	char fname[256];
 	sprintf (fname, "%s\\Archive\\%s.tree", path, name[layer]);
-	treef = fopen(fname, "rb");
+	treef = VFS::fopen(fname, "rb");
 	if (!treef) return false;
 
 	TreeFileHeader tfh;

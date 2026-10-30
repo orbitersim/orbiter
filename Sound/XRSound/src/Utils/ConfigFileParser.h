@@ -15,6 +15,7 @@
 
 #include <fstream>      // for ifstream
 #include <string>
+#include "VFSAPI.h"
 
 const int MAX_LINE_LENGTH = 1024;
 const int MAX_NAME_LENGTH = 256;
@@ -60,8 +61,7 @@ public:
     {
         if (!pFilename || !*pFilename)
             return false;
-
-        std::ifstream file(pFilename);
+        VFS::ifstream file(pFilename);
         return file.good();
     }
 

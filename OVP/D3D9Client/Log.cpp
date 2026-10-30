@@ -159,7 +159,7 @@ void D3D9InitLog(const char *file)
 	QueryPerformanceFrequency((LARGE_INTEGER*)&qpcFrq);
 	QueryPerformanceCounter((LARGE_INTEGER*)&qpcStart);
 
-	if (fopen_s(&d3d9client_log,file,"w+")) { d3d9client_log=NULL; } // Failed
+	if (VFS::fopen_s(&d3d9client_log,file,"w+")) { d3d9client_log=NULL; } // Failed
 	else {
 		QueryPerformanceCounter((LARGE_INTEGER*)&qpcRef);
 		InitializeCriticalSectionAndSpinCount(&LogCrit, 256);

@@ -14,6 +14,7 @@
 #include "D3dmath.h"
 #include "Log.h"
 #include "DlgMgr.h"
+#include "VFS.h"
 #include <assert.h>
 
 using namespace std;
@@ -1200,7 +1201,7 @@ void Pane::SetVCNeighbours (int left, int right, int top, int bottom)
 
 void Pane::InitState (const char *scn)
 {
-	ifstream ifs (scn);
+	VFS::ifstream ifs (scn);
 	if (ifs) Read (ifs);
 }
 

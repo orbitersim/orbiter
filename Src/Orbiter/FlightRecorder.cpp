@@ -16,10 +16,9 @@
 #include "State.h"
 #include "MenuInfoBar.h"
 #include "DlgMgr.h"
-#include <fstream>
+#include <iomanip>
+#include "VFS.h"
 #include <string>
-#include <filesystem>
-namespace fs = std::filesystem;
 
 using namespace std;
 
@@ -157,7 +156,7 @@ void Vessel::FRecorder_Save (bool force)
 				}
 				frec_last.rvel    = vel;
 
-				ofstream ofs (FRfname, ios::app);
+				VFS::ofstream ofs (FRfname, ios::app);
 				ofs << setprecision(10)  << (frec_last.simt-Tofs) << ' ';
 				if (frec_last.crd == 1) { // store in polar coords
 					double r = frec_last.rpos.length();
@@ -177,7 +176,7 @@ void Vessel::FRecorder_Save (bool force)
 			}
 		}
 		if (cbody != ref) {
-			ofstream ofs(FRfname, isfirst ? ios::trunc : ios::app);
+			VFS::ofstream ofs(FRfname, isfirst ? ios::trunc : ios::app);
 			ofs << "STARTMJD " << setprecision(12) << MJDofs << endl;
 			ofs << "REF " << cbody->Name() << endl;
 			ofs << "FRM " << (frec_last.frm == 0 ? "ECLIPTIC" : "EQUATORIAL") << endl;
@@ -237,7 +236,7 @@ void Vessel::FRecorder_Save (bool force)
 			if (attforce) {
 				char cbuf[256];
 				strcpy (cbuf, FRfname); strcpy (cbuf+strlen(cbuf)-3, "att");
-				ofstream ofs (cbuf, ios::app);
+				VFS::ofstream ofs (cbuf, ios::app);
 				ofs << setprecision(10) << (td.SimT1-Tofs) << setprecision(6);
 				for (i = 0; i < 3; i++)
 					ofs << ' ' << (/*frec_att_last.att[i] =*/ a[i]);
@@ -251,7 +250,7 @@ void Vessel::FRecorder_Save (bool force)
 		if (ref != sp.ref) {
 			char cbuf[256];
 			strcpy (cbuf, FRfname); strcpy (cbuf+strlen(cbuf)-3, "att");
-			ofstream ofs (cbuf, isfirst ? ios::trunc : ios::app);
+			VFS::ofstream ofs (cbuf, isfirst ? ios::trunc : ios::app);
 			if (isfirst)
 				ofs << "STARTMJD " << setprecision(12) << MJDofs << endl;
 			switch (frec_att_last.frm) {
@@ -283,7 +282,7 @@ void Vessel::FRecorder_Save (bool force)
 	bool bfopen = false;
 	dt = td.SimT1-frec_eng_simt;
 	alim = min (0.2, 0.1/dt);
-	ofstream ofs;
+	VFS::ofstream ofs;
 	for (j = 0; j < m_thruster.size(); j++) {
 		if (fabs(frec_eng[j]-m_thruster[j]->level) > alim || force) {
 			if (!bfopen) {
@@ -309,7 +308,7 @@ void Vessel::FRecorder_SaveEvent (const char *event_type, const char *event)
 	if (!bFRrecord) return;
 	char cbuf[256];
 	strcpy (cbuf, FRfname); strcpy (cbuf+strlen(cbuf)-3, "atc");
-	ofstream ofs(cbuf, ios::app);
+	VFS::ofstream ofs(cbuf, ios::app);
 	ofs << setprecision(10) << (td.SimT1-Tofs) << ' ' << event_type << ' ' << event << endl;
 }
 
@@ -363,7 +362,7 @@ bool Vessel::FRecorder_Read (const char *scname)
 		if (scname[i-1] == '\\') break;
 	sprintf (fname, "Flights/%s/%s.pos", scname+i, name.c_str());
 
-	ifstream ifs (fname);
+	VFS::ifstream ifs (fname);
 	if (!ifs) {
 		bFRplayback = false;
 		return false;
@@ -465,7 +464,7 @@ bool Vessel::FRecorder_Read (const char *scname)
 	// open articulation event stream
 	if (FRatc_stream) delete FRatc_stream;
 	strcpy (cbuf, fname); strcpy (cbuf+strlen(cbuf)-3, "atc");
-	FRatc_stream = new ifstream (cbuf); TRACENEW
+	FRatc_stream = new VFS::ifstream (cbuf); TRACENEW
 	*FRatc_stream >> frec_eng_simt;
 	if (!FRatc_stream->good()) {
 		delete FRatc_stream;
@@ -775,16 +774,14 @@ void Orbiter::FRecorder_Reset ()
 
 bool Orbiter::FRecorder_PrepareDir (const char *fname, bool force)
 {
-	fs::path dir = fs::path("Flights") / fname;
-	std::error_code ec;
-	auto status = fs::status(dir, ec);
+	char path[MAX_PATH];
+	snprintf(path, sizeof(path), "Flights/%s", fname);
 
 	// don't overwrite existing recording
-	if (!ec) {
-		if(fs::is_directory(status) && !force) return false;
-		fs::remove_all(dir);
-	}
-	fs::create_directory(dir);
+	if(VFS::is_directory(path) && !force) return false;
+
+	VFS::remove_all(path);
+	VFS::create_directory(path);
 
 	return true;
 }
@@ -809,7 +806,7 @@ void Orbiter::FRecorder_Activate (bool active, const char *fname, bool append)
 void Orbiter::FRecorder_SaveEvent (const char *event_type, const char *event)
 {
 	if (!bRecord) return;
-	ofstream ofs(FRsysname, ios::app);
+	VFS::ofstream ofs(FRsysname, ios::app);
 	ofs << setprecision(10) << (td.SimT1-Tofs) << ' ' << event_type << ' ' << event << endl;
 }
 
@@ -827,7 +824,7 @@ void Orbiter::FRecorder_OpenPlayback (const char *scname)
 	FRsysname = new char[strlen(cbuf)+1]; TRACENEW
 	strcpy (FRsysname, cbuf);
 
-	FRsys_stream = new ifstream (cbuf); TRACENEW
+	FRsys_stream = new VFS::ifstream (cbuf); TRACENEW
 	*FRsys_stream >> frec_sys_simt;
 	if (!FRsys_stream->good()) {
 		delete FRsys_stream;
@@ -847,7 +844,7 @@ void Orbiter::FRecorder_RescanPlayback ()
 {
 	oapi::ScreenAnnotation *sa = SNotePB();
 	if (sa) sa->Reset();
-	FRsys_stream = new ifstream (FRsysname); TRACENEW
+	FRsys_stream = new VFS::ifstream (FRsysname); TRACENEW
 	*FRsys_stream >> frec_sys_simt;
 	FRecorder_Play(); // read up to current playback time
 }

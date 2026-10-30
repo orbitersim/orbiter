@@ -22,6 +22,7 @@
 #include "Log.h"
 #include "Util.h"
 #include "Psys.h"
+#include "VFS.h"
 
 using namespace std;
 
@@ -96,7 +97,7 @@ Instrument *Instrument::Create (int type, Pane *_pane,
 	return 0;
 }
 
-Instrument *Instrument::Create (ifstream &ifs, Pane *_pane,
+Instrument *Instrument::Create (std::ifstream &ifs, Pane *_pane,
 	INT_PTR _id, const Spec &spec, Vessel *_vessel)
 {
 	static const char *mfdstr[MAXMFD] = {"Left","Right","3","4","5","6","7","8","9","10","11","12"};
@@ -151,7 +152,7 @@ void Instrument::GlobalInit (oapi::GraphicsClient *gc)
 	draw[4][1].col = 0xA00000;  // aux colour 4 dim
 
 	// Read customised settings
-	ifstream ifs (g_pOrbiter->ConfigPath ("MFD\\Default"));
+	VFS::ifstream ifs (g_pOrbiter->ConfigPath ("MFD\\Default"));
 	if (ifs) {
 		char label[64];
 		int c;

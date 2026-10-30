@@ -4,7 +4,6 @@
 #include <math.h>
 #include <stdio.h>
 #include <string.h>
-#include <fstream>
 #include "Astro.h"
 #include "Vecmat.h"
 

@@ -452,7 +452,7 @@ WindowManager::WindowManager(HWND hAppMainWindow, HINSTANCE _hInst, bool bWindow
 
 	if (file.IsInvalid()) {
 		sprintf_s(path, 256, "%sgcGUI.cfg", OapiExtension::GetConfigDir());
-		fopen_s(&file.pFile, path, "r");
+		VFS::fopen_s(&file.pFile, path, "r");
 	}
 
 	if (!file.IsInvalid()) {

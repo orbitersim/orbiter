@@ -37,6 +37,7 @@
 #include "State.h"
 #include "Util.h"
 #include "elevmgr.h"
+#include "VFS.h"
 #include <fstream>
 #include <iomanip>
 #include <stdio.h>
@@ -83,7 +84,7 @@ Vessel::Vessel (const PlanetarySystem *psys, const char *_name, const char *_cla
 	classname = new char[strlen(_classname)+1]; TRACENEW
 	strcpy (classname, _classname);
 
-	ifstream classf;
+	VFS::ifstream classf;
 	if (!OpenConfigFile (classf))
 		g_pOrbiter->TerminateOnError(); // PANIC!
 
@@ -117,7 +118,7 @@ Vessel::Vessel (const PlanetarySystem *psys, const char *_name, const char *_cla
 	classname = new char[strlen(_classname)+1]; TRACENEW
 	strcpy (classname, _classname);
 
-	ifstream classf;
+	VFS::ifstream classf;
 	if (!OpenConfigFile (classf))
 		g_pOrbiter->TerminateOnError(); // PANIC!
 
@@ -159,7 +160,7 @@ Vessel::Vessel (const PlanetarySystem *psys, const char *_name, const char *_cla
 	classname = new char[strlen(_classname)+1]; TRACENEW
 	strcpy (classname, _classname);
 
-	ifstream classf;
+	VFS::ifstream classf;
 	if (!OpenConfigFile (classf))
 		g_pOrbiter->TerminateOnError(); // PANIC!
 
@@ -233,7 +234,7 @@ Vessel::~Vessel ()
 
 // ==============================================================
 
-bool Vessel::OpenConfigFile (ifstream &cfgfile) const
+bool Vessel::OpenConfigFile (VFS::ifstream &cfgfile) const
 {
 	char cbuf[256];
 	strcpy (cbuf, "Vessels\\");
@@ -436,7 +437,7 @@ void Vessel::ReadGenericCaps (ifstream &ifs)
 
 	// recursively read base class specs
 	if (GetItemString (ifs, "BaseClass", cbuf)) {
-		ifstream basef (g_pOrbiter->ConfigPath (cbuf));
+		VFS::ifstream basef (g_pOrbiter->ConfigPath (cbuf));
 		if (basef) ReadGenericCaps (basef);
 	}
 
@@ -5971,9 +5972,11 @@ bool Vessel::RegisterModule (const char *dllname)
 {
 	char cbuf[256];
 	sprintf (cbuf, "Modules\\%s.dll", dllname);
-	hMod = LoadLibrary (cbuf);
-	if (!hMod)
+	hMod = (HINSTANCE)VFS::LoadModule(cbuf);
+	if (!hMod) {
+		oapiWriteLogV("Failed to load %s", cbuf);
 		return false;
+	}
 
 	// retrieve module version
 	int (*fversion)() = (int(*)())GetProcAddress (hMod, "GetModuleVersion");
@@ -6064,7 +6067,7 @@ bool Vessel::Read (ifstream &scn)
 
 bool Vessel::EditorModule (char *cbuf) const
 {
-	ifstream classf;
+	VFS::ifstream classf;
 	if (!OpenConfigFile (classf)) return false;
 	return GetItemString (classf, "EditorModule", cbuf);
 }
@@ -8804,7 +8807,7 @@ void VESSEL2::clbkSaveState (FILEHANDLE scn)
 
 void VESSEL2::clbkLoadStateEx (FILEHANDLE scn, void *status)
 {
-	vessel->ParseScenarioEx (*(ifstream*)scn, status);
+	vessel->ParseScenarioEx (*(VFS::ifstream*)scn, status);
 }
 
 void VESSEL2::clbkSetStateEx (const void *status)

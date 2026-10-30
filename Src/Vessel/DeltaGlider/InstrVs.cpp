@@ -119,7 +119,7 @@ void InstrVS::AddMeshData2D (MESHHANDLE hMesh, DWORD grpidx)
 
 #ifdef UNDEF
 	// DEBUG
-	std::ofstream ofs("tmp.dat");
+	VFS::ofstream ofs("tmp.dat");
 	for (int j = 0; j < NVTX; j++) {
 			ofs << VTX[j].x << ' ' << VTX[j].y << ' ' << 0 << ' ';
 			ofs << VTX[j].nx << ' ' << VTX[j].ny << ' '  << -1 << ' ';

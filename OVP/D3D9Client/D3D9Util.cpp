@@ -1019,21 +1019,26 @@ LPDIRECT3DPIXELSHADER9 CompilePixelShader(LPDIRECT3DDEVICE9 pDev, const char *fi
 
 	string path(file);
 	char filename[MAX_PATH];
+	char rpathfilename[MAX_PATH];
+	char rpathfile[MAX_PATH];
+	VFS::resolve_path(rpathfile, file);
 
 	string last = path.substr(path.find_last_of("\\/") + 1);
 	sprintf_s(filename, MAX_PATH, "Cache/D3D9Client/Shaders/%s_%s_%hX_%s.bin", name, function, crc, last.c_str());
+	if (Config->ShaderCacheUse)
+		VFS::resolve_path(rpathfilename, filename, true);
 
 	if (Config->ShaderCacheUse)
 	{
 		// Browse Shader Cache --------------------
 		//
-		HANDLE hCacheRead = CreateFile(filename, GENERIC_READ, 0, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
+		HANDLE hCacheRead = CreateFile(rpathfilename, GENERIC_READ, 0, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
 
 		if (hCacheRead != INVALID_HANDLE_VALUE) {
 			FILETIME cacheWrite, mainWrite;
 			if (GetFileTime(hCacheRead, NULL, NULL, &cacheWrite))
 			{
-				HANDLE hRead = CreateFile(file, GENERIC_READ, 0, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
+				HANDLE hRead = CreateFile(rpathfile, GENERIC_READ, 0, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
 				if (hRead != INVALID_HANDLE_VALUE)
 				{
 					if (GetFileTime(hRead, NULL, NULL, &mainWrite))
@@ -1087,7 +1092,7 @@ LPDIRECT3DPIXELSHADER9 CompilePixelShader(LPDIRECT3DDEVICE9 pDev, const char *fi
 		}
 	}
 
-	HR(D3DXCompileShaderFromFileA(file, macro, NULL, function, "ps_3_0", flags, &pCode, &pErrors, pConst));
+	HR(D3DXCompileShaderFromFileA(rpathfile, macro, NULL, function, "ps_3_0", flags, &pCode, &pErrors, pConst));
 
 	if (pErrors) {
 		LogErr("Compiling a Shader [%s] function [%s] Failed:\n %s", file, function, (char*)pErrors->GetBufferPointer());
@@ -1106,7 +1111,7 @@ LPDIRECT3DPIXELSHADER9 CompilePixelShader(LPDIRECT3DDEVICE9 pDev, const char *fi
 	//
 	if (Config->ShaderCacheUse)
 	{
-		HANDLE hCache = CreateFile(filename, GENERIC_WRITE, 0, NULL, CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, NULL);
+		HANDLE hCache = CreateFile(rpathfilename, GENERIC_WRITE, 0, NULL, CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, NULL);
 		if (hCache != INVALID_HANDLE_VALUE) {
 			DWORD bytesWritten;
 			if (!WriteFile(hCache, pCode->GetBufferPointer(), pCode->GetBufferSize(), &bytesWritten, NULL))
@@ -1128,7 +1133,7 @@ LPDIRECT3DPIXELSHADER9 CompilePixelShader(LPDIRECT3DDEVICE9 pDev, const char *fi
 			FILE *fp = NULL;
 			char name[256];
 			sprintf_s(name, 256, "%s_%s_asm.html", RemovePath(file), function);
-			if (!fopen_s(&fp, name, "w")) {
+			if (!VFS::fopen_s(&fp, name, "w")) {
 				fwrite(pBuffer->GetBufferPointer(), 1, pBuffer->GetBufferSize(), fp);
 				fclose(fp);
 			}
@@ -1159,21 +1164,26 @@ LPDIRECT3DVERTEXSHADER9 CompileVertexShader(LPDIRECT3DDEVICE9 pDev, const char *
 
 	string path(file);
 	char filename[MAX_PATH];
+	char rpathfilename[MAX_PATH];
+	char rpathfile[MAX_PATH];
+	VFS::resolve_path(rpathfile, file);
 
 	string last = path.substr(path.find_last_of("\\/") + 1);
 	sprintf_s(filename, MAX_PATH, "Cache/D3D9Client/Shaders/%s_%s_%hX_%s.bin", name, function, crc, last.c_str());
+	if (Config->ShaderCacheUse)
+		VFS::resolve_path(rpathfilename, filename, true);
 
 	if (Config->ShaderCacheUse)
 	{
 		// Browse Shader Cache --------------------
 		//
-		HANDLE hCacheRead = CreateFile(filename, GENERIC_READ, 0, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
+		HANDLE hCacheRead = CreateFile(rpathfilename, GENERIC_READ, 0, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
 
 		if (hCacheRead != INVALID_HANDLE_VALUE) {
 			FILETIME cacheWrite, mainWrite;
 			if (GetFileTime(hCacheRead, NULL, NULL, &cacheWrite))
 			{
-				HANDLE hRead = CreateFile(file, GENERIC_READ, 0, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
+				HANDLE hRead = CreateFile(rpathfile, GENERIC_READ, 0, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
 				if (hRead != INVALID_HANDLE_VALUE)
 				{
 					if (GetFileTime(hRead, NULL, NULL, &mainWrite))
@@ -1222,7 +1232,7 @@ LPDIRECT3DVERTEXSHADER9 CompileVertexShader(LPDIRECT3DDEVICE9 pDev, const char *
 
 	LogAlw("Compiling a Shader [%s] function [%s]...", file, function);
 
-	HR(D3DXCompileShaderFromFileA(file, macro, NULL, function, "vs_3_0", flags, &pCode, &pErrors, pConst));
+	HR(D3DXCompileShaderFromFileA(rpathfile, macro, NULL, function, "vs_3_0", flags, &pCode, &pErrors, pConst));
 
 	if (pErrors) {
 		LogErr("Compiling a Shader [%s] function [%s] Failed:\n %s", file, function, (char*)pErrors->GetBufferPointer());
@@ -1241,7 +1251,7 @@ LPDIRECT3DVERTEXSHADER9 CompileVertexShader(LPDIRECT3DDEVICE9 pDev, const char *
 	//
 	if (Config->ShaderCacheUse)
 	{
-		HANDLE hCache = CreateFile(filename, GENERIC_WRITE, 0, NULL, CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, NULL);
+		HANDLE hCache = CreateFile(rpathfilename, GENERIC_WRITE, 0, NULL, CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, NULL);
 
 		if (hCache != INVALID_HANDLE_VALUE) {
 			DWORD bytesWritten;

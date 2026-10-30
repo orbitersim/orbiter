@@ -524,6 +524,11 @@ void DialogManager::InitImGui()
 	ImGui::CreateContext();
 	ImPlot::CreateContext();
 	ImGuiIO& io = ImGui::GetIO();
+
+	static char inifile[MAX_PATH];
+	VFS::resolve_path(inifile, "imgui.ini", true);
+	io.IniFilename = inifile;
+
 	// Viewports don't play nice when in full screen mode
 	if(!pOrbiter->IsFullscreen())
 		io.ConfigFlags |= ImGuiConfigFlags_ViewportsEnable;
@@ -540,11 +545,12 @@ void DialogManager::InitImGui()
 	
 	const CFG_FONTPRM &prm = g_pOrbiter->Cfg()->CfgFontPrm;
 
-	defaultFont = io.Fonts->AddFontFromFileTTF(prm.ImGui_DefaultFontFile, prm.ImGui_FontSize);
-	io.Fonts->AddFontFromFileTTF("Fonts/fa-solid-900.ttf", prm.ImGui_FontSize, &icons_config);
-	consoleFont = io.Fonts->AddFontFromFileTTF(prm.ImGui_ConsoleFontFile, prm.ImGui_FontSize);
-	monoFont = io.Fonts->AddFontFromFileTTF(prm.ImGui_MonospacedFontFile, prm.ImGui_FontSize);
-	manuscriptFont = io.Fonts->AddFontFromFileTTF(prm.ImGui_ManuscriptFontFile, prm.ImGui_FontSize);
+	char rpath[MAX_PATH];
+	defaultFont = io.Fonts->AddFontFromFileTTF(VFS::resolve_path(rpath, prm.ImGui_DefaultFontFile), prm.ImGui_FontSize);
+	io.Fonts->AddFontFromFileTTF(VFS::resolve_path(rpath, "Fonts/fa-solid-900.ttf"), prm.ImGui_FontSize, &icons_config);
+	consoleFont = io.Fonts->AddFontFromFileTTF(VFS::resolve_path(rpath, prm.ImGui_ConsoleFontFile), prm.ImGui_FontSize);
+	monoFont = io.Fonts->AddFontFromFileTTF(VFS::resolve_path(rpath, prm.ImGui_MonospacedFontFile), prm.ImGui_FontSize);
+	manuscriptFont = io.Fonts->AddFontFromFileTTF(VFS::resolve_path(rpath, prm.ImGui_ManuscriptFontFile), prm.ImGui_FontSize);
 
 	ImGui_ImplWin32_Init(hWnd);
 	gc->clbkImGuiInit();

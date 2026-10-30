@@ -15,6 +15,7 @@
 #include "Vessel.h"
 #include "SuperVessel.h"
 #include "Log.h"
+#include "VFS.h"
 
 using namespace std;
 
@@ -67,7 +68,7 @@ void PlanetarySystem::Clear ()
 void PlanetarySystem::InitState (const char *fname)
 {
 	char cbuf[256], *pc, *pd;
-	ifstream ifs (fname);
+	VFS::ifstream ifs (fname);
 	if (!ifs) return;
 	if (FindLine (ifs, "BEGIN_SHIPS")) {
 		for (;;) {
@@ -170,7 +171,7 @@ bool PlanetarySystem::Read (char *fname, const Config* config, OutputLoadStatusC
 	DWORD j;
 	char cbuf[256], label[128];
 	
-	ifstream ifs (config->ConfigPath(fname));
+	VFS::ifstream ifs (config->ConfigPath(fname));
 	if (!ifs) return false;
 	Clear();
 	if (GetItemString (ifs, "Name", cbuf)) {
@@ -225,9 +226,9 @@ void PlanetarySystem::ScanLabelLists (ifstream &cfg, bool bScanHeaders)
 	char cbuf[256];
 	oapi::GraphicsClient::LABELLIST* ll;
 	int idx = 0;
-	ForEach(FILETYPE_MARKER, [&](const fs::directory_entry& entry) {
+	ForEach(FILETYPE_MARKER, [&](const char *entry) {
 		// open marker file
-		ifstream ulf(entry.path());
+		VFS::ifstream ulf(entry);
 		// read label header
 		if (bScanHeaders) {
 			oapi::GraphicsClient::LABELLIST list;
@@ -238,7 +239,7 @@ void PlanetarySystem::ScanLabelLists (ifstream &cfg, bool bScanHeaders)
 			list.distfac = 1.0f;
 			list.active = false;
 			list.flag = 0;
-			list.name = entry.path().stem().string();
+			list.name = VFS::stem(cbuf, entry);
 			if (FindLine(ulf, "BEGIN_HEADER")) {
 				char item[256], value[256];
 				for (;;) {

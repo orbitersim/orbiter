@@ -10,6 +10,7 @@
 #include "Star.h"
 #include "Camera.h"
 #include "Log.h"
+#include "VFS.h"
 
 using namespace std;
 
@@ -27,7 +28,7 @@ Star::Star (double _mass, double _mean_radius)
 Star::Star (char *fname)
 : CelestialBody (fname)
 {
-	ifstream ifs (g_pOrbiter->ConfigPath (fname));
+	VFS::ifstream ifs (g_pOrbiter->ConfigPath (fname));
 	if (!ifs) return;
 	bDynamicPosVel = false;
 	// read star-specific parameters here
