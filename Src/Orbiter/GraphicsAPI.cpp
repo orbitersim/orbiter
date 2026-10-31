@@ -332,6 +332,26 @@ bool GraphicsClient::ElevationGrid(ELEVHANDLE hElev, int ilat, int ilng, int lvl
 
 // ======================================================================
 
+bool GraphicsClient::FilterElevation (ELEVHANDLE hElev, int ilat, int ilng, int lvl,
+	double elev_res, INT16 *elev) const
+{
+	if (!hElev) return false;
+	ElevationManager *emgr = (ElevationManager*)hElev;
+	return emgr->FilterElevation (ilat, ilng, lvl, elev_res, elev);
+}
+
+// ======================================================================
+
+bool GraphicsClient::FilterElevation (ELEVHANDLE hElev, int ilat, int ilng, int lvl,
+	double elev_res, float *elev) const
+{
+	if (!hElev) return false;
+	ElevationManager *emgr = (ElevationManager*)hElev;
+	return emgr->FilterElevation (ilat, ilng, lvl, elev_res, elev);
+}
+
+// ======================================================================
+
 void GraphicsClient::ShowDefaultSplash ()
 {
 	const DWORD texcol = 0xA06060;
@@ -920,4 +940,11 @@ DLLEXPORT bool oapiRegisterGraphicsClient (GraphicsClient *gc)
 DLLEXPORT bool oapiUnregisterGraphicsClient (GraphicsClient *gc)
 {
 	return g_pOrbiter->RemoveGraphicsClient (gc);
+}
+
+DLLEXPORT HMODULE oapiGetGraphicsClientModule ()
+{
+	if (!g_pOrbiter) return NULL;
+	GraphicsClient *gc = g_pOrbiter->GetGraphicsClient();
+	return gc ? gc->GetModule() : NULL;
 }

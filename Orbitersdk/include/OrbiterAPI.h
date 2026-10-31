@@ -5570,6 +5570,13 @@ OAPIFUNC HDC oapiGetDC (SURFHANDLE surf);
  * \sa oapiGetDC, oapiGetSketchpad, oapiReleaseSketchpad
  */
 OAPIFUNC void oapiReleaseDC (SURFHANDLE surf, HDC hDC);
+
+/**
+ * \brief Returns the module instance handle of the active graphics client.
+ * \return Module handle (HMODULE) of the attached graphics client DLL, or NULL
+ *   if running without an external graphics client.
+ */
+OAPIFUNC HMODULE oapiGetGraphicsClientModule ();
 //@}
 
 
