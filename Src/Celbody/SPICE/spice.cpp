@@ -31,6 +31,7 @@ SOFTWARE.
 #include <vector>
 #include "Orbitersdk.h"
 #include "SpiceUsr.h"
+#include "VFSAPI.h"
 
 using namespace std;
 
@@ -41,9 +42,14 @@ static set<string> loaded_kernels;
 bool load_kernel(const string& kernel_name)
 {
 	char s[1024];
-	if (loaded_kernels.find(kernel_name) != loaded_kernels.end())
+	char rpath[MAX_PATH];
+	if(!VFS::resolve_path(rpath, kernel_name.c_str())) {
+		sprintf_s(s, 1024, "spice.dll: Kernel %s - not found.", kernel_name.c_str());
+		return false;
+	}
+	if (loaded_kernels.find(rpath) != loaded_kernels.end())
 		return true;
-	furnsh_c(kernel_name.c_str());
+	furnsh_c(rpath);
 	if (failed_c())
 	{
 		getmsg_c("long", sizeof(s), s);
@@ -51,7 +57,7 @@ bool load_kernel(const string& kernel_name)
 		return false;
 	}
 	sprintf_s(s, 1024, "spice.dll: Kernel %s - OK.", kernel_name.c_str());
-	loaded_kernels.insert(kernel_name);
+	loaded_kernels.insert(rpath);
 	oapiWriteLog(s);
 	return true;
 }

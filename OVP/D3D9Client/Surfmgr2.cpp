@@ -208,7 +208,7 @@ INT16 *SurfTile::ReadElevationFile (const char *name, int lvl, int ilat, int iln
 	// Elevation data
 	if (smgr->DoLoadIndividualFiles(2)) { // try loading from individual tile file
 		sprintf_s(path, MAX_PATH, "%s\\Elev\\%02d\\%06d\\%06d.elv", mgr->DataRootDir().c_str(), lvl, ilat, ilng);
-		if (!fopen_s(&f, path, "rb")) {
+		if (!VFS::fopen_s(&f, path, "rb")) {
 			e = g_pMemgr_i->New(ndat);
 			elev = g_pMemgr_f->New(ndat);
 			// read the elevation file header
@@ -296,7 +296,7 @@ INT16 *SurfTile::ReadElevationFile (const char *name, int lvl, int ilat, int iln
 		ELEVFILEHEADER hdr;
 		if (smgr->DoLoadIndividualFiles(3)) { // try loading from individual tile file
 			sprintf_s (path, MAX_PATH, "%s\\Elev_mod\\%02d\\%06d\\%06d.elv", mgr->DataRootDir().c_str(), lvl, ilat, ilng);
-			if (!fopen_s(&f, path, "rb")) {
+			if (!VFS::fopen_s(&f, path, "rb")) {
 				fread (&hdr, sizeof(ELEVFILEHEADER), 1, f);
 				if (hdr.hdrsize != sizeof(ELEVFILEHEADER)) fseek (f, hdr.hdrsize, SEEK_SET);
 				LogClr("Teal", "NewElevMod[%s]: Lvl=%d, Scale=%g, Offset=%g", name, lvl - 4, hdr.scale, hdr.offset);
@@ -1638,7 +1638,9 @@ SURFHANDLE TileManager2<SurfTile>::SeekTileTexture(int iLng, int iLat, int level
 		{
 			char path[MAX_PATH];
 			sprintf_s(path, MAX_PATH, "%s\\Surf\\%02d\\%06d\\%06d.dds", m_dataRootDir.c_str(), level + 4, iLat, iLng);
-			bOk = (D3DXCreateTextureFromFileEx(Dev(), path, 0, 0, 0, 0, D3DFMT_FROM_FILE, D3DPOOL_DEFAULT,
+			char rpath[MAX_PATH];
+			VFS::resolve_path(rpath, path);
+			bOk = (D3DXCreateTextureFromFileEx(Dev(), rpath, 0, 0, 0, 0, D3DFMT_FROM_FILE, D3DPOOL_DEFAULT,
 				D3DX_FILTER_NONE, D3DX_FILTER_BOX, 0, NULL, NULL, &pTex) == S_OK);
 		}
 
@@ -1664,7 +1666,9 @@ SURFHANDLE TileManager2<SurfTile>::SeekTileTexture(int iLng, int iLat, int level
 		{
 			char path[MAX_PATH];
 			sprintf_s(path, MAX_PATH, "%s\\Mask\\%02d\\%06d\\%06d.dds", m_dataRootDir.c_str(), level + 4, iLat, iLng);
-			bOk = (D3DXCreateTextureFromFileEx(Dev(), path, 0, 0, 0, 0, D3DFMT_FROM_FILE, D3DPOOL_DEFAULT,
+			char rpath[MAX_PATH];
+			VFS::resolve_path(rpath, path);
+			bOk = (D3DXCreateTextureFromFileEx(Dev(), rpath, 0, 0, 0, 0, D3DFMT_FROM_FILE, D3DPOOL_DEFAULT,
 				D3DX_FILTER_NONE, D3DX_FILTER_BOX, 0, NULL, NULL, &pTex) == S_OK);
 		}
 
@@ -1742,7 +1746,7 @@ float* TileManager2<SurfTile>::BrowseElevationData(int lvl, int ilat, int ilng, 
 	// Elevation data
 	if (flags & gcTileFlags::CACHE) { // try loading from individual tile file
 		sprintf_s(path, MAX_PATH, "%s\\Elev\\%02d\\%06d\\%06d.elv", m_dataRootDir.c_str(), lvl + 4, ilat, ilng);
-		if (!fopen_s(&f, path, "rb")) {
+		if (!VFS::fopen_s(&f, path, "rb")) {
 			elev = new float[ndat];
 			fread(&ehdr, sizeof(ELEVFILEHEADER), 1, f);
 			if (ehdr.hdrsize != sizeof(ELEVFILEHEADER)) fseek(f, ehdr.hdrsize, SEEK_SET);
@@ -1805,7 +1809,7 @@ float* TileManager2<SurfTile>::BrowseElevationData(int lvl, int ilat, int ilng, 
 		if (flags & gcTileFlags::CACHE) { // try loading from individual tile file
 			sprintf_s(fname, ARRAYSIZE(fname), "%s\\Elev_mod\\%02d\\%06d\\%06d.elv", CbodyName(), lvl + 4, ilat, ilng);
 			bool found = GetClient()->TexturePath(fname, path);
-			if (found && !fopen_s(&f, path, "rb")) {
+			if (found && !VFS::fopen_s(&f, path, "rb")) {
 
 				fread(&hdr, sizeof(ELEVFILEHEADER), 1, f);
 				if (hdr.hdrsize != sizeof(ELEVFILEHEADER)) fseek(f, hdr.hdrsize, SEEK_SET);

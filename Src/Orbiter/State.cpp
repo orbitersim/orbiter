@@ -19,6 +19,7 @@
 #include "Vessel.h"
 #include "Astro.h"
 #include "Util.h"
+#include "VFS.h"
 
 using namespace std;
 
@@ -41,7 +42,7 @@ void State::Update ()
 
 bool State::Read (const char *fname)
 {
-	ifstream ifs (fname, ios::in);
+	VFS::ifstream ifs (fname, ios::in);
 	if (!ifs) return false;
 
 	int i;

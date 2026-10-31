@@ -64,14 +64,16 @@ LPDIRECT3DTEXTURE9 NatLoadSpecialTexture(const char* fname, const char* ext)
 	
 	if (g_client->TexturePath(name, path)) {
 		D3DXIMAGE_INFO info;	
-		if (D3DXGetImageInfoFromFileA(path, &info) == S_OK) {
+		char rpath[MAX_PATH];
+		VFS::resolve_path(rpath, path);
+		if (D3DXGetImageInfoFromFileA(rpath, &info) == S_OK) {
 
 			DWORD Mips = D3DFMT_FROM_FILE;
 
 			if (Config->TextureMips == 2) Mips = 0;                         // Autogen all
 			if (Config->TextureMips == 1 && info.MipLevels == 1) Mips = 0;  // Autogen missing
 
-			if (S_OK == D3DXCreateTextureFromFileExA(g_client->GetDevice(), path, info.Width, info.Height, Mips, 0, D3DFMT_FROM_FILE, D3DPOOL_DEFAULT, D3DX_DEFAULT, D3DX_DEFAULT, 0, NULL, NULL, &pTex))
+			if (S_OK == D3DXCreateTextureFromFileExA(g_client->GetDevice(), rpath, info.Width, info.Height, Mips, 0, D3DFMT_FROM_FILE, D3DPOOL_DEFAULT, D3DX_DEFAULT, D3DX_DEFAULT, 0, NULL, NULL, &pTex))
 			{
 				return pTex;
 			}
@@ -93,6 +95,7 @@ SURFHANDLE NatLoadSurface(const char* file, DWORD flags, bool bPath)
 	NatCheckFlags(flags);
 
 	char path[MAX_PATH];
+	char rpath[MAX_PATH];
 
 	if (bPath) strcpy_s(path, MAX_PATH, file);
 	else {
@@ -100,6 +103,7 @@ SURFHANDLE NatLoadSurface(const char* file, DWORD flags, bool bPath)
 			return NULL;
 		}
 	}
+	VFS::resolve_path(rpath, path);
 	
 	DWORD pass = OAPISURFACE_TEXTURE | OAPISURFACE_SHARED;
 
@@ -108,8 +112,7 @@ SURFHANDLE NatLoadSurface(const char* file, DWORD flags, bool bPath)
 	if ((flags & ~pass) == 0)
 	{
 		D3DXIMAGE_INFO info;
-
-		if (D3DXGetImageInfoFromFileA(path, &info) == S_OK)
+		if (D3DXGetImageInfoFromFileA(rpath, &info) == S_OK)
 		{
 
 			if (info.ImageFileFormat == D3DXIFF_JPG) info.Format = D3DFMT_X8R8G8B8;
@@ -120,7 +123,7 @@ SURFHANDLE NatLoadSurface(const char* file, DWORD flags, bool bPath)
 			if (Config->TextureMips == 2) Mips = 0;                         // Autogen all
 			if (Config->TextureMips == 1 && info.MipLevels == 1) Mips = 0;  // Autogen missing
 
-			if (S_OK == D3DXCreateTextureFromFileExA(g_client->GetDevice(), path, info.Width, info.Height, Mips, 0, info.Format, D3DPOOL_DEFAULT, D3DX_DEFAULT, D3DX_DEFAULT, 0, NULL, NULL, &pTex))
+			if (S_OK == D3DXCreateTextureFromFileExA(g_client->GetDevice(), rpath, info.Width, info.Height, Mips, 0, info.Format, D3DPOOL_DEFAULT, D3DX_DEFAULT, D3DX_DEFAULT, 0, NULL, NULL, &pTex))
 			{
 				pNat = new SurfNative(pTex, flags);
 				pNat->SetName(file);
@@ -149,7 +152,7 @@ SURFHANDLE NatLoadSurface(const char* file, DWORD flags, bool bPath)
 	//
 	D3DXIMAGE_INFO info;
 
-	if (S_OK == D3DXGetImageInfoFromFileA(path, &info))
+	if (S_OK == D3DXGetImageInfoFromFileA(rpath, &info))
 	{
 		if (flags & OAPISURFACE_SKETCHPAD) flags |= OAPISURFACE_RENDERTARGET;
 		if (flags & OAPISURFACE_RENDERTARGET) flags |= OAPISURFACE_UNCOMPRESS;
@@ -192,7 +195,7 @@ SURFHANDLE NatLoadSurface(const char* file, DWORD flags, bool bPath)
 
 		if (flags & OAPISURFACE_TEXTURE)
 		{
-			if (S_OK == D3DXCreateTextureFromFileExA(g_client->GetDevice(), path, info.Width, info.Height, Mips,
+			if (S_OK == D3DXCreateTextureFromFileExA(g_client->GetDevice(), rpath, info.Width, info.Height, Mips,
 				Usage, Format, Pool, D3DX_DEFAULT, D3DX_DEFAULT, 0, NULL, NULL, &pTex))
 			{
 				SurfNative* pSrf = new SurfNative(pTex, flags);
@@ -208,7 +211,7 @@ SURFHANDLE NatLoadSurface(const char* file, DWORD flags, bool bPath)
 			LPDIRECT3DSURFACE9 pSurf = NULL;
 			if (S_OK == g_client->GetDevice()->CreateRenderTarget(info.Width, info.Height, Format, Multi, 0, bLock, &pSurf, NULL))
 			{
-				if (S_OK == D3DXLoadSurfaceFromFile(pSurf, NULL, NULL, path, NULL, D3DX_DEFAULT, 0, NULL))
+				if (S_OK == D3DXLoadSurfaceFromFile(pSurf, NULL, NULL, rpath, NULL, D3DX_DEFAULT, 0, NULL))
 				{
 					SurfNative* pSrf = new SurfNative(pSurf, flags);
 					pSrf->SetName(file);
@@ -237,11 +240,13 @@ bool NatSaveSurface(const char* file, LPDIRECT3DRESOURCE9 pResource)
 	if (contains(file, ".jpg")) fmt = D3DXIFF_JPG;
 	if (contains(file, ".png")) fmt = D3DXIFF_PNG;
 
+	char rpath[MAX_PATH];
+	VFS::resolve_path(rpath, file, true);
 
 	if (pResource->GetType() == D3DRTYPE_SURFACE)
 	{
 		LPDIRECT3DSURFACE9 pSurf = static_cast<LPDIRECT3DSURFACE9>(pResource);
-		if (D3DXSaveSurfaceToFileA(file, fmt, pSurf, NULL, NULL) == S_OK) return true;
+		if (D3DXSaveSurfaceToFileA(rpath, fmt, pSurf, NULL, NULL) == S_OK) return true;
 		oapiWriteLog((char*)"NatSaveSurface(SURF):");
 		NatDumpResource(pResource);
 		return false;
@@ -255,7 +260,7 @@ bool NatSaveSurface(const char* file, LPDIRECT3DRESOURCE9 pResource)
 		pTex->GetLevelDesc(0, &desc);
 
 		if (desc.Pool == D3DPOOL_SYSTEMMEM || desc.Usage & D3DUSAGE_DYNAMIC) {
-			if (D3DXSaveTextureToFileA(file, fmt, pTex, NULL) == S_OK) return true;
+			if (D3DXSaveTextureToFileA(rpath, fmt, pTex, NULL) == S_OK) return true;
 			oapiWriteLog((char*)"NatSaveSurface(TEX):");
 			NatDumpResource(pResource);
 			return false;
@@ -273,14 +278,14 @@ bool NatSaveSurface(const char* file, LPDIRECT3DRESOURCE9 pResource)
 				pSrc->Release();
 				pTgt->Release();
 			}
-			if (D3DXSaveTextureToFile(file, fmt, pSys, NULL) == S_OK) {
+			if (D3DXSaveTextureToFile(rpath, fmt, pSys, NULL) == S_OK) {
 				pSys->Release();
 				return true;
 			}
 			pSys->Release();
 		}
 
-		if (D3DXSaveTextureToFileA(file, fmt, pTex, NULL) == S_OK) return true;
+		if (D3DXSaveTextureToFileA(rpath, fmt, pTex, NULL) == S_OK) return true;
 	}
 
 	oapiWriteLog((char*)"NatSaveSurface():");
@@ -930,8 +935,10 @@ bool SurfNative::Decompress()
 			oapiWriteLogV("SurfNative::Reload() File Not Found [%s]", path);
 			return false;
 		}
+		char rpath[MAX_PATH];
+		VFS::resolve_path(rpath, path);
 
-		if (S_OK == D3DXCreateTextureFromFileExA(pDevice, path, desc.Width, desc.Height, Mipmaps, D3DUSAGE_RENDERTARGET, Format,
+		if (S_OK == D3DXCreateTextureFromFileExA(pDevice, rpath, desc.Width, desc.Height, Mipmaps, D3DUSAGE_RENDERTARGET, Format,
 			D3DPOOL_DEFAULT, D3DX_DEFAULT, D3DX_DEFAULT, 0, NULL, NULL, &pDecomp))
 		{
 			HR(pDecomp->GetSurfaceLevel(0, &pDeSrf))
@@ -986,8 +993,10 @@ bool SurfNative::DeClone()
 			oapiWriteLogV("SurfNative::DeClone() File Not Found [%s]", path);
 			return false;
 		}
+		char rpath[MAX_PATH];
+		VFS::resolve_path(rpath, path);
 
-		if (S_OK == D3DXCreateTextureFromFileExA(pDevice, path, desc.Width, desc.Height, Mipmaps, D3DUSAGE_RENDERTARGET, Format,
+		if (S_OK == D3DXCreateTextureFromFileExA(pDevice, rpath, desc.Width, desc.Height, Mipmaps, D3DUSAGE_RENDERTARGET, Format,
 			D3DPOOL_DEFAULT, D3DX_DEFAULT, D3DX_DEFAULT, 0, NULL, NULL, &pTex))
 		{
 			pResource = pTex;
@@ -1021,18 +1030,20 @@ void SurfNative::Reload()
 		oapiWriteLogV("SurfNative::Reload() File Not Found [%s]", path);
 		return;
 	}
+	char rpath[MAX_PATH];
+	VFS::resolve_path(rpath, path);
 
 	if (Flags == OAPISURFACE_TEXTURE)
 	{
 		D3DXIMAGE_INFO info;
 
-		if (D3DXGetImageInfoFromFileA(path, &info) == S_OK)
+		if (D3DXGetImageInfoFromFileA(rpath, &info) == S_OK)
 		{
 			DWORD Mips = D3DFMT_FROM_FILE;
 			if (Config->TextureMips == 2) Mips = 0;                         // Autogen all
 			if (Config->TextureMips == 1 && info.MipLevels == 1) Mips = 0;  // Autogen missing
 
-			if (S_OK == D3DXCreateTextureFromFileExA(g_client->GetDevice(), path, info.Width, info.Height, Mips, 0,
+			if (S_OK == D3DXCreateTextureFromFileExA(g_client->GetDevice(), rpath, info.Width, info.Height, Mips, 0,
 				D3DFMT_FROM_FILE, D3DPOOL_DEFAULT, D3DX_DEFAULT, D3DX_DEFAULT, 0, NULL, NULL, (LPDIRECT3DTEXTURE9 *)&pResource))
 			{
 				AddMap(MAP_HEAT, NatLoadSpecialTexture(name, "heat"));

@@ -113,7 +113,7 @@ void D3D9Pad::D3D9TechInit(D3D9Client *_gc, LPDIRECT3DDEVICE9 pDevice)
 
 
 #ifdef SKPDBG
-	if (fopen_s(&log, "Sketchpad.log", "w+")) { log = NULL; } // Failed
+	if (VFS::fopen_s(&log, "Sketchpad.log", "w+")) { log = NULL; } // Failed
 #endif // SKPDBG
 
 
@@ -128,8 +128,7 @@ void D3D9Pad::D3D9TechInit(D3D9Client *_gc, LPDIRECT3DDEVICE9 pDevice)
 	// Initialize Techniques -------------------------------------------------------------------------
 	//
 	char name[256];
-	sprintf_s(name, 256, "Modules/D3D9Client/Sketchpad.fx");
-
+	VFS::resolve_path(name, "Modules/D3D9Client/Sketchpad.fx");
 	// Create the Effect from a .fx file.
 	ID3DXBuffer* errors = 0;
 
@@ -151,7 +150,7 @@ void D3D9Pad::D3D9TechInit(D3D9Client *_gc, LPDIRECT3DDEVICE9 pDevice)
 		LPD3DXBUFFER pBuffer = NULL;
 		if (D3DXDisassembleEffect(FX, true, &pBuffer) == S_OK) {
 			FILE *fp = NULL;
-			if (!fopen_s(&fp, "Sketchpad_asm.html", "w")) {
+			if (!VFS::fopen_s(&fp, "Sketchpad_asm.html", "w")) {
 				fwrite(pBuffer->GetBufferPointer(), 1, pBuffer->GetBufferSize(), fp);
 				fclose(fp);
 			}

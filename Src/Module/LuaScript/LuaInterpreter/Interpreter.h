@@ -158,6 +158,9 @@ public:
 	/**
 	 * \brief Define functions for interfacing with Orbiter API
 	 */
+
+	virtual void LoadVFS ();
+
 	virtual void LoadAPI ();
 
 	virtual void LoadVesselAPI ();

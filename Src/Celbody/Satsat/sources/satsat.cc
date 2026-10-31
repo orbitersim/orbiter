@@ -177,7 +177,7 @@ void ReadData (int res)
 
     static double radsdg = atan(1.) / 45.;
 
-    FILE *f = fopen ("tass2.dat", "rt");
+    FILE *f = VFS::fopen ("tass2.dat", "rt");
     fscanf (f, "%lf", &gk);
     fscanf (f, "%lf", &tas);
     gk1 = pow (gk*365.25, 2.0) / tas;

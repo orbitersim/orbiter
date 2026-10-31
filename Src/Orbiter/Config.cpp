@@ -32,12 +32,15 @@ static int g_buflen = 1024;
 const bool bEchoAll_default = false;          // only echo non-default parameters
 
 CFG_DIRPRM CfgDirPrm_default = {
-	".\\Config\\",		// ConfigDir
-	".\\Meshes\\",		// MeshDir
-	".\\Textures\\",	// TextureDir
-	".\\Textures2\\",	// HightexDir
-	".\\Textures\\",	// PlanetTexDir
-	".\\Scenarios\\"	// ScnDir
+	".\\Config\\",      // ConfigDir
+	".\\Meshes\\",      // MeshDir
+	".\\Textures\\",    // TextureDir
+	".\\Textures2\\",   // HightexDir
+	".\\Textures\\",    // PlanetTexDir
+	".\\Scenarios\\",   // ScnDir
+	false,              // bOverlay
+	{},                 // Overlays
+	"."                 // WorkDir
 };
 
 CFG_PHYSICSPRM CfgPhysicsPrm_default = {
@@ -521,6 +524,29 @@ bool Config::Load(const char *fname)
 			strcat (CfgDirPrm.ScnDir, "\\");
 	strcpy (scnpath, CfgDirPrm.ScnDir); scnlen = strlen (scnpath);
 
+	// Overlay
+	GetBool (ifs, "Overlay", CfgDirPrm.bOverlay);
+	if (GetString(ifs, "WorkDir", cbuf)) {
+		CfgDirPrm.WorkDir = cbuf;
+	} else {
+		// Disable overlay if WorkDir is not set properly
+		if(CfgDirPrm.bOverlay) {
+			oapiWriteLog("Config: disabling overlays because no WorkDir specified");
+		}
+		CfgDirPrm.bOverlay = false;
+	}
+
+	// list of active overlays
+	if (FindLine (ifs, "OVERLAYS")) {
+		char cbuf[256];
+		while (ifs.getline (cbuf, 256) && _strnicmp (cbuf, "END_OVERLAYS", 12)) {
+			const char *ov = trim_string(cbuf);
+			// Ignore commented overlays
+			if(*ov)
+				CfgDirPrm.Overlays.push_back(ov);
+		}
+	}
+
 	// Device information
 	GetInt  (ifs, "DeviceIndex", CfgDevPrm.Device_idx);
 	if (GetInt (ifs, "ModeIndex", i)) CfgDevPrm.Device_mode = (DWORD)i;
@@ -827,6 +853,9 @@ void Config::SetDefaults ()
 	strcpy(CfgDirPrm.HightexDir, CfgDirPrm_default.HightexDir);
 	strcpy(CfgDirPrm.PlanetTexDir, CfgDirPrm_default.PlanetTexDir);
 	strcpy(CfgDirPrm.ScnDir, CfgDirPrm_default.ScnDir);
+	CfgDirPrm.bOverlay = false;
+	CfgDirPrm.WorkDir = ".";
+	CfgDirPrm.Overlays.clear();
 
 	strcpy(cfgpath, CfgDirPrm.ConfigDir);    cfglen = strlen(cfgpath);
 	strcpy(mshpath, CfgDirPrm.MeshDir);      mshlen = strlen(mshpath);
@@ -975,7 +1004,11 @@ BOOL Config::Write (const char *fname) const
 		strcmp (CfgDirPrm.TextureDir, CfgDirPrm_default.TextureDir) ||
 		strcmp (CfgDirPrm.HightexDir, CfgDirPrm_default.HightexDir) ||
 		strcmp (CfgDirPrm.PlanetTexDir, CfgDirPrm_default.PlanetTexDir) ||
-		strcmp (CfgDirPrm.ScnDir, CfgDirPrm_default.ScnDir) || bEchoAll) {
+		strcmp (CfgDirPrm.ScnDir, CfgDirPrm_default.ScnDir) || 
+		CfgDirPrm.Overlays.size() > 0 ||
+		CfgDirPrm.bOverlay != CfgDirPrm_default.bOverlay ||
+		CfgDirPrm.WorkDir != CfgDirPrm_default.WorkDir ||
+		bEchoAll) {
 		ofs << "\n; === Subdirectory locations\n";
 		if (strcmp (CfgDirPrm.ConfigDir, CfgDirPrm_default.ConfigDir) || bEchoAll)
 			ofs << "ConfigDir = " << CfgDirPrm.ConfigDir << '\n';
@@ -989,6 +1022,17 @@ BOOL Config::Write (const char *fname) const
 			ofs << "PlanetTexDir = " << CfgDirPrm.PlanetTexDir << endl;
 		if (strcmp (CfgDirPrm.ScnDir, CfgDirPrm_default.ScnDir) || bEchoAll)
 			ofs << "ScenarioDir = " << CfgDirPrm.ScnDir << endl;
+		if (CfgDirPrm.bOverlay != CfgDirPrm_default.bOverlay || bEchoAll)
+			ofs << "Overlay = " << BoolStr(CfgDirPrm.bOverlay) << endl;
+		if (CfgDirPrm.WorkDir != CfgDirPrm_default.WorkDir || bEchoAll)
+			ofs << "WorkDir = " << CfgDirPrm.WorkDir << endl;
+		if (CfgDirPrm.Overlays.size()) {
+			ofs << "\n; === Overlays ===" << endl;
+			ofs << "OVERLAYS" << endl;
+			for (auto name : CfgDirPrm.Overlays)
+				ofs << "  " << name << std::endl;
+			ofs << "END_OVERLAYS" << endl;
+		}
 	}
 
 	if (memcmp (&CfgLogicPrm, &CfgLogicPrm_default, sizeof(CFG_LOGICPRM)) || bEchoAll) {

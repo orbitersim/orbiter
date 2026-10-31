@@ -3,7 +3,7 @@
 
 #include "Keymap.h"
 #include "Config.h"
-#include <fstream>
+#include "VFS.h"
 
 #define NKEY 95
 
@@ -235,7 +235,7 @@ void Keymap::SetDefault ()
 void Keymap::Write (const char *fname)
 {
 	char cbuf[256];
-	ofstream ofs (fname);
+	VFS::ofstream ofs (fname);
 	for (int i = 0; i < LKEY_COUNT; i++)
 		ofs << lkeyspec[i].itemstr << " = " << PrintStr (cbuf, func[i]) << endl;
 }
@@ -243,7 +243,7 @@ void Keymap::Write (const char *fname)
 bool Keymap::Read (const char *fname)
 {
 	char cbuf[256];
-	ifstream ifs (fname, ios::in);
+	VFS::ifstream ifs (fname, ios::in);
 	if (!ifs) return false;
 	for (int i = 0; i < LKEY_COUNT; i++) {
 		//func[i] = 0;

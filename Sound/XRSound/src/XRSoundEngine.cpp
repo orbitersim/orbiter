@@ -161,14 +161,16 @@ bool XRSoundEngine::LoadWav(const int soundID, const char *pSoundFilename, const
         VERBOSE_LOG(this, "XRSoundEngine::LoadWav INFO: sound ID %d is disabled", soundID);
         return false;
     }
+	char rpath[MAX_PATH];
+	VFS::resolve_path(rpath, pSoundFilename);
 
-    // if the wav file has not changed from what is currently in the slot, do not stop it and load it: it's a no-op instead.
+	// if the wav file has not changed from what is currently in the slot, do not stop it and load it: it's a no-op instead.
     bool bEnabled = true;
     WavContext *pContext = FindWavContext(soundID);
     if (pContext)
     {
         // already have a sound in this slot
-        if (equalsIgnoreCase(pContext->csSoundFilename, pSoundFilename))
+        if (equalsIgnoreCase(pContext->csSoundFilename, rpath))
             return true;    // file is unchanged, so nothing to load
         bEnabled = pContext->bEnabled;   // preserve the existing bEnabled flag
 
@@ -177,18 +179,18 @@ bool XRSoundEngine::LoadWav(const int soundID, const char *pSoundFilename, const
         {
             StopWav(soundID);   // in case something is still playing
             // only the filename changes here; other fields in the WavContext do not.
-            pContext->csSoundFilename = pSoundFilename;
+            pContext->csSoundFilename = rpath;
             VERBOSE_LOG(this, "XRSoundEngine::LoadWav for global MusicFolder success: %s", pContext->ToStr(false).c_str());
             return true;
         }
     }
 
     // We are loading a new or different wav file into this slot
-    WavContext context(soundID, pSoundFilename, playbackType, bEnabled);
+    WavContext context(soundID, rpath, playbackType, bEnabled);
 
     // Note: "LoadWav" doesn't actually load the sound file data into memory; however, it does verify that
     // the sound file actually exists.
-    if (!ConfigFileParser::IsFileReadable(pSoundFilename))
+    if (!ConfigFileParser::IsFileReadable(rpath))
     {
         VERBOSE_LOG(this, "XRSoundEngine::LoadWav WARNING: Unable to open sound file for %s", context.ToStr(false).c_str());
         return false;
