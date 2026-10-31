@@ -456,8 +456,10 @@ HRESULT Orbiter::Create (HINSTANCE hInstance)
 //-----------------------------------------------------------------------------
 void Orbiter::SaveConfig ()
 {
-	pConfig->Write (); // save current settings
-	m_pLaunchpad->WriteExtraParams ();
+	if (!pConfig->CfgCmdlinePrm.bCfgReadOnly) {
+		pConfig->Write(); // save current settings
+		m_pLaunchpad->WriteExtraParams();
+	}
 }
 
 //-----------------------------------------------------------------------------
@@ -670,8 +672,7 @@ VOID Orbiter::Launch (const char *scenario)
 
 	HCURSOR hCursor = SetCursor (LoadCursor (NULL, IDC_WAIT));
 	bool have_state = false;
-	pConfig->Write (); // save current settings
-	m_pLaunchpad->WriteExtraParams ();
+	SaveConfig(); // This should be redundant here, but just in case of a subsequent crash, save parameters on launch.
 
 	if (!have_state && !pState->Read (ScnPath (scenario))) {
 		LOGOUT_ERR ("Scenario not found: %s", scenario);

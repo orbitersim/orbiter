@@ -171,6 +171,7 @@ std::vector<::CommandLine::Key>& orbiter::CommandLine::KeyList() const
 		{ KEY_FASTEXIT, "fastexit", 'x', false},
 		{ KEY_OPENVIDEO, "openvideotab", 'v', false},
 		{ KEY_NOGRAPHICS, "nographics", 'G', false},
+		{ KEY_CONFIGREADONLY, "cfgreadonly", 'C', false},
 		{ KEY_KEEPLOG, "keeplog", 'l', false},
 		{ KEY_FIXEDSTEP, "fixedstep", 'f', true},
 		{ KEY_MAXSYSTIME, "maxsystime", 'T', true},
@@ -200,6 +201,9 @@ void orbiter::CommandLine::ApplyOption(const Key* key, const std::string& value)
 		break;
 	case KEY_NOGRAPHICS:
 		cfg.bDiableGraphics = true;
+		break;
+	case KEY_CONFIGREADONLY:
+		cfg.bCfgReadOnly = true;
 		break;
 	case KEY_KEEPLOG:
 		cfg.bAppendLog = true;
@@ -253,6 +257,7 @@ void orbiter::CommandLine::PrintHelpAndExit() const
 	std::cout << "  --fastexit, -x: Exit Orbiter after simulation session\n";
 	std::cout << "  --openvideotab, -v: Open Launchpad on video tab\n";
 	std::cout << "  --nographics, -G: Disable graphics\n";
+	std::cout << "  --cfgreadonly, -C: Do not write to Orbiter.cfg on exit\n";
 	std::cout << "  --keeplog, -l: Append log to previous session\n";
 	std::cout << "  --fixedstep=<s>, -f <s>: Enforce fixed time step length (seconds)\n";
 	std::cout << "  --maxsystime=<t>, -T <t>: Terminate session after <t> seconds\n";
