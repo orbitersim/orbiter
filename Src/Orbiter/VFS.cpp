@@ -29,9 +29,9 @@
 
 extern Orbiter *g_pOrbiter;
 
-static std::list<std::filesystem::path> s_overlays = { "./" };
-static std::filesystem::path s_writePath;
-static bool s_enabled = false;
+static std::list<std::filesystem::path> overlayList = { "./" };
+static std::filesystem::path overlayWritePath;
+static bool overlayEnabled = false;
 static void RegisterVFSProtocol();
 
 // Get the real path of a file, given a virtual path
@@ -48,15 +48,15 @@ static bool GetRealPath(VFS::FixedBuffer dst, const char *path, bool modify = fa
 		return false;
 	}
 
-	if(!s_enabled) {
+	if(!overlayEnabled) {
 		return dst.copy(path);
 	}
 
-	if(s_writePath.empty()) modify = false;
+	if(overlayWritePath.empty()) modify = false;
 
 	std::error_code ec;
 	// First check in the write path
-	auto wpath = s_writePath / path;
+	auto wpath = overlayWritePath / path;
 	if(std::filesystem::exists(wpath, ec)) {
 		return dst.copy(wpath.string().c_str());
 	}
@@ -66,7 +66,7 @@ static bool GetRealPath(VFS::FixedBuffer dst, const char *path, bool modify = fa
 	}
 
 	// Then check in the different overlays
-	for(auto &&overlay: s_overlays) {
+	for(auto &&overlay: overlayList) {
 		auto rpath = overlay / path;
 		if(std::filesystem::exists(rpath, ec)) {
 			if(modify) {
@@ -149,14 +149,14 @@ namespace VFS
 		CFG_DIRPRM &CfgDirPrm = cfg->CfgDirPrm;
 		if(!CfgDirPrm.bOverlay) {
 			oapiWriteLog("VFS: virtual file system disabled");
-			s_enabled = false;
+			overlayEnabled = false;
 			return;
 		}
 
 		oapiWriteLog("VFS: initializing virtual file system");
 
 		for(auto &overlay: CfgDirPrm.Overlays) {
-			// Recurse one deep for xxx/* paths
+			// Recurse one deep for xxx/* paths, ignore files
 			if(ends_with(overlay, "/*")) {
 				char dir[MAX_PATH];
 				if(dirname(dir, overlay.c_str())) {
@@ -171,9 +171,6 @@ namespace VFS
 							} else {
 								oapiWriteLogV("VFS: overlay failed on %s", entry.path().string().c_str());
 							}
-						} else {
-							// don't log errors if there's a mix of files/sub directories in the directory
-							//oapiWriteLogV("VFS: overlay failed on %s", entry.path().string().c_str());
 						}
 						it.increment(ec);
 					}
@@ -199,14 +196,15 @@ namespace VFS
 		const char *workdir = CfgDirPrm.WorkDir.c_str();
 		if(SetWriteDirectory(workdir)) {
 			oapiWriteLogV("VFS: Working directory: %s", workdir);
-			s_enabled = true;
+			overlayEnabled = true;
 		} else {
 			oapiWriteLogV("VFS: Failed to set %s as working directory", workdir);
 			// Disabling overlay if there was an error setting up the working directory
-			s_enabled = false;
+			MessageBox(NULL, "Failed setting up working directory, overlays are disabled", "VFS error", MB_ICONERROR);
+			overlayEnabled = false;
 		}
 
-		if(s_enabled) {
+		if(overlayEnabled) {
 			RegisterVFSProtocol();
 			oapiWriteLogV("VFS: PATH set to %s", getenv("PATH"));
 		}
@@ -215,7 +213,7 @@ namespace VFS
 
 	std::string GetWritePath()
 	{
-		return s_writePath.string();
+		return overlayWritePath.string();
 	}
 
 	bool AddOverlay(const char *path)
@@ -242,7 +240,7 @@ namespace VFS
 			return false;
 		}
 
-		s_overlays.push_front(path);
+		overlayList.push_front(path);
 
 		return true;
 	}
@@ -278,7 +276,7 @@ namespace VFS
 			return false;
 		}
 
-		s_writePath = path;
+		overlayWritePath = path;
 
 		return true;
 	}
@@ -337,11 +335,11 @@ namespace VFS
 			}
 		};
 
-		if (!s_writePath.empty()) {
-			add_entries(s_writePath / dir);
+		if (!overlayWritePath.empty()) {
+			add_entries(overlayWritePath / dir);
 		}
 
-		for (const auto &overlay : s_overlays) {
+		for (const auto &overlay : overlayList) {
 			add_entries(overlay / dir);
 		}
 
@@ -376,14 +374,14 @@ namespace VFS
 	// This is not fool proof, if a reparse point or symlink is used in the work dir, it may cause issues
 	DLLEXPORT bool remove_all(const char* path)
 	{
-		if(!s_enabled) {
+		if(!overlayEnabled) {
 			if(!path) return false;
 			std::error_code ec;
 			std::filesystem::remove_all(path, ec);
 			return !ec;
 		}
 
-		if (!path || !*path || s_writePath.empty())
+		if (!path || !*path || overlayWritePath.empty())
 			return false;
 
 		std::filesystem::path rel(path);
@@ -398,8 +396,8 @@ namespace VFS
 			*rel.begin() == "..")
 			return false;
 
-		const auto target = (s_writePath / rel).lexically_normal();
-		const auto root = std::filesystem::absolute(s_writePath).lexically_normal();
+		const auto target = (overlayWritePath / rel).lexically_normal();
+		const auto root = std::filesystem::absolute(overlayWritePath).lexically_normal();
 
 		// Ensure the target is strictly inside the write directory.
 		const auto absTarget = std::filesystem::absolute(target).lexically_normal();
@@ -514,6 +512,49 @@ namespace VFS
 // Since it'll only be used by the core, no unregistration or fancy COM support is provided.
 // Note that almost all of this was coerced out of ChatGPT.
 #include <cwchar>
+
+class FileMapping {
+	void *m_data;
+	LARGE_INTEGER m_size{};
+public:
+	FileMapping(const wchar_t* filename) {
+		m_data = NULL;
+		HANDLE hFile = CreateFileW(filename, GENERIC_READ, FILE_SHARE_READ, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
+
+		if (hFile == INVALID_HANDLE_VALUE)
+			return;
+
+		HANDLE hMapping = CreateFileMappingW(hFile, NULL, PAGE_READONLY, 0, 0, NULL);
+
+		if (!hMapping) {
+			CloseHandle(hFile);
+			return;
+		}
+
+		m_data = MapViewOfFile(hMapping, FILE_MAP_READ, 0, 0, 0);
+
+		if(m_data) {
+			if(!GetFileSizeEx(hFile, &m_size) || m_size.QuadPart > ULONG_MAX) {
+				UnmapViewOfFile(m_data);
+				m_data = NULL;
+				m_size = {};
+			}
+		}
+
+		CloseHandle(hMapping);
+		CloseHandle(hFile);
+	}
+	~FileMapping() {
+		if(m_data) UnmapViewOfFile(m_data);
+	}
+	FileMapping(const FileMapping&) = delete;
+	FileMapping& operator=(const FileMapping&) = delete;
+
+	const byte *data() const { return (byte *)m_data; }
+	size_t size() const { return (size_t)m_size.QuadPart; }
+	bool valid() const { return m_data != nullptr; }
+};
+
 class VFSHandler : public IInternetProtocol, public IInternetProtocolInfo
 {
 public:
@@ -553,7 +594,7 @@ public:
 
 		HRESULT hr = S_OK;
 		m_sink = pSink;
-		m_data.clear();
+		m_data.reset();
 		m_pos = 0;
 
 		std::wstring url(szUrl);
@@ -562,9 +603,8 @@ public:
 		if(url.find(L"vfs://") == 0) {
 			std::wstring path = url.substr(6); // skip "vfs://"
 
-			HRESULT hr = UrlUnescapeW(&path[0], NULL, NULL, URL_UNESCAPE_AS_UTF8 | URL_UNESCAPE_INPLACE);
+			hr = UrlUnescapeW(&path[0], NULL, NULL, URL_UNESCAPE_AS_UTF8 | URL_UNESCAPE_INPLACE);
 			if (FAILED(hr)) {
-				hr = INET_E_INVALID_URL;
 				goto fail;
 			}
 			const int utf8Size = WideCharToMultiByte(CP_UTF8, WC_ERR_INVALID_CHARS, path.c_str(), -1, NULL, 0, NULL, NULL);
@@ -592,22 +632,10 @@ public:
 					goto fail;
                 }
 
-				std::ifstream file(std::filesystem::path(localPath.c_str()), std::ios::binary);
+				m_data = std::make_unique<FileMapping>(localPath.c_str());
 
-				if(file) {
-					// Load the whole file into memory to simplify the Read implementation
-					// We don't expect huge files here
-					std::vector<char> buffer((std::istreambuf_iterator<char>(file)), {});
-					m_data = std::move(buffer);
-					if (file.bad()) {
-						m_data.clear();
-						hr = E_FAIL;
-					} else if (m_data.size() > (std::numeric_limits<ULONG>::max)()) { // Prevent overflow
-						m_data.clear();
-						hr = INET_E_DOWNLOAD_FAILURE;
-					} else {
-						hr = S_OK;
-					}
+				if(m_data->valid()) {
+					hr = S_OK;
 				} else {
 					hr = INET_E_RESOURCE_NOT_FOUND;
 				}
@@ -620,7 +648,7 @@ public:
 fail:
 		if (m_sink) {
 			if (SUCCEEDED(hr)) {
-				const ULONG size = static_cast<ULONG>(m_data.size());
+				const ULONG size = static_cast<ULONG>(m_data->size());
 				m_sink->ReportData(BSCF_FIRSTDATANOTIFICATION, 0, size);
 				m_sink->ReportData(BSCF_LASTDATANOTIFICATION, size, size);
 			}
@@ -634,7 +662,7 @@ fail:
 	STDMETHOD(Abort)(HRESULT, DWORD) { return S_OK; }
 	STDMETHOD(Terminate)(DWORD) { 
 		m_sink.Release();
-		m_data.clear();
+		m_data.reset();
 		m_pos = 0;
 		return S_OK;
 	}
@@ -650,15 +678,15 @@ fail:
 		if (!pv && cb != 0) return E_POINTER;
 		if (cb == 0) return S_OK;
 
-		if (m_pos >= m_data.size())
+		if (m_pos >= m_data->size())
 			return S_FALSE;
 
-		size_t remaining = m_data.size() - m_pos;
+		size_t remaining = m_data->size() - m_pos;
 		ULONG toCopy = static_cast<ULONG>(
 			std::min<size_t>(cb, remaining));
 
 		if (toCopy) {
-			memcpy(pv, m_data.data() + m_pos, toCopy);
+			memcpy(pv, m_data->data() + m_pos, toCopy);
 			m_pos += toCopy;
 		}
 
@@ -783,7 +811,7 @@ fail:
 
 private:
 	CComPtr<IInternetProtocolSink> m_sink;
-	std::vector<char> m_data;
+	std::unique_ptr<FileMapping> m_data;
 	size_t m_pos;
 	volatile LONG m_ref;
 };
