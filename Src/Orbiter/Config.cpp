@@ -247,6 +247,7 @@ CFG_CMDLINEPRM CfgCmdlinePrm_default = {
 	false,              // fast exit (false = return to Launchpad dialog)
 	false,              // open video tab (false = open Scenarios tab)
 	false,              // append to log file (false = overwrite)
+	false,              // disable graphics (false = don't disable)
 	0,                  // FrameLimit (0 = unlimited)
 	0.0,                // fixed time step length (0 = disabled)
 	0.0,                // Max sys time (0 = unlimited)

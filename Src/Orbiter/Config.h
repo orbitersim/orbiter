@@ -285,6 +285,7 @@ struct CFG_CMDLINEPRM {
 	bool   bFastExit;           // Terminate Orbiter at session end?
 	bool   bOpenVideoTab;       // Open Launchpad on video tab?
 	bool   bAppendLog;          // Orbiter log: append instead of overwrite?
+	bool   bDiableGraphics;     // Launch Orbiter in console mode without a graphics client
 	size_t FrameLimit;          // max number of timeframes before session termination (0 = unlimited)
 	double FixedStep;           // fixed time step length (0 = disabled). If != 0, overrides CFG_DEBUGPRM::FixedStep
 	double MaxSysTime;          // Max session runtime (sys time). 0 = unlimited

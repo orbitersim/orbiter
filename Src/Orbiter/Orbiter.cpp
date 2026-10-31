@@ -2701,6 +2701,9 @@ bool Orbiter::DeactivateRoughType ()
 //-----------------------------------------------------------------------------
 bool Orbiter::AttachGraphicsClient (oapi::GraphicsClient *gc)
 {
+	if (pConfig->CfgCmdlinePrm.bDiableGraphics)
+		return false;
+
 	if (gclient) return false; // another client is already attached
 	register_module = gc;
 	gclient = gc;
