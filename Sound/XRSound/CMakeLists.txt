@@ -30,3 +30,4 @@ install(FILES "${ORBITER_BINARY_ROOT_DIR}/Doc/XRSound User Manual.pdf"
 )
 
 add_subdirectory(src)
+add_subdirectory(tests)

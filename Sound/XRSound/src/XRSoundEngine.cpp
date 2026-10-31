@@ -36,6 +36,7 @@ ISoundEngine *XRSoundEngine::s_SoundEngine = nullptr;
 XRSoundConfigFileParser XRSoundEngine::s_globalConfig;
 bool XRSoundEngine::s_bSoundEngineNeedsInitialization = true;
 WavContext *XRSoundEngine::s_pMusicFolderWavContext = nullptr;  // this global, vessel-independent context will exist until the irrKlang engine is terminated
+const XRSoundEngine *XRSoundEngine::s_pMusicVolumeEngine = nullptr;
 std::string XRSoundEngine::s_csVersion;
 
 // Returns the global configuration (the configured defaults; written only by the parser).
@@ -129,6 +130,7 @@ void XRSoundEngine::DestroySoundEngine()
             StopWavImpl(s_pMusicFolderWavContext, nullptr);
             delete s_pMusicFolderWavContext;
             s_pMusicFolderWavContext = nullptr;        // so we will recreate it when the Orbiter relaunches
+            s_pMusicVolumeEngine = nullptr;
         }
 
         // free and reset the engine
@@ -246,6 +248,8 @@ void XRSoundEngine::OnSettingChanged(const XRSound::Setting setting)
 // Destructor
 XRSoundEngine::~XRSoundEngine()
 {
+    if (s_pMusicVolumeEngine == this)
+        s_pMusicVolumeEngine = nullptr;     // so that a new engine at the same address is still seen as a new owner of the music
     delete m_pConfig;
 }
 
@@ -930,10 +934,27 @@ bool XRSoundEngine::IsMusicSlotContext(const WavContext &context)
 }
 
 // Re-applies the volume of the shared music slot using this engine's levels, but only if this engine is the one playing the slot right now (see header).
-void XRSoundEngine::ReapplyMusicVolume()
+void XRSoundEngine::ReapplyMusicVolume(const bool bLogChange)
 {
-    if (s_pMusicFolderWavContext && PlaysMusicSlot())      // do not create the music context just to apply a volume
-        ReapplyVolume(*s_pMusicFolderWavContext);
+    if (!s_pMusicFolderWavContext || !PlaysMusicSlot())     // do not create the music context just to apply a volume
+        return;
+
+    ISound *pISound = GetActiveISound(*s_pMusicFolderWavContext);
+    if (pISound)
+    {
+        const bool bHandover = (s_pMusicVolumeEngine != this);
+        s_pMusicVolumeEngine = this;
+        ApplyFinalVolume(*s_pMusicFolderWavContext, pISound, bLogChange || bHandover);
+    }
+}
+
+// Sets the sound's volume to ComputeFinalVolume(context), logging it (verbose only) when the sound starts, or when it changes and bLogChange is true (see header).
+void XRSoundEngine::ApplyFinalVolume(const WavContext &context, ISound *pISound, const bool bLogChange)
+{
+    const float volume = ComputeFinalVolume(context);
+    const bool bStarting = !pISound->hasVolume();
+    if (pISound->setVolume(volume) && (bStarting || bLogChange))
+        VERBOSE_LOG(this, "XRSoundEngine::ApplyFinalVolume: volume = %.4f for %s", volume, context.ToStr(false).c_str());
 }
 
 // Immediately re-applies the volume to the sound if it is playing or paused.  Never touches pause, loop, or position.
@@ -941,7 +962,7 @@ void XRSoundEngine::ReapplyVolume(WavContext &context)
 {
     ISound *pISound = GetActiveISound(context);
     if (pISound)
-        pISound->setVolume(ComputeFinalVolume(context));
+        ApplyFinalVolume(context, pISound, true);
 }
 
 // Re-applies the volume to every sound in this engine (the global music slot is handled separately by the callers that change it).
@@ -1048,7 +1069,7 @@ bool XRSoundEngine::SetVolumeByType(const XRSound::VolumeType type, const float 
     if (type != XRSound::VolumeType::Music)
         ReapplyAllVolumes();
     if ((type == XRSound::VolumeType::Main) || (type == XRSound::VolumeType::Music))
-        ReapplyMusicVolume();       // only does anything if this engine is the one playing the music right now
+        ReapplyMusicVolume(true);   // only does anything if this engine is the one playing the music right now
 
     VERBOSE_LOG(this, "XRSoundEngine::SetVolumeByType: volume type %d changed from %.3f to %.3f", static_cast<int>(type), oldLevel, level);
     return true;
@@ -1081,7 +1102,7 @@ bool XRSoundEngine::SetSoundVolume(const int soundID, const float volume)
     {
         // The music slot is shared by all vessels, so the item level is this engine's own (it is applied when this engine's vessel has focus and plays the music).
         m_active.musicItemLevel = volume;
-        ReapplyMusicVolume();
+        ReapplyMusicVolume(true);
         VERBOSE_LOG(this, "XRSoundEngine::SetSoundVolume: set this engine's MusicFolder item level to %.3f", volume);
         return true;
     }
@@ -1156,7 +1177,7 @@ bool XRSoundEngine::SetSoundPlaybackType(const int soundID, const XRSound::Playb
         // the music slot is shared by all vessels, so the override is this engine's own (see ActiveValues)
         m_active.bHasMusicPlaybackTypeOverride = true;
         m_active.musicPlaybackTypeOverride = playbackType;
-        ReapplyMusicVolume();
+        ReapplyMusicVolume(true);
         VERBOSE_LOG(this, "XRSoundEngine::SetSoundPlaybackType: set this engine's MusicFolder playback type override to %s", WavContext::PlaybackTypeToStr(playbackType));
         return true;
     }

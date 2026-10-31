@@ -401,7 +401,7 @@ void VesselXRSoundEngine::UpdateSoundState(WavContext &context)
 
             // update the state for this sound
             // Note: ComputeFinalVolume is the mix volume (requested * item level * this vessel's category level * this vessel's main volume) followed by the fades for the effective playback type.
-            pISound->setVolume(ComputeFinalVolume(context));
+            ApplyFinalVolume(context, pISound, false);
             pISound->setIsLooped(context.bLoop);
 
             // While the simulation is paused, never un-pause a sound that already exists: clbkPause pauses each ISound directly and leaves context.bPaused alone, so

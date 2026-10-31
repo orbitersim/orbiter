@@ -107,7 +107,7 @@ void ModuleXRSoundEngine::UpdateSoundState(WavContext &context)
         {
             // update the state for this sound
             // Note: ComputeFinalVolume applies the requested / item / category levels and this module's main volume.
-            pISound->setVolume(ComputeFinalVolume(context));
+            ApplyFinalVolume(context, pISound, false);
             pISound->setIsLooped(context.bLoop);
 
             // While the simulation is paused, never un-pause a sound that already exists: clbkPause pauses each ISound directly and leaves context.bPaused alone, so

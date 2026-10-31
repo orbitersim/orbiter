@@ -315,6 +315,13 @@ public:
     // uses this engine's own playback type override for MusicFolder (see ActiveValues).
     XRSound::PlaybackType EffectivePlaybackTypeFor(const WavContext &context) const;
 
+    // Sets the sound's volume to ComputeFinalVolume(context).  With verbose logging on, logs the volume to XRSound.log when the sound starts, and when it changes
+    // if bLogChange is true, so that a test or a developer can see the exact volume given to the audio library.  ReapplyVolume passes true (a level, item level,
+    // or playback type change), and so does ReapplyMusicVolume when the music changes hands to another vessel; the per-update paths pass false, since the fades
+    // and the engine sounds' thrust-following volumes change at every update.  (A PlayWav call that changes the volume of a sound already playing is applied by
+    // the per-update path, so it is not logged.)
+    void ApplyFinalVolume(const WavContext &context, ISound *pISound, const bool bLogChange);
+
     // If the context has an ISound that has not finished, sets its volume to ComputeFinalVolume(context).  Never changes the paused, loop, or position state of the sound.
     void ReapplyVolume(WavContext &context);
 
@@ -322,8 +329,10 @@ public:
     void ReapplyAllVolumes();
 
     // If this engine is the one currently playing the shared music slot (see PlaysMusicSlot), re-applies the volume of the music slot using THIS engine's levels.
-    // Invoked when this engine changes a level that affects music, and by the music prestep so that the slot always plays at the levels of the vessel that has focus.
-    void ReapplyMusicVolume();
+    // Invoked with bLogChange true when this engine changes a level or playback type that affects music, and with bLogChange false at every update by the music
+    // prestep, so that the slot always plays at the levels of the vessel that has focus (the music's fades can change at every update).  Either way, a volume change
+    // is logged when the music changes hands to this engine (a focus change), so that the handover shows in the log.
+    void ReapplyMusicVolume(const bool bLogChange);
 
     // Returns true if this engine is the one that plays the shared (global) music slot right now: a vessel engine whose vessel has focus.  Module engines never play music.
     virtual bool PlaysMusicSlot() const;
@@ -417,6 +426,7 @@ protected:
 
 private:
     static WavContext *s_pMusicFolderWavContext;  // our special, global MusicFolder sound
+    static const XRSoundEngine *s_pMusicVolumeEngine;   // the engine that applied the music slot's volume last (see ReapplyMusicVolume); only compared, never dereferenced
     static std::string s_csVersion;
     std::string m_lastLogLine;  // last log message written to XRSound.log
     double m_nextDuplicateLogLineSimt;

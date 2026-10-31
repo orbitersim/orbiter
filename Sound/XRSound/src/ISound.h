@@ -44,7 +44,15 @@ public:
 	// - stop() was called and the fade out is finished
 	// - the sound has played to its end
 	bool isFinished() const { return m_state != State::PAUSED && !ma_sound_is_playing(&m_sound); }
-	void setVolume(const float vol) { ma_sound_set_volume(&m_sound, vol); }
+	// Sets the volume given to the audio library; returns true if it differs from the volume set last (always true the first time).
+	bool setVolume(const float vol) {
+		const bool bChanged = (vol != m_volume);
+		m_volume = vol;
+		ma_sound_set_volume(&m_sound, vol);
+		return bChanged;
+	}
+	// Returns true once setVolume has been called
+	bool hasVolume() const { return m_volume >= 0; }
     void setIsLooped(const bool looped);
     void setIsPaused(const bool paused);
     void setPan(const float pan);
@@ -64,6 +72,7 @@ public:
 #endif
 	State m_state;
 	ma_sound m_sound;
+	float m_volume = -1.0f;     // the volume set last by setVolume; -1 until the first call
 };
 
 // Basic sound engine

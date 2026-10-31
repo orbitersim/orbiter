@@ -29,6 +29,7 @@
 namespace
 {
     // Whether a setting is numeric (the double forms of SetSetting / GetSetting) or a string.
+    // A new setting also goes into the settings table of the manual XRSound API test (MakeNumSettings in tests/TestSupport.cpp), with a check of its effect.
     enum class SettingKind { Invalid, Numeric, String };
 
     SettingKind KindOf(const XRSound::Setting setting)

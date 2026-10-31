@@ -714,8 +714,9 @@ void MusicDefaultSoundGroupPreStep::clbkPreStep(const double simt, const double 
         else
         {
             // Song is already playing.  The music slot is shared by all vessels, so make sure it plays at the levels of the vessel that has focus now (this vessel):
-            // when focus moves to another vessel, that vessel's levels take over here without restarting the song.
-            m_pEngine->ReapplyMusicVolume();
+            // when focus moves to another vessel, that vessel's levels take over here without restarting the song.  This logs the volume only when the music changes
+            // hands (see ReapplyMusicVolume), since a fading playback type override can change the music's volume at every update.
+            m_pEngine->ReapplyMusicVolume(false);
         }
     }
 }
