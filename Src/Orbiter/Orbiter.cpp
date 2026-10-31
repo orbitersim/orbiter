@@ -838,7 +838,7 @@ HWND Orbiter::CreateRenderWindow (Config *pCfg, const char *scenario)
 		LOGOUT ("Finished initialising panels");
 	}
 
-	if (pCfg->CfgLogicPrm.bStartPaused) {
+	if (pCfg->CfgCmdlinePrm.bStartPaused || (!pCfg->CfgCmdlinePrm.bStartUnpaused && pCfg->CfgLogicPrm.bStartPaused)) {
 		BeginTimeStep (true);
 		UpdateWorld(); // otherwise it doesn't get initialised during pause
 		EndTimeStep (true);

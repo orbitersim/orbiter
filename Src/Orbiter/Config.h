@@ -283,6 +283,8 @@ struct CFG_WINDOWPOS {
 
 struct CFG_CMDLINEPRM {
 	bool   bFastExit;           // Terminate Orbiter at session end?
+	bool   bStartPaused;        // Force pause at simulation start?
+	bool   bStartUnpaused;      // Force unpause at simulation start?
 	bool   bOpenVideoTab;       // Open Launchpad on video tab?
 	bool   bAppendLog;          // Orbiter log: append instead of overwrite?
 	bool   bDiableGraphics;     // Launch Orbiter in console mode without a graphics client?

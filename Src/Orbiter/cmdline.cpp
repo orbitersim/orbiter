@@ -169,6 +169,8 @@ std::vector<::CommandLine::Key>& orbiter::CommandLine::KeyList() const
 		{ KEY_SCENARIO, "scenario", 'S', true},
 		{ KEY_SCENARIOX, "scenariox", 's', true},
 		{ KEY_FASTEXIT, "fastexit", 'x', false},
+		{ KEY_PAUSED, "paused", 'P', false},
+		{ KEY_UNPAUSED, "unpaused", 'R', false},
 		{ KEY_OPENVIDEO, "openvideotab", 'v', false},
 		{ KEY_NOGRAPHICS, "nographics", 'G', false},
 		{ KEY_CONFIGREADONLY, "cfgreadonly", 'C', false},
@@ -195,6 +197,12 @@ void orbiter::CommandLine::ApplyOption(const Key* key, const std::string& value)
 		break;
 	case KEY_FASTEXIT:
 		cfg.bFastExit = true;
+		break;
+	case KEY_PAUSED:
+		cfg.bStartPaused = true;
+		break;
+	case KEY_UNPAUSED:
+		cfg.bStartUnpaused = true;
 		break;
 	case KEY_OPENVIDEO:
 		cfg.bOpenVideoTab = true;
@@ -227,13 +235,17 @@ void orbiter::CommandLine::ApplyOption(const Key* key, const std::string& value)
 		break;
 	case KEY_MAXSIMTIME:
 		res = sscanf(value.c_str(), "%lf", &f);
-		if (res == 1)
+		if (res == 1) {
 			cfg.MaxSimTime = f;
+			cfg.bStartUnpaused = true;
+		}
 		break;
 	case KEY_FRAMECOUNT:
 		res = sscanf(value.c_str(), "%zu", &s);
-		if (res == 1)
+		if (res == 1) {
 			cfg.FrameLimit = s;
+			cfg.bStartUnpaused = true;
+		}
 		break;
 	case KEY_PLUGIN:
 		cfg.LoadPlugins.push_back(value);
@@ -255,6 +267,8 @@ void orbiter::CommandLine::PrintHelpAndExit() const
 	std::cout << "  --scenario=<scn>, -S <scn>: Launch scenario <scn>\n";
 	std::cout << "  --scenariox=<scn>, -s <scn>: Launch scenario <scn>, exit on close\n";
 	std::cout << "  --fastexit, -x: Exit Orbiter after simulation session\n";
+	std::cout << "  --paused, -P: Start the simulation session paused\n";
+	std::cout << "  --unpaused, -R: Start the simulation session unpaused\n";
 	std::cout << "  --openvideotab, -v: Open Launchpad on video tab\n";
 	std::cout << "  --nographics, -G: Disable graphics\n";
 	std::cout << "  --cfgreadonly, -C: Do not write to Orbiter.cfg on exit\n";

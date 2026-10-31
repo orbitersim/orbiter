@@ -245,6 +245,8 @@ CFG_CAMERAPRM CfgCameraPrm_default = {
 
 CFG_CMDLINEPRM CfgCmdlinePrm_default = {
 	false,              // fast exit (false = return to Launchpad dialog)
+	false,              // force start paused (false = don't force)
+	false,              // force start unpaused (false = don't force)
 	false,              // open video tab (false = open Scenarios tab)
 	false,              // append to log file (false = overwrite)
 	false,              // disable graphics (false = don't disable)
