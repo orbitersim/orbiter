@@ -25,18 +25,6 @@ static TEXCRDRANGE2 fullrange = {0,1,0,1};
 
 int SURF_MAX_PATCHLEVEL2 = 18; // move this somewhere else
 
-
-bool FileExists(const char* path)
-{
-	bool exists;
-	struct _finddata_t fd;
-	intptr_t fh = _findfirst(path, &fd);
-	if (exists = (fh != -1))
-		_findclose(fh);
-	return exists;
-}
-
-
 // =======================================================================
 // Class Tile
 

@@ -277,7 +277,7 @@ void TileManager2<CloudTile>::InitHasIndividualFiles()
 	if (cprm.tileLoadFlags & 0x0001) {
 		char path[MAX_PATH], dummy[MAX_PATH];
 		sprintf_s(path, MAX_PATH, "%s\\Cloud", m_dataRootDir.c_str());
-		hasIndividualFiles[0] = FileExists(path);
+		hasIndividualFiles[0] = VFS::exists(path);
 	}
 }
 

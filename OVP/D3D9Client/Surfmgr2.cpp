@@ -1572,7 +1572,7 @@ void TileManager2<SurfTile>::InitHasIndividualFiles()
 		char path[MAX_PATH], dummy[MAX_PATH];
 		for (int i = 0; i < ARRAYSIZE(name); ++i) {
 			sprintf_s(path, MAX_PATH, "%s\\%s", m_dataRootDir.c_str(), name[i]);
-			hasIndividualFiles[i] = FileExists(path);
+			hasIndividualFiles[i] = VFS::exists(path);
 		}
 	}
 }
@@ -1703,7 +1703,7 @@ bool TileManager2<SurfTile>::HasTileData(int iLng, int iLat, int level, int flag
 		if (flags & gcTileFlags::CACHE) {
 			char path[MAX_PATH];
 			sprintf_s(path, MAX_PATH, "%s\\Surf\\%02d\\%06d\\%06d.dds", m_dataRootDir.c_str(), level + 4, iLat, iLng);
-			bOk = FileExists(path);
+			bOk = VFS::exists(path);
 
 		}
 		if (flags & gcTileFlags::TREE) if (!bOk && ZTreeManager(0)) if (ZTreeManager(0)->Idx(level + 4, iLat, iLng) != ((DWORD)-1)) bOk = true;
@@ -1713,7 +1713,7 @@ bool TileManager2<SurfTile>::HasTileData(int iLng, int iLat, int level, int flag
 		if (flags & gcTileFlags::CACHE) {
 			char path[MAX_PATH];
 			sprintf_s(path, MAX_PATH, "%s\\Mask\\%02d\\%06d\\%06d.dds", m_dataRootDir.c_str(), level + 4, iLat, iLng);
-			bOk = FileExists(path);
+			bOk = VFS::exists(path);
 		}
 		if (flags & gcTileFlags::TREE) if (!bOk && ZTreeManager(1)) if (ZTreeManager(1)->Idx(level + 4, iLat, iLng) != ((DWORD)-1)) bOk = true;
 	}
@@ -1722,7 +1722,7 @@ bool TileManager2<SurfTile>::HasTileData(int iLng, int iLat, int level, int flag
 		if (flags & gcTileFlags::CACHE) {
 			char path[MAX_PATH];
 			sprintf_s(path, MAX_PATH, "%s\\Elev\\%02d\\%06d\\%06d.elv", m_dataRootDir.c_str(), level + 4, iLat, iLng);
-			bOk = FileExists(path);
+			bOk = VFS::exists(path);
 		}
 		if (flags & gcTileFlags::TREE) if (!bOk && ZTreeManager(2)) if (ZTreeManager(2)->Idx(level + 4, iLat, iLng) != ((DWORD)-1)) bOk = true;
 	}
