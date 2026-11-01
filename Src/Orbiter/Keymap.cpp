@@ -247,7 +247,7 @@ bool Keymap::Read (const char *fname)
 	if (!ifs) return false;
 	for (int i = 0; i < LKEY_COUNT; i++) {
 		//func[i] = 0;
-		if (GetItemString (ifs, lkeyspec[i].itemstr, cbuf)) {
+		if (GetItemString (ifs, lkeyspec[i].itemstr, cbuf, sizeof(cbuf))) {
 			if (!ScanStr (cbuf, func[i])) func[i] = 0;
 		}
 	}

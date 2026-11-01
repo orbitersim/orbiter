@@ -173,14 +173,14 @@ bool PlanetarySystem::Read (char *fname, const Config* config, OutputLoadStatusC
 	ifstream ifs (config->ConfigPath(fname));
 	if (!ifs) return false;
 	Clear();
-	if (GetItemString (ifs, "Name", cbuf)) {
+	if (GetItemString (ifs, "Name", cbuf, sizeof(cbuf))) {
 		m_Name = cbuf;
 	}
 
 	// read stars
 	for (;;) {
 		sprintf (label, "Star%zd", stars.size() + 1);
-		if (!GetItemString (ifs, label, cbuf)) break;
+		if (!GetItemString (ifs, label, cbuf, sizeof(cbuf))) break;
 		OutputLoadStatus (cbuf, outputLoadStatus, callbackContext);
 		AddStar (new Star (cbuf)); TRACENEW
 	}
@@ -188,7 +188,7 @@ bool PlanetarySystem::Read (char *fname, const Config* config, OutputLoadStatusC
 	// read planets
 	for (i = 0;; i++) {
 		sprintf (label, "Planet%d", i+1);
-		if (!GetItemString (ifs, label, cbuf)) break;
+		if (!GetItemString (ifs, label, cbuf, sizeof(cbuf))) break;
 		OutputLoadStatus (cbuf, outputLoadStatus, callbackContext);
 		Planet *planet = new Planet (cbuf); TRACENEW
 		AddPlanet (planet, stars[0]);
@@ -198,7 +198,7 @@ bool PlanetarySystem::Read (char *fname, const Config* config, OutputLoadStatusC
 	for (j = 0; j < stars.size(); j++) stars[j]->RelTrueAndBaryState();
 	for (j = 0; j < stars.size(); j++) stars[j]->AbsTrueState();
 
-	if (GetItemString (ifs, "MarkerPath", cbuf)) {
+	if (GetItemString (ifs, "MarkerPath", cbuf, sizeof(cbuf))) {
 		m_labelPath = cbuf;
 		if (m_labelPath.back() != '\\')
 			m_labelPath.push_back('\\');
@@ -215,7 +215,7 @@ bool PlanetarySystem::Read (char *fname, const Config* config, OutputLoadStatusC
 void PlanetarySystem::OutputLoadStatus (const char *bname, OutputLoadStatusCallback outputLoadStatus, void* callbackContext)
 {
 	char cbuf[256];
-	sprintf (cbuf, "%s: %s", m_Name.c_str(), bname);
+	snprintf (cbuf, sizeof(cbuf), "%s: %s", m_Name.c_str(), bname);
 	outputLoadStatus(cbuf, 0, callbackContext);
 }
 
@@ -371,8 +371,8 @@ void PlanetarySystem::ScanMoons (istream &is, CelestialBody *cbody, const char *
 {
 	char cbuf[256], name[256];
 	for (int i = 0;; i++) {
-		sprintf (cbuf, "%s:Moon%d", id, i+1);
-		if (!GetItemString (is, cbuf, name)) return;
+		snprintf (cbuf, sizeof(cbuf), "%s:Moon%d", id, i+1);
+		if (!GetItemString (is, cbuf, name, sizeof(name))) return;
 		Planet *moon = new Planet (name); TRACENEW
 		AddPlanet (moon, cbody);
 		ScanMoons (is, moon, cbuf); // recursion

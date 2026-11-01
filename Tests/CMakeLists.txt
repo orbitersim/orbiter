@@ -70,6 +70,10 @@ add_core_test_file(Collision.CollisionCore
 	${ORBITER_SOURCE_ROOT_DIR}/Src/Orbiter/CollisionCore.cpp
 	${ORBITER_SOURCE_ROOT_DIR}/Src/Orbiter/Vecmat.cpp
 )
+add_core_test_file(Orbiter.Config
+	${ORBITER_SOURCE_ROOT_DIR}/Src/Orbiter/Config.cpp
+	${ORBITER_SOURCE_ROOT_DIR}/Src/Orbiter/Vecmat.cpp
+)
 if(ORBITER_BUILD_XRSOUND)
 	add_core_test_file(XRSound.Config
 		${ORBITER_SOURCE_ROOT_DIR}/Sound/XRSound/src/Utils/ConfigFileParser.cpp

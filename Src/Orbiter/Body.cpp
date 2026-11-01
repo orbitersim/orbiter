@@ -61,7 +61,7 @@ Body::Body(char* fname)
 	filename = cpath;
 
 	char cbuf[256], *_name = 0;
-	if (GetItemString (ifs, "Name", cbuf)) _name = cbuf;
+	if (GetItemString (ifs, "Name", cbuf, sizeof(cbuf))) _name = cbuf;
 	SetName (_name);
 
 	if (!GetItemReal (ifs, "Mass", mass)) mass = 1.0; // desperate default
