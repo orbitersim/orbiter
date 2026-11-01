@@ -144,6 +144,9 @@ namespace VFS
 
 	void InitVFS()
 	{
+		// Always register the protocol since it's always used in void orbiter::ScenarioTab::ScenarioChanged ()
+		RegisterVFSProtocol();
+
 		std::error_code ec;
 		Config *cfg = g_pOrbiter->Cfg();
 		CFG_DIRPRM &CfgDirPrm = cfg->CfgDirPrm;
@@ -205,7 +208,6 @@ namespace VFS
 		}
 
 		if(overlayEnabled) {
-			RegisterVFSProtocol();
 			oapiWriteLogV("VFS: PATH set to %s", getenv("PATH"));
 		}
 		return;
