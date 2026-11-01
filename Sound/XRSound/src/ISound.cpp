@@ -99,7 +99,7 @@ ISound *ISoundEngine::play2D(const char *soundFileName, const bool playLooped, c
     }
     catch (...) {
         std::string message = std::string("XRSound: Error loading sound file: ") + soundFileName;
-        oapiWriteLog(message.data());
+        oapiWriteLogV("%s", message.c_str());   // prevent possible CTD when running against Orbiter 2024
         return nullptr;
     }
 

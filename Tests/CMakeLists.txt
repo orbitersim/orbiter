@@ -74,6 +74,13 @@ add_core_test_file(Orbiter.Config
 	${ORBITER_SOURCE_ROOT_DIR}/Src/Orbiter/Config.cpp
 	${ORBITER_SOURCE_ROOT_DIR}/Src/Orbiter/Vecmat.cpp
 )
+if(ORBITER_BUILD_XRSOUND)
+	add_core_test_file(XRSound.Config
+		${ORBITER_SOURCE_ROOT_DIR}/Sound/XRSound/src/Utils/ConfigFileParser.cpp
+	)
+	target_include_directories(XRSound.Config PRIVATE ${ORBITER_SOURCE_ROOT_DIR}/Sound/XRSound/src/Utils)
+	target_compile_definitions(XRSound.Config PRIVATE _CRT_SECURE_NO_WARNINGS)
+endif()
 
 if (BUILD_ORBITER_SERVER)
 
