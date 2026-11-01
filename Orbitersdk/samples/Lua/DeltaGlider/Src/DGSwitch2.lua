@@ -124,11 +124,11 @@ function DGSwitch2:RedrawVC (hMesh, surf)
 
 		oapi.get_meshgroup (hMesh, self.mgrp, grs)
 		for i=1, nvtx do
-			local p = vec.sub(vtx[i].pos, self.rf)
-			local pt = mat.mul(R,p)
-			vtx[i].pos = vec.add(pt, self.rf)
+			local p = vtx[i].pos - self.rf
+			local pt = R * p
+			vtx[i].pos = pt + self.rf
 			p = vtx[i].normal
-			pt = mat.mul(R,p)
+			pt = R * p
 			vtx[i].normal = pt
 		end
 		local ges={}

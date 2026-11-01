@@ -85,7 +85,7 @@ function CameraMFD:SelectVessel(hVes, type)
 
 		if self.hAttach then
 			pos, dir, rot = self.hVessel:get_attachmentparams(self.hAttach)
-			pos = vec.add(pos, vec.mul(dir, self.offset))
+			pos = pos + dir * self.offset
 		else
 			return
 		end
@@ -101,7 +101,7 @@ function CameraMFD:SelectVessel(hVes, type)
 
 		if self.hDock then
 			pos, dir, rot = self.hVessel:get_dockparams(self.hDock)
-			pos = vec.add(pos, vec.mul(dir, self.offset))
+			pos = pos + dir * self.offset
 		else
 			return
 		end

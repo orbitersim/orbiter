@@ -82,7 +82,8 @@ void Interpreter::lua_pushtouchdownvtx (lua_State *L, const TOUCHDOWNVTX &tdvtx)
 TOUCHDOWNVTX Interpreter::lua_totouchdownvtx (lua_State *L, int idx)
 {
 	TOUCHDOWNVTX tdvtx;
-	lua_getfield(L, idx, "pos"      ); tdvtx.pos       = lua_tovector(L, -1); lua_pop(L, 1);
+	VECTOR3 pos;
+	lua_getfield(L, idx, "pos"      ); tdvtx.pos       = *lua_tovector(L, -1, &pos); lua_pop(L, 1);
 	lua_getfield(L, idx, "stiffness"); tdvtx.stiffness = lua_tonumber(L, -1); lua_pop(L, 1);
 	lua_getfield(L, idx, "damping"  ); tdvtx.damping   = lua_tonumber(L, -1); lua_pop(L, 1);
 	lua_getfield(L, idx, "mu"       ); tdvtx.mu        = lua_tonumber(L, -1); lua_pop(L, 1);
@@ -881,7 +882,6 @@ int Interpreter::v_get_name (lua_State *L)
 	AssertMtdMinPrmCount(L, 1, funcname);
 	VESSEL *v = lua_tovessel_safe(L, 1, funcname);
 	lua_pushstring (L, v->GetName());
-	GetInterpreter(L)->term_echo(L);
 	return 1;
 }
 
@@ -899,7 +899,6 @@ int Interpreter::v_get_classname (lua_State *L)
 	AssertMtdMinPrmCount(L, 1, funcname);
 	VESSEL *v = lua_tovessel_safe(L, 1, funcname);
 	lua_pushstring (L, v->GetClassName());
-	GetInterpreter(L)->term_echo(L);
 	return 1;
 }
 
@@ -1073,7 +1072,6 @@ int Interpreter::v_get_size (lua_State *L)
 	AssertMtdMinPrmCount(L, 1, funcname);
 	VESSEL *v = lua_tovessel_safe(L, 1, funcname);
 	lua_pushnumber (L, v->GetSize());
-	GetInterpreter(L)->term_echo(L);
 	return 1;
 }
 
@@ -1121,7 +1119,6 @@ int Interpreter::v_get_emptymass (lua_State *L)
 	AssertMtdMinPrmCount(L, 1, funcname);
 	VESSEL *v = lua_tovessel_safe(L, 1, funcname);
 	lua_pushnumber (L, v->GetEmptyMass());
-	GetInterpreter(L)->term_echo(L);
 	return 1;
 }
 
@@ -1206,8 +1203,9 @@ int Interpreter::v_set_pmi (lua_State *L)
 	static const char *funcname = "set_pmi";
 	AssertMtdMinPrmCount(L, 2, funcname);
 	VESSEL *v = lua_tovessel_safe(L, 1, funcname);
-	VECTOR3 pmi = luamtd_tovector_safe(L, 2, funcname);
-	v->SetPMI (pmi);
+	VECTOR3 tpmi;
+	VECTOR3 *pmi = luamtd_tovector_safe(L, 2, funcname, &tpmi);
+	v->SetPMI (*pmi);
 	return 0;
 }
 
@@ -1247,8 +1245,9 @@ int Interpreter::v_set_crosssections (lua_State *L)
 	static const char *funcname = "set_crosssections";
 	AssertMtdMinPrmCount(L, 2, funcname);
 	VESSEL *v = lua_tovessel_safe(L, 1, funcname);
-	VECTOR3 cs = luamtd_tovector_safe(L, 2, funcname);
-	v->SetCrossSections (cs);
+	VECTOR3 tcs;
+	VECTOR3 *cs = luamtd_tovector_safe(L, 2, funcname, &tcs);
+	v->SetCrossSections (*cs);
 	return 0;
 }
 
@@ -1426,10 +1425,11 @@ int Interpreter::v_set_touchdownpoints (lua_State *L)
 	else // old API
 	{
 		//AssertMtdMinPrmCount(L, 4, funcname);
-		VECTOR3 pt1 = luamtd_tovector_safe(L, 2, funcname);
-		VECTOR3 pt2 = luamtd_tovector_safe(L, 3, funcname);
-		VECTOR3 pt3 = luamtd_tovector_safe(L, 4, funcname);
-		v->SetTouchdownPoints(pt1, pt2, pt3);
+		VECTOR3 tpt1, tpt2, tpt3;
+		VECTOR3 *pt1 = luamtd_tovector_safe(L, 2, funcname, &tpt1);
+		VECTOR3 *pt2 = luamtd_tovector_safe(L, 3, funcname, &tpt2);
+		VECTOR3 *pt3 = luamtd_tovector_safe(L, 4, funcname, &tpt3);
+		v->SetTouchdownPoints(*pt1, *pt2, *pt3);
 	}
 	return 0;
 }
@@ -1546,8 +1546,9 @@ int Interpreter::v_set_albedoRGB (lua_State *L)
 	static const char *funcname = "set_albedoRGB";
 	AssertMtdMinPrmCount(L, 2, funcname);
 	VESSEL *v = lua_tovessel_safe(L, 1, funcname);
-	VECTOR3 albedo = luamtd_tovector_safe(L, 2, funcname);
-	v->SetAlbedoRGB(albedo);
+	VECTOR3 talbedo;
+	VECTOR3 *albedo = luamtd_tovector_safe(L, 2, funcname, &talbedo);
+	v->SetAlbedoRGB(*albedo);
 	return 0;
 }
 
@@ -1679,7 +1680,6 @@ int Interpreter::v_get_mass (lua_State *L)
 	AssertMtdMinPrmCount(L, 1, funcname);
 	VESSEL *v = lua_tovessel_safe(L, 1, funcname);
 	lua_pushnumber (L, v->GetMass());
-	GetInterpreter(L)->term_echo(L);
 	return 1;
 }
 
@@ -1790,9 +1790,9 @@ local frame to the global frame and vice versa. Example:
 	vglob = v:get_globalpos
 	vR = v:get_rotationmatrix()
 	-- a point in the local vessel frame
-	ploc = {x=1,y=2,z=3}
+	ploc = _V(1,2,3)
 	-- the point transformed to the global frame
-	pglob = vec.add(vglob, mat.mul(vR, ploc))
+	pglob = vglob + vR * ploc
 
 The global frame is defined by the ecliptic and equinox of J2000.0, with
 origin at the solar system's barycentre.
@@ -1934,17 +1934,17 @@ int Interpreter::vsset(lua_State* L)
 	VESSELSTATUS* vs = (VESSELSTATUS*)lua_touserdata(L, 1);
 	// Extract known values from table
 	lua_getfield(L, 2, "rpos");
-
-	if (lua_isvector(L, -1)) vs->rpos = lua_tovector(L, -1);
+	VECTOR3 tmp;
+	if (lua_isvector(L, -1)) vs->rpos = *lua_tovector(L, -1, &tmp);
 	lua_pop(L, 1);
 	lua_getfield(L, 2, "rvel");
-	if (lua_isvector(L, -1)) vs->rvel = lua_tovector(L, -1);
+	if (lua_isvector(L, -1)) vs->rvel = *lua_tovector(L, -1, &tmp);
 	lua_pop(L, 1);
 	lua_getfield(L, 2, "vrot");
-	if (lua_isvector(L, -1)) vs->vrot = lua_tovector(L, -1);
+	if (lua_isvector(L, -1)) vs->vrot = *lua_tovector(L, -1, &tmp);
 	lua_pop(L, 1);
 	lua_getfield(L, 2, "arot");
-	if (lua_isvector(L, -1)) vs->arot = lua_tovector(L, -1);
+	if (lua_isvector(L, -1)) vs->arot = *lua_tovector(L, -1, &tmp);
 	lua_pop(L, 1);
 	lua_getfield(L, 2, "fuel");
 	if (lua_isnumber(L, -1)) vs->fuel = lua_tonumber(L, -1);
@@ -1968,7 +1968,7 @@ int Interpreter::vsset(lua_State* L)
 	if (lua_isnumber(L, -1)) vs->status = lua_tointeger(L, -1);
 	lua_pop(L, 1);
 	lua_getfield(L, 2, "vdata");
-	if (lua_isvector(L, -1)) vs->vdata[0] = lua_tovector(L, -1);
+	if (lua_isvector(L, -1)) vs->vdata[0] = *lua_tovector(L, -1, &tmp);
 	lua_pop(L, 1);
 	lua_getfield(L, 2, "fdata");
 	if (lua_isnumber(L, -1)) vs->fdata[0] = lua_tonumber(L, -1);
@@ -1984,7 +1984,7 @@ int Interpreter::vs2set(lua_State* L)
 	static const char* funcname = "vs2set";
 	AssertMtdMinPrmCount(L, 2, funcname);
 	VESSELSTATUS2* vs = (VESSELSTATUS2*)lua_touserdata(L, 1);
-
+	VECTOR3 tmp;
 	// Extract known values from table
 	lua_getfield(L, 2, "flags");
 	if (lua_isnumber(L, -1)) vs->flag = lua_tointeger(L, -1);
@@ -2005,16 +2005,16 @@ int Interpreter::vs2set(lua_State* L)
 	if (lua_isnumber(L, -1)) vs->surf_hdg = lua_tonumber(L, -1);
 	lua_pop(L, 1);
 	lua_getfield(L, 2, "rpos");
-	if (lua_isvector(L, -1)) vs->rpos = lua_tovector(L, -1);
+	if (lua_isvector(L, -1)) vs->rpos = *lua_tovector(L, -1, &tmp);
 	lua_pop(L, 1);
 	lua_getfield(L, 2, "rvel");
-	if (lua_isvector(L, -1)) vs->rvel = lua_tovector(L, -1);
+	if (lua_isvector(L, -1)) vs->rvel = *lua_tovector(L, -1, &tmp);
 	lua_pop(L, 1);
 	lua_getfield(L, 2, "vrot");
-	if (lua_isvector(L, -1)) vs->vrot = lua_tovector(L, -1);
+	if (lua_isvector(L, -1)) vs->vrot = *lua_tovector(L, -1, &tmp);
 	lua_pop(L, 1);
 	lua_getfield(L, 2, "arot");
-	if (lua_isvector(L, -1)) vs->arot = lua_tovector(L, -1);
+	if (lua_isvector(L, -1)) vs->arot = *lua_tovector(L, -1, &tmp);
 	lua_pop(L, 1);
 	lua_getfield(L, 2, "rbody");
 	if (lua_islightuserdata(L, -1)) vs->rbody = lua_toObject(L, -1);
@@ -2128,17 +2128,18 @@ int Interpreter::v_defset_status (lua_State *L)
 		v->GetStatus(status);
 
 		// Extract known values from table
+		VECTOR3 tmp;
 		lua_getfield(L, 2, "rpos");
-		if (lua_isvector(L, -1)) status.rpos = lua_tovector(L, -1);
+		if (lua_isvector(L, -1)) status.rpos = *lua_tovector(L, -1, &tmp);
 		lua_pop(L, 1);
 		lua_getfield(L, 2, "rvel");
-		if (lua_isvector(L, -1)) status.rvel = lua_tovector(L, -1);
+		if (lua_isvector(L, -1)) status.rvel = *lua_tovector(L, -1, &tmp);
 		lua_pop(L, 1);
 		lua_getfield(L, 2, "vrot");
-		if (lua_isvector(L, -1)) status.vrot = lua_tovector(L, -1);
+		if (lua_isvector(L, -1)) status.vrot = *lua_tovector(L, -1, &tmp);
 		lua_pop(L, 1);
 		lua_getfield(L, 2, "arot");
-		if (lua_isvector(L, -1)) status.arot = lua_tovector(L, -1);
+		if (lua_isvector(L, -1)) status.arot = *lua_tovector(L, -1, &tmp);
 		lua_pop(L, 1);
 		lua_getfield(L, 2, "fuel");
 		if (lua_isnumber(L, -1)) status.fuel = lua_tonumber(L, -1);
@@ -2162,7 +2163,7 @@ int Interpreter::v_defset_status (lua_State *L)
 		if (lua_isnumber(L, -1)) status.status = lua_tointeger(L, -1);
 		lua_pop(L, 1);
 		lua_getfield(L, 2, "vdata");
-		if (lua_isvector(L, -1)) status.vdata[0] = lua_tovector(L, -1);
+		if (lua_isvector(L, -1)) status.vdata[0] = *lua_tovector(L, -1, &tmp);
 		lua_pop(L, 1);
 		lua_getfield(L, 2, "fdata");
 		if (lua_isnumber(L, -1)) status.fdata[0] = lua_tonumber(L, -1);
@@ -2181,6 +2182,7 @@ int Interpreter::v_defset_status (lua_State *L)
 		v->GetStatusEx(&status);
 
 		// Extract known values from table
+		VECTOR3 tmp;
 		lua_getfield(L, 2, "flags");
 		if (lua_isnumber(L, -1)) status.flag = lua_tointeger(L, -1);
 		lua_pop(L, 1);
@@ -2200,16 +2202,16 @@ int Interpreter::v_defset_status (lua_State *L)
 		if (lua_isnumber(L, -1)) status.surf_hdg = lua_tonumber(L, -1);
 		lua_pop(L, 1);
 		lua_getfield(L, 2, "rpos");
-		if (lua_isvector(L, -1)) status.rpos = lua_tovector(L, -1);
+		if (lua_isvector(L, -1)) status.rpos = *lua_tovector(L, -1, &tmp);
 		lua_pop(L, 1);
 		lua_getfield(L, 2, "rvel");
-		if (lua_isvector(L, -1)) status.rvel = lua_tovector(L, -1);
+		if (lua_isvector(L, -1)) status.rvel = *lua_tovector(L, -1, &tmp);
 		lua_pop(L, 1);
 		lua_getfield(L, 2, "vrot");
-		if (lua_isvector(L, -1)) status.vrot = lua_tovector(L, -1);
+		if (lua_isvector(L, -1)) status.vrot = *lua_tovector(L, -1, &tmp);
 		lua_pop(L, 1);
 		lua_getfield(L, 2, "arot");
-		if (lua_isvector(L, -1)) status.arot = lua_tovector(L, -1);
+		if (lua_isvector(L, -1)) status.arot = *lua_tovector(L, -1, &tmp);
 		lua_pop(L, 1);
 		lua_getfield(L, 2, "rbody");
 		if (lua_islightuserdata(L, -1)) status.rbody = lua_toObject(L, -1);
@@ -2342,8 +2344,9 @@ int Interpreter::v_set_angvel (lua_State *L)
 	static const char *funcname = "set_angvel";
 	AssertMtdMinPrmCount(L, 2, funcname);
 	VESSEL *v = lua_tovessel_safe(L, 1, funcname);
-	VECTOR3 av = luamtd_tovector_safe(L, 2, funcname);
-	v->SetAngularVel (av);
+	VECTOR3 tav;
+	VECTOR3 *av = luamtd_tovector_safe(L, 2, funcname, &tav);
+	v->SetAngularVel (*av);
 	return 0;
 }
 
@@ -2498,8 +2501,9 @@ int Interpreter::v_set_globalorientation (lua_State *L)
 	static const char *funcname = "set_globalorientation";
 	AssertMtdMinPrmCount(L, 2, funcname);
 	VESSEL *v = lua_tovessel_safe(L, 1, funcname);
-	VECTOR3 arot = luamtd_tovector_safe(L, 2, funcname);
-	v->SetGlobalOrientation(arot);
+	VECTOR3 tarot;
+	VECTOR3 *arot = luamtd_tovector_safe(L, 2, funcname, &tarot);
+	v->SetGlobalOrientation(*arot);
 	return 0;
 }
 
@@ -3097,7 +3101,6 @@ int Interpreter::v_get_altitude (lua_State *L)
 			mode = ALTMODE_MEANRAD;
 	}
 	lua_pushnumber (L, v->GetAltitude(mode));
-	GetInterpreter(L)->term_echo(L);
 	return 1;
 }
 
@@ -3119,7 +3122,6 @@ int Interpreter::v_get_pitch (lua_State *L)
 	AssertMtdMinPrmCount(L, 1, funcname);
 	VESSEL *v = lua_tovessel_safe(L, 1, funcname);
 	lua_pushnumber (L, v->GetPitch());
-	GetInterpreter(L)->term_echo(L);
 	return 1;
 }
 
@@ -3142,7 +3144,6 @@ int Interpreter::v_get_bank (lua_State *L)
 	AssertMtdMinPrmCount(L, 1, funcname);
 	VESSEL *v = lua_tovessel_safe(L, 1, funcname);
 	lua_pushnumber (L, v->GetBank());
-	GetInterpreter(L)->term_echo(L);
 	return 1;
 }
 
@@ -3165,7 +3166,6 @@ int Interpreter::v_get_yaw (lua_State *L)
 	AssertMtdMinPrmCount(L, 1, funcname);
 	VESSEL *v = lua_tovessel_safe(L, 1, funcname);
 	lua_pushnumber (L, v->GetYaw());
-	GetInterpreter(L)->term_echo(L);
 	return 1;
 }
 
@@ -3362,7 +3362,6 @@ int Interpreter::v_get_groundspeed (lua_State *L)
 	AssertMtdMinPrmCount(L, 1, funcname);
 	VESSEL *v = lua_tovessel_safe(L, 1, funcname);
 	lua_pushnumber (L, v->GetGroundspeed ());
-//	GetInterpreter(L)->term_echo(L);
 	return 1;
 }
 
@@ -3414,7 +3413,6 @@ int Interpreter::v_get_airspeed (lua_State *L)
 	AssertMtdMinPrmCount(L, 1, funcname);
 	VESSEL *v = lua_tovessel_safe(L, 1, funcname);
 	lua_pushnumber (L, v->GetAirspeed ());
-	GetInterpreter(L)->term_echo(L);
 	return 1;
 }
 
@@ -3492,7 +3490,6 @@ int Interpreter::v_get_aoa (lua_State *L)
 	AssertMtdMinPrmCount(L, 1, funcname);
 	VESSEL *v = lua_tovessel_safe(L, 1, funcname);
 	lua_pushnumber (L, v->GetAOA());
-	GetInterpreter(L)->term_echo(L);
 	return 1;
 }
 
@@ -3514,7 +3511,6 @@ int Interpreter::v_get_slipangle (lua_State *L)
 	AssertMtdMinPrmCount(L, 1, funcname);
 	VESSEL *v = lua_tovessel_safe(L, 1, funcname);
 	lua_pushnumber (L, v->GetSlipAngle());
-	GetInterpreter(L)->term_echo(L);
 	return 1;
 }
 
@@ -3611,7 +3607,8 @@ int Interpreter::v_create_airfoil (lua_State *L)
 	AssertMtdMinPrmCount(L, 7, funcname);
 	VESSEL *v = lua_tovessel_safe(L, 1, funcname);
 	AIRFOIL_ORIENTATION ao = (AIRFOIL_ORIENTATION)(int)(luamtd_tointeger_safe(L, 2, funcname));
-	VECTOR3 ref = luamtd_tovector_safe(L, 3, funcname);
+	VECTOR3 tref;
+	VECTOR3 *ref = luamtd_tovector_safe(L, 3, funcname, &tref);
 	int funcref;
 	if (lua_isstring(L, 4)) {
 		const char* fname = luamtd_tostring_safe(L, 4, funcname);
@@ -3630,7 +3627,7 @@ int Interpreter::v_create_airfoil (lua_State *L)
 	ac->L = L;
 	ac->funcref = funcref;
 
-	AIRFOILHANDLE ha = v->CreateAirfoil3 (ao, ref, AirfoilFunc, ac, c, S, A);
+	AIRFOILHANDLE ha = v->CreateAirfoil3 (ao, *ref, AirfoilFunc, ac, c, S, A);
 	lua_pushlightuserdata (L, ha);
 	return 1;
 }
@@ -3669,7 +3666,8 @@ int Interpreter::v_edit_airfoil (lua_State *L)
 
 	AIRFOILHANDLE hAirfoil = (AIRFOILHANDLE)luamtd_tolightuserdata_safe(L, 2, funcname);
 	DWORD flag = luamtd_tointeger_safe(L, 3, funcname);
-	VECTOR3 ref = luamtd_tovector_safe(L, 4, funcname);
+	VECTOR3 tref;
+	VECTOR3 *ref = luamtd_tovector_safe(L, 4, funcname, &tref);
 	double c = luamtd_tonumber_safe(L, 6, funcname),
 	       S = luamtd_tonumber_safe(L, 7, funcname),
 	       A = luamtd_tonumber_safe(L, 8, funcname);
@@ -3698,7 +3696,7 @@ int Interpreter::v_edit_airfoil (lua_State *L)
 		}
 	}
 
-	v->EditAirfoil(hAirfoil, flag, ref, (AirfoilCoeffFunc)AirfoilFunc, c, S, A);
+	v->EditAirfoil(hAirfoil, flag, *ref, (AirfoilCoeffFunc)AirfoilFunc, c, S, A);
 	return 0;
 }
 
@@ -3785,7 +3783,8 @@ int Interpreter::v_create_controlsurface (lua_State *L)
 	AIRCTRL_TYPE type = (AIRCTRL_TYPE)luamtd_tointeger_safe(L, 2, funcname);
 	double area = luamtd_tonumber_safe(L, 3, funcname);
 	double dCl = luamtd_tonumber_safe(L, 4, funcname);
-	VECTOR3 ref = luamtd_tovector_safe(L, 5, funcname);
+	VECTOR3 tref;
+	VECTOR3 *ref = luamtd_tovector_safe(L, 5, funcname, &tref);
 	int axis = AIRCTRL_AXIS_AUTO;
 	double delay = 1.0;
 	UINT anim = (UINT)-1;
@@ -3798,7 +3797,7 @@ int Interpreter::v_create_controlsurface (lua_State *L)
 			}
 		}
 	}
-	CTRLSURFHANDLE hctrl = v->CreateControlSurface3 (type, area, dCl, ref, axis, delay, anim);
+	CTRLSURFHANDLE hctrl = v->CreateControlSurface3 (type, area, dCl, *ref, axis, delay, anim);
 	lua_pushlightuserdata (L, hctrl);
 	return 1;
 }
@@ -3996,9 +3995,6 @@ in -z (backward) direction, 'x' is the coefficient in lateral (left/right) direc
 and 'y' is the coefficient in vertical (up/down) direction. Drag coefficients in lateral
 and vertical direction are assumed symmetric.
 
-The 'x', 'y' and 'z' fields are identical to a standard vector variable, and can thus
-be assigned via vector operations, but the 'zn' field must be added manually.
-
 @function set_cw
 @tparam table cw resistance coefficients in principal directions
 @see vessel:get_cw
@@ -4008,10 +4004,16 @@ int Interpreter::v_set_cw (lua_State *L)
 	static const char *funcname = "set_cw";
 	AssertMtdMinPrmCount(L, 2, funcname);
 	VESSEL *v = lua_tovessel_safe(L, 1, funcname);
-	VECTOR3 cw = lua_tovector(L, 2);
+	lua_getfield(L, 2, "x");
+	lua_getfield(L, 2, "y");
+	lua_getfield(L, 2, "z");
 	lua_getfield(L, 2, "zn");
 	double zn = lua_tonumber(L,-1);
-	v->SetCW (cw.z, zn, cw.x, cw.y);
+	double z = lua_tonumber(L,-2);
+	double y = lua_tonumber(L,-3);
+	double x = lua_tonumber(L,-4);
+	lua_pop(L, 4);
+	v->SetCW (z, zn, x, y);
 	return 0;
 }
 
@@ -4171,8 +4173,9 @@ int Interpreter::v_set_rotdrag (lua_State *L)
 	static const char *funcname = "set_rotdrag";
 	AssertMtdMinPrmCount(L, 2, funcname);
 	VESSEL *v = lua_tovessel_safe(L, 1, funcname);
-	VECTOR3 rd = luamtd_tovector_safe(L, 2, funcname);
-	v->SetRotDrag (rd);
+	VECTOR3 trd;
+	VECTOR3 *rd = luamtd_tovector_safe(L, 2, funcname, &trd);
+	v->SetRotDrag (*rd);
 	return 0;
 }
 
@@ -4560,9 +4563,10 @@ int Interpreter::v_add_force (lua_State *L)
 	static const char *funcname = "add_force";
 	AssertMtdMinPrmCount(L, 3, funcname);
 	VESSEL *v = lua_tovessel_safe(L, 1, funcname);
-	VECTOR3 F = luamtd_tovector_safe(L, 2, funcname),
-	        r = luamtd_tovector_safe(L, 3, funcname);
-	v->AddForce(F, r);
+	VECTOR3 tF, tr;
+	VECTOR3 *F = luamtd_tovector_safe(L, 2, funcname, &tF);
+	VECTOR3 *r = luamtd_tovector_safe(L, 3, funcname, &tr);
+	v->AddForce(*F, *r);
 	return 0;
 }
 
@@ -4596,11 +4600,12 @@ int Interpreter::v_create_variabledragelement(lua_State* L)
 	AssertMtdMinPrmCount(L, 3, funcname);
 	VESSEL* v = lua_tovessel_safe(L, 1, funcname);
 	double factor = lua_tonumber(L, 2);
-	VECTOR3 ref = lua_tovector(L, 3);
+	VECTOR3 tref;
+	VECTOR3 *ref = lua_tovector(L, 3, &tref);
 	lua_pushnumberref(L);
 	double* ptr = (double*)lua_touserdata(L, -1);
 	*ptr = 0.0;
-	v->CreateVariableDragElement((const double *)ptr, factor, ref);
+	v->CreateVariableDragElement((const double *)ptr, factor, *ref);
 	return 1;
 }
 
@@ -5024,8 +5029,9 @@ int Interpreter::v_create_thruster (lua_State *L)
 	VESSEL *v = lua_tovessel_safe(L, 1, funcname);
 	AssertMtdPrmType(L, 2, PRMTP_TABLE, funcname);
 
-	VECTOR3 pos = luamtd_field_tovector_safe(L, 2, "pos", funcname);
-	VECTOR3 dir = luamtd_field_tovector_safe(L, 2, "dir", funcname);
+	VECTOR3 tpos, tdir;
+	VECTOR3 *pos = luamtd_field_tovector_safe(L, 2, "pos", funcname, &tpos);
+	VECTOR3 *dir = luamtd_field_tovector_safe(L, 2, "dir", funcname, &tdir);
 	double maxth0 = lua_field_tonumber_safe(L, 2, "maxth0", funcname);
 
 	PROPELLANT_HANDLE hp = NULL;
@@ -5048,7 +5054,7 @@ int Interpreter::v_create_thruster (lua_State *L)
 	if (lua_isnumber(L,-1)) pr = (double)lua_tonumber(L,-1);
 	lua_pop(L,1);
 
-	THRUSTER_HANDLE th = v->CreateThruster (pos, dir, maxth0, hp, isp0, ispr, pr);
+	THRUSTER_HANDLE th = v->CreateThruster (*pos, *dir, maxth0, hp, isp0, ispr, pr);
 	lua_pushlightuserdata (L, th);
 	return 1;
 }
@@ -5234,8 +5240,9 @@ int Interpreter::v_set_thrusterpos (lua_State *L)
 	AssertMtdMinPrmCount(L, 3, funcname);
 	VESSEL *v = lua_tovessel_safe(L, 1, funcname);
 	THRUSTER_HANDLE ht = (THRUSTER_HANDLE)luamtd_tolightuserdata_safe(L, 2, funcname);
-	VECTOR3 pos = luamtd_tovector_safe(L, 3, funcname);
-	v->SetThrusterRef (ht, pos);
+	VECTOR3 tpos;
+	VECTOR3 *pos = luamtd_tovector_safe(L, 3, funcname, &tpos);
+	v->SetThrusterRef (ht, *pos);
 	return 0;
 }
 
@@ -5276,8 +5283,9 @@ int Interpreter::v_set_thrusterdir (lua_State *L)
 	AssertMtdMinPrmCount(L, 3, funcname);
 	VESSEL *v = lua_tovessel_safe(L, 1, funcname);
 	THRUSTER_HANDLE ht = (THRUSTER_HANDLE)luamtd_tolightuserdata_safe(L, 2, funcname);
-	VECTOR3 dir = luamtd_tovector_safe(L, 3, funcname);
-	v->SetThrusterDir (ht, dir);
+	VECTOR3 tdir;
+	VECTOR3 *dir = luamtd_tovector_safe(L, 3, funcname, &tdir);
+	v->SetThrusterDir (ht, *dir);
 	return 0;
 }
 
@@ -6099,10 +6107,11 @@ int Interpreter::v_create_dock (lua_State *L)
 	static const char *funcname = "create_dock";
 	AssertMtdMinPrmCount(L, 4, funcname);
 	VESSEL *v = lua_tovessel_safe(L, 1, funcname);
-	VECTOR3 pos = luamtd_tovector_safe(L, 2, funcname);
-	VECTOR3 dir = luamtd_tovector_safe(L, 3, funcname);
-	VECTOR3 rot = luamtd_tovector_safe(L, 4, funcname);
-	lua_pushlightuserdata (L, v->CreateDock (pos, dir, rot));
+	VECTOR3 tpos, tdir, trot;
+	VECTOR3 *pos = luamtd_tovector_safe(L, 2, funcname, &tpos);
+	VECTOR3 *dir = luamtd_tovector_safe(L, 3, funcname, &tdir);
+	VECTOR3 *rot = luamtd_tovector_safe(L, 4, funcname, &trot);
+	lua_pushlightuserdata (L, v->CreateDock (*pos, *dir, *rot));
 	return 1;
 }
 
@@ -6176,13 +6185,14 @@ int Interpreter::v_set_dockparams (lua_State *L)
 		hDock = (DOCKHANDLE)lua_touserdata(L,2);
 		idx++;
 	}
-	VECTOR3 pos = luamtd_tovector_safe(L, idx++, funcname);
-	VECTOR3 dir = luamtd_tovector_safe(L, idx++, funcname);
-	VECTOR3 rot = luamtd_tovector_safe(L, idx++, funcname);
+	VECTOR3 tpos, tdir, trot;
+	VECTOR3 *pos = luamtd_tovector_safe(L, idx++, funcname, &tpos);
+	VECTOR3 *dir = luamtd_tovector_safe(L, idx++, funcname, &tdir);
+	VECTOR3 *rot = luamtd_tovector_safe(L, idx++, funcname, &trot);
 	if (hDock)
-		v->SetDockParams(hDock,pos,dir,rot);
+		v->SetDockParams(hDock,*pos,*dir,*rot);
 	else
-		v->SetDockParams(pos,dir,rot);
+		v->SetDockParams(*pos,*dir,*rot);
 	return 0;
 }
 
@@ -6498,11 +6508,12 @@ int Interpreter::v_move_dock(lua_State* L)
 	VESSEL *v = lua_tovessel_safe(L, 1, funcname);
 	DOCKHANDLE hDock = (DOCKHANDLE)luamtd_tolightuserdata_safe(L, 2, funcname);
 
-	VECTOR3 pos = luamtd_tovector_safe(L, 3, funcname);
-	VECTOR3 dir = luamtd_tovector_safe(L, 4, funcname);
-	VECTOR3 rot = luamtd_tovector_safe(L, 5, funcname);
+	VECTOR3 tpos, tdir, trot;
+	VECTOR3 *pos = luamtd_tovector_safe(L, 3, funcname, &tpos);
+	VECTOR3 *dir = luamtd_tovector_safe(L, 4, funcname, &tdir);
+	VECTOR3 *rot = luamtd_tovector_safe(L, 5, funcname, &trot);
 
-	v->MoveDock(hDock, pos, dir, rot);
+	v->MoveDock(hDock, *pos, *dir, *rot);
 	return 0;
 }
 
@@ -6549,15 +6560,16 @@ int Interpreter::v_create_attachment (lua_State *L)
 	AssertMtdMinPrmCount(L, 6, funcname);
 	VESSEL *v = lua_tovessel_safe(L, 1, funcname);
 	bool toparent = luamtd_toboolean_safe(L, 2, funcname);
-	VECTOR3 pos = luamtd_tovector_safe(L, 3, funcname);
-	VECTOR3 dir = luamtd_tovector_safe(L, 4, funcname);
-	VECTOR3 rot = luamtd_tovector_safe(L, 5, funcname);
+	VECTOR3 tpos, tdir, trot;
+	VECTOR3 *pos = luamtd_tovector_safe(L, 3, funcname, &tpos);
+	VECTOR3 *dir = luamtd_tovector_safe(L, 4, funcname, &tdir);
+	VECTOR3 *rot = luamtd_tovector_safe(L, 5, funcname, &trot);
 	const char *id = lua_tostring_safe(L, 6, funcname);
 	bool loose = false;
 	if (lua_gettop(L) >= 7) {
 		loose = luamtd_toboolean_safe(L, 7, funcname);
 	}
-	lua_pushlightuserdata (L, v->CreateAttachment (toparent, pos, dir, rot, id, loose));
+	lua_pushlightuserdata (L, v->CreateAttachment (toparent, *pos, *dir, *rot, id, loose));
 	return 1;
 }
 
@@ -6627,10 +6639,11 @@ int Interpreter::v_set_attachmentparams (lua_State *L)
 	AssertMtdMinPrmCount(L, 5, funcname);
 	VESSEL *v = lua_tovessel_safe(L, 1, funcname);
 	ATTACHMENTHANDLE hAttachment = (ATTACHMENTHANDLE)luamtd_tolightuserdata_safe(L, 2, funcname);
-	VECTOR3 pos = luamtd_tovector_safe(L, 3, funcname);
-	VECTOR3 dir = luamtd_tovector_safe(L, 4, funcname);
-	VECTOR3 rot = luamtd_tovector_safe(L, 5, funcname);
-	v->SetAttachmentParams (hAttachment, pos, dir, rot);
+	VECTOR3 tpos, tdir, trot;
+	VECTOR3 *pos = luamtd_tovector_safe(L, 3, funcname, &tpos);
+	VECTOR3 *dir = luamtd_tovector_safe(L, 4, funcname, &tdir);
+	VECTOR3 *rot = luamtd_tovector_safe(L, 5, funcname, &trot);
+	v->SetAttachmentParams (hAttachment, *pos, *dir, *rot);
 	return 0;
 }
 
@@ -7251,7 +7264,8 @@ int Interpreter::v_add_pointlight (lua_State *L)
 	static const char *funcname = "add_pointlight";
 	AssertMtdMinPrmCount(L, 2, funcname);
 	VESSEL *v = lua_tovessel_safe(L, 1, funcname);
-	VECTOR3 pos = luamtd_tovector_safe(L, 2, funcname);
+	VECTOR3 tpos;
+	VECTOR3 *pos = luamtd_tovector_safe(L, 2, funcname, &tpos);
 
 	int narg = lua_gettop(L);
 	double att0 = 1e-3, att1 = 0, att2 = 1e-3;
@@ -7282,7 +7296,7 @@ int Interpreter::v_add_pointlight (lua_State *L)
 			} else col_spec = col_diff;
 		}
 	}
-	LightEmitter *le = v->AddPointLight (pos, range, att0, att1, att2, col_diff, col_spec, col_ambi);
+	LightEmitter *le = v->AddPointLight (*pos, range, att0, att1, att2, col_diff, col_spec, col_ambi);
 	lua_pushlightemitter (L, le);
 	return 1;
 }
@@ -7340,8 +7354,9 @@ int Interpreter::v_add_spotlight (lua_State *L)
 	static const char *funcname = "add_spotlight";
 	AssertMtdMinPrmCount(L, 3, funcname);
 	VESSEL *v = lua_tovessel_safe(L, 1, funcname);
-	VECTOR3 pos = luamtd_tovector_safe(L, 2, funcname);
-	VECTOR3 dir = luamtd_tovector_safe(L, 3, funcname);
+	VECTOR3 tpos, tdir;
+	VECTOR3 *pos = luamtd_tovector_safe(L, 2, funcname, &tpos);
+	VECTOR3 *dir = luamtd_tovector_safe(L, 3, funcname, &tdir);
 
 	int narg = lua_gettop(L);
 	double att0 = 1e-3, att1 = 0, att2 = 1e-3;
@@ -7378,7 +7393,7 @@ int Interpreter::v_add_spotlight (lua_State *L)
 			} else col_spec = col_diff;
 		}
 	}
-	LightEmitter *le = v->AddSpotLight (pos, dir, range, att0, att1, att2, umbra, penumbra, col_diff, col_spec, col_ambi);
+	LightEmitter *le = v->AddSpotLight (*pos, *dir, range, att0, att1, att2, umbra, penumbra, col_diff, col_spec, col_ambi);
 	lua_pushlightemitter (L, le);
 	return 1;
 }
@@ -7502,8 +7517,7 @@ int Interpreter::v_add_mesh (lua_State *L)
 	UINT midx;
 	VECTOR3 ofs, *pofs = 0;
 	if (lua_gettop(L) >= 3) {
-		ofs = luamtd_tovector_safe(L, 3, funcname);
-		pofs = &ofs;
+		pofs = luamtd_tovector_safe(L, 3, funcname, &ofs);
 	}
 	AssertMtdPrmType(L, 2, PRMTP_STRING | PRMTP_USERDATA, funcname);
 	if (lua_isstring(L, 2)) {
@@ -7553,8 +7567,7 @@ int Interpreter::v_insert_mesh (lua_State *L)
 	UINT midx, idx = (UINT)lua_tointeger_safe(L, 3, funcname);
 	VECTOR3 ofs, *pofs = 0;
 	if (lua_gettop(L) >= 4) {
-		ofs = luamtd_tovector_safe(L, 4, funcname);
-		pofs = &ofs;
+		pofs = luamtd_tovector_safe(L, 4, funcname, &ofs);
 	}
 	AssertMtdPrmType(L, 2, PRMTP_STRING | PRMTP_USERDATA, funcname);
 	if (lua_isstring(L, 2)) {
@@ -7673,8 +7686,9 @@ int Interpreter::v_shift_mesh (lua_State *L)
 	VESSEL *v = lua_tovessel_safe(L, 1, funcname);
 	ASSERT_MTDNUMBER(L,2);
 	UINT idx = (UINT)luamtd_tointeger_safe(L, 2, funcname);
-	VECTOR3 ofs = luamtd_tovector_safe(L, 3, funcname);
-	bool ok = v->ShiftMesh (idx, ofs);
+	VECTOR3 tofs;
+	VECTOR3 *ofs = luamtd_tovector_safe(L, 3, funcname, &tofs);
+	bool ok = v->ShiftMesh (idx, *ofs);
 	lua_pushboolean (L,ok);
 	return 1;
 }
@@ -7694,8 +7708,9 @@ int Interpreter::v_shift_meshes (lua_State *L)
 	static const char *funcname = "shift_meshes";
 	AssertMtdMinPrmCount(L, 2, funcname);
 	VESSEL *v = lua_tovessel_safe(L, 1, funcname);
-	VECTOR3 ofs = luamtd_tovector_safe(L, 2, funcname);
-	v->ShiftMeshes (ofs);
+	VECTOR3 tofs;
+	VECTOR3 *ofs = luamtd_tovector_safe(L, 2, funcname, &tofs);
+	v->ShiftMeshes (*ofs);
 	return 0;
 }
 
@@ -8067,8 +8082,9 @@ int Interpreter::v_shift_centreofmass (lua_State *L)
 	static const char *funcname = "shift_centreofmass";
 	AssertMtdMinPrmCount(L, 2, funcname);
 	VESSEL *v = lua_tovessel_safe(L, 1, funcname);
-	VECTOR3 shift = luamtd_tovector_safe(L, 2, funcname);
-	v->ShiftCentreOfMass(shift);
+	VECTOR3 tshift;
+	VECTOR3 *shift = luamtd_tovector_safe(L, 2, funcname, &tshift);
+	v->ShiftCentreOfMass(*shift);
 	return 0;
 }
 
@@ -8106,8 +8122,9 @@ int Interpreter::v_shiftCG (lua_State *L)
 	static const char *funcname = "shiftCG";
 	AssertMtdMinPrmCount(L, 2, funcname);
 	VESSEL *v = lua_tovessel_safe(L, 1, funcname);
-	VECTOR3 shift = luamtd_tovector_safe(L, 2, funcname);
-	v->ShiftCG(shift);
+	VECTOR3 tshift;
+	VECTOR3 *shift = luamtd_tovector_safe(L, 2, funcname, &tshift);
+	v->ShiftCG(*shift);
 	return 0;
 }
 
@@ -8160,8 +8177,9 @@ int Interpreter::v_set_rotationmatrix (lua_State *L)
 	static const char *funcname = "set_rotationmatrix";
 	AssertMtdMinPrmCount(L, 2, funcname);
 	VESSEL *v = lua_tovessel_safe(L, 1, funcname);
-	MATRIX3 R = luamtd_tomatrix_safe(L, 2, funcname);
-	v->SetRotationMatrix(R);
+	MATRIX3 tR;
+	MATRIX3 *R = luamtd_tomatrix_safe(L, 2, funcname, &tR);
+	v->SetRotationMatrix(*R);
 	return 0;
 }
 
@@ -8186,9 +8204,10 @@ int Interpreter::v_globalrot (lua_State *L)
 	static const char *funcname = "globalrot";
 	AssertMtdMinPrmCount(L, 2, funcname);
 	VESSEL *v = lua_tovessel_safe(L, 1, funcname);
-	VECTOR3 rloc = luamtd_tovector_safe(L, 2, funcname);
+	VECTOR3 trloc;
+	VECTOR3 *rloc = luamtd_tovector_safe(L, 2, funcname, &trloc);
 	VECTOR3 rglob;
-	v->GlobalRot(rloc, rglob);
+	v->GlobalRot(*rloc, rglob);
 	lua_pushvector(L, rglob);
 	return 1;
 }
@@ -8213,9 +8232,10 @@ int Interpreter::v_horizonrot (lua_State *L)
 	static const char *funcname = "horizonrot";
 	AssertMtdMinPrmCount(L, 2, funcname);
 	VESSEL *v = lua_tovessel_safe(L, 1, funcname);
-	VECTOR3 rloc = luamtd_tovector_safe(L, 2, funcname);
+	VECTOR3 trloc;
+	VECTOR3 *rloc = luamtd_tovector_safe(L, 2, funcname, &trloc);
 	VECTOR3 rhorizon;
-	v->HorizonRot(rloc, rhorizon);
+	v->HorizonRot(*rloc, rhorizon);
 	lua_pushvector(L, rhorizon);
 	return 1;
 }
@@ -8237,9 +8257,10 @@ int Interpreter::v_horizoninvrot (lua_State *L)
 	static const char *funcname = "horizoninvrot";
 	AssertMtdMinPrmCount(L, 2, funcname);
 	VESSEL *v = lua_tovessel_safe(L, 1, funcname);
-	VECTOR3 rhorizon = luamtd_tovector_safe(L, 2, funcname);
+	VECTOR3 trhorizon;
+	VECTOR3 *rhorizon = luamtd_tovector_safe(L, 2, funcname, &trhorizon);
 	VECTOR3 rloc;
-	v->HorizonInvRot(rhorizon, rloc);
+	v->HorizonInvRot(*rhorizon, rloc);
 	lua_pushvector(L, rloc);
 	return 1;
 }
@@ -8267,9 +8288,10 @@ int Interpreter::v_local2global (lua_State *L)
 	static const char *funcname = "local2global";
 	AssertMtdMinPrmCount(L, 2, funcname);
 	VESSEL *v = lua_tovessel_safe(L, 1, funcname);
-	VECTOR3 local = luamtd_tovector_safe(L, 2, funcname);
+	VECTOR3 tlocal;
+	VECTOR3 *local = luamtd_tovector_safe(L, 2, funcname, &tlocal);
 	VECTOR3 global;
-	v->Local2Global(local, global);
+	v->Local2Global(*local, global);
 	lua_pushvector(L, global);
 	return 1;
 }
@@ -8297,9 +8319,10 @@ int Interpreter::v_global2local (lua_State *L)
 	static const char *funcname = "global2local";
 	AssertMtdMinPrmCount(L, 2, funcname);
 	VESSEL *v = lua_tovessel_safe(L, 1, funcname);
-	VECTOR3 global = luamtd_tovector_safe(L, 2, funcname);
+	VECTOR3 tglobal;
+	VECTOR3 *global = luamtd_tovector_safe(L, 2, funcname, &tglobal);
 	VECTOR3 local;
-	v->Global2Local(global, local);
+	v->Global2Local(*global, local);
 	lua_pushvector(L, local);
 	return 1;
 }
@@ -8328,9 +8351,10 @@ int Interpreter::v_local2rel (lua_State *L)
 	static const char *funcname = "local2rel";
 	AssertMtdMinPrmCount(L, 2, funcname);
 	VESSEL *v = lua_tovessel_safe(L, 1, funcname);
-	VECTOR3 local = luamtd_tovector_safe(L, 2, funcname);
+	VECTOR3 tlocal;
+	VECTOR3 *local = luamtd_tovector_safe(L, 2, funcname, &tlocal);
 	VECTOR3 rel;
-	v->Local2Rel(local, rel);
+	v->Local2Rel(*local, rel);
 	lua_pushvector(L, rel);
 	return 1;
 }
@@ -8769,16 +8793,17 @@ int Interpreter::v_add_exhaust (lua_State *L)
 	double lscale = luamtd_tonumber_safe(L, 3, funcname);
 	double wscale = luamtd_tonumber_safe(L, 4, funcname);
 	int idx = 5;
-	VECTOR3 pos, dir;
+	VECTOR3 tpos, tdir;
+	VECTOR3 *pos, *dir;
 	double lofs;
 	SURFHANDLE tex = 0;
 	bool do_posdir = false;
 	bool do_lofs = false;
 
 	if (lua_gettop(L) >= idx && lua_isvector(L, idx)) { // explicit position and direction arguments
-		pos = lua_tovector(L, idx++);
+		pos = lua_tovector(L, idx++, &tpos);
 		AssertMtdMinPrmCount(L, idx, funcname);
-		dir = luamtd_tovector_safe(L, idx++, funcname);
+		dir = luamtd_tovector_safe(L, idx++, funcname, &tdir);
 		do_posdir = true;
 	} else if (lua_gettop(L) >= idx && lua_isnumber(L, idx)) {
 		lofs = lua_tonumber(L, idx++);
@@ -8789,7 +8814,7 @@ int Interpreter::v_add_exhaust (lua_State *L)
 
 	UINT exh;
 	if (do_posdir)
-		exh = v->AddExhaust (ht, lscale, wscale, pos, dir, tex);
+		exh = v->AddExhaust (ht, lscale, wscale, *pos, *dir, tex);
 	else if (do_lofs)
 		exh = v->AddExhaust (ht, lscale, wscale, lofs, tex);
 	else
@@ -8868,11 +8893,12 @@ int Interpreter::v_add_exhauststream(lua_State* L)
 	VESSEL* v = lua_tovessel_safe(L, 1, funcname);
 	THRUSTER_HANDLE ht = (THRUSTER_HANDLE)luamtd_tolightuserdata_safe(L, 2, funcname);
 	PARTICLESTREAMSPEC pss;  memset(&pss, 0, sizeof(PARTICLESTREAMSPEC));
-	VECTOR3 pos;
+	VECTOR3 tpos;
+	VECTOR3 *pos;
 	bool do_pos = false;
 	int idx = 3;
 	if (lua_isvector(L, idx)) {
-		pos = lua_tovector(L, idx++);
+		pos = lua_tovector(L, idx++, &tpos);
 		do_pos = true;
 		AssertMtdMinPrmCount(L, idx, funcname);
 	}
@@ -8943,7 +8969,7 @@ int Interpreter::v_add_exhauststream(lua_State* L)
 	lua_pop(L, 1);
 
 	PSTREAM_HANDLE hp;
-	if (do_pos) hp = v->AddExhaustStream(ht, pos, &pss);
+	if (do_pos) hp = v->AddExhaustStream(ht, *pos, &pss);
 	else        hp = v->AddExhaustStream(ht, &pss);
 	if(hp) 
 		lua_pushlightuserdata(L, hp);
@@ -9173,8 +9199,9 @@ int Interpreter::v_add_particlestream(lua_State* L)
 	pss.tex = (lua_islightuserdata(L, -1) ? (SURFHANDLE)lua_touserdata(L, -1) : NULL);
 	lua_pop(L, 1);
 
-	VECTOR3 pos = lua_tovector_safe(L, 3, "add_particlestream");
-	VECTOR3 dir = lua_tovector_safe(L, 4, "add_particlestream");
+	VECTOR3 tpos, tdir;
+	VECTOR3 *pos = lua_tovector_safe(L, 3, "add_particlestream", &tpos);
+	VECTOR3 *dir = lua_tovector_safe(L, 4, "add_particlestream", &tdir);
 
 	// AddParticleStream's last argument must be a pointer to a double whose lifetime must be compatible with the particle stream itself
 	// We create a "numberref" object to do that
@@ -9183,7 +9210,7 @@ int Interpreter::v_add_particlestream(lua_State* L)
 	double* lvl = (double*)lua_touserdata(L, -1);
 	*lvl = lua_tonumber(L, 5);
 
-	PSTREAM_HANDLE hp = v->AddParticleStream(&pss, pos, dir , lvl);
+	PSTREAM_HANDLE hp = v->AddParticleStream(&pss, *pos, *dir , lvl);
 	if(!hp) {
 		lua_pushnil(L);
 		return 1;
@@ -9239,8 +9266,9 @@ int Interpreter::v_set_cameraoffset (lua_State *L)
 	static const char *funcname = "set_cameraoffset";
 	AssertMtdMinPrmCount(L, 2, funcname);
 	VESSEL *v = lua_tovessel_safe(L, 1, funcname);
-	VECTOR3 ofs = luamtd_tovector_safe(L, 2, funcname);
-	v->SetCameraOffset (ofs);
+	VECTOR3 tofs;
+	VECTOR3 *ofs = luamtd_tovector_safe(L, 2, funcname, &tofs);
+	v->SetCameraOffset (*ofs);
 	return 0;
 }
 
@@ -9293,12 +9321,13 @@ int Interpreter::v_set_cameradefaultdirection (lua_State *L)
 	static const char *funcname = "set_cameradefaultdirection";
 	AssertMtdMinPrmCount(L, 2, funcname);
 	VESSEL *v = lua_tovessel_safe(L, 1, funcname);
-	VECTOR3 cd = luamtd_tovector_safe(L, 2, funcname);
+	VECTOR3 tcd;
+	VECTOR3 *cd = luamtd_tovector_safe(L, 2, funcname, &tcd);
 	if (lua_isnumber(L, 3)) {
 		double tilt = luamtd_tonumber_safe(L, 3, funcname);
-		v->SetCameraDefaultDirection(cd, tilt);
+		v->SetCameraDefaultDirection(*cd, tilt);
 	} else {
-		v->SetCameraDefaultDirection(cd);
+		v->SetCameraDefaultDirection(*cd);
 	}
 	return 0;
 }
@@ -9431,10 +9460,11 @@ int Interpreter::v_set_camerashiftrange (lua_State *L)
 	static const char *funcname = "set_camerashiftrange";
 	AssertMtdMinPrmCount(L, 4, funcname);
 	VESSEL *v = lua_tovessel_safe(L, 1, funcname);
-	VECTOR3 fpos = luamtd_tovector_safe(L, 2, funcname);
-	VECTOR3 lpos = luamtd_tovector_safe(L, 3, funcname);
-	VECTOR3 rpos = luamtd_tovector_safe(L, 4, funcname);
-	v->SetCameraShiftRange(fpos, lpos, rpos);
+	VECTOR3 tfpos, tlpos, trpos;
+	VECTOR3 *fpos = luamtd_tovector_safe(L, 2, funcname, &tfpos);
+	VECTOR3 *lpos = luamtd_tovector_safe(L, 3, funcname, &tlpos);
+	VECTOR3 *rpos = luamtd_tovector_safe(L, 4, funcname, &trpos);
+	v->SetCameraShiftRange(*fpos, *lpos, *rpos);
 	return 0;
 }
 
@@ -9466,22 +9496,23 @@ int Interpreter::v_set_cameramovement (lua_State *L)
 	static const char *funcname = "set_cameramovement";
 	AssertMtdMinPrmCount(L, 10, funcname);
 	VESSEL *v = lua_tovessel_safe(L, 1, funcname);
-	VECTOR3 fpos, lpos, rpos;
+	VECTOR3 tfpos, tlpos, trpos;
+	VECTOR3 *fpos, *lpos, *rpos;
 	double fphi, ftht, lphi, ltht, rphi, rtht;
 
-	fpos = luamtd_tovector_safe(L, 2, funcname);
+	fpos = luamtd_tovector_safe(L, 2, funcname, &tfpos);
 	fphi = luamtd_tonumber_safe(L, 3, funcname);
 	ftht = luamtd_tonumber_safe(L, 4, funcname);
 
-	lpos = luamtd_tovector_safe(L, 5, funcname);
+	lpos = luamtd_tovector_safe(L, 5, funcname, &tlpos);
 	lphi = luamtd_tonumber_safe(L, 6, funcname);
 	ltht = luamtd_tonumber_safe(L, 7, funcname);
 
-	rpos = luamtd_tovector_safe(L, 8, funcname);
+	rpos = luamtd_tovector_safe(L, 8, funcname, &trpos);
 	rphi = luamtd_tonumber_safe(L, 9, funcname);
 	rtht = luamtd_tonumber_safe(L, 10, funcname);
 
-	v->SetCameraMovement(fpos, fphi, ftht, lpos, lphi, ltht, rpos, rphi, rtht);
+	v->SetCameraMovement(*fpos, fphi, ftht, *lpos, lphi, ltht, *rpos, rphi, rtht);
 	return 0;
 }
 

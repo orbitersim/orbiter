@@ -51,7 +51,7 @@ function DGButton2:RedrawVC (hMesh, surf)
 	local zpos = {0, 0.004}
 	if self.state ~= self.vstate then
 		local dz = zpos[self.state+1]-zpos[self.vstate+1]
-		local shift = vec.mul(self.ax, dz)
+		local shift = self.ax * dz
 
 		-- animate button
 		local vtx = oapi.create_ntvertexarray(nvtx)
@@ -66,7 +66,7 @@ function DGButton2:RedrawVC (hMesh, surf)
 
 		oapi.get_meshgroup (hMesh, self.mgrp, grs)
 		for i=1,nvtx do
-			vtx[i].pos = vec.add(vtx[i].pos, shift)
+			vtx[i].pos = vtx[i].pos + shift
 		end
 		local ges = {}
 		ges.flags = GRPEDIT.VTXCRD

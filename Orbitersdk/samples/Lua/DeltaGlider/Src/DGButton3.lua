@@ -87,7 +87,7 @@ function DGButton3:RedrawVC (hMesh, surf)
 	local zpos = {0, 0.005, 0.0065, 0.0065}
 	if self.state ~= self.vstate then
 		local dz = zpos[self.state+1]-zpos[self.vstate+1]
-		local shift = vec.mul(self.ax, dz)
+		local shift = self.ax * dz
 
 		-- animate button
 		local vtx = oapi.create_ntvertexarray(nvtx)
@@ -101,7 +101,7 @@ function DGButton3:RedrawVC (hMesh, surf)
 		grs.VtxPerm = vperm
 		oapi.get_meshgroup (hMesh, self.mgrp, grs)
 		for i=1,nvtx do
-			vtx[i].pos = vec.add(vtx[i].pos, shift)
+			vtx[i].pos = vtx[i].pos + shift
 		end
 		local ges = {}
 		ges.flags = GRPEDIT.VTXCRD
@@ -121,7 +121,7 @@ function DGButton3:RedrawVC (hMesh, surf)
 		grs_lbl.VtxPerm = vperm_lbl
 		oapi.get_meshgroup (hMesh, self.mgrp_lbl, grs_lbl)
 		for i=1,nvtx_lbl do
-			vtx_lbl[i].pos = vec.add(vtx_lbl[i].pos, shift)
+			vtx_lbl[i].pos = vtx_lbl[i].pos + shift
 		end
 
 		-- show/hide indicator
