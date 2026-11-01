@@ -28,7 +28,12 @@ BOOL WINAPI DllMain (HINSTANCE hModule,
 		if (!DLLExit) DLLExit = (DLLEXIT)GetProcAddress (hModule, "opcDLLExit");
 		break;
 	case DLL_PROCESS_DETACH:
-		if (DLLExit) (*DLLExit)(hModule);
+		// Don't call ExitModule in case of abrupt termination (e.g. via exit).
+		// In that case, global C++ destructors from the Orbiter core have already been called
+		// and any OAPI call is likely to result in a crash, especially file accesses through the VFS
+		// when a module tries to save its configuration on shutdown.
+		// See https://learn.microsoft.com/en-us/windows/win32/dlls/dllmain
+		if (lpReserved == NULL && DLLExit) (*DLLExit)(hModule);
 		break;
 	}
 	return TRUE;
