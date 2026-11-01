@@ -283,12 +283,14 @@ struct CFG_WINDOWPOS {
 
 struct CFG_CMDLINEPRM {
 	bool   bFastExit;           // Terminate Orbiter at session end?
+	bool   bCfgFromCinOnly;     // Read config from stdin instead of Orbiter.cfg?
+	bool   bCfgFromCinAdd;      // Read config from stdin after reading from Orbiter.cfg?
+	bool   bCfgReadOnly;        // Prevent Orbiter.cfg update on exit?
 	bool   bStartPaused;        // Force pause at simulation start?
 	bool   bStartUnpaused;      // Force unpause at simulation start?
 	bool   bOpenVideoTab;       // Open Launchpad on video tab?
 	bool   bAppendLog;          // Orbiter log: append instead of overwrite?
 	bool   bDiableGraphics;     // Launch Orbiter in console mode without a graphics client?
-	bool   bCfgReadOnly;        // Prevent Orbiter.cfg update on exit?
 	size_t FrameLimit;          // max number of timeframes before session termination (0 = unlimited)
 	double FixedStep;           // fixed time step length (0 = disabled). If != 0, overrides CFG_DEBUGPRM::FixedStep
 	double MaxSysTime;          // Max session runtime (sys time). 0 = unlimited
@@ -356,6 +358,7 @@ public:
 
 	bool FoundFile() const { return found_config_file; }
 
+	bool Config::Load(std::istream &is);
 	bool Load(const char* fname);
 
 	BOOL Write (const char *fname = 0) const;
@@ -440,14 +443,6 @@ public:
 
 	const void *GetParam (DWORD paramtype) const;
 	// return a specific parameter setting (paramtype defined in GraphicsAPI.h)
-
-	// Read items from master config
-	bool GetString (const char *category, char *val);
-	bool GetReal (const char *category, double &val);
-	bool GetInt (const char *category, int &val);
-	bool GetSize (const char* category, size_t& val);
-	bool GetBool (const char *category, bool &val);
-	bool GetVector (const char *category, Vector &val);
 
 private:
 	bool GetString (std::istream &is, const char *category, char *val);

@@ -11,7 +11,9 @@
 #include <direct.h>
 #include <stdio.h>
 #include <time.h>
+#include <iostream>
 #include <fstream>
+#include <sstream>
 #include <process.h> 
 #include "cmdline.h"
 #include "D3d7util.h"
@@ -381,7 +383,14 @@ HRESULT Orbiter::Create (HINSTANCE hInstance)
 
 	// parameter manager - parses from master config file
 	hInst = hInstance;
-	pConfig->Load(MasterConfigFile);
+	if (!pConfig->CfgCmdlinePrm.bCfgFromCinOnly)
+		pConfig->Load(MasterConfigFile);
+	if (pConfig->CfgCmdlinePrm.bCfgFromCinOnly || pConfig->CfgCmdlinePrm.bCfgFromCinAdd) {
+		std::stringstream memStream;
+		memStream << std::cin.rdbuf();
+		if (memStream.good())
+			pConfig->Load(memStream);
+	}
 	strcpy (cfgpath, pConfig->CfgDirPrm.ConfigDir);   cfglen = strlen (cfgpath);
 
 	if (FAILED (hr = pDI->Create (hInstance))) return hr;

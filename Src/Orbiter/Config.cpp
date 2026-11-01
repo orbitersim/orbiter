@@ -245,12 +245,14 @@ CFG_CAMERAPRM CfgCameraPrm_default = {
 
 CFG_CMDLINEPRM CfgCmdlinePrm_default = {
 	false,              // fast exit (false = return to Launchpad dialog)
+	false,              // read config from stdin (false = read from Orbiter.cfg)
+	false,              // add config from stdin (false = don't allow override from stdin)
+	false,              // don't overwrite Orbiter.cfg (false = allow overwrite)
 	false,              // force start paused (false = don't force)
 	false,              // force start unpaused (false = don't force)
 	false,              // open video tab (false = open Scenarios tab)
 	false,              // append to log file (false = overwrite)
 	false,              // disable graphics (false = don't disable)
-	false,              // don't overwrite Orbiter.cfg (false = allow overwrite)
 	0,                  // FrameLimit (0 = unlimited)
 	0.0,                // fixed time step length (0 = disabled)
 	0.0,                // Max sys time (0 = unlimited)
@@ -316,7 +318,7 @@ char *trim_string (char *cbuf)
 	return c;
 }
 
-char *readline (istream &is)
+char *readline (std::istream &is)
 {
 	const int inc = 256;
 	static int len = 256;
@@ -342,7 +344,7 @@ char *readline (istream &is)
 	return 0; // never gets here
 }
 
-bool GetItemString (istream &is, const char *label, char *val)
+bool GetItemString (std::istream &is, const char *label, char *val)
 {
 	char cbuf[512], *cl, *cv;
 	int i;
@@ -373,31 +375,31 @@ bool GetItemString (istream &is, const char *label, char *val)
 	return false;
 }
 
-bool GetItemReal (istream &is, const char *label, double &val)
+bool GetItemReal (std::istream &is, const char *label, double &val)
 {
 	if (!GetItemString (is, label, g_cbuf)) return false;
 	return (sscanf (g_cbuf, "%lf", &val) == 1);
 }
 
-bool GetItemInt (istream &is, const char *label, int &val)
+bool GetItemInt (std::istream &is, const char *label, int &val)
 {
 	if (!GetItemString (is, label, g_cbuf)) return false;
 	return (sscanf (g_cbuf, "%d", &val) == 1);
 }
 
-bool GetItemSize(istream& is, const char* label, size_t& val)
+bool GetItemSize(std::istream& is, const char* label, size_t& val)
 {
 	if (!GetItemString(is, label, g_cbuf)) return false;
 	return (sscanf(g_cbuf, "%zu", &val) == 1);
 }
 
-bool GetItemHex (istream &is, const char *label, int &val)
+bool GetItemHex (std::istream &is, const char *label, int &val)
 {
 	if (!GetItemString (is, label, g_cbuf)) return false;
 	return (sscanf (g_cbuf, "%x", &val) == 1);
 }
 
-bool GetItemBool (istream &is, const char *label, bool &val)
+bool GetItemBool (std::istream &is, const char *label, bool &val)
 {
 	if (!GetItemString (is, label, g_cbuf)) return false;
 	if (!_strnicmp (g_cbuf, "true", 4)) { val = true; return true; }
@@ -405,7 +407,7 @@ bool GetItemBool (istream &is, const char *label, bool &val)
 	return false;
 }
 
-bool GetItemVector (istream &is, const char *label, Vector &val)
+bool GetItemVector (std::istream &is, const char *label, Vector &val)
 {
 	double x, y, z;
 	if (!GetItemString (is, label, g_cbuf)) return false;
@@ -414,7 +416,7 @@ bool GetItemVector (istream &is, const char *label, Vector &val)
 	return true;
 }
 
-bool GetItemVECTOR (istream &is, const char *label, VECTOR3 &val)
+bool GetItemVECTOR (std::istream &is, const char *label, VECTOR3 &val)
 {
 	double x, y, z;
 	if (!GetItemString (is, label, g_cbuf)) return false;
@@ -423,7 +425,7 @@ bool GetItemVECTOR (istream &is, const char *label, VECTOR3 &val)
 	return true;
 }
 
-bool FindLine (istream &is, const char *line)
+bool FindLine (std::istream &is, const char *line)
 {
 	bool ok = false;
 	is.seekg (0); // rewind stream
@@ -472,142 +474,146 @@ Config::Config(char* fname)
 
 bool Config::Load(const char *fname)
 {
+	Root = new char[strlen(fname) + 1]; TRACENEW
+		strcpy(Root, fname);
+
+	ifstream ifs(fname);
+	if (!ifs) return false;
+
+	found_config_file = true;
+	return Load(ifs);
+}
+
+bool Config::Load(std::istream &is)
+{
 	int i;
 	double d;
 	bool b;
 	char cbuf[256], tag[256];
 
-	Root = new char[strlen(fname)+1]; TRACENEW
-	strcpy (Root, fname);
-
-	ifstream ifs (fname);
-	if (!ifs) return false;
-
-	found_config_file = true;
-
-	GetBool ("EchoAllParams", bEchoAll);
+	GetBool (is, "EchoAllParams", bEchoAll);
 
 	// configuration directory
-	if (GetString (ifs, "ConfigDir", CfgDirPrm.ConfigDir))
+	if (GetString (is, "ConfigDir", CfgDirPrm.ConfigDir))
 		if (CfgDirPrm.ConfigDir[strlen(CfgDirPrm.ConfigDir)-1] != '\\')
 			strcat (CfgDirPrm.ConfigDir, "\\");
 	strcpy (cfgpath, CfgDirPrm.ConfigDir); cfglen = strlen (cfgpath);
 
 	// mesh directory
-	if (GetString (ifs, "MeshDir", CfgDirPrm.MeshDir))
+	if (GetString (is, "MeshDir", CfgDirPrm.MeshDir))
 		if (CfgDirPrm.MeshDir[strlen(CfgDirPrm.MeshDir)-1] != '\\')
 			strcat (CfgDirPrm.MeshDir, "\\");
 	strcpy (mshpath, CfgDirPrm.MeshDir);   mshlen = strlen (mshpath);
 
 	// texture directory
-	if (GetString (ifs, "TextureDir", CfgDirPrm.TextureDir))
+	if (GetString (is, "TextureDir", CfgDirPrm.TextureDir))
 		if (CfgDirPrm.TextureDir[strlen(CfgDirPrm.TextureDir)-1] != '\\')
 			strcat (CfgDirPrm.TextureDir, "\\");
 	strcpy (texpath, CfgDirPrm.TextureDir);  texlen = strlen (texpath);
 
 	// highres texture directory
-	if (GetString (ifs, "HightexDir", CfgDirPrm.HightexDir)) {
+	if (GetString (is, "HightexDir", CfgDirPrm.HightexDir)) {
 		if (CfgDirPrm.HightexDir[strlen(CfgDirPrm.HightexDir)-1] != '\\')
 			strcat (CfgDirPrm.HightexDir, "\\");
 		strcpy (htxpath, CfgDirPrm.HightexDir);  htxlen = strlen (htxpath);
 	}
 
 	// planetary texture directory
-	if (GetString(ifs, "PlanetTexDir", CfgDirPrm.PlanetTexDir)) {
+	if (GetString(is, "PlanetTexDir", CfgDirPrm.PlanetTexDir)) {
 		if (CfgDirPrm.PlanetTexDir[strlen(CfgDirPrm.PlanetTexDir) - 1] != '\\')
 			strcat(CfgDirPrm.PlanetTexDir, "\\");
 		strcpy(ptxpath, CfgDirPrm.PlanetTexDir); ptxlen = strlen(ptxpath);
 	}
 
 	// scenario directory
-	if (GetString (ifs, "ScenarioDir", CfgDirPrm.ScnDir))
+	if (GetString (is, "ScenarioDir", CfgDirPrm.ScnDir))
 		if (CfgDirPrm.ScnDir[strlen(CfgDirPrm.ScnDir)-1] != '\\')
 			strcat (CfgDirPrm.ScnDir, "\\");
 	strcpy (scnpath, CfgDirPrm.ScnDir); scnlen = strlen (scnpath);
 
 	// Device information
-	GetInt  (ifs, "DeviceIndex", CfgDevPrm.Device_idx);
-	if (GetInt (ifs, "ModeIndex", i)) CfgDevPrm.Device_mode = (DWORD)i;
-	if (GetInt(ifs, "OutputIndex", i)) CfgDevPrm.Device_out = (DWORD)i;
-	if (GetInt(ifs, "Style", i)) CfgDevPrm.Device_style = (DWORD)i;
-	GetBool (ifs, "DeviceForceEnum", CfgDevPrm.bForceEnum);
-	GetBool (ifs, "Fullscreen", CfgDevPrm.bFullscreen);
-	GetBool (ifs, "Stereo", CfgDevPrm.bStereo);
-	GetBool (ifs, "NoVSync", CfgDevPrm.bNoVsync);
-	GetBool (ifs, "StencilBuffer", CfgDevPrm.bTryStencil);
-	GetBool (ifs, "FullscreenPageflip", CfgDevPrm.bPageflip);
-	if (GetInt (ifs, "WindowWidth", i))  CfgDevPrm.WinW = (DWORD)i;
-	if (GetInt (ifs, "WindowHeight", i)) CfgDevPrm.WinH = (DWORD)i;
+	GetInt  (is, "DeviceIndex", CfgDevPrm.Device_idx);
+	if (GetInt (is, "ModeIndex", i)) CfgDevPrm.Device_mode = (DWORD)i;
+	if (GetInt(is, "OutputIndex", i)) CfgDevPrm.Device_out = (DWORD)i;
+	if (GetInt(is, "Style", i)) CfgDevPrm.Device_style = (DWORD)i;
+	GetBool (is, "DeviceForceEnum", CfgDevPrm.bForceEnum);
+	GetBool (is, "Fullscreen", CfgDevPrm.bFullscreen);
+	GetBool (is, "Stereo", CfgDevPrm.bStereo);
+	GetBool (is, "NoVSync", CfgDevPrm.bNoVsync);
+	GetBool (is, "StencilBuffer", CfgDevPrm.bTryStencil);
+	GetBool (is, "FullscreenPageflip", CfgDevPrm.bPageflip);
+	if (GetInt (is, "WindowWidth", i))  CfgDevPrm.WinW = (DWORD)i;
+	if (GetInt (is, "WindowHeight", i)) CfgDevPrm.WinH = (DWORD)i;
 
 	// Joystick information
-	if (GetInt (ifs, "JoystickIndex", i))
+	if (GetInt (is, "JoystickIndex", i))
 		CfgJoystickPrm.Joy_idx = (DWORD)i;
-	if (GetInt (ifs, "JoystickThrottleAxis", i))
+	if (GetInt (is, "JoystickThrottleAxis", i))
 		CfgJoystickPrm.ThrottleAxis = max (0, min (3, i));
-	if (GetInt (ifs, "JoystickThrottleSaturation", i))
+	if (GetInt (is, "JoystickThrottleSaturation", i))
 		CfgJoystickPrm.ThrottleSaturation = max (0, min (10000, i));
-	if (GetInt (ifs, "JoystickDeadzone", i))
+	if (GetInt (is, "JoystickDeadzone", i))
 		CfgJoystickPrm.Deadzone = max (0, min (10000, i));
-	GetBool (ifs, "IgnoreThrottleOnStart", CfgJoystickPrm.bThrottleIgnore);
+	GetBool (is, "IgnoreThrottleOnStart", CfgJoystickPrm.bThrottleIgnore);
 
 	// planet render parameters
-	if (GetInt (ifs, "PlanetPreloadMode", i))
+	if (GetInt (is, "PlanetPreloadMode", i))
 		CfgPRenderPrm.PreloadMode = max (0, min (1, i));
-	if (GetInt (ifs, "TileCacheSize", i))
+	if (GetInt (is, "TileCacheSize", i))
 		CfgPRenderPrm.CacheSize = max (0, i);
-	GetBool (ifs, "TileLoadThread", CfgPRenderPrm.bLoadOnThread);
-	if (GetInt (ifs, "PlanetTexLoadFreq", i))
+	GetBool (is, "TileLoadThread", CfgPRenderPrm.bLoadOnThread);
+	if (GetInt (is, "PlanetTexLoadFreq", i))
 		CfgPRenderPrm.LoadFrequency = max (1, min (1000, i));
-	if (GetInt (ifs, "PlanetMipmapMode", i))
+	if (GetInt (is, "PlanetMipmapMode", i))
 		CfgPRenderPrm.MipmapMode = max(0, min(2, i));
-	if (GetInt (ifs, "PlanetAnisoMode", i))
+	if (GetInt (is, "PlanetAnisoMode", i))
 		CfgPRenderPrm.AnisoMode = max(1, min (16, i));
-	if (GetReal (ifs, "PlanetMipmapBias", d))
+	if (GetReal (is, "PlanetMipmapBias", d))
 		CfgPRenderPrm.MipmapBias = max (-1.0, min (1.0, d));
-	if (GetInt (ifs, "PlanetPatchGrid", i))
+	if (GetInt (is, "PlanetPatchGrid", i))
 		CfgPRenderPrm.PatchRes = max(4,min(6,i));
-	if (GetReal (ifs, "PlanetResolutionBias", d))
+	if (GetReal (is, "PlanetResolutionBias", d))
 		CfgPRenderPrm.ResolutionBias = max (-2.0, min (2.0, d));
-	if (GetInt (ifs, "TileLoadFlags", i))
+	if (GetInt (is, "TileLoadFlags", i))
 		CfgPRenderPrm.TileLoadFlags = max (min(i, 3), 1);
 
 	// map dialog parameters
-	if (GetInt (ifs, "MapDlgFlag", i))
+	if (GetInt (is, "MapDlgFlag", i))
 		CfgMapPrm.DispFlag = (DWORD)i;
 
 	// Logical parameters
-	GetBool (ifs, "StartPaused", CfgLogicPrm.bStartPaused);
-	GetInt (ifs, "FlightModel", CfgLogicPrm.FlightModelLevel);
-	GetInt (ifs, "DamageModel", CfgLogicPrm.DamageSetting);
-	if (GetBool (ifs, "UnlimitedFuel", b)) CfgLogicPrm.bLimitedFuel = !b;
-	GetBool (ifs, "RefuelOnPad", CfgLogicPrm.bPadRefuel);
-	GetBool (ifs, "MFDTransparent", CfgLogicPrm.bMfdTransparent);
-	GetBool (ifs, "CompactGlasspit", CfgLogicPrm.bGlasspitCompact);
-	GetInt (ifs, "GenericMFDSize", CfgLogicPrm.MFDSize);
-	GetInt (ifs, "MFDMapVersion", CfgLogicPrm.MFDMapVersion);
-	GetReal (ifs, "InstrumentUpdateInterval", CfgLogicPrm.InstrUpdDT);
-	GetReal (ifs, "PanelScale", CfgLogicPrm.PanelScale);
-	GetReal (ifs, "PanelScrollSpeed", CfgLogicPrm.PanelScrollSpeed);
+	GetBool (is, "StartPaused", CfgLogicPrm.bStartPaused);
+	GetInt (is, "FlightModel", CfgLogicPrm.FlightModelLevel);
+	GetInt (is, "DamageModel", CfgLogicPrm.DamageSetting);
+	if (GetBool (is, "UnlimitedFuel", b)) CfgLogicPrm.bLimitedFuel = !b;
+	GetBool (is, "RefuelOnPad", CfgLogicPrm.bPadRefuel);
+	GetBool (is, "MFDTransparent", CfgLogicPrm.bMfdTransparent);
+	GetBool (is, "CompactGlasspit", CfgLogicPrm.bGlasspitCompact);
+	GetInt (is, "GenericMFDSize", CfgLogicPrm.MFDSize);
+	GetInt (is, "MFDMapVersion", CfgLogicPrm.MFDMapVersion);
+	GetReal (is, "InstrumentUpdateInterval", CfgLogicPrm.InstrUpdDT);
+	GetReal (is, "PanelScale", CfgLogicPrm.PanelScale);
+	GetReal (is, "PanelScrollSpeed", CfgLogicPrm.PanelScrollSpeed);
 
 	// Physics engine
-	GetBool (ifs, "DistributedVesselMass", CfgPhysicsPrm.bDistributedMass);
-	GetBool (ifs, "NonsphericalGravitySources", CfgPhysicsPrm.bNonsphericalGrav);
-	GetBool (ifs, "RadiationPressure", CfgPhysicsPrm.bRadiationPressure);
-	GetBool (ifs, "AtmosphericWind", CfgPhysicsPrm.bAtmWind);
-	GetBool (ifs, "BaseCollision", CfgPhysicsPrm.bBaseCollision);
-	GetBool (ifs, "VesselCollision", CfgPhysicsPrm.bVesselCollision);
-	GetBool (ifs, "StabiliseOrbits", CfgPhysicsPrm.bOrbitStabilise);
-	GetReal (ifs, "StabilisePLimit", CfgPhysicsPrm.Stabilise_PLimit);
-	GetReal (ifs, "StabiliseSLimit", CfgPhysicsPrm.Stabilise_SLimit);
-	if (GetString (ifs, "PertPropSubsampling", cbuf))
+	GetBool (is, "DistributedVesselMass", CfgPhysicsPrm.bDistributedMass);
+	GetBool (is, "NonsphericalGravitySources", CfgPhysicsPrm.bNonsphericalGrav);
+	GetBool (is, "RadiationPressure", CfgPhysicsPrm.bRadiationPressure);
+	GetBool (is, "AtmosphericWind", CfgPhysicsPrm.bAtmWind);
+	GetBool (is, "BaseCollision", CfgPhysicsPrm.bBaseCollision);
+	GetBool (is, "VesselCollision", CfgPhysicsPrm.bVesselCollision);
+	GetBool (is, "StabiliseOrbits", CfgPhysicsPrm.bOrbitStabilise);
+	GetReal (is, "StabilisePLimit", CfgPhysicsPrm.Stabilise_PLimit);
+	GetReal (is, "StabiliseSLimit", CfgPhysicsPrm.Stabilise_SLimit);
+	if (GetString (is, "PertPropSubsampling", cbuf))
 		sscanf (cbuf, "%d%lf", &CfgPhysicsPrm.PPropSubMax, &CfgPhysicsPrm.PPropSubLimit);
-	GetReal (ifs, "PertPropNonsphericalLimit", CfgPhysicsPrm.PPropStepLimit);
-	GetInt (ifs, "PropStages", CfgPhysicsPrm.nLPropLevel);
+	GetReal (is, "PertPropNonsphericalLimit", CfgPhysicsPrm.PPropStepLimit);
+	GetInt (is, "PropStages", CfgPhysicsPrm.nLPropLevel);
 	for (i = 0; i < MAX_PROP_LEVEL; i++) {
 		int n, mode;
 		double ttgt, atgt, tlim, alim;
 		sprintf (tag, "PropStage%d", i);
-		if (GetString (ifs, tag, cbuf)) {
+		if (GetString (is, tag, cbuf)) {
 			n = sscanf (cbuf, "%d%lf%lf%lf%lf", &mode, &ttgt, &atgt, &tlim, &alim);
 			if (n >= 1 && mode >= 0 && mode < NPROP_METHOD)                     CfgPhysicsPrm.PropMode[i] = mode;
 			if (n >= 2 && fabs (ttgt-CfgPhysicsPrm_default.PropTTgt[i]) > 1e-6) CfgPhysicsPrm.PropTTgt[i] = ttgt;
@@ -618,198 +624,180 @@ bool Config::Load(const char *fname)
 	}
 	CfgPhysicsPrm.PropTLim[CfgPhysicsPrm.nLPropLevel-1] = 1e10;
 	CfgPhysicsPrm.PropALim[CfgPhysicsPrm.nLPropLevel-1] = 1e10;
-	GetInt (ifs, "PropSubsampling", CfgPhysicsPrm.PropSubMax);
-
-#ifdef UNDEF
-	// BEGIN OBSOLETE
-	if (GetString (ifs, "PropSubsampling", cbuf)) {
-		int n;
-		double sublim;
-		n = sscanf (cbuf, "%d%lf", &CfgPhysicsPrm.PropSubMax, &sublim);
-		if (n >= 2 && fabs(sublim-CfgPhysicsPrm_default.APropSubLimit) > 1e-6) CfgPhysicsPrm.APropSubLimit = sublim;
-	}
-	if (GetString (ifs, "AngPropLimits", cbuf)) {
-		int n;
-		double clim, tlim;
-		n = sscanf (cbuf, "%lf%lf", &clim, &tlim);
-		if (n >= 1 && fabs(clim-CfgPhysicsPrm_default.APropCouplingLimit) > 1e-6) CfgPhysicsPrm.APropCouplingLimit = clim;
-		if (n >= 2 && fabs(tlim-CfgPhysicsPrm_default.APropTorqueLimit) > 1e-4) CfgPhysicsPrm.APropTorqueLimit = tlim;
-	}
-	// END OBSOLETE
-#endif
+	GetInt (is, "PropSubsampling", CfgPhysicsPrm.PropSubMax);
 
 	// visualisation parameters
-	GetBool (ifs, "EnableShadows", CfgVisualPrm.bShadows);
-	GetBool (ifs, "EnableVesselShadows", CfgVisualPrm.bVesselShadows);
-	GetBool (ifs, "EnableClouds", CfgVisualPrm.bClouds);
-	GetBool (ifs, "EnableCloudShadows", CfgVisualPrm.bCloudShadows);
-	GetBool (ifs, "EnableNightlights", CfgVisualPrm.bNightlights);
-	GetBool (ifs, "EnableWaterReflection", CfgVisualPrm.bWaterreflect);
-	GetBool (ifs, "EnableSpecularRipples", CfgVisualPrm.bSpecularRipple);
-	GetBool (ifs, "EnableHorizonHaze", CfgVisualPrm.bHaze);
-	GetBool (ifs, "EnableDistanceFog", CfgVisualPrm.bFog);
-	GetBool (ifs, "EnableSpecularReflection", CfgVisualPrm.bSpecular);
-	GetBool (ifs, "EnableReentryFlames", CfgVisualPrm.bReentryFlames);
-	GetBool (ifs, "EnableParticleStreams", CfgVisualPrm.bParticleStreams);
-	GetBool (ifs, "EnableLocalLights", CfgVisualPrm.bLocalLight);
-	if (GetInt (ifs, "MaxLights", i))
+	GetBool (is, "EnableShadows", CfgVisualPrm.bShadows);
+	GetBool (is, "EnableVesselShadows", CfgVisualPrm.bVesselShadows);
+	GetBool (is, "EnableClouds", CfgVisualPrm.bClouds);
+	GetBool (is, "EnableCloudShadows", CfgVisualPrm.bCloudShadows);
+	GetBool (is, "EnableNightlights", CfgVisualPrm.bNightlights);
+	GetBool (is, "EnableWaterReflection", CfgVisualPrm.bWaterreflect);
+	GetBool (is, "EnableSpecularRipples", CfgVisualPrm.bSpecularRipple);
+	GetBool (is, "EnableHorizonHaze", CfgVisualPrm.bHaze);
+	GetBool (is, "EnableDistanceFog", CfgVisualPrm.bFog);
+	GetBool (is, "EnableSpecularReflection", CfgVisualPrm.bSpecular);
+	GetBool (is, "EnableReentryFlames", CfgVisualPrm.bReentryFlames);
+	GetBool (is, "EnableParticleStreams", CfgVisualPrm.bParticleStreams);
+	GetBool (is, "EnableLocalLights", CfgVisualPrm.bLocalLight);
+	if (GetInt (is, "MaxLights", i))
 		CfgVisualPrm.MaxLight = (DWORD)i;
-	if (GetInt (ifs, "AmbientLevel", i))
+	if (GetInt (is, "AmbientLevel", i))
 		SetAmbientLevel ((DWORD)i);
-	if (GetInt (ifs, "PlanetMaxPatchLevel", i))
+	if (GetInt (is, "PlanetMaxPatchLevel", i))
 		CfgVisualPrm.PlanetMaxLevel = max (1, min (SURF_MAX_PATCHLEVEL2, i));
-	if (GetReal (ifs, "PlanetPatchRes", d))
+	if (GetReal (is, "PlanetPatchRes", d))
 		CfgVisualPrm.PlanetPatchRes = max (0.1, min (10.0, d));
-	if (GetReal (ifs, "NightlightBrightness", d))
+	if (GetReal (is, "NightlightBrightness", d))
 		CfgVisualPrm.LightBrightness = max (0.0, min (1.0, d));
-	if (GetInt (ifs, "ElevationMode", i) && i >= 0 && i <= 1)
+	if (GetInt (is, "ElevationMode", i) && i >= 0 && i <= 1)
 		CfgVisualPrm.ElevMode = i;
-	GetBool(ifs, "EnableBackgroundStars", CfgVisualPrm.bUseStarDots);
-	if (GetString(ifs, "StarPrm", cbuf)) {
+	GetBool(is, "EnableBackgroundStars", CfgVisualPrm.bUseStarDots);
+	if (GetString(is, "StarPrm", cbuf)) {
 		sscanf(cbuf, "%lf%lf%lf%d", &CfgVisualPrm.StarPrm.mag_hi, &CfgVisualPrm.StarPrm.mag_lo, &CfgVisualPrm.StarPrm.brt_min, &i);
 		CfgVisualPrm.StarPrm.map_log = (i != 0);
 	}
-	GetBool(ifs, "EnableBackgroundStarmap", CfgVisualPrm.bUseStarImage);
-	if (GetString(ifs, "CSphereStarPath", cbuf))
+	GetBool(is, "EnableBackgroundStarmap", CfgVisualPrm.bUseStarImage);
+	if (GetString(is, "CSphereStarPath", cbuf))
 		strncpy(CfgVisualPrm.StarImagePath, cbuf, 128);
-	GetBool(ifs, "EnableBackgroundImage", CfgVisualPrm.bUseBgImage);
-	if (GetString(ifs, "CSphereBgPath", cbuf))
+	GetBool(is, "EnableBackgroundImage", CfgVisualPrm.bUseBgImage);
+	if (GetString(is, "CSphereBgPath", cbuf))
 		strncpy(CfgVisualPrm.CSphereBgPath, cbuf, 128);
-	GetReal (ifs, "CSphereBgIntensity", CfgVisualPrm.CSphereBgIntens);
+	GetReal (is, "CSphereBgIntensity", CfgVisualPrm.CSphereBgIntens);
 
 	// screen capture parameters
-	GetInt (ifs, "CaptureTarget", CfgCapturePrm.ImageTgt);
-	if (GetString (ifs, "CaptureFile", cbuf))
+	GetInt (is, "CaptureTarget", CfgCapturePrm.ImageTgt);
+	if (GetString (is, "CaptureFile", cbuf))
 		strncpy (CfgCapturePrm.ImageFile, cbuf, 128);
-	if (GetString (ifs, "CaptureSequenceDir", cbuf))
+	if (GetString (is, "CaptureSequenceDir", cbuf))
 		strncpy (CfgCapturePrm.SequenceDir, cbuf, 128);
-	GetInt (ifs, "CaptureImageFormat", CfgCapturePrm.ImageFormat);
-	GetInt (ifs, "CaptureImageQuality", CfgCapturePrm.ImageQuality);
-	GetInt (ifs, "CaptureSequenceStart", CfgCapturePrm.SequenceStart);
-	GetInt (ifs, "CaptureSequenceSkip", CfgCapturePrm.SequenceSkip);
+	GetInt (is, "CaptureImageFormat", CfgCapturePrm.ImageFormat);
+	GetInt (is, "CaptureImageQuality", CfgCapturePrm.ImageQuality);
+	GetInt (is, "CaptureSequenceStart", CfgCapturePrm.SequenceStart);
+	GetInt (is, "CaptureSequenceSkip", CfgCapturePrm.SequenceSkip);
 
 	// instrument parameters
-	CfgInstrumentPrm.bMfdPow2 = (GetBool (ifs, "ForceMfdPow2", b) ? (b ? 1 : 0) : 2);
-	GetInt (ifs, "MfdHiresThreshold", CfgInstrumentPrm.MfdHiresThreshold);
-	GetInt (ifs, "PanelMfdHudSize", CfgInstrumentPrm.PanelMFDHUDSize);
-	GetInt (ifs, "VCMfdSize", CfgInstrumentPrm.VCMFDSize);
+	CfgInstrumentPrm.bMfdPow2 = (GetBool (is, "ForceMfdPow2", b) ? (b ? 1 : 0) : 2);
+	GetInt (is, "MfdHiresThreshold", CfgInstrumentPrm.MfdHiresThreshold);
+	GetInt (is, "PanelMfdHudSize", CfgInstrumentPrm.PanelMFDHUDSize);
+	GetInt (is, "VCMfdSize", CfgInstrumentPrm.VCMFDSize);
 
 	// visual helper parameters
-	if (GetInt (ifs, "Planetarium", i))
+	if (GetInt (is, "Planetarium", i))
 		CfgVisHelpPrm.flagPlanetarium = (DWORD)i;
-	if (GetInt(ifs, "SurfMarkers", i))
+	if (GetInt(is, "SurfMarkers", i))
 		CfgVisHelpPrm.flagMarkers = (DWORD)i;
-	if (GetString (ifs, "Bodyforces", cbuf))
+	if (GetString (is, "Bodyforces", cbuf))
 		sscanf (cbuf, "%u%f%f", &CfgVisHelpPrm.flagBodyForce, &CfgVisHelpPrm.scaleBodyForce, &CfgVisHelpPrm.opacBodyForce);
-	if (GetString (ifs, "CoordinateAxes", cbuf))
+	if (GetString (is, "CoordinateAxes", cbuf))
 		sscanf (cbuf, "%u%f%f", &CfgVisHelpPrm.flagFrameAxes, &CfgVisHelpPrm.scaleFrameAxes, &CfgVisHelpPrm.opacFrameAxes);
 
 	// debug options
-	if (GetInt (ifs, "ShutdownMode", i) && i >= 0 && i <= 2)
+	if (GetInt (is, "ShutdownMode", i) && i >= 0 && i <= 2)
 		CfgDebugPrm.ShutdownMode = i;
-	if (GetReal (ifs, "FixedStep", d) && d >= 0)
+	if (GetReal (is, "FixedStep", d) && d >= 0)
 		CfgDebugPrm.FixedStep = d;
-	GetBool (ifs, "DisableFontSmoothing", CfgDebugPrm.bDisableSmoothFont);
-	GetBool (ifs, "ForceReenableFontSmoothing", CfgDebugPrm.bForceReenableSmoothFont);
-	GetInt (ifs, "HtmlScnDesc", CfgDebugPrm.bHtmlScnDesc);
-	GetBool (ifs, "SaveExitScreen", CfgDebugPrm.bSaveExitScreen);
-	GetBool (ifs, "WireframeMode", CfgDebugPrm.bWireframeMode);
-    GetBool (ifs, "NormaliseNormals", CfgDebugPrm.bNormaliseNormals);
-	GetBool (ifs, "VerboseLog", CfgDebugPrm.bVerboseLog);
+	GetBool (is, "DisableFontSmoothing", CfgDebugPrm.bDisableSmoothFont);
+	GetBool (is, "ForceReenableFontSmoothing", CfgDebugPrm.bForceReenableSmoothFont);
+	GetInt (is, "HtmlScnDesc", CfgDebugPrm.bHtmlScnDesc);
+	GetBool (is, "SaveExitScreen", CfgDebugPrm.bSaveExitScreen);
+	GetBool (is, "WireframeMode", CfgDebugPrm.bWireframeMode);
+    GetBool (is, "NormaliseNormals", CfgDebugPrm.bNormaliseNormals);
+	GetBool (is, "VerboseLog", CfgDebugPrm.bVerboseLog);
 
-	GetReal (ifs, "CameraPanspeed", CfgCameraPrm.Panspeed);
-	GetReal (ifs, "CameraTerrainLimit", CfgCameraPrm.TerrainLimit);
-	GetInt (ifs, "HUDColIdx", CfgCameraPrm.HUDCol);
+	GetReal (is, "CameraPanspeed", CfgCameraPrm.Panspeed);
+	GetReal (is, "CameraTerrainLimit", CfgCameraPrm.TerrainLimit);
+	GetInt (is, "HUDColIdx", CfgCameraPrm.HUDCol);
 
 	// user interface parameters
-	if (GetInt(ifs, "MouseFocusMode", i) && i >= 0 && i <= 2)
+	if (GetInt(is, "MouseFocusMode", i) && i >= 0 && i <= 2)
 		CfgUIPrm.MouseFocusMode = (DWORD)i;
-	if (GetInt (ifs, "MenubarMode", i) && i >= 0 && i <= 2)
+	if (GetInt (is, "MenubarMode", i) && i >= 0 && i <= 2)
 		CfgUIPrm.MenuMode = (DWORD)i;
-	GetBool (ifs, "MenubarLabelAlways", CfgUIPrm.bMenuLabelAlways);
-	if (GetInt (ifs, "MenuButtonHoverSize", i))
+	GetBool (is, "MenubarLabelAlways", CfgUIPrm.bMenuLabelAlways);
+	if (GetInt (is, "MenuButtonHoverSize", i))
 		CfgUIPrm.MenuButtonHoverSize = i;
-	if (GetInt (ifs, "MenuButtonSize", i))
+	if (GetInt (is, "MenuButtonSize", i))
 		CfgUIPrm.MenuButtonSize = i;
-	if (GetInt (ifs, "MenuButtonSpacing", i))
+	if (GetInt (is, "MenuButtonSpacing", i))
 		CfgUIPrm.MenuButtonSpacing = i;
-	GetBool (ifs, "ShowWarpAlways", CfgUIPrm.bWarpAlways);
-	if (GetInt (ifs, "InfobarMode", i) && i >= 0 && i <= 2)
+	GetBool (is, "ShowWarpAlways", CfgUIPrm.bWarpAlways);
+	if (GetInt (is, "InfobarMode", i) && i >= 0 && i <= 2)
 		CfgUIPrm.InfoMode = i;
-	if (GetInt (ifs, "FPS", i) && i >= 0 && i <= 2)
+	if (GetInt (is, "FPS", i) && i >= 0 && i <= 2)
 		CfgUIPrm.FPS = i;
-	if (GetInt (ifs, "MenubarOpacity", i) && i >= 0 && i <= 10)
+	if (GetInt (is, "MenubarOpacity", i) && i >= 0 && i <= 10)
 		CfgUIPrm.MenuOpacity = i;
-	if (GetInt (ifs, "InfobarOpacity", i) && i >= 0 && i <= 10)
+	if (GetInt (is, "InfobarOpacity", i) && i >= 0 && i <= 10)
 		CfgUIPrm.InfoOpacity = (DWORD)i;
-	if (GetInt (ifs, "MenubarSpeed", i) && i >= 1 && i <= 20)
+	if (GetInt (is, "MenubarSpeed", i) && i >= 1 && i <= 20)
 		CfgUIPrm.MenuScrollspeed = (DWORD)i;
-	GetInt (ifs, "SelVesselTab", CfgUIPrm.SelVesselTab);
-	GetInt (ifs, "SelVesselRange", CfgUIPrm.SelVesselRange);
-	GetBool (ifs, "SelVesselFlat", CfgUIPrm.bSelVesselFlat);
+	GetInt (is, "SelVesselTab", CfgUIPrm.SelVesselTab);
+	GetInt (is, "SelVesselRange", CfgUIPrm.SelVesselRange);
+	GetBool (is, "SelVesselFlat", CfgUIPrm.bSelVesselFlat);
 
 	// demo parameters
-	GetBool (ifs, "DemoMode", CfgDemoPrm.bDemo);
-	GetBool (ifs, "BackgroundImage", CfgDemoPrm.bBkImage);
-	GetBool (ifs, "BlockExit", CfgDemoPrm.bBlockExit);
-	GetReal (ifs, "MaxDemoTime", CfgDemoPrm.MaxDemoTime);
-	GetReal (ifs, "MaxLaunchpadIdleTime", CfgDemoPrm.LPIdleTime);
+	GetBool (is, "DemoMode", CfgDemoPrm.bDemo);
+	GetBool (is, "BackgroundImage", CfgDemoPrm.bBkImage);
+	GetBool (is, "BlockExit", CfgDemoPrm.bBlockExit);
+	GetReal (is, "MaxDemoTime", CfgDemoPrm.MaxDemoTime);
+	GetReal (is, "MaxLaunchpadIdleTime", CfgDemoPrm.LPIdleTime);
 
 	// record/playback parameters
-	GetInt (ifs, "RecordPosFrame", CfgRecPlayPrm.RecordPosFrame);
-	GetInt (ifs, "RecordAttFrame", CfgRecPlayPrm.RecordAttFrame);
-	GetBool (ifs, "RecordTimewarp", CfgRecPlayPrm.bRecordWarp);
-	GetBool (ifs, "RecordFocusEvent", CfgRecPlayPrm.bRecordFocus);
-	GetBool (ifs, "ReplayTimewarp", CfgRecPlayPrm.bReplayWarp);
-	GetBool (ifs, "ReplayFocusEvent", CfgRecPlayPrm.bReplayFocus);
-	GetBool (ifs, "ReplayCameraEvent", CfgRecPlayPrm.bReplayCam);
-	GetBool (ifs, "SystimeSampling", CfgRecPlayPrm.bSysInterval);
-	GetBool (ifs, "PlaybackNotes", CfgRecPlayPrm.bShowNotes);
+	GetInt (is, "RecordPosFrame", CfgRecPlayPrm.RecordPosFrame);
+	GetInt (is, "RecordAttFrame", CfgRecPlayPrm.RecordAttFrame);
+	GetBool (is, "RecordTimewarp", CfgRecPlayPrm.bRecordWarp);
+	GetBool (is, "RecordFocusEvent", CfgRecPlayPrm.bRecordFocus);
+	GetBool (is, "ReplayTimewarp", CfgRecPlayPrm.bReplayWarp);
+	GetBool (is, "ReplayFocusEvent", CfgRecPlayPrm.bReplayFocus);
+	GetBool (is, "ReplayCameraEvent", CfgRecPlayPrm.bReplayCam);
+	GetBool (is, "SystimeSampling", CfgRecPlayPrm.bSysInterval);
+	GetBool (is, "PlaybackNotes", CfgRecPlayPrm.bShowNotes);
 
 	// font characteristics
-	if (GetReal (ifs, "DialogFont_Scale", d)) CfgFontPrm.dlgFont_Scale = (float)d;
-	GetString (ifs, "DialogFont1_Face", CfgFontPrm.dlgFont1_Face);
-	if (GetReal (ifs, "ImGui_FontSize", d)) CfgFontPrm.ImGui_FontSize = (float)d;
-	GetString (ifs, "ImGui_DefaultFontFile", CfgFontPrm.ImGui_DefaultFontFile);
-	GetString (ifs, "ImGui_ConsoleFontFile", CfgFontPrm.ImGui_ConsoleFontFile);
-	GetString (ifs, "ImGui_MonospacedFontFile", CfgFontPrm.ImGui_MonospacedFontFile);
-	GetString (ifs, "ImGui_ManuscriptFontFile", CfgFontPrm.ImGui_ManuscriptFontFile);
+	if (GetReal (is, "DialogFont_Scale", d)) CfgFontPrm.dlgFont_Scale = (float)d;
+	GetString (is, "DialogFont1_Face", CfgFontPrm.dlgFont1_Face);
+	if (GetReal (is, "ImGui_FontSize", d)) CfgFontPrm.ImGui_FontSize = (float)d;
+	GetString (is, "ImGui_DefaultFontFile", CfgFontPrm.ImGui_DefaultFontFile);
+	GetString (is, "ImGui_ConsoleFontFile", CfgFontPrm.ImGui_ConsoleFontFile);
+	GetString (is, "ImGui_MonospacedFontFile", CfgFontPrm.ImGui_MonospacedFontFile);
+	GetString (is, "ImGui_ManuscriptFontFile", CfgFontPrm.ImGui_ManuscriptFontFile);
 
 	// misc. options
-	if (GetString (ifs, "LPadRect", cbuf)) {
+	if (GetString (is, "LPadRect", cbuf)) {
 		sscanf (cbuf, "%d%d%d%d", &rLaunchpad.left, &rLaunchpad.top,
 			&rLaunchpad.right, &rLaunchpad.bottom);
 	}
 
-	if (GetString (ifs, "DlgMapPos", cbuf))
+	if (GetString (is, "DlgMapPos", cbuf))
 		sscanf (cbuf, "%d%d%d%d", &CfgWindowPos.DlgMap.left, &CfgWindowPos.DlgMap.top,
 			&CfgWindowPos.DlgMap.right, &CfgWindowPos.DlgMap.bottom);
-	if (GetString (ifs, "DlgInfoPos", cbuf))
+	if (GetString (is, "DlgInfoPos", cbuf))
 		sscanf (cbuf, "%d%d%d%d", &CfgWindowPos.DlgInfo.left, &CfgWindowPos.DlgInfo.top,
 			&CfgWindowPos.DlgInfo.right, &CfgWindowPos.DlgInfo.bottom);
-	if (GetString (ifs, "DlgCamPos", cbuf))
+	if (GetString (is, "DlgCamPos", cbuf))
 		sscanf (cbuf, "%d%d%d%d", &CfgWindowPos.DlgCamera.left, &CfgWindowPos.DlgCamera.top,
 			&CfgWindowPos.DlgCamera.right, &CfgWindowPos.DlgCamera.bottom);
-	if (GetString (ifs, "DlgFocusPos", cbuf))
+	if (GetString (is, "DlgFocusPos", cbuf))
 		sscanf (cbuf, "%d%d%d%d", &CfgWindowPos.DlgFocus.left, &CfgWindowPos.DlgFocus.top,
 			&CfgWindowPos.DlgFocus.right, &CfgWindowPos.DlgFocus.bottom);
-	if (GetString (ifs, "DlgTaccPos", cbuf))
+	if (GetString (is, "DlgTaccPos", cbuf))
 		sscanf (cbuf, "%d%d%d%d", &CfgWindowPos.DlgTacc.left, &CfgWindowPos.DlgTacc.top,
 			&CfgWindowPos.DlgTacc.right, &CfgWindowPos.DlgTacc.bottom);
-	if (GetString(ifs, "DlgOptionsPos", cbuf))
+	if (GetString(is, "DlgOptionsPos", cbuf))
 		sscanf(cbuf, "%d%d%d%d", &CfgWindowPos.DlgOptions.left, &CfgWindowPos.DlgOptions.top,
 			&CfgWindowPos.DlgOptions.right, &CfgWindowPos.DlgOptions.bottom);
-	if (GetString (ifs, "DlgVhelperPos", cbuf))
+	if (GetString (is, "DlgVhelperPos", cbuf))
 		sscanf (cbuf, "%d%d%d%d", &CfgWindowPos.DlgVishelper.left, &CfgWindowPos.DlgVishelper.top,
 			&CfgWindowPos.DlgVishelper.right, &CfgWindowPos.DlgVishelper.bottom);
-	GetInt (ifs, "LpadScnListWidth", CfgWindowPos.LaunchpadScnListWidth);
-	GetInt (ifs, "LpadModListWidth", CfgWindowPos.LaunchpadModListWidth);
-	GetInt (ifs, "LpadExtListWidth", CfgWindowPos.LaunchpadExtListWidth);
+	GetInt (is, "LpadScnListWidth", CfgWindowPos.LaunchpadScnListWidth);
+	GetInt (is, "LpadModListWidth", CfgWindowPos.LaunchpadModListWidth);
+	GetInt (is, "LpadExtListWidth", CfgWindowPos.LaunchpadExtListWidth);
 
 	// list of active modules
-	if (FindLine (ifs, "ACTIVE_MODULES")) {
+	if (FindLine (is, "ACTIVE_MODULES")) {
 		char cbuf[256];
-		while (ifs.getline (cbuf, 256) && _strnicmp (cbuf, "END_MODULES", 11))
+		while (is.getline (cbuf, 256) && _strnicmp (cbuf, "END_MODULES", 11))
 			m_activeModules.push_back(std::string(trim_string(cbuf)));
 	}
 	return true;
@@ -1480,7 +1468,7 @@ void Config::DelActiveModule (const std::string& name)
 		m_activeModules.erase(it);
 }
 
-bool Config::GetString (istream &is, const char *category, char *val)
+bool Config::GetString (std::istream &is, const char *category, char *val)
 {
 	char cbuf[512];
 	int i;
@@ -1506,25 +1494,25 @@ bool Config::GetString (istream &is, const char *category, char *val)
 	return true;
 }
 
-bool Config::GetReal (istream &is, const char *category, double &val)
+bool Config::GetReal (std::istream &is, const char *category, double &val)
 {
 	if (!GetString (is, category, g_cbuf)) return false;
 	return (sscanf (g_cbuf, "%lf", &val) == 1);
 }
 
-bool Config::GetInt (istream &is, const char *category, int &val)
+bool Config::GetInt (std::istream &is, const char *category, int &val)
 {
 	if (!GetString (is, category, g_cbuf)) return false;
 	return (sscanf (g_cbuf, "%d", &val) == 1);
 }
 
-bool Config::GetSize (istream& is, const char* category, size_t& val)
+bool Config::GetSize (std::istream& is, const char* category, size_t& val)
 {
 	if (!GetString(is, category, g_cbuf)) return false;
 	return (sscanf(g_cbuf, "%zu", &val) == 1);
 }
 
-bool Config::GetBool (istream &is, const char *category, bool &val)
+bool Config::GetBool (std::istream &is, const char *category, bool &val)
 {
 	if (!GetString (is, category, g_cbuf)) return false;
 	if (!_strnicmp (g_cbuf, "true", 4)) { val = true; return true; }
@@ -1532,59 +1520,11 @@ bool Config::GetBool (istream &is, const char *category, bool &val)
 	return false;
 }
 
-bool Config::GetVector (istream &is, const char *category, Vector &val)
+bool Config::GetVector (std::istream &is, const char *category, Vector &val)
 {
 	double x, y, z;
 	if (!GetString (is, category, g_cbuf)) return false;
 	if (sscanf (g_cbuf, "%lf%lf%lf", &x, &y, &z) < 3) return false;
 	val.Set (x, y, z);
 	return true;
-}
-
-bool Config::GetString (const char *category, char *val)
-{
-	if (!Root) return false;
-	ifstream ifs (Root);
-	if (!ifs) return false;
-	return GetString (ifs, category, val);
-}
-
-bool Config::GetReal (const char *category, double &val)
-{
-	if (!Root) return false;
-	ifstream ifs (Root);
-	if (!ifs) return false;
-	return GetReal (ifs, category, val);
-}
-
-bool Config::GetInt (const char *category, int &val)
-{
-	if (!Root) return false;
-	ifstream ifs (Root);
-	if (!ifs) return false;
-	return GetInt (ifs, category, val);
-}
-
-bool Config::GetSize (const char* category, size_t& val)
-{
-	if (!Root) return false;
-	ifstream ifs(Root);
-	if (!ifs) return false;
-	return GetSize(ifs, category, val);
-}
-
-bool Config::GetBool (const char *category, bool &val)
-{
-	if (!Root) return false;
-	ifstream ifs (Root);
-	if (!ifs) return false;
-	return GetBool (ifs, category, val);
-}
-
-bool Config::GetVector (const char *category, Vector &val)
-{
-	if (!Root) return false;
-	ifstream ifs (Root);
-	if (!ifs) return false;
-	return GetVector (ifs, category, val);
 }
