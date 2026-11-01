@@ -3,7 +3,7 @@ name: Release
 on:
   push:
     tags:
-      - "^[\d]{4}$"
+      - "2[0-9][0-9][0-9]"
 
 run-name: Release ${{ github.ref_name }}
 
