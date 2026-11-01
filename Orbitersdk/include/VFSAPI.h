@@ -76,7 +76,11 @@ namespace VFS
 
 		// copy will return false and invalidate the buffer in case of error.
 		// The buffer is cleared to prevent uninitialized data from being used later.
-		// The only way to go from an invalid state to a valid one is to copy valid data
+		// The only way to go from an invalid state to a valid one is to copy valid data.
+		// /!\ This function is called even if the overlay is disabled. The LuaInterpreter "unit" test
+		// uses it indirectly via Orbiter.exe imports but when the exe is loaded, its
+		// references are not resolved (see https://learn.microsoft.com/en-us/windows/win32/api/libloaderapi/nf-libloaderapi-loadlibrarya)
+		// We therefore cannot use strlen or memmove here.
 		constexpr bool copy(const char *str) {
 			if (!str) {
 				m_ptr[0] = '\0';
@@ -84,14 +88,32 @@ namespace VFS
 				return false;
 			}
 
-			const size_t len = std::strlen(str);
+			// strlen
+			size_t len = 0;
+			while (str[len] != '\0')
+				++len;
+
 			if (len >= m_maxlen) {
 				m_ptr[0] = '\0';
 				m_valid = false;
 				return false;
 			}
 
-			std::memmove(m_ptr, str, len + 1);
+			// Adapted from https://git.musl-libc.org/cgit/musl/tree/src/string/memmove.c
+			const auto memmove = [](void *dest, const void *src, size_t n) {
+				char *d = (char *)dest;
+				const char *s = (const char *)src;
+
+				if (d==s) return;
+
+				if (d<s) {
+					for (; n; n--) *d++ = *s++;
+				} else {
+					while (n) n--, d[n] = s[n];
+				}
+			};
+
+			memmove(m_ptr, str, len + 1);
 			m_valid = true;
 			return true;
 		}
