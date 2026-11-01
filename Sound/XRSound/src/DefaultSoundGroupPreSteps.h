@@ -1,13 +1,12 @@
 // ==============================================================
 // Defines the default group sound handlers for XRSound.
 // 
-// Copyright (c) 2018-2021 Douglas Beachy
+// Copyright (c) 2018-2026 Douglas Beachy
 // Licensed under the MIT License
 // ==============================================================
 
 #pragma once
 
-#include <atlstr.h>             // for CString
 #include <unordered_map>
 
 #include "OrbiterSDK.h"
@@ -26,15 +25,15 @@ public:
     virtual ~DefaultSoundGroupPreStep();
     virtual bool Initialize(const int soundID, const char *pFolderSubpath, const XRSound::PlaybackType playbackType) override;
     bool SetFolder(const char *pFolderSubpath);
-    const char *GetFolder() const { return m_csFolderSubpath; }
-    CString GetRandomSoundFile();
-    CString GetNextSoundFile();
+    const char *GetFolder() const { return m_csFolderSubpath.c_str(); }
+    std::string GetRandomSoundFile();
+    std::string GetNextSoundFile();
     bool LoadWavWithBasename(const char *pBasename);
     bool LoadAndPlayWavWithBasename(const char *pBasename, const bool bLoop = false, const float volume = 1.0f);
 
 protected:
     FileList *m_pSoundFilesList;      // contains list of all files for this group of sounds
-    CString m_csFolderSubpath;        // Relative to $ORBITER_ROOT; e.g., "XRSound\Default\Cabin Ambience"
+    std::string m_csFolderSubpath;        // Relative to $ORBITER_ROOT; e.g., "XRSound\Default\Cabin Ambience"
     int m_currentSoundFileIndex;      // used by GetNextSoundFile
 };
 
@@ -154,3 +153,4 @@ public:
 protected:
     double m_startNextSongRealtime;  // -1 = "not set yet"
 };
+

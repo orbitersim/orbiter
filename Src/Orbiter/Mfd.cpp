@@ -928,8 +928,8 @@ void Instrument::DisplayModes (int page)
 		skp->SetTextColor (col_green1);
 		name = m->Spec()->name;
 		skp->Text (x, y, name, strlen(name));
-		if (id <= MFD_RIGHT) {
-			KeyStr[1] = (id == MFD_LEFT ? 'L' : 'R');
+		if (id <= MFD_RIGHT || IsRuningInExternMFD()) {
+			KeyStr[1] = (id == MFD_RIGHT ? 'R' : 'L');
 			KeyStr[8] = Key2Char[m->Spec()->key];
 			skp->SetTextColor (col_grey2);
 			skp->Text (x, y+ch, KeyStr, 10);
@@ -992,8 +992,8 @@ void Instrument::DrawMenu ()
 				skp->Text (x, y, mnu[item].line2, strlen(mnu[item].line2));
 				y += ch;
 			}
-			if (id <= MFD_RIGHT && mnu[item].selchar != '\0') {
-				KeyStr[1] = (id == MFD_LEFT ? 'L' : 'R');
+			if ((id <= MFD_RIGHT || IsRuningInExternMFD()) && mnu[item].selchar != '\0') {
+				KeyStr[1] = (id == MFD_RIGHT ? 'R' : 'L');
 				KeyStr[8] = mnu[item].selchar;
 				skp->SetTextColor (col_grey2);
 				skp->Text (x, y, KeyStr, 10);

@@ -3,7 +3,7 @@
 // Desc: Class functions to implement a Direct3D app framework.
 // Part of the ORBITER VISUALISATION PROJECT (OVP)
 // Dual licensed under GPL v3 and LGPL v3
-// Copyright (C) 2007 - 2016 Martin Schweiger
+// Copyright (C) 2007-2026 Martin Schweiger
 //				 2011 - 2016 Jarmo Nikkanen
 // ==============================================================
 
@@ -637,4 +637,5 @@ HRESULT CD3DFramework9::CreateWindowedMode()
 
 	return -1;
 }
+
 

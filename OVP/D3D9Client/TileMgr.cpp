@@ -2,7 +2,7 @@
 // TileMgr.cpp
 // Part of the ORBITER VISUALISATION PROJECT (OVP)
 // Dual licensed under GPL v3 and LGPL v3
-// Copyright (C) 2006 - 2016 Martin Schweiger
+// Copyright (C) 2006-2026 Martin Schweiger
 //				 2011 - 2016 Jarmo Nikkanen (D3D9Client modification)
 // ==============================================================
 
@@ -1290,4 +1290,5 @@ HANDLE TileBuffer::hQueueMutex = NULL;
 HANDLE TileBuffer::hLoadThread = NULL;
 HANDLE TileBuffer::hStopThread(CreateEvent(NULL, FALSE, FALSE, NULL));
 struct TileBuffer::QUEUEDESC TileBuffer::loadqueue[MAXQUEUE] = {0};
+
 

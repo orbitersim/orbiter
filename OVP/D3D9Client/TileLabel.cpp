@@ -2,7 +2,7 @@
 // TileLabel.cpp
 // Part of the ORBITER VISUALISATION PROJECT (OVP)
 // Dual licensed under GPL v3 and LGPL v3
-// Copyright (C) 2017 Martin Schweiger (martins/apogee)
+// Copyright (C) 2017-2026 Martin Schweiger (martins/apogee)
 //                    Peter Schneider (Kuddel)
 // ==============================================================
 
@@ -187,7 +187,7 @@ bool TileLabel::Read ()
 		ZTreeMgr *mgr = tile->smgr->ZTreeManager(4);
 		DWORD ndata = mgr->ReadData(lvl+4, ilat, ilng, &buf);
 		if (ndata) {
-			std::istringstream iss((char*)buf);
+			std::istringstream iss(std::string((char*)buf, ndata));
 			while (/*iss.tellg() < ndata &&*/ iss >> typestr >> lat >> lng >> altstr >> std::ws) {
 				std::getline(iss, name, '\n');
 
@@ -279,6 +279,8 @@ void TileLabel::Render (D3D9Pad *skp, oapi::Font **labelfont, int *fontidx)
 	MATRIX3 Rpl;
 	oapiGetRotationMatrix(hPlanet, &Rpl);            // planet rotation matrix
 	VECTOR3 campos = tmul(Rpl, *Pcam - Ppl);         // camera pos in planet frame
+	
+	const float labelScale = pScene->GetCamera()->labelScale;
 
 	Tick();
 
@@ -291,7 +293,7 @@ void TileLabel::Render (D3D9Pad *skp, oapi::Font **labelfont, int *fontidx)
 				skp->SetFont(labelfont[idx]);
 				*fontidx = idx;
 			}
-			scale = symscale[idx];
+			scale = max(1, int(symscale[idx] * labelScale));
 			sp = mul(Rpl, renderlabel[i]->pos) + Ppl - *Pcam;
 			dir = unit(sp);
 			if (pScene->CameraDirection2Viewport(dir, x, y)) {
@@ -459,3 +461,4 @@ int TileLabel::LimitAndRotateLongLabelList(TLABEL *l, DWORD H, int *y)
 
 	return partLen;
 }
+

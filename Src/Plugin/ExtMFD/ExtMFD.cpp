@@ -4,7 +4,7 @@
 // ==============================================================
 //                  ORBITER MODULE: ExtMFD
 //                  Part of the ORBITER SDK
-//            Copyright (C) 2006 Martin Schweiger
+//            Copyright (C) 2006-2026 Martin Schweiger
 //                   All rights reserved
 //
 // ExtMFD.cpp
@@ -90,3 +90,4 @@ void OpenDlgClbk (void *context)
 	MFDSPEC spec = {{0,0,100,100},6,6,10,10};
 	oapiRegisterExternMFD (new MFDWindow (spec), spec);
 }
+

@@ -1001,6 +1001,14 @@ public:
 	void GetBaseShadowGeometry (OBJHANDLE hBase, MESHHANDLE **mesh_sh, double **elev, DWORD *nmesh_sh) const;
 
 	/**
+	 * \brief Returns meshes for base objects marked with COLLISION.
+	 * \param hBase surface base handle
+	 * \param mesh_col mesh list for collidable base objects (NULL if none)
+	 * \param nmesh_col length of mesh_col list
+	 */
+	void GetBaseCollisionStructures (OBJHANDLE hBase, MESHHANDLE **mesh_col, DWORD *nmesh_col) const;
+
+	/**
 	 * \brief Render an instrument panel in cockpit view as a 2D billboard.
 	 * \param hSurf array of texture handles for the panel surface
 	 * \param hMesh billboard mesh handle
@@ -1424,7 +1432,6 @@ public:
 	 * \default None, returns NULL.
 	 * \note Clients which can obtain a Windows GDI handle for a surface should
 	 *   overload this method.
-	 * \todo This method should be moved into the GDIClient class
 	 */
 	virtual HDC clbkGetSurfaceDC (SURFHANDLE surf) { return NULL; }
 
@@ -1435,7 +1442,6 @@ public:
 	 * \default None.
 	 * \note Clients which can obtain a Windows GDI handle for a surface should
 	 *   overload this method to release an existing GDI.
-	 * \todo This method should be moved into the GDIClient class
 	 */
 	virtual void clbkReleaseSurfaceDC (SURFHANDLE surf, HDC hDC) {}
 	// @}

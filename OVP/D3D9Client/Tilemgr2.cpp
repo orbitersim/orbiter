@@ -1,6 +1,6 @@
 // ==============================================================
 //   ORBITER VISUALISATION PROJECT (OVP)
-//   Copyright (C) 2006-2016 Martin Schweiger
+//   Copyright (C) 2006-2026 Martin Schweiger
 //   Dual licensed under GPL v3 and LGPL v3
 // ==============================================================
 
@@ -1075,7 +1075,7 @@ LPDIRECT3DTEXTURE9 TileManager2Base::hCloudMicroNorm = NULL;
 // -----------------------------------------------------------------------
 
 TileManager2Base::TileManager2Base (vPlanet *vplanet, int _maxres, int _gridres)
-: vp(vplanet), gridRes(_gridres), ElevMode(eElevMode::DontCare), ElevModeLvl(0)
+: vp(vplanet), gridRes(_gridres), ElevMode(eElevMode::DontCare), ElevModeLvl(0), elvstat{}, prevstat{}
 {
 	// set persistent parameters
 	TilesLoaded = 0;
@@ -1223,3 +1223,4 @@ MATRIX4 TileManager2Base::WorldMatrix (int ilng, int nlng, int ilat, int nlat)
 		return mul(lrot,prm.dwmat_tmp);
 	}
 }
+

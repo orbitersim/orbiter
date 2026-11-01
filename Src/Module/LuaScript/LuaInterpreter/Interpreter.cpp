@@ -118,10 +118,18 @@ void Interpreter::Initialise ()
 	LoadSketchpadAPI ();  // load Sketchpad methods
 	LoadAnnotationAPI (); // load screen annotation methods
 	LoadVesselStatusAPI ();
+#ifdef XRSOUND
 	LoadXRSoundAPI ();
+#endif
 	LoadVecMatAPI();
 	LoadStartupScript (); // load default initialisation script
 }
+
+#ifndef XRSOUND
+void Interpreter::LoadXRSoundAPI ()
+{
+}
+#endif
 
 int Interpreter::Status () const
 {
@@ -602,12 +610,23 @@ int Interpreter::RunChunk (const char *chunk, int n)
 	return res;
 }
 
-void Interpreter::term_out (lua_State *L, bool iserr)
+void Interpreter::term_out(lua_State *L, bool iserr)
 {
-	const char *str = lua_tostringex (L,-1);
-	if (str) term_strout (str, iserr);
-}
+    int n = lua_gettop(L);
+    std::string line;
 
+    for (int i = 1; i <= n; i++) {
+        const char *str = lua_tostringex(L, i);
+        if (str) {
+            if (i > 1) line += "\t";
+            line += str;
+        }
+    }
+
+    if (!line.empty()) {
+        term_strout(line.c_str(), iserr);
+    }
+}
 void Interpreter::LoadAPI ()
 {
 	// Load global functions
@@ -725,6 +744,7 @@ void Interpreter::LoadAPI ()
 
 		// planet functions
 		{"get_planetperiod", oapi_get_planetperiod},
+		{"get_planetatmconstants", oapi_get_planetatmconstants},
 		{"get_objecttype", oapi_get_objecttype},
 		{"get_gbody", oapi_get_gbody},
 		{"get_gbodycount", oapi_get_gbodycount},
@@ -902,11 +922,13 @@ void Interpreter::LoadAPI ()
 	luaL_openlib (L, "term", termLib, 0);
 
 	// Load XRSound library
+#ifdef XRSOUND
 	static const struct luaL_reg XRSoundLib[] = {
 		{"create_instance", xrsound_create_instance},
 		{NULL, NULL}
 	};
 	luaL_openlib (L, "xrsound", XRSoundLib, 0);
+#endif
 
 	// Set up global tables of constants
 
@@ -7372,21 +7394,21 @@ NTVERTEX lua_tontvertex(lua_State *L, int idx)
 		luaL_error(L, "invalid argument for ntvertex creation");
 	}
 	NTVERTEX ret;
-	lua_rawgeti(L, 1, idx);
+	lua_rawgeti(L, idx, 1);
 	ret.x = luaL_checknumber(L, -1); lua_pop(L, 1);
-	lua_rawgeti(L, 2, idx);
+	lua_rawgeti(L, idx, 2);
 	ret.y = luaL_checknumber(L, -1); lua_pop(L, 1);
-	lua_rawgeti(L, 3, idx);
+	lua_rawgeti(L, idx, 3);
 	ret.z = luaL_checknumber(L, -1); lua_pop(L, 1);
-	lua_rawgeti(L, 4, idx);
+	lua_rawgeti(L, idx, 4);
 	ret.nx = luaL_checknumber(L, -1); lua_pop(L, 1);
-	lua_rawgeti(L, 5, idx);
+	lua_rawgeti(L, idx, 5);
 	ret.ny = luaL_checknumber(L, -1); lua_pop(L, 1);
-	lua_rawgeti(L, 6, idx);
+	lua_rawgeti(L, idx, 6);
 	ret.nz = luaL_checknumber(L, -1); lua_pop(L, 1);
-	lua_rawgeti(L, 7, idx);
+	lua_rawgeti(L, idx, 7);
 	ret.tu = luaL_checknumber(L, -1); lua_pop(L, 1);
-	lua_rawgeti(L, 8, idx);
+	lua_rawgeti(L, idx, 8);
 	ret.tv = luaL_checknumber(L, -1); lua_pop(L, 1);
 	return ret;
 }

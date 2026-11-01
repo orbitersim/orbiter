@@ -497,6 +497,9 @@ void Vessel::SetState (const VESSELSTATUS &status)
 	default:
 		break;
 	}
+	m_hullCachePValid = false;
+	if (g_psys && g_psys->isVessel(this))
+		RefreshCollisionOverlapState();
 }
 
 // ==============================================================
@@ -590,6 +593,9 @@ void Vessel::SetState2 (const void *status)
 		break;
 	}
 	if (xpdr && vs->xpdr) xpdr->SetStep (vs->xpdr);
+	m_hullCachePValid = false;
+	if (g_psys && g_psys->isVessel(this))
+		RefreshCollisionOverlapState();
 }
 
 // ==============================================================

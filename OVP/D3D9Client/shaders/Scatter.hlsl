@@ -2,7 +2,7 @@
 // ============================================================================
 // Part of the ORBITER VISUALISATION PROJECT (OVP)
 // licensed under MIT
-// Copyright (C) 2022 Jarmo Nikkanen
+// Copyright (C) 2022-2026 Jarmo Nikkanen
 // ============================================================================
 
 #if defined(_PERFORMANCE) // DO NOT CHANGE THESE, MUST MATCH WITH C++ CODE
@@ -769,3 +769,4 @@ float4 LandViewAtten(float u : TEXCOORD0, float v : TEXCOORD1) : COLOR
 
 	return float4(ret, 1.0);
 }
+

@@ -48,7 +48,6 @@ endif()
 
 # Define directories and file paths for some common binaries
 set(OVP_DIR "${CMAKE_SOURCE_DIR}/OVP")
-set(GDICLIENT_DIR "${OVP_DIR}/GDIClient")
 
 set(ORBITER_SOURCE_ROOT_DIR ${CMAKE_SOURCE_DIR})
 set(ORBITER_SOURCE_DIR ${ORBITER_SOURCE_ROOT_DIR}/Src/Orbiter)
@@ -86,7 +85,6 @@ set(ORBITER_INSTALL_SDK_DIR ${ORBITER_INSTALL_ROOT_DIR}/Orbitersdk)
 set(ORBITER_SDK_LIB $<TARGET_FILE:Orbitersdk>)
 set(ORBITER_DLGCTRL_LIB $<TARGET_FILE:DlgCtrl>)
 set(LUAINTERPRETER_LIB $<TARGET_LINKER_FILE:LuaInterpreter>)
-set(GDICLIENT_LIB $<TARGET_LINKER_FILE:GDIClient>)
 
 set(EXTERN_DIR "${CMAKE_SOURCE_DIR}/Extern")
 
@@ -127,6 +125,7 @@ add_custom_target(CopyData ALL
 	COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_SOURCE_DIR}/Script/ ${CMAKE_BINARY_DIR}/Script
 	COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_SOURCE_DIR}/Config/ ${CMAKE_BINARY_DIR}/Config
 	COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_SOURCE_DIR}/GravityModels/ ${CMAKE_BINARY_DIR}/GravityModels
+	COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_SOURCE_DIR}/Kernels/ ${CMAKE_BINARY_DIR}/Kernels
 	COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_SOURCE_DIR}/Flights/ ${CMAKE_BINARY_DIR}/Flights
 	COMMAND ${CMAKE_COMMAND} -E make_directory ${ORBITER_BINARY_SDK_DIR}/lib/Lua
 )
@@ -155,6 +154,12 @@ configure_file(${CMAKE_CURRENT_SOURCE_DIR}/cmake/pdftex_fix.bat.in ${PDFTEX_CMD}
 
 set(OrbiterTgt Orbiter)
 set(ORBITER_LIB $<TARGET_LINKER_FILE:Orbiter>)
+
+# =====================================================================================
+# Build Spice module for celbodies. If false, build legacy (VSOP87/ELP82,etc)
+set(SPICE_BUILD TRUE)
+
+# =====================================================================================
 
 # =====================================================================================
 # Configure Orbiter.cfg for externally installed planet textures
@@ -218,10 +223,6 @@ option(ORBITER_TRACY_PROFILER
 
 include(cmake/tracy.cmake)
 
-if(ORBITER_BUILD_XRSOUND)
-	set(IRRKLANG_DIR "" CACHE PATH "Path to the irrKlang library")
-endif()
-
 if(ORBITER_BUILD_D3D9CLIENT)
 	find_package(DXSDK REQUIRED)
 	set(DXSDK_DIR
@@ -266,7 +267,7 @@ endfunction()
 
 
 # Installation
-install(DIRECTORY Scenarios Textures Meshes Config GravityModels Script Flights BinAssets/
+install(DIRECTORY Scenarios Textures Meshes Config GravityModels Kernels Script Flights BinAssets/
 	DESTINATION ${ORBITER_INSTALL_ROOT_DIR}
 )
 

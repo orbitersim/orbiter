@@ -1,6 +1,6 @@
 // ==============================================================
 //   ORBITER VISUALISATION PROJECT (OVP)
-//   Copyright (C) 2006-2016 Martin Schweiger
+//   Copyright (C) 2006-2026 Martin Schweiger
 //   Dual licensed under GPL v3 and LGPL v3
 // ==============================================================
 
@@ -996,7 +996,7 @@ void SurfTile::Render ()
 
 		D3DXVECTOR3 bc = bs_pos - shd->pos;
 
-		double alt = scene->GetCameraAltitude() - scene->GetTargetElevation();
+		double alt = scene->GetCameraElevation();
 
 		if ((alt < 10e3) && (scene->GetCameraProxyVisual() == mgr->GetPlanet())) {
 
@@ -1880,3 +1880,4 @@ float* TileManager2<SurfTile>::BrowseElevationData(int lvl, int ilat, int ilng, 
 
 	return elev;
 }
+

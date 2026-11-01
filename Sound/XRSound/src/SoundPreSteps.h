@@ -1,13 +1,12 @@
 // ==============================================================
 // Defines the default sounds for XRSound.
 // 
-// Copyright (c) 2018-2021 Douglas Beachy
+// Copyright (c) 2018-2026 Douglas Beachy
 // Licensed under the MIT License
 // ==============================================================
 
 #pragma once
 
-#include <atlstr.h>             // for CString
 #include <unordered_map>
 
 #include "OrbiterSDK.h"
@@ -62,7 +61,7 @@ protected:
     bool PlaySwitch(const bool bOn, const float volume = 1.0);
     bool LoadWav(const int soundID, const char *pSoundFilename, const XRSound::PlaybackType playbackType);
     bool PlayWav(const int soundID, const bool bLoop = false, const float volume = 1.0);
-    bool LoadAndPlayWavUsingID(const int soundID, const char *pWavFile, const bool bLoop, const XRSound::PlaybackType playbackType, const float volume = 1.0);
+    bool LoadAndPlayWavUsingID(const int soundID, const std::string &pWavFile, const bool bLoop, const XRSound::PlaybackType playbackType, const float volume = 1.0);
     bool StopWav(const int soundID);
 
     VesselXRSoundEngine *m_pEngine;
@@ -155,13 +154,14 @@ protected:
     class RCSAttackForAxisSound
     {
     public:
-        RCSAttackForAxisSound(const double &axisThrustLevel, const int soundID, VesselXRSoundEngine *pEngine, const bool bNegativeAxis, const char *pWavFilePath);
+        RCSAttackForAxisSound(const double &axisThrustLevel, const int soundID, VesselXRSoundEngine *pEngine, const bool bNegativeAxis, const char *pWavFilePath, const int closeSoundID, const char *pCloseWavFilePath);
         ~RCSAttackForAxisSound();
         void clbkPreStep();
 
     protected:
         const double &m_axisThrustLevel;
         int m_soundID;
+        int m_closeSoundID;
         VesselXRSoundEngine *m_pEngine;
         bool m_bNegativeAxis;         // if true, thrust level is along the negative axis
         bool m_bAttackSoundMayPlay;   // if true, RCS Attack sound should start playing on the next call to clbkPreStep *if* thrust level >= m_minThrustLevelForSound
@@ -293,3 +293,4 @@ public:
     DisableAutopilotsForTimeAccPreStep(VesselXRSoundEngine *pEngine);
     virtual void clbkPreStep(const double simt, const double simdt, const double mjd) override;
 };
+

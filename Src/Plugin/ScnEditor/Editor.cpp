@@ -79,7 +79,9 @@ void ScnEditor::OpenDialog ()
 {
 	nTab  = 0;
 	cTab  = NULL;
-	hDlg  = oapiOpenDialogEx (hInst, IDD_EDITOR, EditorProc, 0, this);
+	// Don't overwrite hDlg with NULL if the dialog is already open
+	HWND tmp = oapiOpenDialogEx (hInst, IDD_EDITOR, EditorProc, 0, this);
+	if(tmp) hDlg = tmp;
 }
 
 void ScnEditor::CloseDialog ()

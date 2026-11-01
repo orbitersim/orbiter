@@ -1,7 +1,7 @@
 // =================================================================================================================================
 // The MIT Lisence:
 //
-// Copyright (C) 2013-2016 Jarmo Nikkanen
+// Copyright (C) 2013-2026 Jarmo Nikkanen
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation 
 // files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, 
@@ -46,3 +46,4 @@ void		EnvMapDirection(int dir, D3DXVECTOR3 *Dir, D3DXVECTOR3 *Up);
 D3DXVECTOR3 WorldPickRay(float x, float y, const LPD3DXMATRIX mProj, const LPD3DXMATRIX mView);
 bool		SolveLUSystem(int n, double *A, double *b, double *x, double *det=NULL);
 #endif
+

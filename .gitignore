@@ -6,6 +6,11 @@ CMakeSettings.json
 out/**
 !/Sound/XRSound/XRSound/**/*.vcxproj.user
 **/*.bak
+*.log
+/keymap.cfg
+
+# developer-specific bat files in the root
+/*.bat
 
 # .NET-specific directories
 bin/
@@ -23,8 +28,6 @@ Sound/XRSound/**/Release-with-OrbiterRelease/
 *.kdev4
 .kdev/
 [Bb]uild/
-
-Extern/irrKlang
 
 Doc/**/*.log
 Doc/**/*.pdf

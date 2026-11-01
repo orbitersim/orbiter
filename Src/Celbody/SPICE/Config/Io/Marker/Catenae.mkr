@@ -1,0 +1,9 @@
+BEGIN_HEADER
+InitialState on
+ColourIdx 4
+END_HEADER
+
+BEGIN_DATA
++46.70	-8.80	:	[Mazda Catena]
++54.50	+0.50	:	[Reshet Catena]
++236.50	+62.80	:	[Tvashtar Catena]

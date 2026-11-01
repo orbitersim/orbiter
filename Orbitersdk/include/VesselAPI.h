@@ -2137,6 +2137,44 @@ public:
 	 * \sa GetForceVector
 	 */
 	void AddForce (const VECTOR3 &F, const VECTOR3 &r) const;
+
+	/**
+	 * \brief Returns debug visualization data for the last vessel-to-vessel collision
+	 * \param[out] contactPt contact point in vessel-local frame [<b>m</b>]
+	 * \param[out] normal collision normal in vessel-local frame
+	 * \param[out] impulseDir impulse direction in vessel-local frame
+	 * \param[out] leverArm lever arm from CoM to contact in vessel-local frame [<b>m</b>]
+	 * \param[out] depth penetration depth [<b>m</b>]
+	 * \param[out] impulseMag impulse magnitude [<b>Ns</b>]
+	 * \return true if a collision was detected this frame, false otherwise
+	 */
+	bool GetCollisionDebugData (VECTOR3 &contactPt, VECTOR3 &normal, VECTOR3 &impulseDir, VECTOR3 &leverArm, double &depth, double &impulseMag) const;
+
+	/**
+	 * \brief Returns the hull cache point cloud used for collision detection.
+	 * \param nPts [out] Number of points in the cloud
+	 * \return Pointer to array of VECTOR3 local points, or NULL if none
+	 */
+	const VECTOR3 *GetCollisionPointCloud (DWORD &nPts) const;
+
+	/**
+	 * \brief Returns the generated QuickHull triangle indices for the convex hull.
+	 * \param nIdx [out] Number of indices (always a multiple of 3)
+	 * \return Pointer to array of WORD indices into the point cloud, or NULL if none
+	 */
+	const WORD *GetCollisionHullIndices (DWORD &nIdx) const;
+
+	/**
+	 * \brief Returns true if the vessel uses the implicit GJK Convex Hull for collisions.
+	 */
+	bool IsConvexCollider () const;
+
+	/**
+	 * \brief Returns a list of AABB (min/max pairs) for chunks marked as docking clear zones.
+	 * \param nBoxes [out] Number of bounding boxes
+	 * \return Pointer to an array of VECTOR3 pairs (min, max, min, max, ...), or NULL if none
+	 */
+	const VECTOR3 *GetCollisionClearZones (DWORD &nBoxes) const;
 	//@}
 
 

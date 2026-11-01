@@ -2,7 +2,7 @@
 // VBase.h
 // Part of the ORBITER VISUALISATION PROJECT (OVP)
 // Dual licensed under GPL v3 and LGPL v3
-// Copyright (C) 2007-2016 Martin Schweiger
+// Copyright (C) 2007-2026 Martin Schweiger
 // ==============================================================
 
 #ifndef __VBASE_H
@@ -83,7 +83,8 @@ private:
 	D3D9Mesh *tilemesh;
 	D3D9Mesh **structure_bs;
 	D3D9Mesh **structure_as;
-	DWORD nstructure_bs, nstructure_as;
+	D3D9Mesh **structure_col;
+	DWORD nstructure_bs, nstructure_as, nstructure_col;
 	bool lights;               // use nighttextures for base objects
 	//bool bLocalLight;          // true if lighting is modified
 	class vPlanet *vP;
@@ -99,3 +100,4 @@ private:
 };
 
 #endif // !__VBASE_H
+

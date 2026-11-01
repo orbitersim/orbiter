@@ -2,7 +2,7 @@
 // CelSphere.cpp
 // Part of the ORBITER VISUALISATION PROJECT (OVP)
 // Dual licensed under GPL v3 and LGPL v3
-// Copyright (C) 2006-2016 Martin Schweiger
+// Copyright (C) 2006-2026 Martin Schweiger
 //				 2012-2016 Jarmo Nikkanen
 // ==============================================================
 
@@ -668,3 +668,4 @@ D3DXHANDLE D3D9CelestialSphere::s_eLine = 0;
 D3DXHANDLE D3D9CelestialSphere::s_eLabel = 0;
 D3DXHANDLE D3D9CelestialSphere::s_eColor = 0;
 D3DXHANDLE D3D9CelestialSphere::s_eWVP = 0;
+

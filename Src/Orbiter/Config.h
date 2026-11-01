@@ -62,6 +62,8 @@ struct CFG_PHYSICSPRM {
 	bool   bNonsphericalGrav;	// take into account nonspherical planet shapes for gravity calculations
 	bool   bRadiationPressure;	// take into account radiation pressure effects
 	bool   bAtmWind;            // nonzero wind speeds
+	bool   bBaseCollision;      // surface base collision
+	bool   bVesselCollision;    // vessel-to-vessel collision
 	bool   bOrbitStabilise;		// use Encke orbit stabilisation at high time accelerations
 	double Stabilise_PLimit;	// perturbation limit for stabilisation
 	double Stabilise_SLimit;	// step size limit for stabilisation
@@ -163,7 +165,6 @@ struct CFG_VISHELPPRM {
 struct CFG_DEBUGPRM {
 	int    ShutdownMode;		// 0=standard (redisplay launchpad), 1=respawn, 2=terminate
 	double FixedStep;			// fixed time step length [s] (0=variable)
-	int    TimerMode;			// timer mode (0=auto, 1=hires hardware, 2=lores software
 	bool   bDisableSmoothFont;  // disable font smoothing for better performance
 	bool   bForceReenableSmoothFont; // enable font smoothing on exit, even if it wasn't on originally (recover from losing settings after a previous crash)
 	int    bHtmlScnDesc;        // 0=use simple text box, 1=use inline html viewer, 2=auto-detect (disable inline html under linux/wine)

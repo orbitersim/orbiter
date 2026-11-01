@@ -1,7 +1,7 @@
 // ==============================================================
 //                 ORBITER MODULE: Atlantis
 //                  Part of the ORBITER SDK
-//          Copyright (C) 2001-2003 Martin Schweiger
+//          Copyright (C) 2001-2026 Martin Schweiger
 //                   All rights reserved
 //
 // Common.cpp
@@ -88,4 +88,5 @@ void GetSRB_State (double met, double &thrust_level, double &prop_level)
 	thrust_level = SRB_ThrSCL[i] * (met-SRB_Seq[i]) + SRB_Thrust[i];
 	prop_level = SRB_PrpSCL[i] * (met-SRB_Seq[i]) + SRB_Prop[i];
 }
+
 

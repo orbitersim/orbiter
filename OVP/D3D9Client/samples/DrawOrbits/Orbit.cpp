@@ -1,5 +1,5 @@
 // ==================================================================
-// Copyright (c) 2021 Jarmo Nikkanen
+// Copyright (c) 2021-2026 Jarmo Nikkanen
 // Licensed under the MIT License
 // ==================================================================
 
@@ -586,3 +586,4 @@ void COrbit::CreateCircular(const VECTOR3 &_Pos, const VECTOR3 &_N, double Mu, d
 	VECTOR3 _Vel = unit(crossp_LH(_N, _Pos)) * sqrt(Mu / length(_Pos));
 	CreateFromStateVectors(_Pos, _Vel, Mu, MJD);
 }
+

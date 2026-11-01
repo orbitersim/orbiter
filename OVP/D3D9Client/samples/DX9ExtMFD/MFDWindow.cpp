@@ -1,5 +1,5 @@
 // ==============================================================          
-// Copyright (C) 2006 Martin Schweiger
+// Copyright (C) 2006-2026 Martin Schweiger
 // Licensed under the MIT License
 // ==============================================================
 
@@ -335,3 +335,4 @@ LRESULT FAR PASCAL MFD_BtnProc (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lPar
 
 	return DefWindowProc (hWnd, uMsg, wParam, lParam);
 }
+
