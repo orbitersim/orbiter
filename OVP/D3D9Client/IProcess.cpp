@@ -1,6 +1,6 @@
 
 // ===================================================
-// Copyright (C) 2021 Jarmo Nikkanen
+// Copyright (C) 2021-2026 Jarmo Nikkanen
 // licensed under LGPL v2
 // ===================================================
 
@@ -807,3 +807,4 @@ int gcIPInterface::FindDefine(const char *key)
 {
 	return pIPI->FindDefine(key);
 }
+

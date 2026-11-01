@@ -182,6 +182,15 @@ Note that some advanced rendering options can also be found in the \textit{Extra
 \item \textbf{Atmospheric wind effects:} Enables wind effects on vessels flying inside atmospheres.
 \end{itemize}
 
+\textbf{Collisions}
+
+Orbiter's collision system uses the GJK/EPA convex hull algorithm as its primary detection method, with a point-to-triangle fallback for non-convex vessel pairs. The collision response uses a Newtonian rigid-body impulse solver. Docking exclusion zones automatically suppress collision near docking ports during approach. For technical details, refer to "Mesh-to-mesh collision detection and response" in the Orbiter Technical Reference.
+
+\begin{itemize}
+\item \textbf{Vessel-to-Vessel:} Enables collision detection and resolution between spacecraft. When both vessels use convex colliders (the default), detection uses the GJK/EPA algorithm on clustered convex sub-hulls for high performance. A point-to-triangle fallback is available for non-convex meshes.
+\item \textbf{Vessel-to-Base:} Enables collision detection between vessels and planetary surface objects (buildings, pads, etc.) defined in base configuration files. Only base meshes marked with the \texttt{COLLISION} keyword are tested.
+\end{itemize}
+
 \subsubsection{Instruments \& panels}
 \label{sssec:launchpad_instr_panels}
 \begin{figure}[H]

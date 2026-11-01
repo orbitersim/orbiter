@@ -1,5 +1,5 @@
 // ===================================================
-// Copyright (C) 2022 Jarmo Nikkanen
+// Copyright (C) 2022-2026 Jarmo Nikkanen
 // licensed under MIT
 // ===================================================
 
@@ -244,5 +244,6 @@ float4 CreateSunTexPS(float u : TEXCOORD0, float v : TEXCOORD1) : COLOR
 	T = saturate(1.0f - exp(-T));
 	return float4(1, 1, 1, T);
 }
+
 
 

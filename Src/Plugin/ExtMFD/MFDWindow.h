@@ -4,7 +4,7 @@
 // ==============================================================
 //                  ORBITER MODULE: ExtMFD
 //                  Part of the ORBITER SDK
-//            Copyright (C) 2006 Martin Schweiger
+//            Copyright (C) 2006-2026 Martin Schweiger
 //                   All rights reserved
 //
 // MFDWindow.h
@@ -32,6 +32,7 @@ public:
 	float aspect_ratio = 382.0/366.0;
 
 private:
+	int m_windowId;
 	int BW, BH;       // button width and height
 	int fnth;         // button font height
 	bool vstick;      // stick to vessel

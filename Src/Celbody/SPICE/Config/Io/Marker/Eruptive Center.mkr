@@ -1,0 +1,18 @@
+BEGIN_HEADER
+InitialState on
+ColourIdx 2
+END_HEADER
+
+BEGIN_DATA
++245.30	+24.50	:	Amirani
++326.40	-18.20	:	Kanehekili
++57.40	+18.20	:	Loki
++150.30	-29.30	:	Marduk
++303.80	-49.60	:	Masubi
++237.70	+19.50	:	Maui
++104.70	-18.70	:	Pele
++206.10	-1.50	:	Prometheus
++23.50	+45.20	:	Surt
++226.90	+39.20	:	Thor
++187.50	+28.60	:	Volund
++187.40	+18.40	:	Zamama

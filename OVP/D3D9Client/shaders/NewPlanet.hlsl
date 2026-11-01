@@ -1,7 +1,7 @@
 // ============================================================================
 // Part of the ORBITER VISUALISATION PROJECT (OVP)
 // licensed under LGPL v2
-// Copyright (C) 2022 Jarmo Nikkanen
+// Copyright (C) 2022-2026 Jarmo Nikkanen
 // ============================================================================
 
 #include "Scatter.hlsl"
@@ -965,3 +965,4 @@ float4 GiantCloudPS(CldVS frg) : COLOR
 
 	return float4(HDR(cTex.rgb), saturate(cTex.a));
 }
+

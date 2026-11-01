@@ -2,7 +2,7 @@
 // Utilities
 // Part of the ORBITER VISUALISATION PROJECT (OVP) D3D9 Client
 // Dual licensed under GPL v3 and LGPL v3
-// Copyright (C) 2006-2016 Martin Schweiger
+// Copyright (C) 2006-2026 Martin Schweiger
 //				 2012-2016 Jarmo Nikkanen
 //				 2012-2016 �mile "Bibi Uncle" Gr�goire
 // ==============================================================
@@ -471,7 +471,7 @@ void strremchr(char *str, int idx)
 
 // --------------------------------------------------------------
 // Improved version of fgets
-// Copyright (C) 2012 Jarmo Nikkanen
+// Copyright (C) 2012-2026 Jarmo Nikkanen
 // Return:
 // -1 = eof
 //  0 = invalid string
@@ -2098,4 +2098,5 @@ void ShaderClass::SetVSConstants(HANDLE hVar, void* data, UINT bytes)
 		LogErr("Shader::SetVSConstants() Failed. File[%s], Entrypoint[%s]", fn.c_str(), vsn.c_str());
 	}
 }
+
 

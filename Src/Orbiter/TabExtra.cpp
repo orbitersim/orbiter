@@ -73,7 +73,6 @@ void orbiter::ExtraTab::GetConfig (const Config *cfg)
 	RegisterExtraParam(new ExtraShutdown(this), ht); TRACENEW
 	RegisterExtraParam(new ExtraFixedStep(this), ht); TRACENEW
 	RegisterExtraParam(new ExtraRenderingOptions(this), ht); TRACENEW
-	RegisterExtraParam(new ExtraTimerSettings(this), ht); TRACENEW
 	RegisterExtraParam(new ExtraLaunchpadOptions(this), ht); TRACENEW
 	RegisterExtraParam(new ExtraLogfileOptions(this), ht); TRACENEW
 	RegisterExtraParam(new ExtraPerformanceSettings(this), ht); TRACENEW
@@ -1311,85 +1310,6 @@ INT_PTR CALLBACK ExtraRenderingOptions::DlgProc (HWND hWnd, UINT uMsg, WPARAM wP
 	//		return 0;
 		case IDOK:
 			if (((ExtraRenderingOptions*)GetWindowLongPtr (hWnd, DWLP_USER))->StoreParams (hWnd))
-				EndDialog (hWnd, 0);
-			break;
-		}
-		break;
-	}
-	return BuiltinLaunchpadItem::DlgProc (hWnd, uMsg, wParam, lParam);
-}
-
-//-----------------------------------------------------------------------------
-// Debugging parameters: timer settings
-//-----------------------------------------------------------------------------
-
-char *ExtraTimerSettings::Name ()
-{
-	return (char*)"Timer settings";
-}
-
-char *ExtraTimerSettings::Description ()
-{
-	return (char*)"This option allows the selection of the timer used by Orbiter to calculate time step intervals. Useful for testing and working around buggy hardware timers.";
-}
-
-bool ExtraTimerSettings::clbkOpen (HWND hParent)
-{
-	OpenDialog (hParent, IDD_EXTRA_TIMER, DlgProc);
-	return true;
-}
-
-void ExtraTimerSettings::InitDialog (HWND hWnd)
-{
-	SetDialog (hWnd, pTab->Cfg()->CfgDebugPrm);
-}
-
-void ExtraTimerSettings::ResetDialog (HWND hWnd)
-{
-	extern CFG_DEBUGPRM CfgDebugPrm_default;
-	SetDialog (hWnd, CfgDebugPrm_default);
-}
-
-void ExtraTimerSettings::SetDialog (HWND hWnd, const CFG_DEBUGPRM &prm)
-{
-	SendDlgItemMessage (hWnd, IDC_COMBO1, CB_RESETCONTENT, 0, 0);
-	SendDlgItemMessage (hWnd, IDC_COMBO1, CB_ADDSTRING, 0, (LPARAM)"Automatic selection");
-	SendDlgItemMessage (hWnd, IDC_COMBO1, CB_ADDSTRING, 0, (LPARAM)"High-performance hardware timer");
-	SendDlgItemMessage (hWnd, IDC_COMBO1, CB_ADDSTRING, 0, (LPARAM)"Software timer");
-	SendDlgItemMessage (hWnd, IDC_COMBO1, CB_SETCURSEL, prm.TimerMode, 0);
-}
-
-bool ExtraTimerSettings::StoreParams (HWND hWnd)
-{
-	Config *cfg = pTab->Cfg();
-	int idx = SendDlgItemMessage (hWnd, IDC_COMBO1, CB_GETCURSEL, 0, 0);
-	if (idx == CB_ERR) idx = 0;
-	cfg->CfgDebugPrm.TimerMode = idx;
-	return true;
-}
-
-bool ExtraTimerSettings::OpenHelp (HWND hWnd)
-{
-	OpenDefaultHelp (hWnd, "extra_timer");
-	return true;
-}
-
-INT_PTR CALLBACK ExtraTimerSettings::DlgProc (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
-{
-	switch (uMsg) {
-	case WM_INITDIALOG:
-		((ExtraTimerSettings*)lParam)->InitDialog (hWnd);
-		break;
-	case WM_COMMAND:
-		switch (LOWORD (wParam)) {
-		case IDC_BUTTON1:
-			((ExtraTimerSettings*)GetWindowLongPtr (hWnd, DWLP_USER))->ResetDialog (hWnd);
-			return 0;
-		case IDC_BUTTON2:
-			((ExtraTimerSettings*)GetWindowLongPtr (hWnd, DWLP_USER))->OpenHelp (hWnd);
-			return 0;
-		case IDOK:
-			if (((ExtraTimerSettings*)GetWindowLongPtr (hWnd, DWLP_USER))->StoreParams (hWnd))
 				EndDialog (hWnd, 0);
 			break;
 		}

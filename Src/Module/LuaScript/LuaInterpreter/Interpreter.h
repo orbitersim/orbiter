@@ -59,7 +59,9 @@ class gcCore;
 class VESSEL;
 class MFD2;
 
+#ifdef XRSOUND
 class XRSound;
+#endif
 
 struct AirfoilContext {
 	lua_State *L;
@@ -1128,10 +1130,13 @@ protected:
 
 	friend int OpenHelp (void *context);
 
+	// Keep this virtual slot in every build so Interpreter has the same layout for SDK consumers.
+	virtual void LoadXRSoundAPI ();
+
+#ifdef XRSOUND
 	// -------------------------------------------
 	// XRSound
 	// -------------------------------------------
-	virtual void LoadXRSoundAPI ();
 	static int lua_isxrsound(lua_State *L, int idx);
 	static XRSound *lua_toxrsound(lua_State *L, int idx);
 	static int xrsound_create_instance(lua_State *L);
@@ -1154,6 +1159,7 @@ protected:
 	static int xrsound_set_playposition(lua_State *L);
 	static int xrsound_get_playposition(lua_State *L);
 	static int xrsound_collect(lua_State *L);
+#endif
 
 	// Interpolators
 	void LoadInterpolatorAPI ();

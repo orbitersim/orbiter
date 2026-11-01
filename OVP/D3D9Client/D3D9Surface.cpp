@@ -2,7 +2,7 @@
 // D3D9Surface.cpp
 // Part of the ORBITER VISUALISATION PROJECT (OVP)
 // Dual licensed under GPL v3 and LGPL v3
-// Copyright (C) 2011 - 2016 Jarmo Nikkanen
+// Copyright (C) 2011-2026 Jarmo Nikkanen
 // ===========================================================================================
 
 #define STRICT
@@ -1318,3 +1318,4 @@ void NatDumpResource(LPDIRECT3DRESOURCE9 pResource)
 		oapiWriteLogV("DX9_DUMP: Size = (%u, %u)", desc.Width, desc.Height);
 	}
 }
+

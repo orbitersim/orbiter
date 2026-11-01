@@ -39,7 +39,7 @@ jobs:
 
     steps:
     - name: Checkout
-      uses: actions/checkout@v6
+      uses: actions/checkout@v7
 
     - name: Setup Problem Matcher
       uses: ammaraskar/msvc-problem-matcher@master
@@ -76,14 +76,14 @@ jobs:
         mkdir out\install
 
     - name: Cache irrKlang package
-      uses: actions/cache@v5
+      uses: actions/cache@v6
       with:
         path: ${{ github.workspace }}/Extern/irrKlang/${{ inputs.architecture }}
         key: irrKlang-${{ inputs.architecture }}
 
     - name: Cache DirectX SDK
       id:   cache
-      uses: actions/cache@v5
+      uses: actions/cache@v6
       with:
         path: "${{ github.workspace }}\\DXSDK"
         key:  dxsdk_jun10
@@ -97,6 +97,23 @@ jobs:
          7z x DXSDK_Jun10.exe DXSDK/Lib
          del DXSDK_Jun10.exe
          dir /S /B DXSDK
+
+    - name: Cache SPICE assets
+      id:   spice-cache
+      uses: actions/cache@v6
+      if: inputs.upload
+      with:
+        path: "${{ github.workspace }}\\SPICE"
+        key: spice_assets
+
+    - name: Download SPICE assets
+      if:   steps.spice-cache.outputs.cache-hit != 'true' && inputs.upload
+      shell: cmd
+      run: |
+        mkdir "${{ github.workspace }}/SPICE"
+        curl -L https://cdn.openorbiter.space/spice/Kernels.7z -o "${{ github.workspace }}/SPICE/Kernels.7z"
+        curl -L https://cdn.openorbiter.space/spice/Textures.7z -o "${{ github.workspace }}/SPICE/Textures.7z"
+        dir /S /B "${{ github.workspace }}/SPICE"
 
     - name: Configure
       run: cmake . --preset windows-${{ inputs.architecture }}-${{ inputs.configuration }}
@@ -116,7 +133,7 @@ jobs:
     - name: List exports
       shell: cmd
       run: |
-        dumpbin /EXPORTS ${{ github.workspace }}\out\install\Orbiter\Modules\Server\Orbiter.exe /OUT:exports_tmp0.txt
+        dumpbin /EXPORTS ${{ github.workspace }}\out\install\Orbiter\Orbiter.exe /OUT:exports_tmp0.txt
         type exports_tmp0.txt | find " ?" > exports_tmp1.txt
         for /F "tokens=4" %%F in (exports_tmp1.txt) do @echo %%F >> exports_tmp2.txt
         undname exports_tmp2.txt | sort > exports.txt
@@ -128,6 +145,15 @@ jobs:
       continue-on-error: true
       run: git diff -U0 --ignore-cr-at-eol --ignore-space-at-eol --no-index exports.2016.txt exports.txt
 
+    - name: Copy SPICE assets into output
+      if: inputs.upload
+      working-directory: ${{ github.workspace }}/out/install/Orbiter
+      shell: cmd
+      run: |
+        7z x "${{ github.workspace }}/SPICE/Kernels.7z" -oKernels -y
+        7z x "${{ github.workspace }}/SPICE/Textures.7z" -oKernels -y
+        dir /S /B Kernels
+
     - name: Pack
       if: inputs.upload
       working-directory: ${{ github.workspace }}/out/install/Orbiter
@@ -136,14 +162,14 @@ jobs:
 
     - name: Upload exports
       if: inputs.upload
-      uses: actions/upload-artifact@v6
+      uses: actions/upload-artifact@v7
       with:
         name: exports-${{ inputs.architecture }}
         path: ${{ github.workspace }}/exports.txt
         retention-days: 14
 
     - name: Upload Build Artifact
-      uses: actions/upload-artifact@v6
+      uses: actions/upload-artifact@v7
       if: inputs.upload
       with:
         name: Orbiter-${{ inputs.architecture }}

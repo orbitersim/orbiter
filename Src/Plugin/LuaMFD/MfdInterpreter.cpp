@@ -49,28 +49,16 @@ void MFDInterpreter::LoadAPI ()
 
 void MFDInterpreter::term_strout (const char *str, bool iserr)
 {
-	AddLine (str, iserr ? 0x0000FF:0x00FF00);
-}
-
-void MFDInterpreter::term_out (lua_State *L, bool iserr)
-{
-	const char *str = lua_tostringex (L, -1);
-	char *s0 = (char*)str, *s;
-	for(;;) {
-		s = strchr (s0, '\n');
-		if (!s) {
-			//AddLine (s0, 0x00FF00);
-			term_strout (s0, iserr);
-			break;
-		} else {
-			char cbuf[1024], *c, *cc;
-			for (c = s0, cc = cbuf; c < s; c++) *cc++ = *c;
-			*cc++ = '\0';
-			//AddLine (cbuf, 0x00FF00);
-			term_strout (cbuf, iserr);
-			s0 = s+1;
+	if (strchr (str, '\n')) {
+		char *cbuf = new char[strlen(str)+1];
+		strcpy (cbuf, str);
+		char *s = strtok (cbuf, "\n");
+		while (s) {
+			AddLine (s, iserr ? 0x0000FF:0x00FF00);
+			s = strtok (NULL, "\n");
 		}
-	}
+		delete []cbuf;
+	} else AddLine (str, iserr ? 0x0000FF:0x00FF00);
 }
 
 int MFDInterpreter::termOut (lua_State *L)

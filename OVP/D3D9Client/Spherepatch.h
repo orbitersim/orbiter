@@ -1,6 +1,6 @@
 // ==============================================================
 //   ORBITER VISUALISATION PROJECT (OVP)
-//   Copyright (C) 2006-2016 Martin Schweiger
+//   Copyright (C) 2006-2026 Martin Schweiger
 //   Dual licensed under GPL v3 and LGPL v3
 // ==============================================================
 
@@ -44,3 +44,4 @@ void CreateSpherePatch(LPDIRECT3DDEVICE9 pDev, VBMESH &mesh, int nlng, int nlat,
 void ClearVBMesh (VBMESH &mesh);
 
 #endif // !__SPHEREPATCH_H
+

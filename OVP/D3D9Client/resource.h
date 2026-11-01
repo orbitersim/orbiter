@@ -92,7 +92,6 @@
 #define IDC_SEPARATION                          2105
 #define IDC_SEPA_DSP                            2106
 #define IDC_SRFPRELOAD                          2107
-#define IDC_SYMBOLIC                            2108
 #define IDC_ATM_COPYTO                          2109
 #define IDC_CAMMODE                             2110
 #define IDC_MESHRES                             2111
@@ -245,3 +244,5 @@
 #define IDC_ATG5                                4064
 #define IDC_ATG6                                4065
 #define IDC_ATM_PAGE                            4066
+#define IDC_SHOW_BASE_COL                       4084
+#define IDC_SHOW_VESSEL_COL                     4085

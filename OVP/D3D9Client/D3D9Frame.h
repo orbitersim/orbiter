@@ -1,7 +1,7 @@
 // ==============================================================
 // Part of the ORBITER VISUALISATION PROJECT (OVP)
 // Dual licensed under GPL v3 and LGPL v3
-// Copyright (C) 2006-2016 Martin Schweiger
+// Copyright (C) 2006-2026 Martin Schweiger
 //				 2012-2016 Jarmo Nikkanen
 // ==============================================================
 
@@ -143,3 +143,4 @@ public:
 #define D3DFWERR_NOTINITIALIZED       0x8200000f
 
 #endif // !D3D9FRAME_H
+

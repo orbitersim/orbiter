@@ -1,6 +1,6 @@
 // ==============================================================
 //   ORBITER VISUALISATION PROJECT (OVP)
-//   Copyright (C) 2006-2016 Martin Schweiger
+//   Copyright (C) 2006-2026 Martin Schweiger
 //   Dual licensed under GPL v3 and LGPL v3
 // ==============================================================
 
@@ -154,3 +154,4 @@ void QuadTreeNode<T>::DelAbove(int lvl)
 }
 
 #endif // !__QTREE_H
+

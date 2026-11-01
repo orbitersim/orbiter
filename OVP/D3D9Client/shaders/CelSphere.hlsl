@@ -1,7 +1,7 @@
 // ==============================================================
 // Part of the ORBITER VISUALISATION PROJECT (OVP)
 // Licensed under LGPL v2
-// Copyright (C) 2021 Jarmo Nikkanen
+// Copyright (C) 2021-2026 Jarmo Nikkanen
 // ==============================================================
 
 #define BOOL bool
@@ -59,3 +59,4 @@ float4 CelPS(CelSphereVS frg) : COLOR
 	if (Flow.bBeta)  vColor += tex2D(tTexB, frg.tex0).rgb * Const.fBeta;
 	return float4(vColor, 1.0);
 }
+

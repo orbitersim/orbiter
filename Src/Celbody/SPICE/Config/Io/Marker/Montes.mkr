@@ -1,0 +1,30 @@
+BEGIN_HEADER
+InitialState on
+ColourIdx 2
+ShapeIdx 3
+END_HEADER
+
+BEGIN_DATA
++90.90	-3.70	:	Boösaule Montes
++121.40	-32.40	:	Caucasus Mons
++118.80	-76.20	:	Crimea Mons
++161.90	-25.90	:	Dorian Montes
++102.40	-41.50	:	Egypt Mons
++21.20	-48.90	:	Euboea Montes
++233.50	+26.30	:	Euxine Mons
++272.30	+18.60	:	Gish Bar Mons
++313.80	-69.70	:	Haemus Montes
++278.20	-5.10	:	Hi'iaka Montes
++123.40	+8.60	:	Ionian Mons
++255.50	+15.20	:	Monan Mons
++293.10	+22.80	:	Mongibello Mons
++110.00	+52.10	:	Nile Montes
++144.40	+4.20	:	Ot Mons
++113.30	-8.80	:	Pillan Mons
++158.80	-36.30	:	Rata Mons
++225.80	-10.70	:	Seth Mons
++288.50	-12.00	:	Shamshu Mons
++87.70	-52.70	:	Silpium Mons
++261.00	+26.20	:	Skythia Mons
++199.50	-29.50	:	Tohil Mons
++283.00	+38.10	:	Zal Montes

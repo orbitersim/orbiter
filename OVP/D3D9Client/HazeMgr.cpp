@@ -2,7 +2,7 @@
 // HazeMgr.cpp
 // Part of the ORBITER VISUALISATION PROJECT (OVP)
 // Dual licensed under GPL v3 and LGPL v3
-// Copyright (C) 2007 - 2016 Martin Schweiger
+// Copyright (C) 2007-2026 Martin Schweiger
 //				 2011 - 2016 Jarmo Nikkanen
 // ============================================================================
 
@@ -526,4 +526,5 @@ LPDIRECT3DVERTEXBUFFER9 HazeManager2::pSkyVB[6];
 LPDIRECT3DVERTEXBUFFER9 HazeManager2::pRingVB = NULL;
 int HazeManager2::xreslvl[6] = {9,6,5,4,3,2};
 int HazeManager2::yreslvl[6] = {11,8,6,5,5,4};
+
 

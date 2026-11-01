@@ -1,7 +1,7 @@
 // ==============================================================
 // XRSoundDLL.cpp : Main class file for XRSound Orbiter module.
 //
-// Copyright (c) 2018-2021 Douglas Beachy
+// Copyright (c) 2018-2026 Douglas Beachy
 // Licensed under the MIT License
 // ==============================================================
 
@@ -10,6 +10,34 @@
 #include "XRSoundDLL.h"
 #include "VesselXRSoundEngine.h"
 #include "ModuleXRSoundEngine.h"
+
+namespace
+{
+// These SEH guards were inline in XRSoundDLL::clbkPreStep. The VS 2026 Debug
+// build reports C2712 there because that function also owns a debug STL
+// iterator requiring destruction. Keep the guards in these helpers without
+// changing their behavior: false makes clbkPreStep write the original error
+// message, then continue the update.
+// TODO: Investigate the CTD that prompted the catch-all handlers and whether
+// they can be removed. Continuing after an access violation may leave Orbiter
+// in an invalid state; changing that policy is outside this build fix.
+bool PreStepVesselWithSEH(OBJHANDLE hVessel, VesselXRSoundEngine *pEngine,
+    double simt, double simdt, double mjd)
+{
+    __try
+    {
+        _ASSERTE(oapiIsVessel(hVessel));
+        _ASSERTE(pEngine);
+        pEngine->clbkPreStep(simt, simdt, mjd);
+        return true;
+    }
+    __except(EXCEPTION_EXECUTE_HANDLER)
+    {
+        return false;
+    }
+}
+
+}
 
 // Exported DLL method; invoked only by our static XRSound.lib to obtain an XRSoundEngine object for a given vessel.
 // Added in API version 1.0
@@ -46,8 +74,8 @@ VesselXRSoundEngine *XRSoundDLL::GetXRSoundEngineInstance(const OBJHANDLE hVesse
     if (!bIsValidVessel)
     {
         // should never happen!
-        CString msg;
-        msg.Format("XRSoundDLL::GetXRSoundEngineInstance ERROR: vessel handle passed is invalid! bInvokedByClientVessel = %d", bInvokedByClientVessel);
+        char msg[256];
+        snprintf(msg, 256, "XRSoundDLL::GetXRSoundEngineInstance ERROR: vessel handle passed is invalid! bInvokedByClientVessel = %d", bInvokedByClientVessel);
         WriteLog(msg);
         return nullptr;
     }
@@ -65,15 +93,17 @@ VesselXRSoundEngine *XRSoundDLL::GetXRSoundEngineInstance(const OBJHANDLE hVesse
         // if this ship has thrusters; it should have default sounds
         const DWORD dwThrusterCount = pVessel->GetThrusterCount();
         const bool bShouldHaveDefaultSounds = (dwThrusterCount > 0);
-        CString csVesselDesc;
-        csVesselDesc.Format("'%s' [class name '%s'], bInvokedByClientVessel = %d, dwThrusterCount = %u, bShouldHaveDefaultSounds = %d",
-            pVessel->GetName(), pVessel->GetClassName(), bInvokedByClientVessel, dwThrusterCount, bShouldHaveDefaultSounds);
+        char csVesselDesc[256];
+        const char *pName = pVessel->GetName();
+        const char *pClassName = pVessel->GetClassName();
+        snprintf(csVesselDesc, 256, "'%s' [class name '%s'], bInvokedByClientVessel = %d, dwThrusterCount = %u, bShouldHaveDefaultSounds = %d",
+            pName ? pName : "<unknown>", pClassName ? pClassName : "<unknown>", bInvokedByClientVessel, dwThrusterCount, bShouldHaveDefaultSounds);
 
         // if the request for an engine came from a vessel, it should *always* succeed, even if it would not normally have default sounds
         if (bInvokedByClientVessel || bShouldHaveDefaultSounds)
         {
-            CString msg;
-            msg.Format("XRSoundDLL::GetXRSoundEngineInstance: creating new XRSoundEngine instance for vessel %s", static_cast<const char *>(csVesselDesc));
+            char msg[256];
+            snprintf(msg, 256, "XRSoundDLL::GetXRSoundEngineInstance: creating new XRSoundEngine instance for vessel %s", static_cast<const char *>(csVesselDesc));
 
             pEngine = VesselXRSoundEngine::CreateInstance(hVessel);
             if (pEngine)
@@ -106,8 +136,8 @@ ModuleXRSoundEngine *XRSoundDLL::GetXRSoundEngineInstance(const char *pUniqueMod
     if (!bIsValidModuleID)
     {
         // should never happen!
-        CString msg;
-        msg.Format("XRSoundDLL::GetXRSoundEngineInstance ERROR: pUniqueModuleName passed is nullptr or empty!");
+        char msg[256];
+        snprintf(msg, 256, "XRSoundDLL::GetXRSoundEngineInstance ERROR: pUniqueModuleName passed is nullptr or empty!");
         WriteLog(msg);
         return nullptr;
     }
@@ -115,8 +145,8 @@ ModuleXRSoundEngine *XRSoundDLL::GetXRSoundEngineInstance(const char *pUniqueMod
     ModuleXRSoundEngine *pEngine = s_pInstance->FindXRSoundEngineForModule(pUniqueModuleName);
     if (!pEngine)   // no existing engine found for this module
     {
-        CString csMsg;
-        csMsg.Format("XRSoundDLL::GetXRSoundEngineInstance: creating new XRSoundEngine instance for module '%s'", pUniqueModuleName);
+        char csMsg[256];
+        snprintf(csMsg, 256, "XRSoundDLL::GetXRSoundEngineInstance: creating new XRSoundEngine instance for module '%s'", pUniqueModuleName);
         pEngine = ModuleXRSoundEngine::CreateInstance(pUniqueModuleName);
         if (pEngine)
         {
@@ -125,7 +155,7 @@ ModuleXRSoundEngine *XRSoundDLL::GetXRSoundEngineInstance(const char *pUniqueMod
         }
         else
         {
-            csMsg.Format("XRSoundDLL::GetXRSoundEngineInstance: WARNING: nullptr or empty module name supplied; returning nullptr.");
+            snprintf(csMsg, 256, "XRSoundDLL::GetXRSoundEngineInstance: WARNING: nullptr or empty module name supplied; returning nullptr.");
         }
         s_pInstance->WriteLog(csMsg);
     }
@@ -152,9 +182,6 @@ DLLCLBK void InitModule(HINSTANCE hDLL)
     
     // parse this immediately so we can read it from the start
     XRSoundDLL::ParseGlobalConfigFile();
-
-    // NOTE: the initial implementation was to call XRSoundEngine::InitializeIrrKlangEngine from here, but
-    // it hung indefinitely when calling createIrrKlangDevice, so I had to move that logic into XRSoundDLL::GetXRSoundEngineInstance.
 }
 
 // parse (or re-parse) our global XRSound.cfg file (this parse is vessel-independent)
@@ -165,8 +192,8 @@ void XRSoundDLL::ParseGlobalConfigFile()
     globalConfig.ParseFile();
     if (globalConfig.ParseFailed())
     {
-        CString msg;
-        msg.Format("Error parsing configuration file '%s' -- see above error messages for details.", globalConfig.GetDefaultFilename());
+        char msg[256];
+        snprintf(msg, 256, "Error parsing configuration file '%s' -- see above error messages for details.", globalConfig.GetDefaultFilename());
         globalConfig.WriteLog(msg);
     }
 }
@@ -186,7 +213,7 @@ XRSoundDLL *XRSoundDLL::s_pInstance;
 
 // Constructor
 XRSoundDLL::XRSoundDLL(HINSTANCE hDLL) :
-    Module(hDLL), m_hDLL(hDLL), m_nextSoundEnginesRefreshSimt(0), m_absoluteSimTime(0), m_nextIrrKlangUpdateRealtime(0)
+    Module(hDLL), m_hDLL(hDLL), m_nextSoundEnginesRefreshSimt(0), m_absoluteSimTime(0)
 {
 }
 
@@ -198,7 +225,7 @@ XRSoundDLL::~XRSoundDLL()
     // sanity checks to make sure things were already cleaned up as expected
     _ASSERTE(m_allVesselsMap.size() == 0);
     _ASSERTE(m_allModulesMap.size() == 0);
-    _ASSERTE(!XRSoundEngine::IsKlangEngineInitialized());
+    _ASSERTE(!XRSoundEngine::IsSoundEngineInitialized());
 #endif
 }
 
@@ -209,7 +236,7 @@ void XRSoundDLL::clbkSimulationStart(RenderMode mode)
     // reparse our global (i.e., vessel-independent) config file in case the user dropped to the launchpad and restarted
     XRSoundDLL::ParseGlobalConfigFile();
 
-    // NOTE: this is too late to invoke XRSoundEngine::InitializeIrrKlangEngine, since vessels need the engine to be available
+    // NOTE: this is too late to invoke XRSoundEngine::InitializeSoundEngine, since vessels need the engine to be available
     // before clbkSetClassCaps.
     // Instead, the first call to XRSoundDLL::GetXRSoundEngineInstance handles initializing the engine, since that
     // is the first call that must be made before any other XRSoundEngine calls can be made.
@@ -239,7 +266,7 @@ void XRSoundDLL::clbkSimulationEnd()
         XRSoundEngine::DestroyInstance(it->second);
     m_allVesselsMap.clear();
 
-    XRSoundEngine::DestroyIrrKlangEngine();
+    XRSoundEngine::DestroySoundEngine();
 }
 
 // Returns a list of all Orbiter vessel handles that exist during this frame
@@ -360,24 +387,9 @@ void XRSoundDLL::UpdateAllVesselsMap()
 //   mjd simulation time after the currently processed step into modified Julian Date format[days]
 void XRSoundDLL::clbkPreStep(double simtDoNotUse, double simdt, double mjd)
 {
-    // This note copied verbatim from our VesselExt::clbkPreStep method in Vessel3Ext.cpp.
-
-    //**************************************************************************************************************
-    // Update our absolute sim time counter: it is simt that always counts *up*, ignoring MDJ changes both positive and negative.
-    // (The Orbiter core does not invoke clkbPreStep for MJD edits: it adjusts simt but not *simdt* on the next call, so that makes it easy.)
-    //
-    // Note: do NOT use simt in any way for this: simt adjusts with MJD, but simdt does not.
-    // WARNING: XRSOUND CODE SHOULD *NEVER* INVOKE oapiGetSimTime(): it varies by MJD and so is unreliable for time deltas (which 
-    // was the whole point of simt in the first place).  Instead, you should always use simt we pass to our PreStep objects (since we 
-    // pass absoluteSimtTime in it instead), or invoke XRSoundDLL::GetAbsoluteSimTime() if a local simt is not available.  
-    //
-    // I added a #define oapiGetSimTime error to XRSoundEngine.h to prevent XRSound code from accidentally trying to invoke it.
-    //**************************************************************************************************************
     // Note: currently simdt never appears to go negative, but we're being defensive here anyway
     if (simdt > 0)
         m_absoluteSimTime += simdt;
-
-    // DEV DEBUGGING ONLY: sprintf(oapiDebugString(), "GetAbsoluteSimTime()=%lf, simtDoNotUse=%lf, simdt=%lf", GetAbsoluteSimTime(), simtDoNotUse, simdt);
 
     // use our simt that is not affected by MDJ changes
     const double simt = GetAbsoluteSimTime();
@@ -391,22 +403,15 @@ void XRSoundDLL::clbkPreStep(double simtDoNotUse, double simdt, double mjd)
         for (auto it = m_allVesselsMap.begin(); it != m_allVesselsMap.end(); it++)
         {
             const OBJHANDLE hVessel = it->first;
-            _ASSERTE(oapiIsVessel(hVessel));    // should still be a valid vessel, since UpdateAllVesselsMap() removes invalid (i.e., now-deleted) vessels
-            VesselXRSoundEngine *pEngine = it->second;
-            _ASSERTE(pEngine);
-            pEngine->clbkPreStep(simt, simdt, mjd);
+            // The vessel should still be valid: UpdateAllVesselsMap removes deleted vessels.
+            if (!PreStepVesselWithSEH(hVessel, it->second, simt, simdt, mjd))
+            {
+                char csMsg[256];
+                snprintf(csMsg, 256, "XRSoundDLL::clbkPreStep ERROR: Access Violation in VesselXRSoundEngine::clbkPreStep for vessel %s", oapiIsVessel(hVessel) ? oapiGetVesselInterface(hVessel)->GetName() : "<invalid>");
+                WriteLog(csMsg);
+            }
         }
         m_nextSoundEnginesRefreshSimt = simt + GetGlobalConfig().UpdateInterval;
-    }
-
-    // NOTE: we need to give irrKlang ~20 timeslices a second in *realtime*, not *sim time*, which can be slowed down to 1/10 realtime.
-    // give irrKlang a timeslice to update the state of the sound output
-    const double systemUptime = GetSystemUptime();
-    if (systemUptime >= m_nextIrrKlangUpdateRealtime)
-    {
-        // DEV DEBUGGING ONLY: sprintf(oapiDebugString(), "Updating irrKlang engine at systemUptime %lf", systemUptime);
-        XRSoundEngine::UpdateIrrKlangEngine();
-        m_nextIrrKlangUpdateRealtime = systemUptime + 0.05;     // 20 updates per second in realtime
     }
 }
 

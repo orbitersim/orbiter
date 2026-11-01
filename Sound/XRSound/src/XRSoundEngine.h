@@ -2,13 +2,12 @@
 // Base class for the XRSound API engine implementation; this file is not distributed with XRSound.
 // The code for this exists in XRSound.dll.
 // 
-// Copyright (c) 2018-2021 Douglas Beachy
+// Copyright (c) 2018-2026 Douglas Beachy
 // Licensed under the MIT License
 // ==============================================================
 
 #pragma once
 
-#include <atlstr.h>             // for CString
 #include <unordered_map>
 
 #include "OrbiterSDK.h"
@@ -24,14 +23,12 @@ class ModuleXRSoundEngine;
 // Note: ideally I would like to have this invoke '#error foo' to generate an elegant message, but there's no way to declare that
 #define oapiGetSimTime ERROR! "Do not invoke oapiGetSimTime: see comment block in XRSoundDLL::clbkPreStep for details"
 
+class ISound;
+class ISoundEngine;
 #ifdef XRSOUND_DLL_BUILD
-#include <irrKlang.h>
-using namespace irrklang;
 #include "XRSoundConfigFileParser.h"
 #else
 // we're compiling XRSoundLib, so all we need is a forward reference (and we don't want to include the full class definition on the .lib side!)
-class ISoundEngine;
-class ISound;
 class XRSoundConfigFileParser;
 #endif
 
@@ -70,21 +67,21 @@ struct WavContext
     }
 
     // used for logging
-    CString ToStr(const bool bShowLoopAndVolume = true) const
+    std::string ToStr(const bool bShowLoopAndVolume = true) const
     { 
-        CString msg;
+		char cbuf[256];
         if (bShowLoopAndVolume)
         {
-            msg.Format("[soundID = %d, playbackType = %s (%d), bLoop = %d, volume = %.2lf, bPaused = %d, bEnabled = %d, filename = '%s']",
-                soundID, PlaybackTypeToStr(playbackType), playbackType, bLoop, volume, bPaused, bEnabled, static_cast<const char *>(csSoundFilename));
+            snprintf(cbuf, 256, "[soundID = %d, playbackType = %s (%d), bLoop = %d, volume = %.2lf, bPaused = %d, bEnabled = %d, filename = '%s']",
+                soundID, PlaybackTypeToStr(playbackType), playbackType, bLoop, volume, bPaused, bEnabled, static_cast<const char *>(csSoundFilename.c_str()));
         }
         else
         {
-            msg.Format("[soundID = %d, playbackType = %s (%d), filename = '%s']",
-                soundID, PlaybackTypeToStr(playbackType), playbackType, static_cast<const char *>(csSoundFilename));
+            snprintf(cbuf, 256, "[soundID = %d, playbackType = %s (%d), filename = '%s']",
+                soundID, PlaybackTypeToStr(playbackType), playbackType, static_cast<const char *>(csSoundFilename.c_str()));
         }
         
-        return msg;
+        return cbuf;
     }
 
     // Used for logging
@@ -112,7 +109,7 @@ struct WavContext
 
     // data added via LoadWav
     int soundID;
-    CString csSoundFilename;
+    std::string csSoundFilename;
     XRSound::PlaybackType playbackType;   // InternalOnly, BothViewFar, Radio, etc.
 
     // data added via PlayWav and SetPaused
@@ -188,9 +185,8 @@ public:
 
     // Methods only invoked by XRSoundDLL (our Orbiter module class).  Because these are non-virtual, it is impossible for XRSoundLib to invoke them
     // because it cannot link with them when the Orbiter vessel using XRSoundLib tries to link.
-    static void DestroyIrrKlangEngine();     // performs one-time destruction of our irrKlang engine
-    static bool IsKlangEngineInitialized();
-    static void UpdateIrrKlangEngine();     // invoked several times per second so the engine can update its state
+    static void DestroySoundEngine();     // performs one-time destruction of our sound engine
+    static bool IsSoundEngineInitialized();
     static const char *GetSoundDriverName();
     static const char *GetVersionStr();
     static void ResetStaticSimulationData();
@@ -205,7 +201,7 @@ public:
     void SetAllWavPaused(const bool bPaused);     
     
     XRSoundConfigFileParser &GetConfig() { _ASSERTE(m_pConfig);  return *m_pConfig; }
-    vector<CString> GetValidSoundFileExtensions();    // e.g., ".flac", ".wav", ".mp3", etc.
+    vector<std::string> GetValidSoundFileExtensions();    // e.g., ".flac", ".wav", ".mp3", etc.
     const char *GetWavFilename(const int soundID);
     
     // returns Orbiter's camera's global coordinates
@@ -222,7 +218,7 @@ public:
     static XRSoundConfigFileParser s_globalConfig;    // this is parsed at DLL initialization time so we can write to the log file and read configuration data early-on from our static methods
 
 protected:
-    static bool InitializeIrrKlangEngine();  // performs one-time static initialization of our irrKlang singleton
+    static bool InitializeSoundEngine();  // performs one-time static initialization of our sound singleton
 
     //=====================================================================================
     // Protected abstract methods -- these are not exposed via the XRSoundEngine interface.
@@ -235,8 +231,8 @@ protected:
     static bool StopWavImpl(WavContext *pContext, XRSoundEngine *pEngine);
     
     // data
-    static ISoundEngine *s_pKlangEngine;        // initialized by InitializeIrrKlangEngine
-    static bool s_bIrrKlangEngineNeedsInitialization; // used to handle one-time startup items
+    static ISoundEngine *s_SoundEngine;        // initialized by InitializeSoundEngine
+    static bool s_bSoundEngineNeedsInitialization; // used to handle one-time startup items
 
     XRSoundConfigFileParser *m_pConfig;   // this is per-engine instance instead of static so that we can per-vessel or per-module configuration overrides if we want to    
     
@@ -250,8 +246,8 @@ protected:
 
 private:
     static WavContext *s_pMusicFolderWavContext;  // our special, global MusicFolder sound
-    static CString s_csVersion;
-    CString m_lastLogLine;  // last log message written to XRSound.log
+    static std::string s_csVersion;
+    std::string m_lastLogLine;  // last log message written to XRSound.log
     double m_nextDuplicateLogLineSimt;
 };
 
@@ -260,7 +256,8 @@ private:
 {                                                   \
     if (pEngine->GetConfig().EnableVerboseLogging)  \
     {                                               \
-        CString msg; msg.Format(str, __VA_ARGS__);  \
+        char msg[256];                              \
+		snprintf(msg, 256, str, __VA_ARGS__);       \
         pEngine->WriteLog(msg);                     \
     }                                               \
 }
@@ -273,3 +270,4 @@ private:
 // calling convention, NOT the normal __stdcall that C++ uses.
 extern "C" typedef XRSoundEngine* (__cdecl* VesselXRSoundEngineInstanceFuncPtr)(OBJHANDLE hVessel);
 extern "C" typedef XRSoundEngine* (__cdecl* ModuleXRSoundEngineInstanceFuncPtr)(const char* pUniqueModuleName);
+

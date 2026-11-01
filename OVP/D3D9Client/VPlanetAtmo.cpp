@@ -2,7 +2,7 @@
 // VPlanet.cpp
 // Part of the ORBITER VISUALISATION PROJECT (OVP)
 // Dual licensed under LGPL v3
-// Copyright (C) 2006-2022 Martin Schweiger
+// Copyright (C) 2006-2026 Martin Schweiger
 //				 2010-2022 Jarmo Nikkanen
 // ==============================================================
 
@@ -632,8 +632,13 @@ void vPlanet::UpdateScatter()
 	cp.vTangent = vTan;		// RefFrame for surface micro-tex and water
 	cp.vBiTangent = vBiT;	// RefFrame for surface micro-tex and water
 	cp.cSun = FVECTOR3(1, 1, 1) * atmo->suni;
-	cp.PlanetRad = float(pr);
-	cp.PlanetRad2 = float(pr * pr);
+
+	// MS261029 : Changed this because it caused problem in spherical rendering mode when
+	// vertices are reset to PlanetRad distance from planet centre (GH issue #704)
+	//cp.PlanetRad = float(pr);
+	cp.PlanetRad = float(GetSize());
+
+	cp.PlanetRad2 = cp.PlanetRad * cp.PlanetRad;
 	cp.MinAlt = float(minelev);
 	cp.MaxAlt = float(maxelev);		// Max Elevation above sea-level
 	cp.iAltRng = 1.0f / (cp.MaxAlt - cp.MinAlt);
@@ -1456,5 +1461,6 @@ void vPlanet::TestComputations(Sketchpad* pSkp)
 	}
 	pSkp->SetViewMode(Sketchpad::USER);
 }
+
 
 

@@ -125,6 +125,9 @@ public:
 	void ShiftPanel (double dx, double dy);
 	// move instrument panel on screen. dx, dy: pixels/sec
 
+	void ShiftPanel(int dir);
+	// move instrument panel in given direction
+
 	void ShowHUD (bool yes = true);
 	// turn head up display on/off
 
@@ -211,6 +214,7 @@ public:
 	VirtualCockpit *GetVC() { return vcockpit; }
 
 	Panel2D *GetPanel2D() { return panel2d; }
+	Panel *GetPanel2D_old() { return panel; }
 
 	void RegisterPanelBackground (HBITMAP hBmp, DWORD flag, DWORD ck);
 	void RegisterPanelBackground (SURFHANDLE hSurf, DWORD flag);
@@ -274,8 +278,6 @@ private:
 	SURFHANDLE mfdTex_blank; // dummy texture for blank MFD surfaces
 	MenuInfoBar *mibar;      // main menu and info displays
 
-	HPEN  hPen[6];           // pen resources
-	HBRUSH hBrush1, hBrush2; // brush resources
 	int panelmode;           // 0=none, 1=MFDs only, 2=2D panels, 3=virtual cockpit
 
 	HUD *hud;                  // head up display

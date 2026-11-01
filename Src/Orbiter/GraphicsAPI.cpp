@@ -261,6 +261,13 @@ void GraphicsClient::GetBaseShadowGeometry (OBJHANDLE hBase, MESHHANDLE **mesh_s
 
 // ======================================================================
 
+void GraphicsClient::GetBaseCollisionStructures (OBJHANDLE hBase, MESHHANDLE **mesh_col, DWORD *nmesh_col) const
+{
+	((Base*)hBase)->ExportCollisionMeshes ((Mesh***)mesh_col, nmesh_col);
+}
+
+// ======================================================================
+
 const void *GraphicsClient::GetConfigParam (DWORD paramtype) const
 {
 	return g_pOrbiter->Cfg()->GetParam (paramtype);
@@ -850,8 +857,6 @@ void ScreenAnnotation::SetSize (double scale)
 		hf = (int)(viewH*txtscale/35.0);
 		if (font) gc->clbkReleaseFont (font);
 		font = gc->clbkCreateFont (-hf, true, "Sans");
-		//if (hFont) DeleteObject (hFont);
-		//hFont = CreateFont (-hf, 0, 0, 0, 400, 0, 0, 0, 0, 3, 2, 1, 49, "Arial");
 	}
 }
 

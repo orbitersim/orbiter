@@ -1,5 +1,5 @@
 // ==================================================================
-// Copyright (c) 2021 Jarmo Nikkanen
+// Copyright (c) 2021-2026 Jarmo Nikkanen
 // Licensed under the MIT License
 // ==================================================================
 
@@ -241,3 +241,4 @@ void Layer::UpdateProps()
 	else pProp->OpenEntry(hISec, false);
 	pProp->Update();
 }
+

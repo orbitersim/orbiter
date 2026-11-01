@@ -69,6 +69,7 @@ set(common_src
 	Star.cpp
 # Vessel classes
 	FlightRecorder.cpp
+	CollisionCore.cpp
 	SuperVessel.cpp
 	Vessel.cpp
 	Vesselbase.cpp
@@ -110,8 +111,6 @@ set(common_src
 	D3d7util.cpp
 	D3dmath.cpp
 	Di7frame.cpp
-# Graphics interface base class for GDI clients
-	${GDICLIENT_DIR}/GDIClient.cpp
 # Utils
 	Log.cpp
 	Memstat.cpp

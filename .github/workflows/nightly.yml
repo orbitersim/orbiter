@@ -50,7 +50,7 @@ jobs:
     runs-on: windows-latest
     steps:
       - name: Download artifacts
-        uses: actions/download-artifact@v7
+        uses: actions/download-artifact@v8
 
       - name: Re-arrange artifacts
         shell: cmd

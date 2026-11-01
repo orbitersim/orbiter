@@ -1,5 +1,5 @@
 // ==============================================================          
-// Copyright (C) 2006 Martin Schweiger
+// Copyright (C) 2006-2026 Martin Schweiger
 // Licensed under the MIT License
 // ==============================================================
 //
@@ -132,4 +132,5 @@ void OpenDlgClbk (void *context)
 //{
 //	oapiCloseDialog (hDlg);
 //}
+
 

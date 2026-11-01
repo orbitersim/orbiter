@@ -1,5 +1,5 @@
 // ==================================================================
-// Copyright (c) 2021 Jarmo Nikkanen
+// Copyright (c) 2021-2026 Jarmo Nikkanen
 // Licensed under the MIT License
 // ==================================================================
 
@@ -427,3 +427,4 @@ int QTree::SaveTile(int flags, SURFHANDLE hSurf, SURFHANDLE hTemp, DRECT bounds,
 }
 
 	
+

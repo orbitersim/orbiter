@@ -192,6 +192,7 @@ bool Pane::SetPanelMode (int pmode, bool force)
 	if (pmode == panelmode && !force) return true; // nothing to do
 	panelmode = pmode;
 	
+	g_camera->ResetCockpitView();
 	Vessel::UnsetCameraMovement();
 
 	for (i = 0; i < MAXMFD; i++) {
@@ -325,8 +326,7 @@ int Pane::SelectVC (int id)
 	vcockpit = new VirtualCockpit (id, this); TRACENEW
 	if (g_focusobj->LoadVC (id)) {
 		vcid = id;
-		g_camera->ResetCockpitPos();
-		g_camera->ResetCockpitDir (false);
+		g_camera->ResetCockpitView();
 		for (i = 0; i < MAXMFD; i++) {
 			if (mfd[i].exist && mfd[i].active)
 				OpenMFD (i, mfd[i].lastmode);
@@ -381,6 +381,28 @@ void Pane::ShiftPanel (double dx, double dy)
 		if (panel2d) panel2d->Move (ix, iy);
 		else         panel->Move (ix, iy);
 	}
+}
+
+void Pane::ShiftPanel(int dir)
+{
+	double dx = 0.0, dy = 0.0;
+	const double speed = g_pOrbiter->Cfg()->CfgLogicPrm.PanelScrollSpeed;
+	const double dt = td.SysDT;
+	switch (dir) {
+	case 0: // left
+		dx = dt * speed;
+		break;
+	case 1: // right
+		dx = -dt * speed;
+		break;
+	case 2: // up
+		dy = dt * speed;
+		break;
+	case 3: // down
+		dy = -dt * speed;
+		break;
+	}
+	ShiftPanel(dx, dy);
 }
 
 void Pane::ShowHUD (bool yes)
@@ -744,19 +766,6 @@ void Pane::InitResources ()
 		f1W = f1H = 0;
 	}
 
-	// OBSOLETE
-	hPen[0] = CreatePen (PS_SOLID, 0, RGB(0,255,0));
-	hPen[1] = CreatePen (PS_SOLID, 0, RGB(0,255,0));
-	hPen[2] = CreatePen (PS_SOLID, 0, RGB(0,128,0));
-	hPen[3] = CreatePen (PS_SOLID, 0, RGB(128,128,0));
-	hPen[4] = CreatePen (PS_SOLID, 0, RGB(64,64,0));
-	hPen[5] = CreatePen (PS_SOLID, 0, RGB(128,128,128));
-	static LOGBRUSH lbrush1 = {BS_SOLID, RGB(0,128,0), 0};
-	static LOGBRUSH lbrush2 = {BS_SOLID, RGB(96,96,0), 0};
-	hBrush1 = CreateBrushIndirect (&lbrush1);
-	hBrush2 = CreateBrushIndirect (&lbrush2);
-	// END OBSOLETE
-
 	blinkmesh.tex = (gc ? gc->clbkLoadTexture ("transp.dds", 0x4) : NULL);
 
 #ifdef UNDEF
@@ -789,9 +798,6 @@ void Pane::FreeResources ()
 
 	for (i = 0; i < 2; i++) gc->clbkReleaseFont (hudfont[i]);
 	gc->clbkReleasePen (hudpen);
-	for (i = 0; i < 6; i++) DeleteObject (hPen[i]);
-	DeleteObject (hBrush1);
-	DeleteObject (hBrush2);
 	if (blinkmesh.tex) gc->clbkReleaseSurface (blinkmesh.tex);
 }
 

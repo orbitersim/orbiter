@@ -251,7 +251,7 @@ int main (int argc, char *argv[])
 
 	cout << "+-----------------------------------------------------------------------+\n";
 	cout << "|             pltex: Planetary texture manager for ORBITER              |\n";
-	cout << "|        Build: " << __DATE__ << "      (c) 2001-2008 Martin Schweiger         |\n";
+	cout << "|        Build: " << __DATE__ << "      (c) 2001-2026 Martin Schweiger         |\n";
 	cout << "+-----------------------------------------------------------------------+\n\n";
 
 	for (;;) {
@@ -2827,3 +2827,4 @@ DWORD CopyDDS (FILE *ftgt, FILE *fsrc, DWORD idx, bool idx_is_ofs)
 
 	return tsize;
 }
+

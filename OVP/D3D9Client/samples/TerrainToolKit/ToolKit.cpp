@@ -1,5 +1,5 @@
 // ==================================================================
-// Copyright (c) 2021 Jarmo Nikkanen
+// Copyright (c) 2021-2026 Jarmo Nikkanen
 // Licensed under the MIT License
 // ==================================================================
 
@@ -1221,3 +1221,4 @@ void ToolKit::clbkPreStep(double simt, double simdt, double mjd)
 {
 	if (!pCore) return;
 }
+

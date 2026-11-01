@@ -1,7 +1,7 @@
 // ==============================================================
 // XRSoundEngine30.h : Defines the XRSoundEngine version 2.x interface.
 //
-// Copyright (c) 2021 Douglas Beachy
+// Copyright (c) 2021-2026 Douglas Beachy
 // Licensed under the MIT License
 // ==============================================================
 
@@ -24,3 +24,4 @@ public:
     virtual bool  SetPlayPosition(const int soundID, const unsigned int positionMillis) = 0;
     virtual int   GetPlayPosition(const int soundID) = 0;
 };
+

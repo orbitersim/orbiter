@@ -2,7 +2,7 @@
 // Atmospheric controls implementation
 // Part of the ORBITER VISUALISATION PROJECT (OVP)
 // Dual licensed under GPL v3 and LGPL v3
-// Copyright (C) 2014 - 2016 Jarmo Nikkanen
+// Copyright (C) 2014-2026 Jarmo Nikkanen
 // ==============================================================
 
 #include "D3D9Client.h"
@@ -580,5 +580,6 @@ INT_PTR CALLBACK WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 }
 
 } //namespace
+
 
 

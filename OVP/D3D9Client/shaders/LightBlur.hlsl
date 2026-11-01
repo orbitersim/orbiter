@@ -1,7 +1,7 @@
 // ==============================================================
 // Part of the ORBITER VISUALISATION PROJECT (OVP)
 // Dual licensed under GPL v3 and LGPL v3
-// Copyright (C) 2016 Jarmo Nikkanen
+// Copyright (C) 2016-2026 Jarmo Nikkanen
 //				 2016 SolarLiner (Nathan Graule)
 // ==============================================================
 
@@ -178,4 +178,5 @@ float4 PSNormal(float tx : TEXCOORD0, float ty : TEXCOORD1) : COLOR
 	float2 xy = (q.xy + 1.0f) * 0.5f;
 	return float4(xy, abs(q.z), 1.0f);
 }
+
 

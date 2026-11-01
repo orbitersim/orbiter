@@ -1,5 +1,5 @@
 // ===================================================
-// Copyright (C) 2012-2021 Jarmo Nikkanen
+// Copyright (C) 2012-2026 Jarmo Nikkanen
 // licensed under LGPL v2
 // ===================================================
 
@@ -2095,3 +2095,4 @@ void D3D9PadBrush::D3D9TechInit(LPDIRECT3DDEVICE9 pDevice)
 {
 	//pDev = pDevice;
 }
+
