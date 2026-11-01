@@ -1565,7 +1565,7 @@ int LoadPlanetTextures(const char* fname, LPDIRECT3DTEXTURE9* ppdds, DWORD flags
 
 		FILE* f;
 
-		if (fopen_s(&f, path, "rb")) return 0;
+		if (VFS::fopen_s(&f, path, "rb")) return 0;
 
 		int ntex = 0;
 		char* buffer, * location;
