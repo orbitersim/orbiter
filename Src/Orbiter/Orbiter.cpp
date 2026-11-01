@@ -384,12 +384,12 @@ HRESULT Orbiter::Create (HINSTANCE hInstance)
 	// parameter manager - parses from master config file
 	hInst = hInstance;
 	if (!pConfig->CfgCmdlinePrm.bCfgFromCinOnly)
-		pConfig->Load(MasterConfigFile);
+		pConfig->Read(MasterConfigFile);
 	if (pConfig->CfgCmdlinePrm.bCfgFromCinOnly || pConfig->CfgCmdlinePrm.bCfgFromCinAdd) {
 		std::stringstream memStream;
 		memStream << std::cin.rdbuf();
 		if (memStream.good())
-			pConfig->Load(memStream);
+			pConfig->Read(memStream);
 	}
 	strcpy (cfgpath, pConfig->CfgDirPrm.ConfigDir);   cfglen = strlen (cfgpath);
 
@@ -465,8 +465,11 @@ HRESULT Orbiter::Create (HINSTANCE hInstance)
 //-----------------------------------------------------------------------------
 void Orbiter::SaveConfig ()
 {
-	if (!pConfig->CfgCmdlinePrm.bCfgReadOnly) {
-		pConfig->Write(); // save current settings
+	if (pConfig->CfgCmdlinePrm.bCfgToCoutOnly) {
+		pConfig->Write(std::cout);
+	}
+	else if (!pConfig->CfgCmdlinePrm.bCfgReadOnly) {
+		pConfig->Write();
 		m_pLaunchpad->WriteExtraParams();
 	}
 }
@@ -681,7 +684,8 @@ VOID Orbiter::Launch (const char *scenario)
 
 	HCURSOR hCursor = SetCursor (LoadCursor (NULL, IDC_WAIT));
 	bool have_state = false;
-	SaveConfig(); // This should be redundant here, but just in case of a subsequent crash, save parameters on launch.
+	if (!pConfig->CfgCmdlinePrm.bCfgToCoutOnly) // we don't want to write to stdout for each launch
+		SaveConfig(); // This should be redundant here, but just in case of a subsequent crash, save parameters on launch.
 
 	if (!have_state && !pState->Read (ScnPath (scenario))) {
 		LOGOUT_ERR ("Scenario not found: %s", scenario);

@@ -286,6 +286,7 @@ struct CFG_CMDLINEPRM {
 	bool   bCfgFromCinOnly;     // Read config from stdin instead of Orbiter.cfg?
 	bool   bCfgFromCinAdd;      // Read config from stdin after reading from Orbiter.cfg?
 	bool   bCfgReadOnly;        // Prevent Orbiter.cfg update on exit?
+	bool   bCfgToCoutOnly;      // Write config to stdout instead of Orbiter.cfg?
 	bool   bStartPaused;        // Force pause at simulation start?
 	bool   bStartUnpaused;      // Force unpause at simulation start?
 	bool   bOpenVideoTab;       // Open Launchpad on video tab?
@@ -358,12 +359,15 @@ public:
 
 	bool FoundFile() const { return found_config_file; }
 
-	bool Config::Load(std::istream &is);
-	bool Load(const char* fname);
+	bool Read(const char* fname);
+	bool Config::Read(std::istream &is);
+	// read config parameters from a named file or an open stream
+	// returns false if read fails
 
-	BOOL Write (const char *fname = 0) const;
-	// write config parameters to file "fname"
-	// returns FALSE if write fails
+	bool Write (const char *fname = 0) const;
+	bool Write(std::ostream &os) const;
+	// write config parameters to a named file or an open stream
+	// returns false if write fails
 
 	char *ConfigPath (const char *name) const;
 	// Return full path for config file name (adds ".cfg" to name)

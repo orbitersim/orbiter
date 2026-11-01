@@ -248,6 +248,7 @@ CFG_CMDLINEPRM CfgCmdlinePrm_default = {
 	false,              // read config from stdin (false = read from Orbiter.cfg)
 	false,              // add config from stdin (false = don't allow override from stdin)
 	false,              // don't overwrite Orbiter.cfg (false = allow overwrite)
+	false,              // write config to stdout (false = write to Orbiter.cfg)
 	false,              // force start paused (false = don't force)
 	false,              // force start unpaused (false = don't force)
 	false,              // open video tab (false = open Scenarios tab)
@@ -469,10 +470,10 @@ Config::Config(char* fname)
 	Root = 0;
 	SetDefaults();
 
-	Load(fname);
+	Read(fname);
 }
 
-bool Config::Load(const char *fname)
+bool Config::Read(const char *fname)
 {
 	Root = new char[strlen(fname) + 1]; TRACENEW
 		strcpy(Root, fname);
@@ -481,10 +482,10 @@ bool Config::Load(const char *fname)
 	if (!ifs) return false;
 
 	found_config_file = true;
-	return Load(ifs);
+	return Read(ifs);
 }
 
-bool Config::Load(std::istream &is)
+bool Config::Read(std::istream &is)
 {
 	int i;
 	double d;
@@ -947,19 +948,23 @@ const void *Config::GetParam (DWORD paramtype) const
 	}
 }
 
-BOOL Config::Write (const char *fname) const
+bool Config::Write(const char *fname) const
+{
+	if (!fname) fname = Root;
+	if (!fname) return false;
+	ofstream ofs(fname);
+	if (!ofs) return false;
+	return Write(ofs);
+}
+
+bool Config::Write(std::ostream &os) const
 {
 	int i;
 
-	if (!fname) fname = Root;
-	if (!fname) return FALSE;
-	ofstream ofs (fname);
-	if (!ofs) return FALSE;
-
-	ofs << "; === ORBITER Master Configuration File ===\n";
-	ofs << "EchoAllParams = " << BoolStr (bEchoAll) << '\n';
+	os << "; === ORBITER Master Configuration File ===\n";
+	os << "EchoAllParams = " << BoolStr (bEchoAll) << '\n';
 	if (rLaunchpad.right > rLaunchpad.left)
-		ofs << "LPadRect = " << rLaunchpad.left << ' ' << rLaunchpad.top
+		os << "LPadRect = " << rLaunchpad.left << ' ' << rLaunchpad.top
 			<< ' ' << rLaunchpad.right << ' ' << rLaunchpad.bottom << '\n';
 
 	if (strcmp (CfgDirPrm.ConfigDir, CfgDirPrm_default.ConfigDir) || 
@@ -968,423 +973,423 @@ BOOL Config::Write (const char *fname) const
 		strcmp (CfgDirPrm.HightexDir, CfgDirPrm_default.HightexDir) ||
 		strcmp (CfgDirPrm.PlanetTexDir, CfgDirPrm_default.PlanetTexDir) ||
 		strcmp (CfgDirPrm.ScnDir, CfgDirPrm_default.ScnDir) || bEchoAll) {
-		ofs << "\n; === Subdirectory locations\n";
+		os << "\n; === Subdirectory locations\n";
 		if (strcmp (CfgDirPrm.ConfigDir, CfgDirPrm_default.ConfigDir) || bEchoAll)
-			ofs << "ConfigDir = " << CfgDirPrm.ConfigDir << '\n';
+			os << "ConfigDir = " << CfgDirPrm.ConfigDir << '\n';
 		if (strcmp (CfgDirPrm.MeshDir, CfgDirPrm_default.MeshDir) || bEchoAll)
-			ofs << "MeshDir = " << CfgDirPrm.MeshDir << '\n';
+			os << "MeshDir = " << CfgDirPrm.MeshDir << '\n';
 		if (strcmp (CfgDirPrm.TextureDir, CfgDirPrm_default.TextureDir) || bEchoAll)
-			ofs << "TextureDir = " << CfgDirPrm.TextureDir << endl;
+			os << "TextureDir = " << CfgDirPrm.TextureDir << endl;
 		if (strcmp (CfgDirPrm.HightexDir, CfgDirPrm_default.HightexDir) || bEchoAll)
-			ofs << "HightexDir = " << CfgDirPrm.HightexDir << endl;
+			os << "HightexDir = " << CfgDirPrm.HightexDir << endl;
 		if (strcmp(CfgDirPrm.PlanetTexDir, CfgDirPrm_default.PlanetTexDir) || bEchoAll)
-			ofs << "PlanetTexDir = " << CfgDirPrm.PlanetTexDir << endl;
+			os << "PlanetTexDir = " << CfgDirPrm.PlanetTexDir << endl;
 		if (strcmp (CfgDirPrm.ScnDir, CfgDirPrm_default.ScnDir) || bEchoAll)
-			ofs << "ScenarioDir = " << CfgDirPrm.ScnDir << endl;
+			os << "ScenarioDir = " << CfgDirPrm.ScnDir << endl;
 	}
 
 	if (memcmp (&CfgLogicPrm, &CfgLogicPrm_default, sizeof(CFG_LOGICPRM)) || bEchoAll) {
-		ofs << "\n; === Logical parameters ===\n";
+		os << "\n; === Logical parameters ===\n";
 		if (CfgLogicPrm.bStartPaused != CfgLogicPrm_default.bStartPaused || bEchoAll)
-			ofs << "StartPaused = " << BoolStr(CfgLogicPrm.bStartPaused) << '\n';
+			os << "StartPaused = " << BoolStr(CfgLogicPrm.bStartPaused) << '\n';
 		if (CfgLogicPrm.FlightModelLevel != CfgLogicPrm_default.FlightModelLevel || bEchoAll)
-			ofs << "FlightModel = " << CfgLogicPrm.FlightModelLevel << '\n';
+			os << "FlightModel = " << CfgLogicPrm.FlightModelLevel << '\n';
 		if (CfgLogicPrm.DamageSetting != CfgLogicPrm_default.DamageSetting || bEchoAll)
-			ofs << "DamageModel = " << CfgLogicPrm.DamageSetting << '\n';
+			os << "DamageModel = " << CfgLogicPrm.DamageSetting << '\n';
 		if (CfgLogicPrm.bLimitedFuel != CfgLogicPrm_default.bLimitedFuel || bEchoAll)
-			ofs << "UnlimitedFuel = " << BoolStr(!CfgLogicPrm.bLimitedFuel) << '\n';
+			os << "UnlimitedFuel = " << BoolStr(!CfgLogicPrm.bLimitedFuel) << '\n';
 		if (CfgLogicPrm.bPadRefuel != CfgLogicPrm_default.bPadRefuel || bEchoAll)
-			ofs << "RefuelOnPad = " << BoolStr(CfgLogicPrm.bPadRefuel) << '\n';
+			os << "RefuelOnPad = " << BoolStr(CfgLogicPrm.bPadRefuel) << '\n';
 		if (CfgLogicPrm.bMfdTransparent != CfgLogicPrm_default.bMfdTransparent || bEchoAll)
-			ofs << "MFDTransparent = " << BoolStr (CfgLogicPrm.bMfdTransparent) << '\n';
+			os << "MFDTransparent = " << BoolStr (CfgLogicPrm.bMfdTransparent) << '\n';
 		if (CfgLogicPrm.bGlasspitCompact != CfgLogicPrm_default.bGlasspitCompact || bEchoAll)
-			ofs << "CompactGlasspit = " << BoolStr (CfgLogicPrm.bGlasspitCompact) << '\n';
+			os << "CompactGlasspit = " << BoolStr (CfgLogicPrm.bGlasspitCompact) << '\n';
 		if (CfgLogicPrm.MFDSize != CfgLogicPrm_default.MFDSize || bEchoAll)
-			ofs << "GenericMFDSize = " << CfgLogicPrm.MFDSize << '\n';
+			os << "GenericMFDSize = " << CfgLogicPrm.MFDSize << '\n';
 		if (CfgLogicPrm.MFDMapVersion != CfgLogicPrm_default.MFDMapVersion || bEchoAll)
-			ofs << "MFDMapVersion = " << CfgLogicPrm.MFDMapVersion << '\n';
+			os << "MFDMapVersion = " << CfgLogicPrm.MFDMapVersion << '\n';
 		if (fabs (CfgLogicPrm.InstrUpdDT-CfgLogicPrm_default.InstrUpdDT) > 1e-8 || bEchoAll)
-			ofs << "InstrumentUpdateInterval = " << CfgLogicPrm.InstrUpdDT << '\n';
+			os << "InstrumentUpdateInterval = " << CfgLogicPrm.InstrUpdDT << '\n';
 		if (fabs (CfgLogicPrm.PanelScale-CfgLogicPrm_default.PanelScale) > 1e-8 || bEchoAll)
-			ofs << "PanelScale = " << CfgLogicPrm.PanelScale << '\n';
+			os << "PanelScale = " << CfgLogicPrm.PanelScale << '\n';
 		if (fabs (CfgLogicPrm.PanelScrollSpeed-CfgLogicPrm_default.PanelScrollSpeed) > 1e-8 || bEchoAll)
-			ofs << "PanelScrollSpeed = " << CfgLogicPrm.PanelScrollSpeed << '\n';
+			os << "PanelScrollSpeed = " << CfgLogicPrm.PanelScrollSpeed << '\n';
 	}
 
 	if (memcmp (&CfgVisualPrm, &CfgVisualPrm_default, sizeof(CFG_VISUALPRM)) || bEchoAll) {
-		ofs << "\n; === Visual parameters ===\n";
+		os << "\n; === Visual parameters ===\n";
 		if (CfgVisualPrm.bShadows != CfgVisualPrm_default.bShadows || bEchoAll)
-			ofs << "EnableShadows = " << BoolStr (CfgVisualPrm.bShadows) << '\n';
+			os << "EnableShadows = " << BoolStr (CfgVisualPrm.bShadows) << '\n';
 		if (CfgVisualPrm.bVesselShadows != CfgVisualPrm_default.bVesselShadows || bEchoAll)
-			ofs << "EnableVesselShadows = " << BoolStr (CfgVisualPrm.bVesselShadows) << '\n';
+			os << "EnableVesselShadows = " << BoolStr (CfgVisualPrm.bVesselShadows) << '\n';
 		if (CfgVisualPrm.bClouds != CfgVisualPrm_default.bClouds || bEchoAll)
-			ofs << "EnableClouds = " << BoolStr (CfgVisualPrm.bClouds) << '\n';
+			os << "EnableClouds = " << BoolStr (CfgVisualPrm.bClouds) << '\n';
 		if (CfgVisualPrm.bCloudShadows != CfgVisualPrm_default.bCloudShadows || bEchoAll)
-			ofs << "EnableCloudShadows = " << BoolStr (CfgVisualPrm.bCloudShadows) << '\n';
+			os << "EnableCloudShadows = " << BoolStr (CfgVisualPrm.bCloudShadows) << '\n';
 		if (CfgVisualPrm.bNightlights != CfgVisualPrm_default.bNightlights || bEchoAll)
-			ofs << "EnableNightlights = " << BoolStr (CfgVisualPrm.bNightlights) << '\n';
+			os << "EnableNightlights = " << BoolStr (CfgVisualPrm.bNightlights) << '\n';
 		if (CfgVisualPrm.bWaterreflect != CfgVisualPrm_default.bWaterreflect || bEchoAll)
-			ofs << "EnableWaterReflection = " << BoolStr (CfgVisualPrm.bWaterreflect) << '\n';
+			os << "EnableWaterReflection = " << BoolStr (CfgVisualPrm.bWaterreflect) << '\n';
 		if (CfgVisualPrm.bSpecularRipple != CfgVisualPrm_default.bSpecularRipple || bEchoAll)
-			ofs << "EnableSpecularRipples = " << BoolStr (CfgVisualPrm.bSpecularRipple) << '\n';
+			os << "EnableSpecularRipples = " << BoolStr (CfgVisualPrm.bSpecularRipple) << '\n';
 		if (CfgVisualPrm.bHaze != CfgVisualPrm_default.bHaze || bEchoAll)
-			ofs << "EnableHorizonHaze = " << BoolStr (CfgVisualPrm.bHaze) << '\n';
+			os << "EnableHorizonHaze = " << BoolStr (CfgVisualPrm.bHaze) << '\n';
 		if (CfgVisualPrm.bFog != CfgVisualPrm_default.bFog || bEchoAll)
-			ofs << "EnableDistanceFog = " << BoolStr (CfgVisualPrm.bFog) << '\n';
+			os << "EnableDistanceFog = " << BoolStr (CfgVisualPrm.bFog) << '\n';
 		if (CfgVisualPrm.bSpecular != CfgVisualPrm_default.bSpecular || bEchoAll)
-			ofs << "EnableSpecularReflection = " << BoolStr (CfgVisualPrm.bSpecular) << '\n';
+			os << "EnableSpecularReflection = " << BoolStr (CfgVisualPrm.bSpecular) << '\n';
 		if (CfgVisualPrm.bReentryFlames != CfgVisualPrm_default.bReentryFlames || bEchoAll)
-			ofs << "EnableReentryFlames = " << BoolStr (CfgVisualPrm.bReentryFlames) << '\n';
+			os << "EnableReentryFlames = " << BoolStr (CfgVisualPrm.bReentryFlames) << '\n';
 		if (CfgVisualPrm.bParticleStreams != CfgVisualPrm_default.bParticleStreams || bEchoAll)
-			ofs << "EnableParticleStreams = " << BoolStr (CfgVisualPrm.bParticleStreams) << '\n';
+			os << "EnableParticleStreams = " << BoolStr (CfgVisualPrm.bParticleStreams) << '\n';
 		if (CfgVisualPrm.bLocalLight != CfgVisualPrm_default.bLocalLight || bEchoAll)
-			ofs << "EnableLocalLights = " << BoolStr (CfgVisualPrm.bLocalLight) << '\n';
+			os << "EnableLocalLights = " << BoolStr (CfgVisualPrm.bLocalLight) << '\n';
 		if (CfgVisualPrm.MaxLight != CfgVisualPrm_default.MaxLight || bEchoAll)
-			ofs << "MaxLights = " << CfgVisualPrm.MaxLight << '\n';
+			os << "MaxLights = " << CfgVisualPrm.MaxLight << '\n';
 		if (CfgVisualPrm.AmbientLevel != CfgVisualPrm_default.AmbientLevel || bEchoAll)
-			ofs << "AmbientLevel = " << CfgVisualPrm.AmbientLevel << '\n';
+			os << "AmbientLevel = " << CfgVisualPrm.AmbientLevel << '\n';
 		if (CfgVisualPrm.PlanetMaxLevel != CfgVisualPrm_default.PlanetMaxLevel || bEchoAll)
-			ofs << "PlanetMaxPatchLevel = " << CfgVisualPrm.PlanetMaxLevel << '\n';
+			os << "PlanetMaxPatchLevel = " << CfgVisualPrm.PlanetMaxLevel << '\n';
 		if (CfgVisualPrm.PlanetPatchRes != CfgVisualPrm_default.PlanetPatchRes || bEchoAll)
-			ofs << "PlanetPatchRes = " << CfgVisualPrm.PlanetPatchRes << '\n';
+			os << "PlanetPatchRes = " << CfgVisualPrm.PlanetPatchRes << '\n';
 		if (CfgVisualPrm.LightBrightness != CfgVisualPrm_default.LightBrightness || bEchoAll)
-			ofs << "NightlightBrightness = " << CfgVisualPrm.LightBrightness << '\n';
+			os << "NightlightBrightness = " << CfgVisualPrm.LightBrightness << '\n';
 		if (CfgVisualPrm.bUseStarDots != CfgVisualPrm_default.bUseStarDots || bEchoAll)
-			ofs << "EnableBackgroundStars = " << BoolStr(CfgVisualPrm.bUseStarDots) << '\n';
+			os << "EnableBackgroundStars = " << BoolStr(CfgVisualPrm.bUseStarDots) << '\n';
 		if (memcmp (&CfgVisualPrm.StarPrm, &CfgVisualPrm_default.StarPrm, sizeof(StarRenderPrm)) || bEchoAll)
-			ofs << "StarPrm = " << CfgVisualPrm.StarPrm.mag_hi << ' ' << CfgVisualPrm.StarPrm.mag_lo << ' '
+			os << "StarPrm = " << CfgVisualPrm.StarPrm.mag_hi << ' ' << CfgVisualPrm.StarPrm.mag_lo << ' '
 				<< CfgVisualPrm.StarPrm.brt_min << ' ' << (CfgVisualPrm.StarPrm.map_log ? 1:0) << '\n';
 		if (CfgVisualPrm.bUseStarImage != CfgVisualPrm_default.bUseStarImage || bEchoAll)
-			ofs << "EnableBackgroundStarmap = " << BoolStr(CfgVisualPrm.bUseStarImage) << '\n';
+			os << "EnableBackgroundStarmap = " << BoolStr(CfgVisualPrm.bUseStarImage) << '\n';
 		if (strcmp(CfgVisualPrm.StarImagePath, CfgVisualPrm_default.StarImagePath) || bEchoAll)
-			ofs << "CSphereStarPath = " << CfgVisualPrm.StarImagePath << '\n';
+			os << "CSphereStarPath = " << CfgVisualPrm.StarImagePath << '\n';
 		if (CfgVisualPrm.bUseBgImage != CfgVisualPrm_default.bUseBgImage || bEchoAll)
-			ofs << "EnableBackgroundImage = " << BoolStr(CfgVisualPrm.bUseBgImage) << '\n';
+			os << "EnableBackgroundImage = " << BoolStr(CfgVisualPrm.bUseBgImage) << '\n';
 		if (strcmp (CfgVisualPrm.CSphereBgPath, CfgVisualPrm_default.CSphereBgPath) || bEchoAll)
-			ofs << "CSphereBgPath = " << CfgVisualPrm.CSphereBgPath << '\n';
+			os << "CSphereBgPath = " << CfgVisualPrm.CSphereBgPath << '\n';
 		if (CfgVisualPrm.CSphereBgIntens != CfgVisualPrm_default.CSphereBgIntens || bEchoAll)
-			ofs << "CSphereBgIntensity = " << CfgVisualPrm.CSphereBgIntens << '\n';
+			os << "CSphereBgIntensity = " << CfgVisualPrm.CSphereBgIntens << '\n';
 		if (CfgVisualPrm.ElevMode != CfgVisualPrm_default.ElevMode || bEchoAll)
-			ofs << "ElevationMode = " << CfgVisualPrm.ElevMode << '\n';
+			os << "ElevationMode = " << CfgVisualPrm.ElevMode << '\n';
 	}
 
 	if (memcmp (&CfgCapturePrm, &CfgCapturePrm_default, sizeof(CFG_CAPTUREPRM)) || bEchoAll) {
-		ofs << "\n; === Screen capture parameters ===\n";
+		os << "\n; === Screen capture parameters ===\n";
 		if (CfgCapturePrm.ImageTgt != CfgCapturePrm_default.ImageTgt || bEchoAll)
-			ofs << "CaptureTarget = " << CfgCapturePrm.ImageTgt << '\n';
+			os << "CaptureTarget = " << CfgCapturePrm.ImageTgt << '\n';
 		if (strcmp (CfgCapturePrm.ImageFile, CfgCapturePrm_default.ImageFile) || bEchoAll)
-			ofs << "CaptureFile = " << CfgCapturePrm.ImageFile << '\n';
+			os << "CaptureFile = " << CfgCapturePrm.ImageFile << '\n';
 		if (strcmp (CfgCapturePrm.SequenceDir, CfgCapturePrm_default.SequenceDir) || bEchoAll)
-			ofs << "CaptureSequenceDir = " << CfgCapturePrm.SequenceDir << '\n';
+			os << "CaptureSequenceDir = " << CfgCapturePrm.SequenceDir << '\n';
 		if (CfgCapturePrm.ImageFormat != CfgCapturePrm_default.ImageFormat || bEchoAll)
-			ofs << "CaptureImageFormat = " << CfgCapturePrm.ImageFormat << '\n';
+			os << "CaptureImageFormat = " << CfgCapturePrm.ImageFormat << '\n';
 		if (CfgCapturePrm.ImageQuality != CfgCapturePrm_default.ImageQuality || bEchoAll)
-			ofs << "CaptureImageQuality = " << CfgCapturePrm.ImageQuality << '\n';
+			os << "CaptureImageQuality = " << CfgCapturePrm.ImageQuality << '\n';
 		if (CfgCapturePrm.SequenceStart != CfgCapturePrm_default.SequenceStart || bEchoAll)
-			ofs << "CaptureSequenceStart = " << CfgCapturePrm.SequenceStart << '\n';
+			os << "CaptureSequenceStart = " << CfgCapturePrm.SequenceStart << '\n';
 		if (CfgCapturePrm.SequenceSkip != CfgCapturePrm_default.SequenceSkip || bEchoAll)
-			ofs << "CaptureSequenceSkip = " << CfgCapturePrm.SequenceSkip << '\n';
+			os << "CaptureSequenceSkip = " << CfgCapturePrm.SequenceSkip << '\n';
 	}
 
 	if (memcmp (&CfgInstrumentPrm, &CfgInstrumentPrm_default, sizeof(CFG_INSTRUMENTPRM)) || bEchoAll) {
-		ofs << "\n; === Instrument parameters ===\n";
+		os << "\n; === Instrument parameters ===\n";
 		if (CfgInstrumentPrm.bMfdPow2 != CfgInstrumentPrm_default.bMfdPow2 || bEchoAll)
-			ofs << "ForceMfdPow2 = " << ((CfgInstrumentPrm.bMfdPow2 < 2) ?
+			os << "ForceMfdPow2 = " << ((CfgInstrumentPrm.bMfdPow2 < 2) ?
 				BoolStr (CfgInstrumentPrm.bMfdPow2 == 1) : "AUTO") << '\n';
 		if (CfgInstrumentPrm.MfdHiresThreshold != CfgInstrumentPrm_default.MfdHiresThreshold || bEchoAll)
-			ofs << "MfdHiresThreshold = " << CfgInstrumentPrm.MfdHiresThreshold << '\n';
+			os << "MfdHiresThreshold = " << CfgInstrumentPrm.MfdHiresThreshold << '\n';
 		if (CfgInstrumentPrm.PanelMFDHUDSize != CfgInstrumentPrm_default.PanelMFDHUDSize || bEchoAll)
-			ofs << "PanelMfdHudSize = " << CfgInstrumentPrm.PanelMFDHUDSize << '\n';
+			os << "PanelMfdHudSize = " << CfgInstrumentPrm.PanelMFDHUDSize << '\n';
 		if (CfgInstrumentPrm.VCMFDSize != CfgInstrumentPrm_default.VCMFDSize || bEchoAll)
-			ofs << "VCMfdSize = " << CfgInstrumentPrm.VCMFDSize << '\n';
+			os << "VCMfdSize = " << CfgInstrumentPrm.VCMFDSize << '\n';
 	}
 
 	if (memcmp (&CfgVisHelpPrm, &CfgVisHelpPrm_default, sizeof(CFG_VISHELPPRM)) || bEchoAll) {
-		ofs << "\n; === Visual helper parameters ===\n";
+		os << "\n; === Visual helper parameters ===\n";
 		if (CfgVisHelpPrm.flagPlanetarium != CfgVisHelpPrm_default.flagPlanetarium || bEchoAll)
-			ofs << "Planetarium = " << CfgVisHelpPrm.flagPlanetarium << '\n';
+			os << "Planetarium = " << CfgVisHelpPrm.flagPlanetarium << '\n';
 		if (CfgVisHelpPrm.flagMarkers != CfgVisHelpPrm_default.flagMarkers || bEchoAll)
-			ofs << "SurfMarkers = " << CfgVisHelpPrm.flagMarkers << '\n';
+			os << "SurfMarkers = " << CfgVisHelpPrm.flagMarkers << '\n';
 		if (CfgVisHelpPrm.flagBodyForce != CfgVisHelpPrm_default.flagBodyForce ||
 			CfgVisHelpPrm.scaleBodyForce != CfgVisHelpPrm_default.scaleBodyForce ||
 			CfgVisHelpPrm.opacBodyForce != CfgVisHelpPrm_default.opacBodyForce || bEchoAll)
-			ofs << "Bodyforces = " << CfgVisHelpPrm.flagBodyForce << ' ' << CfgVisHelpPrm.scaleBodyForce
+			os << "Bodyforces = " << CfgVisHelpPrm.flagBodyForce << ' ' << CfgVisHelpPrm.scaleBodyForce
 				<< ' ' << CfgVisHelpPrm.opacBodyForce << '\n';
 		if (CfgVisHelpPrm.flagFrameAxes != CfgVisHelpPrm_default.flagFrameAxes ||
 			CfgVisHelpPrm.scaleFrameAxes != CfgVisHelpPrm_default.scaleFrameAxes ||
 			CfgVisHelpPrm.opacFrameAxes != CfgVisHelpPrm_default.opacFrameAxes || bEchoAll)
-			ofs << "CoordinateAxes = " << CfgVisHelpPrm.flagFrameAxes << ' ' << CfgVisHelpPrm.scaleFrameAxes
+			os << "CoordinateAxes = " << CfgVisHelpPrm.flagFrameAxes << ' ' << CfgVisHelpPrm.scaleFrameAxes
 				<< ' ' << CfgVisHelpPrm.opacFrameAxes << '\n';
 	}
 
 	if (memcmp (&CfgDebugPrm, &CfgDebugPrm_default, sizeof (CFG_DEBUGPRM)) || bEchoAll) {
-		ofs << "\n; === Debugging options ===\n";
+		os << "\n; === Debugging options ===\n";
 		if (CfgDebugPrm.ShutdownMode != CfgDebugPrm_default.ShutdownMode || bEchoAll)
-			ofs << "ShutdownMode = " << CfgDebugPrm.ShutdownMode << '\n';
+			os << "ShutdownMode = " << CfgDebugPrm.ShutdownMode << '\n';
 		if (CfgDebugPrm.FixedStep != CfgDebugPrm_default.FixedStep || bEchoAll)
-			ofs << "FixedStep = " << CfgDebugPrm.FixedStep << '\n';
+			os << "FixedStep = " << CfgDebugPrm.FixedStep << '\n';
 		if (CfgDebugPrm.bDisableSmoothFont != CfgDebugPrm_default.bDisableSmoothFont || bEchoAll)
-			ofs << "DisableFontSmoothing = " << BoolStr (CfgDebugPrm.bDisableSmoothFont) << '\n';
+			os << "DisableFontSmoothing = " << BoolStr (CfgDebugPrm.bDisableSmoothFont) << '\n';
 		if (CfgDebugPrm.bForceReenableSmoothFont != CfgDebugPrm_default.bForceReenableSmoothFont || bEchoAll)
-			ofs << "ForceReenableFontSmoothing = " << BoolStr (CfgDebugPrm.bForceReenableSmoothFont) << '\n';
+			os << "ForceReenableFontSmoothing = " << BoolStr (CfgDebugPrm.bForceReenableSmoothFont) << '\n';
 		if (CfgDebugPrm.bHtmlScnDesc != CfgDebugPrm_default.bHtmlScnDesc || bEchoAll)
-			ofs << "HtmlScnDesc = " << CfgDebugPrm.bHtmlScnDesc << '\n';
+			os << "HtmlScnDesc = " << CfgDebugPrm.bHtmlScnDesc << '\n';
 		if (CfgDebugPrm.bSaveExitScreen != CfgDebugPrm_default.bSaveExitScreen || bEchoAll)
-			ofs << "SaveExitScreen = " << BoolStr (CfgDebugPrm.bSaveExitScreen) << '\n';
+			os << "SaveExitScreen = " << BoolStr (CfgDebugPrm.bSaveExitScreen) << '\n';
 		if (CfgDebugPrm.bWireframeMode != CfgDebugPrm_default.bWireframeMode || bEchoAll)
-			ofs << "WireframeMode = " << BoolStr (CfgDebugPrm.bWireframeMode) << '\n';
+			os << "WireframeMode = " << BoolStr (CfgDebugPrm.bWireframeMode) << '\n';
 		if (CfgDebugPrm.bNormaliseNormals != CfgDebugPrm_default.bNormaliseNormals || bEchoAll)
-			ofs << "NormaliseNormals = " << BoolStr (CfgDebugPrm.bNormaliseNormals) << '\n';
+			os << "NormaliseNormals = " << BoolStr (CfgDebugPrm.bNormaliseNormals) << '\n';
 		if (CfgDebugPrm.bVerboseLog != CfgDebugPrm_default.bVerboseLog || bEchoAll)
-			ofs << "VerboseLog = " << BoolStr (CfgDebugPrm.bVerboseLog) << '\n';
+			os << "VerboseLog = " << BoolStr (CfgDebugPrm.bVerboseLog) << '\n';
 	}
 
 	if (memcmp (&CfgPhysicsPrm, &CfgPhysicsPrm_default, sizeof(CFG_PHYSICSPRM)) || bEchoAll) {
-		ofs << "\n; === Physics engine ===\n";
+		os << "\n; === Physics engine ===\n";
 		if (CfgPhysicsPrm.bDistributedMass != CfgPhysicsPrm_default.bDistributedMass || bEchoAll)
-			ofs << "DistributedVesselMass = " << BoolStr (CfgPhysicsPrm.bDistributedMass) << '\n';
+			os << "DistributedVesselMass = " << BoolStr (CfgPhysicsPrm.bDistributedMass) << '\n';
 		if (CfgPhysicsPrm.bNonsphericalGrav != CfgPhysicsPrm_default.bNonsphericalGrav || bEchoAll)
-			ofs << "NonsphericalGravitySources = " << BoolStr (CfgPhysicsPrm.bNonsphericalGrav) << '\n';
+			os << "NonsphericalGravitySources = " << BoolStr (CfgPhysicsPrm.bNonsphericalGrav) << '\n';
 		if (CfgPhysicsPrm.bRadiationPressure != CfgPhysicsPrm_default.bRadiationPressure || bEchoAll)
-			ofs << "RadiationPressure = " << BoolStr (CfgPhysicsPrm.bRadiationPressure) << '\n';
+			os << "RadiationPressure = " << BoolStr (CfgPhysicsPrm.bRadiationPressure) << '\n';
 		if (CfgPhysicsPrm.bAtmWind != CfgPhysicsPrm_default.bAtmWind || bEchoAll)
-			ofs << "AtmosphericWind = " << BoolStr (CfgPhysicsPrm.bAtmWind) << '\n';
+			os << "AtmosphericWind = " << BoolStr (CfgPhysicsPrm.bAtmWind) << '\n';
 		if (CfgPhysicsPrm.bBaseCollision != CfgPhysicsPrm_default.bBaseCollision || bEchoAll)
-			ofs << "BaseCollision = " << BoolStr (CfgPhysicsPrm.bBaseCollision) << '\n';
+			os << "BaseCollision = " << BoolStr (CfgPhysicsPrm.bBaseCollision) << '\n';
 		if (CfgPhysicsPrm.bVesselCollision != CfgPhysicsPrm_default.bVesselCollision || bEchoAll)
-			ofs << "VesselCollision = " << BoolStr (CfgPhysicsPrm.bVesselCollision) << '\n';
+			os << "VesselCollision = " << BoolStr (CfgPhysicsPrm.bVesselCollision) << '\n';
 		if (CfgPhysicsPrm.bOrbitStabilise != CfgPhysicsPrm_default.bOrbitStabilise || bEchoAll)
-			ofs << "StabiliseOrbits = " << BoolStr (CfgPhysicsPrm.bOrbitStabilise) << '\n';
+			os << "StabiliseOrbits = " << BoolStr (CfgPhysicsPrm.bOrbitStabilise) << '\n';
 		if (CfgPhysicsPrm.Stabilise_PLimit != CfgPhysicsPrm_default.Stabilise_PLimit || bEchoAll)
-			ofs << "StabilisePLimit = " << CfgPhysicsPrm.Stabilise_PLimit << '\n';
+			os << "StabilisePLimit = " << CfgPhysicsPrm.Stabilise_PLimit << '\n';
 		if (CfgPhysicsPrm.Stabilise_SLimit != CfgPhysicsPrm_default.Stabilise_SLimit || bEchoAll)
-			ofs << "StabiliseSLimit = " << CfgPhysicsPrm.Stabilise_SLimit << '\n';
+			os << "StabiliseSLimit = " << CfgPhysicsPrm.Stabilise_SLimit << '\n';
 		if (CfgPhysicsPrm.PPropSubMax != CfgPhysicsPrm_default.PPropSubMax || CfgPhysicsPrm.PPropSubLimit != CfgPhysicsPrm_default.PPropSubLimit || bEchoAll)
-			ofs << "PertPropSubsampling = " << CfgPhysicsPrm.PPropSubMax << ' ' << CfgPhysicsPrm.PPropSubLimit << '\n';
+			os << "PertPropSubsampling = " << CfgPhysicsPrm.PPropSubMax << ' ' << CfgPhysicsPrm.PPropSubLimit << '\n';
 		if (CfgPhysicsPrm.PPropStepLimit != CfgPhysicsPrm_default.PPropStepLimit || bEchoAll)
-			ofs << "PertPropNonsphericalLimit = " << CfgPhysicsPrm.PPropStepLimit << '\n';
+			os << "PertPropNonsphericalLimit = " << CfgPhysicsPrm.PPropStepLimit << '\n';
 		if (CfgPhysicsPrm.nLPropLevel != CfgPhysicsPrm_default.nLPropLevel || bEchoAll)
-			ofs << "PropStages = " << CfgPhysicsPrm.nLPropLevel << '\n';
+			os << "PropStages = " << CfgPhysicsPrm.nLPropLevel << '\n';
 		for (i = 0; i < MAX_PROP_LEVEL; i++)
 			if (CfgPhysicsPrm.PropMode[i] != CfgPhysicsPrm_default.PropMode[i] ||
 				(i < CfgPhysicsPrm.nLPropLevel && (CfgPhysicsPrm.PropTTgt[i] != CfgPhysicsPrm_default.PropTTgt[i] || CfgPhysicsPrm.PropATgt[i] != CfgPhysicsPrm_default.PropATgt[i])) ||
 				(i < CfgPhysicsPrm.nLPropLevel-1 && (CfgPhysicsPrm.PropTLim[i] != CfgPhysicsPrm_default.PropTLim[i] || CfgPhysicsPrm.PropALim[i] != CfgPhysicsPrm_default.PropALim[i])) ||
 				bEchoAll) {
-				ofs << "PropStage" << i << " = " << CfgPhysicsPrm.PropMode[i] << ' ' << CfgPhysicsPrm.PropTTgt[i] << ' ' << CfgPhysicsPrm.PropATgt[i];
+				os << "PropStage" << i << " = " << CfgPhysicsPrm.PropMode[i] << ' ' << CfgPhysicsPrm.PropTTgt[i] << ' ' << CfgPhysicsPrm.PropATgt[i];
 				if (i < CfgPhysicsPrm.nLPropLevel-1)
-					ofs << ' ' << CfgPhysicsPrm.PropTLim[i] << ' ' << CfgPhysicsPrm.PropALim[i];
-				ofs << '\n';
+					os << ' ' << CfgPhysicsPrm.PropTLim[i] << ' ' << CfgPhysicsPrm.PropALim[i];
+				os << '\n';
 			}
 #ifdef UNDEF
 		if (CfgPhysicsPrm.APropSubMax != CfgPhysicsPrm_default.APropSubMax || CfgPhysicsPrm.APropSubLimit != CfgPhysicsPrm_default.APropSubLimit || bEchoAll)
-			ofs << "AngPropSubsampling = " << CfgPhysicsPrm.APropSubMax << ' ' << CfgPhysicsPrm.APropSubLimit << '\n';
+			os << "AngPropSubsampling = " << CfgPhysicsPrm.APropSubMax << ' ' << CfgPhysicsPrm.APropSubLimit << '\n';
 		if (CfgPhysicsPrm.APropCouplingLimit != CfgPhysicsPrm_default.APropCouplingLimit || CfgPhysicsPrm.APropTorqueLimit != CfgPhysicsPrm_default.APropTorqueLimit || bEchoAll)
-			ofs << "AngPropLimits = " << CfgPhysicsPrm.APropCouplingLimit << ' ' << CfgPhysicsPrm.APropTorqueLimit << '\n';
+			os << "AngPropLimits = " << CfgPhysicsPrm.APropCouplingLimit << ' ' << CfgPhysicsPrm.APropTorqueLimit << '\n';
 #endif
 		if (CfgPhysicsPrm.PropSubMax != CfgPhysicsPrm_default.PropSubMax || bEchoAll)
-			ofs << "PropSubsampling = " << CfgPhysicsPrm.PropSubMax << '\n';
+			os << "PropSubsampling = " << CfgPhysicsPrm.PropSubMax << '\n';
 	}
 
 	if (memcmp (&CfgPRenderPrm, &CfgPRenderPrm_default, sizeof(CFG_PLANETRENDERPRM)) || bEchoAll) {
-		ofs << "\n; === Planet rendering parameters ===\n";
+		os << "\n; === Planet rendering parameters ===\n";
 		if (CfgPRenderPrm.PreloadMode != CfgPRenderPrm_default.PreloadMode || bEchoAll)
-			ofs << "PlanetPreloadMode = " << CfgPRenderPrm.PreloadMode << '\n';
+			os << "PlanetPreloadMode = " << CfgPRenderPrm.PreloadMode << '\n';
 		if (CfgPRenderPrm.CacheSize != CfgPRenderPrm_default.CacheSize || bEchoAll)
-			ofs << "TileCacheSize = " << CfgPRenderPrm.CacheSize << '\n';
+			os << "TileCacheSize = " << CfgPRenderPrm.CacheSize << '\n';
 		if (CfgPRenderPrm.bLoadOnThread != CfgPRenderPrm_default.bLoadOnThread || bEchoAll)
-			ofs << "TileLoadThread = " << BoolStr (CfgPRenderPrm.bLoadOnThread) << '\n';
+			os << "TileLoadThread = " << BoolStr (CfgPRenderPrm.bLoadOnThread) << '\n';
 		if (CfgPRenderPrm.LoadFrequency != CfgPRenderPrm_default.LoadFrequency || bEchoAll)
-			ofs << "PlanetTexLoadFreq = " << CfgPRenderPrm.LoadFrequency << '\n';
+			os << "PlanetTexLoadFreq = " << CfgPRenderPrm.LoadFrequency << '\n';
 		if (CfgPRenderPrm.AnisoMode != CfgPRenderPrm_default.AnisoMode || bEchoAll)
-			ofs << "PlanetAnisoMode = " << CfgPRenderPrm.AnisoMode << '\n';
+			os << "PlanetAnisoMode = " << CfgPRenderPrm.AnisoMode << '\n';
 		if (CfgPRenderPrm.MipmapMode != CfgPRenderPrm_default.MipmapMode || bEchoAll)
-			ofs << "PlanetMipmapMode = " << CfgPRenderPrm.MipmapMode << '\n';
+			os << "PlanetMipmapMode = " << CfgPRenderPrm.MipmapMode << '\n';
 		if (CfgPRenderPrm.MipmapBias != CfgPRenderPrm_default.MipmapBias || bEchoAll)
-			ofs << "PlanetMipmapBias = " << CfgPRenderPrm.MipmapBias << '\n';
+			os << "PlanetMipmapBias = " << CfgPRenderPrm.MipmapBias << '\n';
 		if (CfgPRenderPrm.PatchRes != CfgPRenderPrm_default.PatchRes || bEchoAll)
-			ofs << "PlanetPatchGrid = " << CfgPRenderPrm.PatchRes << '\n';
+			os << "PlanetPatchGrid = " << CfgPRenderPrm.PatchRes << '\n';
 		if (CfgPRenderPrm.ResolutionBias != CfgPRenderPrm_default.ResolutionBias || bEchoAll)
-			ofs << "PlanetResolutionBias = " << CfgPRenderPrm.ResolutionBias << '\n';
+			os << "PlanetResolutionBias = " << CfgPRenderPrm.ResolutionBias << '\n';
 		if (CfgPRenderPrm.TileLoadFlags != CfgPRenderPrm_default.TileLoadFlags || bEchoAll)
-			ofs << "TileLoadFlags = " << CfgPRenderPrm.TileLoadFlags << '\n';
+			os << "TileLoadFlags = " << CfgPRenderPrm.TileLoadFlags << '\n';
 	}
 
 	if (memcmp (&CfgMapPrm, &CfgMapPrm_default, sizeof (CFG_MAPPRM)) || bEchoAll) {
-		ofs << "\n; === Map dialog parameters ===\n";
+		os << "\n; === Map dialog parameters ===\n";
 		if (CfgMapPrm.DispFlag != CfgMapPrm_default.DispFlag || bEchoAll)
-			ofs << "MapDlgFlag = " << CfgMapPrm.DispFlag << '\n';
+			os << "MapDlgFlag = " << CfgMapPrm.DispFlag << '\n';
 	}
 
 	if (memcmp (&CfgCameraPrm, &CfgCameraPrm_default, sizeof(CFG_CAMERAPRM)) || bEchoAll) {
-		ofs << "\n; === Camera parameters ===\n";
+		os << "\n; === Camera parameters ===\n";
 		if (CfgCameraPrm.Panspeed != CfgCameraPrm_default.Panspeed || bEchoAll)
-			ofs << "CameraPanspeed = " << CfgCameraPrm.Panspeed << '\n';
+			os << "CameraPanspeed = " << CfgCameraPrm.Panspeed << '\n';
 		if (CfgCameraPrm.TerrainLimit != CfgCameraPrm_default.TerrainLimit || bEchoAll)
-			ofs << "CameraTerrainLimit = " << CfgCameraPrm.TerrainLimit << '\n';
+			os << "CameraTerrainLimit = " << CfgCameraPrm.TerrainLimit << '\n';
 		if (CfgCameraPrm.HUDCol != CfgCameraPrm_default.HUDCol || bEchoAll)
-			ofs << "HUDColIdx = " << CfgCameraPrm.HUDCol << endl;
+			os << "HUDColIdx = " << CfgCameraPrm.HUDCol << endl;
 	}
 
 	if (CfgDevPrm.Device_idx >= 0) { // otherwise undefined
-		ofs << "\n; === Device settings ===\n";
-		ofs << "DeviceIndex = " << CfgDevPrm.Device_idx << '\n';
-		ofs << "ModeIndex = " << CfgDevPrm.Device_mode << '\n';
-		ofs << "OutputIndex = " << CfgDevPrm.Device_out << '\n';
-		ofs << "Style = " << CfgDevPrm.Device_style << '\n';
+		os << "\n; === Device settings ===\n";
+		os << "DeviceIndex = " << CfgDevPrm.Device_idx << '\n';
+		os << "ModeIndex = " << CfgDevPrm.Device_mode << '\n';
+		os << "OutputIndex = " << CfgDevPrm.Device_out << '\n';
+		os << "Style = " << CfgDevPrm.Device_style << '\n';
 
 		if (CfgDevPrm.bForceEnum != CfgDevPrm_default.bForceEnum || bEchoAll)
-			ofs << "DeviceForceEnum = " << BoolStr (CfgDevPrm.bForceEnum) << '\n';
+			os << "DeviceForceEnum = " << BoolStr (CfgDevPrm.bForceEnum) << '\n';
 		if (CfgDevPrm.bFullscreen != CfgDevPrm_default.bFullscreen || bEchoAll)
-			ofs << "Fullscreen = " << BoolStr (CfgDevPrm.bFullscreen) << '\n';
+			os << "Fullscreen = " << BoolStr (CfgDevPrm.bFullscreen) << '\n';
 		if (CfgDevPrm.bStereo != CfgDevPrm_default.bStereo || bEchoAll)
-			ofs << "Stereo = " << BoolStr (CfgDevPrm.bStereo) << '\n';
+			os << "Stereo = " << BoolStr (CfgDevPrm.bStereo) << '\n';
 		if (CfgDevPrm.bNoVsync != CfgDevPrm_default.bNoVsync || bEchoAll)
-			ofs << "NoVSync = " << BoolStr (CfgDevPrm.bNoVsync) << '\n';
+			os << "NoVSync = " << BoolStr (CfgDevPrm.bNoVsync) << '\n';
 		if (CfgDevPrm.bTryStencil != CfgDevPrm_default.bTryStencil || bEchoAll)
-			ofs << "StencilBuffer = " << BoolStr (CfgDevPrm.bTryStencil) << '\n';
+			os << "StencilBuffer = " << BoolStr (CfgDevPrm.bTryStencil) << '\n';
 		if (CfgDevPrm.bPageflip != CfgDevPrm_default.bPageflip || bEchoAll)
-			ofs << "FullscreenPageflip = " << BoolStr (CfgDevPrm.bPageflip) << '\n';
+			os << "FullscreenPageflip = " << BoolStr (CfgDevPrm.bPageflip) << '\n';
 		if (CfgDevPrm.WinW != CfgDevPrm_default.WinW || bEchoAll)
-			ofs << "WindowWidth = " << CfgDevPrm.WinW << '\n';
+			os << "WindowWidth = " << CfgDevPrm.WinW << '\n';
 		if (CfgDevPrm.WinH != CfgDevPrm_default.WinH || bEchoAll)
-			ofs << "WindowHeight = " << CfgDevPrm.WinH << '\n';
+			os << "WindowHeight = " << CfgDevPrm.WinH << '\n';
 	}
 
 	if (memcmp (&CfgJoystickPrm, &CfgJoystickPrm_default, sizeof(CFG_JOYSTICKPRM)) || bEchoAll) {
-		ofs << "\n; === Joystick parameters ===\n";
+		os << "\n; === Joystick parameters ===\n";
 		if (CfgJoystickPrm.Joy_idx != CfgJoystickPrm_default.Joy_idx || bEchoAll)
-			ofs << "JoystickIndex = " << CfgJoystickPrm.Joy_idx << '\n';
+			os << "JoystickIndex = " << CfgJoystickPrm.Joy_idx << '\n';
 		if (CfgJoystickPrm.ThrottleAxis != CfgJoystickPrm_default.ThrottleAxis || bEchoAll)
-			ofs << "JoystickThrottleAxis = " << CfgJoystickPrm.ThrottleAxis << '\n';
+			os << "JoystickThrottleAxis = " << CfgJoystickPrm.ThrottleAxis << '\n';
 		if (CfgJoystickPrm.ThrottleSaturation != CfgJoystickPrm_default.ThrottleSaturation || bEchoAll)
-			ofs << "JoystickThrottleSaturation = " << CfgJoystickPrm.ThrottleSaturation << '\n';
+			os << "JoystickThrottleSaturation = " << CfgJoystickPrm.ThrottleSaturation << '\n';
 		if (CfgJoystickPrm.Deadzone != CfgJoystickPrm_default.Deadzone || bEchoAll)
-			ofs << "JoystickDeadzone = " << CfgJoystickPrm.Deadzone << '\n';
+			os << "JoystickDeadzone = " << CfgJoystickPrm.Deadzone << '\n';
 		if (CfgJoystickPrm.bThrottleIgnore != CfgJoystickPrm_default.bThrottleIgnore || bEchoAll)
-			ofs << "IgnoreThrottleOnStart = " << BoolStr (CfgJoystickPrm.bThrottleIgnore) << '\n';
+			os << "IgnoreThrottleOnStart = " << BoolStr (CfgJoystickPrm.bThrottleIgnore) << '\n';
 	}
 
 	if (memcmp (&CfgUIPrm, &CfgUIPrm_default, sizeof(CFG_UIPRM)) || bEchoAll) {
-		ofs << "\n; === User interface parameters ===\n";
+		os << "\n; === User interface parameters ===\n";
 		if (CfgUIPrm.MouseFocusMode != CfgUIPrm_default.MouseFocusMode || bEchoAll)
-			ofs << "MouseFocusMode = " << CfgUIPrm.MouseFocusMode << '\n';
+			os << "MouseFocusMode = " << CfgUIPrm.MouseFocusMode << '\n';
 		if (CfgUIPrm.MenuMode != CfgUIPrm_default.MenuMode || bEchoAll)
-			ofs << "MenubarMode = " << CfgUIPrm.MenuMode << '\n';
+			os << "MenubarMode = " << CfgUIPrm.MenuMode << '\n';
 		if (CfgUIPrm.bMenuLabelAlways != CfgUIPrm_default.bMenuLabelAlways || bEchoAll)
-			ofs << "MenubarLabelAlways = " << BoolStr (CfgUIPrm.bMenuLabelAlways) << '\n';
+			os << "MenubarLabelAlways = " << BoolStr (CfgUIPrm.bMenuLabelAlways) << '\n';
 		if (CfgUIPrm.MenuButtonSize != CfgUIPrm_default.MenuButtonSize || bEchoAll)
-			ofs << "MenuButtonSize = " << CfgUIPrm.MenuButtonSize << '\n';
+			os << "MenuButtonSize = " << CfgUIPrm.MenuButtonSize << '\n';
 		if (CfgUIPrm.MenuButtonHoverSize != CfgUIPrm_default.MenuButtonHoverSize || bEchoAll)
-			ofs << "MenuButtonHoverSize = " << CfgUIPrm.MenuButtonHoverSize << '\n';
+			os << "MenuButtonHoverSize = " << CfgUIPrm.MenuButtonHoverSize << '\n';
 		if (CfgUIPrm.MenuButtonSpacing != CfgUIPrm_default.MenuButtonSpacing || bEchoAll)
-			ofs << "MenuButtonSpacing = " << CfgUIPrm.MenuButtonSpacing << '\n';
+			os << "MenuButtonSpacing = " << CfgUIPrm.MenuButtonSpacing << '\n';
 		if (CfgUIPrm.bWarpAlways != CfgUIPrm_default.bWarpAlways || bEchoAll)
-			ofs << "ShowWarpAlways = " << BoolStr (CfgUIPrm.bWarpAlways) << '\n';
+			os << "ShowWarpAlways = " << BoolStr (CfgUIPrm.bWarpAlways) << '\n';
 		if (CfgUIPrm.InfoMode != CfgUIPrm_default.InfoMode || bEchoAll)
-			ofs << "InfobarMode = " << CfgUIPrm.InfoMode << '\n';
+			os << "InfobarMode = " << CfgUIPrm.InfoMode << '\n';
 		if (CfgUIPrm.FPS != CfgUIPrm_default.FPS || bEchoAll)
-			ofs << "FPS = " << CfgUIPrm.FPS << '\n';
+			os << "FPS = " << CfgUIPrm.FPS << '\n';
 		if (CfgUIPrm.MenuOpacity != CfgUIPrm_default.MenuOpacity || bEchoAll)
-			ofs << "MenubarOpacity = " << CfgUIPrm.MenuOpacity << '\n';
+			os << "MenubarOpacity = " << CfgUIPrm.MenuOpacity << '\n';
 		if (CfgUIPrm.InfoOpacity != CfgUIPrm_default.InfoOpacity || bEchoAll)
-			ofs << "InfobarOpacity = " << CfgUIPrm.InfoOpacity << '\n';
+			os << "InfobarOpacity = " << CfgUIPrm.InfoOpacity << '\n';
 		if (CfgUIPrm.MenuScrollspeed != CfgUIPrm_default.MenuScrollspeed || bEchoAll)
-			ofs << "MenubarSpeed = " << CfgUIPrm.MenuScrollspeed << '\n';
+			os << "MenubarSpeed = " << CfgUIPrm.MenuScrollspeed << '\n';
 		if (CfgUIPrm.SelVesselTab != CfgUIPrm_default.SelVesselTab || bEchoAll)
-			ofs << "SelVesselTab = " << CfgUIPrm.SelVesselTab << '\n';
+			os << "SelVesselTab = " << CfgUIPrm.SelVesselTab << '\n';
 		if (CfgUIPrm.SelVesselRange != CfgUIPrm_default.SelVesselRange || bEchoAll)
-			ofs << "SelVesselRange = " << CfgUIPrm.SelVesselRange << '\n';
+			os << "SelVesselRange = " << CfgUIPrm.SelVesselRange << '\n';
 		if (CfgUIPrm.bSelVesselFlat != CfgUIPrm_default.bSelVesselFlat || bEchoAll)
-			ofs << "SelVesselFlat = " << BoolStr (CfgUIPrm.bSelVesselFlat) << '\n';
+			os << "SelVesselFlat = " << BoolStr (CfgUIPrm.bSelVesselFlat) << '\n';
 	}
 
 	if (memcmp (&CfgDemoPrm, &CfgDemoPrm_default, sizeof(CFG_DEMOPRM)) || bEchoAll) {
-		ofs << "\n; === Demo parameters ===\n";
+		os << "\n; === Demo parameters ===\n";
 		if (CfgDemoPrm.bDemo != CfgDemoPrm_default.bDemo || bEchoAll)
-			ofs << "DemoMode = " << BoolStr (CfgDemoPrm.bDemo) << '\n';
+			os << "DemoMode = " << BoolStr (CfgDemoPrm.bDemo) << '\n';
 		if (CfgDemoPrm.bBkImage != CfgDemoPrm_default.bBkImage || bEchoAll)
-			ofs << "BackgroundImage = " << BoolStr (CfgDemoPrm.bBkImage) << '\n';
+			os << "BackgroundImage = " << BoolStr (CfgDemoPrm.bBkImage) << '\n';
 		if (CfgDemoPrm.bBlockExit != CfgDemoPrm_default.bBlockExit || bEchoAll)
-			ofs << "BlockExit = " << BoolStr (CfgDemoPrm.bBlockExit) << '\n';
+			os << "BlockExit = " << BoolStr (CfgDemoPrm.bBlockExit) << '\n';
 		if (CfgDemoPrm.MaxDemoTime != CfgDemoPrm_default.MaxDemoTime || bEchoAll)
-			ofs << "MaxDemoTime = " << CfgDemoPrm.MaxDemoTime << '\n';
+			os << "MaxDemoTime = " << CfgDemoPrm.MaxDemoTime << '\n';
 		if (CfgDemoPrm.LPIdleTime != CfgDemoPrm_default.LPIdleTime || bEchoAll)
-			ofs << "MaxLaunchpadIdleTime = " << CfgDemoPrm.LPIdleTime << '\n';
+			os << "MaxLaunchpadIdleTime = " << CfgDemoPrm.LPIdleTime << '\n';
 	}
 
 	if (memcmp (&CfgRecPlayPrm, &CfgRecPlayPrm_default, sizeof(CFG_RECPLAYPRM)) || bEchoAll) {
-		ofs << "\n; === Record/play parameters ===\n";
+		os << "\n; === Record/play parameters ===\n";
 		if (CfgRecPlayPrm.RecordPosFrame != CfgRecPlayPrm_default.RecordPosFrame || bEchoAll)
-			ofs << "RecordPosFrame = " << CfgRecPlayPrm.RecordPosFrame << '\n';
+			os << "RecordPosFrame = " << CfgRecPlayPrm.RecordPosFrame << '\n';
 		if (CfgRecPlayPrm.RecordAttFrame != CfgRecPlayPrm_default.RecordAttFrame || bEchoAll)
-			ofs << "RecordAttFrame = " << CfgRecPlayPrm.RecordAttFrame << '\n';
+			os << "RecordAttFrame = " << CfgRecPlayPrm.RecordAttFrame << '\n';
 		if (CfgRecPlayPrm.bRecordWarp != CfgRecPlayPrm_default.bRecordWarp || bEchoAll)
-			ofs << "RecordTimewarp = " << BoolStr (CfgRecPlayPrm.bRecordWarp) << '\n';
+			os << "RecordTimewarp = " << BoolStr (CfgRecPlayPrm.bRecordWarp) << '\n';
 		if (CfgRecPlayPrm.bRecordFocus != CfgRecPlayPrm_default.bRecordFocus || bEchoAll)
-			ofs << "RecordFocusEvent = " << BoolStr (CfgRecPlayPrm.bRecordFocus) << '\n';
+			os << "RecordFocusEvent = " << BoolStr (CfgRecPlayPrm.bRecordFocus) << '\n';
 		if (CfgRecPlayPrm.bReplayWarp != CfgRecPlayPrm_default.bReplayWarp || bEchoAll)
-			ofs << "ReplayTimewarp = " << BoolStr (CfgRecPlayPrm.bReplayWarp) << '\n';
+			os << "ReplayTimewarp = " << BoolStr (CfgRecPlayPrm.bReplayWarp) << '\n';
 		if (CfgRecPlayPrm.bReplayFocus != CfgRecPlayPrm_default.bReplayFocus || bEchoAll)
-			ofs << "ReplayFocusEvent = " << BoolStr (CfgRecPlayPrm.bReplayFocus) << '\n';
+			os << "ReplayFocusEvent = " << BoolStr (CfgRecPlayPrm.bReplayFocus) << '\n';
 		if (CfgRecPlayPrm.bReplayCam != CfgRecPlayPrm_default.bReplayCam || bEchoAll)
-			ofs << "ReplayCameraEvent = " << BoolStr (CfgRecPlayPrm.bReplayCam) << '\n';
+			os << "ReplayCameraEvent = " << BoolStr (CfgRecPlayPrm.bReplayCam) << '\n';
 		if (CfgRecPlayPrm.bSysInterval != CfgRecPlayPrm_default.bSysInterval || bEchoAll)
-			ofs << "SystimeSampling = " << BoolStr (CfgRecPlayPrm.bSysInterval) << '\n';
+			os << "SystimeSampling = " << BoolStr (CfgRecPlayPrm.bSysInterval) << '\n';
 		if (CfgRecPlayPrm.bShowNotes != CfgRecPlayPrm_default.bShowNotes || bEchoAll)
-			ofs << "PlaybackNotes = " << BoolStr (CfgRecPlayPrm.bShowNotes) << '\n';
+			os << "PlaybackNotes = " << BoolStr (CfgRecPlayPrm.bShowNotes) << '\n';
 	}
 
 	if (memcmp (&CfgFontPrm, &CfgFontPrm_default, sizeof(CFG_FONTPRM)) || bEchoAll) {
-		ofs << "\n; === Font parameters ===\n";
+		os << "\n; === Font parameters ===\n";
 		if (CfgFontPrm.dlgFont_Scale != CfgFontPrm_default.dlgFont_Scale || bEchoAll)
-			ofs << "DialogFont_Scale = " << CfgFontPrm.dlgFont_Scale << '\n';
+			os << "DialogFont_Scale = " << CfgFontPrm.dlgFont_Scale << '\n';
 		if (strcmp (CfgFontPrm.dlgFont1_Face, CfgFontPrm_default.dlgFont1_Face) || bEchoAll)
-			ofs << "DialogFont1_Face = " << CfgFontPrm.dlgFont1_Face << '\n';
+			os << "DialogFont1_Face = " << CfgFontPrm.dlgFont1_Face << '\n';
 		if (CfgFontPrm.ImGui_FontSize != CfgFontPrm_default.ImGui_FontSize || bEchoAll)
-			ofs << "ImGui_FontSize = " << CfgFontPrm.ImGui_FontSize << '\n';
+			os << "ImGui_FontSize = " << CfgFontPrm.ImGui_FontSize << '\n';
 		if (strcmp (CfgFontPrm.ImGui_DefaultFontFile, CfgFontPrm_default.ImGui_DefaultFontFile) || bEchoAll)
-			ofs << "ImGui_DefaultFontFile = " << CfgFontPrm.ImGui_DefaultFontFile << '\n';
+			os << "ImGui_DefaultFontFile = " << CfgFontPrm.ImGui_DefaultFontFile << '\n';
 		if (strcmp (CfgFontPrm.ImGui_ConsoleFontFile, CfgFontPrm_default.ImGui_ConsoleFontFile) || bEchoAll)
-			ofs << "ImGui_ConsoleFontFile = " << CfgFontPrm.ImGui_ConsoleFontFile << '\n';
+			os << "ImGui_ConsoleFontFile = " << CfgFontPrm.ImGui_ConsoleFontFile << '\n';
 		if (strcmp (CfgFontPrm.ImGui_MonospacedFontFile, CfgFontPrm_default.ImGui_MonospacedFontFile) || bEchoAll)
-			ofs << "ImGui_MonospacedFontFile = " << CfgFontPrm.ImGui_MonospacedFontFile << '\n';
+			os << "ImGui_MonospacedFontFile = " << CfgFontPrm.ImGui_MonospacedFontFile << '\n';
 		if (strcmp (CfgFontPrm.ImGui_ManuscriptFontFile, CfgFontPrm_default.ImGui_ManuscriptFontFile) || bEchoAll)
-			ofs << "ImGui_ManuscriptFontFile = " << CfgFontPrm.ImGui_ManuscriptFontFile << '\n';
+			os << "ImGui_ManuscriptFontFile = " << CfgFontPrm.ImGui_ManuscriptFontFile << '\n';
 	}
 
 	if (memcmp (&CfgWindowPos, &CfgWindowPos_default, sizeof(CFG_WINDOWPOS)) || bEchoAll) {
-		ofs << "\n; === Window positions ===\n";
+		os << "\n; === Window positions ===\n";
 		if (CfgWindowPos.DlgMap != CfgWindowPos_default.DlgMap || bEchoAll)
-			ofs << "DlgMapPos = " << CfgWindowPos.DlgMap << '\n';
+			os << "DlgMapPos = " << CfgWindowPos.DlgMap << '\n';
 		if (CfgWindowPos.DlgInfo != CfgWindowPos_default.DlgInfo || bEchoAll)
-			ofs << "DlgInfoPos = " << CfgWindowPos.DlgInfo << '\n';
+			os << "DlgInfoPos = " << CfgWindowPos.DlgInfo << '\n';
 		if (CfgWindowPos.DlgCamera != CfgWindowPos_default.DlgCamera || bEchoAll)
-			ofs << "DlgCamPos = " << CfgWindowPos.DlgCamera << '\n';
+			os << "DlgCamPos = " << CfgWindowPos.DlgCamera << '\n';
 		if (CfgWindowPos.DlgFocus != CfgWindowPos_default.DlgFocus || bEchoAll)
-			ofs << "DlgFocusPos = " << CfgWindowPos.DlgFocus << '\n';
+			os << "DlgFocusPos = " << CfgWindowPos.DlgFocus << '\n';
 		if (CfgWindowPos.DlgTacc != CfgWindowPos_default.DlgTacc || bEchoAll)
-			ofs << "DlgTaccPos = " << CfgWindowPos.DlgTacc << '\n';
+			os << "DlgTaccPos = " << CfgWindowPos.DlgTacc << '\n';
 		if (CfgWindowPos.DlgOptions != CfgWindowPos_default.DlgOptions || bEchoAll)
-			ofs << "DlgOptionsPos = " << CfgWindowPos.DlgOptions << '\n';
+			os << "DlgOptionsPos = " << CfgWindowPos.DlgOptions << '\n';
 		if (CfgWindowPos.DlgVishelper != CfgWindowPos_default.DlgVishelper || bEchoAll)
-			ofs << "DlgVhelperPos = " << CfgWindowPos.DlgVishelper << '\n';
+			os << "DlgVhelperPos = " << CfgWindowPos.DlgVishelper << '\n';
 		if (CfgWindowPos.LaunchpadScnListWidth != CfgWindowPos_default.LaunchpadScnListWidth || bEchoAll)
-			ofs << "LpadScnListWidth = " << CfgWindowPos.LaunchpadScnListWidth << '\n';
+			os << "LpadScnListWidth = " << CfgWindowPos.LaunchpadScnListWidth << '\n';
 		if (CfgWindowPos.LaunchpadModListWidth != CfgWindowPos_default.LaunchpadModListWidth || bEchoAll)
-			ofs << "LpadModListWidth = " << CfgWindowPos.LaunchpadModListWidth << '\n';
+			os << "LpadModListWidth = " << CfgWindowPos.LaunchpadModListWidth << '\n';
 		if (CfgWindowPos.LaunchpadExtListWidth != CfgWindowPos_default.LaunchpadExtListWidth || bEchoAll)
-			ofs << "LpadExtListWidth = " << CfgWindowPos.LaunchpadExtListWidth << '\n';
+			os << "LpadExtListWidth = " << CfgWindowPos.LaunchpadExtListWidth << '\n';
 	}
 
 	if (m_activeModules.size()) {
-		ofs << "\n; === Active plugin list ===" << endl;
-		ofs << "ACTIVE_MODULES" << endl;
+		os << "\n; === Active plugin list ===" << endl;
+		os << "ACTIVE_MODULES" << endl;
 		for (auto name : m_activeModules)
-			ofs << "  " << name << std::endl;
-		ofs << "END_MODULES" << endl;
+			os << "  " << name << std::endl;
+		os << "END_MODULES" << endl;
 	}
-	ofs << flush;
-	return TRUE;
+	os << flush;
+	return true;
 }
 
 char *Config::ConfigPath (const char *name) const
