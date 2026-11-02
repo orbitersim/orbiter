@@ -384,7 +384,10 @@ HRESULT Orbiter::Create (HINSTANCE hInstance)
 	// parameter manager - parses from master config file
 	hInst = hInstance;
 	if (!pConfig->CfgCmdlinePrm.bCfgFromCinOnly)
-		pConfig->Read(m_sMasterConfigFile);
+		if (!pConfig->Read(m_sMasterConfigFile)) {
+			LOGOUT_WARN("Configuration file %s not found. Reverting to default settings.",
+				m_sMasterConfigFile.c_str());
+		}
 	if (pConfig->CfgCmdlinePrm.bCfgFromCinOnly || pConfig->CfgCmdlinePrm.bCfgFromCinAdd) {
 		std::stringstream memStream;
 		memStream << std::cin.rdbuf();
@@ -469,7 +472,10 @@ void Orbiter::SaveConfig ()
 		pConfig->Write(std::cout);
 	}
 	else if (!pConfig->CfgCmdlinePrm.bCfgReadOnly) {
-		pConfig->Write(m_sMasterConfigFile);
+		if (!pConfig->Write(m_sMasterConfigFile)) {
+			LOGOUT_WARN("Could not write to configuration file %s. Configuration changes will be lost.",
+				m_sMasterConfigFile.c_str());
+		}
 	}
 
 	// Plugin modules that write config parameters defined in the Launchpad
