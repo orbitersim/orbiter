@@ -321,7 +321,7 @@ void ScnEditor::Pause (bool pause)
 HINSTANCE ScnEditor::LoadVesselLibrary (const VESSEL *vessel)
 {
 	// load vessel-specific editor extensions
-	char cbuf[256];
+	char cbuf[512]; // allow room for the full plugin name
 	if (hEdLib) FreeLibrary (hEdLib); // remove previous library
 	if (vessel->GetEditorModule (cbuf))
 		hEdLib = LoadLibrary (cbuf);

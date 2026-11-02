@@ -306,7 +306,8 @@ char *readline (std::istream &is);
 // buffer containing the line. The buffer is grown dynamically to
 // hold a string of arbitrary length.
 
-bool GetItemString (std::istream &is, const char *label, char *val);
+bool GetItemString (std::istream &is, const char *label, char *val); // val must hold 512 chars
+bool GetItemString (std::istream &is, const char *label, char *val, size_t size);
 bool GetItemReal   (std::istream &is, const char *label, double &val);
 bool GetItemInt    (std::istream &is, const char *label, int &val);
 bool GetItemSize   (std::istream &is, const char *label, size_t &val);
@@ -446,7 +447,8 @@ public:
 	bool GetVector (const char *category, Vector &val);
 
 private:
-	bool GetString (std::istream &is, const char *category, char *val);
+	bool GetString (std::istream &is, const char *category, char *val); // val must hold 512 chars
+	bool GetString (std::istream &is, const char *category, char *val, size_t size);
 	bool GetReal (std::istream &is, const char *category, double &val);
 	bool GetInt (std::istream &is, const char *category, int &val);
 	bool GetSize (std::istream& is, const char* category, size_t& val);

@@ -20,6 +20,15 @@ set_target_properties(XRSound_dll PROPERTIES
 	COMPILE_DEFINITIONS "XRSOUND_DLL_BUILD;_CRT_SECURE_NO_WARNINGS;_USRDLL;XRSOUNDDLL_EXPORTS"
 )
 
+option(XRSOUND_DEBUG_GUI
+	"Include the XRSound Audio debug window in Debug builds (needs Orbiter's ImGui dialogs, so OFF for an XRSound that loads in earlier Orbiter 2024 versions)"
+	ON
+)
+# Debug builds only; the window never goes into a Release build.
+if(XRSOUND_DEBUG_GUI)
+	target_compile_definitions(XRSound_dll PRIVATE $<$<CONFIG:Debug>:XRSOUND_DEBUG_GUI>)
+endif()
+
 target_include_directories(XRSound_dll PUBLIC
 	${ORBITER_SOURCE_SDK_INCLUDE_DIR}
 	${CMAKE_CURRENT_SOURCE_DIR}/Utils

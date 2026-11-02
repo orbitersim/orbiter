@@ -383,6 +383,28 @@ void Pane::ShiftPanel (double dx, double dy)
 	}
 }
 
+void Pane::ShiftPanel(int dir)
+{
+	double dx = 0.0, dy = 0.0;
+	const double speed = g_pOrbiter->Cfg()->CfgLogicPrm.PanelScrollSpeed;
+	const double dt = td.SysDT;
+	switch (dir) {
+	case 0: // left
+		dx = dt * speed;
+		break;
+	case 1: // right
+		dx = -dt * speed;
+		break;
+	case 2: // up
+		dy = dt * speed;
+		break;
+	case 3: // down
+		dy = -dt * speed;
+		break;
+	}
+	ShiftPanel(dx, dy);
+}
+
 void Pane::ShowHUD (bool yes)
 {
 	SetHUDMode (yes ? hudmode : HUD_NONE);

@@ -1,0 +1,75 @@
+<!DOCTYPE HTML PUBLIC "-//IETF//DTD HTML//EN">
+<HTML>
+<HEAD>
+<meta name="GENERATOR" content="Microsoft&reg; HTML Help Workshop 4.1">
+<Title>Camera modes</Title>
+<LINK REL="stylesheet" HREF="Orbiter.css" TYPE="TEXT/CSS">
+</HEAD>
+<BODY>
+
+<p class="header"><a class="header" href="intro.htm">Orbiter</a> &gt; <a class="header" href="mainmenu.htm">Main menu</a> &gt; <a class="header" href="camera.htm">Camera</a> &gt; Modes</p>
+
+    <h1>Camera modes</h1>
+    <p>The <i>Mode</i> tab in the camera dialog allows to switch between different view modes:
+	<ul>
+	<li><a href="#cockpit">Cockpit</a></li>
+	<li><a href="#track">Track</a></li>
+	<li><a href="#ground">Ground</a></li>
+	</ul>
+	
+	<h2 id="cockpit">Cockpit mode</h2>
+	<p>An internal view from the cockpit of the current player-controlled spacecraft. You can select different cockpit views: <i>Glass cockpit</i>, which is a standard mode including two MFD instruments and some basic controls and readouts. <i>2D panel view</i> shows spacecraft-specific custom instrument panels, and <i>Virtual cockpit</i> places you in a 3D representation of the spacecraft's cockpit. Not all vessels may support 2D panels and virtual cockpits, but the glass cockpit view is always available. A keyboard shortcut for switching between the available cockpit modes is <kbd class="ctrl">F8</kbd>.</p>
+	
+	<h2 id="track">Track mode</h2>
+	<p>An external view that follows the spacecraft or any other objects in the simulation. Different sub-modes allow to fine-tune how the camera moves around the tracked target, or sets the camera to a fixed position relative to another object:</p>
+	<p>
+	<ul>
+	<li><b>Movable target-relative</b>: The camera moves in the target frame of reference. It will retain its position relative to the target unless rotated manually. For example, if you use this mode to look at a planet, the camera will rotate together with the planet, and always show the same hemisphere, while the celestial background appears to revolve around the observer. The manual rotation keys rotate the camera in longitudinal and latitudinal directions.</li>
+	<li><b>Movable absolute direction</b>: As in target-relative mode, the camera moves in the target frame of reference (longitude and latitude), but it will retain a constant absolute direction, even if the target rotates.</li>
+	<li><b>Movable global frame</b>: The camera moves in the absolute frame of reference, which in Orbiter is defined as the ecliptical frame (ecliptic and equinox of J2000.0).</li>
+	</ul>
+	</p>
+	<p>There are two further track modes which cannot be rotated manually but instead define the camera position in terms of an additional source object:</p>
+	<p>
+	<ul>
+	<li><b>Target from ...</b>: The camera is positioned so that the specified source object is located behind the observer, while looking towards the target.</li>
+	<li><b>Target to ...</b>: The camera is positioned so that the specified source object is located behind the target object.</li>
+	</ul>
+	</p>
+	<p>For example, if you set the camera to track the Moon from the Sun, you will see the fully lit (full Moon) side of the Moon.</p>
+	<p>In both fixed modes, manual rotation is disabled, but the camera can still be moved in and out with <kbd class="ctrl">PgUp</kbd><sub><i>cursor</i></sub> and <kbd class="ctrl">PgDn</kbd><sub><i>cursor</i></sub>.</p>
+
+	<h2 id="ground">Ground observer mode</h2>
+	<p>Use the <i>Ground</i> tab in the camera dialog to select a ground-based camera mode. Ground-based views place the camera at a fixed point relative to the surface of a planet. This is a good way to follow the launch of a rocket from a spectator's perspective, or view the final approach of a Shuttle from the control tower.</p>
+
+	<p>There are two different operation modes for the ground observer camera: If the <i>Target lock</i> option is ticked, the camera will always be pointed towards the current camera target. You can move the camera around the target, and move in or out, but the target remains in the centre of the simulation window.</p>
+
+	<p>If the target lock option is not ticked, the camera is in <i>free</i> mode. In this case, it can be both moved and rotated independent of the view target.</p>
+	
+	<p>The ground camera can be controlled from the <a href="cam_control.htm">Control</a> tab of the Camera dialog or with the following shortcuts:
+
+	<p><b>A. Target lock mode</b></p>
+	<p>
+	<ul>
+	<li>To move the camera around the target, use <kbd class="ctrl">Ctrl</kbd> <kbd>&larr;</kbd> <kbd>&rarr;</kbd>.</li>
+	<li>To move the camera towards and away from the target, use <kbd class="ctrl">Ctrl</kbd> <kbd>&uarr;</kbd> <kbd>&darr;</kbd>.</li>
+	<li>To move the camera up and down, use <kbd class="ctrl">PgUp</kbd> and <kbd class="ctrl">PgDn</kbd>.</li>
+	</ul>
+	</p>
+
+	<p>The camera can also be moved by holding the right mouse button and dragging the mouse.</p>
+
+	<p><b>B. Free mode</b></p>
+	<p>
+	<ul>
+	<li>To move the camera left and right, use <kbd class="ctrl">Ctrl</kbd> <kbd>&larr;</kbd> <kbd>&rarr;</kbd>.</li>
+	<li>To move the camera forward and back, use <kbd class="ctrl">Ctrl</kbd> <kbd>&uarr;</kbd> <kbd>&darr;</kbd>.</li>
+	<li>To move the camera up and down, use <kbd class="ctrl">PgUp</kbd> and <kbd class="ctrl">PgDn</kbd>.</li>
+	<li>To rotate the camera left and right, use <kbd>&larr;</kbd> <kbd>&rarr;</kbd>.</li>
+	<li>To rotate the camare up and down, use <kbd>&uarr;</kbd> <kbd>&darr;</kbd>.</li>
+	</ul>
+	</p>
+
+	<p>The camera can also be rotated by holding the right mouse button and dragging the mouse.</p>
+</BODY>
+</HTML>

@@ -996,7 +996,7 @@ void SurfTile::Render ()
 
 		D3DXVECTOR3 bc = bs_pos - shd->pos;
 
-		double alt = scene->GetCameraAltitude() - scene->GetTargetElevation();
+		double alt = scene->GetCameraElevation();
 
 		if ((alt < 10e3) && (scene->GetCameraProxyVisual() == mgr->GetPlanet())) {
 

@@ -125,6 +125,9 @@ public:
 	void ShiftPanel (double dx, double dy);
 	// move instrument panel on screen. dx, dy: pixels/sec
 
+	void ShiftPanel(int dir);
+	// move instrument panel in given direction
+
 	void ShowHUD (bool yes = true);
 	// turn head up display on/off
 
@@ -211,6 +214,7 @@ public:
 	VirtualCockpit *GetVC() { return vcockpit; }
 
 	Panel2D *GetPanel2D() { return panel2d; }
+	Panel *GetPanel2D_old() { return panel; }
 
 	void RegisterPanelBackground (HBITMAP hBmp, DWORD flag, DWORD ck);
 	void RegisterPanelBackground (SURFHANDLE hSurf, DWORD flag);
