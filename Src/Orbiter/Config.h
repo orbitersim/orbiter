@@ -361,12 +361,12 @@ public:
 	bool FoundFile() const { return found_config_file; }
 
 	bool Read(const std::string &fname);
-	bool Config::Read(std::istream &is);
+	bool Read(std::istream &is);
 	// read config parameters from a named file or an open stream
 	// returns false if read fails
 
 	bool Write(const std::string &fname) const;
-	bool Write () const;
+	bool Write() const;
 	bool Write(std::ostream &os) const;
 	// write config parameters to a named file or an open stream
 	// returns false if write fails

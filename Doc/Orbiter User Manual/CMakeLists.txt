@@ -1,5 +1,14 @@
 set(name "Orbiter User Manual")
 
+file(GLOB TexSources
+	*tex
+	../common_definitions.tex
+	../keystroke_styles.tex
+	../orbiterlogo.png
+	Images/*.png
+	Images/*.jpg
+)
+
 set(src_path ${CMAKE_CURRENT_SOURCE_DIR}/${name}.tex)
 set(out_path ${CMAKE_CURRENT_BINARY_DIR}/${name}.pdf)
 set(pdflatex_cmd ${PDFLATEX_COMPILER} --synctex=1 -output-directory=${CMAKE_CURRENT_BINARY_DIR} ${src_path})
@@ -10,7 +19,7 @@ add_custom_command(
 	COMMAND ${pdflatex_cmd}
 	COMMAND ${bibtex_cmd}
 	COMMAND ${pdflatex_cmd}
-	DEPENDS ${src_path}
+	DEPENDS ${TexSources}
 	WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
 	JOB_POOL latex
 )

@@ -96,14 +96,26 @@
 \newpage
 \subfile{CLI}
 \newpage
-\subfile{ADVANCED_CFG}
-\newpage
-\subfile{GLOSSARY}
-\newpage
-\subfile{CREDITS}
-\newpage
 \subfile{LICENSE}
 \newpage
 \bibliography{REFERENCES}
+
+\appendix
+\renewcommand{\thesection}{Appendix \Alph{section}} % replace "A" with "Appendix A"
+\renewcommand{\thesubsection}{\Alph{section}.\arabic{subsection}} % keep "A" numbering for subsections
+\addtocontents{toc}{\protect\advance\protect\cftsecnumwidth 5.0em\relax} % make space for "Appendix A" in the TOC
+
+\newpage
+\subfile{A_SPACECRAFT}
+\newpage
+\subfile{A_CONFIG}
+\newpage
+\subfile{A_CONSTANTS}
+\newpage
+\subfile{A_GLOSSARY}
+\newpage
+\subfile{A_CREDITS}
+\newpage
+\subfile{A_CHANGELOG}
 
 \end{document}
