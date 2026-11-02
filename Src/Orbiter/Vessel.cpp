@@ -255,7 +255,7 @@ bool Vessel::OpenConfigFile (ifstream &cfgfile) const
 	if (cfgfile.good()) return true;
 	else {
 		cfgfile.clear();
-		LOGOUT_ERR_FILENOTFOUND_MSG(g_pOrbiter->ConfigPath(cbuf + 8), "No vessel class configuration file found for: %s", classname ? classname : name);
+		LOGOUT_ERR_FILENOTFOUND_MSG(g_pOrbiter->ConfigPath(cbuf + 8), "No vessel class configuration file found for: %s", classname ? classname : name.c_str());
 		//LogOut (">>> ERROR: No vessel class configuration file found for:");
 		//LOGOUT_ERR(classname ? classname : name);
 		return false;
@@ -448,7 +448,7 @@ void Vessel::ReadGenericCaps (ifstream &ifs)
 	bool b;
 
 	// recursively read base class specs
-	if (GetItemString (ifs, "BaseClass", cbuf)) {
+	if (GetItemString (ifs, "BaseClass", cbuf, sizeof(cbuf))) {
 		ifstream basef (g_pOrbiter->ConfigPath (cbuf));
 		if (basef) ReadGenericCaps (basef);
 	}
@@ -456,7 +456,7 @@ void Vessel::ReadGenericCaps (ifstream &ifs)
 	// read base class parameters
 	RigidBody::ReadGenericCaps (ifs);
 
-	if (GetItemString(ifs, "MeshName", cbuf)) {
+	if (GetItemString(ifs, "MeshName", cbuf, sizeof(cbuf))) {
 		// preload mesh template
 		MESHHANDLE mesh = (MESHHANDLE)g_pOrbiter->meshmanager.LoadMesh(cbuf);
 		if (mesh)
@@ -465,14 +465,14 @@ void Vessel::ReadGenericCaps (ifstream &ifs)
 			g_pOrbiter->TerminateOnError(); // we assume that vessel meshes are required
 	}
 
-	if (GetItemString (ifs, "CollisionHull", cbuf))
+	if (GetItemString (ifs, "CollisionHull", cbuf, sizeof(cbuf)))
 		TouchdownPointsFromFile (cbuf);
 
 	if (onlinehelp) {
 		delete []onlinehelp;
 		onlinehelp = NULL;
 	}
-	if (GetItemString (ifs, "Help", cbuf)) {
+	if (GetItemString (ifs, "Help", cbuf, sizeof(cbuf))) {
 		onlinehelp = new char[strlen(cbuf)+1]; TRACENEW
 		strcpy (onlinehelp, cbuf);
 	}
@@ -494,7 +494,7 @@ void Vessel::ReadGenericCaps (ifstream &ifs)
 	for (i = 0;; i++) {
 		double maxmass, efficiency = 1.0;
 		sprintf (item, "PropellantResource%d", i+1);
-		if (!GetItemString (ifs, item, cbuf)) break;
+		if (!GetItemString (ifs, item, cbuf, sizeof(cbuf))) break;
 		if (sscanf (cbuf, "%lf%lf", &maxmass, &efficiency))
 			CreatePropellantResource (maxmass, -1, efficiency);
 	}
@@ -515,7 +515,7 @@ void Vessel::ReadGenericCaps (ifstream &ifs)
 	if (GetItemReal (ifs, "MaxAttitudeThrust", d))
 		CreateDefaultAttitudeSet (d);
 
-	if (GetItemString (ifs, "TouchdownPoints", cbuf)) {
+	if (GetItemString (ifs, "TouchdownPoints", cbuf, sizeof(cbuf))) {
 		TOUCHDOWNVTX tdvtx[3];
 		for (i = 0; i < 3; i++) {
 			tdvtx[i].stiffness = 1e6;
@@ -531,7 +531,7 @@ void Vessel::ReadGenericCaps (ifstream &ifs)
 	} else 
 		GetItemReal (ifs, "COG_OverGround", cog_elev);  // obsolete
 
-	if (GetItemString (ifs, "CW", cbuf)) {
+	if (GetItemString (ifs, "CW", cbuf, sizeof(cbuf))) {
 		sscanf (cbuf, "%lf%lf%lf%lf", CWz, CWz+1, &CWx, &CWy);
 		bCWexplicit = true;
 	}
@@ -7797,12 +7797,12 @@ bool Vessel::LoadModule (ifstream &classf)
 	modIntf.v = 0;
 	modIntf.coreCreated = false;
 	flightmodel = g_pOrbiter->Cfg()->CfgLogicPrm.FlightModelLevel;
-	if (found = GetItemString (classf, "Module", cbuf)) {
+	if (found = GetItemString (classf, "Module", cbuf, sizeof(cbuf))) {
 		found = RegisterModule (cbuf);
 		if (!found) {
 			DWORD code = GetLastError();
 			char errbuf[256];
-			sprintf(errbuf, "Could not load vessel module: %s (code %d)", cbuf, code);
+			snprintf(errbuf, sizeof(errbuf), "Could not load vessel module: %s (code %lu)", cbuf, code);
 			LOGOUT_ERR (errbuf);
 		}
 		if (modIntf.ovcInit)
@@ -7818,7 +7818,7 @@ bool Vessel::LoadModule (ifstream &classf)
 bool Vessel::RegisterModule (const char *dllname)
 {
 	char cbuf[256];
-	sprintf (cbuf, "Modules\\%s.dll", dllname);
+	snprintf (cbuf, sizeof(cbuf), "Modules\\%s.dll", dllname);
 	hMod = LoadLibrary (cbuf);
 	if (!hMod)
 		return false;

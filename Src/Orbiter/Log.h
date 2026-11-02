@@ -16,13 +16,23 @@ typedef void (*LogOutFunc)(const char* msg);
 void InitLog (const char *logfile, bool append);   // Set log file name and clear if exists
 void SetLogVerbosity (bool verbose);
 void SetLogOutFunc(LogOutFunc func); // clone log output to a function
-void LogOut (const char *msg, ...);   // Write a message to the log file
+// A message with no arguments is written as plain text; with arguments, it is their printf format
+void LogOutFormat (const char *msg, ...);   // Write a message to the log file
+inline void LogOut (const char *msg) { LogOutFormat ("%s", msg); }
+// The template is necessary so the compiler knows which version to call for a message with no arguments
+template<typename... Args> void LogOut (const char *msg, Args... args) { LogOutFormat (msg, args...); }
 void LogOutVA(const char *format, va_list ap);
-void LogOutFine (const char *msg, ...);   // Write a message to the log file if fine-grain output enabled
+void LogOutFineFormat (const char *msg, ...);   // Write a message to the log file if fine-grain output enabled
+inline void LogOutFine (const char *msg) { LogOutFineFormat ("%s", msg); }
+template<typename... Args> void LogOutFine (const char *msg, Args... args) { LogOutFineFormat (msg, args...); }
 void LogOut ();                       // Write current message to log file
-void LogOut_Error (const char *func, const char *file, int line, const char *msg, ...);  // Write error message to log file
+void LogOut_ErrorFormat (const char *func, const char *file, int line, const char *msg, ...);  // Write error message to log file
+inline void LogOut_Error (const char *func, const char *file, int line, const char *msg) { LogOut_ErrorFormat (func, file, line, "%s", msg); }
+template<typename... Args> void LogOut_Error (const char *func, const char *file, int line, const char *msg, Args... args) { LogOut_ErrorFormat (func, file, line, msg, args...); }
 void LogOut_ErrorVA(const char *func, const char *file, int line, const char *msg, va_list ap);
-void LogOut_Warning(const char* func, const char* file, int line, const char* msg, ...);  // Write general warning to log file
+void LogOut_WarningFormat(const char* func, const char* file, int line, const char* msg, ...);  // Write general warning to log file
+inline void LogOut_Warning(const char* func, const char* file, int line, const char* msg) { LogOut_WarningFormat(func, file, line, "%s", msg); }
+template<typename... Args> void LogOut_Warning(const char* func, const char* file, int line, const char* msg, Args... args) { LogOut_WarningFormat(func, file, line, msg, args...); }
 void LogOut_WarningVA(const char* func, const char* file, int line, const char* msg, va_list ap);
 void LogOut_Obsolete(const char* func, const char* msg = 0);      // Write obsolete-function warning to log file
 void LogOut_LastError (const char *func, const char *file, int line);             // Write formatted string from GetLastError
@@ -105,7 +115,7 @@ void PrintModules();
 #define dCHECK(test,msg,...)
 #endif
 
-#define CHECKCWD(cwd,name) { char c[512]; _getcwd(c,512); if(strcmp(c,cwd)) { _chdir(cwd); sprintf (c,"CWD modified by module %s - Fixing.",name); LOGOUT_WARN(c); } }
+#define CHECKCWD(cwd,name) { char c[512]; if(_getcwd(c,512) && strcmp(c,cwd)) { _chdir(cwd); LOGOUT_WARN("CWD modified by module %s - Fixing.",name); } }
 
 #ifndef __LOG_CPP
 extern char logs[256];

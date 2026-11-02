@@ -1,7 +1,7 @@
 ===========================================================================
-XRSound 4.0
+XRSound 4.01
 
-Version Date: 26-Oct-2026
+Version Date: 31-Oct-2026
   
 Copyright (c) 2018-2026 Douglas Beachy and contributors
 Licensed under the MIT license

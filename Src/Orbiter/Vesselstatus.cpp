@@ -176,7 +176,7 @@ bool Vessel::ParseScenarioLine2 (char *line, void *status)
 			Base *base = ((Planet*)vs->rbody)->GetBase (trim_string(cbuf));
 			if (!base) {
 				char cerr[1024];
-				sprintf (cerr, "Scenario parse error for vessel %s: base '%s' not found on body '%s'.", name.c_str(), trim_string(cbuf), ((Planet*)vs->rbody)->Name());
+				snprintf (cerr, sizeof(cerr), "Scenario parse error for vessel %s: base '%s' not found on body '%s'.", name.c_str(), trim_string(cbuf), ((Planet*)vs->rbody)->Name());
 				LOGOUT_ERR(cerr);
 				g_pOrbiter->TerminateOnError();
 			}

@@ -12,6 +12,7 @@
 
 #include <fstream>
 #include <iomanip>
+#include <limits>
 #include <string.h>
 #include <stdio.h>
 #include "Config.h"
@@ -345,7 +346,22 @@ char *readline (std::istream &is)
 	return 0; // never gets here
 }
 
-bool GetItemString (std::istream &is, const char *label, char *val)
+// Reads one line like getline, but a line too long for buf is cut off and the rest of it skipped
+static bool getline_trunc (istream &is, char *buf, int size)
+{
+	if (is.getline (buf, size)) return true;
+	if (is.eof() || is.bad()) return false;
+	is.clear();
+	is.ignore (numeric_limits<streamsize>::max(), '\n');
+	return true;
+}
+
+bool GetItemString (istream &is, const char *label, char *val)
+{
+	return GetItemString (is, label, val, 512);
+}
+
+bool GetItemString (istream &is, const char *label, char *val, size_t size)
 {
 	char cbuf[512], *cl, *cv;
 	int i;
@@ -353,7 +369,7 @@ bool GetItemString (std::istream &is, const char *label, char *val)
 	is.clear();
 	is.seekg (0, ios::beg);
 
-	while (is.getline (cbuf, 512)) {
+	while (getline_trunc (is, cbuf, 512)) {
 		cl = trim_string(cbuf);
 		if (!_stricmp(cl, "END_PARSE")) return false;
 		
@@ -364,7 +380,7 @@ bool GetItemString (std::istream &is, const char *label, char *val)
 		if (!_stricmp (cl, label)) {
 			while (*cv == ' ' || *cv == '\t') cv++;
 			if (*cv) {
-				strcpy (val, cv);
+				snprintf (val, size, "%s", cv);
 				return true;
 			} else {
 				return false;
@@ -491,39 +507,39 @@ bool Config::Read(std::istream &is)
 	GetBool (is, "EchoAllParams", bEchoAll);
 
 	// configuration directory
-	if (GetString (is, "ConfigDir", CfgDirPrm.ConfigDir))
+	if (GetString (is, "ConfigDir", CfgDirPrm.ConfigDir, sizeof(CfgDirPrm.ConfigDir)-1))
 		if (CfgDirPrm.ConfigDir[strlen(CfgDirPrm.ConfigDir)-1] != '\\')
 			strcat (CfgDirPrm.ConfigDir, "\\");
 	strcpy (cfgpath, CfgDirPrm.ConfigDir); cfglen = strlen (cfgpath);
 
 	// mesh directory
-	if (GetString (is, "MeshDir", CfgDirPrm.MeshDir))
+	if (GetString (is, "MeshDir", CfgDirPrm.MeshDir, sizeof(CfgDirPrm.MeshDir)-1))
 		if (CfgDirPrm.MeshDir[strlen(CfgDirPrm.MeshDir)-1] != '\\')
 			strcat (CfgDirPrm.MeshDir, "\\");
 	strcpy (mshpath, CfgDirPrm.MeshDir);   mshlen = strlen (mshpath);
 
 	// texture directory
-	if (GetString (is, "TextureDir", CfgDirPrm.TextureDir))
+	if (GetString (is, "TextureDir", CfgDirPrm.TextureDir, sizeof(CfgDirPrm.TextureDir)-1))
 		if (CfgDirPrm.TextureDir[strlen(CfgDirPrm.TextureDir)-1] != '\\')
 			strcat (CfgDirPrm.TextureDir, "\\");
 	strcpy (texpath, CfgDirPrm.TextureDir);  texlen = strlen (texpath);
 
 	// highres texture directory
-	if (GetString (is, "HightexDir", CfgDirPrm.HightexDir)) {
+	if (GetString (is, "HightexDir", CfgDirPrm.HightexDir, sizeof(CfgDirPrm.HightexDir)-1)) {
 		if (CfgDirPrm.HightexDir[strlen(CfgDirPrm.HightexDir)-1] != '\\')
 			strcat (CfgDirPrm.HightexDir, "\\");
 		strcpy (htxpath, CfgDirPrm.HightexDir);  htxlen = strlen (htxpath);
 	}
 
 	// planetary texture directory
-	if (GetString(is, "PlanetTexDir", CfgDirPrm.PlanetTexDir)) {
+	if (GetString(is, "PlanetTexDir", CfgDirPrm.PlanetTexDir, sizeof(CfgDirPrm.PlanetTexDir)-1)) {
 		if (CfgDirPrm.PlanetTexDir[strlen(CfgDirPrm.PlanetTexDir) - 1] != '\\')
 			strcat(CfgDirPrm.PlanetTexDir, "\\");
 		strcpy(ptxpath, CfgDirPrm.PlanetTexDir); ptxlen = strlen(ptxpath);
 	}
 
 	// scenario directory
-	if (GetString (is, "ScenarioDir", CfgDirPrm.ScnDir))
+	if (GetString (is, "ScenarioDir", CfgDirPrm.ScnDir, sizeof(CfgDirPrm.ScnDir)-1))
 		if (CfgDirPrm.ScnDir[strlen(CfgDirPrm.ScnDir)-1] != '\\')
 			strcat (CfgDirPrm.ScnDir, "\\");
 	strcpy (scnpath, CfgDirPrm.ScnDir); scnlen = strlen (scnpath);
@@ -602,7 +618,7 @@ bool Config::Read(std::istream &is)
 	GetBool (is, "StabiliseOrbits", CfgPhysicsPrm.bOrbitStabilise);
 	GetReal (is, "StabilisePLimit", CfgPhysicsPrm.Stabilise_PLimit);
 	GetReal (is, "StabiliseSLimit", CfgPhysicsPrm.Stabilise_SLimit);
-	if (GetString (is, "PertPropSubsampling", cbuf))
+	if (GetString (is, "PertPropSubsampling", cbuf, sizeof(cbuf)))
 		sscanf (cbuf, "%d%lf", &CfgPhysicsPrm.PPropSubMax, &CfgPhysicsPrm.PPropSubLimit);
 	GetReal (is, "PertPropNonsphericalLimit", CfgPhysicsPrm.PPropStepLimit);
 	GetInt (is, "PropStages", CfgPhysicsPrm.nLPropLevel);
@@ -610,7 +626,7 @@ bool Config::Read(std::istream &is)
 		int n, mode;
 		double ttgt, atgt, tlim, alim;
 		sprintf (tag, "PropStage%d", i);
-		if (GetString (is, tag, cbuf)) {
+		if (GetString (is, tag, cbuf, sizeof(cbuf))) {
 			n = sscanf (cbuf, "%d%lf%lf%lf%lf", &mode, &ttgt, &atgt, &tlim, &alim);
 			if (n >= 1 && mode >= 0 && mode < NPROP_METHOD)                     CfgPhysicsPrm.PropMode[i] = mode;
 			if (n >= 2 && fabs (ttgt-CfgPhysicsPrm_default.PropTTgt[i]) > 1e-6) CfgPhysicsPrm.PropTTgt[i] = ttgt;
@@ -650,23 +666,23 @@ bool Config::Read(std::istream &is)
 	if (GetInt (is, "ElevationMode", i) && i >= 0 && i <= 1)
 		CfgVisualPrm.ElevMode = i;
 	GetBool(is, "EnableBackgroundStars", CfgVisualPrm.bUseStarDots);
-	if (GetString(is, "StarPrm", cbuf)) {
+	if (GetString(is, "StarPrm", cbuf, sizeof(cbuf))) {
 		sscanf(cbuf, "%lf%lf%lf%d", &CfgVisualPrm.StarPrm.mag_hi, &CfgVisualPrm.StarPrm.mag_lo, &CfgVisualPrm.StarPrm.brt_min, &i);
 		CfgVisualPrm.StarPrm.map_log = (i != 0);
 	}
 	GetBool(is, "EnableBackgroundStarmap", CfgVisualPrm.bUseStarImage);
-	if (GetString(is, "CSphereStarPath", cbuf))
+	if (GetString(is, "CSphereStarPath", cbuf, sizeof(cbuf)))
 		strncpy(CfgVisualPrm.StarImagePath, cbuf, 128);
 	GetBool(is, "EnableBackgroundImage", CfgVisualPrm.bUseBgImage);
-	if (GetString(is, "CSphereBgPath", cbuf))
+	if (GetString(is, "CSphereBgPath", cbuf, sizeof(cbuf)))
 		strncpy(CfgVisualPrm.CSphereBgPath, cbuf, 128);
 	GetReal (is, "CSphereBgIntensity", CfgVisualPrm.CSphereBgIntens);
 
 	// screen capture parameters
 	GetInt (is, "CaptureTarget", CfgCapturePrm.ImageTgt);
-	if (GetString (is, "CaptureFile", cbuf))
+	if (GetString (is, "CaptureFile", cbuf, sizeof(cbuf)))
 		strncpy (CfgCapturePrm.ImageFile, cbuf, 128);
-	if (GetString (is, "CaptureSequenceDir", cbuf))
+	if (GetString (is, "CaptureSequenceDir", cbuf, sizeof(cbuf)))
 		strncpy (CfgCapturePrm.SequenceDir, cbuf, 128);
 	GetInt (is, "CaptureImageFormat", CfgCapturePrm.ImageFormat);
 	GetInt (is, "CaptureImageQuality", CfgCapturePrm.ImageQuality);
@@ -684,9 +700,9 @@ bool Config::Read(std::istream &is)
 		CfgVisHelpPrm.flagPlanetarium = (DWORD)i;
 	if (GetInt(is, "SurfMarkers", i))
 		CfgVisHelpPrm.flagMarkers = (DWORD)i;
-	if (GetString (is, "Bodyforces", cbuf))
+	if (GetString (is, "Bodyforces", cbuf, sizeof(cbuf)))
 		sscanf (cbuf, "%u%f%f", &CfgVisHelpPrm.flagBodyForce, &CfgVisHelpPrm.scaleBodyForce, &CfgVisHelpPrm.opacBodyForce);
-	if (GetString (is, "CoordinateAxes", cbuf))
+	if (GetString (is, "CoordinateAxes", cbuf, sizeof(cbuf)))
 		sscanf (cbuf, "%u%f%f", &CfgVisHelpPrm.flagFrameAxes, &CfgVisHelpPrm.scaleFrameAxes, &CfgVisHelpPrm.opacFrameAxes);
 
 	// debug options
@@ -753,38 +769,38 @@ bool Config::Read(std::istream &is)
 
 	// font characteristics
 	if (GetReal (is, "DialogFont_Scale", d)) CfgFontPrm.dlgFont_Scale = (float)d;
-	GetString (is, "DialogFont1_Face", CfgFontPrm.dlgFont1_Face);
+	GetString (is, "DialogFont1_Face", CfgFontPrm.dlgFont1_Face, sizeof(CfgFontPrm.dlgFont1_Face));
 	if (GetReal (is, "ImGui_FontSize", d)) CfgFontPrm.ImGui_FontSize = (float)d;
-	GetString (is, "ImGui_DefaultFontFile", CfgFontPrm.ImGui_DefaultFontFile);
-	GetString (is, "ImGui_ConsoleFontFile", CfgFontPrm.ImGui_ConsoleFontFile);
-	GetString (is, "ImGui_MonospacedFontFile", CfgFontPrm.ImGui_MonospacedFontFile);
-	GetString (is, "ImGui_ManuscriptFontFile", CfgFontPrm.ImGui_ManuscriptFontFile);
+	GetString (is, "ImGui_DefaultFontFile", CfgFontPrm.ImGui_DefaultFontFile, sizeof(CfgFontPrm.ImGui_DefaultFontFile));
+	GetString (is, "ImGui_ConsoleFontFile", CfgFontPrm.ImGui_ConsoleFontFile, sizeof(CfgFontPrm.ImGui_ConsoleFontFile));
+	GetString (is, "ImGui_MonospacedFontFile", CfgFontPrm.ImGui_MonospacedFontFile, sizeof(CfgFontPrm.ImGui_MonospacedFontFile));
+	GetString (is, "ImGui_ManuscriptFontFile", CfgFontPrm.ImGui_ManuscriptFontFile, sizeof(CfgFontPrm.ImGui_ManuscriptFontFile));
 
 	// misc. options
-	if (GetString (is, "LPadRect", cbuf)) {
+	if (GetString (is, "LPadRect", cbuf, sizeof(cbuf))) {
 		sscanf (cbuf, "%d%d%d%d", &rLaunchpad.left, &rLaunchpad.top,
 			&rLaunchpad.right, &rLaunchpad.bottom);
 	}
 
-	if (GetString (is, "DlgMapPos", cbuf))
+	if (GetString (is, "DlgMapPos", cbuf, sizeof(cbuf)))
 		sscanf (cbuf, "%d%d%d%d", &CfgWindowPos.DlgMap.left, &CfgWindowPos.DlgMap.top,
 			&CfgWindowPos.DlgMap.right, &CfgWindowPos.DlgMap.bottom);
-	if (GetString (is, "DlgInfoPos", cbuf))
+	if (GetString (is, "DlgInfoPos", cbuf, sizeof(cbuf)))
 		sscanf (cbuf, "%d%d%d%d", &CfgWindowPos.DlgInfo.left, &CfgWindowPos.DlgInfo.top,
 			&CfgWindowPos.DlgInfo.right, &CfgWindowPos.DlgInfo.bottom);
-	if (GetString (is, "DlgCamPos", cbuf))
+	if (GetString (is, "DlgCamPos", cbuf, sizeof(cbuf)))
 		sscanf (cbuf, "%d%d%d%d", &CfgWindowPos.DlgCamera.left, &CfgWindowPos.DlgCamera.top,
 			&CfgWindowPos.DlgCamera.right, &CfgWindowPos.DlgCamera.bottom);
-	if (GetString (is, "DlgFocusPos", cbuf))
+	if (GetString (is, "DlgFocusPos", cbuf, sizeof(cbuf)))
 		sscanf (cbuf, "%d%d%d%d", &CfgWindowPos.DlgFocus.left, &CfgWindowPos.DlgFocus.top,
 			&CfgWindowPos.DlgFocus.right, &CfgWindowPos.DlgFocus.bottom);
-	if (GetString (is, "DlgTaccPos", cbuf))
+	if (GetString (is, "DlgTaccPos", cbuf, sizeof(cbuf)))
 		sscanf (cbuf, "%d%d%d%d", &CfgWindowPos.DlgTacc.left, &CfgWindowPos.DlgTacc.top,
 			&CfgWindowPos.DlgTacc.right, &CfgWindowPos.DlgTacc.bottom);
-	if (GetString(is, "DlgOptionsPos", cbuf))
+	if (GetString(is, "DlgOptionsPos", cbuf, sizeof(cbuf)))
 		sscanf(cbuf, "%d%d%d%d", &CfgWindowPos.DlgOptions.left, &CfgWindowPos.DlgOptions.top,
 			&CfgWindowPos.DlgOptions.right, &CfgWindowPos.DlgOptions.bottom);
-	if (GetString (is, "DlgVhelperPos", cbuf))
+	if (GetString (is, "DlgVhelperPos", cbuf, sizeof(cbuf)))
 		sscanf (cbuf, "%d%d%d%d", &CfgWindowPos.DlgVishelper.left, &CfgWindowPos.DlgVishelper.top,
 			&CfgWindowPos.DlgVishelper.right, &CfgWindowPos.DlgVishelper.bottom);
 	GetInt (is, "LpadScnListWidth", CfgWindowPos.LaunchpadScnListWidth);
@@ -794,7 +810,7 @@ bool Config::Read(std::istream &is)
 	// list of active modules
 	if (FindLine (is, "ACTIVE_MODULES")) {
 		char cbuf[256];
-		while (is.getline (cbuf, 256) && _strnicmp (cbuf, "END_MODULES", 11))
+		while (getline_trunc (is, cbuf, 256) && _strnicmp (cbuf, "END_MODULES", 11))
 			m_activeModules.push_back(std::string(trim_string(cbuf)));
 	}
 	return true;
@@ -1389,40 +1405,39 @@ bool Config::Write(std::ostream &os) const
 
 char *Config::ConfigPath (const char *name) const
 {
-	strcpy (cfgpath+cfglen, name);
-	return strcat (cfgpath, ".cfg");
+	snprintf (cfgpath+cfglen, sizeof(cfgpath)-cfglen, "%s.cfg", name);
+	return cfgpath;
 }
 
 char *Config::ConfigPathNoext (const char *name)
 {
-	strcpy (cfgpath+cfglen, name);
+	snprintf (cfgpath+cfglen, sizeof(cfgpath)-cfglen, "%s", name);
 	return cfgpath;
 }
 
 char *Config::MeshPath (const char *name)
 {
-	strcpy (mshpath+mshlen, name);
-	return strcat (mshpath, ".msh");
+	snprintf (mshpath+mshlen, sizeof(mshpath)-mshlen, "%s.msh", name);
+	return mshpath;
 }
 
 char *Config::TexPath (const char *name, const char *ext)
 {
-	strcpy (texpath+texlen, name);
-	return strcat (texpath, ext ? ext : ".dds");
+	snprintf (texpath+texlen, sizeof(texpath)-texlen, "%s%s", name, ext ? ext : ".dds");
+	return texpath;
 }
 
 char *Config::HTexPath (const char *name, const char *ext)
 {
 	if (!htxlen) return 0;
-	strcpy (htxpath+htxlen, name);
-	return strcat (htxpath, ext ? ext : ".dds");
+	snprintf (htxpath+htxlen, sizeof(htxpath)-htxlen, "%s%s", name, ext ? ext : ".dds");
+	return htxpath;
 }
 
 char* Config::PTexPath(const char* name, const char* ext)
 {
 	if (!ptxlen) return 0;
-	strcpy(ptxpath + ptxlen, name);
-	if (ext) strcat(ptxpath, ext);
+	snprintf(ptxpath + ptxlen, sizeof(ptxpath) - ptxlen, "%s%s", name, ext ? ext : "");
 	return ptxpath;
 }
 
@@ -1470,12 +1485,17 @@ void Config::DelActiveModule (const std::string& name)
 
 bool Config::GetString (std::istream &is, const char *category, char *val)
 {
+	return GetString (is, category, val, 512);
+}
+
+bool Config::GetString (istream &is, const char *category, char *val, size_t size)
+{
 	char cbuf[512];
 	int i;
 
 	is.clear();
 	is.seekg (0, ios::beg);
-	while (is.getline (cbuf, 512) && strncmp (cbuf, category, strlen(category)));
+	while (getline_trunc (is, cbuf, 512) && strncmp (cbuf, category, strlen(category)));
 	if (!is.good()) {
 		is.clear();
 		return false;
@@ -1490,7 +1510,7 @@ bool Config::GetString (std::istream &is, const char *category, char *val)
 	if (!cbuf[i]) return false;
 	i++;
 	while (cbuf[i] == ' ' || cbuf[i] == '\t') i++;
-	strcpy (val, cbuf+i);
+	snprintf (val, size, "%s", cbuf+i);
 	return true;
 }
 
