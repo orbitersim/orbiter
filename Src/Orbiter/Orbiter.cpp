@@ -47,6 +47,7 @@
 #include "imgui_impl_win32.h"
 #include "VFSAPI.h"
 #include "VFS.h"
+#include <filesystem>
 
 #include "Tracy.hpp"
 
@@ -191,7 +192,20 @@ INT WINAPI WinMain (HINSTANCE hInstance, HINSTANCE, LPSTR strCmdLine, INT nCmdSh
 	orbiter::CommandLine::Parse(g_pOrbiter, strCmdLine);
 
 	// Initialise the log
-	INITLOG("Orbiter.log", g_pOrbiter->Cfg()->CfgCmdlinePrm.bAppendLog); // init log file
+
+	// The VFS is not yet initialized.
+	// Parse the config ourselves here so that the Orbiter.log file ends up in the work dir
+	char logname[MAX_PATH];
+	CFG_DIRPRM &dirprm = g_pOrbiter->Cfg()->CfgDirPrm;
+	if(dirprm.bOverlay && dirprm.WorkDir.size()) {
+		std::error_code ec;
+		std::filesystem::create_directories(dirprm.WorkDir.c_str(), ec);
+		snprintf(logname, sizeof(logname), "%s/Orbiter.log", dirprm.WorkDir.c_str());
+	} else {
+		strcpy (logname, "Orbiter.log");
+	}
+
+	INITLOG(logname, g_pOrbiter->Cfg()->CfgCmdlinePrm.bAppendLog); // init log file
 
 #ifdef ISBETA
 	LOGOUT("Build %s BETA [v.%06d]", __DATE__, GetVersion());

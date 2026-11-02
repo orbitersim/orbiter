@@ -27,16 +27,7 @@ static FILE *logFile;
 
 void InitLog (const char *logfile, bool append)
 {
-	// The VFS is not yet initialized.
-	// Parse the config ourselves here so that the Orbiter.log file ends up in the work dir
-	CFG_DIRPRM &dirprm = g_pOrbiter->Cfg()->CfgDirPrm;
-	if(dirprm.bOverlay && dirprm.WorkDir.size()) {
-		std::error_code ec;
-		std::filesystem::create_directories(dirprm.WorkDir.c_str(), ec);
-		snprintf(logname, sizeof(logname), "%s/%s", dirprm.WorkDir.c_str(), logfile);
-	} else {
-		strcpy (logname, logfile);
-	}
+	strncpy (logname, logfile, sizeof(logname));
 	ofstream ofs (logname, append ? ios::app : ios::out);
 	ofs << "**** " << logfile << endl;
 	ofs.close();
@@ -70,17 +61,23 @@ void LogOutVA(const char *format, va_list ap)
 		fputc('\n', logFile);
 		fflush(logFile);
 	}
+	if (logOut) {
+		vsnprintf(logs, 255, format, ap);
+		(*logOut)(logs);
+	}
 }
 
 void LogOutFineFormat (const char *msg, ...)
 {
-	if (logFile && finelog) {
+	if (finelog) {
 		va_list ap;
 		va_start (ap, msg);
-		fprintf (logFile, "%010.3f: ", (timeGetTime() - t0) * 1e-3);
-		vfprintf (logFile, msg, ap);
-		fputc ('\n', logFile);
-		fflush (logFile);
+		if(logFile) {
+			fprintf (logFile, "%010.3f: ", (timeGetTime() - t0) * 1e-3);
+			vfprintf (logFile, msg, ap);
+			fputc ('\n', logFile);
+			fflush (logFile);
+		}
 		if (logOut) {
 			vsnprintf (logs, 255, msg, ap);
 			(*logOut)(logs);
