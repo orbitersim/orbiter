@@ -16,6 +16,13 @@
 
 #include "catch2/catch_all.hpp"
 
+namespace VFS {
+	const char *resolve_path(FixedBuffer dst, const char *path, bool modify) {
+		dst.copy(path);
+		return dst.data();
+	}
+}
+
 namespace fs = std::filesystem;
 
 class TestParser : public ConfigFileParser
