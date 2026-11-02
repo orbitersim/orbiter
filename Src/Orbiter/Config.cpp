@@ -461,22 +461,18 @@ int ListIndex (int listlen, char **list, char *label)
 
 Config::Config()
 {
-	Root = 0;
 	SetDefaults ();
 }
 
-Config::Config(char* fname)
+Config::Config(const std::string &fname)
 {
-	Root = 0;
 	SetDefaults();
-
 	Read(fname);
 }
 
-bool Config::Read(const char *fname)
+bool Config::Read(const std::string &fname)
 {
-	Root = new char[strlen(fname) + 1]; TRACENEW
-		strcpy(Root, fname);
+	m_sRoot = fname;
 
 	ifstream ifs(fname);
 	if (!ifs) return false;
@@ -806,10 +802,6 @@ bool Config::Read(std::istream &is)
 
 Config::~Config()
 {
-	if (Root) {
-		delete []Root;
-		Root = NULL;
-	}
 }
 
 void Config::SetDefaults ()
@@ -828,8 +820,7 @@ void Config::SetDefaults ()
 	strcpy(ptxpath, CfgDirPrm.PlanetTexDir); ptxlen = strlen(ptxpath);
 	strcpy(scnpath, CfgDirPrm.ScnDir);       scnlen = strlen(scnpath);
 
-	if (Root) delete []Root;
-	Root = 0;
+	m_sRoot.clear();
 
 	bEchoAll = bEchoAll_default;
 	memset (&rLaunchpad, 0, sizeof(RECT));
@@ -948,13 +939,17 @@ const void *Config::GetParam (DWORD paramtype) const
 	}
 }
 
-bool Config::Write(const char *fname) const
+bool Config::Write(const std::string &fname) const
 {
-	if (!fname) fname = Root;
-	if (!fname) return false;
+	if (!fname.size()) return false;
 	ofstream ofs(fname);
 	if (!ofs) return false;
 	return Write(ofs);
+}
+
+bool Config::Write() const
+{
+	return Write(m_sRoot);
 }
 
 bool Config::Write(std::ostream &os) const

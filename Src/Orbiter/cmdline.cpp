@@ -170,6 +170,7 @@ std::vector<::CommandLine::Key>& orbiter::CommandLine::KeyList() const
 		{ KEY_CONFIG_CIN_ADD, "cfgcinadd", 'i', false},
 		{ KEY_CONFIG_READONLY, "cfgreadonly", 'o', false},
 		{ KEY_CONFIG_COUT_ONLY, "cfgcoutonly", 'O', false},
+		{ KEY_CONFIG_NAME, "cfgname", 'n', true},
 		{ KEY_SCENARIO, "scenario", 'S', true},
 		{ KEY_SCENARIOX, "scenariox", 's', true},
 		{ KEY_FASTEXIT, "fastexit", 'x', false},
@@ -210,6 +211,9 @@ void orbiter::CommandLine::ApplyOption(const Key* key, const std::string& value)
 		break;
 	case KEY_CONFIG_COUT_ONLY:
 		cfg.bCfgToCoutOnly = true;
+		break;
+	case KEY_CONFIG_NAME:
+		m_pOrbiter->SetMasterConfig(value);
 		break;
 	case KEY_FASTEXIT:
 		cfg.bFastExit = true;
@@ -281,6 +285,7 @@ void orbiter::CommandLine::PrintHelpAndExit() const
 	std::cout << "  --cfgcinadd, -i: Read configuration from stdin after reading Orbiter.cfg\n";
 	std::cout << "  --cfgreadonly, -o: Do not write to Orbiter.cfg on exit\n";
 	std::cout << "  --cfgcoutonly, -O: Write configuration to stdout instead of Orbiter.cfg\n";
+	std::cout << "  --cfgname=<name>, -n <name>: Use <name> instead of Orbiter.cfg for config\n";
 	std::cout << "  --scenario=<scn>, -S <scn>: Launch scenario <scn>\n";
 	std::cout << "  --scenariox=<scn>, -s <scn>: Launch scenario <scn>, exit on close\n";
 	std::cout << "  --fastexit, -x: Exit Orbiter after simulation session\n";

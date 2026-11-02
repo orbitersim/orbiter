@@ -71,7 +71,7 @@ const int MAX_TEXTURE_BUFSIZE = 8000000;
 
 const TCHAR* g_strAppTitle = "OpenOrbiter";
 
-const TCHAR* MasterConfigFile = "Orbiter.cfg";
+const std::string DefaultMasterConfigFile = "Orbiter.cfg";
 
 const TCHAR* CurrentScenario = "(Current state)";
 char ScenarioName[256] = "\0";
@@ -294,6 +294,7 @@ Orbiter::Orbiter ()
 	// Initialise timer
 	timeBeginPeriod(1);
 
+	m_sMasterConfigFile = DefaultMasterConfigFile;
 	pDI             = new DInput(this); TRACENEW
 	pConfig         = new Config; TRACENEW
 	pState          = NULL;
@@ -329,7 +330,6 @@ Orbiter::Orbiter ()
 	D3DMathSetup();
 	script          = NULL;
 	memstat = nullptr;
-
 	simheapsize     = 0;
 
 	for (int i = 0; i < 15; i++)
@@ -384,7 +384,7 @@ HRESULT Orbiter::Create (HINSTANCE hInstance)
 	// parameter manager - parses from master config file
 	hInst = hInstance;
 	if (!pConfig->CfgCmdlinePrm.bCfgFromCinOnly)
-		pConfig->Read(MasterConfigFile);
+		pConfig->Read(m_sMasterConfigFile);
 	if (pConfig->CfgCmdlinePrm.bCfgFromCinOnly || pConfig->CfgCmdlinePrm.bCfgFromCinAdd) {
 		std::stringstream memStream;
 		memStream << std::cin.rdbuf();
@@ -469,9 +469,13 @@ void Orbiter::SaveConfig ()
 		pConfig->Write(std::cout);
 	}
 	else if (!pConfig->CfgCmdlinePrm.bCfgReadOnly) {
-		pConfig->Write();
-		m_pLaunchpad->WriteExtraParams();
+		pConfig->Write(m_sMasterConfigFile);
 	}
+
+	// Plugin modules that write config parameters defined in the Launchpad
+	// Extra tab aren't affected by the cout redirection. They still write their
+	// stuff using their default method.
+	m_pLaunchpad->WriteExtraParams();
 }
 
 //-----------------------------------------------------------------------------

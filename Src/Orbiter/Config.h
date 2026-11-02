@@ -349,7 +349,7 @@ class Config {
 public:
 	Config ();
 
-	Config (char *fname);
+	Config (const std::string &fname);
 	// construct from defaults in file "fname"
 
 	~Config ();
@@ -359,12 +359,13 @@ public:
 
 	bool FoundFile() const { return found_config_file; }
 
-	bool Read(const char* fname);
+	bool Read(const std::string &fname);
 	bool Config::Read(std::istream &is);
 	// read config parameters from a named file or an open stream
 	// returns false if read fails
 
-	bool Write (const char *fname = 0) const;
+	bool Write(const std::string &fname) const;
+	bool Write () const;
 	bool Write(std::ostream &os) const;
 	// write config parameters to a named file or an open stream
 	// returns false if write fails
@@ -393,9 +394,6 @@ public:
 
 	bool bEchoAll;          // echo all configuration parameters (or only non-default ones)?
 	RECT rLaunchpad;        // launchpad dialog position
-
-	// directory information
-	char *Root;             // master config file
 
 	// visual parameters
 	DWORD AmbientColour;         // RGBA value of ambient component
@@ -455,6 +453,8 @@ private:
 	bool GetSize (std::istream& is, const char* category, size_t& val);
 	bool GetBool (std::istream &is, const char *category, bool &val);
 	bool GetVector (std::istream &is, const char *category, Vector &val);
+
+	std::string m_sRoot;    // master config file
 
 	mutable char cfgpath[256];  // buffer for creating full path names
 	char mshpath[256];
