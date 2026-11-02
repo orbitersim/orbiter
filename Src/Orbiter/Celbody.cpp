@@ -54,7 +54,7 @@ CelestialBody::CelestialBody (char *fname)
 		g_pOrbiter->TerminateOnError();
 	}
 
-	if (GetItemString (ifs, "Module", cbuf))
+	if (GetItemString (ifs, "Module", cbuf, sizeof(cbuf)))
 		RegisterModule (cbuf);
 
 	GetItemReal (ifs, "SidRotPeriod", rot_T);
@@ -68,7 +68,7 @@ CelestialBody::CelestialBody (char *fname)
 	GetItemReal (ifs, "PrecessionObliquity", eps_ref);
 	GetItemReal (ifs, "PrecessionLAN", lan_ref);
 
-	if (GetItemString(ifs, "GravModelPath", cbuf) && GetItemInt(ifs, "GravCoeffCutoff", gravcoeff)) {
+	if (GetItemString(ifs, "GravModelPath", cbuf, sizeof(cbuf)) && GetItemInt(ifs, "GravCoeffCutoff", gravcoeff)) {
 		char gravModelFileName[512];
 		sprintf(gravModelFileName, "GravityModels\\%s",cbuf);
 		int maxGravityTerms = 0;
@@ -106,7 +106,7 @@ CelestialBody::CelestialBody (char *fname)
 		}
 	}
 
-	if (GetItemString (ifs, "JCoeff", cbuf)) {
+	if (GetItemString (ifs, "JCoeff", cbuf, sizeof(cbuf))) {
 		char *str;
 		str = strtok (cbuf, " \t");
 		while (str) {
@@ -122,7 +122,7 @@ CelestialBody::CelestialBody (char *fname)
 	}
 
 	if (GetItemBool (ifs, "HasElements", bInitFromElements) && bInitFromElements) {
-		if (GetItemString (ifs, "ElReference", cbuf) &&
+		if (GetItemString (ifs, "ElReference", cbuf, sizeof(cbuf)) &&
 			!_stricmp (cbuf, "ParentEquator"))
 			elframe = ELFRAME_PARENTEQU;
 		el = new Elements (fname); TRACENEW
@@ -716,10 +716,10 @@ void CelestialBody::RegisterModule (char *dllname)
 	char cbuf[256];
 	module = 0;                              // reset new interface
 	memset (&modIntf, 0, sizeof (modIntf));  // reset old interface
-	sprintf (cbuf, "Modules\\Celbody\\%s.dll", dllname); // try new module location
+	snprintf (cbuf, sizeof(cbuf), "Modules\\Celbody\\%s.dll", dllname); // try new module location
 	hMod = LoadLibrary (cbuf);
 	if (!hMod) {
-		sprintf (cbuf, "Modules\\%s.dll", dllname);  // try legacy module location
+		snprintf (cbuf, sizeof(cbuf), "Modules\\%s.dll", dllname);  // try legacy module location
 		hMod = LoadLibrary (cbuf);
 	}
 	if (!hMod) {
