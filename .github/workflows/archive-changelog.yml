@@ -1,0 +1,48 @@
+name: Archive Changelog on Release
+
+on:
+  release:
+    types: [published]
+
+jobs:
+  archive-changelog:
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Archive current changelog to Doc subdirectory
+        run: |
+          # release tag
+          TAG_NAME="${{ github.event.release.tag_name }}"
+          
+          # ensure directory exists
+          mkdir -p Doc/ChangeLog
+          
+          # check we actually have a current changelog
+          if [ -f CHANGELOG.md ]; then
+            echo "Archiving CHANGELOG.md to Doc/ChangeLog/CHANGELOG-$TAG_NAME.md"
+            
+            # move the old changelog to the Doc/ChangeLog folder and rename
+            mv CHANGELOG.md "Doc/ChangeLog/CHANGELOG-$TAG_NAME.md"
+          else
+            echo "No active CHANGELOG.md found to archive."
+          fi
+
+          # create a blank current changelog file
+          echo -e "# Changelog\n\nMerge commits will be documented in this file.\n" > CHANGELOG.md
+
+      - name: Commit and Push Archive
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "41898282+github-actions[bot]@://github.com"
+          
+          # Stage the current file and the archive directory
+          git add CHANGELOG.md Doc/ChangeLog/
+          
+          git commit -m "Archived changelog for release ${{ github.event.release.tag_name }} to Doc/ChangeLog/ [skip ci]"
+          git push
