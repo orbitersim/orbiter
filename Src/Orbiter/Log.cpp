@@ -40,7 +40,7 @@ void SetLogVerbosity (bool verbose)
 	finelog = verbose;
 }
 
-void LogOut (const char *msg, ...)
+void LogOutFormat (const char *msg, ...)
 {
 	va_list ap;
 	va_start (ap, msg);
@@ -51,26 +51,30 @@ void LogOut (const char *msg, ...)
 void LogOutVA(const char *format, va_list ap)
 {
 	FILE *f = fopen(logname, "a+t");
-	fprintf(f, "%010.3f: ", (timeGetTime() - t0) * 1e-3);
-	vfprintf(f, format, ap);
-	fputc('\n', f);
-	fclose(f);
+	if (f) {
+		fprintf(f, "%010.3f: ", (timeGetTime() - t0) * 1e-3);
+		vfprintf(f, format, ap);
+		fputc('\n', f);
+		fclose(f);
+	}
 	if (logOut) {
 		vsnprintf(logs, 255, format, ap);
 		(*logOut)(logs);
 	}
 }
 
-void LogOutFine (const char *msg, ...)
+void LogOutFineFormat (const char *msg, ...)
 {
 	if (finelog) {
 		va_list ap;
 		va_start (ap, msg);
 		FILE *f = fopen (logname, "a+t");
-		fprintf (f, "%010.3f: ", (timeGetTime() - t0) * 1e-3);
-		vfprintf (f, msg, ap);
-		fputc ('\n', f);
-		fclose (f);
+		if (f) {
+			fprintf (f, "%010.3f: ", (timeGetTime() - t0) * 1e-3);
+			vfprintf (f, msg, ap);
+			fputc ('\n', f);
+			fclose (f);
+		}
 		if (logOut) {
 			vsnprintf (logs, 255, msg, ap);
 			(*logOut)(logs);
@@ -84,7 +88,7 @@ void LogOut ()
 	LogOut (logs);
 }
 
-void LogOut_Error (const char *func, const char *file, int line, const char *msg, ...)
+void LogOut_ErrorFormat (const char *func, const char *file, int line, const char *msg, ...)
 {
 	va_list ap;
 	va_start (ap, msg);
@@ -144,7 +148,7 @@ void LogOut_LastError (const char *func, const char *file, int line)
 	DWORD err = GetLastError();
 	LPTSTR errString = NULL;
 	FormatMessage (FORMAT_MESSAGE_FROM_SYSTEM|FORMAT_MESSAGE_ALLOCATE_BUFFER|FORMAT_MESSAGE_IGNORE_INSERTS,NULL,err,MAKELANGID(LANG_NEUTRAL,SUBLANG_DEFAULT),(LPTSTR)&errString,0,NULL);
-	LogOut_Error (func, file, line, errString);
+	LogOut_Error (func, file, line, errString ? errString : "Unknown error");
 	if (errString) LocalFree(errString);
 }
 
@@ -304,7 +308,7 @@ void LogOut_DIErr (HRESULT hr, const char *func, const char *file, int line) {
 	LogOut ("---------------------------------------------------------------");
 }
 
-void LogOut_Warning(const char* func, const char* file, int line, const char* msg, ...)
+void LogOut_WarningFormat(const char* func, const char* file, int line, const char* msg, ...)
 {
 	va_list ap;
 	va_start(ap, msg);
