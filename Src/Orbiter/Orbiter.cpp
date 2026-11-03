@@ -170,6 +170,8 @@ int _matherr(struct _exception *except )
 INT WINAPI WinMain (HINSTANCE hInstance, HINSTANCE, LPSTR strCmdLine, INT nCmdShow)
 {
 #ifdef _CRTDBG_MAP_ALLOC
+	// Detect memory leaks. Use _CrtSetBreakAlloc(<memblock>) at the beginning
+	// of WinMain to set a breakpoint at a memory block flagged by this.
 	_CrtSetDbgFlag(_CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF);
 #endif
 
@@ -1852,15 +1854,8 @@ void Orbiter::Resume (void)
 
 DWORD Orbiter::RegisterCustomCmd (char *label, char *desc, CustomFunc func, void *context)
 {
-	CUSTOMCMD cmd = {
-		std::string(label),
-		std::string(desc),
-		g_customcmdid++,
-		func,
-		context
-	};
-	m_vCustomCmd.push_back(cmd);
-	return cmd.id;
+	m_vCustomCmd.push_back(CUSTOMCMD(label, desc, g_customcmdid, func, context));
+	return g_customcmdid++;
 }
 
 bool Orbiter::UnregisterCustomCmd (int cmdId)

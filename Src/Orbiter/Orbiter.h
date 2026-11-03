@@ -238,13 +238,15 @@ public:
 	void FRecorder_ToggleEditor ();
 	// toggle the playback editor
 
-	typedef struct {
+	struct CUSTOMCMD {
 		std::string label;
 		std::string desc;
 		int id;
 		CustomFunc func;
 		void *context;
-	} CUSTOMCMD;
+
+		CUSTOMCMD(const char *lbl, const char *dsc, int n, CustomFunc f, void *ctx): label(lbl), desc(dsc), id(n), func(f), context(ctx) {}
+	};
 
 	struct CUSTOMMENUCMD {
 		std::string label;
