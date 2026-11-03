@@ -239,8 +239,8 @@ public:
 	// toggle the playback editor
 
 	typedef struct {
-		char *label;
-		char *desc;
+		std::string label;
+		std::string desc;
 		int id;
 		CustomFunc func;
 		void *context;
@@ -447,8 +447,7 @@ private:
 	// returns address of a procedure in a plugin module, or NULL if procedure not found
 
 	// list of custom commands
-	CUSTOMCMD *customcmd;
-	DWORD ncustomcmd;
+	std::vector<CUSTOMCMD> m_vCustomCmd;
 	friend class DlgFunction;
 
 	// list of custom menu items
