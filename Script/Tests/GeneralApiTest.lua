@@ -399,6 +399,73 @@ assert(math.abs(gv.z) < 1e-13 )
 pass()
 
 -- ---------------------------------------------------
+add_line("Test: interpolators")
+
+-- Original implementation for Atlantis
+VCL = {0.1, 0.17, 0.2, 0.2, 0.17, 0.1, 0, -0.11, -0.24, -0.38,  -0.5,  -0.5, -0.02, 0.6355,    0.63,   0.46, 0.28, 0.13, 0.0, -0.16, -0.26, -0.29, -0.24, -0.1, 0.1}
+VCM = {  0,    0,   0,   0,    0,   0, 0,     0,    0,0.002,0.004, 0.0025,0.0012,      0,-0.0012,-0.0007,    0,    0,   0,     0,     0,     0,     0,    0,   0}
+Vstep = 15 * RAD
+Vistep = 1 / Vstep
+function VLiftCoeff(hVessel,aoa,M,Re)
+	aoa = aoa + PI
+	local idx = 1 + math.floor(math.max(0, math.min(23, aoa*Vistep)))
+	local d = aoa*Vistep - idx + 1
+	local cl = VCL[idx] + (VCL[idx+1]-VCL[idx])*d
+	local cm = VCM[idx] + (VCM[idx+1]-VCM[idx])*d
+	local cd = 0.055 + oapi.get_induceddrag(cl, 2.266, 0.6)
+
+	return cl,cm,cd
+end
+
+interp = interpolator.uniform_linear(-math.pi, math.pi, VCL, VCM)
+for i=-3,3,0.1 do
+    local rcl,rcm,rcd = VLiftCoeff(nil, i, 0, 0) -- only aoa is used
+    local icl, icm = interp(i)
+    assert(math.abs(rcl - icl) < 1e-13)
+    assert(math.abs(rcm - icm) < 1e-13)
+end
+
+-- Original implementation for DeltaGlider
+local function VLiftCoeffDG(hVessel,aoa,M,Re)
+	local nabsc = 9
+	local AOA = {-180*RAD,-60*RAD,-30*RAD, -2*RAD, 15*RAD,20*RAD,25*RAD,60*RAD,180*RAD}
+	local CL  = {       0,      0,   -0.4,      0,    0.7,     1,   0.8,     0,      0}
+	local CM  = {       0,      0,  0.014, 0.0039, -0.006,-0.008,-0.010,     0,      0}
+
+	local i = 1
+	while AOA[i+1] < aoa and i < nabsc do
+		i = i + 1
+	end
+
+	local cl, cm, cd
+	if i < nabsc then
+		local f = (aoa - AOA[i]) / (AOA[i + 1] - AOA[i])
+		cl = CL[i] + (CL[i + 1] - CL[i]) * f  -- aoa-dependent lift coefficient
+		cm = CM[i] + (CM[i + 1] - CM[i]) * f  -- aoa-dependent moment coefficient
+	else
+		cl = CL[nabsc]
+		cm = CM[nabsc]
+	end
+	local saoa = math.sin(aoa)
+	local pd = 0.015 + 0.4*saoa*saoa  -- profile drag
+	cd = pd + oapi.get_induceddrag (cl, 1.5, 0.7) + oapi.get_wavedrag (M, 0.75, 1.0, 1.1, 0.04)
+	-- profile drag + (lift-)induced drag + transonic/supersonic wave (compressibility) drag
+	return cl, cm, cd
+end
+nuinterp = interpolator.nonuniform_linear({-180*RAD,-60*RAD,-30*RAD, -2*RAD, 15*RAD,20*RAD,25*RAD,60*RAD,180*RAD},
+                                   {       0,      0,   -0.4,      0,    0.7,     1,   0.8,     0,      0},
+                                   {       0,      0,  0.014, 0.0039, -0.006,-0.008,-0.010,     0,      0})
+for i=-3,3,0.1 do
+    local rcl,rcm,rcd = VLiftCoeffDG(nil, i, 0, 0) -- only aoa is used
+    local icl, icm = nuinterp(i)
+    assert(math.abs(rcl - icl) < 1e-13)
+    assert(math.abs(rcm - icm) < 1e-13)
+end
+
+
+
+
+-- ---------------------------------------------------
 -- FINAL RESULT
 -- ---------------------------------------------------
 os.remove(fname_root) -- cleanup the mess we left...
