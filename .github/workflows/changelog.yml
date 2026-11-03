@@ -1,0 +1,44 @@
+name: Update Changelog on Merge
+
+on:
+  pull_request:
+    types: [closed]
+    branches:
+      - main
+
+jobs:
+  update-changelog:
+    # Only run if the PR was actually merged, not just closed without merging
+    if: github.event.pull_request.merged == true
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: write # Allow writes to the repository
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # Fetch all history to get the commit message
+
+      - name: Append merge commit message to Changelog
+        run: |
+          # in case the file doesn't exist
+          touch CHANGELOG.md
+
+          # extract commit details
+          PR_TITLE="${{ github.event.pull_request.title }}"
+          PR_NUMBER="${{ github.event.pull_request.number }}"
+          PR_BODY="${{ github.event.pull_request.body }}"
+          MERGE_COMMIT="${{ github.event.pull_request.merge_commit_sha }}"
+          
+          # prepend to changelog
+          echo -e "## PR #$PR_NUMBER: $PR_TITLE\n\nCommit: $MERGE_COMMIT\n\n$PR_BODY\n\n$(cat CHANGELOG.md)" > CHANGELOG.md
+
+      - name: Commit and Push changes
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "41898282+github-actions[bot]@://github.com"
+          git add CHANGELOG.md
+          git commit -m "docs: update CHANGELOG.md for PR #${{ github.event.pull_request.number }} [skip ci]"
+          git push
