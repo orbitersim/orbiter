@@ -42,7 +42,7 @@ DLLCLBK void InitModule (HINSTANCE hDLL)
 	spec.msgproc = TransxMFD::MsgProc;
 	spec.context = NULL;
 	//Code contributed by Dave Robotham
-	ifstream kstream;
+	VFS::ifstream kstream;
 	kstream.open("Config\\MFD\\TransX.cfg",NULL);
 	if( kstream )
 	{

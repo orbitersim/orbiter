@@ -171,7 +171,7 @@ bool TileLabel::Read ()
 		sprintf_s(path, MAX_PATH, "%s\\Label\\%02d\\%06d\\%06d.lab", tile->mgr->CbodyName(), lvl+4, ilat, ilng);
 		tile->mgr->GetClient()->TexturePath(path, texpath);
 
-		std::ifstream ifs(texpath);
+		VFS::ifstream ifs(texpath);
 		while (ifs >> typestr >> lat >> lng >> altstr >> std::ws) {
 			std::getline(ifs, name, '\n');
 			TLABEL *item = new TLABEL;

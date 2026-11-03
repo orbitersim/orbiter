@@ -748,7 +748,7 @@ int RunwayLights::CreateRunwayLights(class vBase *vB, const class Scene *scn, co
 	char cbuf[256];
 	
 	FILE* file = NULL;
-	fopen_s(&file, filename, "r");
+	VFS::fopen_s(&file, filename, "r");
 
 	if (file == NULL) {
 		LogErr("Could not open %s file.", filename);
@@ -1002,7 +1002,7 @@ int TaxiLights::CreateTaxiLights(OBJHANDLE base, const class Scene *scn, const c
 	char cbuf[256];
 	
 	FILE* file = NULL;
-	fopen_s(&file, filename, "r");
+	VFS::fopen_s(&file, filename, "r");
 
 	if (file == NULL) {
 		LogErr("Could not open %s file.", filename);

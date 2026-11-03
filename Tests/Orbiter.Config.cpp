@@ -11,6 +11,8 @@
 #undef min
 #undef max
 
+void oapiWriteLog(char *line) {}
+
 #include "catch2/catch_all.hpp"
 
 TEST_CASE("A long config value is cut off to the caller's buffer", "[config]")

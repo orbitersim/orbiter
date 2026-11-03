@@ -3,8 +3,6 @@
 
 #include <d3d.h>
 #include <stdio.h>
-#include <iostream>
-#include <fstream>
 #include "Orbiter.h"
 #include "Config.h"
 #include "Planet.h"

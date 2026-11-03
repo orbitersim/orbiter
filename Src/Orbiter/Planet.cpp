@@ -19,6 +19,7 @@
 #include "Camera.h"
 #include "Log.h"
 #include "Util.h"
+#include "VFS.h"
 
 #define UPDMODE_ANALYTIC 0
 #define UPDMODE_DYNAMIC  1
@@ -215,7 +216,7 @@ Planet::Planet (char *fname)
 	maxelev = 0.0;
 	labelLegend  = NULL;
 	nLabelLegend = 0;
-	ifstream ifs (g_pOrbiter->ConfigPath (fname));
+	VFS::ifstream ifs (g_pOrbiter->ConfigPath (fname));
 	if (!ifs) return;
 
 	AtmInterface = 0;
@@ -487,23 +488,26 @@ void Planet::ScanBases (char *path)
 
 	sprintf (spath, "%s/dummy", path);
 	strcpy (cbuf, g_pOrbiter->ConfigPath(spath));
-	fs::path configdir = fs::path(cbuf).parent_path();
-	std::error_code ec;
-	for (const auto& entry : fs::directory_iterator(configdir, ec)) {
-		if (entry.path().extension().string() == ".cfg") {
-			ifstream ifs(entry.path());
-			if (!ifs) continue;
-			do {
-				if (!ifs.getline(cbuf, 256)) break;
-				pc = trim_string(cbuf);
-			} while (!pc[0]);
-			if (_strnicmp(pc, "BASE-V2.0", 9)) continue;
-			sprintf(spath, "%s\\%s", path, entry.path().stem().string().c_str());
-			Base* base = new Base(spath, this); TRACENEW
-			if (!AddBase(base))
-				delete base;
+	char configdir[MAX_PATH];
+	VFS::dirname(configdir, cbuf);
+	VFS::enumerate(configdir, [&](const char *filename) {
+		if (VFS::has_extension(filename, "cfg")) {
+			VFS::ifstream ifs(filename);
+			if (ifs) {
+				do {
+					if (!ifs.getline(cbuf, 256)) break;
+					pc = trim_string(cbuf);
+				} while (!pc[0]);
+				if (!_strnicmp(pc, "BASE-V2.0", 9)) {
+					char stem[MAX_PATH];
+					snprintf(spath, sizeof(spath), "%s\\%s", path, VFS::stem(stem, filename));
+					Base* base = new Base(spath, this); TRACENEW
+					if (!AddBase(base))
+						delete base;
+				}
+			}
 		}
-	}
+	});
 }
 
 bool Planet::AddBase (Base *base)
@@ -532,10 +536,10 @@ void Planet::ScanLabelLists (ifstream &cfg)
 
 	oapi::GraphicsClient::LABELLIST* ll;
 	bool scanheader = (labellist == 0); // only need to parse the headers for the initial scan
-	ForEach(FILETYPE_MARKER, [&](const fs::directory_entry& entry) {
+	ForEach(FILETYPE_MARKER, [&](const char *entry) {
 		char cbuf[256];
 		// open marker file
-		ifstream ulf(entry.path());
+		VFS::ifstream ulf(entry);
 
 		// read label header
 		if (scanheader) {
@@ -547,7 +551,7 @@ void Planet::ScanLabelLists (ifstream &cfg)
 				labellist = tmp;
 			}
 			ll = labellist + nlabellist;
-			ll->name = entry.path().filename().string();
+			ll->name = VFS::basename(entry);
 			ll->marker.clear();
 			ll->colour = 1;
 			ll->shape = 0;
@@ -623,7 +627,7 @@ void Planet::ScanLabelLegend()
 	if (labelpath) strncpy (path, labelpath, 256);
 	else           sprintf (path, "%s%s/", g_pOrbiter->Cfg()->CfgDirPrm.ConfigDir, name.c_str());
 	strcat (path, "Label.cfg");
-	std::ifstream ifs(path);
+	VFS::ifstream ifs(path);
 	while (ifs.good()) {
 		char typestr[16], activestr[16], markerstr[16], namebuf[256], *name;
 		int r,g,b;

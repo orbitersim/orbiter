@@ -4,16 +4,18 @@
 #define __LOG_CPP
 
 #include <string.h>
-#include <fstream>
 #include <Windows.h>
 #include <Psapi.h>
 #include "Log.h"
 #include "Orbiter.h"
+#include "VFS.h"
+#include <filesystem>
 
 using namespace std;
 
 extern char DBG_MSG[256];
 extern TimeData td;
+extern Orbiter *g_pOrbiter;
 
 static char logname[256] = "Orbiter.log";
 static char logs[256] = "";
@@ -21,13 +23,16 @@ static bool finelog = false;
 static DWORD t0 = 0;
 
 static LogOutFunc logOut = 0;
+static FILE *logFile;
 
 void InitLog (const char *logfile, bool append)
 {
-	strcpy (logname, logfile);
+	strncpy (logname, logfile, sizeof(logname));
 	ofstream ofs (logname, append ? ios::app : ios::out);
-	ofs << "**** " << logname << endl;
+	ofs << "**** " << logfile << endl;
+	ofs.close();
 	t0 = timeGetTime();
+	logFile = fopen(logname, "a+t");
 }
 
 void SetLogOutFunc(LogOutFunc func)
@@ -50,12 +55,11 @@ void LogOutFormat (const char *msg, ...)
 
 void LogOutVA(const char *format, va_list ap)
 {
-	FILE *f = fopen(logname, "a+t");
-	if (f) {
-		fprintf(f, "%010.3f: ", (timeGetTime() - t0) * 1e-3);
-		vfprintf(f, format, ap);
-		fputc('\n', f);
-		fclose(f);
+	if (logFile) {
+		fprintf(logFile, "%010.3f: ", (timeGetTime() - t0) * 1e-3);
+		vfprintf(logFile, format, ap);
+		fputc('\n', logFile);
+		fflush(logFile);
 	}
 	if (logOut) {
 		vsnprintf(logs, 255, format, ap);
@@ -68,12 +72,11 @@ void LogOutFineFormat (const char *msg, ...)
 	if (finelog) {
 		va_list ap;
 		va_start (ap, msg);
-		FILE *f = fopen (logname, "a+t");
-		if (f) {
-			fprintf (f, "%010.3f: ", (timeGetTime() - t0) * 1e-3);
-			vfprintf (f, msg, ap);
-			fputc ('\n', f);
-			fclose (f);
+		if(logFile) {
+			fprintf (logFile, "%010.3f: ", (timeGetTime() - t0) * 1e-3);
+			vfprintf (logFile, msg, ap);
+			fputc ('\n', logFile);
+			fflush (logFile);
 		}
 		if (logOut) {
 			vsnprintf (logs, 255, msg, ap);
@@ -402,7 +405,7 @@ void tracenew (char *fname, int line)
 {
 #define TESTALLOC 2
 #if TESTALLOC == 1
-	ofstream ofs("tracenew.txt", ios::app);
+	VFS::ofstream ofs("tracenew.txt", ios::app);
 	sprintf (DBG_MSG, "T=%f, %s: %d", SimT, fname, line);
 	ofs << DBG_MSG << endl;
 	ofs.close();
