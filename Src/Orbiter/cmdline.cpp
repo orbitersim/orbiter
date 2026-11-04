@@ -166,10 +166,18 @@ std::vector<::CommandLine::Key>& orbiter::CommandLine::KeyList() const
 {
 	static std::vector<CommandLine::Key> keyList = {
 		{ KEY_HELP, "help", 'h', false},
+		{ KEY_CONFIG_CIN_ONLY, "cfgcinonly", 'I', false},
+		{ KEY_CONFIG_CIN_ADD, "cfgcinadd", 'i', false},
+		{ KEY_CONFIG_READONLY, "cfgreadonly", 'o', false},
+		{ KEY_CONFIG_COUT_ONLY, "cfgcoutonly", 'O', false},
+		{ KEY_CONFIG_NAME, "cfgname", 'n', true},
 		{ KEY_SCENARIO, "scenario", 'S', true},
 		{ KEY_SCENARIOX, "scenariox", 's', true},
 		{ KEY_FASTEXIT, "fastexit", 'x', false},
+		{ KEY_PAUSED, "paused", 'P', false},
+		{ KEY_UNPAUSED, "unpaused", 'R', false},
 		{ KEY_OPENVIDEO, "openvideotab", 'v', false},
+		{ KEY_NOGRAPHICS, "nographics", 'G', false},
 		{ KEY_KEEPLOG, "keeplog", 'l', false},
 		{ KEY_FIXEDSTEP, "fixedstep", 'f', true},
 		{ KEY_MAXSYSTIME, "maxsystime", 'T', true},
@@ -191,11 +199,36 @@ void orbiter::CommandLine::ApplyOption(const Key* key, const std::string& value)
 	case KEY_HELP:
 		PrintHelpAndExit();
 		break;
+	case KEY_CONFIG_CIN_ONLY:
+		cfg.bCfgFromCinOnly = true;
+		cfg.bCfgReadOnly = true;
+		break;
+	case KEY_CONFIG_CIN_ADD:
+		cfg.bCfgFromCinAdd = true;
+		break;
+	case KEY_CONFIG_READONLY:
+		cfg.bCfgReadOnly = true;
+		break;
+	case KEY_CONFIG_COUT_ONLY:
+		cfg.bCfgToCoutOnly = true;
+		break;
+	case KEY_CONFIG_NAME:
+		m_pOrbiter->SetMasterConfig(value);
+		break;
 	case KEY_FASTEXIT:
 		cfg.bFastExit = true;
 		break;
+	case KEY_PAUSED:
+		cfg.bStartPaused = true;
+		break;
+	case KEY_UNPAUSED:
+		cfg.bStartUnpaused = true;
+		break;
 	case KEY_OPENVIDEO:
 		cfg.bOpenVideoTab = true;
+		break;
+	case KEY_NOGRAPHICS:
+		cfg.bDiableGraphics = true;
 		break;
 	case KEY_KEEPLOG:
 		cfg.bAppendLog = true;
@@ -219,13 +252,17 @@ void orbiter::CommandLine::ApplyOption(const Key* key, const std::string& value)
 		break;
 	case KEY_MAXSIMTIME:
 		res = sscanf(value.c_str(), "%lf", &f);
-		if (res == 1)
+		if (res == 1) {
 			cfg.MaxSimTime = f;
+			cfg.bStartUnpaused = true;
+		}
 		break;
 	case KEY_FRAMECOUNT:
 		res = sscanf(value.c_str(), "%zu", &s);
-		if (res == 1)
+		if (res == 1) {
 			cfg.FrameLimit = s;
+			cfg.bStartUnpaused = true;
+		}
 		break;
 	case KEY_PLUGIN:
 		cfg.LoadPlugins.push_back(value);
@@ -244,10 +281,18 @@ void orbiter::CommandLine::PrintHelpAndExit() const
 	std::cout << "orbiter.exe [options]\n\n";
 	std::cout << "Options:\n";
 	std::cout << "  --help, -h: Print this help page and exit.\n";
+	std::cout << "  --cfgcinonly, -I: Read configuration from stdin instead Orbiter.cfg\n";
+	std::cout << "  --cfgcinadd, -i: Read configuration from stdin after reading Orbiter.cfg\n";
+	std::cout << "  --cfgreadonly, -o: Do not write to Orbiter.cfg on exit\n";
+	std::cout << "  --cfgcoutonly, -O: Write configuration to stdout instead of Orbiter.cfg\n";
+	std::cout << "  --cfgname=<name>, -n <name>: Use <name> instead of Orbiter.cfg for config\n";
 	std::cout << "  --scenario=<scn>, -S <scn>: Launch scenario <scn>\n";
 	std::cout << "  --scenariox=<scn>, -s <scn>: Launch scenario <scn>, exit on close\n";
 	std::cout << "  --fastexit, -x: Exit Orbiter after simulation session\n";
+	std::cout << "  --paused, -P: Start the simulation session paused\n";
+	std::cout << "  --unpaused, -R: Start the simulation session unpaused\n";
 	std::cout << "  --openvideotab, -v: Open Launchpad on video tab\n";
+	std::cout << "  --nographics, -G: Disable graphics\n";
 	std::cout << "  --keeplog, -l: Append log to previous session\n";
 	std::cout << "  --fixedstep=<s>, -f <s>: Enforce fixed time step length (seconds)\n";
 	std::cout << "  --maxsystime=<t>, -T <t>: Terminate session after <t> seconds\n";

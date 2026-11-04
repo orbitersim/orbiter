@@ -65,7 +65,7 @@ void orbiter::DefVideoTab::ShowInterface(HWND hTab, bool show)
 BOOL orbiter::DefVideoTab::OnInitDialog(HWND hWnd, WPARAM wParam, LPARAM lParam)
 {
 	ShowInterface(hWnd, false);
-	EnumerateClients(hWnd);
+	EnumerateClients(hWnd, pCfg->CfgCmdlinePrm.bDiableGraphics);
 	return TRUE;
 }
 
@@ -143,12 +143,15 @@ bool orbiter::DefVideoTab::OpenHelp ()
 
 //-----------------------------------------------------------------------------
 
-void orbiter::DefVideoTab::EnumerateClients(HWND hTab)
+void orbiter::DefVideoTab::EnumerateClients(HWND hTab, bool console_only)
 {
 	SendDlgItemMessage(hTab, IDC_VID_COMBO_MODULE, CB_RESETCONTENT, 0, 0);
 	PCSTR strConsole = "Console mode (no engine loaded)";
 	SendDlgItemMessage(hTab, IDC_VID_COMBO_MODULE, CB_ADDSTRING, 0, (LPARAM)strConsole);
-	ScanDir(hTab, "Modules\\Plugin");
+
+	if (!console_only)
+		ScanDir(hTab, "Modules\\Plugin");
+
 	SendDlgItemMessage(hTab, IDC_VID_COMBO_MODULE, CB_SETCURSEL, 0, 0);
 }
 

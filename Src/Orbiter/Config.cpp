@@ -246,8 +246,15 @@ CFG_CAMERAPRM CfgCameraPrm_default = {
 
 CFG_CMDLINEPRM CfgCmdlinePrm_default = {
 	false,              // fast exit (false = return to Launchpad dialog)
+	false,              // read config from stdin (false = read from Orbiter.cfg)
+	false,              // add config from stdin (false = don't allow override from stdin)
+	false,              // don't overwrite Orbiter.cfg (false = allow overwrite)
+	false,              // write config to stdout (false = write to Orbiter.cfg)
+	false,              // force start paused (false = don't force)
+	false,              // force start unpaused (false = don't force)
 	false,              // open video tab (false = open Scenarios tab)
 	false,              // append to log file (false = overwrite)
+	false,              // disable graphics (false = don't disable)
 	0,                  // FrameLimit (0 = unlimited)
 	0.0,                // fixed time step length (0 = disabled)
 	0.0,                // Max sys time (0 = unlimited)
@@ -313,7 +320,7 @@ char *trim_string (char *cbuf)
 	return c;
 }
 
-char *readline (istream &is)
+char *readline (std::istream &is)
 {
 	const int inc = 256;
 	static int len = 256;
@@ -385,31 +392,31 @@ bool GetItemString (istream &is, const char *label, char *val, size_t size)
 	return false;
 }
 
-bool GetItemReal (istream &is, const char *label, double &val)
+bool GetItemReal (std::istream &is, const char *label, double &val)
 {
 	if (!GetItemString (is, label, g_cbuf)) return false;
 	return (sscanf (g_cbuf, "%lf", &val) == 1);
 }
 
-bool GetItemInt (istream &is, const char *label, int &val)
+bool GetItemInt (std::istream &is, const char *label, int &val)
 {
 	if (!GetItemString (is, label, g_cbuf)) return false;
 	return (sscanf (g_cbuf, "%d", &val) == 1);
 }
 
-bool GetItemSize(istream& is, const char* label, size_t& val)
+bool GetItemSize(std::istream& is, const char* label, size_t& val)
 {
 	if (!GetItemString(is, label, g_cbuf)) return false;
 	return (sscanf(g_cbuf, "%zu", &val) == 1);
 }
 
-bool GetItemHex (istream &is, const char *label, int &val)
+bool GetItemHex (std::istream &is, const char *label, int &val)
 {
 	if (!GetItemString (is, label, g_cbuf)) return false;
 	return (sscanf (g_cbuf, "%x", &val) == 1);
 }
 
-bool GetItemBool (istream &is, const char *label, bool &val)
+bool GetItemBool (std::istream &is, const char *label, bool &val)
 {
 	if (!GetItemString (is, label, g_cbuf)) return false;
 	if (!_strnicmp (g_cbuf, "true", 4)) { val = true; return true; }
@@ -417,7 +424,7 @@ bool GetItemBool (istream &is, const char *label, bool &val)
 	return false;
 }
 
-bool GetItemVector (istream &is, const char *label, Vector &val)
+bool GetItemVector (std::istream &is, const char *label, Vector &val)
 {
 	double x, y, z;
 	if (!GetItemString (is, label, g_cbuf)) return false;
@@ -426,7 +433,7 @@ bool GetItemVector (istream &is, const char *label, Vector &val)
 	return true;
 }
 
-bool GetItemVECTOR (istream &is, const char *label, VECTOR3 &val)
+bool GetItemVECTOR (std::istream &is, const char *label, VECTOR3 &val)
 {
 	double x, y, z;
 	if (!GetItemString (is, label, g_cbuf)) return false;
@@ -435,7 +442,7 @@ bool GetItemVECTOR (istream &is, const char *label, VECTOR3 &val)
 	return true;
 }
 
-bool FindLine (istream &is, const char *line)
+bool FindLine (std::istream &is, const char *line)
 {
 	bool ok = false;
 	is.seekg (0); // rewind stream
@@ -470,156 +477,156 @@ int ListIndex (int listlen, char **list, char *label)
 
 Config::Config()
 {
-	Root = 0;
 	SetDefaults ();
 }
 
-Config::Config(char* fname)
+Config::Config(const std::string &fname)
 {
-	Root = 0;
 	SetDefaults();
-
-	Load(fname);
+	Read(fname);
 }
 
-bool Config::Load(const char *fname)
+bool Config::Read(const std::string &fname)
+{
+	m_sRoot = fname;
+
+	ifstream ifs(fname);
+	if (!ifs) return false;
+
+	found_config_file = true;
+	return Read(ifs);
+}
+
+bool Config::Read(std::istream &is)
 {
 	int i;
 	double d;
 	bool b;
 	char cbuf[256], tag[256];
 
-	Root = new char[strlen(fname)+1]; TRACENEW
-	strcpy (Root, fname);
-
-	ifstream ifs (fname);
-	if (!ifs) return false;
-
-	found_config_file = true;
-
-	GetBool ("EchoAllParams", bEchoAll);
+	GetBool (is, "EchoAllParams", bEchoAll);
 
 	// configuration directory
-	if (GetString (ifs, "ConfigDir", CfgDirPrm.ConfigDir, sizeof(CfgDirPrm.ConfigDir)-1))
+	if (GetString (is, "ConfigDir", CfgDirPrm.ConfigDir, sizeof(CfgDirPrm.ConfigDir)-1))
 		if (CfgDirPrm.ConfigDir[strlen(CfgDirPrm.ConfigDir)-1] != '\\')
 			strcat (CfgDirPrm.ConfigDir, "\\");
 	strcpy (cfgpath, CfgDirPrm.ConfigDir); cfglen = strlen (cfgpath);
 
 	// mesh directory
-	if (GetString (ifs, "MeshDir", CfgDirPrm.MeshDir, sizeof(CfgDirPrm.MeshDir)-1))
+	if (GetString (is, "MeshDir", CfgDirPrm.MeshDir, sizeof(CfgDirPrm.MeshDir)-1))
 		if (CfgDirPrm.MeshDir[strlen(CfgDirPrm.MeshDir)-1] != '\\')
 			strcat (CfgDirPrm.MeshDir, "\\");
 	strcpy (mshpath, CfgDirPrm.MeshDir);   mshlen = strlen (mshpath);
 
 	// texture directory
-	if (GetString (ifs, "TextureDir", CfgDirPrm.TextureDir, sizeof(CfgDirPrm.TextureDir)-1))
+	if (GetString (is, "TextureDir", CfgDirPrm.TextureDir, sizeof(CfgDirPrm.TextureDir)-1))
 		if (CfgDirPrm.TextureDir[strlen(CfgDirPrm.TextureDir)-1] != '\\')
 			strcat (CfgDirPrm.TextureDir, "\\");
 	strcpy (texpath, CfgDirPrm.TextureDir);  texlen = strlen (texpath);
 
 	// highres texture directory
-	if (GetString (ifs, "HightexDir", CfgDirPrm.HightexDir, sizeof(CfgDirPrm.HightexDir)-1)) {
+	if (GetString (is, "HightexDir", CfgDirPrm.HightexDir, sizeof(CfgDirPrm.HightexDir)-1)) {
 		if (CfgDirPrm.HightexDir[strlen(CfgDirPrm.HightexDir)-1] != '\\')
 			strcat (CfgDirPrm.HightexDir, "\\");
 		strcpy (htxpath, CfgDirPrm.HightexDir);  htxlen = strlen (htxpath);
 	}
 
 	// planetary texture directory
-	if (GetString(ifs, "PlanetTexDir", CfgDirPrm.PlanetTexDir, sizeof(CfgDirPrm.PlanetTexDir)-1)) {
+	if (GetString(is, "PlanetTexDir", CfgDirPrm.PlanetTexDir, sizeof(CfgDirPrm.PlanetTexDir)-1)) {
 		if (CfgDirPrm.PlanetTexDir[strlen(CfgDirPrm.PlanetTexDir) - 1] != '\\')
 			strcat(CfgDirPrm.PlanetTexDir, "\\");
 		strcpy(ptxpath, CfgDirPrm.PlanetTexDir); ptxlen = strlen(ptxpath);
 	}
 
 	// scenario directory
-	if (GetString (ifs, "ScenarioDir", CfgDirPrm.ScnDir, sizeof(CfgDirPrm.ScnDir)-1))
+	if (GetString (is, "ScenarioDir", CfgDirPrm.ScnDir, sizeof(CfgDirPrm.ScnDir)-1))
 		if (CfgDirPrm.ScnDir[strlen(CfgDirPrm.ScnDir)-1] != '\\')
 			strcat (CfgDirPrm.ScnDir, "\\");
 	strcpy (scnpath, CfgDirPrm.ScnDir); scnlen = strlen (scnpath);
 
 	// Device information
-	GetInt  (ifs, "DeviceIndex", CfgDevPrm.Device_idx);
-	if (GetInt (ifs, "ModeIndex", i)) CfgDevPrm.Device_mode = (DWORD)i;
-	if (GetInt(ifs, "OutputIndex", i)) CfgDevPrm.Device_out = (DWORD)i;
-	if (GetInt(ifs, "Style", i)) CfgDevPrm.Device_style = (DWORD)i;
-	GetBool (ifs, "DeviceForceEnum", CfgDevPrm.bForceEnum);
-	GetBool (ifs, "Fullscreen", CfgDevPrm.bFullscreen);
-	GetBool (ifs, "Stereo", CfgDevPrm.bStereo);
-	GetBool (ifs, "NoVSync", CfgDevPrm.bNoVsync);
-	GetBool (ifs, "StencilBuffer", CfgDevPrm.bTryStencil);
-	GetBool (ifs, "FullscreenPageflip", CfgDevPrm.bPageflip);
-	if (GetInt (ifs, "WindowWidth", i))  CfgDevPrm.WinW = (DWORD)i;
-	if (GetInt (ifs, "WindowHeight", i)) CfgDevPrm.WinH = (DWORD)i;
+	GetInt  (is, "DeviceIndex", CfgDevPrm.Device_idx);
+	if (GetInt (is, "ModeIndex", i)) CfgDevPrm.Device_mode = (DWORD)i;
+	if (GetInt(is, "OutputIndex", i)) CfgDevPrm.Device_out = (DWORD)i;
+	if (GetInt(is, "Style", i)) CfgDevPrm.Device_style = (DWORD)i;
+	GetBool (is, "DeviceForceEnum", CfgDevPrm.bForceEnum);
+	GetBool (is, "Fullscreen", CfgDevPrm.bFullscreen);
+	GetBool (is, "Stereo", CfgDevPrm.bStereo);
+	GetBool (is, "NoVSync", CfgDevPrm.bNoVsync);
+	GetBool (is, "StencilBuffer", CfgDevPrm.bTryStencil);
+	GetBool (is, "FullscreenPageflip", CfgDevPrm.bPageflip);
+	if (GetInt (is, "WindowWidth", i))  CfgDevPrm.WinW = (DWORD)i;
+	if (GetInt (is, "WindowHeight", i)) CfgDevPrm.WinH = (DWORD)i;
 
 	// Joystick information
-	if (GetInt (ifs, "JoystickIndex", i))
+	if (GetInt (is, "JoystickIndex", i))
 		CfgJoystickPrm.Joy_idx = (DWORD)i;
-	if (GetInt (ifs, "JoystickThrottleAxis", i))
+	if (GetInt (is, "JoystickThrottleAxis", i))
 		CfgJoystickPrm.ThrottleAxis = max (0, min (3, i));
-	if (GetInt (ifs, "JoystickThrottleSaturation", i))
+	if (GetInt (is, "JoystickThrottleSaturation", i))
 		CfgJoystickPrm.ThrottleSaturation = max (0, min (10000, i));
-	if (GetInt (ifs, "JoystickDeadzone", i))
+	if (GetInt (is, "JoystickDeadzone", i))
 		CfgJoystickPrm.Deadzone = max (0, min (10000, i));
-	GetBool (ifs, "IgnoreThrottleOnStart", CfgJoystickPrm.bThrottleIgnore);
+	GetBool (is, "IgnoreThrottleOnStart", CfgJoystickPrm.bThrottleIgnore);
 
 	// planet render parameters
-	if (GetInt (ifs, "PlanetPreloadMode", i))
+	if (GetInt (is, "PlanetPreloadMode", i))
 		CfgPRenderPrm.PreloadMode = max (0, min (1, i));
-	if (GetInt (ifs, "TileCacheSize", i))
+	if (GetInt (is, "TileCacheSize", i))
 		CfgPRenderPrm.CacheSize = max (0, i);
-	GetBool (ifs, "TileLoadThread", CfgPRenderPrm.bLoadOnThread);
-	if (GetInt (ifs, "PlanetTexLoadFreq", i))
+	GetBool (is, "TileLoadThread", CfgPRenderPrm.bLoadOnThread);
+	if (GetInt (is, "PlanetTexLoadFreq", i))
 		CfgPRenderPrm.LoadFrequency = max (1, min (1000, i));
-	if (GetInt (ifs, "PlanetMipmapMode", i))
+	if (GetInt (is, "PlanetMipmapMode", i))
 		CfgPRenderPrm.MipmapMode = max(0, min(2, i));
-	if (GetInt (ifs, "PlanetAnisoMode", i))
+	if (GetInt (is, "PlanetAnisoMode", i))
 		CfgPRenderPrm.AnisoMode = max(1, min (16, i));
-	if (GetReal (ifs, "PlanetMipmapBias", d))
+	if (GetReal (is, "PlanetMipmapBias", d))
 		CfgPRenderPrm.MipmapBias = max (-1.0, min (1.0, d));
-	if (GetInt (ifs, "PlanetPatchGrid", i))
+	if (GetInt (is, "PlanetPatchGrid", i))
 		CfgPRenderPrm.PatchRes = max(4,min(6,i));
-	if (GetReal (ifs, "PlanetResolutionBias", d))
+	if (GetReal (is, "PlanetResolutionBias", d))
 		CfgPRenderPrm.ResolutionBias = max (-2.0, min (2.0, d));
-	if (GetInt (ifs, "TileLoadFlags", i))
+	if (GetInt (is, "TileLoadFlags", i))
 		CfgPRenderPrm.TileLoadFlags = max (min(i, 3), 1);
 
 	// map dialog parameters
-	if (GetInt (ifs, "MapDlgFlag", i))
+	if (GetInt (is, "MapDlgFlag", i))
 		CfgMapPrm.DispFlag = (DWORD)i;
 
 	// Logical parameters
-	GetBool (ifs, "StartPaused", CfgLogicPrm.bStartPaused);
-	GetInt (ifs, "FlightModel", CfgLogicPrm.FlightModelLevel);
-	GetInt (ifs, "DamageModel", CfgLogicPrm.DamageSetting);
-	if (GetBool (ifs, "UnlimitedFuel", b)) CfgLogicPrm.bLimitedFuel = !b;
-	GetBool (ifs, "RefuelOnPad", CfgLogicPrm.bPadRefuel);
-	GetBool (ifs, "MFDTransparent", CfgLogicPrm.bMfdTransparent);
-	GetBool (ifs, "CompactGlasspit", CfgLogicPrm.bGlasspitCompact);
-	GetInt (ifs, "GenericMFDSize", CfgLogicPrm.MFDSize);
-	GetInt (ifs, "MFDMapVersion", CfgLogicPrm.MFDMapVersion);
-	GetReal (ifs, "InstrumentUpdateInterval", CfgLogicPrm.InstrUpdDT);
-	GetReal (ifs, "PanelScale", CfgLogicPrm.PanelScale);
-	GetReal (ifs, "PanelScrollSpeed", CfgLogicPrm.PanelScrollSpeed);
+	GetBool (is, "StartPaused", CfgLogicPrm.bStartPaused);
+	GetInt (is, "FlightModel", CfgLogicPrm.FlightModelLevel);
+	GetInt (is, "DamageModel", CfgLogicPrm.DamageSetting);
+	if (GetBool (is, "UnlimitedFuel", b)) CfgLogicPrm.bLimitedFuel = !b;
+	GetBool (is, "RefuelOnPad", CfgLogicPrm.bPadRefuel);
+	GetBool (is, "MFDTransparent", CfgLogicPrm.bMfdTransparent);
+	GetBool (is, "CompactGlasspit", CfgLogicPrm.bGlasspitCompact);
+	GetInt (is, "GenericMFDSize", CfgLogicPrm.MFDSize);
+	GetInt (is, "MFDMapVersion", CfgLogicPrm.MFDMapVersion);
+	GetReal (is, "InstrumentUpdateInterval", CfgLogicPrm.InstrUpdDT);
+	GetReal (is, "PanelScale", CfgLogicPrm.PanelScale);
+	GetReal (is, "PanelScrollSpeed", CfgLogicPrm.PanelScrollSpeed);
 
 	// Physics engine
-	GetBool (ifs, "DistributedVesselMass", CfgPhysicsPrm.bDistributedMass);
-	GetBool (ifs, "NonsphericalGravitySources", CfgPhysicsPrm.bNonsphericalGrav);
-	GetBool (ifs, "RadiationPressure", CfgPhysicsPrm.bRadiationPressure);
-	GetBool (ifs, "AtmosphericWind", CfgPhysicsPrm.bAtmWind);
-	GetBool (ifs, "BaseCollision", CfgPhysicsPrm.bBaseCollision);
-	GetBool (ifs, "VesselCollision", CfgPhysicsPrm.bVesselCollision);
-	GetBool (ifs, "StabiliseOrbits", CfgPhysicsPrm.bOrbitStabilise);
-	GetReal (ifs, "StabilisePLimit", CfgPhysicsPrm.Stabilise_PLimit);
-	GetReal (ifs, "StabiliseSLimit", CfgPhysicsPrm.Stabilise_SLimit);
-	if (GetString (ifs, "PertPropSubsampling", cbuf, sizeof(cbuf)))
+	GetBool (is, "DistributedVesselMass", CfgPhysicsPrm.bDistributedMass);
+	GetBool (is, "NonsphericalGravitySources", CfgPhysicsPrm.bNonsphericalGrav);
+	GetBool (is, "RadiationPressure", CfgPhysicsPrm.bRadiationPressure);
+	GetBool (is, "AtmosphericWind", CfgPhysicsPrm.bAtmWind);
+	GetBool (is, "BaseCollision", CfgPhysicsPrm.bBaseCollision);
+	GetBool (is, "VesselCollision", CfgPhysicsPrm.bVesselCollision);
+	GetBool (is, "StabiliseOrbits", CfgPhysicsPrm.bOrbitStabilise);
+	GetReal (is, "StabilisePLimit", CfgPhysicsPrm.Stabilise_PLimit);
+	GetReal (is, "StabiliseSLimit", CfgPhysicsPrm.Stabilise_SLimit);
+	if (GetString (is, "PertPropSubsampling", cbuf, sizeof(cbuf)))
 		sscanf (cbuf, "%d%lf", &CfgPhysicsPrm.PPropSubMax, &CfgPhysicsPrm.PPropSubLimit);
-	GetReal (ifs, "PertPropNonsphericalLimit", CfgPhysicsPrm.PPropStepLimit);
-	GetInt (ifs, "PropStages", CfgPhysicsPrm.nLPropLevel);
+	GetReal (is, "PertPropNonsphericalLimit", CfgPhysicsPrm.PPropStepLimit);
+	GetInt (is, "PropStages", CfgPhysicsPrm.nLPropLevel);
 	for (i = 0; i < MAX_PROP_LEVEL; i++) {
 		int n, mode;
 		double ttgt, atgt, tlim, alim;
 		sprintf (tag, "PropStage%d", i);
-		if (GetString (ifs, tag, cbuf, sizeof(cbuf))) {
+		if (GetString (is, tag, cbuf, sizeof(cbuf))) {
 			n = sscanf (cbuf, "%d%lf%lf%lf%lf", &mode, &ttgt, &atgt, &tlim, &alim);
 			if (n >= 1 && mode >= 0 && mode < NPROP_METHOD)                     CfgPhysicsPrm.PropMode[i] = mode;
 			if (n >= 2 && fabs (ttgt-CfgPhysicsPrm_default.PropTTgt[i]) > 1e-6) CfgPhysicsPrm.PropTTgt[i] = ttgt;
@@ -630,198 +637,180 @@ bool Config::Load(const char *fname)
 	}
 	CfgPhysicsPrm.PropTLim[CfgPhysicsPrm.nLPropLevel-1] = 1e10;
 	CfgPhysicsPrm.PropALim[CfgPhysicsPrm.nLPropLevel-1] = 1e10;
-	GetInt (ifs, "PropSubsampling", CfgPhysicsPrm.PropSubMax);
-
-#ifdef UNDEF
-	// BEGIN OBSOLETE
-	if (GetString (ifs, "PropSubsampling", cbuf, sizeof(cbuf))) {
-		int n;
-		double sublim;
-		n = sscanf (cbuf, "%d%lf", &CfgPhysicsPrm.PropSubMax, &sublim);
-		if (n >= 2 && fabs(sublim-CfgPhysicsPrm_default.APropSubLimit) > 1e-6) CfgPhysicsPrm.APropSubLimit = sublim;
-	}
-	if (GetString (ifs, "AngPropLimits", cbuf, sizeof(cbuf))) {
-		int n;
-		double clim, tlim;
-		n = sscanf (cbuf, "%lf%lf", &clim, &tlim);
-		if (n >= 1 && fabs(clim-CfgPhysicsPrm_default.APropCouplingLimit) > 1e-6) CfgPhysicsPrm.APropCouplingLimit = clim;
-		if (n >= 2 && fabs(tlim-CfgPhysicsPrm_default.APropTorqueLimit) > 1e-4) CfgPhysicsPrm.APropTorqueLimit = tlim;
-	}
-	// END OBSOLETE
-#endif
+	GetInt (is, "PropSubsampling", CfgPhysicsPrm.PropSubMax);
 
 	// visualisation parameters
-	GetBool (ifs, "EnableShadows", CfgVisualPrm.bShadows);
-	GetBool (ifs, "EnableVesselShadows", CfgVisualPrm.bVesselShadows);
-	GetBool (ifs, "EnableClouds", CfgVisualPrm.bClouds);
-	GetBool (ifs, "EnableCloudShadows", CfgVisualPrm.bCloudShadows);
-	GetBool (ifs, "EnableNightlights", CfgVisualPrm.bNightlights);
-	GetBool (ifs, "EnableWaterReflection", CfgVisualPrm.bWaterreflect);
-	GetBool (ifs, "EnableSpecularRipples", CfgVisualPrm.bSpecularRipple);
-	GetBool (ifs, "EnableHorizonHaze", CfgVisualPrm.bHaze);
-	GetBool (ifs, "EnableDistanceFog", CfgVisualPrm.bFog);
-	GetBool (ifs, "EnableSpecularReflection", CfgVisualPrm.bSpecular);
-	GetBool (ifs, "EnableReentryFlames", CfgVisualPrm.bReentryFlames);
-	GetBool (ifs, "EnableParticleStreams", CfgVisualPrm.bParticleStreams);
-	GetBool (ifs, "EnableLocalLights", CfgVisualPrm.bLocalLight);
-	if (GetInt (ifs, "MaxLights", i))
+	GetBool (is, "EnableShadows", CfgVisualPrm.bShadows);
+	GetBool (is, "EnableVesselShadows", CfgVisualPrm.bVesselShadows);
+	GetBool (is, "EnableClouds", CfgVisualPrm.bClouds);
+	GetBool (is, "EnableCloudShadows", CfgVisualPrm.bCloudShadows);
+	GetBool (is, "EnableNightlights", CfgVisualPrm.bNightlights);
+	GetBool (is, "EnableWaterReflection", CfgVisualPrm.bWaterreflect);
+	GetBool (is, "EnableSpecularRipples", CfgVisualPrm.bSpecularRipple);
+	GetBool (is, "EnableHorizonHaze", CfgVisualPrm.bHaze);
+	GetBool (is, "EnableDistanceFog", CfgVisualPrm.bFog);
+	GetBool (is, "EnableSpecularReflection", CfgVisualPrm.bSpecular);
+	GetBool (is, "EnableReentryFlames", CfgVisualPrm.bReentryFlames);
+	GetBool (is, "EnableParticleStreams", CfgVisualPrm.bParticleStreams);
+	GetBool (is, "EnableLocalLights", CfgVisualPrm.bLocalLight);
+	if (GetInt (is, "MaxLights", i))
 		CfgVisualPrm.MaxLight = (DWORD)i;
-	if (GetInt (ifs, "AmbientLevel", i))
+	if (GetInt (is, "AmbientLevel", i))
 		SetAmbientLevel ((DWORD)i);
-	if (GetInt (ifs, "PlanetMaxPatchLevel", i))
+	if (GetInt (is, "PlanetMaxPatchLevel", i))
 		CfgVisualPrm.PlanetMaxLevel = max (1, min (SURF_MAX_PATCHLEVEL2, i));
-	if (GetReal (ifs, "PlanetPatchRes", d))
+	if (GetReal (is, "PlanetPatchRes", d))
 		CfgVisualPrm.PlanetPatchRes = max (0.1, min (10.0, d));
-	if (GetReal (ifs, "NightlightBrightness", d))
+	if (GetReal (is, "NightlightBrightness", d))
 		CfgVisualPrm.LightBrightness = max (0.0, min (1.0, d));
-	if (GetInt (ifs, "ElevationMode", i) && i >= 0 && i <= 1)
+	if (GetInt (is, "ElevationMode", i) && i >= 0 && i <= 1)
 		CfgVisualPrm.ElevMode = i;
-	GetBool(ifs, "EnableBackgroundStars", CfgVisualPrm.bUseStarDots);
-	if (GetString(ifs, "StarPrm", cbuf, sizeof(cbuf))) {
+	GetBool(is, "EnableBackgroundStars", CfgVisualPrm.bUseStarDots);
+	if (GetString(is, "StarPrm", cbuf, sizeof(cbuf))) {
 		sscanf(cbuf, "%lf%lf%lf%d", &CfgVisualPrm.StarPrm.mag_hi, &CfgVisualPrm.StarPrm.mag_lo, &CfgVisualPrm.StarPrm.brt_min, &i);
 		CfgVisualPrm.StarPrm.map_log = (i != 0);
 	}
-	GetBool(ifs, "EnableBackgroundStarmap", CfgVisualPrm.bUseStarImage);
-	if (GetString(ifs, "CSphereStarPath", cbuf, sizeof(cbuf)))
+	GetBool(is, "EnableBackgroundStarmap", CfgVisualPrm.bUseStarImage);
+	if (GetString(is, "CSphereStarPath", cbuf, sizeof(cbuf)))
 		strncpy(CfgVisualPrm.StarImagePath, cbuf, 128);
-	GetBool(ifs, "EnableBackgroundImage", CfgVisualPrm.bUseBgImage);
-	if (GetString(ifs, "CSphereBgPath", cbuf, sizeof(cbuf)))
+	GetBool(is, "EnableBackgroundImage", CfgVisualPrm.bUseBgImage);
+	if (GetString(is, "CSphereBgPath", cbuf, sizeof(cbuf)))
 		strncpy(CfgVisualPrm.CSphereBgPath, cbuf, 128);
-	GetReal (ifs, "CSphereBgIntensity", CfgVisualPrm.CSphereBgIntens);
+	GetReal (is, "CSphereBgIntensity", CfgVisualPrm.CSphereBgIntens);
 
 	// screen capture parameters
-	GetInt (ifs, "CaptureTarget", CfgCapturePrm.ImageTgt);
-	if (GetString (ifs, "CaptureFile", cbuf, sizeof(cbuf)))
+	GetInt (is, "CaptureTarget", CfgCapturePrm.ImageTgt);
+	if (GetString (is, "CaptureFile", cbuf, sizeof(cbuf)))
 		strncpy (CfgCapturePrm.ImageFile, cbuf, 128);
-	if (GetString (ifs, "CaptureSequenceDir", cbuf, sizeof(cbuf)))
+	if (GetString (is, "CaptureSequenceDir", cbuf, sizeof(cbuf)))
 		strncpy (CfgCapturePrm.SequenceDir, cbuf, 128);
-	GetInt (ifs, "CaptureImageFormat", CfgCapturePrm.ImageFormat);
-	GetInt (ifs, "CaptureImageQuality", CfgCapturePrm.ImageQuality);
-	GetInt (ifs, "CaptureSequenceStart", CfgCapturePrm.SequenceStart);
-	GetInt (ifs, "CaptureSequenceSkip", CfgCapturePrm.SequenceSkip);
+	GetInt (is, "CaptureImageFormat", CfgCapturePrm.ImageFormat);
+	GetInt (is, "CaptureImageQuality", CfgCapturePrm.ImageQuality);
+	GetInt (is, "CaptureSequenceStart", CfgCapturePrm.SequenceStart);
+	GetInt (is, "CaptureSequenceSkip", CfgCapturePrm.SequenceSkip);
 
 	// instrument parameters
-	CfgInstrumentPrm.bMfdPow2 = (GetBool (ifs, "ForceMfdPow2", b) ? (b ? 1 : 0) : 2);
-	GetInt (ifs, "MfdHiresThreshold", CfgInstrumentPrm.MfdHiresThreshold);
-	GetInt (ifs, "PanelMfdHudSize", CfgInstrumentPrm.PanelMFDHUDSize);
-	GetInt (ifs, "VCMfdSize", CfgInstrumentPrm.VCMFDSize);
+	CfgInstrumentPrm.bMfdPow2 = (GetBool (is, "ForceMfdPow2", b) ? (b ? 1 : 0) : 2);
+	GetInt (is, "MfdHiresThreshold", CfgInstrumentPrm.MfdHiresThreshold);
+	GetInt (is, "PanelMfdHudSize", CfgInstrumentPrm.PanelMFDHUDSize);
+	GetInt (is, "VCMfdSize", CfgInstrumentPrm.VCMFDSize);
 
 	// visual helper parameters
-	if (GetInt (ifs, "Planetarium", i))
+	if (GetInt (is, "Planetarium", i))
 		CfgVisHelpPrm.flagPlanetarium = (DWORD)i;
-	if (GetInt(ifs, "SurfMarkers", i))
+	if (GetInt(is, "SurfMarkers", i))
 		CfgVisHelpPrm.flagMarkers = (DWORD)i;
-	if (GetString (ifs, "Bodyforces", cbuf, sizeof(cbuf)))
+	if (GetString (is, "Bodyforces", cbuf, sizeof(cbuf)))
 		sscanf (cbuf, "%u%f%f", &CfgVisHelpPrm.flagBodyForce, &CfgVisHelpPrm.scaleBodyForce, &CfgVisHelpPrm.opacBodyForce);
-	if (GetString (ifs, "CoordinateAxes", cbuf, sizeof(cbuf)))
+	if (GetString (is, "CoordinateAxes", cbuf, sizeof(cbuf)))
 		sscanf (cbuf, "%u%f%f", &CfgVisHelpPrm.flagFrameAxes, &CfgVisHelpPrm.scaleFrameAxes, &CfgVisHelpPrm.opacFrameAxes);
 
 	// debug options
-	if (GetInt (ifs, "ShutdownMode", i) && i >= 0 && i <= 2)
+	if (GetInt (is, "ShutdownMode", i) && i >= 0 && i <= 2)
 		CfgDebugPrm.ShutdownMode = i;
-	if (GetReal (ifs, "FixedStep", d) && d >= 0)
+	if (GetReal (is, "FixedStep", d) && d >= 0)
 		CfgDebugPrm.FixedStep = d;
-	GetBool (ifs, "DisableFontSmoothing", CfgDebugPrm.bDisableSmoothFont);
-	GetBool (ifs, "ForceReenableFontSmoothing", CfgDebugPrm.bForceReenableSmoothFont);
-	GetInt (ifs, "HtmlScnDesc", CfgDebugPrm.bHtmlScnDesc);
-	GetBool (ifs, "SaveExitScreen", CfgDebugPrm.bSaveExitScreen);
-	GetBool (ifs, "WireframeMode", CfgDebugPrm.bWireframeMode);
-    GetBool (ifs, "NormaliseNormals", CfgDebugPrm.bNormaliseNormals);
-	GetBool (ifs, "VerboseLog", CfgDebugPrm.bVerboseLog);
+	GetBool (is, "DisableFontSmoothing", CfgDebugPrm.bDisableSmoothFont);
+	GetBool (is, "ForceReenableFontSmoothing", CfgDebugPrm.bForceReenableSmoothFont);
+	GetInt (is, "HtmlScnDesc", CfgDebugPrm.bHtmlScnDesc);
+	GetBool (is, "SaveExitScreen", CfgDebugPrm.bSaveExitScreen);
+	GetBool (is, "WireframeMode", CfgDebugPrm.bWireframeMode);
+    GetBool (is, "NormaliseNormals", CfgDebugPrm.bNormaliseNormals);
+	GetBool (is, "VerboseLog", CfgDebugPrm.bVerboseLog);
 
-	GetReal (ifs, "CameraPanspeed", CfgCameraPrm.Panspeed);
-	GetReal (ifs, "CameraTerrainLimit", CfgCameraPrm.TerrainLimit);
-	GetInt (ifs, "HUDColIdx", CfgCameraPrm.HUDCol);
+	GetReal (is, "CameraPanspeed", CfgCameraPrm.Panspeed);
+	GetReal (is, "CameraTerrainLimit", CfgCameraPrm.TerrainLimit);
+	GetInt (is, "HUDColIdx", CfgCameraPrm.HUDCol);
 
 	// user interface parameters
-	if (GetInt(ifs, "MouseFocusMode", i) && i >= 0 && i <= 2)
+	if (GetInt(is, "MouseFocusMode", i) && i >= 0 && i <= 2)
 		CfgUIPrm.MouseFocusMode = (DWORD)i;
-	if (GetInt (ifs, "MenubarMode", i) && i >= 0 && i <= 2)
+	if (GetInt (is, "MenubarMode", i) && i >= 0 && i <= 2)
 		CfgUIPrm.MenuMode = (DWORD)i;
-	GetBool (ifs, "MenubarLabelAlways", CfgUIPrm.bMenuLabelAlways);
-	if (GetInt (ifs, "MenuButtonHoverSize", i))
+	GetBool (is, "MenubarLabelAlways", CfgUIPrm.bMenuLabelAlways);
+	if (GetInt (is, "MenuButtonHoverSize", i))
 		CfgUIPrm.MenuButtonHoverSize = i;
-	if (GetInt (ifs, "MenuButtonSize", i))
+	if (GetInt (is, "MenuButtonSize", i))
 		CfgUIPrm.MenuButtonSize = i;
-	if (GetInt (ifs, "MenuButtonSpacing", i))
+	if (GetInt (is, "MenuButtonSpacing", i))
 		CfgUIPrm.MenuButtonSpacing = i;
-	GetBool (ifs, "ShowWarpAlways", CfgUIPrm.bWarpAlways);
-	if (GetInt (ifs, "InfobarMode", i) && i >= 0 && i <= 2)
+	GetBool (is, "ShowWarpAlways", CfgUIPrm.bWarpAlways);
+	if (GetInt (is, "InfobarMode", i) && i >= 0 && i <= 2)
 		CfgUIPrm.InfoMode = i;
-	if (GetInt (ifs, "FPS", i) && i >= 0 && i <= 2)
+	if (GetInt (is, "FPS", i) && i >= 0 && i <= 2)
 		CfgUIPrm.FPS = i;
-	if (GetInt (ifs, "MenubarOpacity", i) && i >= 0 && i <= 10)
+	if (GetInt (is, "MenubarOpacity", i) && i >= 0 && i <= 10)
 		CfgUIPrm.MenuOpacity = i;
-	if (GetInt (ifs, "InfobarOpacity", i) && i >= 0 && i <= 10)
+	if (GetInt (is, "InfobarOpacity", i) && i >= 0 && i <= 10)
 		CfgUIPrm.InfoOpacity = (DWORD)i;
-	if (GetInt (ifs, "MenubarSpeed", i) && i >= 1 && i <= 20)
+	if (GetInt (is, "MenubarSpeed", i) && i >= 1 && i <= 20)
 		CfgUIPrm.MenuScrollspeed = (DWORD)i;
-	GetInt (ifs, "SelVesselTab", CfgUIPrm.SelVesselTab);
-	GetInt (ifs, "SelVesselRange", CfgUIPrm.SelVesselRange);
-	GetBool (ifs, "SelVesselFlat", CfgUIPrm.bSelVesselFlat);
+	GetInt (is, "SelVesselTab", CfgUIPrm.SelVesselTab);
+	GetInt (is, "SelVesselRange", CfgUIPrm.SelVesselRange);
+	GetBool (is, "SelVesselFlat", CfgUIPrm.bSelVesselFlat);
 
 	// demo parameters
-	GetBool (ifs, "DemoMode", CfgDemoPrm.bDemo);
-	GetBool (ifs, "BackgroundImage", CfgDemoPrm.bBkImage);
-	GetBool (ifs, "BlockExit", CfgDemoPrm.bBlockExit);
-	GetReal (ifs, "MaxDemoTime", CfgDemoPrm.MaxDemoTime);
-	GetReal (ifs, "MaxLaunchpadIdleTime", CfgDemoPrm.LPIdleTime);
+	GetBool (is, "DemoMode", CfgDemoPrm.bDemo);
+	GetBool (is, "BackgroundImage", CfgDemoPrm.bBkImage);
+	GetBool (is, "BlockExit", CfgDemoPrm.bBlockExit);
+	GetReal (is, "MaxDemoTime", CfgDemoPrm.MaxDemoTime);
+	GetReal (is, "MaxLaunchpadIdleTime", CfgDemoPrm.LPIdleTime);
 
 	// record/playback parameters
-	GetInt (ifs, "RecordPosFrame", CfgRecPlayPrm.RecordPosFrame);
-	GetInt (ifs, "RecordAttFrame", CfgRecPlayPrm.RecordAttFrame);
-	GetBool (ifs, "RecordTimewarp", CfgRecPlayPrm.bRecordWarp);
-	GetBool (ifs, "RecordFocusEvent", CfgRecPlayPrm.bRecordFocus);
-	GetBool (ifs, "ReplayTimewarp", CfgRecPlayPrm.bReplayWarp);
-	GetBool (ifs, "ReplayFocusEvent", CfgRecPlayPrm.bReplayFocus);
-	GetBool (ifs, "ReplayCameraEvent", CfgRecPlayPrm.bReplayCam);
-	GetBool (ifs, "SystimeSampling", CfgRecPlayPrm.bSysInterval);
-	GetBool (ifs, "PlaybackNotes", CfgRecPlayPrm.bShowNotes);
+	GetInt (is, "RecordPosFrame", CfgRecPlayPrm.RecordPosFrame);
+	GetInt (is, "RecordAttFrame", CfgRecPlayPrm.RecordAttFrame);
+	GetBool (is, "RecordTimewarp", CfgRecPlayPrm.bRecordWarp);
+	GetBool (is, "RecordFocusEvent", CfgRecPlayPrm.bRecordFocus);
+	GetBool (is, "ReplayTimewarp", CfgRecPlayPrm.bReplayWarp);
+	GetBool (is, "ReplayFocusEvent", CfgRecPlayPrm.bReplayFocus);
+	GetBool (is, "ReplayCameraEvent", CfgRecPlayPrm.bReplayCam);
+	GetBool (is, "SystimeSampling", CfgRecPlayPrm.bSysInterval);
+	GetBool (is, "PlaybackNotes", CfgRecPlayPrm.bShowNotes);
 
 	// font characteristics
-	if (GetReal (ifs, "DialogFont_Scale", d)) CfgFontPrm.dlgFont_Scale = (float)d;
-	GetString (ifs, "DialogFont1_Face", CfgFontPrm.dlgFont1_Face, sizeof(CfgFontPrm.dlgFont1_Face));
-	if (GetReal (ifs, "ImGui_FontSize", d)) CfgFontPrm.ImGui_FontSize = (float)d;
-	GetString (ifs, "ImGui_DefaultFontFile", CfgFontPrm.ImGui_DefaultFontFile, sizeof(CfgFontPrm.ImGui_DefaultFontFile));
-	GetString (ifs, "ImGui_ConsoleFontFile", CfgFontPrm.ImGui_ConsoleFontFile, sizeof(CfgFontPrm.ImGui_ConsoleFontFile));
-	GetString (ifs, "ImGui_MonospacedFontFile", CfgFontPrm.ImGui_MonospacedFontFile, sizeof(CfgFontPrm.ImGui_MonospacedFontFile));
-	GetString (ifs, "ImGui_ManuscriptFontFile", CfgFontPrm.ImGui_ManuscriptFontFile, sizeof(CfgFontPrm.ImGui_ManuscriptFontFile));
+	if (GetReal (is, "DialogFont_Scale", d)) CfgFontPrm.dlgFont_Scale = (float)d;
+	GetString (is, "DialogFont1_Face", CfgFontPrm.dlgFont1_Face, sizeof(CfgFontPrm.dlgFont1_Face));
+	if (GetReal (is, "ImGui_FontSize", d)) CfgFontPrm.ImGui_FontSize = (float)d;
+	GetString (is, "ImGui_DefaultFontFile", CfgFontPrm.ImGui_DefaultFontFile, sizeof(CfgFontPrm.ImGui_DefaultFontFile));
+	GetString (is, "ImGui_ConsoleFontFile", CfgFontPrm.ImGui_ConsoleFontFile, sizeof(CfgFontPrm.ImGui_ConsoleFontFile));
+	GetString (is, "ImGui_MonospacedFontFile", CfgFontPrm.ImGui_MonospacedFontFile, sizeof(CfgFontPrm.ImGui_MonospacedFontFile));
+	GetString (is, "ImGui_ManuscriptFontFile", CfgFontPrm.ImGui_ManuscriptFontFile, sizeof(CfgFontPrm.ImGui_ManuscriptFontFile));
 
 	// misc. options
-	if (GetString (ifs, "LPadRect", cbuf, sizeof(cbuf))) {
+	if (GetString (is, "LPadRect", cbuf, sizeof(cbuf))) {
 		sscanf (cbuf, "%d%d%d%d", &rLaunchpad.left, &rLaunchpad.top,
 			&rLaunchpad.right, &rLaunchpad.bottom);
 	}
 
-	if (GetString (ifs, "DlgMapPos", cbuf, sizeof(cbuf)))
+	if (GetString (is, "DlgMapPos", cbuf, sizeof(cbuf)))
 		sscanf (cbuf, "%d%d%d%d", &CfgWindowPos.DlgMap.left, &CfgWindowPos.DlgMap.top,
 			&CfgWindowPos.DlgMap.right, &CfgWindowPos.DlgMap.bottom);
-	if (GetString (ifs, "DlgInfoPos", cbuf, sizeof(cbuf)))
+	if (GetString (is, "DlgInfoPos", cbuf, sizeof(cbuf)))
 		sscanf (cbuf, "%d%d%d%d", &CfgWindowPos.DlgInfo.left, &CfgWindowPos.DlgInfo.top,
 			&CfgWindowPos.DlgInfo.right, &CfgWindowPos.DlgInfo.bottom);
-	if (GetString (ifs, "DlgCamPos", cbuf, sizeof(cbuf)))
+	if (GetString (is, "DlgCamPos", cbuf, sizeof(cbuf)))
 		sscanf (cbuf, "%d%d%d%d", &CfgWindowPos.DlgCamera.left, &CfgWindowPos.DlgCamera.top,
 			&CfgWindowPos.DlgCamera.right, &CfgWindowPos.DlgCamera.bottom);
-	if (GetString (ifs, "DlgFocusPos", cbuf, sizeof(cbuf)))
+	if (GetString (is, "DlgFocusPos", cbuf, sizeof(cbuf)))
 		sscanf (cbuf, "%d%d%d%d", &CfgWindowPos.DlgFocus.left, &CfgWindowPos.DlgFocus.top,
 			&CfgWindowPos.DlgFocus.right, &CfgWindowPos.DlgFocus.bottom);
-	if (GetString (ifs, "DlgTaccPos", cbuf, sizeof(cbuf)))
+	if (GetString (is, "DlgTaccPos", cbuf, sizeof(cbuf)))
 		sscanf (cbuf, "%d%d%d%d", &CfgWindowPos.DlgTacc.left, &CfgWindowPos.DlgTacc.top,
 			&CfgWindowPos.DlgTacc.right, &CfgWindowPos.DlgTacc.bottom);
-	if (GetString(ifs, "DlgOptionsPos", cbuf, sizeof(cbuf)))
+	if (GetString(is, "DlgOptionsPos", cbuf, sizeof(cbuf)))
 		sscanf(cbuf, "%d%d%d%d", &CfgWindowPos.DlgOptions.left, &CfgWindowPos.DlgOptions.top,
 			&CfgWindowPos.DlgOptions.right, &CfgWindowPos.DlgOptions.bottom);
-	if (GetString (ifs, "DlgVhelperPos", cbuf, sizeof(cbuf)))
+	if (GetString (is, "DlgVhelperPos", cbuf, sizeof(cbuf)))
 		sscanf (cbuf, "%d%d%d%d", &CfgWindowPos.DlgVishelper.left, &CfgWindowPos.DlgVishelper.top,
 			&CfgWindowPos.DlgVishelper.right, &CfgWindowPos.DlgVishelper.bottom);
-	GetInt (ifs, "LpadScnListWidth", CfgWindowPos.LaunchpadScnListWidth);
-	GetInt (ifs, "LpadModListWidth", CfgWindowPos.LaunchpadModListWidth);
-	GetInt (ifs, "LpadExtListWidth", CfgWindowPos.LaunchpadExtListWidth);
+	GetInt (is, "LpadScnListWidth", CfgWindowPos.LaunchpadScnListWidth);
+	GetInt (is, "LpadModListWidth", CfgWindowPos.LaunchpadModListWidth);
+	GetInt (is, "LpadExtListWidth", CfgWindowPos.LaunchpadExtListWidth);
 
 	// list of active modules
-	if (FindLine (ifs, "ACTIVE_MODULES")) {
+	if (FindLine (is, "ACTIVE_MODULES")) {
 		char cbuf[256];
-		while (getline_trunc (ifs, cbuf, 256) && _strnicmp (cbuf, "END_MODULES", 11))
+		while (getline_trunc (is, cbuf, 256) && _strnicmp (cbuf, "END_MODULES", 11))
 			m_activeModules.push_back(std::string(trim_string(cbuf)));
 	}
 	return true;
@@ -829,10 +818,6 @@ bool Config::Load(const char *fname)
 
 Config::~Config()
 {
-	if (Root) {
-		delete []Root;
-		Root = NULL;
-	}
 }
 
 void Config::SetDefaults ()
@@ -851,8 +836,7 @@ void Config::SetDefaults ()
 	strcpy(ptxpath, CfgDirPrm.PlanetTexDir); ptxlen = strlen(ptxpath);
 	strcpy(scnpath, CfgDirPrm.ScnDir);       scnlen = strlen(scnpath);
 
-	if (Root) delete []Root;
-	Root = 0;
+	m_sRoot.clear();
 
 	bEchoAll = bEchoAll_default;
 	memset (&rLaunchpad, 0, sizeof(RECT));
@@ -971,19 +955,27 @@ const void *Config::GetParam (DWORD paramtype) const
 	}
 }
 
-BOOL Config::Write (const char *fname) const
+bool Config::Write(const std::string &fname) const
+{
+	if (!fname.size()) return false;
+	ofstream ofs(fname);
+	if (!ofs) return false;
+	return Write(ofs);
+}
+
+bool Config::Write() const
+{
+	return Write(m_sRoot);
+}
+
+bool Config::Write(std::ostream &os) const
 {
 	int i;
 
-	if (!fname) fname = Root;
-	if (!fname) return FALSE;
-	ofstream ofs (fname);
-	if (!ofs) return FALSE;
-
-	ofs << "; === ORBITER Master Configuration File ===\n";
-	ofs << "EchoAllParams = " << BoolStr (bEchoAll) << '\n';
+	os << "; === ORBITER Master Configuration File ===\n";
+	os << "EchoAllParams = " << BoolStr (bEchoAll) << '\n';
 	if (rLaunchpad.right > rLaunchpad.left)
-		ofs << "LPadRect = " << rLaunchpad.left << ' ' << rLaunchpad.top
+		os << "LPadRect = " << rLaunchpad.left << ' ' << rLaunchpad.top
 			<< ' ' << rLaunchpad.right << ' ' << rLaunchpad.bottom << '\n';
 
 	if (strcmp (CfgDirPrm.ConfigDir, CfgDirPrm_default.ConfigDir) || 
@@ -992,423 +984,423 @@ BOOL Config::Write (const char *fname) const
 		strcmp (CfgDirPrm.HightexDir, CfgDirPrm_default.HightexDir) ||
 		strcmp (CfgDirPrm.PlanetTexDir, CfgDirPrm_default.PlanetTexDir) ||
 		strcmp (CfgDirPrm.ScnDir, CfgDirPrm_default.ScnDir) || bEchoAll) {
-		ofs << "\n; === Subdirectory locations\n";
+		os << "\n; === Subdirectory locations\n";
 		if (strcmp (CfgDirPrm.ConfigDir, CfgDirPrm_default.ConfigDir) || bEchoAll)
-			ofs << "ConfigDir = " << CfgDirPrm.ConfigDir << '\n';
+			os << "ConfigDir = " << CfgDirPrm.ConfigDir << '\n';
 		if (strcmp (CfgDirPrm.MeshDir, CfgDirPrm_default.MeshDir) || bEchoAll)
-			ofs << "MeshDir = " << CfgDirPrm.MeshDir << '\n';
+			os << "MeshDir = " << CfgDirPrm.MeshDir << '\n';
 		if (strcmp (CfgDirPrm.TextureDir, CfgDirPrm_default.TextureDir) || bEchoAll)
-			ofs << "TextureDir = " << CfgDirPrm.TextureDir << endl;
+			os << "TextureDir = " << CfgDirPrm.TextureDir << endl;
 		if (strcmp (CfgDirPrm.HightexDir, CfgDirPrm_default.HightexDir) || bEchoAll)
-			ofs << "HightexDir = " << CfgDirPrm.HightexDir << endl;
+			os << "HightexDir = " << CfgDirPrm.HightexDir << endl;
 		if (strcmp(CfgDirPrm.PlanetTexDir, CfgDirPrm_default.PlanetTexDir) || bEchoAll)
-			ofs << "PlanetTexDir = " << CfgDirPrm.PlanetTexDir << endl;
+			os << "PlanetTexDir = " << CfgDirPrm.PlanetTexDir << endl;
 		if (strcmp (CfgDirPrm.ScnDir, CfgDirPrm_default.ScnDir) || bEchoAll)
-			ofs << "ScenarioDir = " << CfgDirPrm.ScnDir << endl;
+			os << "ScenarioDir = " << CfgDirPrm.ScnDir << endl;
 	}
 
 	if (memcmp (&CfgLogicPrm, &CfgLogicPrm_default, sizeof(CFG_LOGICPRM)) || bEchoAll) {
-		ofs << "\n; === Logical parameters ===\n";
+		os << "\n; === Logical parameters ===\n";
 		if (CfgLogicPrm.bStartPaused != CfgLogicPrm_default.bStartPaused || bEchoAll)
-			ofs << "StartPaused = " << BoolStr(CfgLogicPrm.bStartPaused) << '\n';
+			os << "StartPaused = " << BoolStr(CfgLogicPrm.bStartPaused) << '\n';
 		if (CfgLogicPrm.FlightModelLevel != CfgLogicPrm_default.FlightModelLevel || bEchoAll)
-			ofs << "FlightModel = " << CfgLogicPrm.FlightModelLevel << '\n';
+			os << "FlightModel = " << CfgLogicPrm.FlightModelLevel << '\n';
 		if (CfgLogicPrm.DamageSetting != CfgLogicPrm_default.DamageSetting || bEchoAll)
-			ofs << "DamageModel = " << CfgLogicPrm.DamageSetting << '\n';
+			os << "DamageModel = " << CfgLogicPrm.DamageSetting << '\n';
 		if (CfgLogicPrm.bLimitedFuel != CfgLogicPrm_default.bLimitedFuel || bEchoAll)
-			ofs << "UnlimitedFuel = " << BoolStr(!CfgLogicPrm.bLimitedFuel) << '\n';
+			os << "UnlimitedFuel = " << BoolStr(!CfgLogicPrm.bLimitedFuel) << '\n';
 		if (CfgLogicPrm.bPadRefuel != CfgLogicPrm_default.bPadRefuel || bEchoAll)
-			ofs << "RefuelOnPad = " << BoolStr(CfgLogicPrm.bPadRefuel) << '\n';
+			os << "RefuelOnPad = " << BoolStr(CfgLogicPrm.bPadRefuel) << '\n';
 		if (CfgLogicPrm.bMfdTransparent != CfgLogicPrm_default.bMfdTransparent || bEchoAll)
-			ofs << "MFDTransparent = " << BoolStr (CfgLogicPrm.bMfdTransparent) << '\n';
+			os << "MFDTransparent = " << BoolStr (CfgLogicPrm.bMfdTransparent) << '\n';
 		if (CfgLogicPrm.bGlasspitCompact != CfgLogicPrm_default.bGlasspitCompact || bEchoAll)
-			ofs << "CompactGlasspit = " << BoolStr (CfgLogicPrm.bGlasspitCompact) << '\n';
+			os << "CompactGlasspit = " << BoolStr (CfgLogicPrm.bGlasspitCompact) << '\n';
 		if (CfgLogicPrm.MFDSize != CfgLogicPrm_default.MFDSize || bEchoAll)
-			ofs << "GenericMFDSize = " << CfgLogicPrm.MFDSize << '\n';
+			os << "GenericMFDSize = " << CfgLogicPrm.MFDSize << '\n';
 		if (CfgLogicPrm.MFDMapVersion != CfgLogicPrm_default.MFDMapVersion || bEchoAll)
-			ofs << "MFDMapVersion = " << CfgLogicPrm.MFDMapVersion << '\n';
+			os << "MFDMapVersion = " << CfgLogicPrm.MFDMapVersion << '\n';
 		if (fabs (CfgLogicPrm.InstrUpdDT-CfgLogicPrm_default.InstrUpdDT) > 1e-8 || bEchoAll)
-			ofs << "InstrumentUpdateInterval = " << CfgLogicPrm.InstrUpdDT << '\n';
+			os << "InstrumentUpdateInterval = " << CfgLogicPrm.InstrUpdDT << '\n';
 		if (fabs (CfgLogicPrm.PanelScale-CfgLogicPrm_default.PanelScale) > 1e-8 || bEchoAll)
-			ofs << "PanelScale = " << CfgLogicPrm.PanelScale << '\n';
+			os << "PanelScale = " << CfgLogicPrm.PanelScale << '\n';
 		if (fabs (CfgLogicPrm.PanelScrollSpeed-CfgLogicPrm_default.PanelScrollSpeed) > 1e-8 || bEchoAll)
-			ofs << "PanelScrollSpeed = " << CfgLogicPrm.PanelScrollSpeed << '\n';
+			os << "PanelScrollSpeed = " << CfgLogicPrm.PanelScrollSpeed << '\n';
 	}
 
 	if (memcmp (&CfgVisualPrm, &CfgVisualPrm_default, sizeof(CFG_VISUALPRM)) || bEchoAll) {
-		ofs << "\n; === Visual parameters ===\n";
+		os << "\n; === Visual parameters ===\n";
 		if (CfgVisualPrm.bShadows != CfgVisualPrm_default.bShadows || bEchoAll)
-			ofs << "EnableShadows = " << BoolStr (CfgVisualPrm.bShadows) << '\n';
+			os << "EnableShadows = " << BoolStr (CfgVisualPrm.bShadows) << '\n';
 		if (CfgVisualPrm.bVesselShadows != CfgVisualPrm_default.bVesselShadows || bEchoAll)
-			ofs << "EnableVesselShadows = " << BoolStr (CfgVisualPrm.bVesselShadows) << '\n';
+			os << "EnableVesselShadows = " << BoolStr (CfgVisualPrm.bVesselShadows) << '\n';
 		if (CfgVisualPrm.bClouds != CfgVisualPrm_default.bClouds || bEchoAll)
-			ofs << "EnableClouds = " << BoolStr (CfgVisualPrm.bClouds) << '\n';
+			os << "EnableClouds = " << BoolStr (CfgVisualPrm.bClouds) << '\n';
 		if (CfgVisualPrm.bCloudShadows != CfgVisualPrm_default.bCloudShadows || bEchoAll)
-			ofs << "EnableCloudShadows = " << BoolStr (CfgVisualPrm.bCloudShadows) << '\n';
+			os << "EnableCloudShadows = " << BoolStr (CfgVisualPrm.bCloudShadows) << '\n';
 		if (CfgVisualPrm.bNightlights != CfgVisualPrm_default.bNightlights || bEchoAll)
-			ofs << "EnableNightlights = " << BoolStr (CfgVisualPrm.bNightlights) << '\n';
+			os << "EnableNightlights = " << BoolStr (CfgVisualPrm.bNightlights) << '\n';
 		if (CfgVisualPrm.bWaterreflect != CfgVisualPrm_default.bWaterreflect || bEchoAll)
-			ofs << "EnableWaterReflection = " << BoolStr (CfgVisualPrm.bWaterreflect) << '\n';
+			os << "EnableWaterReflection = " << BoolStr (CfgVisualPrm.bWaterreflect) << '\n';
 		if (CfgVisualPrm.bSpecularRipple != CfgVisualPrm_default.bSpecularRipple || bEchoAll)
-			ofs << "EnableSpecularRipples = " << BoolStr (CfgVisualPrm.bSpecularRipple) << '\n';
+			os << "EnableSpecularRipples = " << BoolStr (CfgVisualPrm.bSpecularRipple) << '\n';
 		if (CfgVisualPrm.bHaze != CfgVisualPrm_default.bHaze || bEchoAll)
-			ofs << "EnableHorizonHaze = " << BoolStr (CfgVisualPrm.bHaze) << '\n';
+			os << "EnableHorizonHaze = " << BoolStr (CfgVisualPrm.bHaze) << '\n';
 		if (CfgVisualPrm.bFog != CfgVisualPrm_default.bFog || bEchoAll)
-			ofs << "EnableDistanceFog = " << BoolStr (CfgVisualPrm.bFog) << '\n';
+			os << "EnableDistanceFog = " << BoolStr (CfgVisualPrm.bFog) << '\n';
 		if (CfgVisualPrm.bSpecular != CfgVisualPrm_default.bSpecular || bEchoAll)
-			ofs << "EnableSpecularReflection = " << BoolStr (CfgVisualPrm.bSpecular) << '\n';
+			os << "EnableSpecularReflection = " << BoolStr (CfgVisualPrm.bSpecular) << '\n';
 		if (CfgVisualPrm.bReentryFlames != CfgVisualPrm_default.bReentryFlames || bEchoAll)
-			ofs << "EnableReentryFlames = " << BoolStr (CfgVisualPrm.bReentryFlames) << '\n';
+			os << "EnableReentryFlames = " << BoolStr (CfgVisualPrm.bReentryFlames) << '\n';
 		if (CfgVisualPrm.bParticleStreams != CfgVisualPrm_default.bParticleStreams || bEchoAll)
-			ofs << "EnableParticleStreams = " << BoolStr (CfgVisualPrm.bParticleStreams) << '\n';
+			os << "EnableParticleStreams = " << BoolStr (CfgVisualPrm.bParticleStreams) << '\n';
 		if (CfgVisualPrm.bLocalLight != CfgVisualPrm_default.bLocalLight || bEchoAll)
-			ofs << "EnableLocalLights = " << BoolStr (CfgVisualPrm.bLocalLight) << '\n';
+			os << "EnableLocalLights = " << BoolStr (CfgVisualPrm.bLocalLight) << '\n';
 		if (CfgVisualPrm.MaxLight != CfgVisualPrm_default.MaxLight || bEchoAll)
-			ofs << "MaxLights = " << CfgVisualPrm.MaxLight << '\n';
+			os << "MaxLights = " << CfgVisualPrm.MaxLight << '\n';
 		if (CfgVisualPrm.AmbientLevel != CfgVisualPrm_default.AmbientLevel || bEchoAll)
-			ofs << "AmbientLevel = " << CfgVisualPrm.AmbientLevel << '\n';
+			os << "AmbientLevel = " << CfgVisualPrm.AmbientLevel << '\n';
 		if (CfgVisualPrm.PlanetMaxLevel != CfgVisualPrm_default.PlanetMaxLevel || bEchoAll)
-			ofs << "PlanetMaxPatchLevel = " << CfgVisualPrm.PlanetMaxLevel << '\n';
+			os << "PlanetMaxPatchLevel = " << CfgVisualPrm.PlanetMaxLevel << '\n';
 		if (CfgVisualPrm.PlanetPatchRes != CfgVisualPrm_default.PlanetPatchRes || bEchoAll)
-			ofs << "PlanetPatchRes = " << CfgVisualPrm.PlanetPatchRes << '\n';
+			os << "PlanetPatchRes = " << CfgVisualPrm.PlanetPatchRes << '\n';
 		if (CfgVisualPrm.LightBrightness != CfgVisualPrm_default.LightBrightness || bEchoAll)
-			ofs << "NightlightBrightness = " << CfgVisualPrm.LightBrightness << '\n';
+			os << "NightlightBrightness = " << CfgVisualPrm.LightBrightness << '\n';
 		if (CfgVisualPrm.bUseStarDots != CfgVisualPrm_default.bUseStarDots || bEchoAll)
-			ofs << "EnableBackgroundStars = " << BoolStr(CfgVisualPrm.bUseStarDots) << '\n';
+			os << "EnableBackgroundStars = " << BoolStr(CfgVisualPrm.bUseStarDots) << '\n';
 		if (memcmp (&CfgVisualPrm.StarPrm, &CfgVisualPrm_default.StarPrm, sizeof(StarRenderPrm)) || bEchoAll)
-			ofs << "StarPrm = " << CfgVisualPrm.StarPrm.mag_hi << ' ' << CfgVisualPrm.StarPrm.mag_lo << ' '
+			os << "StarPrm = " << CfgVisualPrm.StarPrm.mag_hi << ' ' << CfgVisualPrm.StarPrm.mag_lo << ' '
 				<< CfgVisualPrm.StarPrm.brt_min << ' ' << (CfgVisualPrm.StarPrm.map_log ? 1:0) << '\n';
 		if (CfgVisualPrm.bUseStarImage != CfgVisualPrm_default.bUseStarImage || bEchoAll)
-			ofs << "EnableBackgroundStarmap = " << BoolStr(CfgVisualPrm.bUseStarImage) << '\n';
+			os << "EnableBackgroundStarmap = " << BoolStr(CfgVisualPrm.bUseStarImage) << '\n';
 		if (strcmp(CfgVisualPrm.StarImagePath, CfgVisualPrm_default.StarImagePath) || bEchoAll)
-			ofs << "CSphereStarPath = " << CfgVisualPrm.StarImagePath << '\n';
+			os << "CSphereStarPath = " << CfgVisualPrm.StarImagePath << '\n';
 		if (CfgVisualPrm.bUseBgImage != CfgVisualPrm_default.bUseBgImage || bEchoAll)
-			ofs << "EnableBackgroundImage = " << BoolStr(CfgVisualPrm.bUseBgImage) << '\n';
+			os << "EnableBackgroundImage = " << BoolStr(CfgVisualPrm.bUseBgImage) << '\n';
 		if (strcmp (CfgVisualPrm.CSphereBgPath, CfgVisualPrm_default.CSphereBgPath) || bEchoAll)
-			ofs << "CSphereBgPath = " << CfgVisualPrm.CSphereBgPath << '\n';
+			os << "CSphereBgPath = " << CfgVisualPrm.CSphereBgPath << '\n';
 		if (CfgVisualPrm.CSphereBgIntens != CfgVisualPrm_default.CSphereBgIntens || bEchoAll)
-			ofs << "CSphereBgIntensity = " << CfgVisualPrm.CSphereBgIntens << '\n';
+			os << "CSphereBgIntensity = " << CfgVisualPrm.CSphereBgIntens << '\n';
 		if (CfgVisualPrm.ElevMode != CfgVisualPrm_default.ElevMode || bEchoAll)
-			ofs << "ElevationMode = " << CfgVisualPrm.ElevMode << '\n';
+			os << "ElevationMode = " << CfgVisualPrm.ElevMode << '\n';
 	}
 
 	if (memcmp (&CfgCapturePrm, &CfgCapturePrm_default, sizeof(CFG_CAPTUREPRM)) || bEchoAll) {
-		ofs << "\n; === Screen capture parameters ===\n";
+		os << "\n; === Screen capture parameters ===\n";
 		if (CfgCapturePrm.ImageTgt != CfgCapturePrm_default.ImageTgt || bEchoAll)
-			ofs << "CaptureTarget = " << CfgCapturePrm.ImageTgt << '\n';
+			os << "CaptureTarget = " << CfgCapturePrm.ImageTgt << '\n';
 		if (strcmp (CfgCapturePrm.ImageFile, CfgCapturePrm_default.ImageFile) || bEchoAll)
-			ofs << "CaptureFile = " << CfgCapturePrm.ImageFile << '\n';
+			os << "CaptureFile = " << CfgCapturePrm.ImageFile << '\n';
 		if (strcmp (CfgCapturePrm.SequenceDir, CfgCapturePrm_default.SequenceDir) || bEchoAll)
-			ofs << "CaptureSequenceDir = " << CfgCapturePrm.SequenceDir << '\n';
+			os << "CaptureSequenceDir = " << CfgCapturePrm.SequenceDir << '\n';
 		if (CfgCapturePrm.ImageFormat != CfgCapturePrm_default.ImageFormat || bEchoAll)
-			ofs << "CaptureImageFormat = " << CfgCapturePrm.ImageFormat << '\n';
+			os << "CaptureImageFormat = " << CfgCapturePrm.ImageFormat << '\n';
 		if (CfgCapturePrm.ImageQuality != CfgCapturePrm_default.ImageQuality || bEchoAll)
-			ofs << "CaptureImageQuality = " << CfgCapturePrm.ImageQuality << '\n';
+			os << "CaptureImageQuality = " << CfgCapturePrm.ImageQuality << '\n';
 		if (CfgCapturePrm.SequenceStart != CfgCapturePrm_default.SequenceStart || bEchoAll)
-			ofs << "CaptureSequenceStart = " << CfgCapturePrm.SequenceStart << '\n';
+			os << "CaptureSequenceStart = " << CfgCapturePrm.SequenceStart << '\n';
 		if (CfgCapturePrm.SequenceSkip != CfgCapturePrm_default.SequenceSkip || bEchoAll)
-			ofs << "CaptureSequenceSkip = " << CfgCapturePrm.SequenceSkip << '\n';
+			os << "CaptureSequenceSkip = " << CfgCapturePrm.SequenceSkip << '\n';
 	}
 
 	if (memcmp (&CfgInstrumentPrm, &CfgInstrumentPrm_default, sizeof(CFG_INSTRUMENTPRM)) || bEchoAll) {
-		ofs << "\n; === Instrument parameters ===\n";
+		os << "\n; === Instrument parameters ===\n";
 		if (CfgInstrumentPrm.bMfdPow2 != CfgInstrumentPrm_default.bMfdPow2 || bEchoAll)
-			ofs << "ForceMfdPow2 = " << ((CfgInstrumentPrm.bMfdPow2 < 2) ?
+			os << "ForceMfdPow2 = " << ((CfgInstrumentPrm.bMfdPow2 < 2) ?
 				BoolStr (CfgInstrumentPrm.bMfdPow2 == 1) : "AUTO") << '\n';
 		if (CfgInstrumentPrm.MfdHiresThreshold != CfgInstrumentPrm_default.MfdHiresThreshold || bEchoAll)
-			ofs << "MfdHiresThreshold = " << CfgInstrumentPrm.MfdHiresThreshold << '\n';
+			os << "MfdHiresThreshold = " << CfgInstrumentPrm.MfdHiresThreshold << '\n';
 		if (CfgInstrumentPrm.PanelMFDHUDSize != CfgInstrumentPrm_default.PanelMFDHUDSize || bEchoAll)
-			ofs << "PanelMfdHudSize = " << CfgInstrumentPrm.PanelMFDHUDSize << '\n';
+			os << "PanelMfdHudSize = " << CfgInstrumentPrm.PanelMFDHUDSize << '\n';
 		if (CfgInstrumentPrm.VCMFDSize != CfgInstrumentPrm_default.VCMFDSize || bEchoAll)
-			ofs << "VCMfdSize = " << CfgInstrumentPrm.VCMFDSize << '\n';
+			os << "VCMfdSize = " << CfgInstrumentPrm.VCMFDSize << '\n';
 	}
 
 	if (memcmp (&CfgVisHelpPrm, &CfgVisHelpPrm_default, sizeof(CFG_VISHELPPRM)) || bEchoAll) {
-		ofs << "\n; === Visual helper parameters ===\n";
+		os << "\n; === Visual helper parameters ===\n";
 		if (CfgVisHelpPrm.flagPlanetarium != CfgVisHelpPrm_default.flagPlanetarium || bEchoAll)
-			ofs << "Planetarium = " << CfgVisHelpPrm.flagPlanetarium << '\n';
+			os << "Planetarium = " << CfgVisHelpPrm.flagPlanetarium << '\n';
 		if (CfgVisHelpPrm.flagMarkers != CfgVisHelpPrm_default.flagMarkers || bEchoAll)
-			ofs << "SurfMarkers = " << CfgVisHelpPrm.flagMarkers << '\n';
+			os << "SurfMarkers = " << CfgVisHelpPrm.flagMarkers << '\n';
 		if (CfgVisHelpPrm.flagBodyForce != CfgVisHelpPrm_default.flagBodyForce ||
 			CfgVisHelpPrm.scaleBodyForce != CfgVisHelpPrm_default.scaleBodyForce ||
 			CfgVisHelpPrm.opacBodyForce != CfgVisHelpPrm_default.opacBodyForce || bEchoAll)
-			ofs << "Bodyforces = " << CfgVisHelpPrm.flagBodyForce << ' ' << CfgVisHelpPrm.scaleBodyForce
+			os << "Bodyforces = " << CfgVisHelpPrm.flagBodyForce << ' ' << CfgVisHelpPrm.scaleBodyForce
 				<< ' ' << CfgVisHelpPrm.opacBodyForce << '\n';
 		if (CfgVisHelpPrm.flagFrameAxes != CfgVisHelpPrm_default.flagFrameAxes ||
 			CfgVisHelpPrm.scaleFrameAxes != CfgVisHelpPrm_default.scaleFrameAxes ||
 			CfgVisHelpPrm.opacFrameAxes != CfgVisHelpPrm_default.opacFrameAxes || bEchoAll)
-			ofs << "CoordinateAxes = " << CfgVisHelpPrm.flagFrameAxes << ' ' << CfgVisHelpPrm.scaleFrameAxes
+			os << "CoordinateAxes = " << CfgVisHelpPrm.flagFrameAxes << ' ' << CfgVisHelpPrm.scaleFrameAxes
 				<< ' ' << CfgVisHelpPrm.opacFrameAxes << '\n';
 	}
 
 	if (memcmp (&CfgDebugPrm, &CfgDebugPrm_default, sizeof (CFG_DEBUGPRM)) || bEchoAll) {
-		ofs << "\n; === Debugging options ===\n";
+		os << "\n; === Debugging options ===\n";
 		if (CfgDebugPrm.ShutdownMode != CfgDebugPrm_default.ShutdownMode || bEchoAll)
-			ofs << "ShutdownMode = " << CfgDebugPrm.ShutdownMode << '\n';
+			os << "ShutdownMode = " << CfgDebugPrm.ShutdownMode << '\n';
 		if (CfgDebugPrm.FixedStep != CfgDebugPrm_default.FixedStep || bEchoAll)
-			ofs << "FixedStep = " << CfgDebugPrm.FixedStep << '\n';
+			os << "FixedStep = " << CfgDebugPrm.FixedStep << '\n';
 		if (CfgDebugPrm.bDisableSmoothFont != CfgDebugPrm_default.bDisableSmoothFont || bEchoAll)
-			ofs << "DisableFontSmoothing = " << BoolStr (CfgDebugPrm.bDisableSmoothFont) << '\n';
+			os << "DisableFontSmoothing = " << BoolStr (CfgDebugPrm.bDisableSmoothFont) << '\n';
 		if (CfgDebugPrm.bForceReenableSmoothFont != CfgDebugPrm_default.bForceReenableSmoothFont || bEchoAll)
-			ofs << "ForceReenableFontSmoothing = " << BoolStr (CfgDebugPrm.bForceReenableSmoothFont) << '\n';
+			os << "ForceReenableFontSmoothing = " << BoolStr (CfgDebugPrm.bForceReenableSmoothFont) << '\n';
 		if (CfgDebugPrm.bHtmlScnDesc != CfgDebugPrm_default.bHtmlScnDesc || bEchoAll)
-			ofs << "HtmlScnDesc = " << CfgDebugPrm.bHtmlScnDesc << '\n';
+			os << "HtmlScnDesc = " << CfgDebugPrm.bHtmlScnDesc << '\n';
 		if (CfgDebugPrm.bSaveExitScreen != CfgDebugPrm_default.bSaveExitScreen || bEchoAll)
-			ofs << "SaveExitScreen = " << BoolStr (CfgDebugPrm.bSaveExitScreen) << '\n';
+			os << "SaveExitScreen = " << BoolStr (CfgDebugPrm.bSaveExitScreen) << '\n';
 		if (CfgDebugPrm.bWireframeMode != CfgDebugPrm_default.bWireframeMode || bEchoAll)
-			ofs << "WireframeMode = " << BoolStr (CfgDebugPrm.bWireframeMode) << '\n';
+			os << "WireframeMode = " << BoolStr (CfgDebugPrm.bWireframeMode) << '\n';
 		if (CfgDebugPrm.bNormaliseNormals != CfgDebugPrm_default.bNormaliseNormals || bEchoAll)
-			ofs << "NormaliseNormals = " << BoolStr (CfgDebugPrm.bNormaliseNormals) << '\n';
+			os << "NormaliseNormals = " << BoolStr (CfgDebugPrm.bNormaliseNormals) << '\n';
 		if (CfgDebugPrm.bVerboseLog != CfgDebugPrm_default.bVerboseLog || bEchoAll)
-			ofs << "VerboseLog = " << BoolStr (CfgDebugPrm.bVerboseLog) << '\n';
+			os << "VerboseLog = " << BoolStr (CfgDebugPrm.bVerboseLog) << '\n';
 	}
 
 	if (memcmp (&CfgPhysicsPrm, &CfgPhysicsPrm_default, sizeof(CFG_PHYSICSPRM)) || bEchoAll) {
-		ofs << "\n; === Physics engine ===\n";
+		os << "\n; === Physics engine ===\n";
 		if (CfgPhysicsPrm.bDistributedMass != CfgPhysicsPrm_default.bDistributedMass || bEchoAll)
-			ofs << "DistributedVesselMass = " << BoolStr (CfgPhysicsPrm.bDistributedMass) << '\n';
+			os << "DistributedVesselMass = " << BoolStr (CfgPhysicsPrm.bDistributedMass) << '\n';
 		if (CfgPhysicsPrm.bNonsphericalGrav != CfgPhysicsPrm_default.bNonsphericalGrav || bEchoAll)
-			ofs << "NonsphericalGravitySources = " << BoolStr (CfgPhysicsPrm.bNonsphericalGrav) << '\n';
+			os << "NonsphericalGravitySources = " << BoolStr (CfgPhysicsPrm.bNonsphericalGrav) << '\n';
 		if (CfgPhysicsPrm.bRadiationPressure != CfgPhysicsPrm_default.bRadiationPressure || bEchoAll)
-			ofs << "RadiationPressure = " << BoolStr (CfgPhysicsPrm.bRadiationPressure) << '\n';
+			os << "RadiationPressure = " << BoolStr (CfgPhysicsPrm.bRadiationPressure) << '\n';
 		if (CfgPhysicsPrm.bAtmWind != CfgPhysicsPrm_default.bAtmWind || bEchoAll)
-			ofs << "AtmosphericWind = " << BoolStr (CfgPhysicsPrm.bAtmWind) << '\n';
+			os << "AtmosphericWind = " << BoolStr (CfgPhysicsPrm.bAtmWind) << '\n';
 		if (CfgPhysicsPrm.bBaseCollision != CfgPhysicsPrm_default.bBaseCollision || bEchoAll)
-			ofs << "BaseCollision = " << BoolStr (CfgPhysicsPrm.bBaseCollision) << '\n';
+			os << "BaseCollision = " << BoolStr (CfgPhysicsPrm.bBaseCollision) << '\n';
 		if (CfgPhysicsPrm.bVesselCollision != CfgPhysicsPrm_default.bVesselCollision || bEchoAll)
-			ofs << "VesselCollision = " << BoolStr (CfgPhysicsPrm.bVesselCollision) << '\n';
+			os << "VesselCollision = " << BoolStr (CfgPhysicsPrm.bVesselCollision) << '\n';
 		if (CfgPhysicsPrm.bOrbitStabilise != CfgPhysicsPrm_default.bOrbitStabilise || bEchoAll)
-			ofs << "StabiliseOrbits = " << BoolStr (CfgPhysicsPrm.bOrbitStabilise) << '\n';
+			os << "StabiliseOrbits = " << BoolStr (CfgPhysicsPrm.bOrbitStabilise) << '\n';
 		if (CfgPhysicsPrm.Stabilise_PLimit != CfgPhysicsPrm_default.Stabilise_PLimit || bEchoAll)
-			ofs << "StabilisePLimit = " << CfgPhysicsPrm.Stabilise_PLimit << '\n';
+			os << "StabilisePLimit = " << CfgPhysicsPrm.Stabilise_PLimit << '\n';
 		if (CfgPhysicsPrm.Stabilise_SLimit != CfgPhysicsPrm_default.Stabilise_SLimit || bEchoAll)
-			ofs << "StabiliseSLimit = " << CfgPhysicsPrm.Stabilise_SLimit << '\n';
+			os << "StabiliseSLimit = " << CfgPhysicsPrm.Stabilise_SLimit << '\n';
 		if (CfgPhysicsPrm.PPropSubMax != CfgPhysicsPrm_default.PPropSubMax || CfgPhysicsPrm.PPropSubLimit != CfgPhysicsPrm_default.PPropSubLimit || bEchoAll)
-			ofs << "PertPropSubsampling = " << CfgPhysicsPrm.PPropSubMax << ' ' << CfgPhysicsPrm.PPropSubLimit << '\n';
+			os << "PertPropSubsampling = " << CfgPhysicsPrm.PPropSubMax << ' ' << CfgPhysicsPrm.PPropSubLimit << '\n';
 		if (CfgPhysicsPrm.PPropStepLimit != CfgPhysicsPrm_default.PPropStepLimit || bEchoAll)
-			ofs << "PertPropNonsphericalLimit = " << CfgPhysicsPrm.PPropStepLimit << '\n';
+			os << "PertPropNonsphericalLimit = " << CfgPhysicsPrm.PPropStepLimit << '\n';
 		if (CfgPhysicsPrm.nLPropLevel != CfgPhysicsPrm_default.nLPropLevel || bEchoAll)
-			ofs << "PropStages = " << CfgPhysicsPrm.nLPropLevel << '\n';
+			os << "PropStages = " << CfgPhysicsPrm.nLPropLevel << '\n';
 		for (i = 0; i < MAX_PROP_LEVEL; i++)
 			if (CfgPhysicsPrm.PropMode[i] != CfgPhysicsPrm_default.PropMode[i] ||
 				(i < CfgPhysicsPrm.nLPropLevel && (CfgPhysicsPrm.PropTTgt[i] != CfgPhysicsPrm_default.PropTTgt[i] || CfgPhysicsPrm.PropATgt[i] != CfgPhysicsPrm_default.PropATgt[i])) ||
 				(i < CfgPhysicsPrm.nLPropLevel-1 && (CfgPhysicsPrm.PropTLim[i] != CfgPhysicsPrm_default.PropTLim[i] || CfgPhysicsPrm.PropALim[i] != CfgPhysicsPrm_default.PropALim[i])) ||
 				bEchoAll) {
-				ofs << "PropStage" << i << " = " << CfgPhysicsPrm.PropMode[i] << ' ' << CfgPhysicsPrm.PropTTgt[i] << ' ' << CfgPhysicsPrm.PropATgt[i];
+				os << "PropStage" << i << " = " << CfgPhysicsPrm.PropMode[i] << ' ' << CfgPhysicsPrm.PropTTgt[i] << ' ' << CfgPhysicsPrm.PropATgt[i];
 				if (i < CfgPhysicsPrm.nLPropLevel-1)
-					ofs << ' ' << CfgPhysicsPrm.PropTLim[i] << ' ' << CfgPhysicsPrm.PropALim[i];
-				ofs << '\n';
+					os << ' ' << CfgPhysicsPrm.PropTLim[i] << ' ' << CfgPhysicsPrm.PropALim[i];
+				os << '\n';
 			}
 #ifdef UNDEF
 		if (CfgPhysicsPrm.APropSubMax != CfgPhysicsPrm_default.APropSubMax || CfgPhysicsPrm.APropSubLimit != CfgPhysicsPrm_default.APropSubLimit || bEchoAll)
-			ofs << "AngPropSubsampling = " << CfgPhysicsPrm.APropSubMax << ' ' << CfgPhysicsPrm.APropSubLimit << '\n';
+			os << "AngPropSubsampling = " << CfgPhysicsPrm.APropSubMax << ' ' << CfgPhysicsPrm.APropSubLimit << '\n';
 		if (CfgPhysicsPrm.APropCouplingLimit != CfgPhysicsPrm_default.APropCouplingLimit || CfgPhysicsPrm.APropTorqueLimit != CfgPhysicsPrm_default.APropTorqueLimit || bEchoAll)
-			ofs << "AngPropLimits = " << CfgPhysicsPrm.APropCouplingLimit << ' ' << CfgPhysicsPrm.APropTorqueLimit << '\n';
+			os << "AngPropLimits = " << CfgPhysicsPrm.APropCouplingLimit << ' ' << CfgPhysicsPrm.APropTorqueLimit << '\n';
 #endif
 		if (CfgPhysicsPrm.PropSubMax != CfgPhysicsPrm_default.PropSubMax || bEchoAll)
-			ofs << "PropSubsampling = " << CfgPhysicsPrm.PropSubMax << '\n';
+			os << "PropSubsampling = " << CfgPhysicsPrm.PropSubMax << '\n';
 	}
 
 	if (memcmp (&CfgPRenderPrm, &CfgPRenderPrm_default, sizeof(CFG_PLANETRENDERPRM)) || bEchoAll) {
-		ofs << "\n; === Planet rendering parameters ===\n";
+		os << "\n; === Planet rendering parameters ===\n";
 		if (CfgPRenderPrm.PreloadMode != CfgPRenderPrm_default.PreloadMode || bEchoAll)
-			ofs << "PlanetPreloadMode = " << CfgPRenderPrm.PreloadMode << '\n';
+			os << "PlanetPreloadMode = " << CfgPRenderPrm.PreloadMode << '\n';
 		if (CfgPRenderPrm.CacheSize != CfgPRenderPrm_default.CacheSize || bEchoAll)
-			ofs << "TileCacheSize = " << CfgPRenderPrm.CacheSize << '\n';
+			os << "TileCacheSize = " << CfgPRenderPrm.CacheSize << '\n';
 		if (CfgPRenderPrm.bLoadOnThread != CfgPRenderPrm_default.bLoadOnThread || bEchoAll)
-			ofs << "TileLoadThread = " << BoolStr (CfgPRenderPrm.bLoadOnThread) << '\n';
+			os << "TileLoadThread = " << BoolStr (CfgPRenderPrm.bLoadOnThread) << '\n';
 		if (CfgPRenderPrm.LoadFrequency != CfgPRenderPrm_default.LoadFrequency || bEchoAll)
-			ofs << "PlanetTexLoadFreq = " << CfgPRenderPrm.LoadFrequency << '\n';
+			os << "PlanetTexLoadFreq = " << CfgPRenderPrm.LoadFrequency << '\n';
 		if (CfgPRenderPrm.AnisoMode != CfgPRenderPrm_default.AnisoMode || bEchoAll)
-			ofs << "PlanetAnisoMode = " << CfgPRenderPrm.AnisoMode << '\n';
+			os << "PlanetAnisoMode = " << CfgPRenderPrm.AnisoMode << '\n';
 		if (CfgPRenderPrm.MipmapMode != CfgPRenderPrm_default.MipmapMode || bEchoAll)
-			ofs << "PlanetMipmapMode = " << CfgPRenderPrm.MipmapMode << '\n';
+			os << "PlanetMipmapMode = " << CfgPRenderPrm.MipmapMode << '\n';
 		if (CfgPRenderPrm.MipmapBias != CfgPRenderPrm_default.MipmapBias || bEchoAll)
-			ofs << "PlanetMipmapBias = " << CfgPRenderPrm.MipmapBias << '\n';
+			os << "PlanetMipmapBias = " << CfgPRenderPrm.MipmapBias << '\n';
 		if (CfgPRenderPrm.PatchRes != CfgPRenderPrm_default.PatchRes || bEchoAll)
-			ofs << "PlanetPatchGrid = " << CfgPRenderPrm.PatchRes << '\n';
+			os << "PlanetPatchGrid = " << CfgPRenderPrm.PatchRes << '\n';
 		if (CfgPRenderPrm.ResolutionBias != CfgPRenderPrm_default.ResolutionBias || bEchoAll)
-			ofs << "PlanetResolutionBias = " << CfgPRenderPrm.ResolutionBias << '\n';
+			os << "PlanetResolutionBias = " << CfgPRenderPrm.ResolutionBias << '\n';
 		if (CfgPRenderPrm.TileLoadFlags != CfgPRenderPrm_default.TileLoadFlags || bEchoAll)
-			ofs << "TileLoadFlags = " << CfgPRenderPrm.TileLoadFlags << '\n';
+			os << "TileLoadFlags = " << CfgPRenderPrm.TileLoadFlags << '\n';
 	}
 
 	if (memcmp (&CfgMapPrm, &CfgMapPrm_default, sizeof (CFG_MAPPRM)) || bEchoAll) {
-		ofs << "\n; === Map dialog parameters ===\n";
+		os << "\n; === Map dialog parameters ===\n";
 		if (CfgMapPrm.DispFlag != CfgMapPrm_default.DispFlag || bEchoAll)
-			ofs << "MapDlgFlag = " << CfgMapPrm.DispFlag << '\n';
+			os << "MapDlgFlag = " << CfgMapPrm.DispFlag << '\n';
 	}
 
 	if (memcmp (&CfgCameraPrm, &CfgCameraPrm_default, sizeof(CFG_CAMERAPRM)) || bEchoAll) {
-		ofs << "\n; === Camera parameters ===\n";
+		os << "\n; === Camera parameters ===\n";
 		if (CfgCameraPrm.Panspeed != CfgCameraPrm_default.Panspeed || bEchoAll)
-			ofs << "CameraPanspeed = " << CfgCameraPrm.Panspeed << '\n';
+			os << "CameraPanspeed = " << CfgCameraPrm.Panspeed << '\n';
 		if (CfgCameraPrm.TerrainLimit != CfgCameraPrm_default.TerrainLimit || bEchoAll)
-			ofs << "CameraTerrainLimit = " << CfgCameraPrm.TerrainLimit << '\n';
+			os << "CameraTerrainLimit = " << CfgCameraPrm.TerrainLimit << '\n';
 		if (CfgCameraPrm.HUDCol != CfgCameraPrm_default.HUDCol || bEchoAll)
-			ofs << "HUDColIdx = " << CfgCameraPrm.HUDCol << endl;
+			os << "HUDColIdx = " << CfgCameraPrm.HUDCol << endl;
 	}
 
 	if (CfgDevPrm.Device_idx >= 0) { // otherwise undefined
-		ofs << "\n; === Device settings ===\n";
-		ofs << "DeviceIndex = " << CfgDevPrm.Device_idx << '\n';
-		ofs << "ModeIndex = " << CfgDevPrm.Device_mode << '\n';
-		ofs << "OutputIndex = " << CfgDevPrm.Device_out << '\n';
-		ofs << "Style = " << CfgDevPrm.Device_style << '\n';
+		os << "\n; === Device settings ===\n";
+		os << "DeviceIndex = " << CfgDevPrm.Device_idx << '\n';
+		os << "ModeIndex = " << CfgDevPrm.Device_mode << '\n';
+		os << "OutputIndex = " << CfgDevPrm.Device_out << '\n';
+		os << "Style = " << CfgDevPrm.Device_style << '\n';
 
 		if (CfgDevPrm.bForceEnum != CfgDevPrm_default.bForceEnum || bEchoAll)
-			ofs << "DeviceForceEnum = " << BoolStr (CfgDevPrm.bForceEnum) << '\n';
+			os << "DeviceForceEnum = " << BoolStr (CfgDevPrm.bForceEnum) << '\n';
 		if (CfgDevPrm.bFullscreen != CfgDevPrm_default.bFullscreen || bEchoAll)
-			ofs << "Fullscreen = " << BoolStr (CfgDevPrm.bFullscreen) << '\n';
+			os << "Fullscreen = " << BoolStr (CfgDevPrm.bFullscreen) << '\n';
 		if (CfgDevPrm.bStereo != CfgDevPrm_default.bStereo || bEchoAll)
-			ofs << "Stereo = " << BoolStr (CfgDevPrm.bStereo) << '\n';
+			os << "Stereo = " << BoolStr (CfgDevPrm.bStereo) << '\n';
 		if (CfgDevPrm.bNoVsync != CfgDevPrm_default.bNoVsync || bEchoAll)
-			ofs << "NoVSync = " << BoolStr (CfgDevPrm.bNoVsync) << '\n';
+			os << "NoVSync = " << BoolStr (CfgDevPrm.bNoVsync) << '\n';
 		if (CfgDevPrm.bTryStencil != CfgDevPrm_default.bTryStencil || bEchoAll)
-			ofs << "StencilBuffer = " << BoolStr (CfgDevPrm.bTryStencil) << '\n';
+			os << "StencilBuffer = " << BoolStr (CfgDevPrm.bTryStencil) << '\n';
 		if (CfgDevPrm.bPageflip != CfgDevPrm_default.bPageflip || bEchoAll)
-			ofs << "FullscreenPageflip = " << BoolStr (CfgDevPrm.bPageflip) << '\n';
+			os << "FullscreenPageflip = " << BoolStr (CfgDevPrm.bPageflip) << '\n';
 		if (CfgDevPrm.WinW != CfgDevPrm_default.WinW || bEchoAll)
-			ofs << "WindowWidth = " << CfgDevPrm.WinW << '\n';
+			os << "WindowWidth = " << CfgDevPrm.WinW << '\n';
 		if (CfgDevPrm.WinH != CfgDevPrm_default.WinH || bEchoAll)
-			ofs << "WindowHeight = " << CfgDevPrm.WinH << '\n';
+			os << "WindowHeight = " << CfgDevPrm.WinH << '\n';
 	}
 
 	if (memcmp (&CfgJoystickPrm, &CfgJoystickPrm_default, sizeof(CFG_JOYSTICKPRM)) || bEchoAll) {
-		ofs << "\n; === Joystick parameters ===\n";
+		os << "\n; === Joystick parameters ===\n";
 		if (CfgJoystickPrm.Joy_idx != CfgJoystickPrm_default.Joy_idx || bEchoAll)
-			ofs << "JoystickIndex = " << CfgJoystickPrm.Joy_idx << '\n';
+			os << "JoystickIndex = " << CfgJoystickPrm.Joy_idx << '\n';
 		if (CfgJoystickPrm.ThrottleAxis != CfgJoystickPrm_default.ThrottleAxis || bEchoAll)
-			ofs << "JoystickThrottleAxis = " << CfgJoystickPrm.ThrottleAxis << '\n';
+			os << "JoystickThrottleAxis = " << CfgJoystickPrm.ThrottleAxis << '\n';
 		if (CfgJoystickPrm.ThrottleSaturation != CfgJoystickPrm_default.ThrottleSaturation || bEchoAll)
-			ofs << "JoystickThrottleSaturation = " << CfgJoystickPrm.ThrottleSaturation << '\n';
+			os << "JoystickThrottleSaturation = " << CfgJoystickPrm.ThrottleSaturation << '\n';
 		if (CfgJoystickPrm.Deadzone != CfgJoystickPrm_default.Deadzone || bEchoAll)
-			ofs << "JoystickDeadzone = " << CfgJoystickPrm.Deadzone << '\n';
+			os << "JoystickDeadzone = " << CfgJoystickPrm.Deadzone << '\n';
 		if (CfgJoystickPrm.bThrottleIgnore != CfgJoystickPrm_default.bThrottleIgnore || bEchoAll)
-			ofs << "IgnoreThrottleOnStart = " << BoolStr (CfgJoystickPrm.bThrottleIgnore) << '\n';
+			os << "IgnoreThrottleOnStart = " << BoolStr (CfgJoystickPrm.bThrottleIgnore) << '\n';
 	}
 
 	if (memcmp (&CfgUIPrm, &CfgUIPrm_default, sizeof(CFG_UIPRM)) || bEchoAll) {
-		ofs << "\n; === User interface parameters ===\n";
+		os << "\n; === User interface parameters ===\n";
 		if (CfgUIPrm.MouseFocusMode != CfgUIPrm_default.MouseFocusMode || bEchoAll)
-			ofs << "MouseFocusMode = " << CfgUIPrm.MouseFocusMode << '\n';
+			os << "MouseFocusMode = " << CfgUIPrm.MouseFocusMode << '\n';
 		if (CfgUIPrm.MenuMode != CfgUIPrm_default.MenuMode || bEchoAll)
-			ofs << "MenubarMode = " << CfgUIPrm.MenuMode << '\n';
+			os << "MenubarMode = " << CfgUIPrm.MenuMode << '\n';
 		if (CfgUIPrm.bMenuLabelAlways != CfgUIPrm_default.bMenuLabelAlways || bEchoAll)
-			ofs << "MenubarLabelAlways = " << BoolStr (CfgUIPrm.bMenuLabelAlways) << '\n';
+			os << "MenubarLabelAlways = " << BoolStr (CfgUIPrm.bMenuLabelAlways) << '\n';
 		if (CfgUIPrm.MenuButtonSize != CfgUIPrm_default.MenuButtonSize || bEchoAll)
-			ofs << "MenuButtonSize = " << CfgUIPrm.MenuButtonSize << '\n';
+			os << "MenuButtonSize = " << CfgUIPrm.MenuButtonSize << '\n';
 		if (CfgUIPrm.MenuButtonHoverSize != CfgUIPrm_default.MenuButtonHoverSize || bEchoAll)
-			ofs << "MenuButtonHoverSize = " << CfgUIPrm.MenuButtonHoverSize << '\n';
+			os << "MenuButtonHoverSize = " << CfgUIPrm.MenuButtonHoverSize << '\n';
 		if (CfgUIPrm.MenuButtonSpacing != CfgUIPrm_default.MenuButtonSpacing || bEchoAll)
-			ofs << "MenuButtonSpacing = " << CfgUIPrm.MenuButtonSpacing << '\n';
+			os << "MenuButtonSpacing = " << CfgUIPrm.MenuButtonSpacing << '\n';
 		if (CfgUIPrm.bWarpAlways != CfgUIPrm_default.bWarpAlways || bEchoAll)
-			ofs << "ShowWarpAlways = " << BoolStr (CfgUIPrm.bWarpAlways) << '\n';
+			os << "ShowWarpAlways = " << BoolStr (CfgUIPrm.bWarpAlways) << '\n';
 		if (CfgUIPrm.InfoMode != CfgUIPrm_default.InfoMode || bEchoAll)
-			ofs << "InfobarMode = " << CfgUIPrm.InfoMode << '\n';
+			os << "InfobarMode = " << CfgUIPrm.InfoMode << '\n';
 		if (CfgUIPrm.FPS != CfgUIPrm_default.FPS || bEchoAll)
-			ofs << "FPS = " << CfgUIPrm.FPS << '\n';
+			os << "FPS = " << CfgUIPrm.FPS << '\n';
 		if (CfgUIPrm.MenuOpacity != CfgUIPrm_default.MenuOpacity || bEchoAll)
-			ofs << "MenubarOpacity = " << CfgUIPrm.MenuOpacity << '\n';
+			os << "MenubarOpacity = " << CfgUIPrm.MenuOpacity << '\n';
 		if (CfgUIPrm.InfoOpacity != CfgUIPrm_default.InfoOpacity || bEchoAll)
-			ofs << "InfobarOpacity = " << CfgUIPrm.InfoOpacity << '\n';
+			os << "InfobarOpacity = " << CfgUIPrm.InfoOpacity << '\n';
 		if (CfgUIPrm.MenuScrollspeed != CfgUIPrm_default.MenuScrollspeed || bEchoAll)
-			ofs << "MenubarSpeed = " << CfgUIPrm.MenuScrollspeed << '\n';
+			os << "MenubarSpeed = " << CfgUIPrm.MenuScrollspeed << '\n';
 		if (CfgUIPrm.SelVesselTab != CfgUIPrm_default.SelVesselTab || bEchoAll)
-			ofs << "SelVesselTab = " << CfgUIPrm.SelVesselTab << '\n';
+			os << "SelVesselTab = " << CfgUIPrm.SelVesselTab << '\n';
 		if (CfgUIPrm.SelVesselRange != CfgUIPrm_default.SelVesselRange || bEchoAll)
-			ofs << "SelVesselRange = " << CfgUIPrm.SelVesselRange << '\n';
+			os << "SelVesselRange = " << CfgUIPrm.SelVesselRange << '\n';
 		if (CfgUIPrm.bSelVesselFlat != CfgUIPrm_default.bSelVesselFlat || bEchoAll)
-			ofs << "SelVesselFlat = " << BoolStr (CfgUIPrm.bSelVesselFlat) << '\n';
+			os << "SelVesselFlat = " << BoolStr (CfgUIPrm.bSelVesselFlat) << '\n';
 	}
 
 	if (memcmp (&CfgDemoPrm, &CfgDemoPrm_default, sizeof(CFG_DEMOPRM)) || bEchoAll) {
-		ofs << "\n; === Demo parameters ===\n";
+		os << "\n; === Demo parameters ===\n";
 		if (CfgDemoPrm.bDemo != CfgDemoPrm_default.bDemo || bEchoAll)
-			ofs << "DemoMode = " << BoolStr (CfgDemoPrm.bDemo) << '\n';
+			os << "DemoMode = " << BoolStr (CfgDemoPrm.bDemo) << '\n';
 		if (CfgDemoPrm.bBkImage != CfgDemoPrm_default.bBkImage || bEchoAll)
-			ofs << "BackgroundImage = " << BoolStr (CfgDemoPrm.bBkImage) << '\n';
+			os << "BackgroundImage = " << BoolStr (CfgDemoPrm.bBkImage) << '\n';
 		if (CfgDemoPrm.bBlockExit != CfgDemoPrm_default.bBlockExit || bEchoAll)
-			ofs << "BlockExit = " << BoolStr (CfgDemoPrm.bBlockExit) << '\n';
+			os << "BlockExit = " << BoolStr (CfgDemoPrm.bBlockExit) << '\n';
 		if (CfgDemoPrm.MaxDemoTime != CfgDemoPrm_default.MaxDemoTime || bEchoAll)
-			ofs << "MaxDemoTime = " << CfgDemoPrm.MaxDemoTime << '\n';
+			os << "MaxDemoTime = " << CfgDemoPrm.MaxDemoTime << '\n';
 		if (CfgDemoPrm.LPIdleTime != CfgDemoPrm_default.LPIdleTime || bEchoAll)
-			ofs << "MaxLaunchpadIdleTime = " << CfgDemoPrm.LPIdleTime << '\n';
+			os << "MaxLaunchpadIdleTime = " << CfgDemoPrm.LPIdleTime << '\n';
 	}
 
 	if (memcmp (&CfgRecPlayPrm, &CfgRecPlayPrm_default, sizeof(CFG_RECPLAYPRM)) || bEchoAll) {
-		ofs << "\n; === Record/play parameters ===\n";
+		os << "\n; === Record/play parameters ===\n";
 		if (CfgRecPlayPrm.RecordPosFrame != CfgRecPlayPrm_default.RecordPosFrame || bEchoAll)
-			ofs << "RecordPosFrame = " << CfgRecPlayPrm.RecordPosFrame << '\n';
+			os << "RecordPosFrame = " << CfgRecPlayPrm.RecordPosFrame << '\n';
 		if (CfgRecPlayPrm.RecordAttFrame != CfgRecPlayPrm_default.RecordAttFrame || bEchoAll)
-			ofs << "RecordAttFrame = " << CfgRecPlayPrm.RecordAttFrame << '\n';
+			os << "RecordAttFrame = " << CfgRecPlayPrm.RecordAttFrame << '\n';
 		if (CfgRecPlayPrm.bRecordWarp != CfgRecPlayPrm_default.bRecordWarp || bEchoAll)
-			ofs << "RecordTimewarp = " << BoolStr (CfgRecPlayPrm.bRecordWarp) << '\n';
+			os << "RecordTimewarp = " << BoolStr (CfgRecPlayPrm.bRecordWarp) << '\n';
 		if (CfgRecPlayPrm.bRecordFocus != CfgRecPlayPrm_default.bRecordFocus || bEchoAll)
-			ofs << "RecordFocusEvent = " << BoolStr (CfgRecPlayPrm.bRecordFocus) << '\n';
+			os << "RecordFocusEvent = " << BoolStr (CfgRecPlayPrm.bRecordFocus) << '\n';
 		if (CfgRecPlayPrm.bReplayWarp != CfgRecPlayPrm_default.bReplayWarp || bEchoAll)
-			ofs << "ReplayTimewarp = " << BoolStr (CfgRecPlayPrm.bReplayWarp) << '\n';
+			os << "ReplayTimewarp = " << BoolStr (CfgRecPlayPrm.bReplayWarp) << '\n';
 		if (CfgRecPlayPrm.bReplayFocus != CfgRecPlayPrm_default.bReplayFocus || bEchoAll)
-			ofs << "ReplayFocusEvent = " << BoolStr (CfgRecPlayPrm.bReplayFocus) << '\n';
+			os << "ReplayFocusEvent = " << BoolStr (CfgRecPlayPrm.bReplayFocus) << '\n';
 		if (CfgRecPlayPrm.bReplayCam != CfgRecPlayPrm_default.bReplayCam || bEchoAll)
-			ofs << "ReplayCameraEvent = " << BoolStr (CfgRecPlayPrm.bReplayCam) << '\n';
+			os << "ReplayCameraEvent = " << BoolStr (CfgRecPlayPrm.bReplayCam) << '\n';
 		if (CfgRecPlayPrm.bSysInterval != CfgRecPlayPrm_default.bSysInterval || bEchoAll)
-			ofs << "SystimeSampling = " << BoolStr (CfgRecPlayPrm.bSysInterval) << '\n';
+			os << "SystimeSampling = " << BoolStr (CfgRecPlayPrm.bSysInterval) << '\n';
 		if (CfgRecPlayPrm.bShowNotes != CfgRecPlayPrm_default.bShowNotes || bEchoAll)
-			ofs << "PlaybackNotes = " << BoolStr (CfgRecPlayPrm.bShowNotes) << '\n';
+			os << "PlaybackNotes = " << BoolStr (CfgRecPlayPrm.bShowNotes) << '\n';
 	}
 
 	if (memcmp (&CfgFontPrm, &CfgFontPrm_default, sizeof(CFG_FONTPRM)) || bEchoAll) {
-		ofs << "\n; === Font parameters ===\n";
+		os << "\n; === Font parameters ===\n";
 		if (CfgFontPrm.dlgFont_Scale != CfgFontPrm_default.dlgFont_Scale || bEchoAll)
-			ofs << "DialogFont_Scale = " << CfgFontPrm.dlgFont_Scale << '\n';
+			os << "DialogFont_Scale = " << CfgFontPrm.dlgFont_Scale << '\n';
 		if (strcmp (CfgFontPrm.dlgFont1_Face, CfgFontPrm_default.dlgFont1_Face) || bEchoAll)
-			ofs << "DialogFont1_Face = " << CfgFontPrm.dlgFont1_Face << '\n';
+			os << "DialogFont1_Face = " << CfgFontPrm.dlgFont1_Face << '\n';
 		if (CfgFontPrm.ImGui_FontSize != CfgFontPrm_default.ImGui_FontSize || bEchoAll)
-			ofs << "ImGui_FontSize = " << CfgFontPrm.ImGui_FontSize << '\n';
+			os << "ImGui_FontSize = " << CfgFontPrm.ImGui_FontSize << '\n';
 		if (strcmp (CfgFontPrm.ImGui_DefaultFontFile, CfgFontPrm_default.ImGui_DefaultFontFile) || bEchoAll)
-			ofs << "ImGui_DefaultFontFile = " << CfgFontPrm.ImGui_DefaultFontFile << '\n';
+			os << "ImGui_DefaultFontFile = " << CfgFontPrm.ImGui_DefaultFontFile << '\n';
 		if (strcmp (CfgFontPrm.ImGui_ConsoleFontFile, CfgFontPrm_default.ImGui_ConsoleFontFile) || bEchoAll)
-			ofs << "ImGui_ConsoleFontFile = " << CfgFontPrm.ImGui_ConsoleFontFile << '\n';
+			os << "ImGui_ConsoleFontFile = " << CfgFontPrm.ImGui_ConsoleFontFile << '\n';
 		if (strcmp (CfgFontPrm.ImGui_MonospacedFontFile, CfgFontPrm_default.ImGui_MonospacedFontFile) || bEchoAll)
-			ofs << "ImGui_MonospacedFontFile = " << CfgFontPrm.ImGui_MonospacedFontFile << '\n';
+			os << "ImGui_MonospacedFontFile = " << CfgFontPrm.ImGui_MonospacedFontFile << '\n';
 		if (strcmp (CfgFontPrm.ImGui_ManuscriptFontFile, CfgFontPrm_default.ImGui_ManuscriptFontFile) || bEchoAll)
-			ofs << "ImGui_ManuscriptFontFile = " << CfgFontPrm.ImGui_ManuscriptFontFile << '\n';
+			os << "ImGui_ManuscriptFontFile = " << CfgFontPrm.ImGui_ManuscriptFontFile << '\n';
 	}
 
 	if (memcmp (&CfgWindowPos, &CfgWindowPos_default, sizeof(CFG_WINDOWPOS)) || bEchoAll) {
-		ofs << "\n; === Window positions ===\n";
+		os << "\n; === Window positions ===\n";
 		if (CfgWindowPos.DlgMap != CfgWindowPos_default.DlgMap || bEchoAll)
-			ofs << "DlgMapPos = " << CfgWindowPos.DlgMap << '\n';
+			os << "DlgMapPos = " << CfgWindowPos.DlgMap << '\n';
 		if (CfgWindowPos.DlgInfo != CfgWindowPos_default.DlgInfo || bEchoAll)
-			ofs << "DlgInfoPos = " << CfgWindowPos.DlgInfo << '\n';
+			os << "DlgInfoPos = " << CfgWindowPos.DlgInfo << '\n';
 		if (CfgWindowPos.DlgCamera != CfgWindowPos_default.DlgCamera || bEchoAll)
-			ofs << "DlgCamPos = " << CfgWindowPos.DlgCamera << '\n';
+			os << "DlgCamPos = " << CfgWindowPos.DlgCamera << '\n';
 		if (CfgWindowPos.DlgFocus != CfgWindowPos_default.DlgFocus || bEchoAll)
-			ofs << "DlgFocusPos = " << CfgWindowPos.DlgFocus << '\n';
+			os << "DlgFocusPos = " << CfgWindowPos.DlgFocus << '\n';
 		if (CfgWindowPos.DlgTacc != CfgWindowPos_default.DlgTacc || bEchoAll)
-			ofs << "DlgTaccPos = " << CfgWindowPos.DlgTacc << '\n';
+			os << "DlgTaccPos = " << CfgWindowPos.DlgTacc << '\n';
 		if (CfgWindowPos.DlgOptions != CfgWindowPos_default.DlgOptions || bEchoAll)
-			ofs << "DlgOptionsPos = " << CfgWindowPos.DlgOptions << '\n';
+			os << "DlgOptionsPos = " << CfgWindowPos.DlgOptions << '\n';
 		if (CfgWindowPos.DlgVishelper != CfgWindowPos_default.DlgVishelper || bEchoAll)
-			ofs << "DlgVhelperPos = " << CfgWindowPos.DlgVishelper << '\n';
+			os << "DlgVhelperPos = " << CfgWindowPos.DlgVishelper << '\n';
 		if (CfgWindowPos.LaunchpadScnListWidth != CfgWindowPos_default.LaunchpadScnListWidth || bEchoAll)
-			ofs << "LpadScnListWidth = " << CfgWindowPos.LaunchpadScnListWidth << '\n';
+			os << "LpadScnListWidth = " << CfgWindowPos.LaunchpadScnListWidth << '\n';
 		if (CfgWindowPos.LaunchpadModListWidth != CfgWindowPos_default.LaunchpadModListWidth || bEchoAll)
-			ofs << "LpadModListWidth = " << CfgWindowPos.LaunchpadModListWidth << '\n';
+			os << "LpadModListWidth = " << CfgWindowPos.LaunchpadModListWidth << '\n';
 		if (CfgWindowPos.LaunchpadExtListWidth != CfgWindowPos_default.LaunchpadExtListWidth || bEchoAll)
-			ofs << "LpadExtListWidth = " << CfgWindowPos.LaunchpadExtListWidth << '\n';
+			os << "LpadExtListWidth = " << CfgWindowPos.LaunchpadExtListWidth << '\n';
 	}
 
 	if (m_activeModules.size()) {
-		ofs << "\n; === Active plugin list ===" << endl;
-		ofs << "ACTIVE_MODULES" << endl;
+		os << "\n; === Active plugin list ===" << endl;
+		os << "ACTIVE_MODULES" << endl;
 		for (auto name : m_activeModules)
-			ofs << "  " << name << std::endl;
-		ofs << "END_MODULES" << endl;
+			os << "  " << name << std::endl;
+		os << "END_MODULES" << endl;
 	}
-	ofs << flush;
-	return TRUE;
+	os << flush;
+	return true;
 }
 
 char *Config::ConfigPath (const char *name) const
@@ -1491,7 +1483,7 @@ void Config::DelActiveModule (const std::string& name)
 		m_activeModules.erase(it);
 }
 
-bool Config::GetString (istream &is, const char *category, char *val)
+bool Config::GetString (std::istream &is, const char *category, char *val)
 {
 	return GetString (is, category, val, 512);
 }
@@ -1522,25 +1514,25 @@ bool Config::GetString (istream &is, const char *category, char *val, size_t siz
 	return true;
 }
 
-bool Config::GetReal (istream &is, const char *category, double &val)
+bool Config::GetReal (std::istream &is, const char *category, double &val)
 {
 	if (!GetString (is, category, g_cbuf)) return false;
 	return (sscanf (g_cbuf, "%lf", &val) == 1);
 }
 
-bool Config::GetInt (istream &is, const char *category, int &val)
+bool Config::GetInt (std::istream &is, const char *category, int &val)
 {
 	if (!GetString (is, category, g_cbuf)) return false;
 	return (sscanf (g_cbuf, "%d", &val) == 1);
 }
 
-bool Config::GetSize (istream& is, const char* category, size_t& val)
+bool Config::GetSize (std::istream& is, const char* category, size_t& val)
 {
 	if (!GetString(is, category, g_cbuf)) return false;
 	return (sscanf(g_cbuf, "%zu", &val) == 1);
 }
 
-bool Config::GetBool (istream &is, const char *category, bool &val)
+bool Config::GetBool (std::istream &is, const char *category, bool &val)
 {
 	if (!GetString (is, category, g_cbuf)) return false;
 	if (!_strnicmp (g_cbuf, "true", 4)) { val = true; return true; }
@@ -1548,59 +1540,11 @@ bool Config::GetBool (istream &is, const char *category, bool &val)
 	return false;
 }
 
-bool Config::GetVector (istream &is, const char *category, Vector &val)
+bool Config::GetVector (std::istream &is, const char *category, Vector &val)
 {
 	double x, y, z;
 	if (!GetString (is, category, g_cbuf)) return false;
 	if (sscanf (g_cbuf, "%lf%lf%lf", &x, &y, &z) < 3) return false;
 	val.Set (x, y, z);
 	return true;
-}
-
-bool Config::GetString (const char *category, char *val)
-{
-	if (!Root) return false;
-	ifstream ifs (Root);
-	if (!ifs) return false;
-	return GetString (ifs, category, val);
-}
-
-bool Config::GetReal (const char *category, double &val)
-{
-	if (!Root) return false;
-	ifstream ifs (Root);
-	if (!ifs) return false;
-	return GetReal (ifs, category, val);
-}
-
-bool Config::GetInt (const char *category, int &val)
-{
-	if (!Root) return false;
-	ifstream ifs (Root);
-	if (!ifs) return false;
-	return GetInt (ifs, category, val);
-}
-
-bool Config::GetSize (const char* category, size_t& val)
-{
-	if (!Root) return false;
-	ifstream ifs(Root);
-	if (!ifs) return false;
-	return GetSize(ifs, category, val);
-}
-
-bool Config::GetBool (const char *category, bool &val)
-{
-	if (!Root) return false;
-	ifstream ifs (Root);
-	if (!ifs) return false;
-	return GetBool (ifs, category, val);
-}
-
-bool Config::GetVector (const char *category, Vector &val)
-{
-	if (!Root) return false;
-	ifstream ifs (Root);
-	if (!ifs) return false;
-	return GetVector (ifs, category, val);
 }

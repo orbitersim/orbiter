@@ -56,6 +56,7 @@ public:
 	VOID Launch (const char *scenario);
 	void CloseApp (bool fast_shutdown = false);
 	int GetVersion () const;
+	void SetMasterConfig(const std::string &fname) { m_sMasterConfigFile = fname; }
 	HWND CreateRenderWindow (Config *pCfg, const char *scenario);
 	void PreCloseSession();
 	void CloseSession ();
@@ -386,6 +387,7 @@ private:
 	DWORD           viewW, viewH;  // render viewport dimensions
 	DWORD			viewBPP;       // render colour depth (bits per pixel)
 
+	std::string     m_sMasterConfigFile;  // file used for configuration I/O
 	char            cfgpath[256];
 	int             cfglen;
 	char            simkstate[256];// accumulated simulated key state
