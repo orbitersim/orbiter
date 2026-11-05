@@ -162,6 +162,18 @@ int _matherr(struct _exception *except )
 }
 
 
+// Hacky class to handle playback annotations without breaking the old ABI
+class PlaybackAnnotation: public ScreenAnnotation
+{
+	public:
+		PlaybackAnnotation(GraphicsClient *_gc): ScreenAnnotation(_gc) {}
+		void Render() override {
+			if(g_pOrbiter->Cfg()->CfgRecPlayPrm.bShowNotes) {
+				ScreenAnnotation::Render();
+			}
+		}
+};
+
 // =======================================================================
 // WinMain()
 // Application entry containing message loop
@@ -734,7 +746,7 @@ HWND Orbiter::CreateRenderWindow (Config *pCfg, const char *scenario)
 		pDlgMgr->AddEntry(g_input);
 
 		// playback screen annotation manager
-		snote_playback = gclient->clbkCreateAnnotation ();
+		snote_playback = new PlaybackAnnotation(gclient);
 	}
 	else {
 		pDlgMgr = new DialogManager(this, m_pConsole->WindowHandle());
@@ -1574,7 +1586,7 @@ void Orbiter::EndPlayback ()
 oapi::ScreenAnnotation *Orbiter::CreateAnnotation (bool exclusive, double size, COLORREF col)
 {
 	if (!gclient) return NULL;
-	oapi::ScreenAnnotation *sn = gclient->clbkCreateAnnotation();
+	oapi::ScreenAnnotation *sn = new ScreenAnnotation(gclient);
 	if (!sn) return NULL;
 	
 	sn->SetSize (size);
@@ -1590,22 +1602,6 @@ oapi::ScreenAnnotation *Orbiter::CreateAnnotation (bool exclusive, double size, 
 	snote = tmp;
 	snote[nsnote++] = sn;
 	return sn;
-
-	//DWORD w = oclient->GetFramework()->GetRenderWidth();
-	//DWORD h = oclient->GetFramework()->GetRenderHeight();
-
-	//ScreenNote *sn = new ScreenNote (this, w, h);
-	//sn->SetSize (size);
-	//sn->SetColour (col);
-
-	//ScreenNote **tmp = new ScreenNote*[nsnote+1];
-	//if (nsnote) {
-	//	memcpy (tmp, snote, nsnote*sizeof(ScreenNote*));
-	//	delete []snote;
-	//}
-	//snote = tmp;
-	//snote[nsnote++] = sn;
-	//return sn;
 }
 
 bool Orbiter::DeleteAnnotation (oapi::ScreenAnnotation *sn)
@@ -1735,11 +1731,6 @@ const Mesh *Orbiter::LoadMeshGlobal (const char *fname, LoadMeshClbkFunc fClbk)
 VOID Orbiter::Output2DData ()
 {
 	g_pane->Draw ();
-	if (g_pane) {
-		for (DWORD i = 0; i < nsnote; i++)
-			snote[i]->Render();
-		if (snote_playback && pConfig->CfgRecPlayPrm.bShowNotes) snote_playback->Render();
-	}
 }
 
 //-----------------------------------------------------------------------------
