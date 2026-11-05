@@ -1463,14 +1463,14 @@ void OptionsPage_CelSphere::UpdateControls(HWND hPage)
 {
 	char cbuf[256];
 
-	std::string starpath = std::string(Cfg()->CfgVisualPrm.StarImagePath);
+	std::string starpath(Cfg()->CfgVisualPrm.StarImagePath);
 	for (int idx = 0; idx < m_pathStarmap.size(); idx++)
 		if (!starpath.compare(m_pathStarmap[idx].second)) {
 			SendDlgItemMessage(hPage, IDC_OPT_CSP_STARMAPIMAGE, CB_SETCURSEL, idx, 0);
 			break;
 		}
 
-	std::string bgpath = std::string(Cfg()->CfgVisualPrm.CSphereBgPath);
+	std::string bgpath(Cfg()->CfgVisualPrm.CSphereBgPath);
 	for (int idx = 0; idx < m_pathBgImage.size(); idx++)
 		if (!bgpath.compare(m_pathBgImage[idx].second)) {
 			SendDlgItemMessage(hPage, IDC_OPT_CSP_BKGIMAGE, CB_SETCURSEL, idx, 0);
