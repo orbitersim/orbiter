@@ -38,8 +38,8 @@ jobs:
 
       - name: Commit and Push Archive
         run: |
-          git config --global user.name "github-actions[bot]"
-          git config --global user.email "41898282+github-actions[bot]@://github.com"
+          git config --local user.name "github-actions[bot]"
+          git config --local user.email "41898282+github-actions[bot]@users.noreply.github.com"
           
           # Stage the current file and the archive directory
           git add CHANGELOG.md Doc/ChangeLog/
