@@ -268,6 +268,13 @@ typedef void *HDC;
   *   DWORD
   */
 #define CFGPRM_SURFMARKERFLAG 0x0026
+
+/**
+ * Flag for enabling planetary terrain flattening (.flt)
+ * \par Parameter type:
+ *   bool
+ */
+#define CFGPRM_TERRAINFLATS 0x0027
 /// @}
 
 /**
@@ -281,6 +288,7 @@ typedef void *HDC;
 #define RP_MAXLIGHTS          4 ///< maximum number of simultaneous light sources supported
 #define RP_ISTLDEVICE         5 ///< render device supports Transform&Lighting
 #define RP_REQUIRETEXPOW2     6 ///< texture size=pow2 required? (0=no, 1=yes, 2=conditional)
+#define RP_TERRAINFLATS       7 ///< client override for terrain flattening? (0=disabled, 1=enabled)
 /// @}
 
 /// \defgroup plnflag Bit flags for planetarium mode elements
@@ -1471,6 +1479,22 @@ public:
 		int pilat, int pilng, int plvl, INT16* pelev, INT16* elev, double* emean = 0) const;
 
 	/**
+	 * \brief Apply planetary terrain flattening (.flt) shapes to an elevation grid
+	 * \param emgr elevation manager handle
+	 * \param ilat patch latitude index
+	 * \param ilng patch longitude index
+	 * \param lvl patch resolution level
+	 * \param elev_res elevation grid unit resolution [m]
+	 * \param [in,out] elev pointer to array with elevation grid data (259 x 259 elements)
+	 * \return true if any flattening shapes modified the tile, false otherwise
+	 */
+	bool FilterElevation (ELEVHANDLE emgr, int ilat, int ilng, int lvl,
+		double elev_res, INT16 *elev) const;
+
+	bool FilterElevation (ELEVHANDLE emgr, int ilat, int ilng, int lvl,
+		double elev_res, float *elev) const;
+
+	/**
 	 * \brief Filter elevation grid data
 	 * \param hPlanet object handle of the planet the data belongs to
 	 * \param ilat patch latitude index
@@ -1479,10 +1503,10 @@ public:
 	 * \param elev_res elevation level resolution
 	 * \param elev pointer to array with elevation grid data
 	 * \default None.
-	 * \note Clients that manipulate elevation file data in memory (e.g. for flattening
-	 *   features) for visuals should overload this method in order to manipulate the
-	 *   terrain collision data in the same way. As soon as the internal collision tile
-	 *   is loaded in the core, the callback is invoked.
+	 * \note Standard planetary .flt terrain flattening is performed natively by the
+	 *   core ElevationManager. Clients that apply additional custom or procedural
+	 *   elevation modifications for visuals may still overload this callback to
+	 *   manipulate terrain collision data in the same way.
 	 */
 	virtual bool clbkFilterElevation(OBJHANDLE hPlanet, int ilat, int ilng, int lvl, double elev_res, INT16* elev) { return false; }
 	// @}
@@ -1597,6 +1621,19 @@ protected:
 	virtual void clbkUpdate (bool running) {}
 
 	/**
+	 * \brief Begin per-frame rendering bracket
+	 *
+	 * Called at the start of Orbiter::Render3DEnvironment(), prior to ImGui
+	 * new-frame processing and clbkRenderScene(). Explicit-command-buffer
+	 * clients (such as Vulkan) can use this callback to synchronize frame
+	 * fences, flush offscreen surface barriers, acquire the swapchain image,
+	 * and open the primary frame command buffer.
+	 * \default None.
+	 * \sa clbkRenderScene, clbkEndFrame, clbkDisplayFrame
+	 */
+	virtual void clbkBeginFrame () {}
+
+	/**
 	 * \brief Per-frame render notification
 	 *
 	 * Called once per frame, after the logical world state has been updated,
@@ -1609,6 +1646,19 @@ protected:
 	 *   panel, HUD, etc.)
 	 */
 	virtual void clbkRenderScene () = 0;
+
+	/**
+	 * \brief End per-frame rendering bracket
+	 *
+	 * Called at the end of Orbiter::Render3DEnvironment(), after clbkRenderScene(),
+	 * 2-D HUD/annotation overlays, and clbkImGuiRenderDrawData() have all been
+	 * recorded, immediately prior to clbkDisplayFrame(). Explicit-command-buffer
+	 * clients can use this callback to finalize the main render pass and close
+	 * the frame command buffer before presentation.
+	 * \default None.
+	 * \sa clbkBeginFrame, clbkRenderScene, clbkDisplayFrame
+	 */
+	virtual void clbkEndFrame () {}
 
 	/**
 	 * \brief Display a scene on screen after rendering it.

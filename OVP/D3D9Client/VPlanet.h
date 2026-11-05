@@ -19,9 +19,6 @@ class D3D9Mesh;
 class SurfTile;
 class CloudTile;
 
-bool FilterElevationPhysics(OBJHANDLE hPlanet, int lvl, int ilat, int ilng, double elev_res, INT16* elev);
-
-
 #define SUN_COLOR 0
 #define RAY_COLOR 1
 #define MIE_COLOR 2

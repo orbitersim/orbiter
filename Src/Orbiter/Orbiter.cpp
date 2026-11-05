@@ -985,12 +985,14 @@ void Orbiter::BroadcastGlobalInit ()
 HRESULT Orbiter::Render3DEnvironment (bool hidedialogs)
 {
 	if (gclient) {
+		gclient->clbkBeginFrame ();
 		if(!hidedialogs)
 			pDlgMgr->ImGuiNewFrame();
 		gclient->clbkRenderScene ();
 		Output2DData ();
 		if(!hidedialogs)
 			gclient->clbkImGuiRenderDrawData();
+		gclient->clbkEndFrame ();
 		gclient->clbkDisplayFrame ();
 	}
 	// Mark frame boundary for when using the profiler
