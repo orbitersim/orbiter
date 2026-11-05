@@ -120,6 +120,7 @@ private:
 	TEXTMETRIC			tm;         ///< Font attributes
 	LOGFONT             lf;         ///< Font attributes
 	ID3DXFont           *wfont;     ///< WCHAR font
+	ID3DXSprite         *sprite;    ///< Sprite for text rotation
 
 	// Rendering pipeline configuration
 	//
