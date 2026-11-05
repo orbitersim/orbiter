@@ -37,8 +37,6 @@ jobs:
           echo -e "# Changelog\n\nMerge commits will be documented in this file.\n" > CHANGELOG.md
 
       - name: Commit and Push Archive
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           git config --local user.name "github-actions[bot]"
           git config --local user.email "41898282+github-actions[bot]@users.noreply.github.com"
@@ -47,4 +45,4 @@ jobs:
           git add CHANGELOG.md Doc/ChangeLog/
           
           git commit --allow-empty -m "Archived changelog for release ${{ github.event.release.tag_name }} to Doc/ChangeLog/ [skip ci]"
-          git push https://x-access-token:${GITHUB_TOKEN}@://github.com{{ github.repository }}.git HEAD:main
+          git push origin HEAD:main
