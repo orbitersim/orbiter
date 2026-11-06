@@ -5987,7 +5987,7 @@ bool Vessel::CheckVesselOverlap(Vessel *v, double margin) {
 	while (my_root->attach && my_root->attach->mate) my_root = my_root->attach->mate;
 	if (v_root == my_root) return false;
 
-	if (supervessel && supervessel == v->supervessel) return false;
+	if (my_root->supervessel && my_root->supervessel == v_root->supervessel) return false;
 
 	const StateVectors *svA = (s1->pos.length2() > 0.0 ? s1 : s0);
 	const StateVectors *svB = (v->s1->pos.length2() > 0.0 ? v->s1 : v->s0);
@@ -6170,6 +6170,8 @@ void Vessel::RefreshCollisionOverlapState() {
 
 // GJK/EPA Implementation
 
+
+
 void Vessel::ResolveCollisionWith(Vessel *v) {
 	if (fstatus == FLIGHTSTATUS_LANDED && v->fstatus == FLIGHTSTATUS_LANDED) return;
 	if (!proxyplanet || proxyplanet != v->proxyplanet) return;
@@ -6180,7 +6182,9 @@ void Vessel::ResolveCollisionWith(Vessel *v) {
 	while (my_root->attach && my_root->attach->mate) my_root = my_root->attach->mate;
 	if (v_root == my_root) return;
 
-	if (supervessel && supervessel == v->supervessel) return; // Skip docked vessels
+	SuperVessel *svA = my_root->supervessel;
+	SuperVessel *svB = v_root->supervessel;
+	if (svA && svA == svB) return; // Skip docked vessels
 
 	// Post-undock grace period: skip collision for 5 seconds after undocking
 	// to allow the separation push to clear the vessels' overlaps.
@@ -6521,21 +6525,30 @@ void Vessel::ResolveCollisionWith(Vessel *v) {
 			rawContactPtGlobal = s1->pos + mul(s1->R, Vector(bestRes.contactPtLocal.x, bestRes.contactPtLocal.y, bestRes.contactPtLocal.z));
 		}
 
-		Vector rA = rawContactPtGlobal - s1->pos;
-		Vector rB = rawContactPtGlobal - v->s1->pos;
+		VesselBase *bodyA = svA ? (VesselBase*)svA : (VesselBase*)my_root;
+		VesselBase *bodyB = svB ? (VesselBase*)svB : (VesselBase*)v_root;
+		StateVectors *sA = bodyA->s1;
+		StateVectors *sB = bodyB->s1;
+		double massA = bodyA->Mass();
+		double massB = bodyB->Mass();
+		const Vector &pmiA = bodyA->PMI();
+		const Vector &pmiB = bodyB->PMI();
+
+		Vector rA = rawContactPtGlobal - sA->pos;
+		Vector rB = rawContactPtGlobal - sB->pos;
 
 		double rA_len = rA.length();
 		double rB_len = rB.length();
 
 		// For the contact point used in force-vector display, use the midpoint
-		Vector contactPtGlobal = (s1->pos + rA + v->s1->pos + rB) * 0.5;
+		Vector contactPtGlobal = (sA->pos + rA + sB->pos + rB) * 0.5;
 
-		Vector omegaA_global = mul(s1->R, s1->omega);
-		Vector omegaB_global = mul(v->s1->R, v->s1->omega);
+		Vector omegaA_global = mul(sA->R, sA->omega);
+		Vector omegaB_global = mul(sB->R, sB->omega);
 
 		// All cross products MUST remain in the left-handed convention to avoid inverse spins and negative effective mass.
-		Vector velA = s1->vel + crossp(rA, omegaA_global);
-		Vector velB = v->s1->vel + crossp(rB, omegaB_global);
+		Vector velA = sA->vel + crossp(rA, omegaA_global);
+		Vector velB = sB->vel + crossp(rB, omegaB_global);
 		Vector vRelContact = velA - velB;
 
 		double relVelAlongNormal = dotp(vRelContact, normGlobal);
@@ -6546,55 +6559,68 @@ void Vessel::ResolveCollisionWith(Vessel *v) {
 			return;
 		}
 
-		double linearRelVel = dotp(s1->vel - v->s1->vel, normGlobal);
+		double linearRelVel = dotp(sA->vel - sB->vel, normGlobal);
 		double relVelForImpulse = relVelAlongNormal;
 
 		// If already separating, no impulse
 		if (relVelForImpulse > 0) relVelForImpulse = 0.0;
 
 		// Inverse Inertia Tensors
-		Vector invI_A(1.0 / (PMI().x * Mass()), 1.0 / (PMI().y * Mass()), 1.0 / (PMI().z * Mass()));
-		Vector invI_B(1.0 / (v->PMI().x * v->Mass()), 1.0 / (v->PMI().y * v->Mass()), 1.0 / (v->PMI().z * v->Mass()));
+		double pmiMaxA = max(pmiA.x, max(pmiA.y, pmiA.z));
+		double pmiMaxB = max(pmiB.x, max(pmiB.y, pmiB.z));
+		Vector pmiEffA(max(pmiA.x, 0.25 * pmiMaxA), max(pmiA.y, 0.25 * pmiMaxA), max(pmiA.z, 0.25 * pmiMaxA));
+		Vector pmiEffB(max(pmiB.x, 0.25 * pmiMaxB), max(pmiB.y, 0.25 * pmiMaxB), max(pmiB.z, 0.25 * pmiMaxB));
+		Vector invI_A(1.0 / (pmiEffA.x * massA), 1.0 / (pmiEffA.y * massA), 1.0 / (pmiEffA.z * massA));
+		Vector invI_B(1.0 / (pmiEffB.x * massB), 1.0 / (pmiEffB.y * massB), 1.0 / (pmiEffB.z * massB));
 
-		double e = 1.0; // Perfectly rigid body restitution
+		double e = 0.2; // Inelastic structural restitution for spacecraft collisions
 
 		// Again, Orbiter's left-handed convention means where v = r x w, torque is tau = F x r.
 		Vector crossA = crossp(normGlobal, rA);
 		Vector crossB = crossp(normGlobal, rB);
-		Vector crossA_local = tmul(s1->R, crossA);
-		Vector crossB_local = tmul(v->s1->R, crossB);
+		Vector crossA_local = tmul(sA->R, crossA);
+		Vector crossB_local = tmul(sB->R, crossB);
 		Vector iIT_crossA_local = crossA_local * invI_A;
 		Vector iIT_crossB_local = crossB_local * invI_B;
-		Vector iIT_crossA_global = mul(s1->R, iIT_crossA_local);
-		Vector iIT_crossB_global = mul(v->s1->R, iIT_crossB_local);
+		Vector iIT_crossA_global = mul(sA->R, iIT_crossA_local);
+		Vector iIT_crossB_global = mul(sB->R, iIT_crossB_local);
 
 		// Angular effect is the dot product of the contact point velocity generated by the unit torque (v = r x w)
 		double angularEffect = dotp(crossp(rA, iIT_crossA_global) + crossp(rB, iIT_crossB_global), normGlobal);
-		double denom = (1.0 / Mass()) + (1.0 / v->Mass()) + angularEffect;
+		double denom = (1.0 / massA) + (1.0 / massB) + angularEffect;
 		if (denom < 1e-8) denom = 1e-8;
+		double rotShare = angularEffect / denom;
+		if (relVelAlongNormal < 0.0) {
+			double linClosing = min(0.0, linearRelVel);
+			double rotClosing = min(0.0, relVelAlongNormal - linClosing);
+			relVelForImpulse = linClosing + rotShare * rotClosing;
+			if (relVelForImpulse < relVelAlongNormal) relVelForImpulse = relVelAlongNormal;
+		} else {
+			relVelForImpulse = 0.0;
+		}
 		double j = -(1.0 + e) * relVelForImpulse / denom;
 
 #ifdef VESSEL_COLLISION_DEBUG
 		// Logs
-		double KE_pre_lin = 0.5 * Mass() * s1->vel.length2() + 0.5 * v->Mass() * v->s1->vel.length2();
-		Vector omA_loc_pre = s1->omega;
-		Vector omB_loc_pre = v->s1->omega;
-		double KE_pre_rot = 0.5 * Mass() * (PMI().x * omA_loc_pre.x * omA_loc_pre.x + PMI().y * omA_loc_pre.y * omA_loc_pre.y + PMI().z * omA_loc_pre.z * omA_loc_pre.z)
-		                   + 0.5 * v->Mass() * (v->PMI().x * omB_loc_pre.x * omB_loc_pre.x + v->PMI().y * omB_loc_pre.y * omB_loc_pre.y + v->PMI().z * omB_loc_pre.z * omB_loc_pre.z);
+		double KE_pre_lin = 0.5 * massA * sA->vel.length2() + 0.5 * massB * sB->vel.length2();
+		Vector omA_loc_pre = sA->omega;
+		Vector omB_loc_pre = sB->omega;
+		double KE_pre_rot = 0.5 * massA * (pmiA.x * omA_loc_pre.x * omA_loc_pre.x + pmiA.y * omA_loc_pre.y * omA_loc_pre.y + pmiA.z * omA_loc_pre.z * omA_loc_pre.z)
+		                   + 0.5 * massB * (pmiB.x * omB_loc_pre.x * omB_loc_pre.x + pmiB.y * omB_loc_pre.y * omB_loc_pre.y + pmiB.z * omB_loc_pre.z * omB_loc_pre.z);
 		double KE_pre = KE_pre_lin + KE_pre_rot;
-		Vector P_pre = s1->vel * Mass() + v->s1->vel * v->Mass();
+		Vector P_pre = sA->vel * massA + sB->vel * massB;
 		oapiWriteLogV("VCOL[%s<->%s] T=%.3f depth=%.4f e=%.2f", Name(), v->Name(), td.SimT1, bestRes.depth, e);
 		oapiWriteLogV("  normal=(%.4f,%.4f,%.4f) vN=%.4f vN_imp=%.4f linVN=%.4f",
 			normGlobal.x, normGlobal.y, normGlobal.z, relVelAlongNormal, relVelForImpulse, linearRelVel);
 		oapiWriteLogV("  rA=(%.2f,%.2f,%.2f)|%.2f rB=(%.2f,%.2f,%.2f)|%.2f rA_raw|%.2f rB_raw|%.2f",
 			rA.x, rA.y, rA.z, rA.length(), rB.x, rB.y, rB.z, rB.length(), rA_len, rB_len);
 		oapiWriteLogV("  j=%.4f massA=%.1f massB=%.1f angEff=%.6f denom=%.6f",
-			j, Mass(), v->Mass(), angularEffect, denom);
+			j, massA, massB, angularEffect, denom);
 #endif
 
 		Vector impulse = normGlobal * j;
-		Vector deltaVelA = impulse / Mass();
-		Vector deltaVelB = -(impulse / v->Mass());
+		Vector deltaVelA = impulse / massA;
+		Vector deltaVelB = -(impulse / massB);
 
 		// Normal impulse +j*n is applied to A (pushes A away from B).
 		// Torque on A = (+j*n) x rA = j * (n x rA).
@@ -6605,32 +6631,35 @@ void Vessel::ResolveCollisionWith(Vessel *v) {
 		Vector deltaOmegaB = -(iIT_crossB_local * j);
 
 		// Tangential Friction
-		Vector vRel_t = vRelContact - (normGlobal * relVelAlongNormal);
+		Vector velA_postNorm = (sA->vel + deltaVelA) + crossp(rA, mul(sA->R, sA->omega + deltaOmegaA));
+		Vector velB_postNorm = (sB->vel + deltaVelB) + crossp(rB, mul(sB->R, sB->omega + deltaOmegaB));
+		Vector vRelContact_postNorm = velA_postNorm - velB_postNorm;
+		Vector vRel_t = vRelContact_postNorm - (normGlobal * dotp(vRelContact_postNorm, normGlobal));
 		double vt_len = vRel_t.length();
 		if (vt_len > 1e-4) {
 			Vector tangent = vRel_t / vt_len;
 			// Tangential force on A is -jt * tangent. Torque is (-tangent) x rA = - (tangent x rA).
 			Vector crossA_t = crossp(tangent, rA);
 			Vector crossB_t = crossp(tangent, rB);
-			Vector iIT_crossA_t_local = tmul(s1->R, crossA_t) * invI_A;
-			Vector iIT_crossB_t_local = tmul(v->s1->R, crossB_t) * invI_B;
-			Vector iIT_crossA_t_global = mul(s1->R, iIT_crossA_t_local);
-			Vector iIT_crossB_t_global = mul(v->s1->R, iIT_crossB_t_local);
+			Vector iIT_crossA_t_local = tmul(sA->R, crossA_t) * invI_A;
+			Vector iIT_crossB_t_local = tmul(sB->R, crossB_t) * invI_B;
+			Vector iIT_crossA_t_global = mul(sA->R, iIT_crossA_t_local);
+			Vector iIT_crossB_t_global = mul(sB->R, iIT_crossB_t_local);
 
 			// Angular effect (left-handed velocity - (v = r x w))
 			double angularEffect_t = dotp(crossp(rA, iIT_crossA_t_global) + crossp(rB, iIT_crossB_t_global), tangent);
-			double denom_t = (1.0 / Mass()) + (1.0 / v->Mass()) + angularEffect_t;
+			double denom_t = (1.0 / massA) + (1.0 / massB) + angularEffect_t;
 			if (denom_t < 1e-8) denom_t = 1e-8;
 			double effectiveMass_t = 1.0 / denom_t;
 
 			double jt = vt_len * effectiveMass_t;
-			double mu = 0.6;
+			double mu = 0.15;
 			if (jt > mu * j) jt = mu * j;
 
 			// Friction impulse on A is -jt*tangent
 			Vector frictionImpulse = tangent * jt;
-			deltaVelA -= frictionImpulse / Mass();
-			deltaVelB += frictionImpulse / v->Mass();
+			deltaVelA -= frictionImpulse / massA;
+			deltaVelB += frictionImpulse / massB;
 			// Torque on A = (-jt * tangent) x rA = -jt * crossA_t
 			deltaOmegaA -= iIT_crossA_t_local * jt;
 			deltaOmegaB += iIT_crossB_t_local * jt;
@@ -6645,46 +6674,51 @@ void Vessel::ResolveCollisionWith(Vessel *v) {
 		// (low normal approach velocity), and only dampens the spin component
 		// around the contact normal to avoid killing a legit tumble
 		double closingSpeed = relVelAlongNormal < 0 ? -relVelAlongNormal : 0.0;
-		if (td.SimDT > 0.0 && closingSpeed < 0.5) {
-			Vector omA_g = mul(s1->R, s1->omega);
-			Vector omB_g = mul(v->s1->R, v->s1->omega);
+		if (td.SimDT > 0.0 && relVelAlongNormal <= 0.0 && closingSpeed < 0.5) {
+			Vector omA_g = mul(sA->R, sA->omega);
+			Vector omB_g = mul(sB->R, sB->omega);
 			Vector omega_rel_g = omA_g - omB_g;
 
 			double omega_normal = dotp(omega_rel_g, normGlobal);
-			Vector omega_damp_g = normGlobal * (omega_normal * min(0.3, td.SimDT * 3.0));
-			deltaOmegaA -= tmul(s1->R, omega_damp_g);
-			deltaOmegaB += tmul(v->s1->R, omega_damp_g);
+			Vector dampAxisA_loc = tmul(sA->R, normGlobal);
+			Vector dampAxisB_loc = tmul(sB->R, normGlobal);
+			double invIA_n = dotp(dampAxisA_loc * invI_A, dampAxisA_loc);
+			double invIB_n = dotp(dampAxisB_loc * invI_B, dampAxisB_loc);
+			double invISum = invIA_n + invIB_n;
+			double dampImpulse = (invISum > 1e-12) ? (omega_normal * min(0.3, td.SimDT * 3.0) / invISum) : 0.0;
+			deltaOmegaA -= (dampAxisA_loc * invI_A) * dampImpulse;
+			deltaOmegaB += (dampAxisB_loc * invI_B) * dampImpulse;
 		}
 
 		// Cap angular velocity gain per collision (Relaxed significantly to allow angular momentum transfer)
 		double maxOmegaGain = 10.0; // Flat cap to prevent pure numerical explosions, without killing legit spin
-		Vector newOmA = s1->omega + deltaOmegaA;
-		if (newOmA.length() > s1->omega.length() + maxOmegaGain && newOmA.length() > 1e-6)
-			deltaOmegaA = newOmA.unit() * (s1->omega.length() + maxOmegaGain) - s1->omega;
-		Vector newOmB = v->s1->omega + deltaOmegaB;
-		if (newOmB.length() > v->s1->omega.length() + maxOmegaGain && newOmB.length() > 1e-6)
-			deltaOmegaB = newOmB.unit() * (v->s1->omega.length() + maxOmegaGain) - v->s1->omega;
+		Vector newOmA = sA->omega + deltaOmegaA;
+		if (newOmA.length() > sA->omega.length() + maxOmegaGain && newOmA.length() > 1e-6)
+			deltaOmegaA = newOmA.unit() * (sA->omega.length() + maxOmegaGain) - sA->omega;
+		Vector newOmB = sB->omega + deltaOmegaB;
+		if (newOmB.length() > sB->omega.length() + maxOmegaGain && newOmB.length() > 1e-6)
+			deltaOmegaB = newOmB.unit() * (sB->omega.length() + maxOmegaGain) - sB->omega;
 
 		// Positional correction: push-out along normal with a small margin
 		// to prevent persistent overlap. Velocity-proportional margin is
 		// clamped to the penetration depth to avoid overshoot at low framerates.
-		double totalMass = Mass() + v->Mass();
-		double velMargin = min(closingSpeed * td.SimDT * 0.5, bestRes.depth * 0.5);
+		double totalMass = massA + massB;
+		double velMargin = 0.0;
 		double pushOutMag = bestRes.depth * 1.01 + velMargin;
-		Vector deltaPosA = normGlobal * (pushOutMag * (v->Mass() / totalMass));
-		Vector deltaPosB = -(normGlobal * (pushOutMag * (Mass() / totalMass)));
+		Vector deltaPosA = normGlobal * (pushOutMag * (massB / totalMass));
+		Vector deltaPosB = -(normGlobal * (pushOutMag * (massA / totalMass)));
 
 #ifdef VESSEL_COLLISION_DEBUG
 		// Logs
-		Vector velA_post = s1->vel + deltaVelA;
-		Vector velB_post = v->s1->vel + deltaVelB;
-		Vector omA_post = s1->omega + deltaOmegaA;
-		Vector omB_post = v->s1->omega + deltaOmegaB;
-		double KE_post_lin = 0.5 * Mass() * velA_post.length2() + 0.5 * v->Mass() * velB_post.length2();
-		double KE_post_rot = 0.5 * Mass() * (PMI().x * omA_post.x * omA_post.x + PMI().y * omA_post.y * omA_post.y + PMI().z * omA_post.z * omA_post.z)
-		                   + 0.5 * v->Mass() * (v->PMI().x * omB_post.x * omB_post.x + v->PMI().y * omB_post.y * omB_post.y + v->PMI().z * omB_post.z * omB_post.z);
+		Vector velA_post = sA->vel + deltaVelA;
+		Vector velB_post = sB->vel + deltaVelB;
+		Vector omA_post = sA->omega + deltaOmegaA;
+		Vector omB_post = sB->omega + deltaOmegaB;
+		double KE_post_lin = 0.5 * massA * velA_post.length2() + 0.5 * massB * velB_post.length2();
+		double KE_post_rot = 0.5 * massA * (pmiA.x * omA_post.x * omA_post.x + pmiA.y * omA_post.y * omA_post.y + pmiA.z * omA_post.z * omA_post.z)
+		                   + 0.5 * massB * (pmiB.x * omB_post.x * omB_post.x + pmiB.y * omB_post.y * omB_post.y + pmiB.z * omB_post.z * omB_post.z);
 		double KE_post = KE_post_lin + KE_post_rot;
-		Vector P_post = velA_post * Mass() + velB_post * v->Mass();
+		Vector P_post = velA_post * massA + velB_post * massB;
 		double dKE = KE_post - KE_pre;
 		Vector dP = P_post - P_pre;
 		oapiWriteLogV("  dVelA=(%.4f,%.4f,%.4f) dVelB=(%.4f,%.4f,%.4f)",
@@ -6705,7 +6739,7 @@ void Vessel::ResolveCollisionWith(Vessel *v) {
 		// Debug visualization data for both vessels
 		{
 			Vector nLocal = tmul(s1->R, normGlobal);
-			Vector rAlocal = tmul(s1->R, rA);
+			Vector rAlocal = tmul(s1->R, rawContactPtGlobal - s1->pos);
 			Vector impLocal = tmul(s1->R, impulse);
 			m_colDebug.active = true;
 			m_colDebug.contactPt = {rAlocal.x, rAlocal.y, rAlocal.z};
@@ -6718,7 +6752,7 @@ void Vessel::ResolveCollisionWith(Vessel *v) {
 		}
 		{
 			Vector nLocalB = tmul(v->s1->R, -normGlobal);
-			Vector rBlocal = tmul(v->s1->R, rB);
+			Vector rBlocal = tmul(v->s1->R, rawContactPtGlobal - v->s1->pos);
 			Vector impLocalB = tmul(v->s1->R, -impulse);
 			v->m_colDebug.active = true;
 			v->m_colDebug.contactPt = {rBlocal.x, rBlocal.y, rBlocal.z};
@@ -6732,81 +6766,89 @@ void Vessel::ResolveCollisionWith(Vessel *v) {
 
 		double cooldownEnd = td.SimT1 + 1.0;
 
-		// Apply to entire stack
-		for (DWORD idx = 0; idx < g_psys->nVessel(); idx++) {
-			Vessel *vj = g_psys->GetVessel(idx);
-			Vessel *vj_root = vj;
-			while (vj_root->attach && vj_root->attach->mate) vj_root = vj_root->attach->mate;
+		auto applyToAssembly = [&](Vessel *root, SuperVessel *sv, const Vector &dPos, const Vector &dVel, const Vector &dOmega) {
+			if (sv) {
+				if (sv->fstatus == FLIGHTSTATUS_LANDED)
+					sv->Activate(true);
+				sv->s1->pos += dPos;
+				sv->s1->vel += dVel;
+				sv->s1->omega += dOmega;
+				sv->rpos_base = sv->s1->pos; sv->rpos_add.Set(0,0,0);
+				sv->rvel_base = sv->s1->vel; sv->rvel_add.Set(0,0,0);
+				sv->bOrbitStabilised = false;
+				if (sv->cbody) {
+					sv->cpos = sv->s1->pos - sv->cbody->s1->pos;
+					sv->cvel = sv->s1->vel - sv->cbody->s1->vel;
+				}
+				for (DWORD i = 0; i < sv->nv; i++) {
+					Vessel *vj = sv->vlist[i].vessel;
+					sv->ComponentStateVectors(sv->s1, vj->s1, i);
+					vj->rpos_base = vj->s1->pos; vj->rpos_add.Set(0,0,0);
+					vj->rvel_base = vj->s1->vel; vj->rvel_add.Set(0,0,0);
+					vj->UpdateSurfParams();
+					vj->bOrbitStabilised = false;
+					vj->el_valid = false;
+					vj->bForceActive = true;
+					vj->m_hullCachePValid = false;
+					if (cooldownEnd > vj->collisionCooldownT)
+						vj->collisionCooldownT = cooldownEnd;
+					if (vj->cbody) {
+						vj->cpos = vj->s1->pos - vj->cbody->s1->pos;
+						vj->cvel = vj->s1->vel - vj->cbody->s1->vel;
+					}
+					if (vj->nforcevec_col < 10 && td.SimDT > 0.0) {
+						Vector F_global = dVel * (vj->Mass() / td.SimDT);
+						vj->col_forcevec[vj->nforcevec_col] = tmul(vj->s1->R, F_global);
+						vj->col_forcepos[vj->nforcevec_col] = tmul(vj->s1->R, contactPtGlobal - vj->s1->pos);
+						vj->nforcevec_col++;
+					}
+					vj->UpdateAttachments();
+				}
+				return;
+			}
+			for (DWORD idx = 0; idx < g_psys->nVessel(); idx++) {
+				Vessel *vj = g_psys->GetVessel(idx);
+				Vessel *vj_root = vj;
+				while (vj_root->attach && vj_root->attach->mate) vj_root = vj_root->attach->mate;
+				if (vj_root == root) {
+					if (vj->fstatus == FLIGHTSTATUS_LANDED) {
+						vj->fstatus = FLIGHTSTATUS_FREEFLIGHT;
+						vj->bSurfaceContact = false;
+						if (vj->proxybase) vj->proxybase->ReportTakeoff (vj);
+						if (vj->lstatus == 3 || vj->lstatus == 5) vj->lstatus = 1;
+						vj->rpos_base = vj->s1->pos; vj->rpos_add.Set(0,0,0);
+						vj->s1->vel += vj->rvel_add;
+						vj->rvel_base = vj->s1->vel; vj->rvel_add.Set(0,0,0);
+						vj->s1->omega.Set(0,0,0);
+					}
+					vj->s1->pos += dPos;
+					vj->s1->vel += dVel;
+					vj->s1->omega += dOmega;
+					vj->rpos_base = vj->s1->pos; vj->rpos_add.Set(0,0,0);
+					vj->rvel_base = vj->s1->vel; vj->rvel_add.Set(0,0,0);
+					vj->UpdateSurfParams();
+					vj->bOrbitStabilised = false;
+					vj->el_valid = false;
+					vj->bForceActive = true;
+					vj->m_hullCachePValid = false;
+					if (cooldownEnd > vj->collisionCooldownT)
+						vj->collisionCooldownT = cooldownEnd;
+					if (vj->cbody) {
+						vj->cpos = vj->s1->pos - vj->cbody->s1->pos;
+						vj->cvel = vj->s1->vel - vj->cbody->s1->vel;
+					}
+					if (vj->nforcevec_col < 10 && td.SimDT > 0.0) {
+						Vector F_global = dVel * (vj->Mass() / td.SimDT);
+						vj->col_forcevec[vj->nforcevec_col] = tmul(vj->s1->R, F_global);
+						vj->col_forcepos[vj->nforcevec_col] = tmul(vj->s1->R, contactPtGlobal - vj->s1->pos);
+						vj->nforcevec_col++;
+					}
+				}
+			}
+		};
 
-			if (vj_root == my_root) {
-				if (vj->fstatus == FLIGHTSTATUS_LANDED) {
-					vj->fstatus = FLIGHTSTATUS_FREEFLIGHT;
-					vj->bSurfaceContact = false;
-					if (vj->proxybase) vj->proxybase->ReportTakeoff (vj);
-					if (vj->lstatus == 3 || vj->lstatus == 5) vj->lstatus = 1;
-					vj->rpos_base = vj->s1->pos; vj->rpos_add.Set(0,0,0);
-					vj->s1->vel += vj->rvel_add;
-					vj->rvel_base = vj->s1->vel; vj->rvel_add.Set(0,0,0);
-					vj->s1->omega.Set(0,0,0);
-				}
-				vj->s1->pos += deltaPosA;
-				vj->s1->vel += deltaVelA;
-				vj->s1->omega += deltaOmegaA;
-				vj->rpos_base = vj->s1->pos; vj->rpos_add.Set(0,0,0);
-				vj->rvel_base = vj->s1->vel; vj->rvel_add.Set(0,0,0);
-				vj->UpdateSurfParams();
-				vj->bOrbitStabilised = false;
-				vj->el_valid = false;
-				vj->bForceActive = true;
-				vj->m_hullCachePValid = false;
-				if (cooldownEnd > vj->collisionCooldownT)
-					vj->collisionCooldownT = cooldownEnd;
-				if (vj->cbody) {
-					vj->cpos = vj->s1->pos - vj->cbody->s1->pos;
-					vj->cvel = vj->s1->vel - vj->cbody->s1->vel;
-				}
-				if (vj->nforcevec_col < 10 && td.SimDT > 0.0) {
-					Vector F_global = deltaVelA * (vj->Mass() / td.SimDT);
-					vj->col_forcevec[vj->nforcevec_col] = tmul(vj->s1->R, F_global);
-					vj->col_forcepos[vj->nforcevec_col] = tmul(vj->s1->R, contactPtGlobal - vj->s1->pos);
-					vj->nforcevec_col++;
-				}
-			}
-			else if (vj_root == v_root) {
-				if (vj->fstatus == FLIGHTSTATUS_LANDED) {
-					vj->fstatus = FLIGHTSTATUS_FREEFLIGHT;
-					vj->bSurfaceContact = false;
-					if (vj->proxybase) vj->proxybase->ReportTakeoff (vj);
-					if (vj->lstatus == 3 || vj->lstatus == 5) vj->lstatus = 1;
-					vj->rpos_base = vj->s1->pos; vj->rpos_add.Set(0,0,0);
-					vj->s1->vel += vj->rvel_add;
-					vj->rvel_base = vj->s1->vel; vj->rvel_add.Set(0,0,0);
-					vj->s1->omega.Set(0,0,0);
-				}
-				vj->s1->pos += deltaPosB;
-				vj->s1->vel += deltaVelB;
-				vj->s1->omega += deltaOmegaB;
-				vj->rpos_base = vj->s1->pos; vj->rpos_add.Set(0,0,0);
-				vj->rvel_base = vj->s1->vel; vj->rvel_add.Set(0,0,0);
-				vj->UpdateSurfParams();
-				vj->bOrbitStabilised = false;
-				vj->el_valid = false;
-				vj->bForceActive = true;
-				vj->m_hullCachePValid = false;
-				if (cooldownEnd > vj->collisionCooldownT)
-					vj->collisionCooldownT = cooldownEnd;
-				if (vj->cbody) {
-					vj->cpos = vj->s1->pos - vj->cbody->s1->pos;
-					vj->cvel = vj->s1->vel - vj->cbody->s1->vel;
-				}
-				if (vj->nforcevec_col < 10 && td.SimDT > 0.0) {
-					Vector F_global = deltaVelB * (vj->Mass() / td.SimDT);
-					vj->col_forcevec[vj->nforcevec_col] = tmul(vj->s1->R, F_global);
-					vj->col_forcepos[vj->nforcevec_col] = tmul(vj->s1->R, contactPtGlobal - vj->s1->pos);
-					vj->nforcevec_col++;
-				}
-			}
-		}
+		applyToAssembly(my_root, svA, deltaPosA, deltaVelA, deltaOmegaA);
+		applyToAssembly(v_root, svB, deltaPosB, deltaVelB, deltaOmegaB);
 
 		m_hullCachePValid = false;
 		v->m_hullCachePValid = false;
