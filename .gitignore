@@ -34,3 +34,4 @@ Doc/**/*.pdf
 Doc/**/*.gz
 /build/
 /compile_commands.json
+/.cache/
