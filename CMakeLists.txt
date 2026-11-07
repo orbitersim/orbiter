@@ -111,7 +111,7 @@ add_compile_options(
 )
 
 set(CMAKE_BUILD_WITH_INSTALL_RPATH TRUE)
-set(CMAKE_INSTALL_RPATH "@executable_path")
+set(CMAKE_INSTALL_RPATH "@executable_path;@executable_path/Modules")
 set(CMAKE_SHARED_LIBRARY_SUFFIX ".dylib")
 set(CMAKE_SHARED_LIBRARY_PREFIX "")
 
@@ -139,7 +139,12 @@ set(ORBITER_LIB OrbiterCore "-Wl,-undefined,dynamic_lookup")
 set(ORBITER_SDK_LIB "-Wl,-force_load,$<TARGET_FILE:Orbitersdk>" OrbiterPlatform)
 set(LUAINTERPRETER_LIB $<TARGET_LINKER_FILE:LuaInterpreter>)
 
-set(SPICE_BUILD TRUE)
+option(ORBITER_SPICE "Use SPICE ephemerides for celestial bodies (needs Kernels/orbiter.bsp)" ON)
+set(SPICE_BUILD ${ORBITER_SPICE})
+if(SPICE_BUILD AND NOT EXISTS ${CMAKE_SOURCE_DIR}/Kernels/orbiter.bsp)
+	message(WARNING "Kernels/orbiter.bsp not found (build it with spkmerge from Kernels/orbiter.mrg). Using the VSOP87/ELP82 celestial bodies instead.")
+	set(SPICE_BUILD FALSE)
+endif()
 
 set(ORBITER_PLANET_TEXTURE_INSTALL_DIR
 	${ORBITER_BINARY_ROOT_DIR}/Textures
