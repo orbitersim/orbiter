@@ -14,6 +14,8 @@
 
 #include "orbitersdk.h"
 
+class PodTiltPreset;
+
 // ==========================================================
 // Some vessel class caps
 // ==========================================================
@@ -249,7 +251,6 @@ private:
 };
 
 typedef struct {
-	HINSTANCE hDLL;
 	oapi::Font* pFont[1];
 	oapi::Pen* pPen[3];
 	oapi::Brush* pBrush[2];

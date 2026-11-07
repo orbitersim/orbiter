@@ -187,7 +187,7 @@ static int g_dwMenuCmd;
 // Local prototypes
 // ==============================================================
 
-void OpenDlgClbk (void *context);
+static void OpenDlgClbk (void *context);
 
 // ==============================================================
 // API interface

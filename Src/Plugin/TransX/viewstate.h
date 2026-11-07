@@ -24,6 +24,8 @@
 #include "transx.h"
 #include "transxstate.h"
 
+class shipptrs;
+
 class viewstate
 {
 	int mfdposition;

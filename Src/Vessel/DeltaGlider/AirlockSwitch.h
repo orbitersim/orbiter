@@ -12,7 +12,7 @@
 #ifndef __AIRLOCKSWITCH_H
 #define __AIRLOCKSWITCH_H
 
-#include "..\Common\Vessel\Instrument.h"
+#include "../Common/Vessel/Instrument.h"
 
 // ==============================================================
 

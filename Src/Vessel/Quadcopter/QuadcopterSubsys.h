@@ -5,7 +5,7 @@
 #define __QUADCOPTERSUBSYS_H
 
 #include "Quadcopter.h"
-#include "..\Common\Instrument.h"
+#include "../Common/Instrument.h"
 
 // ==============================================================
 

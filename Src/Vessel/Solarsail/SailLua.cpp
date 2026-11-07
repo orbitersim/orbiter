@@ -16,7 +16,7 @@ using std::max;
 // API function prototypes
 
 SolarSail *lua_toSSail (lua_State *L, int idx = 1);
-int sailSetPaddle (lua_State *L);
+static int sailSetPaddle (lua_State *L);
 
 // ==========================================================================
 // API initialisation

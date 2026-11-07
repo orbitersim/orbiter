@@ -6,7 +6,6 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${ORBITER_BINARY_PLUGIN_DIR})
 
 add_library(DialogTemplate SHARED
 	DialogTemplate.cpp
-	DialogTemplate.rc
 )
 
 target_include_directories(DialogTemplate
@@ -16,6 +15,7 @@ target_include_directories(DialogTemplate
 target_link_libraries(DialogTemplate
 	${ORBITER_LIB}
 	${ORBITER_SDK_LIB}
+	imgui
 )
 
 add_dependencies(DialogTemplate

@@ -14,14 +14,14 @@ extern "C" {
 // API function prototypes
 
 ShuttleA *lua_toShuttleA (lua_State *L, int idx = 1);
-int lua_gear (lua_State *L);
-int set_adilayout (lua_State *L);
-int set_attrefmode (lua_State *L);
-int set_attreftgtmode (lua_State *L);
-int set_attrefoffset (lua_State *L);
-int set_atttgtoffset (lua_State *L);
-int set_attoffsetmode (lua_State *L);
-int set_atttgtframemode (lua_State *L);
+static int lua_gear (lua_State *L);
+static int set_adilayout (lua_State *L);
+static int set_attrefmode (lua_State *L);
+static int set_attreftgtmode (lua_State *L);
+static int set_attrefoffset (lua_State *L);
+static int set_atttgtoffset (lua_State *L);
+static int set_attoffsetmode (lua_State *L);
+static int set_atttgtframemode (lua_State *L);
 
 // ==========================================================================
 // ShuttleA Lua instance initialisation

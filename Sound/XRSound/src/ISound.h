@@ -6,6 +6,7 @@
 // ==============================================================
 
 #pragma once
+#include <windows.h>
 #include <stdio.h>
 #include "miniaudio.h"
 #include <list>

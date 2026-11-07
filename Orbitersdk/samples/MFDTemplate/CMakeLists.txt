@@ -6,7 +6,6 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${ORBITER_BINARY_PLUGIN_DIR})
 
 add_library(MFDTemplate SHARED
 	MFDTemplate.cpp
-	MFDTemplate.rc
 )
 
 target_include_directories(MFDTemplate

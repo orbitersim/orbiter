@@ -12,7 +12,7 @@
 #ifndef __MOMENTIND_H
 #define __MOMENTIND_H
 
-#include "..\Common\Instrument.h"
+#include "../Common/Instrument.h"
 
 // ==============================================================
 

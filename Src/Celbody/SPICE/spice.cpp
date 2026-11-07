@@ -100,7 +100,7 @@ public:
 		return atm;
 	};
 
-	void SpiceBody::show_error(char* s);
+	void show_error(char* s);
 
 private:
 	char body_name[256];
@@ -118,7 +118,7 @@ private:
 	double elts_end[8];
 	double elts_sys_begin[8];
 	double elts_sys_end[8];
-	void SpiceBody::Interpolate(double simt, double* r);
+	void Interpolate(double simt, double* r);
 	double interval;
 	int response = -1;
 	int prev_response = -1;
@@ -126,7 +126,7 @@ private:
 	double t_end = -1.0e99;
 	double sp_beg[12];
 	double sp_end[12];
-	double SpiceBody::calc_gm(double* state1, double* state2, double dt);
+	double calc_gm(double* state1, double* state2, double dt);
 	double gm, gm_sys;
 };
 

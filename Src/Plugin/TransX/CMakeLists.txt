@@ -19,7 +19,6 @@ add_library(TransX SHARED
     TransXFunction.cpp
     transxstate.cpp
     viewstate.cpp
-    TransX.rc
 )
 
 target_include_directories(TransX

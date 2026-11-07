@@ -3,7 +3,6 @@
 
 add_library(ScriptMFD SHARED
 	ScriptMFD.cpp
-	ScriptMFD.rc
 )
 
 target_include_directories(ScriptMFD

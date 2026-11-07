@@ -403,16 +403,17 @@ int TreeTOC::AddSubtree(const MemTreeNode *node)
 			LARGE_INTEGER sz;
 			DWORD ndata;
 			sprintf(path, "%s\\%s\\%02d\\%06d\\%06d.%s", root, layer, lvl, ilat, ilng, ext);
-			HANDLE hFile = CreateFile(path, GENERIC_READ, 0, 0, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
-			GetFileSizeEx(hFile, &sz);
+			FILE *hFile = fopen(path, "rb");
+			fseeko(hFile, 0, SEEK_END);
+			sz.QuadPart = ftello(hFile);
+			fseeko(hFile, 0, SEEK_SET);
 			if (sz.LowPart > nbuf) { // grow data buffer
 				BYTE *tmp = new BYTE[nbuf = sz.LowPart];
 				delete[]buf;
 				buf = tmp;
 			}
-			DWORD nread;
-			ReadFile(hFile, buf, sz.LowPart, &nread, NULL);
-			CloseHandle(hFile);
+			DWORD nread = (DWORD)::fread(buf, 1, sz.LowPart, hFile);
+			fclose(hFile);
 			if (nread < sz.LowPart) {
 				std::cerr << "Unexpected end of file" << std::endl;
 				exit(1);
@@ -504,16 +505,17 @@ void TreeTOC::WriteSubtreeData(const MemTreeNode *node, FILE *f)
 			LARGE_INTEGER sz;
 			DWORD ndata;
 			sprintf(path, "%s\\%s\\%02d\\%06d\\%06d.%s", root, layer, lvl, ilat, ilng, ext);
-			HANDLE hFile = CreateFile(path, GENERIC_READ, 0, 0, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
-			GetFileSizeEx(hFile, &sz);
+			FILE *hFile = fopen(path, "rb");
+			fseeko(hFile, 0, SEEK_END);
+			sz.QuadPart = ftello(hFile);
+			fseeko(hFile, 0, SEEK_SET);
 			if (sz.LowPart > nbuf) { // grow data buffer
 				BYTE *tmp = new BYTE[nbuf = sz.LowPart];
 				delete[]buf;
 				buf = tmp;
 			}
-			DWORD nread;
-			ReadFile(hFile, buf, sz.LowPart, &nread, NULL);
-			CloseHandle(hFile);
+			DWORD nread = (DWORD)::fread(buf, 1, sz.LowPart, hFile);
+			fclose(hFile);
 			if (nread < sz.LowPart) {
 				std::cerr << "Unexpected end of file" << std::endl;
 				exit(1);
@@ -726,7 +728,7 @@ DWORD deflate_node_data(BYTE *inp, DWORD ninp, BYTE *outp, DWORD noutp)
 
 DWORD inflate_node_data(BYTE *inp, DWORD ninp, BYTE *outp, DWORD noutp)
 {
-	DWORD ndata = noutp;
+	uLongf ndata = noutp;
 	if (uncompress(outp, &ndata, inp, ninp) != Z_OK)
 		return 0;
 #ifdef UNDEF

@@ -7,6 +7,8 @@
 #include "Interpreter.h"
 #include "LuaConsole.h"
 
+class LuaConsole;
+
 // ==============================================================
 // class ConsoleInterpreter
 

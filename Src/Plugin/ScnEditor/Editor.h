@@ -7,388 +7,403 @@
 //
 // Editor.h
 //
-// Interface definition for ScnEditor class and editor tab
-// subclasses derived from ScnEditorTab.
+// Interface definition for the ScnEditor dialog and its pages.
 // ==============================================================
 
 #ifndef __SCNEDITOR_H
 #define __SCNEDITOR_H
 
+#include "OrbiterAPI.h"
+#include "VesselAPI.h"
 #include "ScnEditorAPI.h"
 #include "Convert.h"
-#include <commctrl.h>
-#include <filesystem>
-namespace fs = std::filesystem;
+#include <memory>
+#include <string>
+#include <vector>
 
-class ScnEditorTab;
-typedef void (*CustomButtonFunc)(OBJHANDLE);
+class ScnEditorPage;
+
+enum {
+	PG_VESSEL,
+	PG_NEW,
+	PG_SAVE,
+	PG_EDIT,
+	PG_ELEMENTS,
+	PG_STATEVEC,
+	PG_LANDED,
+	PG_ORIENTATION,
+	PG_ANGVEL,
+	PG_PROPELLANT,
+	PG_DOCKING,
+	PG_DATE,
+	PG_COUNT
+};
 
 // ==============================================================
 // class ScnEditor
 // ==============================================================
 
-class ScnEditor {
+class ScnEditor: public ImGuiDialog, public ScnEditorInterface {
 public:
-	ScnEditor (HINSTANCE hDLL);
+	ScnEditor ();
 	~ScnEditor ();
-	void OpenDialog ();
-	void CloseDialog ();
-	void InitDialog (HWND hDlg);
-	DWORD AddTab (ScnEditorTab *newTab);
-	void DelCustomTabs ();
-	void ShowTab (DWORD t);
-	bool SaveScenario (HWND hDlg);
-	INT_PTR MsgProc (HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam);
+	void Open ();
+	void Close ();
+	void Display () override;
 
-	HWND DlgHandle () const { return hDlg; }
-	HINSTANCE InstHandle () const { return hInst; }
-
-	void ScanCBodyList (HWND hDlg, int hList, OBJHANDLE hSelect);
-	void ScanPadList (HWND hDlg, int hList, OBJHANDLE hBase);
-	void SetBasePosition (HWND hDlg);
-	void SelectBase (HWND hDlg, int hList, OBJHANDLE hRef, OBJHANDLE hBase);
-	bool CreateVessel (char *name, char *classname);
+	void SwitchPage (int page);
+	int AddPage (ScnEditorPage *page);
+	void DelCustomPages ();
+	bool CreateVessel (const char *name, const char *classname);
 	void VesselDeleted (OBJHANDLE hV);
-	void Pause (bool pause);
-	char *ExtractVesselName (char *str);
-	HINSTANCE LoadVesselLibrary (const VESSEL *vessel);
+	void *LoadVesselLibrary (const VESSEL *vessel);
+	void FreeVesselLibrary ();
 
-public:
-	OBJHANDLE hVessel;   // vessel being edited
-	HIMAGELIST imglist;  // image list for tree control icons
-	int treeicon_idx[4]; // tree view icons
+	bool AddFuncButton (const EditorFuncSpec *spec) override;
+	bool AddPageButton (const EditorPageSpec *spec) override;
 
-private:
-	DWORD dwCmd;         // custom command handle
-	int dwMenuCmd;       // custom menu command handle
-	DWORD nTab;          // total number of main dialog tabs
-	DWORD nTab0;         // number of standard tabs (excluding custom)
-	ScnEditorTab **pTab; // array of tab instances
-	ScnEditorTab *cTab;  // currently displayed tab
-	HWND  hDlg;          // main dialog handle
-	HINSTANCE hInst;     // module instance handle
-	HINSTANCE hEdLib;    // vessel editor library instance handle
-};
-
-
-// ==============================================================
-// class ScnEditorTab
-// ==============================================================
-
-class ScnEditorTab {
-public:
-	ScnEditorTab (ScnEditor *editor);
-	virtual ~ScnEditorTab ();
-	ScnEditor *Editor() { return ed; }
-	VESSEL *Vessel() { return oapiGetVesselInterface (ed->hVessel); }
-	HWND CreateTab (HINSTANCE hInst, WORD ResId, DLGPROC TabProc);
-	HWND CreateTab (WORD ResId, DLGPROC TabProc);
-	void DestroyTab ();
-	virtual void InitTab () {}
-	HWND TabHandle () const { return hTab; }
-	void SwitchTab (int newtab);
-	virtual char *HelpTopic ();
-	virtual void OpenHelp ();
-	void Show ();
-	void Hide ();
-	virtual INT_PTR TabProc (HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam);
-	static ScnEditorTab *TabPointer (HWND, UINT, WPARAM, LPARAM);
+	OBJHANDLE hVessel;
 
 protected:
-	void ScanVesselList (int ResId, bool detail = false, OBJHANDLE hExclude = NULL);
-	OBJHANDLE GetVesselFromList (int ResId);
+	void OnDraw () override {}
+	void OnClose () override;
 
-	ScnEditor *ed;        // associated editor
-	HWND hTab;            // tab window handle
+private:
+	void ShowPage (int page);
+
+	std::vector<std::unique_ptr<ScnEditorPage>> pages;
+	int cur;
+	int pending;
+	void *hEdLib;
+	DWORD dwCmd;
+	int dwMenuCmd;
 };
 
-
 // ==============================================================
-// class EditorTab_Vessel
+// class ScnEditorPage: base class for editor pages
 // ==============================================================
 
-class EditorTab_Vessel: public ScnEditorTab {
+class ScnEditorPage {
 public:
-	EditorTab_Vessel (ScnEditor *editor);
-	void InitTab ();
-	char *HelpTopic ();
-	INT_PTR TabProc (HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam);
+	ScnEditorPage (ScnEditor *editor): ed (editor) {}
+	virtual ~ScnEditorPage () {}
+	virtual void Init () {}
+	virtual void Draw () = 0;
+	virtual void Footer () = 0;
+	virtual const char *HelpTopic () { return "/ScnEditor.htm"; }
+	virtual void OpenHelp ();
+	VESSEL *Vessel () { return oapiIsVessel (ed->hVessel) ? oapiGetVesselInterface (ed->hVessel) : 0; }
+
+protected:
+	ScnEditor *ed;
+};
+
+// ==============================================================
+
+class EditorPage_Vessel: public ScnEditorPage {
+public:
+	EditorPage_Vessel (ScnEditor *editor);
+	void Init () override;
+	void Draw () override;
+	void Footer () override;
+	void VesselDeleted (OBJHANDLE hV);
+
+protected:
 	void SelectVessel (OBJHANDLE hV);
 	void VesselSelected ();
-	void VesselDeleted (OBJHANDLE hV);
-	static INT_PTR CALLBACK DlgProc (HWND, UINT, WPARAM, LPARAM);
-	
-protected:
-	void ScanVesselList ();
-	bool DeleteVessel ();
-	bool CanDelete (OBJHANDLE hVessel);
+	void EditVessel ();
+	void DeleteVessel ();
+	bool CanDelete (OBJHANDLE hV);
+
+private:
+	OBJHANDLE sel;
+	bool track;
+	bool deleteError;
 };
 
-
-// ==============================================================
-// class EditorTab_New
 // ==============================================================
 
-class EditorTab_New: public ScnEditorTab {
+class EditorPage_New: public ScnEditorPage {
 public:
-	EditorTab_New (ScnEditor *editor);
-	~EditorTab_New ();
-	void InitTab ();
-	char *HelpTopic ();
-	INT_PTR TabProc (HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam);
-	static INT_PTR CALLBACK DlgProc (HWND, UINT, WPARAM, LPARAM);
+	struct Node {
+		std::string name;
+		std::string path;
+		bool dir;
+		std::vector<Node> children;
+	};
+
+	EditorPage_New (ScnEditor *editor);
+	~EditorPage_New ();
+	void Init () override;
+	void Draw () override;
+	void Footer () override;
+	const char *HelpTopic () override { return "/NewVessel.htm"; }
 
 protected:
-	void ScanConfigDir (const fs::path &dir, HTREEITEM hti);
-	void RefreshVesselTpList ();
-	int GetSelVesselTp (char *name, int len);
-	void VesselTpChanged ();
+	void ScanConfigDir (const char *dir, const std::string &prefix, std::vector<Node> &list);
+	void DrawTree (const std::vector<Node> &list);
+	void SelectType (const std::string &path);
 	bool CreateVessel ();
-	bool UpdateVesselBmp ();
-	void DrawVesselBmp ();
+	void ReleaseImage ();
 
 private:
-	HBITMAP hVesselBmp;
-	int imghmax;
+	char name[256];
+	bool camera;
+	bool focus;
+	std::vector<Node> tree;
+	std::string seltype;
+	SURFHANDLE img;
+	int imgw, imgh;
+	bool create;
 };
 
-
-// ==============================================================
-// class EditorTab_Edit
 // ==============================================================
 
-class EditorTab_Edit: public ScnEditorTab {
+class EditorPage_Save: public ScnEditorPage {
 public:
-	EditorTab_Edit (ScnEditor *editor);
-	void InitTab ();
-	char *HelpTopic ();
-	BOOL AddFuncButton (EditorFuncSpec *efs);
-	BOOL AddPageButton (EditorPageSpec *eps);
-	INT_PTR TabProc (HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam);
-	static INT_PTR CALLBACK DlgProc (HWND, UINT, WPARAM, LPARAM);
+	EditorPage_Save (ScnEditor *editor);
+	void Draw () override;
+	void Footer () override;
+	const char *HelpTopic () override { return "/SaveScenario.htm"; }
+
+protected:
+	bool SaveScenario ();
 
 private:
+	char fname[256];
+	char title[256];
+	char text[4096];
+};
+
+// ==============================================================
+
+class EditorPage_Edit: public ScnEditorPage {
+public:
+	EditorPage_Edit (ScnEditor *editor);
+	void Init () override;
+	void Draw () override;
+	void Footer () override;
+	const char *HelpTopic () override { return "/EditVessel.htm"; }
+	bool AddFuncButton (const EditorFuncSpec *spec);
+	bool AddPageButton (const EditorPageSpec *spec);
+	void Reset () { hVessel = 0; }
+
+private:
+	struct CustomButton {
+		std::string label;
+		CustomButtonFunc func;
+		int page;
+	};
 	OBJHANDLE hVessel;
-	int nCustom; // number of custom buttons
-	CustomButtonFunc funcCustom[6];
-	int CustomPage[6];
+	std::vector<CustomButton> custom;
 };
 
-
-// ==============================================================
-// class EditorTab_Save
 // ==============================================================
 
-class EditorTab_Save: public ScnEditorTab {
+class EditorPage_Date: public ScnEditorPage {
 public:
-	EditorTab_Save (ScnEditor *editor);
-	char *HelpTopic ();
-	INT_PTR TabProc (HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam);
-	static INT_PTR CALLBACK DlgProc (HWND, UINT, WPARAM, LPARAM);
-};
-
-
-// ==============================================================
-// class EditorTab_Date
-// ==============================================================
-
-class EditorTab_Date: public ScnEditorTab {
-public:
-	EditorTab_Date (ScnEditor *editor);
-	void InitTab ();
-	char *HelpTopic ();
-	INT_PTR TabProc (HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam);
-	static INT_PTR CALLBACK DlgProc (HWND, UINT, WPARAM, LPARAM);
+	EditorPage_Date (ScnEditor *editor);
+	void Init () override;
+	void Draw () override;
+	void Footer () override;
+	const char *HelpTopic () override { return "/Date.htm"; }
 
 protected:
 	void Apply ();
 	void Refresh ();
 	void UpdateDateTime ();
-	void UpdateMJD (void);
-	void UpdateJD (void);
-	void UpdateJC (void);
-	void UpdateEpoch (void);
 	void SetUT (struct tm *new_date, bool reset_ut = false);
-	void SetMJD (double new_mjd, bool reset_mjd = false);
-	void SetJD (double new_jd, bool reset_jd = false);
-	void SetJC (double new_jc, bool reset_jc = false);
-	void SetEpoch (double new_epoch, bool reset_epoch = false);
+	void SetMJD (double new_mjd);
 	void OnChangeDateTime ();
-	void OnChangeMjd ();
-	void OnChangeJd ();
-	void OnChangeJc ();
-	void OnChangeEpoch ();
 
 private:
 	double mjd;
 	struct tm date;
-	bool bIgnore;
+	int ut[6];
+	double vmjd, vjd, vjc, vepoch;
+	int propOrbital;
+	int propSuborbital;
 };
 
-
-// ==============================================================
-// class EditorTab_Elements
 // ==============================================================
 
-class EditorTab_Elements: public ScnEditorTab {
+class EditorPage_Elements: public ScnEditorPage {
 public:
-	EditorTab_Elements (ScnEditor *editor);
-	void InitTab ();
-	char *HelpTopic ();
-	INT_PTR TabProc (HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam);
-	static INT_PTR CALLBACK DlgProc (HWND, UINT, WPARAM, LPARAM);
+	EditorPage_Elements (ScnEditor *editor);
+	void Init () override;
+	void Draw () override;
+	void Footer () override;
+	const char *HelpTopic () override { return "/Elements.htm"; }
 
 protected:
 	void Apply ();
 	void Refresh ();
-	void RefreshSecondaryParams (const ELEMENTS &el, const ORBITPARAM &prm);
+	double Scale (int i) const;
+	double &Element (int i);
 
 private:
-	ELEMENTS el;       // orbital elements of edited vessel
-	ORBITPARAM prm;    // additional orbital parameters
-	double elmjd;      // element epoch
+	ELEMENTS el;
+	ORBITPARAM prm;
+	double elmjd;
+	OBJHANDLE hRef;
+	int frm;
+	int epc;
+	int unit[6];
+	double val[6];
+	int prec;
+	bool valid;
 };
 
-
-// ==============================================================
-// class EditorTab_Statevec
 // ==============================================================
 
-class EditorTab_Statevec: public ScnEditorTab {
+class EditorPage_Statevec: public ScnEditorPage {
 public:
-	EditorTab_Statevec (ScnEditor *editor);
-	void InitTab ();
-	char *HelpTopic ();
-	INT_PTR TabProc (HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam);
-	static INT_PTR CALLBACK DlgProc (HWND, UINT, WPARAM, LPARAM);
+	EditorPage_Statevec (ScnEditor *editor);
+	void Init () override;
+	void Draw () override;
+	void Footer () override;
+	const char *HelpTopic () override { return "/Statevec.htm"; }
 
 protected:
-	void ScanVesselList ();
-	void DlgLabels ();
 	void Refresh (OBJHANDLE hV = NULL);
 	void Apply ();
+
+private:
+	OBJHANDLE hRef;
+	int frm;
+	int crd;
+	double val[6];
+	OBJHANDLE hCopy;
 };
 
-
-// ==============================================================
-// class EditorTab_Landed
 // ==============================================================
 
-class EditorTab_Landed: public ScnEditorTab {
+class EditorPage_Landed: public ScnEditorPage {
 public:
-	EditorTab_Landed (ScnEditor *editor);
-	void InitTab ();
-	char *HelpTopic ();
-	INT_PTR TabProc (HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam);
-	static INT_PTR CALLBACK DlgProc (HWND, UINT, WPARAM, LPARAM);
+	EditorPage_Landed (ScnEditor *editor);
+	void Init () override;
+	void Draw () override;
+	void Footer () override;
+	const char *HelpTopic () override { return "/Location.htm"; }
 
 protected:
-	void ScanVesselList ();
-	void ScanCBodyList (HWND hDlg, int hList, OBJHANDLE hSelect);
-	void ScanBaseList (HWND hDlg, int hList, OBJHANDLE hRef);
 	void SelectCBody (OBJHANDLE hBody);
+	void SelectBase (OBJHANDLE hBase);
+	void SetBasePosition ();
 	void Refresh (OBJHANDLE hV = NULL);
 	void Apply ();
+
+private:
+	OBJHANDLE hRef;
+	OBJHANDLE hBase;
+	int pad;
+	double lng, lat, hdg;
+	OBJHANDLE hCopy;
 };
 
-
-// ==============================================================
-// class EditorTab_Orientation
 // ==============================================================
 
-class EditorTab_Orientation: public ScnEditorTab {
+class EditorPage_Orientation: public ScnEditorPage {
 public:
-	EditorTab_Orientation (ScnEditor *editor);
-	void InitTab ();
-	char *HelpTopic ();
-	INT_PTR TabProc (HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam);
-	static INT_PTR CALLBACK DlgProc (HWND, UINT, WPARAM, LPARAM);
+	EditorPage_Orientation (ScnEditor *editor);
+	void Init () override { Refresh (); }
+	void Draw () override;
+	void Footer () override;
+	const char *HelpTopic () override { return "/Orientation.htm"; }
 
 protected:
 	void Refresh ();
 	void Apply ();
-	void ApplyAngularVel ();
 	void Rotate (int axis, double da);
+
+private:
+	double arot[3];
 };
 
 // ==============================================================
-// class EditorTab_AngularVel
-// ==============================================================
 
-class EditorTab_AngularVel: public ScnEditorTab {
+class EditorPage_AngularVel: public ScnEditorPage {
 public:
-	EditorTab_AngularVel (ScnEditor *editor);
-	void InitTab ();
-	char *HelpTopic ();
-	INT_PTR TabProc (HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam);
-	static INT_PTR CALLBACK DlgProc (HWND, UINT, WPARAM, LPARAM);
+	EditorPage_AngularVel (ScnEditor *editor);
+	void Init () override { Refresh (); }
+	void Draw () override;
+	void Footer () override;
+	const char *HelpTopic () override { return "/AngularVel.htm"; }
 
 protected:
 	void Refresh ();
 	void Apply ();
 	void Killrot ();
+
+private:
+	double avel[3];
 };
 
 // ==============================================================
-// class EditorTab_Propellant
-// ==============================================================
 
-class EditorTab_Propellant: public ScnEditorTab {
+class EditorPage_Propellant: public ScnEditorPage {
 public:
-	EditorTab_Propellant (ScnEditor *editor);
-	void InitTab ();
-	char *HelpTopic ();
-	INT_PTR TabProc (HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam);
-	static INT_PTR CALLBACK DlgProc (HWND, UINT, WPARAM, LPARAM);
+	EditorPage_Propellant (ScnEditor *editor);
+	void Init () override;
+	void Draw () override;
+	void Footer () override;
+	const char *HelpTopic () override { return "/Propellant.htm"; }
 
 protected:
 	void Refresh ();
-	void RefreshTotals ();
 	void Apply ();
-	void SetLevel (double level, bool setall = false);
+	void SetLevel (double lvl, bool setall = false);
 
 private:
-	DWORD ntank;
-	int lastedit;
+	int tank;
+	int ntank;
+	double level;
+	double mass;
+	double maxmass;
+	int gauge;
+	bool massEdited;
 };
 
 // ==============================================================
-// class EditorTab_Docking
-// ==============================================================
 
-class EditorTab_Docking: public ScnEditorTab {
+class EditorPage_Docking: public ScnEditorPage {
 public:
-	EditorTab_Docking (ScnEditor *editor);
-	void InitTab ();
-	char *HelpTopic ();
-	INT_PTR TabProc (HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam);
-	static INT_PTR CALLBACK DlgProc (HWND, UINT, WPARAM, LPARAM);
+	EditorPage_Docking (ScnEditor *editor);
+	void Init () override;
+	void Draw () override;
+	void Footer () override;
+	const char *HelpTopic () override { return "/Docking.htm"; }
 
 protected:
-	UINT DockNo ();
-	void ScanTargetList ();
-	void SetTargetDock (DWORD dock);
-	void ToggleIDS ();
-	void IncIDSChannel (int dch);
+	int DockNo ();
+	void SetTargetDock (int dock);
+	void SetIDSChannel (double freq, int dch);
 	void Dock ();
 	void Undock ();
 	void Refresh ();
-	void DisplayErrorMsg (UINT err);
+
+private:
+	int dock;
+	OBJHANDLE hTarget;
+	int tgtdock;
+	int mode;
+	double freq;
+	bool freqEditing;
+	std::string errmsg;
 };
 
 // ==============================================================
-// class EditorTab_Custom
-// ==============================================================
 
-class EditorTab_Custom: public ScnEditorTab {
+class EditorPage_Custom: public ScnEditorPage {
 public:
-	EditorTab_Custom (ScnEditor *editor, HINSTANCE hInst, WORD ResId, DLGPROC UserProc);
-	void OpenHelp ();
-	INT_PTR TabProc (HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam);
-	static INT_PTR CALLBACK DlgProc (HWND, UINT, WPARAM, LPARAM);
+	EditorPage_Custom (ScnEditor *editor, const EditorPageSpec *spec);
+	void Draw () override;
+	void Footer () override;
+	void OpenHelp () override;
 
 private:
-	DLGPROC usrProc;
+	CustomPageFunc func;
+	HELPCONTEXT *help;
 };
 
 #endif // !__SCNEDITOR_H

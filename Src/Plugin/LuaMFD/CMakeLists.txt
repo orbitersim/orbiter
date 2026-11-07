@@ -3,7 +3,6 @@
 
 add_library(LuaMFD SHARED
 	LuaMFD.cpp
-	LuaMFD.rc
 	MfdInterpreter.cpp
 )
 

@@ -8,31 +8,62 @@
 // DialogTemplate.cpp
 //
 // This module demonstrates how to build an Orbiter plugin which
-// opens a Windows dialog box. This is a good starting point for
+// opens an ImGui dialog box. This is a good starting point for
 // your own dialog-based addons.
 // ==============================================================
 
-#define STRICT
 #define ORBITER_MODULE
-#include "windows.h"
 #include "orbitersdk.h"
-#include "resource.h"
+#include "imgui.h"
 #include <stdio.h>
+
+ORBITER_MODULE_INFO("SDK sample plugins",
+	"DIALOG TEMPLATE:\r\n\r\nA simple SDK example which provides a dialog box that can be opened during a simulation session via the \"My dialog\" entry in the Custom Functions list (Ctrl-F4).\r\n\r\nThis addon is not very useful - it is intended as a starting point for developers.");
 
 // ==============================================================
 // Global variables
 // ==============================================================
 
-HINSTANCE g_hInst;  // module instance handle
 DWORD g_dwCmd;      // custom function identifier
-int myprm = 0;
+int myprm = 0;      // a parameter stored in the scenario file
 
 // ==============================================================
-// Local prototypes
+// The dialog
 // ==============================================================
 
-void OpenDlgClbk (void *context);
-INT_PTR CALLBACK MsgProc (HWND, UINT, WPARAM, LPARAM);
+// Derive from ImGuiDialog and draw the contents in OnDraw.
+// Orbiter calls ImGui::Begin/End around OnDraw and provides
+// the close button in the title bar.
+
+class MyDialog: public ImGuiDialog {
+public:
+	MyDialog (): ImGuiDialog ("Orbiter dialog template", {300.0f, 150.0f}) {}
+
+protected:
+	void OnDraw () override
+	{
+		if (ImGui::Button ("Who am I?")) {
+			// display the focus vessel name
+			oapiGetObjectName (oapiGetFocusObject(), iam, 256);
+		}
+		ImGui::Text ("%s", iam);
+		ImGui::Separator ();
+		ImGui::SetNextItemWidth (ImGui::GetFontSize() * 8.0f);
+		ImGui::InputInt ("Remember this", &myprm);
+		if (ImGui::Button ("Close"))
+			oapiCloseDialog (this);
+	}
+
+private:
+	char iam[256] = "";
+};
+
+MyDialog *g_dlg = 0;
+
+void OpenDlgClbk (void *context)
+{
+	oapiOpenDialog (g_dlg);
+}
 
 // ==============================================================
 // API interface
@@ -44,7 +75,7 @@ INT_PTR CALLBACK MsgProc (HWND, UINT, WPARAM, LPARAM);
 
 DLLCLBK void InitModule (HINSTANCE hDLL)
 {
-	g_hInst = hDLL; // remember the instance handle
+	g_dlg = new MyDialog;
 
 	// To allow the user to open our new dialog box, we create
 	// an entry in the "Custom Functions" list which is accessed
@@ -62,8 +93,8 @@ DLLCLBK void ExitModule (HINSTANCE hDLL)
 {
 	// Unregister the custom function in Orbiter
 	oapiUnregisterCustomCmd (g_dwCmd);
+	delete g_dlg;
 }
-
 
 // ==============================================================
 // Write some parameters to the scenario file
@@ -84,58 +115,4 @@ DLLCLBK void opcLoadState (FILEHANDLE scn)
 			sscanf (line+5, "%d", &myprm);
 		}
 	}
-}
-
-// ==============================================================
-// Open the dialog window
-
-void OpenDlgClbk (void *context)
-{
-	HWND hDlg = oapiOpenDialog (g_hInst, IDD_MYDIALOG, MsgProc);
-	// Don't use a standard Windows function like CreateWindow to
-	// open the dialog box, because it won't work in fullscreen mode
-}
-
-// ==============================================================
-// Close the dialog
-
-void CloseDlg (HWND hDlg)
-{
-	oapiCloseDialog (hDlg);
-}
-
-// ==============================================================
-// Windows message handler for the dialog box
-
-INT_PTR CALLBACK MsgProc (HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
-{
-	char name[256];
-
-	switch (uMsg) {
-	case WM_INITDIALOG:
-		sprintf (name, "%d", myprm);
-		SetWindowText (GetDlgItem (hDlg, IDC_REMEMBER), name);
-		return TRUE;
-
-	case WM_DESTROY:
-		GetWindowText (GetDlgItem (hDlg, IDC_REMEMBER), name, 256);
-		sscanf (name, "%d", &myprm);
-		return TRUE;
-
-	case WM_COMMAND:
-		switch (LOWORD (wParam)) {
-
-		case IDC_WHOAMI:  // user pressed dialog button
-			// display the focus vessel name
-			oapiGetObjectName (oapiGetFocusObject(), name, 256);
-			SetWindowText (GetDlgItem (hDlg, IDC_IAM), name);
-			return TRUE;
-
-		case IDCANCEL: // dialog closed by user
-			CloseDlg (hDlg);
-			return TRUE;
-		}
-		break;
-	}
-	return oapiDefDialogProc (hDlg, uMsg, wParam, lParam);
 }

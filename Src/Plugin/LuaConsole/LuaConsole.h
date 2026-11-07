@@ -9,6 +9,9 @@
 #include "ConsoleInterpreter.h"
 #include <memory>
 
+class ConsoleConfig;
+class ConsoleInterpreter;
+
 #define NLINE 100 // number of buffered lines
 
 class LuaConsoleDlg;

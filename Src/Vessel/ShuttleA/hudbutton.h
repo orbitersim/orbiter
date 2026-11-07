@@ -12,7 +12,7 @@
 #ifndef __HUDBUTTON_H
 #define __HUDBUTTON_H
 
-#include "..\Common\Instrument.h"
+#include "../Common/Instrument.h"
 
 // ==============================================================
 

@@ -12,7 +12,7 @@
 #ifndef __NAVBUTTON_H
 #define __NAVBUTTON_H
 
-#include "..\Common\Instrument.h"
+#include "../Common/Instrument.h"
 
 // ==============================================================
 

@@ -5,7 +5,6 @@ add_library(ScnEditor SHARED
 	ScnEditor.cpp
 	Editor.cpp
 	Convert.cpp
-	ScnEditor.rc
 )
 
 target_include_directories(ScnEditor
@@ -15,7 +14,7 @@ target_include_directories(ScnEditor
 target_link_libraries(ScnEditor
 	${ORBITER_LIB}
 	${ORBITER_SDK_LIB}
-	comctl32.lib
+	imgui
 )
 
 set_target_properties(ScnEditor

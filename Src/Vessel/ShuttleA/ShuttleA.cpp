@@ -14,7 +14,7 @@
 
 #include "ShuttleA.h"
 #include "ScnEditorAPI.h"
-#include "DlgCtrl.h"
+#include "imgui.h"
 #include "attref.h"
 #include "mfdbutton.h"
 #include "navbutton.h"
@@ -30,7 +30,6 @@
 #include "adictrl.h"
 #include "auxpodctrl.h"
 #include "InstrVs.h"
-#include "resource.h"
 #include "meshres.h"
 #include <math.h>
 #include <stdio.h>
@@ -38,7 +37,12 @@
 using std::min;
 using std::max;
 
-#define LOADBMP(id) (LoadBitmap (g_Param.hDLL, MAKEINTRESOURCE (id)))
+static SURFHANDLE LoadBmp (const char *name)
+{
+	char fname[256];
+	snprintf (fname, sizeof(fname), "ShuttleA/Bitmaps/%s.bmp", name);
+	return oapiLoadSurfaceEx (fname, OAPISURFACE_TEXTURE);
+}
 
 // ==============================================================
 // Global parameters
@@ -342,16 +346,16 @@ void ShuttleA::InitPanel (int panel)
 
 	switch (panel) {
 	case -1: //VC resources
-		srf[2] = oapiCreateSurface (LOADBMP (IDB_BUTTON1));
-		srf[3] = oapiCreateSurface (LOADBMP (IDB_INDICATOR1));
-		srf[4] = oapiCreateSurface (LOADBMP (IDB_INDICATOR2));
-		srf[5] = oapiCreateSurface (LOADBMP (IDB_BUTTON3)); 
+		srf[2] = LoadBmp ("button1");
+		srf[3] = LoadBmp ("indicator1");
+		srf[4] = LoadBmp ("indicator2");
+		srf[5] = LoadBmp ("button3"); 
 
 		break;
 	case 0:
-		srf[0] = oapiCreateSurface (LOADBMP (IDB_SLIDER1));
-		srf[1] = oapiCreateSurface (LOADBMP (IDB_SWITCH1));
-		srf[2] = oapiCreateSurface (LOADBMP (IDB_BUTTON1));
+		srf[0] = LoadBmp ("slider1");
+		srf[1] = LoadBmp ("switch1");
+		srf[2] = LoadBmp ("button1");
 		
 		for (i = 0; i < 2; i++) {
 			sliderpos_main[i] = sliderpos_hovr[i] =
@@ -361,12 +365,12 @@ void ShuttleA::InitPanel (int panel)
 		}
 		break;
 	case 1:
-		srf[0] = oapiCreateSurface (LOADBMP (IDB_SWITCH2));
-		srf[1] = oapiCreateSurface (LOADBMP (IDB_SWITCH3));
-		srf[2] = oapiCreateSurface (LOADBMP (IDB_SWITCH4));
-		srf[3] = oapiCreateSurface (LOADBMP (IDB_INDICATOR1));
-		srf[4] = oapiCreateSurface (LOADBMP (IDB_INDICATOR2));
-		srf[5] = oapiCreateSurface (LOADBMP (IDB_BUTTON3));
+		srf[0] = LoadBmp ("switch2");
+		srf[1] = LoadBmp ("switch3");
+		srf[2] = LoadBmp ("switch4");
+		srf[3] = LoadBmp ("indicator1");
+		srf[4] = LoadBmp ("indicator2");
+		srf[5] = LoadBmp ("button3");
 		break;
 	}
 }
@@ -2434,9 +2438,6 @@ void ShuttleA::PaintMarkings (SURFHANDLE tex)
 // --------------------------------------------------------------
 DLLCLBK void InitModule (HINSTANCE hModule)
 {
-	g_Param.hDLL = hModule;
-	oapiRegisterCustomControls (hModule);
-
 	// allocate Sketchpad resources
 	g_Param.pFont[0] = oapiCreateFont(-10, false, (char*)"Arial");
 	g_Param.pPen[0] = oapiCreatePen(1, 3, RGB(120, 220, 120));
@@ -2466,7 +2467,6 @@ DLLCLBK void ExitModule (HINSTANCE hModule)
 	oapiDestroySurface (ShuttleA::panel2dtex);
 	oapiDestroySurface (ShuttleA::paneleltex);
 	oapiDestroySurface (ShuttleA::aditex);
-	oapiUnregisterCustomControls (g_Param.hDLL);
 }
 
 // --------------------------------------------------------------
@@ -2489,124 +2489,59 @@ DLLCLBK void ovcExit (VESSEL *vessel)
 // Scenario editor interface
 // ==============================================================
 
-ShuttleA *GetV (HWND hDlg)
-{
-	// retrieve DG interface from scenario editor
-	OBJHANDLE hVessel;
-	SendMessage (hDlg, WM_SCNEDITOR, SE_GETVESSEL, (LPARAM)&hVessel);
-	return (ShuttleA*)oapiGetVesselInterface (hVessel);
-}
+static bool s_podSync = true;
 
-void UpdatePodSliders (HWND hDlg, ShuttleA *v)
-{
-	int lpos = (int)(v->GetPodAngle(0)/PI*100.0+0.5);
-	int rpos = (int)(v->GetPodAngle(1)/PI*100.0+0.5);
-	oapiSetGaugePos (GetDlgItem (hDlg, IDC_LAUX_POS), lpos);
-	oapiSetGaugePos (GetDlgItem (hDlg, IDC_RAUX_POS), rpos);
-	oapiSetGaugePos (GetDlgItem (hDlg, IDC_AUX_POS), (lpos+rpos)/2);
-}
-
-void InitEdPg1 (HWND hDlg, OBJHANDLE hVessel)
+static void EdPg1 (OBJHANDLE hVessel)
 {
 	ShuttleA *v = (ShuttleA*)oapiGetVesselInterface (hVessel);
-	GAUGEPARAM gp = { 0, 100, GAUGEPARAM::LEFT, GAUGEPARAM::BLACK };
-	oapiSetGaugeParams (GetDlgItem (hDlg, IDC_LAUX_POS), &gp);
-	oapiSetGaugeParams (GetDlgItem (hDlg, IDC_RAUX_POS), &gp);
-	oapiSetGaugeParams (GetDlgItem (hDlg, IDC_AUX_POS), &gp);
-	ShowWindow (GetDlgItem (hDlg, IDC_LAUX_POS), SW_HIDE);
-	ShowWindow (GetDlgItem (hDlg, IDC_RAUX_POS), SW_HIDE);
-	ShowWindow (GetDlgItem (hDlg, IDC_AUX_POS), SW_SHOW);
-	SendDlgItemMessage (hDlg, IDC_AUX_SYNC, BM_SETCHECK, BST_CHECKED, 0);
-	UpdatePodSliders (hDlg, v);
-}
+	if (!v) return;
 
-// --------------------------------------------------------------
-// Message procedure for editor page 1 (animation settings)
-// --------------------------------------------------------------
-INT_PTR CALLBACK EdPg1Proc (HWND hTab, UINT uMsg, WPARAM wParam, LPARAM lParam)
-{
-	switch (uMsg) {
-	case WM_INITDIALOG:
-		InitEdPg1 (hTab, (OBJHANDLE)lParam);
-		return TRUE;
-	case WM_COMMAND:
-		switch (LOWORD (wParam)) {
-		case IDC_GEAR_UP:
-			GetV(hTab)->ActivateLandingGear (ShuttleA::DOOR_OPEN);
-			return TRUE;
-		case IDC_GEAR_DOWN:
-			GetV(hTab)->ActivateLandingGear (ShuttleA::DOOR_CLOSED);
-			return TRUE;
-		case IDC_DPORT_CLOSE:
-			GetV(hTab)->ActivateDockingPort (ShuttleA::DOOR_CLOSED);
-			return TRUE;
-		case IDC_DPORT_OPEN:
-			GetV(hTab)->ActivateDockingPort (ShuttleA::DOOR_OPEN);
-			return TRUE;
-		case IDC_OLOCK_CLOSE:
-			GetV(hTab)->ActivateAirlock (0, ShuttleA::DOOR_CLOSED);
-			return TRUE;
-		case IDC_OLOCK_OPEN:
-			GetV(hTab)->ActivateAirlock (0, ShuttleA::DOOR_OPEN);
-			return TRUE;
-		case IDC_AUX_RETRO: {
-			ShuttleA *v = GetV(hTab);
-			v->SetPodAngle (3, 0.0);
-			UpdatePodSliders (hTab, v);
-			} return TRUE;
-		case IDC_AUX_HOVER: {
-			ShuttleA *v = GetV(hTab);
-			v->SetPodAngle (3, PI05);
-			UpdatePodSliders (hTab, v);
-			} return TRUE;
-		case IDC_AUX_FWD: {
-			ShuttleA *v = GetV(hTab);
-			v->SetPodAngle (3, PI);
-			UpdatePodSliders (hTab, v);
-			} return TRUE;
-		case IDC_AUX_SYNC:
-			if (SendDlgItemMessage (hTab, IDC_AUX_SYNC, BM_GETCHECK, 0, 0) == BST_CHECKED) {
-				ShowWindow (GetDlgItem (hTab, IDC_LAUX_POS), SW_HIDE);
-				ShowWindow (GetDlgItem (hTab, IDC_RAUX_POS), SW_HIDE);
-				ShowWindow (GetDlgItem (hTab, IDC_AUX_POS), SW_SHOW);
-				GetV(hTab)->SetPodAngle (3, oapiGetGaugePos (GetDlgItem (hTab, IDC_AUX_POS))*0.01*PI);
-			} else {
-				ShowWindow (GetDlgItem (hTab, IDC_AUX_POS), SW_HIDE);
-				ShowWindow (GetDlgItem (hTab, IDC_LAUX_POS), SW_SHOW);
-				ShowWindow (GetDlgItem (hTab, IDC_RAUX_POS), SW_SHOW);
-			}
+	ImGui::SeparatorText ("Landing gear");
+	if (ImGui::Button ("Up##gear")) v->ActivateLandingGear (ShuttleA::DOOR_OPEN);
+	ImGui::SameLine ();
+	if (ImGui::Button ("Down##gear")) v->ActivateLandingGear (ShuttleA::DOOR_CLOSED);
+
+	ImGui::SeparatorText ("Docking port");
+	if (ImGui::Button ("Closed##dport")) v->ActivateDockingPort (ShuttleA::DOOR_CLOSED);
+	ImGui::SameLine ();
+	if (ImGui::Button ("Open##dport")) v->ActivateDockingPort (ShuttleA::DOOR_OPEN);
+
+	ImGui::SeparatorText ("Airlock");
+	if (ImGui::Button ("Closed##olock")) v->ActivateAirlock (0, ShuttleA::DOOR_CLOSED);
+	ImGui::SameLine ();
+	if (ImGui::Button ("Open##olock")) v->ActivateAirlock (0, ShuttleA::DOOR_OPEN);
+
+	ImGui::SeparatorText ("Auxiliary pods");
+	int lpos = (int)(v->GetPodAngle(0)/PI*100.0+0.5);
+	int rpos = (int)(v->GetPodAngle(1)/PI*100.0+0.5);
+	const ImGuiSliderFlags sflags = ImGuiSliderFlags_AlwaysClamp;
+	if (s_podSync) {
+		int pos = (lpos+rpos)/2;
+		if (ImGui::SliderInt ("##auxpos", &pos, 0, 100, "%d %%", sflags)) {
+			v->SetPodAngle (1, pos*0.01*PI);
+			v->SetPodAngle (2, pos*0.01*PI);
 		}
-		break;
-	case WM_HSCROLL: {
-		ShuttleA *v = GetV (hTab);
-		int id = GetDlgCtrlID ((HWND)lParam);
-		switch (id) {
-		case IDC_LAUX_POS:
-		case IDC_RAUX_POS:
-		case IDC_AUX_POS:
-			switch (LOWORD (wParam)) {
-			case SB_THUMBTRACK:
-			case SB_LINELEFT:
-			case SB_LINERIGHT:
-				if (id == IDC_LAUX_POS || id == IDC_AUX_POS)
-					v->SetPodAngle (1, HIWORD(wParam)*0.01*PI);
-				if (id == IDC_RAUX_POS || id == IDC_AUX_POS)
-					v->SetPodAngle (2, HIWORD(wParam)*0.01*PI);
-				UpdatePodSliders (hTab, v);
-				return TRUE;
-			}
-			break;
-		}
-		} break;
+	} else {
+		if (ImGui::SliderInt ("Left", &lpos, 0, 100, "%d %%", sflags))
+			v->SetPodAngle (1, lpos*0.01*PI);
+		if (ImGui::SliderInt ("Right", &rpos, 0, 100, "%d %%", sflags))
+			v->SetPodAngle (2, rpos*0.01*PI);
 	}
-	return FALSE;
+	if (ImGui::Checkbox ("Sync", &s_podSync) && s_podSync)
+		v->SetPodAngle (3, ((lpos+rpos)/2)*0.01*PI);
+	if (ImGui::Button ("Retro")) v->SetPodAngle (3, 0.0);
+	ImGui::SameLine ();
+	if (ImGui::Button ("Hover")) v->SetPodAngle (3, PI05);
+	ImGui::SameLine ();
+	if (ImGui::Button ("Fwd")) v->SetPodAngle (3, PI);
 }
 
 // --------------------------------------------------------------
 // Add vessel-specific pages into scenario editor
 // --------------------------------------------------------------
-DLLCLBK void secInit (HWND hEditor, OBJHANDLE hVessel)
+DLLCLBK void secInit (ScnEditorInterface *editor, OBJHANDLE hVessel)
 {
-	EditorPageSpec eps1 = {"Animations", g_Param.hDLL, IDD_EDITOR_PG1, EdPg1Proc};
-	SendMessage (hEditor, WM_SCNEDITOR, SE_ADDPAGEBUTTON, (LPARAM)&eps1);
+	s_podSync = true;
+	EditorPageSpec eps1 = {"Animations", EdPg1, NULL};
+	editor->AddPageButton (&eps1);
 }

@@ -47,6 +47,8 @@ private:
 // Instrument lights
 // ==============================================================
 
+class InstrumentLightSwitch;
+class InstrumentBrightnessDial;
 class InstrumentLight: public DGSubsystem {
 	friend class InstrumentLightSwitch;
 	friend class InstrumentBrightnessDial;
@@ -100,6 +102,8 @@ private:
 // Cockpit floodlights
 // ==============================================================
 
+class CockpitLightSwitch;
+class CockpitBrightnessDial;
 class CockpitLight: public DGSubsystem {
 	friend class CockpitLightSwitch;
 	friend class CockpitBrightnessDial;
@@ -153,6 +157,7 @@ private:
 // Landing/docking lights
 // ==============================================================
 
+class LandDockLightSwitch;
 class LandDockLight: public DGSubsystem {
 	friend class LandDockLightSwitch;
 
@@ -191,6 +196,7 @@ private:
 // Strobes
 // ==============================================================
 
+class StrobeLightSwitch;
 class StrobeLight: public DGSubsystem {
 	friend class StrobeLightSwitch;
 
@@ -228,6 +234,7 @@ private:
 // Navigation lights
 // ==============================================================
 
+class NavLightSwitch;
 class NavLight: public DGSubsystem {
 	friend class NavLightSwitch;
 

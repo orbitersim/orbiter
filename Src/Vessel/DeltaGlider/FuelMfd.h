@@ -12,7 +12,7 @@
 #ifndef __FUELMFD_H
 #define __FUELMFD_H
 
-#include "..\Common\Instrument.h"
+#include "../Common/Instrument.h"
 
 class FuelMFD: public PanelElement {
 public:

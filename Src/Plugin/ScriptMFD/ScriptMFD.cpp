@@ -20,6 +20,9 @@
 #define DLLEXPORT  // hack - this could be solved a bit more elegantly
 #include "Interpreter.h"
 
+ORBITER_MODULE_INFO("Script tools and drivers",
+	"SCRIPT MFD:\r\n\r\nThe driver module for script-based MFD (multifunctional display) modes. By activating this module, all script-based MFD modes become available during the simulation.");
+
 using namespace std;
 
 // ==============================================================

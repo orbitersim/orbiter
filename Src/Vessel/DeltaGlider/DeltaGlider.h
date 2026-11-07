@@ -22,7 +22,9 @@
 #define STRICT 1
 
 #include "orbitersdk.h"
-#include "..\Common\Instrument.h"
+#include "../Common/Instrument.h"
+
+class FuelMFD;
 
 // ==============================================================
 // Some vessel class caps
@@ -336,7 +338,6 @@ private:
 // ==============================================================
 
 typedef struct {
-	HINSTANCE hDLL;
 	DWORD col[4];
 	oapi::Pen *pen[2];
 	SURFHANDLE surf;

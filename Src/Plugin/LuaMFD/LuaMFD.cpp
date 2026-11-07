@@ -6,6 +6,9 @@
 #include "orbitersdk.h"
 #include "LuaMFD.h"
 
+ORBITER_MODULE_INFO("MFD modes",
+	"TERMINAL MFD:\r\n\r\nAdds the \"Terminal\" MFD mode - allows the execution of Lua commands and scripts from a spacecraft's MFD instrument.");
+
 using std::min;
 
 // ==============================================================

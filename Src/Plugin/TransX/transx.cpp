@@ -35,6 +35,9 @@
 #include "shiplist.h"
 #include "transx.h"
 
+ORBITER_MODULE_INFO("MFD modes",
+	"TRANS-X V3.14.1:\r\n\r\nA complex Orbiter navigation tool by Steve Arch and Duncan Sharpe. Activating this module enables the TransX MFD mode.\r\n\r\nSee the documents in Doc/TransX for for User Manual, Quickstart reference and license.");
+
 int TransxMFD::MfdCount=0;
 
 double debug;

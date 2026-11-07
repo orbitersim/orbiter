@@ -13,7 +13,7 @@
 #ifndef __HORIZON_H
 #define __HORIZON_H
 
-#include "..\Common\Instrument.h"
+#include "../Common/Instrument.h"
 
 // ==============================================================
 

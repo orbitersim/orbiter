@@ -22,6 +22,8 @@
 
 #include "orbitelements.h"
 
+class OrbitElements;
+
 class Graph{
 //This class holds information on a display window for graphs, and vectors for the projection angle of these
 //orbit graphs, and current scaling

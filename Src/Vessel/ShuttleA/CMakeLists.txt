@@ -6,6 +6,17 @@ set(TEXTURE_SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/Textures)
 set(CONFIG_SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/Config)
 set(SCRIPT_SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/Script)
 set(THUMBNAIL_SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/Thumbnail)
+set(BITMAP_FILES
+	${CMAKE_CURRENT_SOURCE_DIR}/Bitmaps/button1.bmp
+	${CMAKE_CURRENT_SOURCE_DIR}/Bitmaps/button3.bmp
+	${CMAKE_CURRENT_SOURCE_DIR}/Bitmaps/indicator1.bmp
+	${CMAKE_CURRENT_SOURCE_DIR}/Bitmaps/indicator2.bmp
+	${CMAKE_CURRENT_SOURCE_DIR}/Bitmaps/slider1.bmp
+	${CMAKE_CURRENT_SOURCE_DIR}/Bitmaps/switch1.bmp
+	${CMAKE_CURRENT_SOURCE_DIR}/Bitmaps/switch2.bmp
+	${CMAKE_CURRENT_SOURCE_DIR}/Bitmaps/switch3.bmp
+	${CMAKE_CURRENT_SOURCE_DIR}/Bitmaps/switch4.bmp
+)
 
 add_library(ShuttleA SHARED
 	adiball.cpp
@@ -27,7 +38,6 @@ add_library(ShuttleA SHARED
 	ShuttleALua.cpp
 	sliderpair.cpp
 	switches.cpp
-	ShuttleA.rc
 	${VESSEL_COMMON_DIR}/Instrument.cpp
 )
 
@@ -47,6 +57,7 @@ target_link_libraries(ShuttleA
 	${ORBITER_LIB}
 	${ORBITER_SDK_LIB}
 	lua::lib
+	imgui
 )
 
 # scan mesh files for labels and output to header file
@@ -74,6 +85,12 @@ add_custom_command(
 add_custom_command(
 	TARGET ShuttleA PRE_BUILD
 	COMMAND ${CMAKE_COMMAND} -E copy_directory ${TEXTURE_SOURCE_DIR}/ ${ORBITER_BINARY_TEXTURES_DIR}/ShuttleA
+)
+
+add_custom_command(
+	TARGET ShuttleA PRE_BUILD
+	COMMAND ${CMAKE_COMMAND} -E make_directory ${ORBITER_BINARY_TEXTURES_DIR}/ShuttleA/Bitmaps
+	COMMAND ${CMAKE_COMMAND} -E copy ${BITMAP_FILES} ${ORBITER_BINARY_TEXTURES_DIR}/ShuttleA/Bitmaps
 )
 
 add_custom_command(
@@ -108,6 +125,9 @@ install(DIRECTORY ${MESH_SOURCE_DIR}/
 )
 install(DIRECTORY ${TEXTURE_SOURCE_DIR}/
 	DESTINATION ${ORBITER_INSTALL_TEXTURES_DIR}/ShuttleA
+)
+install(FILES ${BITMAP_FILES}
+	DESTINATION ${ORBITER_INSTALL_TEXTURES_DIR}/ShuttleA/Bitmaps
 )
 install(DIRECTORY ${SCRIPT_SOURCE_DIR}/
 	DESTINATION ${ORBITER_INSTALL_ROOT_DIR}/Script/ShuttleA

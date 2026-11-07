@@ -12,7 +12,7 @@
 #ifndef __DGSWITCHES_H
 #define __DGSWITCHES_H
 
-#include "..\Common\Instrument.h"
+#include "../Common/Instrument.h"
 
 // ==============================================================
 // Flip switch with two or three discrete states:

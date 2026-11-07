@@ -12,7 +12,7 @@
 #ifndef __INSTRAOA_H
 #define __INSTRAOA_H
 
-#include "..\Common\Instrument.h"
+#include "../Common/Instrument.h"
 
 class InstrAOA: public PanelElement {
 public:

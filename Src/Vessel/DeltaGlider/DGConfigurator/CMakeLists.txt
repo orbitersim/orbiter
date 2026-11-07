@@ -5,7 +5,6 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${ORBITER_BINARY_STARTUP_DIR})
 
 add_library(DGConfigurator SHARED
 	DGConfigurator.cpp
-	DGConfigurator.rc
 )
 
 target_include_directories(DGConfigurator
@@ -15,6 +14,7 @@ target_include_directories(DGConfigurator
 target_link_libraries(DGConfigurator
 	${ORBITER_LIB}
 	${ORBITER_SDK_LIB}
+	imgui
 )
 
 add_dependencies(DGConfigurator

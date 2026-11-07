@@ -13,11 +13,12 @@
 // point for your own MFD developments.
 // ==============================================================
 
-#define STRICT
 #define ORBITER_MODULE
-#include "windows.h"
 #include "orbitersdk.h"
 #include "MFDTemplate.h"
+
+ORBITER_MODULE_INFO("SDK sample plugins",
+	"MFD TEMPLATE:\r\n\r\nAdds an \"empty\" dummy MFD mode. Not useful in itself, but the code can be utilised by developers as a starting point for MFD mode implementation.");
 
 // ==============================================================
 // Global variables
@@ -98,7 +99,7 @@ bool MFDTemplate::Update (oapi::Sketchpad *skp)
 	skp->Rectangle (W/4, H/4, (3*W)/4, (3*H)/4);
 
 	// Add MFD display routines here.
-	// Use the device context (hDC) for Windows GDI paint functions.
+	// Use the Sketchpad (skp) drawing functions.
 
 	return true;
 }

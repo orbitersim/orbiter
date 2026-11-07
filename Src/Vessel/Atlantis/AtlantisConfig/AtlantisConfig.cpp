@@ -1,58 +1,70 @@
 // Copyright (c) Martin Schweiger
 // Licensed under the MIT License
 
-#define STRICT 1
 #define ORBITER_MODULE
 #include "orbitersdk.h"
-#include "AC_resource.h"
+#include "imgui.h"
 #include <stdio.h>
-#include <io.h>
+#include <unistd.h>
 
-class VesselConfig;
-class AtlantisConfig;
+static const char *tex_hires_enabled = "Textures2/Atlantis";
+static const char *tex_hires_disabled = "Textures2/~Atlantis";
 
-static const char *tex_hires_enabled = "Textures2\\Atlantis";
-static const char *tex_hires_disabled = "Textures2\\~Atlantis";
+static const char *vcmsh_fname = "Meshes/Atlantis/AtlantisVC.msh";
+static const char *msh_hires_bkup = "Meshes/Atlantis/~AtlantisVC_hi.msh";
+static const char *msh_lores_bkup = "Meshes/Atlantis/~AtlantisVC_lo.msh";
 
-static const char *vcmsh_fname = "Meshes\\Atlantis\\AtlantisVC.msh";
-static const char *msh_hires_bkup = "Meshes\\Atlantis\\~AtlantisVC_hi.msh";
-static const char *msh_lores_bkup = "Meshes\\Atlantis\\~AtlantisVC_lo.msh";
+static bool Exists (const char *path)
+{
+	return access (path, F_OK) == 0;
+}
 
-struct {
-	HINSTANCE hInst;
-	AtlantisConfig *item;
-} gParams;
+class AtlantisConfigDialog: public ImGuiDialog {
+public:
+	AtlantisConfigDialog (): ImGuiDialog ("Atlantis configuration") {}
+	void Open ();
+	void Display () override;
+
+protected:
+	void OnDraw () override {}
+
+private:
+	int texhires = 1;
+	int mshhires = 1;
+};
 
 class AtlantisConfig: public LaunchpadItem {
 public:
 	AtlantisConfig(): LaunchpadItem() {}
 	char *Name() { return (char*)"Atlantis Configuration"; }
 	char *Description();
-	bool clbkOpen (HWND hLaunchpad);
-	bool TexHiresEnabled() const;
-	void TexEnableHires (bool enable);
-	bool MshHiresEnabled() const;
-	bool MshEnableHires (bool enable);
-	void InitDialog (HWND hWnd);
-	void Apply (HWND hWnd);
-	static INT_PTR CALLBACK DlgProc (HWND, UINT, WPARAM, LPARAM);
+	bool clbkOpen ();
+	static bool TexHiresEnabled();
+	static void TexEnableHires (bool enable);
+	static bool MshHiresEnabled();
+	static bool MshEnableHires (bool enable);
+
+private:
+	AtlantisConfigDialog dlg;
 };
+
+static AtlantisConfig *g_item = 0;
 
 char *AtlantisConfig::Description()
 {
 	return (char*)"Global configuration for the default Space Shuttle Atlantis.";
 }
 
-bool AtlantisConfig::clbkOpen (HWND hLaunchpad)
+bool AtlantisConfig::clbkOpen ()
 {
-	// respond to user double-clicking the item in the list
-	return OpenDialog (gParams.hInst, hLaunchpad, IDD_ACONFIG, DlgProc);
+	dlg.Open ();
+	return true;
 }
 
-bool AtlantisConfig::TexHiresEnabled () const
+bool AtlantisConfig::TexHiresEnabled ()
 {
 	// check if the Atlantis highres texture directory is present
-	return (_access (tex_hires_enabled, 0) != -1);
+	return Exists (tex_hires_enabled);
 }
 
 void AtlantisConfig::TexEnableHires (bool enable)
@@ -68,10 +80,10 @@ void AtlantisConfig::TexEnableHires (bool enable)
 	}
 }
 
-bool AtlantisConfig::MshHiresEnabled () const
+bool AtlantisConfig::MshHiresEnabled ()
 {
 	// check if backup of low-res mesh is present
-	return (_access (msh_lores_bkup, 0) != -1);
+	return Exists (msh_lores_bkup);
 }
 
 bool AtlantisConfig::MshEnableHires (bool enable)
@@ -79,56 +91,58 @@ bool AtlantisConfig::MshEnableHires (bool enable)
 	if (MshHiresEnabled() == enable) return false; // nothing to do
 
 	if (enable) {
-		if (_access (msh_hires_bkup, 0) == -1) return false; // high-res backup not found
-		if (_access (vcmsh_fname, 0) != -1 && _access (msh_lores_bkup, 0) == -1)
+		if (!Exists (msh_hires_bkup)) return false; // high-res backup not found
+		if (Exists (vcmsh_fname) && !Exists (msh_lores_bkup))
 			rename (vcmsh_fname, msh_lores_bkup); // back up low-res mesh
 		rename (msh_hires_bkup, vcmsh_fname); // activate high-res mesh
 	} else {
-		if (_access (msh_lores_bkup, 0) == -1) return false; // low-res backup not found
-		if (_access(vcmsh_fname, 0) != -1 && _access (msh_hires_bkup, 0) == -1)
+		if (!Exists (msh_lores_bkup)) return false; // low-res backup not found
+		if (Exists (vcmsh_fname) && !Exists (msh_hires_bkup))
 			rename (vcmsh_fname, msh_hires_bkup); // back up high-res mesh
 		rename (msh_lores_bkup, vcmsh_fname); // activate low-res mesh
 	}
 	return true;
 }
 
-void AtlantisConfig::InitDialog (HWND hWnd)
+void AtlantisConfigDialog::Open ()
 {
-	bool texhires = TexHiresEnabled();
-	bool mshhires = MshHiresEnabled();
-	SendDlgItemMessage (hWnd, IDC_RADIO1, BM_SETCHECK, texhires?BST_CHECKED:BST_UNCHECKED, 0);
-	SendDlgItemMessage (hWnd, IDC_RADIO2, BM_SETCHECK, texhires?BST_UNCHECKED:BST_CHECKED, 0);
-	SendDlgItemMessage (hWnd, IDC_RADIO3, BM_SETCHECK, mshhires?BST_CHECKED:BST_UNCHECKED, 0);
-	SendDlgItemMessage (hWnd, IDC_RADIO4, BM_SETCHECK, mshhires?BST_UNCHECKED:BST_CHECKED, 0);
-}
-
-void AtlantisConfig::Apply (HWND hWnd)
-{
-	bool texhires = (SendDlgItemMessage (hWnd, IDC_RADIO1, BM_GETCHECK, 0, 0) == BST_CHECKED);
-	TexEnableHires (texhires);
-	bool mshhires = (SendDlgItemMessage (hWnd, IDC_RADIO3, BM_GETCHECK, 0, 0) == BST_CHECKED);
-	MshEnableHires (mshhires);
-}
-
-INT_PTR CALLBACK AtlantisConfig::DlgProc (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
-{
-	switch (uMsg) {
-	case WM_INITDIALOG:
-		((AtlantisConfig*)lParam)->InitDialog (hWnd);
-		break;
-	case WM_COMMAND:
-		switch (LOWORD (wParam)) {
-		case IDOK:
-			((AtlantisConfig*)GetWindowLongPtr (hWnd, DWLP_USER))->Apply (hWnd);
-			EndDialog (hWnd, 0);
-			return 0;
-		case IDCANCEL:
-			EndDialog (hWnd, 0);
-			return 0;
-		}
-		break;
+	if (!IsActive()) {
+		texhires = AtlantisConfig::TexHiresEnabled() ? 1 : 0;
+		mshhires = AtlantisConfig::MshHiresEnabled() ? 1 : 0;
 	}
-	return 0;
+	oapiOpenDialog (this);
+}
+
+void AtlantisConfigDialog::Display ()
+{
+	const float em = ImGui::GetFontSize();
+	ImGui::SetNextWindowPos (ImGui::GetMainViewport()->GetCenter(), ImGuiCond_Appearing, ImVec2 (0.5f, 0.5f));
+	ImGui::SetNextWindowSizeConstraints (ImVec2 (22.0f*em, 0.0f), ImVec2 (22.0f*em, FLT_MAX));
+	if (ImGui::Begin (name.c_str(), &active, ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoSavedSettings)) {
+		ImGui::SeparatorText ("Atlantis orbiter: texture resolution");
+		ImGui::RadioButton ("High##tex", &texhires, 1);
+		ImGui::SameLine ();
+		ImGui::RadioButton ("Low##tex", &texhires, 0);
+		ImGui::SeparatorText ("Atlantis orbiter: mesh resolution");
+		ImGui::RadioButton ("High##msh", &mshhires, 1);
+		ImGui::SameLine ();
+		ImGui::RadioButton ("Low##msh", &mshhires, 0);
+		ImGui::Spacing ();
+		ImGui::TextWrapped ("High resolution textures and meshes provide a better visual appearance, but can reduce the performance of the simulator, in particular on less powerful computers.");
+		ImGui::TextWrapped ("If you experience problems, try switching to the low resolution options.");
+		ImGui::Spacing ();
+		ImGui::Separator ();
+		ImGui::Spacing ();
+		if (ImGui::Button ("OK", ImVec2 (5.0f*em, 0))) {
+			AtlantisConfig::TexEnableHires (texhires != 0);
+			AtlantisConfig::MshEnableHires (mshhires != 0);
+			active = false;
+		}
+		ImGui::SameLine ();
+		if (ImGui::Button ("Cancel", ImVec2 (5.0f*em, 0)))
+			active = false;
+	}
+	ImGui::End ();
 }
 
 // ==============================================================
@@ -137,13 +151,12 @@ INT_PTR CALLBACK AtlantisConfig::DlgProc (HWND hWnd, UINT uMsg, WPARAM wParam, L
 
 DLLCLBK void InitModule (HINSTANCE hDLL)
 {
-	gParams.hInst = hDLL;
-	gParams.item = new AtlantisConfig;
+	g_item = new AtlantisConfig;
 	// create the new config item
 	LAUNCHPADITEM_HANDLE root = oapiFindLaunchpadItem ("Vessel configuration");
 	// find the config root entry provided by orbiter
-	oapiRegisterLaunchpadItem (gParams.item, root);
-	// register the DG config entry
+	oapiRegisterLaunchpadItem (g_item, root);
+	// register the Atlantis config entry
 }
 
 // ==============================================================
@@ -153,6 +166,6 @@ DLLCLBK void InitModule (HINSTANCE hDLL)
 DLLCLBK void ExitModule (HINSTANCE hDLL)
 {
 	// Unregister the launchpad items
-	oapiUnregisterLaunchpadItem (gParams.item);
-	delete gParams.item;
+	oapiUnregisterLaunchpadItem (g_item);
+	delete g_item;
 }

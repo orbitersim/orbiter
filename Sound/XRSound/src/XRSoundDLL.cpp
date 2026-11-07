@@ -10,31 +10,23 @@
 #include "XRSoundDLL.h"
 #include "VesselXRSoundEngine.h"
 #include "ModuleXRSoundEngine.h"
+#include "XRSoundEngine10.h"
+
+#define XRSOUND_STR2(x) #x
+#define XRSOUND_STR(x) XRSOUND_STR2(x)
+
+ORBITER_MODULE_INFO("Sound module for Orbiter",
+	"XRSound " XRSOUND_STR(XRSOUND_VERSION_NUMBER) " " XRSOUND_BETA_STR "for Orbiter 2024\r\n============================\r\n\r\n* Automatically adds sounds to all Orbiter vessels that define thrusters.\r\n* Includes a default library of over 450 sounds, including all XR vessel voice callouts by actress Sally Beaumont and 141 ATC callouts from STS-114 and STS-121 featuring CAPCOM Julie Payette.\r\n* All sounds are fully configurable via $ORBITER_ROOT/XRSound/XRSound.cfg.\r\n* Includes a simple-to-use C++ API and support for vessel class-specific configuration files to add custom sounds to your own Orbiter vessels.\r\n\r\nPlease refer to the XRSound User Manual installed to $ORBITER_ROOT/Doc/XRSound User Manual.pdf for more information.\r\n\r\nAs always, the latest version of XRSound is available at http://www.alteaaerospace.com.  Happy orbiting!");
 
 namespace
 {
-// These SEH guards were inline in XRSoundDLL::clbkPreStep. The VS 2026 Debug
-// build reports C2712 there because that function also owns a debug STL
-// iterator requiring destruction. Keep the guards in these helpers without
-// changing their behavior: false makes clbkPreStep write the original error
-// message, then continue the update.
-// TODO: Investigate the CTD that prompted the catch-all handlers and whether
-// they can be removed. Continuing after an access violation may leave Orbiter
-// in an invalid state; changing that policy is outside this build fix.
 bool PreStepVesselWithSEH(OBJHANDLE hVessel, VesselXRSoundEngine *pEngine,
     double simt, double simdt, double mjd)
 {
-    __try
-    {
-        _ASSERTE(oapiIsVessel(hVessel));
-        _ASSERTE(pEngine);
-        pEngine->clbkPreStep(simt, simdt, mjd);
-        return true;
-    }
-    __except(EXCEPTION_EXECUTE_HANDLER)
-    {
-        return false;
-    }
+    _ASSERTE(oapiIsVessel(hVessel));
+    _ASSERTE(pEngine);
+    pEngine->clbkPreStep(simt, simdt, mjd);
+    return true;
 }
 
 }

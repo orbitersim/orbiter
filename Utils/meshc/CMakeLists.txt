@@ -13,6 +13,7 @@ target_include_directories(meshc
 set_target_properties(meshc
 	PROPERTIES
 	FOLDER Tools
+	INSTALL_RPATH "@executable_path/../.."
 )
 
 install(TARGETS meshc

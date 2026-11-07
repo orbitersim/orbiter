@@ -42,6 +42,7 @@ private:
 // Control selector dial
 // ==============================================================
 
+class RcsModeDial;
 class RcsModeSelector: public DGSubsystem {
 	friend class RcsModeDial;
 

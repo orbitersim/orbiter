@@ -16,6 +16,9 @@
 #include "Orbitersdk.h"
 #include <math.h>
 
+class AscentAP;
+class PayloadBayOp;
+
 #ifdef ATLANTIS_TANK_MODULE
 #define TANKFUNC DLLEXPORT
 #else

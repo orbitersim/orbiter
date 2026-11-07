@@ -14,7 +14,7 @@
 
 #include "orbitersdk.h"
 #include "QuadcopterLua.h"
-#include "..\Common\Instrument.h"
+#include "../Common/Instrument.h"
 
 class PropulsionSubsystem;
 

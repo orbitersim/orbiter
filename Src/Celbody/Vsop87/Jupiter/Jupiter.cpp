@@ -4,7 +4,7 @@
 #define ORBITER_MODULE
 
 #include "Jupiter.h"
-#include "..\Galsat\Galsat.h"
+#include "../Galsat/Galsat.h"
 
 // ======================================================================
 // class Jupiter: implementation

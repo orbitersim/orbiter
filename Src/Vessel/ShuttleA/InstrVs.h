@@ -12,7 +12,7 @@
 #ifndef __INSTRVS_H
 #define __INSTRVS_H
 
-#include "..\Common\Instrument.h"
+#include "../Common/Instrument.h"
 
 // ==============================================================
 

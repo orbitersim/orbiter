@@ -12,6 +12,8 @@
 #include <vector>
 #include <array>
 
+class Atlantis;
+
 // ==============================================================
 // class PayloadBayOp
 // Manages payload bay operations (bay doors and radiators),

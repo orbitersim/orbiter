@@ -1,52 +1,58 @@
 // Copyright (c) Martin Schweiger
 // Licensed under the MIT License
 
-#define STRICT 1
 #define ORBITER_MODULE
 #include "orbitersdk.h"
-#include "DGC_resource.h"
+#include "imgui.h"
 #include <stdio.h>
-#include <io.h>
+#include <unistd.h>
 
-class VesselConfig;
-class DGConfig;
+static const char *hires_enabled = "Textures2/DG";
+static const char *hires_disabled = "Textures2/~DG";
 
-static const char *hires_enabled = "Textures2\\DG";
-static const char *hires_disabled = "Textures2\\~DG";
+class DGConfigDialog: public ImGuiDialog {
+public:
+	DGConfigDialog (): ImGuiDialog ("DG configuration") {}
+	void Open ();
+	void Display () override;
 
-struct {
-	HINSTANCE hInst;
-	DGConfig *item;
-} gParams;
+protected:
+	void OnDraw () override {}
+
+private:
+	int hires = 1;
+};
 
 class DGConfig: public LaunchpadItem {
 public:
 	DGConfig(): LaunchpadItem() {}
 	char *Name() { return (char*)"DG Configuration"; }
 	char *Description();
-	bool clbkOpen (HWND hLaunchpad);
-	bool HiresEnabled() const;
-	void EnableHires (bool enable);
-	void InitDialog (HWND hWnd);
-	void Apply (HWND hWnd);
-	static INT_PTR CALLBACK DlgProc (HWND, UINT, WPARAM, LPARAM);
+	bool clbkOpen ();
+	static bool HiresEnabled();
+	static void EnableHires (bool enable);
+
+private:
+	DGConfigDialog dlg;
 };
+
+static DGConfig *g_item = 0;
 
 char *DGConfig::Description()
 {
 	return (char*)"Global configuration for the default Delta-glider.";
 }
 
-bool DGConfig::clbkOpen (HWND hLaunchpad)
+bool DGConfig::clbkOpen ()
 {
-	// respond to user double-clicking the item in the list
-	return OpenDialog (gParams.hInst, hLaunchpad, IDD_DGCONFIG, DlgProc);
+	dlg.Open ();
+	return true;
 }
 
-bool DGConfig::HiresEnabled () const
+bool DGConfig::HiresEnabled ()
 {
 	// check if the DG highres texture directory is present
-	return (_access (hires_enabled, 0) != -1);
+	return access (hires_enabled, F_OK) == 0;
 }
 
 void DGConfig::EnableHires (bool enable)
@@ -62,38 +68,34 @@ void DGConfig::EnableHires (bool enable)
 	}
 }
 
-void DGConfig::InitDialog (HWND hWnd)
+void DGConfigDialog::Open ()
 {
-	bool hires = HiresEnabled();
-	SendDlgItemMessage (hWnd, IDC_RADIO1, BM_SETCHECK, hires?BST_CHECKED:BST_UNCHECKED, 0);
-	SendDlgItemMessage (hWnd, IDC_RADIO2, BM_SETCHECK, hires?BST_UNCHECKED:BST_CHECKED, 0);
+	if (!IsActive())
+		hires = DGConfig::HiresEnabled() ? 1 : 0;
+	oapiOpenDialog (this);
 }
 
-void DGConfig::Apply (HWND hWnd)
+void DGConfigDialog::Display ()
 {
-	bool enable = (SendDlgItemMessage (hWnd, IDC_RADIO1, BM_GETCHECK, 0, 0) == BST_CHECKED);
-	EnableHires (enable);
-}
-
-INT_PTR CALLBACK DGConfig::DlgProc (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
-{
-	switch (uMsg) {
-	case WM_INITDIALOG:
-		((DGConfig*)lParam)->InitDialog (hWnd);
-		break;
-	case WM_COMMAND:
-		switch (LOWORD (wParam)) {
-		case IDOK:
-			((DGConfig*)GetWindowLongPtr (hWnd, DWLP_USER))->Apply (hWnd);
-			EndDialog (hWnd, 0);
-			return 0;
-		case IDCANCEL:
-			EndDialog (hWnd, 0);
-			return 0;
+	const float em = ImGui::GetFontSize();
+	ImGui::SetNextWindowPos (ImGui::GetMainViewport()->GetCenter(), ImGuiCond_Appearing, ImVec2 (0.5f, 0.5f));
+	ImGui::SetNextWindowSizeConstraints (ImVec2 (18.0f*em, 0.0f), ImVec2 (18.0f*em, FLT_MAX));
+	if (ImGui::Begin (name.c_str(), &active, ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoSavedSettings)) {
+		ImGui::SeparatorText ("Texture resolution");
+		ImGui::RadioButton ("High (1024x1024)", &hires, 1);
+		ImGui::RadioButton ("Low (512x512)", &hires, 0);
+		ImGui::Spacing ();
+		ImGui::Separator ();
+		ImGui::Spacing ();
+		if (ImGui::Button ("OK", ImVec2 (5.0f*em, 0))) {
+			DGConfig::EnableHires (hires != 0);
+			active = false;
 		}
-		break;
+		ImGui::SameLine ();
+		if (ImGui::Button ("Cancel", ImVec2 (5.0f*em, 0)))
+			active = false;
 	}
-	return 0;
+	ImGui::End ();
 }
 
 // ==============================================================
@@ -102,12 +104,11 @@ INT_PTR CALLBACK DGConfig::DlgProc (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM 
 
 DLLCLBK void InitModule (HINSTANCE hDLL)
 {
-	gParams.hInst = hDLL;
-	gParams.item = new DGConfig;
+	g_item = new DGConfig;
 	// create the new config item
 	LAUNCHPADITEM_HANDLE root = oapiFindLaunchpadItem ("Vessel configuration");
 	// find the config root entry provided by orbiter
-	oapiRegisterLaunchpadItem (gParams.item, root);
+	oapiRegisterLaunchpadItem (g_item, root);
 	// register the DG config entry
 }
 
@@ -118,6 +119,6 @@ DLLCLBK void InitModule (HINSTANCE hDLL)
 DLLCLBK void ExitModule (HINSTANCE hDLL)
 {
 	// Unregister the launchpad items
-	oapiUnregisterLaunchpadItem (gParams.item);
-	delete gParams.item;
+	oapiUnregisterLaunchpadItem (g_item);
+	delete g_item;
 }

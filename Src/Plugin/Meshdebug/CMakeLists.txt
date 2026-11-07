@@ -3,7 +3,6 @@
 
 add_library(Meshdebug SHARED
 	Meshdebug.cpp
-	Meshdebug.rc
 )
 
 target_include_directories(Meshdebug
@@ -14,6 +13,7 @@ target_include_directories(Meshdebug
 target_link_libraries(Meshdebug
 	${ORBITER_LIB}
 	${ORBITER_SDK_LIB}
+	imgui
 )
 
 add_dependencies(Meshdebug

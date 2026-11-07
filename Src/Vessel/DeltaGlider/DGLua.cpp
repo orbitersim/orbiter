@@ -20,14 +20,14 @@ extern "C" {
 // API function prototypes
 
 DeltaGlider *lua_toDG (lua_State *L, int idx = 1);
-int dgGear (lua_State *L);
-int dgNosecone (lua_State *L);
-int dgHatch (lua_State *L);
-int dgRetro (lua_State *L);
-int dgOLock (lua_State *L);
-int dgILock (lua_State *L);
-int dgRadiator (lua_State *L);
-int dgABrake (lua_State *L);
+static int dgGear (lua_State *L);
+static int dgNosecone (lua_State *L);
+static int dgHatch (lua_State *L);
+static int dgRetro (lua_State *L);
+static int dgOLock (lua_State *L);
+static int dgILock (lua_State *L);
+static int dgRadiator (lua_State *L);
+static int dgABrake (lua_State *L);
 
 // ==========================================================================
 // API initialisation

@@ -14,24 +14,25 @@
 // be used as a starting point for real applications.
 // ==============================================================
 
-#define STRICT 1
 #define ORBITER_MODULE
 #include "orbitersdk.h"
-#include "resource.h"
+#include "imgui.h"
 #include <stdio.h>
+
+ORBITER_MODULE_INFO("SDK sample plugins",
+	"LAUNCHPAD PARAMETER TEMPLATE:\r\n\r\nThis SDK sample creates a root entry (\"My root entry\") and sub-entry (\"My sub-item\") in the Extra tab of the Orbiter launchpad.\r\n\r\nThis addon is not very useful - it is intended as a starting point for developers.");
 
 // ==============================================================
 // Some global parameters
 
 // file name for storing custom parameters
 const char *cfgfile = "myparam.cfg";
-char *myitemtag = "MyParam";
+char myitemtag[] = "MyParam";
 
 class MyRootItem;
 class MyItem;
 
 struct {
-	HINSTANCE hInst;
 	MyRootItem *root_item;
 	MyItem *sub_item;
 	double my_param;
@@ -51,6 +52,48 @@ public:
 };
 
 // ==============================================================
+// The dialog box opened by the launchpad item. Without a running
+// simulation session, Orbiter draws it in the Launchpad window.
+// ==============================================================
+
+class MyDialog: public ImGuiDialog {
+public:
+	MyDialog (): ImGuiDialog ("My parameters") {}
+
+	void Open ()
+	{
+		if (!IsActive()) value = gParams.my_param; // display the current value
+		oapiOpenDialog (this);
+	}
+
+	void Display () override
+	{
+		// Override Display instead of OnDraw to control the window flags
+		if (ImGui::Begin (name.c_str(), &active, ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoCollapse)) {
+			ImGui::PushTextWrapPos (ImGui::GetFontSize() * 20.0f);
+			ImGui::TextUnformatted ("This example demonstrates the possibility of configuring addon modules from the Orbiter Launchpad dialog.");
+			ImGui::PopTextWrapPos ();
+			ImGui::SetNextItemWidth (ImGui::GetFontSize() * 8.0f);
+			ImGui::InputDouble ("Custom parameter", &value);
+			if (ImGui::Button ("OK")) {
+				gParams.my_param = value; // store the value
+				active = false;
+			}
+			ImGui::SameLine ();
+			if (ImGui::Button ("Cancel"))
+				active = false;
+		}
+		ImGui::End ();
+	}
+
+protected:
+	void OnDraw () override {}
+
+private:
+	double value = 0.0;
+};
+
+// ==============================================================
 // A class defining the new launchpad parameter item
 // This opens a dialog box for a user-defined item, and writes
 // the value to a file to be read next time.
@@ -61,9 +104,11 @@ public:
 	MyItem();
 	char *Name() { return "My sub-item"; }
 	char *Description() { return "This item is an example from the Orbiter SDK. It doesn't do anything useful, but provides a source example for developers on how to write Launchpad plugins."; }
-	bool clbkOpen (HWND hLaunchpad);
+	bool clbkOpen ();
 	int clbkWriteConfig ();
-	static INT_PTR CALLBACK DlgProc (HWND, UINT, WPARAM, LPARAM);
+
+private:
+	MyDialog dlg;
 };
 
 MyItem::MyItem (): LaunchpadItem ()
@@ -76,10 +121,10 @@ MyItem::MyItem (): LaunchpadItem ()
 	oapiCloseFile (hFile, FILE_IN);
 }
 
-bool MyItem::clbkOpen (HWND hLaunchpad)
+bool MyItem::clbkOpen ()
 {
 	// respond to user double-clicking the item in the list
-	DialogBox (gParams.hInst, MAKEINTRESOURCE (IDD_MYPARAM), hLaunchpad, DlgProc);
+	dlg.Open ();
 	return true;
 }
 
@@ -92,40 +137,12 @@ int MyItem::clbkWriteConfig ()
 	return 0;
 }
 
-INT_PTR CALLBACK MyItem::DlgProc (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
-{
-	// the dialog message handler
-	char cbuf[32];
-
-	switch (uMsg) {
-	case WM_INITDIALOG: // display the current value
-		sprintf (cbuf, "%f", gParams.my_param);
-		SetWindowText (GetDlgItem (hWnd, IDC_EDIT1), cbuf);
-		return TRUE;
-	case WM_COMMAND:
-		switch (LOWORD (wParam)) {
-		case IDOK:    // store the value
-			GetWindowText (GetDlgItem (hWnd, IDC_EDIT1), cbuf, 32);
-			if (sscanf (cbuf, "%lf", &gParams.my_param) != 1)
-				gParams.my_param = 0;
-			EndDialog (hWnd, 0);
-			return 0;
-		case IDCANCEL:
-			EndDialog (hWnd, 0);
-			return 0;
-		}
-		break;
-	}
-	return 0;
-}
-
 // ==============================================================
 // The DLL entry point
 // ==============================================================
 
 DLLCLBK void InitModule (HINSTANCE hDLL)
 {
-	gParams.hInst = hDLL;
 	gParams.my_param = 0;
 
 	gParams.root_item = new MyRootItem;

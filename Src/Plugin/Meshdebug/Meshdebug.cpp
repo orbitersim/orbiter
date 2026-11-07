@@ -11,28 +11,27 @@
 // May be useful for debugging meshes.
 // ==============================================================
 
-#define STRICT
 #define ORBITER_MODULE
-#include <windows.h>
-#include <commctrl.h>
 #include "orbitersdk.h"
-#include "resource.h"
-#include <cstdio>
+#include "imgui.h"
+#include <algorithm>
+#include <cmath>
+#include <cstring>
 
-using std::min;
-using std::max;
+ORBITER_MODULE_INFO("Developer resources and samples",
+	"MESH DEBUG:\r\n\r\nA small utility for developers. Meshdebug can be used to visually identify a mesh group in a vessel mesh. Set the camera focus on the vessel whose meshes you want to inspect. Then open the mesh debugger dialog from the Custom functions list (Ctrl-F4). The vessel meshes will become semi-transparent, and the selected mesh group will blink.");
 
 // ==============================================================
 // Global variables
 // ==============================================================
 
-HINSTANCE g_hInst;    // module instance handle
-HWND g_hDlg = 0;      // dialog window handle
+class MeshDebugDialog;
+
+MeshDebugDialog *g_dlg = 0; // dialog
 DWORD g_dwCmd;        // custom function identifier
 VESSEL *g_vessel;     // focus vessel interface
 VISHANDLE *g_visptr;  // pointer to visual of current focus object
 MESHHANDLE g_mesh;    // current mesh handle
-MATERIAL matOrig;
 DWORD g_nmesh, g_ngrp;
 int   g_imesh, g_igrp;
 DWORD g_flag;
@@ -46,11 +45,70 @@ bool blink;
 // Local prototypes
 // ==============================================================
 
+void GetMeshParams ();
 void ChangeMesh (int idx);
 void ChangeGroup (int idx);
 void OpenDlgClbk (void *context);
 void SetMaterialOpacity (MESHHANDLE hMesh, float opac);
-INT_PTR CALLBACK MsgProc (HWND, UINT, WPARAM, LPARAM);
+
+// ==============================================================
+// The dialog
+// ==============================================================
+
+class MeshDebugDialog: public ImGuiDialog {
+public:
+	MeshDebugDialog (): ImGuiDialog ("Mesh debugger", {260.0f, 130.0f}) {}
+
+	void Open ()
+	{
+		if (!IsActive()) {
+			GetMeshParams ();
+			oapiGetObjectName (g_vessel->GetHandle(), vesselName, 256);
+		}
+		oapiOpenDialog (this);
+	}
+
+	void Reset ()
+	{
+		g_mesh = 0;
+		g_imesh = g_igrp = -1;
+		active = false;
+		oapiCloseDialog (this);
+	}
+
+protected:
+	void OnDraw () override
+	{
+		bool hasVis = (*g_visptr != 0);
+		ImGui::Text ("Visual: %s", hasVis ? vesselName : "[None]");
+		ImGui::BeginDisabled (!hasVis || !g_nmesh);
+		int m = g_imesh;
+		ImGui::SetNextItemWidth (ImGui::GetFontSize() * 7.0f);
+		if (ImGui::InputInt ("Mesh", &m)) {
+			m = std::min ((int)g_nmesh-1, std::max (0, m));
+			if (m != g_imesh) ChangeMesh (m);
+		}
+		ImGui::SameLine ();
+		ImGui::TextDisabled ("(0 to %d)", (int)g_nmesh-1);
+		int g = g_igrp;
+		ImGui::SetNextItemWidth (ImGui::GetFontSize() * 7.0f);
+		if (ImGui::InputInt ("Group", &g)) {
+			g = std::min ((int)g_ngrp-1, std::max (0, g));
+			if (g != g_igrp) ChangeGroup (g);
+		}
+		ImGui::SameLine ();
+		ImGui::TextDisabled ("(0 to %d)", (int)g_ngrp-1);
+		ImGui::EndDisabled ();
+	}
+
+	void OnClose () override
+	{
+		ChangeMesh (-1);
+	}
+
+private:
+	char vesselName[256] = "";
+};
 
 // ==============================================================
 // API interface
@@ -62,9 +120,9 @@ INT_PTR CALLBACK MsgProc (HWND, UINT, WPARAM, LPARAM);
 
 DLLCLBK void InitModule (HINSTANCE hModule)
 {
-	g_hInst = hModule;
-	g_dwCmd = oapiRegisterCustomCmd ((char*)"Mesh debugger",
-		(char*)"Mark individual mesh groups in a vessel mesh",
+	g_dlg = new MeshDebugDialog;
+	g_dwCmd = oapiRegisterCustomCmd ("Mesh debugger",
+		"Mark individual mesh groups in a vessel mesh",
 		OpenDlgClbk, NULL);
 }
 
@@ -76,7 +134,17 @@ DLLCLBK void InitModule (HINSTANCE hModule)
 DLLCLBK void ExitModule (HINSTANCE hModule)
 {
 	oapiUnregisterCustomCmd (g_dwCmd);
-	// Unregister the custom function in Orbiter
+	delete g_dlg;
+	g_dlg = 0;
+}
+
+
+// ==============================================================
+// Session end: the meshes are gone, so drop the dialog state
+
+DLLCLBK void opcCloseRenderViewport ()
+{
+	if (g_dlg && g_dlg->IsActive()) g_dlg->Reset ();
 }
 
 
@@ -85,7 +153,7 @@ DLLCLBK void ExitModule (HINSTANCE hModule)
 
 DLLCLBK void opcPreStep (double simt, double simdt, double mjd)
 {
-	if (!g_hDlg) return;
+	if (!g_dlg || !g_dlg->IsActive() || !g_mesh) return;
 	double d, t = oapiGetSysTime();
 	bool bshow = (modf (t-g_t, &d) > 0.5);
 	if (bshow != blink) {
@@ -102,18 +170,7 @@ DLLCLBK void opcPreStep (double simt, double simdt, double mjd)
 
 void OpenDlgClbk (void *context)
 {
-	g_hDlg = oapiOpenDialog (g_hInst, IDD_DBGDIALOG, MsgProc);
-}
-
-
-// ==============================================================
-// Close the dialog
-
-void CloseDlg (HWND hDlg)
-{
-	ChangeMesh (-1);
-	oapiCloseDialog (hDlg);
-	g_hDlg = 0;
+	g_dlg->Open ();
 }
 
 
@@ -195,63 +252,4 @@ void SetMaterialOpacity (MESHHANDLE hMesh, float opac)
 		mat->specular.a *= opac;
 		mat->emissive.a *= opac;
 	}
-}
-
-// ==============================================================
-
-void RefreshDialog (HWND hDlg)
-{
-	VISHANDLE vis = *g_visptr;
-	char cbuf[256];
-	if (vis) {
-		SendMessage (GetDlgItem (hDlg, IDC_MESHSPIN), UDM_SETRANGE, 0, MAKELONG (g_nmesh-1, 0));
-		//SendMessage (GetDlgItem (hDlg, IDC_MESHSPIN), UDM_SETPOS, 0, MAKELONG (g_imesh, 0));
-		SendMessage (GetDlgItem (hDlg, IDC_GROUPSPIN), UDM_SETRANGE, 0, MAKELONG (g_ngrp-1, 0));
-		SendMessage (GetDlgItem (hDlg, IDC_GROUPSPIN), UDM_SETPOS, 0, MAKELONG (g_igrp, 0));
-	}
-	sprintf (cbuf, "(0 to %d)", g_nmesh-1);
-	SetWindowText (GetDlgItem (hDlg, IDC_NMESH), cbuf);
-	sprintf (cbuf, "(0 to %d)", g_ngrp-1);
-	SetWindowText (GetDlgItem (hDlg, IDC_NGRP), cbuf);
-}
-
-// ==============================================================
-// Windows message handler for the dialog box
-
-INT_PTR CALLBACK MsgProc (HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
-{
-	switch (uMsg) {
-	case WM_INITDIALOG:          // initialise dialog
-		GetMeshParams();
-		RefreshDialog (hDlg);
-		return TRUE;
-	case WM_NOTIFY:
-		switch (wParam) {
-		case IDC_MESHSPIN:
-			if (((LPNMHDR)lParam)->code == UDN_DELTAPOS) {
-				int m = ((LPNMUPDOWN)lParam)->iPos + ((LPNMUPDOWN)lParam)->iDelta;
-				m = min ((int)g_nmesh-1, max (0, m));
-				if (m != g_imesh) ChangeMesh (m);
-				RefreshDialog (hDlg);
-			}
-			return 0;
-		case IDC_GROUPSPIN:
-			if (((LPNMHDR)lParam)->code == UDN_DELTAPOS) {
-				int g = ((LPNMUPDOWN)lParam)->iPos + ((LPNMUPDOWN)lParam)->iDelta;
-				g = min ((int)g_ngrp-1, max (0, g));
-				if (g != g_igrp) ChangeGroup (g);
-			}
-			return 0;
-		}
-		break;
-	case WM_COMMAND:
-		switch (LOWORD (wParam)) {
-
-		case IDCANCEL: // dialog closed by user
-			CloseDlg (hDlg);
-			return TRUE;
-		}
-		break;
-	}
-	return oapiDefDialogProc (hDlg, uMsg, wParam, lParam);
 }

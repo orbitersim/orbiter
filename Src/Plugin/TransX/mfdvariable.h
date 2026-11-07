@@ -22,6 +22,8 @@
 #define __MFDVARIABLE_H
 #include "mfdvarhandler.h"
 #include "doublelink.h"
+
+class MFDvarhandler;
 class cmdnugget;
 
 #define MAX_NAME_LENGTH			20

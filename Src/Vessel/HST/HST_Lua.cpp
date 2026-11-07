@@ -23,9 +23,9 @@ extern "C" {
 // API function prototypes
 
 HST *lua_toHST (lua_State *L, int idx = 1);
-int hstAntenna (lua_State *L);
-int hstHatch (lua_State *L);
-int hstArray (lua_State *L);
+static int hstAntenna (lua_State *L);
+static int hstHatch (lua_State *L);
+static int hstArray (lua_State *L);
 
 // ==========================================================================
 // API initialisation

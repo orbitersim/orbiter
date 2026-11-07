@@ -5,7 +5,6 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${ORBITER_BINARY_STARTUP_DIR})
 
 add_library(AtlantisConfig SHARED
 	AtlantisConfig.cpp
-	AConfigurator.rc
 )
 
 target_include_directories(AtlantisConfig
@@ -15,6 +14,7 @@ target_include_directories(AtlantisConfig
 target_link_libraries(AtlantisConfig
 	${ORBITER_LIB}
 	${ORBITER_SDK_LIB}
+	imgui
 )
 
 add_dependencies(AtlantisConfig

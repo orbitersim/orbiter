@@ -12,7 +12,9 @@
 #ifndef __ADICTRL_H
 #define __ADICTRL_H
 
-#include "..\Common\Instrument.h"
+#include "../Common/Instrument.h"
+
+class ShuttleA;
 
 // ==============================================================
 

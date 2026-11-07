@@ -13,7 +13,7 @@
 #define __SWITCHES_H
 
 #include "ShuttleA.h"
-#include "..\Common\Instrument.h"
+#include "../Common/Instrument.h"
 
 // ==============================================================
 // Switch type 1 (red vertical switch with 2 or 3 positions)
