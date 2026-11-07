@@ -10,10 +10,12 @@
 #include "OrbiterAPI.h"
 #include "D3D9Client.h"
 #include "D3D9Pad.h"
-#include "GDIPad.h"
 //#include "gcCore.h"
 #include <d3d9.h>
 #include <d3dx9.h>
+
+namespace oapi { class D3D9Client; }
+class D3D9Pad;
 
 #define	MAP_NORMAL			0
 #define	MAP_SPECULAR		1
@@ -58,14 +60,8 @@ void				NatDumpResource(LPDIRECT3DRESOURCE9 pResource);
 
 class SurfNative
 {
-	friend class D3D9Client;
+	friend class oapi::D3D9Client;
 	friend class D3D9Pad;
-	friend class GDIPad;
-
-	struct _HDC_LOCAL {
-		HDC hDC;
-		LPDIRECT3DSURFACE9 pSrf;
-	};
 
 public:
 
@@ -95,8 +91,6 @@ public:
 
 	const char*				GetName() const { return name; }
 	void					SetName(const char*);
-	HDC						GetDC();
-	void					ReleaseDC(HDC);
 
 	bool					IsGDISurface() const;
 	bool					IsCompressed() const;
@@ -151,7 +145,6 @@ public:
 	DWORD					ClientFlags;
 	int						RefCount;
 	D3D9Pad*				pSkp;					// Pooled sketchpad interface cache
-	_HDC_LOCAL				DC;
 };
 
 

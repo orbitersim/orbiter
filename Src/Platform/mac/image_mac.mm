@@ -1,4 +1,4 @@
-#import <Foundation/Foundation.h>
+#import <AppKit/AppKit.h>
 #import <ImageIO/ImageIO.h>
 #import <CoreGraphics/CoreGraphics.h>
 #import <UniformTypeIdentifiers/UniformTypeIdentifiers.h>
@@ -96,6 +96,32 @@ bool SaveImageFile(const std::string &path, const uint8_t *pixels, int width, in
 		CFRelease(dst);
 		CGImageRelease(cg);
 		return ok;
+	}
+}
+
+bool CopyImageToClipboard(const uint8_t *pixels, int width, int height, int stride, int bpp)
+{
+	@autoreleasepool {
+		if (bpp != 24 && bpp != 32) return false;
+		NSBitmapImageRep *rep = [[NSBitmapImageRep alloc] initWithBitmapDataPlanes:nullptr pixelsWide:width pixelsHigh:height
+			bitsPerSample:8 samplesPerPixel:3 hasAlpha:NO isPlanar:NO colorSpaceName:NSDeviceRGBColorSpace bytesPerRow:(NSInteger)width * 4 bitsPerPixel:32];
+		if (!rep) return false;
+		uint8_t *dst = rep.bitmapData;
+		for (int y = 0; y < height; y++) {
+			const uint8_t *src = pixels + (size_t)y * stride;
+			uint8_t *row = dst + (size_t)y * width * 4;
+			for (int x = 0; x < width; x++) {
+				const uint8_t *s = src + x * (bpp / 8);
+				row[x * 4 + 0] = s[2];
+				row[x * 4 + 1] = s[1];
+				row[x * 4 + 2] = s[0];
+				row[x * 4 + 3] = 255;
+			}
+		}
+		NSData *png = [rep representationUsingType:NSBitmapImageFileTypePNG properties:@{}];
+		NSPasteboard *pb = [NSPasteboard generalPasteboard];
+		[pb clearContents];
+		return [pb setData:png forType:NSPasteboardTypePNG];
 	}
 }
 

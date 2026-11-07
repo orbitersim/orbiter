@@ -1,3 +1,4 @@
+#include <algorithm>
 // =================================================================================================================================
 // The MIT Lisence:
 //
@@ -23,7 +24,6 @@
 
 #pragma warning(push)
 #pragma warning(disable : 4838)
-#include <xnamath.h>
 #pragma warning(pop)
 
 using std::min;
@@ -81,11 +81,9 @@ void D9InitAABB(D9BBox *box)
 
 void D9AddPointAABB(D9BBox *box, LPD3DXVECTOR3 point)
 {
-	XMVECTOR q = XMLoadFloat4((const XMFLOAT4*)&box->min);
-	XMVECTOR w = XMLoadFloat4((const XMFLOAT4*)&box->max);
-	XMVECTOR p = XMLoadFloat3((const XMFLOAT3*)point);
-	XMStoreFloat4((XMFLOAT4*)&box->min, XMVectorMin(q,p));
-	XMStoreFloat4((XMFLOAT4*)&box->max, XMVectorMax(w,p));	
+	box->min.x = std::min(box->min.x, point->x); box->min.y = std::min(box->min.y, point->y); box->min.z = std::min(box->min.z, point->z);
+	box->max.x = std::max(box->max.x, point->x); box->max.y = std::max(box->max.y, point->y); box->max.z = std::max(box->max.z, point->z);
+	box->min.w = std::min(box->min.w, 0.0f); box->max.w = std::max(box->max.w, 0.0f);
 }
 
 
@@ -295,94 +293,54 @@ int D9ComputeMinMaxDistance(LPDIRECT3DDEVICE9 pDev, const D9BBox *in, const D3DX
 
 void D9UpdateAABB(D9BBox *box, const D3DXMATRIX *pFirst, const D3DXMATRIX *pSecond)
 {
-
-	XMVECTOR x = XMVectorSet(1, 0, 0, 0);
-	XMVECTOR y = XMVectorSet(0, 1, 0, 0);
-	XMVECTOR z = XMVectorSet(0, 0, 1, 0);
-	XMVECTOR q = XMLoadFloat4((const XMFLOAT4*)&box->min);
-	XMVECTOR w = XMLoadFloat4((const XMFLOAT4*)&box->max);
-
-	if (pFirst) {
-		XMMATRIX MF = XMLoadFloat4x4((const XMFLOAT4X4*)pFirst);
-		x = XMVector3TransformNormal(x, MF);
-		y = XMVector3TransformNormal(y, MF);
-		z = XMVector3TransformNormal(z, MF);
-		q = XMVector3TransformCoord(q, MF);
-		w = XMVector3TransformCoord(w, MF);
+	D3DXVECTOR3 x(1, 0, 0), y(0, 1, 0), z(0, 0, 1);
+	D3DXVECTOR3 q(box->min.x, box->min.y, box->min.z), w(box->max.x, box->max.y, box->max.z);
+	for (const D3DXMATRIX *M : {pFirst, pSecond}) {
+		if (!M) continue;
+		D3DXVec3TransformNormal(&x, &x, M);
+		D3DXVec3TransformNormal(&y, &y, M);
+		D3DXVec3TransformNormal(&z, &z, M);
+		D3DXVec3TransformCoord(&q, &q, M);
+		D3DXVec3TransformCoord(&w, &w, M);
 	}
-
-	if (pSecond) {
-		XMMATRIX MS = XMLoadFloat4x4((const XMFLOAT4X4*)pSecond);
-		x = XMVector3TransformNormal(x, MS);
-		y = XMVector3TransformNormal(y, MS);
-		z = XMVector3TransformNormal(z, MS);
-		q = XMVector3TransformCoord(q, MS);
-		w = XMVector3TransformCoord(w, MS);
-	}
-
-	XMVECTOR p = XMVectorScale(XMVectorAdd(q,w), 0.5f);
-
-	XMStoreFloat4((XMFLOAT4*)&box->bs, p);		
-	XMStoreFloat4((XMFLOAT4*)&box->a,  x);
-	XMStoreFloat4((XMFLOAT4*)&box->b,  y);	
-	XMStoreFloat4((XMFLOAT4*)&box->c,  z);
-
-	box->bs.w = XMVectorGetX(XMVector3Length(XMVectorSubtract(q,w))) * 0.5f;
+	D3DXVECTOR3 p = (q + w) * 0.5f;
+	D3DXVECTOR3 d = q - w;
+	box->bs = D3DXVECTOR4(p.x, p.y, p.z, D3DXVec3Length(&d) * 0.5f);
+	box->a = D3DXVECTOR4(x.x, x.y, x.z, 0);
+	box->b = D3DXVECTOR4(y.x, y.y, y.z, 0);
+	box->c = D3DXVECTOR4(z.x, z.y, z.z, 0);
 }
 
 
-
-	
-
 void D9AddAABB(const D9BBox *in, const D3DXMATRIX *pM, D9BBox *out, bool bReset)
 {
-
-	XMVECTOR x,mi,mx;
-
+	D3DXVECTOR3 mi, mx;
 	if (bReset) {
-		mi = XMVectorSet( 1e12f,  1e12f,  1e12f, 0); 
-		mx = XMVectorSet(-1e12f, -1e12f, -1e12f, 0); 
+		mi = D3DXVECTOR3(1e12f, 1e12f, 1e12f);
+		mx = D3DXVECTOR3(-1e12f, -1e12f, -1e12f);
 	}
 	else {
-		mi = XMLoadFloat4((const XMFLOAT4*)&out->min); 
-		mx = XMLoadFloat4((const XMFLOAT4*)&out->max); 
+		mi = D3DXVECTOR3(out->min.x, out->min.y, out->min.z);
+		mx = D3DXVECTOR3(out->max.x, out->max.y, out->max.z);
 	}
-	
-	XMVECTOR q = XMLoadFloat4((const XMFLOAT4*)&in->min);
-	XMVECTOR w = XMLoadFloat4((const XMFLOAT4*)&in->max);
-
-	q = XMVectorSetW(q, 0);
-	w = XMVectorSetW(w, 0);
-
+	D3DXVECTOR3 q(in->min.x, in->min.y, in->min.z), w(in->max.x, in->max.y, in->max.z);
+	auto grow = [&](const D3DXVECTOR3 &v) {
+		mi.x = std::min(mi.x, v.x); mi.y = std::min(mi.y, v.y); mi.z = std::min(mi.z, v.z);
+		mx.x = std::max(mx.x, v.x); mx.y = std::max(mx.y, v.y); mx.z = std::max(mx.z, v.z);
+	};
 	if (pM) {
-
-		XMVECTOR L[8];
-	
-		L[0] = XMVectorSelectControl(0,0,0,0);
-		L[1] = XMVectorSelectControl(1,1,1,0);
-		L[2] = XMVectorSelectControl(0,0,1,0);
-		L[3] = XMVectorSelectControl(0,1,0,0);
-		L[4] = XMVectorSelectControl(0,1,1,0);
-		L[5] = XMVectorSelectControl(1,0,0,0);
-		L[6] = XMVectorSelectControl(1,0,1,0);
-		L[7] = XMVectorSelectControl(1,1,0,0);
-		
-
-		XMMATRIX M = XMLoadFloat4x4((const XMFLOAT4X4*)pM);
-
-		for (int k=0;k<8;k++) {
-			x  = XMVector3TransformCoord(XMVectorSelect(q, w, L[k]), M);
-			mi = XMVectorMin(mi,x);
-			mx = XMVectorMax(mx,x);
+		for (int k = 0; k < 8; k++) {
+			D3DXVECTOR3 c((k & 1) ? w.x : q.x, (k & 2) ? w.y : q.y, (k & 4) ? w.z : q.z), t;
+			D3DXVec3TransformCoord(&t, &c, pM);
+			grow(t);
 		}
 	}
 	else {
-		mi = XMVectorMin(mi, XMVectorMin(q,w));
-		mx = XMVectorMax(mx, XMVectorMax(q,w));	
+		grow(q);
+		grow(w);
 	}
-
-	XMStoreFloat4((XMFLOAT4*)&out->min, mi);
-	XMStoreFloat4((XMFLOAT4*)&out->max, mx);
+	out->min = D3DXVECTOR4(mi.x, mi.y, mi.z, 0);
+	out->max = D3DXVECTOR4(mx.x, mx.y, mx.z, 0);
 }
 
 

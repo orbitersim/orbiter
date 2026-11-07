@@ -23,6 +23,10 @@ extern D3D9Client* g_client;
 void NatCheckFlags(DWORD &flags)
 {
 	// Append dependend flags
+	if (flags & OAPISURFACE_GDI) {
+		flags &= ~(OAPISURFACE_GDI | OAPISURFACE_SYSMEM);
+		flags |= OAPISURFACE_SKETCHPAD;
+	}
 	if (flags & OAPISURFACE_RENDER3D) flags |= OAPISURFACE_RENDERTARGET;
 	if (flags & OAPISURFACE_SKETCHPAD) flags |= OAPISURFACE_RENDERTARGET;
 
@@ -491,13 +495,12 @@ SurfNative::SurfNative(LPDIRECT3DRESOURCE9 pRes, DWORD flags, LPDIRECT3DSURFACE9
 {
 
 	assert(pRes != NULL);
-	assert(GetCurrentThread() == g_client->GetMainThread());
+	assert(pthread_equal(pthread_self(), g_client->GetMainThread()));
 
 	SurfaceCatalog.insert(this);
 
 	memset(pMap, 0, sizeof(pMap));
 	memset(&desc, 0, sizeof(desc));
-	memset(&DC, 0, sizeof(DC));
 
 	strcpy_s(name, sizeof(name), "null");
 
@@ -814,14 +817,24 @@ bool SurfNative::Fill(LPRECT rect, DWORD c)
 		}
 	}
 
-	if (IsGDISurface())
+	if (IsGDISurface() || desc.Pool == D3DPOOL_SYSTEMMEM)
 	{
-		HDC hDC = SurfNative::GetDC();
-		HBRUSH hBr = CreateSolidBrush(c);
-		FillRect(hDC, &re, hBr);
-		DeleteObject(hBr);
-		SurfNative::ReleaseDC(hDC);
-		return true;
+		LPDIRECT3DSURFACE9 pSrf = GetSurface();
+		D3DLOCKED_RECT lr;
+		if (pSrf->LockRect(&lr, r, 0) == S_OK) {
+			int bpp = (desc.Format == D3DFMT_R5G6B5 || desc.Format == D3DFMT_A4R4G4B4 || desc.Format == D3DFMT_X1R5G5B5 || desc.Format == D3DFMT_A1R5G5B5) ? 2 : 4;
+			DWORD rgb = ((c & 0xFF) << 16) | (c & 0xFF00) | ((c >> 16) & 0xFF) | 0xFF000000;
+			WORD c16 = WORD(((rgb >> 8) & 0xF800) | ((rgb >> 5) & 0x07E0) | ((rgb >> 3) & 0x001F));
+			for (LONG y = 0; y < r->bottom - r->top; y++) {
+				BYTE *row = (BYTE *)lr.pBits + (size_t)y * lr.Pitch;
+				for (LONG x = 0; x < r->right - r->left; x++) {
+					if (bpp == 4) ((DWORD *)row)[x] = rgb;
+					else ((WORD *)row)[x] = c16;
+				}
+			}
+			pSrf->UnlockRect();
+			return true;
+		}
 	}
 
 	LogErr("ColorFill Failed");
@@ -833,80 +846,6 @@ bool SurfNative::Fill(LPRECT rect, DWORD c)
 
 // -----------------------------------------------------------------------------------------------
 //
-HDC	SurfNative::GetDC()
-{
-	if (!DC.hDC)
-	{
-		if (Flags & OAPISURFACE_CAPTURE) {
-			bool bReady = false;
-			LPDIRECT3DSURFACE9 pSrf = GetSurface();
-			D3DLOCKED_RECT rect;
-			if (S_OK == pSrf->LockRect(&rect, NULL, D3DLOCK_DONOTWAIT)) {
-				bReady = true;
-				pSrf->UnlockRect();
-			}
-			if (bReady) {
-				if (pSrf->GetDC(&DC.hDC) == S_OK)
-				{
-					DC.pSrf = pSrf;
-					return DC.hDC;
-				}
-			}
-			return NULL;
-		}
-
-		if (IsGDISurface()) {
-			LPDIRECT3DSURFACE9 pSrf = GetSurface();
-			if (pSrf->GetDC(&DC.hDC) == S_OK)
-			{
-				DC.pSrf = pSrf;
-				return DC.hDC;
-			}
-		}
-		else if (IsRenderTarget())
-		{
-			if (CreateDX7())
-			{
-				DX7Sync(true);
-				if (pDX7->GetDC(&DC.hDC) == S_OK)
-				{
-					DC.pSrf = pDX7;
-					return DC.hDC;
-				}
-			}
-		}
-	}
-	else
-	{
-		LogErr("SurfNative: GetDC() Is Already Open");
-	}
-
-	LogErr("SurfNative: GetDC() Failed");
-	LogSpecs();
-	HALT();
-	return NULL;
-}
-
-
-
-// -----------------------------------------------------------------------------------------------
-//
-void SurfNative::ReleaseDC(HDC _hDC)
-{
-	if (!_hDC) return;
-
-	assert(_hDC == DC.hDC);
-
-	HR(DC.pSrf->ReleaseDC(DC.hDC));
-
-	if (DC.pSrf == pDX7)
-	{
-		DX7Sync(false);
-	}
-
-	DC.pSrf = NULL;
-	DC.hDC = NULL;	
-}
 
 
 
@@ -972,7 +911,6 @@ bool SurfNative::DeClone()
 		assert(pGDICache == NULL);
 		assert(pDX7 == NULL);
 		assert(pTemp == NULL);
-		assert(DC.hDC == NULL);
 
 		D3DFORMAT Format = D3DFMT_FROM_FILE;
 		LPDIRECT3DTEXTURE9 pTex = NULL;
@@ -1060,7 +998,6 @@ void SurfNative::LogSpecs() const
 	if (pTemp) LogErr("Has a In-surface temp layer");
 	if (pDepth) LogErr("Has a DepthStencil surface");
 	if (pDX7) LogErr("Surface is in DX7 compatibility mode");
-	if (DC.hDC) LogErr("Has a HDC [%s]", _PTR(DC.hDC));
 	LogErr("OAPI_Attribs: %s", NatOAPIFlags(Flags));
 	NatDumpResource(pResource);
 }

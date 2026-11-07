@@ -1067,7 +1067,7 @@ TileLoader *TileManager2Base::loader = NULL;
 double TileManager2Base::resolutionBias = 4.0;
 double TileManager2Base::resolutionScale = 1.0;
 bool TileManager2Base::bTileLoadThread = true;
-HFONT TileManager2Base::hFont = NULL;
+
 LPDIRECT3DTEXTURE9 TileManager2Base::hOcean = NULL;
 LPDIRECT3DTEXTURE9 TileManager2Base::hCloudMicro = NULL;
 LPDIRECT3DTEXTURE9 TileManager2Base::hCloudMicroNorm = NULL;
@@ -1102,7 +1102,7 @@ TileManager2Base::~TileManager2Base ()
 
 // -----------------------------------------------------------------------
 
-void TileManager2Base::GlobalInit (class oapi::D3D9Client *gclient)
+void TileManager2Base::GlobalInit (oapi::D3D9Client *gclient)
 {
 	gc = gclient;
 	pDev = gc->GetDevice();
@@ -1121,7 +1121,6 @@ void TileManager2Base::GlobalInit (class oapi::D3D9Client *gclient)
 
 	loader = new TileLoader (gc);
 
-	hFont  = CreateFont(42, 0, 0, 0, 600, false, false, 0, 0, 0, 2, CLEARTYPE_QUALITY, 49, "Arial");
 
 	char name[MAX_PATH];
 
@@ -1141,7 +1140,6 @@ bool TileManager2Base::ShutDown()
 
 void TileManager2Base::GlobalExit ()
 {
-	DeleteObject(hFont); hFont = NULL;
 	SAFE_RELEASE(hOcean);
 	SAFE_RELEASE(hCloudMicro);
 	SAFE_RELEASE(hCloudMicroNorm);

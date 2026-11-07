@@ -32,7 +32,7 @@ ImageProcessing::ImageProcessing(LPDIRECT3DDEVICE9 pDev, const char *_file, cons
 	for (int i=0;i<4;i++) pRtg[i] = pRtgBak[i] = NULL;
 
 	if (_vsentry) pVertex = CompileVertexShader(pDevice, _file, _vsentry, "IPIVS", NULL, &pVSConst);
-	else pVertex = CompileVertexShader(pDevice, "Modules/D3D9Client/IPI.hlsl", "VSMain", "IPIVS", NULL, &pVSConst);
+	else pVertex = CompileVertexShader(pDevice, "Modules/MetalClient/IPI.hlsl", "VSMain", "IPIVS", NULL, &pVSConst);
 
 	pPixel   = CompilePixelShader(pDevice, _file, _psentry, "IPIPS", _ppf, &pPSConst);
 	pOcta	 = new SMVERTEX[10];
@@ -176,7 +176,7 @@ bool ImageProcessing::SetupViewPort()
 
 	// Setup view-projection matrix and viewport
 	//
-	D3DXMatrixOrthoOffCenterLH(&mVP, 0.0f, (float)desc.Width, (float)desc.Height, 0.0f, 0.0f, 1.0f);
+	D3DXMatrixOrthoOffCenterLH(&mVP, -0.5f, (float)desc.Width - 0.5f, (float)desc.Height - 0.5f, -0.5f, 0.0f, 1.0f);
 
 	iVP.X = 0;
 	iVP.Y = 0;

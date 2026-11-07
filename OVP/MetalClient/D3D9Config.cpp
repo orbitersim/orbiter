@@ -7,6 +7,7 @@
 // ==============================================================
 
 #include "D3D9Config.h"
+#include "D3D9Util.h"
 #include "Orbitersdk.h"
 
 using std::min;
@@ -314,3 +315,6 @@ void D3D9Config::WriteParams ()
 	oapiCloseFile (hFile, FILE_OUT);
 }
 
+
+bool D9TileMipmaps() { return Config->TileMipmaps == 1; }
+size_t D9TileVertexSize() { return sizeof(VERTEX_2TEX); }

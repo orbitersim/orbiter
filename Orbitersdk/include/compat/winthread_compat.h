@@ -23,3 +23,19 @@ OCOMPAT_API HANDLE CreateThread(void *sa, SIZE_T stack, LPTHREAD_START_ROUTINE p
 OCOMPAT_API WINBOOL TerminateThread(HANDLE h, DWORD code);
 OCOMPAT_API WINBOOL GetExitCodeThread(HANDLE h, DWORD *code);
 OCOMPAT_API DWORD GetCurrentThreadId(void);
+
+#include <pthread.h>
+typedef struct _CRITICAL_SECTION { pthread_mutex_t m; } CRITICAL_SECTION, *LPCRITICAL_SECTION;
+inline void InitializeCriticalSection(CRITICAL_SECTION *cs)
+{
+	pthread_mutexattr_t a;
+	pthread_mutexattr_init(&a);
+	pthread_mutexattr_settype(&a, PTHREAD_MUTEX_RECURSIVE);
+	pthread_mutex_init(&cs->m, &a);
+	pthread_mutexattr_destroy(&a);
+}
+inline WINBOOL InitializeCriticalSectionAndSpinCount(CRITICAL_SECTION *cs, DWORD) { InitializeCriticalSection(cs); return TRUE; }
+inline void EnterCriticalSection(CRITICAL_SECTION *cs) { pthread_mutex_lock(&cs->m); }
+inline WINBOOL TryEnterCriticalSection(CRITICAL_SECTION *cs) { return pthread_mutex_trylock(&cs->m) == 0; }
+inline void LeaveCriticalSection(CRITICAL_SECTION *cs) { pthread_mutex_unlock(&cs->m); }
+inline void DeleteCriticalSection(CRITICAL_SECTION *cs) { pthread_mutex_destroy(&cs->m); }

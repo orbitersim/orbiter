@@ -691,7 +691,7 @@ public:
 	* \param fname name of the file to be loaded.
 	* \return Bitmap handle of NULL in a case of an error
 	*/
-	gc_interface HBITMAP LoadBitmapFromFile(const char *fname);
+	gc_interface SURFHANDLE LoadBitmapFromFile(const char *fname);
 
 	/**
 	* \brief Get render window handle

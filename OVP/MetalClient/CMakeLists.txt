@@ -84,7 +84,7 @@ set(SourceFiles
 	MaterialMgr.cpp
 	Mesh.cpp
 	MeshMgr.cpp
-	OapiExtension.mm
+	OapiExtension.cpp
 	Particle.cpp
 	RingMgr.cpp
 	RunwayLights.cpp
@@ -106,6 +106,7 @@ set(SourceFiles
 	ZTreeMgr.cpp
 	Tilemgr2_imp.hpp
 	${imgui_SOURCE_DIR}/backends/imgui_impl_metal.mm
+	ClientImGui.mm
 )
 
 
@@ -120,6 +121,7 @@ target_include_directories(MetalClient PRIVATE
 	${imgui_SOURCE_DIR}/backends/
 )
 
+target_compile_options(MetalClient PRIVATE -ferror-limit=0)
 target_link_libraries(MetalClient
 	${ORBITER_LIB}
 	${ORBITER_SDK_LIB}
@@ -132,7 +134,7 @@ set_target_properties(MetalClient
 	COMPILE_DEFINITIONS D3D9CLIENT_EXPORTS
 	FOLDER OVP
 )
-set_source_files_properties(${imgui_SOURCE_DIR}/backends/imgui_impl_metal.mm PROPERTIES COMPILE_OPTIONS -fobjc-arc)
+set_source_files_properties(${imgui_SOURCE_DIR}/backends/imgui_impl_metal.mm ClientImGui.mm PROPERTIES COMPILE_OPTIONS -fobjc-arc)
 
 add_custom_command(
 	TARGET MetalClient PRE_BUILD
@@ -146,4 +148,9 @@ add_dependencies(MetalClient
 )
 
 install(TARGETS MetalClient LIBRARY DESTINATION ${ORBITER_INSTALL_PLUGIN_DIR})
+
+add_subdirectory(samples/DrawOrbits)
+add_subdirectory(samples/DX9ExtMFD)
+add_subdirectory(samples/GenericCamera)
+add_subdirectory(samples/TerrainToolKit)
 install(DIRECTORY ${CLIENT_SOURCE_DIR}/shaders/ DESTINATION ${ORBITER_INSTALL_ROOT_DIR}/Modules/MetalClient)

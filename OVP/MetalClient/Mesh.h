@@ -91,7 +91,7 @@ public:
 
 
 	MeshShader(LPDIRECT3DDEVICE9 pDev, const char *file, const char *vs, const char *ps, const char *opt = NULL) :
-		ShaderClass(pDev, "Modules/D3D9Client/NewMesh.hlsl", vs, ps, "MeshShader", opt)
+		ShaderClass(pDev, "Modules/MetalClient/NewMesh.hlsl", vs, ps, "MeshShader", opt)
 	{
 		memset(hPST, 0, sizeof(hPST));
 		hVSC  = GetVSHandle("vs_const");

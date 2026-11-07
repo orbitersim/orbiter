@@ -169,7 +169,7 @@ Scene::Scene(D3D9Client *_gc, DWORD w, DWORD h)
 	// ------------------------------------------------------------------------------
 	// Read Sun glare sampling kernel file
 
-	ifstream fs("Modules/D3D9Client/GKernel.txt");
+	ifstream fs("Modules/MetalClient/GKernel.txt");
 	if (fs.good()) {
 		string line; vector<FVECTOR2> data;
 		while (getline(fs, line)) {
@@ -177,10 +177,10 @@ Scene::Scene(D3D9Client *_gc, DWORD w, DWORD h)
 			char c;	float a, b;	iss >> a >> c >> b;
 			data.push_back(FVECTOR2(a, b));
 		}
-		if (data.size() != ARRAYSIZE(DepthSampleKernel)) LogErr("Modules/D3D9Client/GKernel.txt Size missmatch. Expecting 57 entries");
+		if (data.size() != ARRAYSIZE(DepthSampleKernel)) LogErr("Modules/MetalClient/GKernel.txt Size missmatch. Expecting 57 entries");
 		else for (int i = 0; i < ARRAYSIZE(DepthSampleKernel); i++) DepthSampleKernel[i] = data[i];
 		data.clear();
-	} else LogErr("Failed to read: Modules/D3D9Client/GKernel.txt");
+	} else LogErr("Failed to read: Modules/MetalClient/GKernel.txt");
 	fs.close();
 
 	CreateSunGlare();
@@ -191,8 +191,8 @@ Scene::Scene(D3D9Client *_gc, DWORD w, DWORD h)
 
 	if (Config->bGlares || Config->bLocalGlares)
 	{
-		pRenderGlares = new ShaderClass(pDevice, "Modules/D3D9Client/Glare.hlsl", "GlareVS", "GlarePS", "RenderGlares", "");
-		pLocalCompute = new ShaderClass(pDevice, "Modules/D3D9Client/Glare.hlsl", "VisibilityVS", "VisibilityPS", "LocalVisCheck", "");
+		pRenderGlares = new ShaderClass(pDevice, "Modules/MetalClient/Glare.hlsl", "GlareVS", "GlarePS", "RenderGlares", "");
+		pLocalCompute = new ShaderClass(pDevice, "Modules/MetalClient/Glare.hlsl", "VisibilityVS", "VisibilityPS", "LocalVisCheck", "");
 		D3DXCreateTexture(pDevice, 32, 1, 1, D3DUSAGE_RENDERTARGET, D3DFMT_R16F, D3DPOOL_DEFAULT, &pLocalResults);
 		HR(pLocalResults->GetSurfaceLevel(0, &pLocalResultsSL));
 	}
@@ -202,7 +202,7 @@ Scene::Scene(D3D9Client *_gc, DWORD w, DWORD h)
 	//
 
 	if (Config->bGlares || Config->bLocalGlares) {
-		pVisDepth = new ImageProcessing(pDevice, "Modules/D3D9Client/LightBlur.hlsl", "PSDepth", NULL);
+		pVisDepth = new ImageProcessing(pDevice, "Modules/MetalClient/LightBlur.hlsl", "PSDepth", NULL);
 		pVisDepth->CompileShader("PSNormal");
 	}
 
@@ -236,11 +236,7 @@ Scene::Scene(D3D9Client *_gc, DWORD w, DWORD h)
 
 	// Create auxiliary color buffer for on screen GDI
 	//
-	if (Config->GDIOverlay) {
-		HR(D3DXCreateTexture(pDevice, viewW, viewH, 1, D3DUSAGE_DYNAMIC, D3DFMT_X8R8G8B8, D3DPOOL_DEFAULT, &ptgBuffer[GBUF_GDI]));
-		pGDIOverlay = new ImageProcessing(pDevice, "Modules/D3D9Client/GDIOverlay.hlsl", "PSMain");
-	}
-	else pGDIOverlay = NULL;
+	pGDIOverlay = NULL;
 
 
 	// Create an auxiliary screen space normal and depth buffer (i.e. Shader readable depth buffer)
@@ -269,7 +265,7 @@ Scene::Scene(D3D9Client *_gc, DWORD w, DWORD h)
 
 		// Load postprocessing effects
 		if (Config->PostProcess == PP_DEFAULT)
-			pLightBlur = new ImageProcessing(pDevice, "Modules/D3D9Client/LightBlur.hlsl", "PSMain", flags);
+			pLightBlur = new ImageProcessing(pDevice, "Modules/MetalClient/LightBlur.hlsl", "PSMain", flags);
 
 		if (pLightBlur) {
 			BufSize = pLightBlur->FindDefine("BufferDivider");
@@ -305,18 +301,6 @@ Scene::Scene(D3D9Client *_gc, DWORD w, DWORD h)
 	for (int i = 0; i < ARRAYSIZE(ptgBuffer);i++)  if (ptgBuffer[i]) ptgBuffer[i]->GetSurfaceLevel(0, &psgBuffer[i]);
 
 
-	if (Config->GDIOverlay) {
-		HDC hDC;
-		// Clear the GDI Overlay with transparency
-		if (psgBuffer[GBUF_GDI]->GetDC(&hDC) == S_OK) {
-			DWORD color = 0xF08040; // BGR "Color Key" value for transparency
-			HBRUSH hBrush = CreateSolidBrush((COLORREF)color);
-			RECT r = _RECT( 0, 0, viewW, viewH );
-			FillRect(hDC, &r, hBrush);
-			DeleteObject(hBrush);
-			psgBuffer[GBUF_GDI]->ReleaseDC(hDC);
-		}
-	}
 
 	LogAlw("================ Scene Created ===============");
 }
@@ -394,7 +378,7 @@ void Scene::CreateSunGlare()
 
 	if (pCreateGlare) SAFE_DELETE(pCreateGlare);
 
-	pCreateGlare = new ImageProcessing(pDevice, "Modules/D3D9Client/Glare.hlsl", "CreateSunGlarePS");
+	pCreateGlare = new ImageProcessing(pDevice, "Modules/MetalClient/Glare.hlsl", "CreateSunGlarePS");
 	pCreateGlare->CompileShader("CreateLocalGlarePS");
 	pCreateGlare->CompileShader("CreateSunGlareAtmPS");
 	pCreateGlare->CompileShader("CreateSunTexPS");
@@ -1195,7 +1179,7 @@ void Scene::ComputeLocalLightsVisibility()
 	D3DSURFACE_DESC desc;
 	pLocalResultsSL->GetDesc(&desc);
 
-	D3DXMatrixOrthoOffCenterLH(&ComputeData.mVP, 0.0f, (float)desc.Width, (float)desc.Height, 0.0f, 0.0f, 1.0f);
+	D3DXMatrixOrthoOffCenterLH(&ComputeData.mVP, -0.5f, (float)desc.Width - 0.5f, (float)desc.Height - 0.5f, -0.5f, 0.0f, 1.0f);
 
 	psgBuffer[GBUF_DEPTH]->GetDesc(&desc);
 
@@ -1308,7 +1292,7 @@ void Scene::RenderMainScene()
 		{
 			if (camCurrent == CustomCams.cend()) camCurrent = CustomCams.cbegin();
 
-			OBJHANDLE hVessel = vFocus->GetObjectA();
+			OBJHANDLE hVessel = vFocus->GetObject();
 			
 			vObject *vO = GetVisObject((*camCurrent)->hVessel);
 			double maxd = min(500e3, GetCameraAltitude() + 15e3);
@@ -2666,7 +2650,7 @@ bool Scene::RenderBlurredMap(LPDIRECT3DDEVICE9 pDev, LPDIRECT3DCUBETEXTURE9 pSrc
 	if (!pSrc) return false;
 
 	if (!pBlur) {
-		pBlur = new ImageProcessing(pDev, "Modules/D3D9Client/EnvMapBlur.hlsl", "PSBlur");
+		pBlur = new ImageProcessing(pDev, "Modules/MetalClient/EnvMapBlur.hlsl", "PSBlur");
 	}
 
 	if (!pBlur->IsOK()) {
@@ -2777,7 +2761,7 @@ bool Scene::IntegrateIrradiance(vVessel *vV, LPDIRECT3DCUBETEXTURE9 pSrc, LPDIRE
 	if (!pSrc) return false;
 
 	if (!pIrradiance) {
-		pIrradiance = new ImageProcessing(pDevice, "Modules/D3D9Client/IrradianceInteg.hlsl", "PSPreInteg");
+		pIrradiance = new ImageProcessing(pDevice, "Modules/MetalClient/IrradianceInteg.hlsl", "PSPreInteg");
 		pIrradiance->CompileShader("PSInteg");
 		pIrradiance->CompileShader("PSPostBlur");
 	}
@@ -3750,7 +3734,7 @@ void Scene::RenderGlares()
 		struct { D3DXMATRIX	mVP; float4	Pos, Color;	float GPUId, Alpha, Blend; } Const;
 
 		Const.Color = FVECTOR4(1, 1, 1, 1);
-		D3DXMatrixOrthoOffCenterLH(&Const.mVP, 0.0f, (float)viewW, (float)viewH, 0.0f, 0.0f, 1.0f);
+		D3DXMatrixOrthoOffCenterLH(&Const.mVP, -0.5f, (float)viewW - 0.5f, (float)viewH - 0.5f, -0.5f, 0.0f, 1.0f);
 		pLocalResultsSL->GetDesc(&desc);
 
 		pRenderGlares->ClearTextures();

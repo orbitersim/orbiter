@@ -50,12 +50,8 @@ class Camera;
 #endif
 
 
-// Message loop return type - maintain backward compatibility for 32-bit
-#ifdef _WIN64
+// Message loop return type: wide enough to carry a pointer
 #define OAPI_MSGTYPE LRESULT
-#else
-#define OAPI_MSGTYPE int
-#endif
 
 // ======================================================================
 /// \defgroup constants Some useful general constants

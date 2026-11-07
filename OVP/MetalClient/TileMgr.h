@@ -20,6 +20,9 @@
 #include "Mesh.h"
 #include "Spherepatch.h"
 
+class CSphereManager;
+class TileBuffer;
+
 #define MAXQUEUE 10
 
 #pragma pack(push,1)

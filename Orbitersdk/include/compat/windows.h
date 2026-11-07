@@ -520,6 +520,8 @@ typedef DWORD (*LPTHREAD_START_ROUTINE)(LPVOID);
 
 OCOMPAT_API int MessageBoxA(HWND hWnd, const char *text, const char *caption, UINT type);
 #define MessageBox MessageBoxA
+inline void FatalAppExitA(UINT, const char *msg) { MessageBoxA(NULL, msg, "Orbiter", 0x10); exit(1); }
+#define FatalAppExit FatalAppExitA
 OCOMPAT_API WINBOOL MessageBeep(UINT type);
 OCOMPAT_API void OutputDebugStringA(const char *str);
 #define OutputDebugString OutputDebugStringA
@@ -540,6 +542,8 @@ OCOMPAT_API HMODULE LoadLibraryExA(const char *path, HANDLE file, DWORD flags);
 #define LOAD_LIBRARY_SEARCH_DEFAULT_DIRS 0x00001000
 #define LOAD_WITH_ALTERED_SEARCH_PATH 0x00000008
 OCOMPAT_API WINBOOL FreeLibrary(HMODULE h);
+OCOMPAT_API const char *GetCommandLineA(void);
+#define GetCommandLine GetCommandLineA
 OCOMPAT_API void *GetProcAddressImpl(HMODULE h, const char *name);
 #ifdef __cplusplus
 inline FARPROC GetProcAddress(HMODULE h, const char *name) { return reinterpret_cast<FARPROC>(GetProcAddressImpl(h, name)); }
@@ -625,6 +629,8 @@ OCOMPAT_API void GetSystemTime(SYSTEMTIME *st);
 #define _ftelli64 ftello
 #define _snprintf snprintf
 #define _vsnprintf vsnprintf
+#define fprintf_s fprintf
+#define vfprintf_s vfprintf
 #define sscanf_s sscanf
 #define fscanf_s fscanf
 #define _byteswap_ulong __builtin_bswap32
@@ -751,6 +757,7 @@ template<size_t N> inline errno_t _strupr_s(char (&s)[N]) { _strupr(s); return 0
 
 #define CP_ACP 0
 #define CP_UTF8 65001
+#define MB_ERR_INVALID_CHARS 0x08
 OCOMPAT_API int MultiByteToWideChar(UINT codepage, DWORD flags, const char *src, int srclen, wchar_t *dst, int dstlen);
 OCOMPAT_API int WideCharToMultiByte(UINT codepage, DWORD flags, const wchar_t *src, int srclen, char *dst, int dstlen, const char *defchar, WINBOOL *useddef);
 

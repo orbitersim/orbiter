@@ -1,4 +1,5 @@
 #include "M9Internal.h"
+#include "M9Font.h"
 #import <CoreText/CoreText.h>
 #import <CoreGraphics/CoreGraphics.h>
 #import <ImageIO/ImageIO.h>
@@ -1305,24 +1306,117 @@ struct Font {
 
 }
 
-static CTFontRef MakeFont(const D3DXFONT_DESCA &d)
+static CTFontRef MakeCTFont(const char *face, int height, int width, int weight, bool italic)
 {
-	NSString *name = d.FaceName[0] ? [NSString stringWithUTF8String:d.FaceName] : @"Helvetica";
+	NSString *name = face && face[0] ? [NSString stringWithUTF8String:face] : @"Helvetica";
 	CTFontRef f = CTFontCreateWithName((__bridge CFStringRef)name, 12.0, nullptr);
 	if (!f) f = CTFontCreateUIFontForLanguage(kCTFontUIFontSystem, 12.0, nullptr);
 	CGFloat size;
-	if (d.Height < 0) size = -d.Height;
+	if (height < 0) size = -height;
 	else {
 		CGFloat cell = CTFontGetAscent(f) + CTFontGetDescent(f);
-		size = d.Height ? 12.0 * d.Height / cell : 12.0;
+		size = height ? 12.0 * height / cell : 12.0;
 	}
 	CTFontSymbolicTraits traits = 0;
-	if (d.Weight >= 600) traits |= kCTFontBoldTrait;
-	if (d.Italic) traits |= kCTFontItalicTrait;
+	if (weight >= 600) traits |= kCTFontBoldTrait;
+	if (italic) traits |= kCTFontItalicTrait;
+	CGAffineTransform xf = CGAffineTransformIdentity;
 	CTFontRef sized = traits ? CTFontCreateCopyWithSymbolicTraits(f, size, nullptr, traits, traits) : nullptr;
 	if (!sized) sized = CTFontCreateCopyWithAttributes(f, size, nullptr, nullptr);
 	CFRelease(f);
+	if (width > 0) {
+		UniChar ch = 'x';
+		CGGlyph g;
+		CGSize adv = {};
+		if (CTFontGetGlyphsForCharacters(sized, &ch, &g, 1)) CTFontGetAdvancesForGlyphs(sized, kCTFontOrientationHorizontal, &g, &adv, 1);
+		if (adv.width > 0) {
+			xf = CGAffineTransformMakeScale(width / adv.width, 1.0);
+			CTFontRef scaled = CTFontCreateCopyWithAttributes(sized, size, &xf, nullptr);
+			CFRelease(sized);
+			sized = scaled;
+		}
+	}
 	return sized;
+}
+
+static CTFontRef MakeFont(const D3DXFONT_DESCA &d)
+{
+	return MakeCTFont(d.FaceName, d.Height, d.Width, d.Weight, d.Italic != 0);
+}
+
+void *m9::CreateFontRef(const char *face, int height, int width, int weight, bool italic)
+{
+	return (void *)MakeCTFont(face, height, width, weight, italic);
+}
+
+void m9::ReleaseFontRef(void *font)
+{
+	if (font) CFRelease((CTFontRef)font);
+}
+
+void m9::GetFontMetrics(void *font, FontMetrics *m)
+{
+	CTFontRef f = (CTFontRef)font;
+	m->ascent = (int)ceil(CTFontGetAscent(f));
+	m->descent = (int)ceil(CTFontGetDescent(f));
+	m->height = m->ascent + m->descent;
+	m->internalLeading = std::max(0, m->height - (int)lrint(CTFontGetSize(f)));
+	m->externalLeading = (int)ceil(CTFontGetLeading(f));
+	m->aveCharWidth = (int)ceil(GlyphAdvance(font, 'x'));
+	m->maxCharWidth = (int)ceil(CTFontGetBoundingBox(f).size.width);
+}
+
+static bool GlyphFor(CTFontRef f, uint32_t ch, CGGlyph &g)
+{
+	UniChar u[2];
+	CFIndex n = 1;
+	if (ch >= 0x10000) {
+		ch -= 0x10000;
+		u[0] = (UniChar)(0xD800 + (ch >> 10));
+		u[1] = (UniChar)(0xDC00 + (ch & 0x3FF));
+		n = 2;
+	} else {
+		u[0] = (UniChar)ch;
+	}
+	CGGlyph gl[2] = {0, 0};
+	if (!CTFontGetGlyphsForCharacters(f, u, gl, n)) return false;
+	g = gl[0];
+	return true;
+}
+
+float m9::GlyphAdvance(void *font, uint32_t ch)
+{
+	CTFontRef f = (CTFontRef)font;
+	CGGlyph g;
+	if (!GlyphFor(f, ch, g)) return 0.0f;
+	CGSize adv = {};
+	CTFontGetAdvancesForGlyphs(f, kCTFontOrientationHorizontal, &g, &adv, 1);
+	return (float)adv.width;
+}
+
+void m9::DrawGlyph(void *font, uint32_t ch, uint8_t *gray, int pitch, int w, int h, float x, float baseline, bool antialias)
+{
+	CTFontRef f = (CTFontRef)font;
+	CGGlyph g;
+	if (!GlyphFor(f, ch, g)) return;
+	CGColorSpaceRef cs = CGColorSpaceCreateDeviceGray();
+	CGContextRef ctx = CGBitmapContextCreate(gray, w, h, 8, pitch, cs, kCGImageAlphaNone);
+	CGColorSpaceRelease(cs);
+	if (!ctx) return;
+	CGContextSetShouldAntialias(ctx, antialias);
+	CGContextSetShouldSmoothFonts(ctx, false);
+	CGContextSetGrayFillColor(ctx, 1.0, 1.0);
+	CGPoint p = CGPointMake(x, h - baseline);
+	CTFontDrawGlyphs(f, &g, &p, 1, ctx);
+	CGContextRelease(ctx);
+}
+
+uint32_t m9::AnsiToUnicode(uint8_t c)
+{
+	static const uint16_t cp1252[32] = {
+		0x20AC, 0x0081, 0x201A, 0x0192, 0x201E, 0x2026, 0x2020, 0x2021, 0x02C6, 0x2030, 0x0160, 0x2039, 0x0152, 0x008D, 0x017D, 0x008F,
+		0x0090, 0x2018, 0x2019, 0x201C, 0x201D, 0x2022, 0x2013, 0x2014, 0x02DC, 0x2122, 0x0161, 0x203A, 0x0153, 0x009D, 0x017E, 0x0178};
+	return c >= 0x80 && c < 0xA0 ? cp1252[c - 0x80] : c;
 }
 
 HRESULT D3DXCreateFontIndirectA(IDirect3DDevice9 *dev, const D3DXFONT_DESCA *desc, ID3DXFont **font)

@@ -13,6 +13,7 @@
 #include <chrono>
 #include <filesystem>
 #include <mutex>
+#include <crt_externs.h>
 #include <unordered_map>
 
 namespace {
@@ -506,4 +507,22 @@ int WideCharToMultiByte(UINT, DWORD, const wchar_t *src, int srclen, char *dst, 
 	return count;
 }
 
+}
+
+const char *GetCommandLineA(void)
+{
+	static std::string line;
+	static std::once_flag once;
+	std::call_once(once, [] {
+		int argc = *_NSGetArgc();
+		char **argv = *_NSGetArgv();
+		for (int i = 0; i < argc; i++) {
+			if (i) line += ' ';
+			bool quote = strchr(argv[i], ' ') != nullptr;
+			if (quote) line += '"';
+			line += argv[i];
+			if (quote) line += '"';
+		}
+	});
+	return line.c_str();
 }

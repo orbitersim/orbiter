@@ -9,6 +9,8 @@
 
 #include "Tilemgr2_imp.hpp"
 
+class TileManager2Base;
+
 /**
  * \brief Visual representation of planetary cloud tile.
  *

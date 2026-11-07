@@ -22,6 +22,8 @@
 #include <d3d9.h> 
 #include <d3dx9.h>
 #include "D3D9TextMgr.h"
+#include "M9Font.h"
+#include <vector>
 #include "Log.h"
 #include "D3D9Client.h"
 #include "D3D9Surface.h"
@@ -58,7 +60,7 @@ D3D9Text::D3D9Text(LPDIRECT3DDEVICE9 pDevice) :
 	wfont      (NULL)
 {
 	ZeroMemory(&tm, sizeof(TEXTMETRIC));
-	ZeroMemory(&lf, sizeof(LOGFONT));	
+	lf = D9FontSpec();
 }
 
 
@@ -127,174 +129,120 @@ int D3D9Text::GetLineSpace()
 
 // ----------------------------------------------------------------------------------------
 //
-bool D3D9Text::Init(HFONT hFont)
+bool D3D9Text::Init(const D9FontSpec &spec)
 {
-	if (hFont==NULL) {
-		LogErr("NULL Font in D3D9Text::Init()");
+	lf = spec;
+	void *font = m9::CreateFontRef(lf.face, lf.height, lf.width, lf.weight, lf.italic);
+	if (!font) {
+		LogErr("Font creation failed in D3D9Text::Init()");
 		return false;
 	}
 
-	// Receive font attributes
-	GetObject(hFont, sizeof(LOGFONT), &lf);
+	m9::FontMetrics fm;
+	m9::GetFontMetrics(font, &fm);
+	memset((void *)&tm, 0, sizeof(TEXTMETRIC));
+	tm.tmHeight = fm.height;
+	tm.tmAscent = fm.ascent;
+	tm.tmDescent = fm.descent;
+	tm.tmInternalLeading = fm.internalLeading;
+	tm.tmExternalLeading = fm.externalLeading;
+	tm.tmAveCharWidth = fm.aveCharWidth;
+	tm.tmMaxCharWidth = fm.maxCharWidth;
+	tm.tmWeight = lf.weight;
+	tm.tmItalic = lf.italic;
+	tm.tmUnderlined = lf.underline;
+	tm.tmStruckOut = lf.strikeout;
+	tm.tmFirstChar = (wchar_t)first;
+	tm.tmLastChar = 255;
+	tm.tmDefaultChar = '?';
+	tm.tmBreakChar = ' ';
 
-	tex_w = 2048;	// Texture Width
+	tex_w = 2048;
 	tex_h = 32;
-	
-	// Allocate space for data
-	//
-	FontData = new D3D9FontData[256]();	// zero-initialized
-	
-	LogAlw("[NEW FONT] (%31s), Size=%d, Weight=%d Pitch&Family=%x", lf.lfFaceName, lf.lfHeight, lf.lfWeight, lf.lfPitchAndFamily);
 
-	bool bFirst = true;
+	FontData = new D3D9FontData[256]();
 
-restart:
+	LogAlw("[NEW FONT] (%31s), Size=%d, Weight=%d", lf.face, lf.height, lf.weight);
 
-	if (tex_h>=2048) {
-		LogErr("^^ Font is too large for pre-rendering");	
-		return false;
-	}
-
-	LPDIRECT3DTEXTURE9 pSrcTex = NULL;
-	LPDIRECT3DSURFACE9 pSurf = NULL;
-
-	if (pDev->CreateTexture(tex_w, tex_h, 1, 0, D3DFMT_R5G6B5, D3DPOOL_SYSTEMMEM, &pSrcTex, NULL)!=S_OK) {
-		LogErr("D3D9Text::CreateOffscreenPlainSurface Fail");
-		return false;
-	}
-
-	HR(pSrcTex->GetSurfaceLevel(0, &pSurf));
-
-	HDC hDC = NULL;
-
-	if (pSurf->GetDC(&hDC)!=S_OK) {
-		LogErr("D3D9Text::GetDC Fail");
-		return false;
-	}
-	
-	HFONT hOld = (HFONT)SelectObject(hDC, hFont);
-
-	if (hOld == NULL) { LogErr("SelectObject(hFont) FAIL"); return false; }
-
-	if (bFirst) {
-
-		// Get Text Metrics information
-		// 
-		memset((void *)&tm, 0, sizeof(TEXTMETRIC));
-		
-		if (GetTextMetrics(hDC, &tm)==false) {
-			LogErr("GetTextMetrics() FAIL");
-			return false;
-		}
-		bFirst = false;
-	}
-
-	// Draw Charters
-	//
-	
-	char text[] = "c";
-
+	bool antialias = lf.quality != NONANTIALIASED_QUALITY;
 	int s = tm.tmMaxCharWidth;
 	int a = tm.tmAscent + 1;
 	int d = tm.tmDescent + 1;
-	int h = a+d;
-	int x = 5;
-	int y = 5 + h;
-	int c = first; // ANSI code of the First Charter
-	D3D9FontData *pData;
+	int h = a + d;
+	std::vector<uint8_t> gray;
 
-	SIZE fnts;
-
-	SetTextAlign(hDC, TA_BASELINE | TA_LEFT);
-	SetTextColor(hDC, 0xFFFFFF);
-	SetBkColor(hDC, 0);
-	SetBkMode(hDC, TRANSPARENT);
-
-	float tw = 1.0f / float(tex_w);
-	float th = 1.0f / float(tex_h);
-	
-	while ( c < 256 ) {
-		pData = Data(c);
-
-		text[0] = c;
-	
-		TextOutA(hDC, x, y, text, 1);
-		GetTextExtentPoint32(hDC, text, 1, &fnts);
-		
-		pData->sp  = float(fnts.cx);		// Char spacing
-		pData->w   = float(fnts.cx+3);		// Char Width
-		pData->h   = float(h);				// Char Height
-
-		pData->tx0 = float(x-1);
-		pData->tx1 = float(x-1 + fnts.cx+3);
-		
-		pData->ty0 = float(y - a);
-		pData->ty1 = float(y + d);
-		
-		pData->tx0 *= tw;
-		pData->tx1 *= tw;
-		pData->ty0 *= th;
-		pData->ty1 *= th;
-
-		c++;	// Next Charter
-
-		x += (fnts.cx + 4);		// --!!-- In order to increase spacing between charters increase this --!!--
-
-		if ((x+s) >= tex_w) {	// Start a New Line
-			x = 5;
-			y+= (h+5);
+	while (true) {
+		if (tex_h >= 2048) {
+			LogErr("^^ Font is too large for pre-rendering");
+			m9::ReleaseFontRef(font);
+			return false;
 		}
+		gray.assign((size_t)tex_w * tex_h, 0);
+		int x = 5;
+		int y = 5 + h;
+		bool fits = true;
+		float tw = 1.0f / float(tex_w);
+		float th = 1.0f / float(tex_h);
+		for (int c = first; c < 256; c++) {
+			D3D9FontData *pData = Data(c);
+			uint32_t uc = m9::AnsiToUnicode((uint8_t)c);
+			m9::DrawGlyph(font, uc, gray.data(), tex_w, tex_w, tex_h, float(x), float(y), antialias);
+			int cx = (int)lrintf(m9::GlyphAdvance(font, uc));
 
-		if ((y+h) >= tex_h) {
-			pSurf->ReleaseDC(hDC);
-			pSurf->Release();
-			pSrcTex->Release();
-			tex_h *= 2;
-			goto restart;
+			pData->sp = float(cx);
+			pData->w = float(cx + 3);
+			pData->h = float(h);
+			pData->tx0 = float(x - 1) * tw;
+			pData->tx1 = float(x - 1 + cx + 3) * tw;
+			pData->ty0 = float(y - a) * th;
+			pData->ty1 = float(y + d) * th;
+
+			x += (cx + 4);
+			if ((x + s) >= tex_w) {
+				x = 5;
+				y += (h + 5);
+			}
+			if ((y + h) >= tex_h) {
+				fits = false;
+				break;
+			}
 		}
+		if (fits) break;
+		tex_h *= 2;
 	}
+	m9::ReleaseFontRef(font);
 
-	SelectObject(hDC, hOld);
-
-	pSurf->ReleaseDC(hDC);
-	pSurf->Release();
-
-	DeleteObject(hFont);
+	LPDIRECT3DTEXTURE9 pSrcTex = NULL;
+	if (pDev->CreateTexture(tex_w, tex_h, 1, 0, D3DFMT_R5G6B5, D3DPOOL_SYSTEMMEM, &pSrcTex, NULL) != S_OK) {
+		LogErr("D3D9Text::CreateTexture Fail");
+		return false;
+	}
+	D3DLOCKED_RECT lr;
+	if (pSrcTex->LockRect(0, &lr, NULL, 0) == S_OK) {
+		for (int y = 0; y < tex_h; y++) {
+			uint16_t *row = (uint16_t *)((uint8_t *)lr.pBits + (size_t)y * lr.Pitch);
+			const uint8_t *src = gray.data() + (size_t)y * tex_w;
+			for (int x = 0; x < tex_w; x++) {
+				uint32_t v = src[x];
+				row[x] = (uint16_t)(((v >> 3) << 11) | ((v >> 2) << 5) | (v >> 3));
+			}
+		}
+		pSrcTex->UnlockRect(0);
+	}
 
 	HR(pDev->CreateTexture(tex_w, tex_h, 0, D3DUSAGE_AUTOGENMIPMAP, D3DFMT_R5G6B5, D3DPOOL_DEFAULT, &pTex, NULL));
 
-	LogAlw("Font Video Memory Usage = %u kb",tex_w*tex_h*2/1024);
+	LogAlw("Font Video Memory Usage = %u kb", tex_w * tex_h * 2 / 1024);
 
-
-	if (pDev->UpdateTexture(pSrcTex, pTex)!=S_OK) {
+	if (pDev->UpdateTexture(pSrcTex, pTex) != S_OK) {
 		LogErr("D3D9TextMgr: Surface Update Failed");
+		pSrcTex->Release();
 		return false;
 	}
-
 	pTex->GenerateMipSubLevels();
-
-#ifdef FNTDBG
-	char texname[256];
-	sprintf_s(texname, 256, "_%s_%d_0x%X.dds", lf.lfFaceName, lf.lfHeight, DWORD(this));
-	D3DXSaveSurfaceToFile(texname, D3DXIFF_DDS, pSurf, NULL, NULL);
-#endif 
 	pSrcTex->Release();
 
-	// Init WCHAR font
-	HR(D3DXCreateFont(
-		pDev,                 // D3D Device
-		lf.lfHeight,          // Font height
-		lf.lfWidth,           // Font width
-		lf.lfWeight,          // Font Weight
-		1,                    // MipLevels
-		lf.lfItalic,          // Italic
-		lf.lfCharSet,         // CharSet
-		lf.lfOutPrecision,    // OutputPrecision
-		lf.lfQuality,         // Quality
-		lf.lfPitchAndFamily,  // PitchAndFamily
-		lf.lfFaceName,        // pFacename,
-		&wfont                // ppFont
-	));
+	HR(D3DXCreateFont(pDev, lf.height, lf.width, lf.weight, 1, lf.italic, 0, 0, lf.quality, 0, lf.face, &wfont));
 
 	SetLineSpace(0);
 	SetTextShare(0);

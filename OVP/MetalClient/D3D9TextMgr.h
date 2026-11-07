@@ -31,6 +31,25 @@
 
 class SurfNative;
 
+#define NONANTIALIASED_QUALITY 3
+#define ANTIALIASED_QUALITY 4
+#define PROOF_QUALITY 2
+#define CLEARTYPE_QUALITY 5
+#define FW_NORMAL 400
+#define FW_BOLD 700
+#define ANSI_CHARSET 0
+
+struct D9FontSpec {
+	int height = 0;
+	int width = 0;
+	int weight = FW_NORMAL;
+	bool italic = false;
+	bool underline = false;
+	bool strikeout = false;
+	int quality = NONANTIALIASED_QUALITY;
+	char face[64] = {};
+};
+
 // ----------------------------------------------------------------------------------------
 //
 struct D3D9FontData {
@@ -67,7 +86,7 @@ public:
 	void		SetCharSet(int charset=ANSI_CHARSET);	// Must be set before Init
 
 				// Init Will Create Charters from "first" (32:space) to "last" (255 ???)
-	bool        Init(HFONT hFont);
+	bool        Init(const D9FontSpec &spec);
 
 	LPDIRECT3DTEXTURE9	GetTexture() const { return pTex; }
 
@@ -118,7 +137,7 @@ private:
 	LPDIRECT3DTEXTURE9	pTex;
 	D3D9FontData		*FontData;  ///< Array of font data information ( [c - first] )
 	TEXTMETRIC			tm;         ///< Font attributes
-	LOGFONT             lf;         ///< Font attributes
+	D9FontSpec          lf;         ///< Font attributes
 	ID3DXFont           *wfont;     ///< WCHAR font
 
 	// Rendering pipeline configuration

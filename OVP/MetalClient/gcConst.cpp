@@ -318,7 +318,7 @@ bool gcConst::RegisterGenericProc(__gcGenericProc proc, DWORD id, void* pParam)
 
 // ===============================================================================================
 //
-HBITMAP	gcConst::LoadBitmapFromFile(const char* fname)
+SURFHANDLE	gcConst::LoadBitmapFromFile(const char* fname)
 {
 	return g_client->gcReadImageFromFile(fname);
 }

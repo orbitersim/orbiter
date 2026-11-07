@@ -39,59 +39,59 @@ DLLCLBK void gcBindCoreMethod(void** ppFnc, const char* name)
 {
 	*ppFnc = NULL;
 #define binder_start
-	if (strcmp(name,"RegisterSwap")==0) *ppFnc = &gcCore2::RegisterSwap;
-	if (strcmp(name,"FlipSwap")==0) *ppFnc = &gcCore2::FlipSwap;
-	if (strcmp(name,"GetRenderTarget")==0) *ppFnc = &gcCore2::GetRenderTarget;
-	if (strcmp(name,"ReleaseSwap")==0) *ppFnc = &gcCore2::ReleaseSwap;
-	if (strcmp(name,"DeleteCustomCamera")==0) *ppFnc = &gcCore2::DeleteCustomCamera;
-	if (strcmp(name,"CustomCameraOnOff")==0) *ppFnc = &gcCore2::CustomCameraOnOff;
-	if (strcmp(name,"CustomCameraOverlay")==0) *ppFnc = &gcCore2::CustomCameraOverlay;
-	if (strcmp(name,"SetCustomCameraSurfaceLabelScale")==0) *ppFnc = &gcCore2::SetCustomCameraSurfaceLabelScale;
-	if (strcmp(name,"SetupCustomCamera")==0) *ppFnc = &gcCore2::SetupCustomCamera;
-	if (strcmp(name,"SketchpadVersion")==0) *ppFnc = &gcCore2::SketchpadVersion;
-	if (strcmp(name,"CreatePoly")==0) *ppFnc = &gcCore2::CreatePoly;
-	if (strcmp(name,"CreateTriangles")==0) *ppFnc = &gcCore2::CreateTriangles;
-	if (strcmp(name,"DeletePoly")==0) *ppFnc = &gcCore2::DeletePoly;
-	if (strcmp(name,"GetTextLength")==0) *ppFnc = &gcCore2::GetTextLength;
-	if (strcmp(name,"GetCharIndexByPosition")==0) *ppFnc = &gcCore2::GetCharIndexByPosition;
-	if (strcmp(name,"RegisterRenderProc")==0) *ppFnc = &gcCore2::RegisterRenderProc;
-	if (strcmp(name,"CreateSketchpadFont")==0) *ppFnc = &gcCore2::CreateSketchpadFont;
-	if (strcmp(name,"GetMeshMaterial")==0) *ppFnc = &gcCore2::GetMeshMaterial;
-	if (strcmp(name,"SetMeshMaterial")==0) *ppFnc = &gcCore2::SetMeshMaterial;
-	if (strcmp(name,"GetMatrix")==0) *ppFnc = &gcCore2::GetMatrix;
-	if (strcmp(name,"SetMatrix")==0) *ppFnc = &gcCore2::SetMatrix;
-	if (strcmp(name,"GetDevMesh")==0) *ppFnc = &gcCore2::GetDevMesh;
-	if (strcmp(name,"LoadDevMeshGlobal")==0) *ppFnc = &gcCore2::LoadDevMeshGlobal;
-	if (strcmp(name,"ReleaseDevMesh")==0) *ppFnc = &gcCore2::ReleaseDevMesh;
-	if (strcmp(name,"RenderMesh")==0) *ppFnc = &gcCore2::RenderMesh;
-	if (strcmp(name,"PickMesh")==0) *ppFnc = &gcCore2::PickMesh;
-	if (strcmp(name,"RenderLines")==0) *ppFnc = &gcCore2::RenderLines;
-	if (strcmp(name,"GetSystemSpecs")==0) *ppFnc = &gcCore2::GetSystemSpecs;
-	if (strcmp(name,"GetSurfaceSpecs")==0) *ppFnc = &gcCore2::GetSurfaceSpecs;
-	if (strcmp(name,"LoadSurface")==0) *ppFnc = &gcCore2::LoadSurface;
-	if (strcmp(name,"SaveSurface")==0) *ppFnc = &gcCore2::SaveSurface;
-	if (strcmp(name,"GetMipSublevel")==0) *ppFnc = &gcCore2::GetMipSublevel;
-	if (strcmp(name,"GenerateMipmaps")==0) *ppFnc = &gcCore2::GenerateMipmaps;
-	if (strcmp(name,"CompressSurface")==0) *ppFnc = &gcCore2::CompressSurface;
-	if (strcmp(name,"LoadBitmapFromFile")==0) *ppFnc = &gcCore2::LoadBitmapFromFile;
-	if (strcmp(name,"GetRenderWindow")==0) *ppFnc = &gcCore2::GetRenderWindow;
-	if (strcmp(name,"RegisterGenericProc")==0) *ppFnc = &gcCore2::RegisterGenericProc;
-	if (strcmp(name,"StretchRectInScene")==0) *ppFnc = &gcCore2::StretchRectInScene;
-	if (strcmp(name,"ClearSurfaceInScene")==0) *ppFnc = &gcCore2::ClearSurfaceInScene;
-	if (strcmp(name,"ScanScreen")==0) *ppFnc = &gcCore2::ScanScreen;
-	if (strcmp(name,"LockSurface")==0) *ppFnc = &gcCore2::LockSurface;
-	if (strcmp(name,"ReleaseLock")==0) *ppFnc = &gcCore2::ReleaseLock;
-	if (strcmp(name,"GetPlanetManager")==0) *ppFnc = &gcCore2::GetPlanetManager;
-	if (strcmp(name,"SetTileOverlay")==0) *ppFnc = &gcCore2::SetTileOverlay;
-	if (strcmp(name,"AddGlobalOverlay")==0) *ppFnc = &gcCore2::AddGlobalOverlay;
-	if (strcmp(name,"GetTileData")==0) *ppFnc = &gcCore2::GetTileData;
-	if (strcmp(name,"GetTile")==0) *ppFnc = &gcCore2::GetTile;
-	if (strcmp(name,"HasTileData")==0) *ppFnc = &gcCore2::HasTileData;
-	if (strcmp(name,"SeekTileTexture")==0) *ppFnc = &gcCore2::SeekTileTexture;
-	if (strcmp(name,"SeekTileElevation")==0) *ppFnc = &gcCore2::SeekTileElevation;
-	if (strcmp(name,"GetElevation")==0) *ppFnc = &gcCore2::GetElevation;
-	if (strcmp(name,"CreateIPInterface")==0) *ppFnc = &gcCore2::CreateIPInterface;
-	if (strcmp(name,"ReleaseIPInterface")==0) *ppFnc = &gcCore2::ReleaseIPInterface;
+	if (strcmp(name,"RegisterSwap")==0) *ppFnc = (void *)&gcCore2::RegisterSwap;
+	if (strcmp(name,"FlipSwap")==0) *ppFnc = (void *)&gcCore2::FlipSwap;
+	if (strcmp(name,"GetRenderTarget")==0) *ppFnc = (void *)&gcCore2::GetRenderTarget;
+	if (strcmp(name,"ReleaseSwap")==0) *ppFnc = (void *)&gcCore2::ReleaseSwap;
+	if (strcmp(name,"DeleteCustomCamera")==0) *ppFnc = (void *)&gcCore2::DeleteCustomCamera;
+	if (strcmp(name,"CustomCameraOnOff")==0) *ppFnc = (void *)&gcCore2::CustomCameraOnOff;
+	if (strcmp(name,"CustomCameraOverlay")==0) *ppFnc = (void *)&gcCore2::CustomCameraOverlay;
+	if (strcmp(name,"SetCustomCameraSurfaceLabelScale")==0) *ppFnc = (void *)&gcCore2::SetCustomCameraSurfaceLabelScale;
+	if (strcmp(name,"SetupCustomCamera")==0) *ppFnc = (void *)&gcCore2::SetupCustomCamera;
+	if (strcmp(name,"SketchpadVersion")==0) *ppFnc = (void *)&gcCore2::SketchpadVersion;
+	if (strcmp(name,"CreatePoly")==0) *ppFnc = (void *)&gcCore2::CreatePoly;
+	if (strcmp(name,"CreateTriangles")==0) *ppFnc = (void *)&gcCore2::CreateTriangles;
+	if (strcmp(name,"DeletePoly")==0) *ppFnc = (void *)&gcCore2::DeletePoly;
+	if (strcmp(name,"GetTextLength")==0) *ppFnc = (void *)&gcCore2::GetTextLength;
+	if (strcmp(name,"GetCharIndexByPosition")==0) *ppFnc = (void *)&gcCore2::GetCharIndexByPosition;
+	if (strcmp(name,"RegisterRenderProc")==0) *ppFnc = (void *)&gcCore2::RegisterRenderProc;
+	if (strcmp(name,"CreateSketchpadFont")==0) *ppFnc = (void *)&gcCore2::CreateSketchpadFont;
+	if (strcmp(name,"GetMeshMaterial")==0) *ppFnc = (void *)&gcCore2::GetMeshMaterial;
+	if (strcmp(name,"SetMeshMaterial")==0) *ppFnc = (void *)&gcCore2::SetMeshMaterial;
+	if (strcmp(name,"GetMatrix")==0) *ppFnc = (void *)&gcCore2::GetMatrix;
+	if (strcmp(name,"SetMatrix")==0) *ppFnc = (void *)&gcCore2::SetMatrix;
+	if (strcmp(name,"GetDevMesh")==0) *ppFnc = (void *)&gcCore2::GetDevMesh;
+	if (strcmp(name,"LoadDevMeshGlobal")==0) *ppFnc = (void *)&gcCore2::LoadDevMeshGlobal;
+	if (strcmp(name,"ReleaseDevMesh")==0) *ppFnc = (void *)&gcCore2::ReleaseDevMesh;
+	if (strcmp(name,"RenderMesh")==0) *ppFnc = (void *)&gcCore2::RenderMesh;
+	if (strcmp(name,"PickMesh")==0) *ppFnc = (void *)&gcCore2::PickMesh;
+	if (strcmp(name,"RenderLines")==0) *ppFnc = (void *)&gcCore2::RenderLines;
+	if (strcmp(name,"GetSystemSpecs")==0) *ppFnc = (void *)&gcCore2::GetSystemSpecs;
+	if (strcmp(name,"GetSurfaceSpecs")==0) *ppFnc = (void *)&gcCore2::GetSurfaceSpecs;
+	if (strcmp(name,"LoadSurface")==0) *ppFnc = (void *)&gcCore2::LoadSurface;
+	if (strcmp(name,"SaveSurface")==0) *ppFnc = (void *)&gcCore2::SaveSurface;
+	if (strcmp(name,"GetMipSublevel")==0) *ppFnc = (void *)&gcCore2::GetMipSublevel;
+	if (strcmp(name,"GenerateMipmaps")==0) *ppFnc = (void *)&gcCore2::GenerateMipmaps;
+	if (strcmp(name,"CompressSurface")==0) *ppFnc = (void *)&gcCore2::CompressSurface;
+	if (strcmp(name,"LoadBitmapFromFile")==0) *ppFnc = (void *)&gcCore2::LoadBitmapFromFile;
+	if (strcmp(name,"GetRenderWindow")==0) *ppFnc = (void *)&gcCore2::GetRenderWindow;
+	if (strcmp(name,"RegisterGenericProc")==0) *ppFnc = (void *)&gcCore2::RegisterGenericProc;
+	if (strcmp(name,"StretchRectInScene")==0) *ppFnc = (void *)&gcCore2::StretchRectInScene;
+	if (strcmp(name,"ClearSurfaceInScene")==0) *ppFnc = (void *)&gcCore2::ClearSurfaceInScene;
+	if (strcmp(name,"ScanScreen")==0) *ppFnc = (void *)&gcCore2::ScanScreen;
+	if (strcmp(name,"LockSurface")==0) *ppFnc = (void *)&gcCore2::LockSurface;
+	if (strcmp(name,"ReleaseLock")==0) *ppFnc = (void *)&gcCore2::ReleaseLock;
+	if (strcmp(name,"GetPlanetManager")==0) *ppFnc = (void *)&gcCore2::GetPlanetManager;
+	if (strcmp(name,"SetTileOverlay")==0) *ppFnc = (void *)&gcCore2::SetTileOverlay;
+	if (strcmp(name,"AddGlobalOverlay")==0) *ppFnc = (void *)&gcCore2::AddGlobalOverlay;
+	if (strcmp(name,"GetTileData")==0) *ppFnc = (void *)&gcCore2::GetTileData;
+	if (strcmp(name,"GetTile")==0) *ppFnc = (void *)&gcCore2::GetTile;
+	if (strcmp(name,"HasTileData")==0) *ppFnc = (void *)&gcCore2::HasTileData;
+	if (strcmp(name,"SeekTileTexture")==0) *ppFnc = (void *)&gcCore2::SeekTileTexture;
+	if (strcmp(name,"SeekTileElevation")==0) *ppFnc = (void *)&gcCore2::SeekTileElevation;
+	if (strcmp(name,"GetElevation")==0) *ppFnc = (void *)&gcCore2::GetElevation;
+	if (strcmp(name,"CreateIPInterface")==0) *ppFnc = (void *)&gcCore2::CreateIPInterface;
+	if (strcmp(name,"ReleaseIPInterface")==0) *ppFnc = (void *)&gcCore2::ReleaseIPInterface;
 #define binder_end
 	if (*ppFnc == NULL) oapiWriteLogV("ERROR:gcCoreAPI: Function [%s] failed to bind", name);
 }
@@ -568,7 +568,7 @@ bool gcCore::RegisterGenericProc(__gcGenericProc proc, DWORD id, void* pParam)
 
 // ===============================================================================================
 //
-HBITMAP	gcCore::LoadBitmapFromFile(const char* fname)
+SURFHANDLE	gcCore::LoadBitmapFromFile(const char* fname)
 {
 	return g_client->gcReadImageFromFile(fname);
 }

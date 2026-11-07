@@ -89,6 +89,7 @@ enum ImageFileType { IMGFILE_BMP = 0, IMGFILE_PNG, IMGFILE_JPG, IMGFILE_TIF };
 __attribute__((visibility("default"))) bool LoadImageFile(const std::string &path, Image &img, int width = 0, int height = 0);
 __attribute__((visibility("default"))) bool LoadImageMemory(const void *data, size_t size, Image &img, int width = 0, int height = 0);
 __attribute__((visibility("default"))) bool SaveImageFile(const std::string &path, const uint8_t *pixels, int width, int height, int stride, int bpp, ImageFileType type, float quality);
+__attribute__((visibility("default"))) bool CopyImageToClipboard(const uint8_t *pixels, int width, int height, int stride, int bpp);
 
 }
 

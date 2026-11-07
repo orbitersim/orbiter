@@ -81,8 +81,8 @@ void vPlanet::GlobalInitAtmosphere(oapi::D3D9Client* gc)
 {
 	pDev = gc->GetDevice();
 
-	if (Config->bAtmoQuality) pIP = new ImageProcessing(pDev, "Modules/D3D9Client/Scatter.hlsl", "SunColor");
-	else pIP = new ImageProcessing(pDev, "Modules/D3D9Client/Scatter.hlsl", "SunColor", "_PERFORMANCE");
+	if (Config->bAtmoQuality) pIP = new ImageProcessing(pDev, "Modules/MetalClient/Scatter.hlsl", "SunColor");
+	else pIP = new ImageProcessing(pDev, "Modules/MetalClient/Scatter.hlsl", "SunColor", "_PERFORMANCE");
 
 	pIP->CompileShader("SkyView");
 	pIP->CompileShader("LandView");
@@ -124,13 +124,13 @@ void vPlanet::GlobalInitAtmosphere(oapi::D3D9Client* gc)
 	string flags = "";
 	if (!Config->bAtmoQuality) flags += "_PERFORMANCE ";
 
-	pRender[PLT_GIANT] = new PlanetShader(pDev, "Modules/D3D9Client/NewPlanet.hlsl", "GiantVS", "GiantPS", "Giant", flags.c_str());
-	pRender[PLT_G_CLOUDS] = new PlanetShader(pDev, "Modules/D3D9Client/NewPlanet.hlsl", "CloudVS", "GiantCloudPS", "GiantCloud", flags.c_str());
+	pRender[PLT_GIANT] = new PlanetShader(pDev, "Modules/MetalClient/NewPlanet.hlsl", "GiantVS", "GiantPS", "Giant", flags.c_str());
+	pRender[PLT_G_CLOUDS] = new PlanetShader(pDev, "Modules/MetalClient/NewPlanet.hlsl", "CloudVS", "GiantCloudPS", "GiantCloud", flags.c_str());
 
 	if (Config->CloudMicro) flags += "_CLOUDMICRO ";
 	if (Config->bCloudNormals) flags += "_CLOUDNORMALS ";
 
-	pRender[PLT_CLOUDS] = new PlanetShader(pDev, "Modules/D3D9Client/NewPlanet.hlsl", "CloudVS", "CloudPS", "Clouds", flags.c_str());
+	pRender[PLT_CLOUDS] = new PlanetShader(pDev, "Modules/MetalClient/NewPlanet.hlsl", "CloudVS", "CloudPS", "Clouds", flags.c_str());
 
 
 
@@ -145,12 +145,12 @@ void vPlanet::GlobalInitAtmosphere(oapi::D3D9Client* gc)
 	if (Config->EnableMeshDbg) flags += "_DEVTOOLS ";
 	if (!Config->bAtmoQuality) flags += "_PERFORMANCE ";
 
-	pRender[PLT_MARS] = new PlanetShader(pDev, "Modules/D3D9Client/NewPlanet.hlsl", "TerrainVS", "TerrainPS", "Mars", (flags + blend).c_str());
+	pRender[PLT_MARS] = new PlanetShader(pDev, "Modules/MetalClient/NewPlanet.hlsl", "TerrainVS", "TerrainPS", "Mars", (flags + blend).c_str());
 
 
 	flags += "_NO_ATMOSPHERE ";
 
-	pRender[PLT_MOON] = new PlanetShader(pDev, "Modules/D3D9Client/NewPlanet.hlsl", "TerrainVS", "TerrainPS", "Moon", (flags + blend).c_str());
+	pRender[PLT_MOON] = new PlanetShader(pDev, "Modules/MetalClient/NewPlanet.hlsl", "TerrainVS", "TerrainPS", "Moon", (flags + blend).c_str());
 
 
 	flags = "";
@@ -165,7 +165,7 @@ void vPlanet::GlobalInitAtmosphere(oapi::D3D9Client* gc)
 	if (Config->EnableMeshDbg) flags += "_DEVTOOLS ";
 	if (!Config->bAtmoQuality) flags += "_PERFORMANCE ";
 
-	pRender[PLT_EARTH] = new PlanetShader(pDev, "Modules/D3D9Client/NewPlanet.hlsl", "TerrainVS", "TerrainPS", "Earth", (flags + blend).c_str());
+	pRender[PLT_EARTH] = new PlanetShader(pDev, "Modules/MetalClient/NewPlanet.hlsl", "TerrainVS", "TerrainPS", "Earth", (flags + blend).c_str());
 }
 
 

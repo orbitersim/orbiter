@@ -15,6 +15,18 @@
 #include "Mesh.h"
 #include <list>
 
+template<class T> class TileManager2;
+class SurfTile;
+class CloudTile;
+
+class CloudManager;
+class HazeManager;
+class HazeManager2;
+class RingManager;
+class SurfaceManager;
+class TileManager;
+class vBase;
+
 class D3D9Mesh;
 class SurfTile;
 class CloudTile;

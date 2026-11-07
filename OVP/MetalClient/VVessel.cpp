@@ -65,9 +65,9 @@ vVessel::vVessel(OBJHANDLE _hObj, const Scene *scene): vObject (_hObj, scene)
 	pMatMgr = new MatMgr(this, scene->GetClient());
 	for (int i = 0; i < ARRAYSIZE(pEnv); i++) pEnv[i] = NULL;
 
-	if (strncmp(vessel->GetClassNameA(), "XR2Ravenstar", 12) == 0) vClass = VCLASS_XR2;
-	if (strncmp(vessel->GetClassNameA(), "SpaceShuttleUltra", 17) == 0) vClass = VCLASS_ULTRA;
-	if (strncmp(vessel->GetClassNameA(), "SSU_CentaurGPrime", 17) == 0) vClass = VCLASS_SSU_CENTAUR;
+	if (strncmp(vessel->GetClassName(), "XR2Ravenstar", 12) == 0) vClass = VCLASS_XR2;
+	if (strncmp(vessel->GetClassName(), "SpaceShuttleUltra", 17) == 0) vClass = VCLASS_ULTRA;
+	if (strncmp(vessel->GetClassName(), "SSU_CentaurGPrime", 17) == 0) vClass = VCLASS_SSU_CENTAUR;
 
 	bBSRecompute = true;
 	ExhaustLength = 0.0f;
@@ -83,7 +83,7 @@ vVessel::vVessel(OBJHANDLE _hObj, const Scene *scene): vObject (_hObj, scene)
 	}
 	
 	/*
-	oapiWriteLogV("%s", vessel->GetClassNameA());
+	oapiWriteLogV("%s", vessel->GetClassName());
 	oapiWriteLogV("nanim = %u", na);
 	for (UINT i = 0; i < na; i++) {
 		oapiWriteLogV("ANIM[%u] = %u comp(s)", i, anim[i].ncomp);
@@ -240,7 +240,7 @@ void vVessel::PreInitObject()
 		for (DWORD i=0;i<nmesh;i++) if (meshlist[i].mesh) pMatMgr->ApplyConfiguration(meshlist[i].mesh);
 		pMatMgr->LoadCameraConfig();
 	}
-	else LogErr("Failed to load a custom configuration for %s",vessel->GetClassNameA());
+	else LogErr("Failed to load a custom configuration for %s",vessel->GetClassName());
 }
 
 
@@ -279,7 +279,7 @@ void vVessel::LoadMeshes()
 
 	memset(meshlist, 0, nmesh*sizeof(MESHREC));
 
-	LogAlw("Vessel(%s) %s has %u meshes", _PTR(vessel), vessel->GetClassNameA(), nmesh);
+	LogAlw("Vessel(%s) %s has %u meshes", _PTR(vessel), vessel->GetClassName(), nmesh);
 
 	for (idx=0;idx<nmesh;idx++) {
 
@@ -317,13 +317,13 @@ void vVessel::LoadMeshes()
 			}
 		}
 		else {
-			LogWrn("Vessel %s has a NULL mesh in index %u",vessel->GetClassNameA(),idx);
+			LogWrn("Vessel %s has a NULL mesh in index %u",vessel->GetClassName(),idx);
 		}
 	}
 
 	UpdateBoundingBox();
 
-	LogOk("Loaded %u meshed for %s",nmesh,vessel->GetClassNameA());
+	LogOk("Loaded %u meshed for %s",nmesh,vessel->GetClassName());
 }
 
 

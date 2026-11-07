@@ -64,7 +64,7 @@ CSphereManager::CSphereManager(D3D9Client *gc, const Scene *scene) : gc(gc), tex
 	NLNG = TileManager::NLNG;
 	NLAT = TileManager::NLAT;
 
-	pShader = new ShaderClass(gc->GetDevice(), "Modules/D3D9Client/CelSphere.hlsl", "CelVS", "CelPS", "CelSphere", "");
+	pShader = new ShaderClass(gc->GetDevice(), "Modules/MetalClient/CelSphere.hlsl", "CelVS", "CelPS", "CelSphere", "");
 
 	// Get Handles for faster access
 	hTexA = pShader->GetPSHandle("tTexA");

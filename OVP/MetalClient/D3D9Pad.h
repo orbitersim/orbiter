@@ -14,6 +14,8 @@
 #include <stack>
 #include "DrawAPI.h"
 
+class D3D9Text;
+
 using namespace oapi;
 
 extern oapi::Font *deffont;
@@ -724,10 +726,20 @@ private:
 
 
 
+#ifndef PS_SOLID
+#define PS_SOLID 0
+#define PS_DASH 1
+#define PS_DOT 2
+#define PS_NULL 5
+#endif
+#ifndef TRANSPARENT
+#define TRANSPARENT 1
+#define OPAQUE 2
+#endif
+
 class D3D9PadFont: public oapi::Font {
 
 	friend class D3D9Pad;
-	friend class GDIPad;
 
 public:
 
@@ -757,14 +769,12 @@ public:
 	 */
 	~D3D9PadFont ();
 
-	HFONT	GetGDIFont () const;
 	DWORD	GetQuality() const { return Quality; }
 	int		GetTextLength(const char *pText, int len) const;
 	int		GetIndexByPosition(const char *pText, int pos, int len) const;
 
 private:
 	D3D9TextPtr pFont;
-	HFONT hFont;
 	DWORD Quality;
 	float rotation;
 	static LPDIRECT3DDEVICE9 pDev;
@@ -776,7 +786,6 @@ private:
 class D3D9PadPen: public oapi::Pen {
 
 	friend class D3D9Pad;
-	friend class GDIPad;
 
 public:
 	static void D3D9TechInit(LPDIRECT3DDEVICE9 pDev);
@@ -800,7 +809,6 @@ private:
 	int style;
 	int width;
 	SkpColor clr;
-	HPEN hPen;
 };
 
 
@@ -809,7 +817,6 @@ private:
 
 class D3D9PadBrush: public oapi::Brush {
 	friend class D3D9Pad;
-	friend class GDIPad;
 
 public:
 	static void D3D9TechInit(LPDIRECT3DDEVICE9 pDev);
@@ -828,7 +835,6 @@ public:
 
 private:
 	SkpColor clr;
-	HBRUSH hBrush;
 };
 
 

@@ -128,7 +128,7 @@ void D3D9Pad::D3D9TechInit(D3D9Client *_gc, LPDIRECT3DDEVICE9 pDevice)
 	// Initialize Techniques -------------------------------------------------------------------------
 	//
 	char name[256];
-	sprintf_s(name, 256, "Modules/D3D9Client/Sketchpad.fx");
+	sprintf_s(name, 256, "Modules/MetalClient/Sketchpad.fx");
 
 	// Create the Effect from a .fx file.
 	ID3DXBuffer* errors = 0;
@@ -427,7 +427,7 @@ void D3D9Pad::BeginDrawing(LPDIRECT3DSURFACE9 pRenderTgt, LPDIRECT3DSURFACE9 pDe
 
 	pRenderTgt->GetDesc(&tgt_desc);
 	zfar = float(max(tgt_desc.Width, tgt_desc.Height));
-	D3DXMatrixOrthoOffCenterLH(&mO, 0.0f, (float)tgt_desc.Width, (float)tgt_desc.Height, 0.0f, 0.0f, zfar);
+	D3DXMatrixOrthoOffCenterLH(&mO, -0.5f, (float)tgt_desc.Width - 0.5f, (float)tgt_desc.Height - 0.5f, -0.5f, 0.0f, zfar);
 	vTarget = D3DXVECTOR4(2.0f / (float)tgt_desc.Width, 2.0f / (float)tgt_desc.Height, (float)tgt_desc.Width, (float)tgt_desc.Height);
 	
 	pTgt = pRenderTgt;
@@ -832,11 +832,6 @@ Font *D3D9Pad::SetFont(Font *font)
 {
 	if (cfont == font) return font;
 
-#ifdef SKPDBG 
-	LOGFONTA lf;
-	GetObjectA(font->GetGDIFont(), sizeof(LOGFONT), &lf);
-	Log("SetFont(%s) Face=[%s] Height=%d Weight=%d", _PTR(font), lf.lfFaceName, lf.lfHeight, lf.lfWeight);
-#endif
 	// No "Change" falgs required here, covered in SetFontTextureNative()
 
 	Font *pfont = cfont;
@@ -1869,8 +1864,6 @@ D3D9PadFont::D3D9PadFont(int height, bool prop, const char *face, FontStyle styl
 	}
 	else face++;
 
-	hFont = NULL;
-
 	if (orientation!=0) rotation = float(orientation) * 0.1f;
 	else                rotation = 0.0f;
 
@@ -1906,12 +1899,17 @@ D3D9PadFont::D3D9PadFont(int height, bool prop, const char *face, FontStyle styl
 	//
 	if (pFont==NULL) {
 
-		HFONT hNew = CreateFont(height, 0, 0, 0, weight, italic, underline, strikeout, 0, 0, 2, Quality, 49, face);
+		D9FontSpec spec;
+		spec.height = height;
+		spec.weight = weight;
+		spec.italic = italic;
+		spec.underline = underline;
+		spec.strikeout = strikeout;
+		spec.quality = Quality;
+		strcpy_s(spec.face, 64, face);
 
 		pFont = std::make_shared<D3D9Text>(pDev);
-		pFont->Init(hNew);
-
-		DeleteObject(hNew);
+		pFont->Init(spec);
 
 		pFont->SetRotation(rotation);
 
@@ -1924,15 +1922,6 @@ D3D9PadFont::D3D9PadFont(int height, bool prop, const char *face, FontStyle styl
 		strcpy_s(p->face, 64, face);
 		fcache.push_back(p);
 	}
-
-	// Create Rotated windows GDI Font for a use with GDIPad ---------------------------
-	//
-	hFont = CreateFontA(height, 0, orientation, orientation, weight, italic, underline, strikeout, 0, 0, 2, Quality, 49, face);
-
-	if (hFont==NULL) {
-		face  = (prop ? def_sansface : def_fixedface);
-		hFont = CreateFont(height, 0, orientation, orientation, weight, italic, underline, strikeout, 0, 0, 2, Quality, 49, face);
-	}
 }
 
 
@@ -1941,7 +1930,6 @@ D3D9PadFont::D3D9PadFont(int height, char *face, int width, int weight, FontStyl
 : Font(height, false, face, style, 0)
 {
 
-	hFont = NULL;
 	rotation = 0.0f;
 
 	// Browse cache ---------------------------------------------------
@@ -1973,10 +1961,18 @@ D3D9PadFont::D3D9PadFont(int height, char *face, int width, int weight, FontStyl
 	//
 	if (pFont == NULL) {
 
-		hFont = CreateFont(height, width, 0, 0, weight, italic, underline, strikeout, 0, 0, 2, Quality, 49, face);
+		D9FontSpec spec;
+		spec.height = height;
+		spec.width = width;
+		spec.weight = weight;
+		spec.italic = italic;
+		spec.underline = underline;
+		spec.strikeout = strikeout;
+		spec.quality = Quality;
+		strcpy_s(spec.face, 64, face);
 
 		pFont = std::make_shared<D3D9Text>(pDev);
-		pFont->Init(hFont);
+		pFont->Init(spec);
 		pFont->SetRotation(0.0f);
 		pFont->SetTextSpace(spacing);
 
@@ -1991,11 +1987,6 @@ D3D9PadFont::D3D9PadFont(int height, char *face, int width, int weight, FontStyl
 		strcpy_s(p->face, 64, face);
 		qcache.push_back(p);
 	}
-	else {
-		// Create windows GDI Font for a use with GDIPad ---------------------------
-		//
-		hFont = CreateFont(height, width, 0, 0, weight, italic, underline, strikeout, 0, 0, 2, Quality, 49, face);
-	}
 }
 
 // -----------------------------------------------------------------------------------------------
@@ -2003,16 +1994,8 @@ D3D9PadFont::D3D9PadFont(int height, char *face, int width, int weight, FontStyl
 D3D9PadFont::~D3D9PadFont ()
 {
 	if (pFont) pFont->SetRotation(0.0f), pFont.reset();
-	if (hFont) DeleteObject(hFont);
 }
 
-
-// -----------------------------------------------------------------------------------------------
-//
-HFONT D3D9PadFont::GetGDIFont () const
-{
-	return hFont;
-}
 
 
 // -----------------------------------------------------------------------------------------------
@@ -2052,7 +2035,6 @@ D3D9PadPen::D3D9PadPen (int s, int w, DWORD col): oapi::Pen (style, width, col)
 	}
 	width = w;
 	if (width<1) width = 1;
-	hPen = CreatePen(style, width, COLORREF(col&0xFFFFFF));
 	clr = SkpColor(col);
 }
 
@@ -2060,7 +2042,6 @@ D3D9PadPen::D3D9PadPen (int s, int w, DWORD col): oapi::Pen (style, width, col)
 //
 D3D9PadPen::~D3D9PadPen ()
 {
-	DeleteObject(hPen);
 }
 
 // -----------------------------------------------------------------------------------------------
@@ -2078,7 +2059,6 @@ void D3D9PadPen::D3D9TechInit(LPDIRECT3DDEVICE9 pDevice)
 
 D3D9PadBrush::D3D9PadBrush (DWORD col): oapi::Brush (col)
 {
-	hBrush = CreateSolidBrush(COLORREF(col&0xFFFFFF));
 	clr = SkpColor(col);
 }
 
@@ -2086,7 +2066,6 @@ D3D9PadBrush::D3D9PadBrush (DWORD col): oapi::Brush (col)
 //
 D3D9PadBrush::~D3D9PadBrush ()
 {
-	DeleteObject(hBrush);
 }
 
 // -----------------------------------------------------------------------------------------------

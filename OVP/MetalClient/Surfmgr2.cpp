@@ -23,6 +23,8 @@
 #include "gcCore.h"
 #include "D3D9Surface.h"
 
+template<> void TileManager2<SurfTile>::SetSubtreeLabels(QuadTreeNode<SurfTile> *node, bool activate);
+
 // =======================================================================
 extern void FilterElevationGraphics(OBJHANDLE hPlanet, int lvl, int ilat, int ilng, float *elev);
 

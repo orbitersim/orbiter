@@ -267,8 +267,8 @@ void HazeManager2::GlobalInit(D3D9Client *gclient)
 	CreateSkydomeBuffers(4);
 	CreateSkydomeBuffers(5);
 
-	pDome = new ShaderClass(pDev, "Modules/D3D9Client/NewPlanet.hlsl", "HorizonVS", "HorizonPS", "Dome", NULL);
-	pRing = new ShaderClass(pDev, "Modules/D3D9Client/NewPlanet.hlsl", "HorizonVS", "HorizonRingPS", "Ring", NULL);
+	pDome = new ShaderClass(pDev, "Modules/MetalClient/NewPlanet.hlsl", "HorizonVS", "HorizonPS", "Dome", NULL);
+	pRing = new ShaderClass(pDev, "Modules/MetalClient/NewPlanet.hlsl", "HorizonVS", "HorizonRingPS", "Ring", NULL);
 }
 
 // -----------------------------------------------------------------------

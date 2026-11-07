@@ -15,7 +15,8 @@
 #include <unordered_set>
 #include <vector>
 
-class oapi::D3D9Client;
+namespace oapi { class D3D9Client; }
+
 
 typedef struct {
 	float fdata;
@@ -43,7 +44,7 @@ typedef struct {
 
 class vVessel: public vObject {
 public:
-	friend class D3D9Client;
+	friend class oapi::D3D9Client;
 	/**
 	 * \brief Creates a new vessel visual for a scene
 	 * \param _hObj vessel object handle

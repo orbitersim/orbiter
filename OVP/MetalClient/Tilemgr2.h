@@ -14,6 +14,7 @@
 #define __TILEMGR2_H
 
 #include "D3D9Client.h"
+#include "D3D9Config.h"
 #include "D3D9Util.h"
 #include "VPlanet.h"
 #include "Spherepatch.h"
@@ -335,7 +336,7 @@ public:
 	 * \brief Set up global parameters shared by all instances
 	 * \param gclient client instance pointer
 	 */
-	static void GlobalInit (class oapi::D3D9Client *gclient);
+	static void GlobalInit (oapi::D3D9Client *gclient);
 
 	/**
 	 * \brief Release global parameters
@@ -348,7 +349,6 @@ public:
 	static bool ShutDown ();
 
 	static LPDIRECT3DDEVICE9 Dev() { return pDev; }
-	static HFONT GetDebugFont() { return hFont; }
 
 	template<class TileType>
 	QuadTreeNode<TileType> *FindNode (QuadTreeNode<TileType> root[2], int lvl, int ilat, int ilng);
@@ -416,7 +416,6 @@ private:
 
 	static oapi::D3D9Client* gc;
 	static LPDIRECT3DDEVICE9 pDev;
-	static HFONT hFont;
 	static double resolutionBias;
 	static double resolutionScale;
 	static bool bTileLoadThread;     // load tiles on separate thread

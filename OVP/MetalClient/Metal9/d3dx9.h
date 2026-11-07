@@ -676,6 +676,8 @@ struct ID3DXConstantTable : IUnknownM9 {
 	HRESULT SetInt(IDirect3DDevice9 *dev, D3DXHANDLE h, INT n);
 	HRESULT SetFloat(IDirect3DDevice9 *dev, D3DXHANDLE h, float f);
 	HRESULT SetFloatArray(IDirect3DDevice9 *dev, D3DXHANDLE h, const float *f, UINT count);
+	HRESULT SetIntArray(IDirect3DDevice9 *dev, D3DXHANDLE h, const INT *n, UINT count);
+	HRESULT SetBoolArray(IDirect3DDevice9 *dev, D3DXHANDLE h, const WINBOOL *b, UINT count);
 	HRESULT SetVector(IDirect3DDevice9 *dev, D3DXHANDLE h, const D3DXVECTOR4 *v);
 	HRESULT SetVectorArray(IDirect3DDevice9 *dev, D3DXHANDLE h, const D3DXVECTOR4 *v, UINT count);
 	HRESULT SetMatrix(IDirect3DDevice9 *dev, D3DXHANDLE h, const D3DXMATRIX *m);

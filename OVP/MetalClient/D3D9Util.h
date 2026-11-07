@@ -208,7 +208,7 @@ typedef struct _LightStruct  {
 	D3DXVECTOR4   Param;            ///< range, falloff, theta, phi
 public : _LightStruct () :	Type(0),
 							Dst2(0.0),
-							Diffuse(D3DXCOLOR(0ul)),
+							Diffuse(D3DXCOLOR(DWORD(0))),
 							Position(0,0,0), Direction(1.0f, 0.0f, 0.0f), Attenuation(1.0f, 1.0f, 1.0f),
 							Param(0,0,0,0)
 							{}

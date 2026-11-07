@@ -168,14 +168,14 @@ bool MatMgr::LoadConfiguration(bool bAppend)
 	char meshname[64];
 	char shadername[64];
 
-	OBJHANDLE hObj = vObj->GetObjectA();
+	OBJHANDLE hObj = vObj->GetObject();
 
 	if (oapiGetObjectType(hObj)!=OBJTP_VESSEL) return false; 
 
 	const char *cfgdir = OapiExtension::GetConfigDir();
 
 	VESSEL *vessel = oapiGetVesselInterface(hObj);
-	strcpy_s(classname, 256, vessel->GetClassNameA());
+	strcpy_s(classname, 256, vessel->GetClassName());
 	parse_vessel_classname(classname);
 
 	AutoFile file;
@@ -187,7 +187,7 @@ bool MatMgr::LoadConfiguration(bool bAppend)
 
 	if (file.IsInvalid()) return true;
 
-	LogAlw("Reading a custom configuration file for a vessel %s (%s)", vessel->GetName(), vessel->GetClassNameA());
+	LogAlw("Reading a custom configuration file for a vessel %s (%s)", vessel->GetName(), vessel->GetClassName());
 	
 	DWORD n = 0;
 	int mat_idx = -1;
@@ -332,14 +332,14 @@ bool MatMgr::SaveConfiguration()
 	char classname[256];
 	
 	
-	OBJHANDLE hObj = vObj->GetObjectA();
+	OBJHANDLE hObj = vObj->GetObject();
 
 	if (oapiGetObjectType(hObj)!=OBJTP_VESSEL) return false; 
 
 	VESSEL *vessel = oapiGetVesselInterface(hObj);
 	const char *cfgdir = OapiExtension::GetConfigDir();
 
-	strcpy_s(classname, 256, vessel->GetClassNameA());
+	strcpy_s(classname, 256, vessel->GetClassName());
 	parse_vessel_classname(classname);
 
 	AutoFile file;
@@ -402,14 +402,14 @@ bool MatMgr::LoadCameraConfig()
 	char path[256];
 	char classname[256];
 
-	OBJHANDLE hObj = vObj->GetObjectA();
+	OBJHANDLE hObj = vObj->GetObject();
 
 	if (oapiGetObjectType(hObj)!=OBJTP_VESSEL) return false; 
 
 	const char *cfgdir = OapiExtension::GetConfigDir();
 	
 	VESSEL *vessel = oapiGetVesselInterface(hObj);
-	strcpy_s(classname, 256, vessel->GetClassNameA());
+	strcpy_s(classname, 256, vessel->GetClassName());
 	parse_vessel_classname(classname);
 
 	AutoFile file;
@@ -419,7 +419,7 @@ bool MatMgr::LoadCameraConfig()
 	
 	if (file.IsInvalid()) return true;
 
-	LogAlw("Reading a camera configuration file for a vessel %s (%s)", vessel->GetName(), vessel->GetClassNameA());
+	LogAlw("Reading a camera configuration file for a vessel %s (%s)", vessel->GetName(), vessel->GetClassName());
 	
 	DWORD iattc = 0;
 	DWORD idock = 0;

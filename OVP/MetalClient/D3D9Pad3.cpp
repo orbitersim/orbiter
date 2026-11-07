@@ -298,7 +298,7 @@ void D3D9Pad::Clear(DWORD color, bool bColor, bool bDepth)
 //
 void D3D9Pad::SetClipDistance(float nr, float fr)
 {
-	D3DXMatrixOrthoOffCenterLH(&mO, 0.0f, (float)tgt_desc.Width, (float)tgt_desc.Height, 0.0f, nr, fr);
+	D3DXMatrixOrthoOffCenterLH(&mO, -0.5f, (float)tgt_desc.Width - 0.5f, (float)tgt_desc.Height - 0.5f, -0.5f, nr, fr);
 	mP._33 = fr / (fr - nr);
 	mP._43 = -nr * mP._33;
 }

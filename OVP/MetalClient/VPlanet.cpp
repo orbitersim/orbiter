@@ -928,8 +928,8 @@ bool vPlanet::Render(LPDIRECT3DDEVICE9 dev)
 		DWORD displ  = *(DWORD*)gc->GetConfigParam(CFGPRM_GETDISPLAYMODE);
 		vObject *vSel =  DebugControls::GetVisual();
 		if (vSel && displ>0) {
-			if (vSel->GetObjectA()) {
-				if (oapiGetObjectType(vSel->GetObjectA())==OBJTP_VESSEL) return false;
+			if (vSel->GetObject()) {
+				if (oapiGetObjectType(vSel->GetObject())==OBJTP_VESSEL) return false;
 			}
 		}
 	}

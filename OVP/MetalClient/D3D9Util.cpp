@@ -585,7 +585,7 @@ std::string &trim (std::string &s) {
 
 // uppercase complete string
 void toUpper (std::string &s) {
-	std::transform(s.begin(), s.end(), s.begin(), std::toupper);
+	std::transform(s.begin(), s.end(), s.begin(), [](unsigned char c) { return (char)std::toupper(c); });
 }
 
 // lowercase complete string
@@ -1005,143 +1005,41 @@ HRESULT D3DMAT_MatrixInvert (D3DXMATRIX *res, D3DXMATRIX *a)
 
 // ============================================================================
 //
-LPDIRECT3DPIXELSHADER9 CompilePixelShader(LPDIRECT3DDEVICE9 pDev, const char *file, const char *function, const char *name, const char* options, LPD3DXCONSTANTTABLE *pConst)
+static LPD3DXBUFFER CompileShaderCode(const char *file, const char *function, const char *name, const char *options, const char *profile, LPD3DXCONSTANTTABLE *pConst)
 {
-	ID3DXBuffer* pErrors = NULL;
-	ID3DXBuffer* pCode = NULL;
-	LPDIRECT3DPIXELSHADER9 pShader = NULL;
-	DWORD flags = 0;
-	char *str = NULL;
-	char *tok = NULL;
-
-	WORD crc = 0;
-	if (options) crc = crc16(options, strlen(options));
-
-	string path(file);
-	char filename[MAX_PATH];
-
-	string last = path.substr(path.find_last_of("\\/") + 1);
-	sprintf_s(filename, MAX_PATH, "Cache/D3D9Client/Shaders/%s_%s_%hX_%s.bin", name, function, crc, last.c_str());
-
-	if (Config->ShaderCacheUse)
-	{
-		// Browse Shader Cache --------------------
-		//
-		HANDLE hCacheRead = CreateFile(filename, GENERIC_READ, 0, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
-
-		if (hCacheRead != INVALID_HANDLE_VALUE) {
-			FILETIME cacheWrite, mainWrite;
-			if (GetFileTime(hCacheRead, NULL, NULL, &cacheWrite))
-			{
-				HANDLE hRead = CreateFile(file, GENERIC_READ, 0, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
-				if (hRead != INVALID_HANDLE_VALUE)
-				{
-					if (GetFileTime(hRead, NULL, NULL, &mainWrite))
-					{
-						if (CompareFileTime(&cacheWrite, &mainWrite) == 1)
-						{
-							DWORD size = GetFileSize(hCacheRead, NULL);
-							DWORD* buffer = new DWORD[(size >> 2) + 1];
-							DWORD bytesRead;
-							if (ReadFile(hCacheRead, buffer, size, &bytesRead, NULL)) {
-								HR(pDev->CreatePixelShader(buffer, &pShader));
-								HR(D3DXGetShaderConstantTable(buffer, pConst));
-							}
-							delete[] buffer;
-						}
-					}
-					CloseHandle(hRead);
-				}
-			}
-			CloseHandle(hCacheRead);
-
-			if (pShader) {
-				//LogOapi("Shader Created From Cache: %s", filename);
-				return pShader;
-			}
-		}
+	ID3DXBuffer *pErrors = NULL;
+	ID3DXBuffer *pCode = NULL;
+	D3DXMACRO macro[17];
+	memset(&macro, 0, sizeof(macro));
+	std::string opts = options ? options : "";
+	std::vector<std::string> toks;
+	for (char *tok = strtok(opts.data(), ";, "); tok && toks.size() < 16; tok = strtok(NULL, ";, ")) {
+		if (strcmp(tok, "PARTIAL") == 0 || strcmp(tok, "DISASM") == 0) continue;
+		toks.push_back(tok);
 	}
-
-
-
-	// Invalid Cache data, Recompile the shader --------------------
-	//
-	D3DXMACRO macro[16];
-	memset(&macro, 0, 16*sizeof(D3DXMACRO));
-	bool bDisassemble = false;
+	for (size_t m = 0; m < toks.size(); m++) macro[m].Name = toks[m].c_str();
 
 	LogAlw("Compiling a Shader [%s] function [%s] name [%s]...", file, function, name);
 
-	if (options) {
-		int m = 0;
-		int l = lstrlen(options) + 1;
-		str = new char[l];
-		strcpy_s(str, l, options);
-		tok = strtok(str,";, ");
-		while (tok!=NULL && m<16) {
-			if (strcmp(tok, "PARTIAL") == 0) flags |= D3DXSHADER_PARTIALPRECISION;
-			if (strcmp(tok, "DISASM") == 0) bDisassemble = true;
-			else macro[m++].Name = tok;
-			tok = strtok(NULL, ";, ");
-			LogAlw("Macro (%s)", tok);
-		}
-	}
-
-	HR(D3DXCompileShaderFromFileA(file, macro, NULL, function, "ps_3_0", flags, &pCode, &pErrors, pConst));
+	D3DXCompileShaderFromFileA(file, macro, NULL, function, profile, 0, &pCode, &pErrors, pConst);
 
 	if (pErrors) {
 		LogErr("Compiling a Shader [%s] function [%s] Failed:\n %s", file, function, (char*)pErrors->GetBufferPointer());
 		MessageBoxA(0, (char*)pErrors->GetBufferPointer(), "Failed to compile a shader", 0);
-		FatalAppExitA(0, "Failed to compile shader code. Exiting...");
+		LogErr("Failed to compile shader code. Exiting...");
+		exit(1);
 	}
+	if (!pCode) LogErr("Failed to compile a shader [%s] [%s]", file, function);
+	return pCode;
+}
 
-	if (!pCode) {
-		LogErr("Failed to compile a shader [%s] [%s]", file, function);
-		SAFE_DELETEA(str);
-		return NULL;
-	}
-
-
-	// Save Shader into a Cache
-	//
-	if (Config->ShaderCacheUse)
-	{
-		HANDLE hCache = CreateFile(filename, GENERIC_WRITE, 0, NULL, CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, NULL);
-		if (hCache != INVALID_HANDLE_VALUE) {
-			DWORD bytesWritten;
-			if (!WriteFile(hCache, pCode->GetBufferPointer(), pCode->GetBufferSize(), &bytesWritten, NULL))
-			{
-				LogErr("CreateShaderCache: WriteFile Error: 0x%X", GetLastError());
-			}
-			CloseHandle(hCache);
-		}
-		else {
-			LogErr("CreateShaderCache: CreateFile Error: 0x%X", GetLastError());
-			LogErr("Path=[%s]", filename);
-		}
-	}
-
-
-	if (bDisassemble && pCode) {
-		LPD3DXBUFFER pBuffer = NULL;
-		if (D3DXDisassembleShader((DWORD*)pCode->GetBufferPointer(), true, NULL, &pBuffer) == S_OK) {
-			FILE *fp = NULL;
-			char name[256];
-			sprintf_s(name, 256, "%s_%s_asm.html", RemovePath(file), function);
-			if (!fopen_s(&fp, name, "w")) {
-				fwrite(pBuffer->GetBufferPointer(), 1, pBuffer->GetBufferSize(), fp);
-				fclose(fp);
-			}
-			pBuffer->Release();
-		}
-	}
-
+LPDIRECT3DPIXELSHADER9 CompilePixelShader(LPDIRECT3DDEVICE9 pDev, const char *file, const char *function, const char *name, const char* options, LPD3DXCONSTANTTABLE *pConst)
+{
+	LPDIRECT3DPIXELSHADER9 pShader = NULL;
+	LPD3DXBUFFER pCode = CompileShaderCode(file, function, name, options, "ps_3_0", pConst);
+	if (!pCode) return NULL;
 	HR(pDev->CreatePixelShader((DWORD*)pCode->GetBufferPointer(), &pShader));
-
 	SAFE_RELEASE(pCode);
-	SAFE_RELEASE(pErrors);
-	SAFE_DELETEA(str);
-
 	return pShader;
 }
 
@@ -1149,120 +1047,11 @@ LPDIRECT3DPIXELSHADER9 CompilePixelShader(LPDIRECT3DDEVICE9 pDev, const char *fi
 //
 LPDIRECT3DVERTEXSHADER9 CompileVertexShader(LPDIRECT3DDEVICE9 pDev, const char *file, const char *function, const char* name, const char *options, LPD3DXCONSTANTTABLE *pConst)
 {
-	ID3DXBuffer* pErrors = NULL;
-	ID3DXBuffer* pCode = NULL;
 	LPDIRECT3DVERTEXSHADER9 pShader = NULL;
-	DWORD flags = 0;
-
-	WORD crc = 0;
-	if (options) crc = crc16(options, strlen(options));
-
-	string path(file);
-	char filename[MAX_PATH];
-
-	string last = path.substr(path.find_last_of("\\/") + 1);
-	sprintf_s(filename, MAX_PATH, "Cache/D3D9Client/Shaders/%s_%s_%hX_%s.bin", name, function, crc, last.c_str());
-
-	if (Config->ShaderCacheUse)
-	{
-		// Browse Shader Cache --------------------
-		//
-		HANDLE hCacheRead = CreateFile(filename, GENERIC_READ, 0, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
-
-		if (hCacheRead != INVALID_HANDLE_VALUE) {
-			FILETIME cacheWrite, mainWrite;
-			if (GetFileTime(hCacheRead, NULL, NULL, &cacheWrite))
-			{
-				HANDLE hRead = CreateFile(file, GENERIC_READ, 0, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
-				if (hRead != INVALID_HANDLE_VALUE)
-				{
-					if (GetFileTime(hRead, NULL, NULL, &mainWrite))
-					{
-						if (CompareFileTime(&cacheWrite, &mainWrite) == 1)
-						{
-							DWORD size = GetFileSize(hCacheRead, NULL);
-							DWORD* buffer = new DWORD[(size >> 2) + 1];
-							DWORD bytesRead;
-							if (ReadFile(hCacheRead, buffer, size, &bytesRead, NULL)) {
-								HR(pDev->CreateVertexShader(buffer, &pShader));
-								HR(D3DXGetShaderConstantTable(buffer, pConst));
-							}
-							delete[] buffer;
-						}
-					}
-					CloseHandle(hRead);
-				}
-			}
-			CloseHandle(hCacheRead);
-
-			if (pShader) {
-				//LogOapi("Shader Created From Cache: %s", filename);
-				return pShader;
-			}
-		}
-	}
-
-	char *str = NULL;
-	char *tok = NULL;
-
-	D3DXMACRO macro[32];
-	memset(&macro, 0, 32*sizeof(D3DXMACRO));
-
-	if (options) {
-		int m = 0;
-		int l = lstrlen(options) + 1;
-		str = new char[l];
-		strcpy_s(str, l, options);
-		tok = strtok(str,";, ");
-		while (tok!=NULL && m<16) {
-			macro[m++].Name = tok;
-			tok = strtok(NULL, ";, ");
-		}
-	}
-
-	LogAlw("Compiling a Shader [%s] function [%s]...", file, function);
-
-	HR(D3DXCompileShaderFromFileA(file, macro, NULL, function, "vs_3_0", flags, &pCode, &pErrors, pConst));
-
-	if (pErrors) {
-		LogErr("Compiling a Shader [%s] function [%s] Failed:\n %s", file, function, (char*)pErrors->GetBufferPointer());
-		MessageBoxA(0, (char*)pErrors->GetBufferPointer(), "Failed to compile a shader", 0);
-		FatalAppExitA(0, "Failed to compile shader code. Exiting...");
-	}
-
-	if (!pCode) {
-		LogErr("Failed to compile a shader [%s] [%s]", file, function);
-		SAFE_DELETEA(str);
-		return NULL;
-	}
-
-
-	// Save Shader into a Cache
-	//
-	if (Config->ShaderCacheUse)
-	{
-		HANDLE hCache = CreateFile(filename, GENERIC_WRITE, 0, NULL, CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, NULL);
-
-		if (hCache != INVALID_HANDLE_VALUE) {
-			DWORD bytesWritten;
-			if (!WriteFile(hCache, pCode->GetBufferPointer(), pCode->GetBufferSize(), &bytesWritten, NULL))
-			{
-				LogErr("CreateShaderCache: WriteFile Error: 0x%X", GetLastError());
-			}
-			CloseHandle(hCache);
-		}
-		else {
-			LogErr("CreateShaderCache: CreateFile Error: 0x%X", GetLastError());
-			LogErr("Path=[%s]", filename);
-		}
-	}
-
+	LPD3DXBUFFER pCode = CompileShaderCode(file, function, name, options, "vs_3_0", pConst);
+	if (!pCode) return NULL;
 	HR(pDev->CreateVertexShader((DWORD*)pCode->GetBufferPointer(), &pShader));
-
 	SAFE_RELEASE(pCode);
-	SAFE_RELEASE(pErrors);
-	SAFE_DELETEA(str);
-
 	return pShader;
 }
 
@@ -2079,8 +1868,8 @@ void ShaderClass::SetPSConstants(HANDLE hVar, void* data, UINT bytes)
 	}
 #endif
 	if (!hVar) return;
-	if (pVSCB->SetValue(pDev, D3DXHANDLE(hVar), data, bytes) != S_OK) {
-		LogErr("Shader::SetPSConstants() Failed. File[%s], Entrypoint[%s]", fn.c_str(), vsn.c_str());
+	if (pPSCB->SetValue(pDev, D3DXHANDLE(hVar), data, bytes) != S_OK) {
+		LogErr("Shader::SetPSConstants() Failed. File[%s], Entrypoint[%s]", fn.c_str(), psn.c_str());
 	}
 }
 

@@ -3459,9 +3459,9 @@ void D3D9Mesh::GlobalInit(LPDIRECT3DDEVICE9 pDev)
 {
 	memset(s_pShader, 0, sizeof(s_pShader));
 
-	s_pShader[SHADER_SHADOWMAP] = new MeshShader(pDev, "Modules/D3D9Client/NewMesh.hlsl", "ShdMapVS", "ShdMapPS");
-	s_pShader[SHADER_SHADOWMAP_OIT] = new MeshShader(pDev, "Modules/D3D9Client/NewMesh.hlsl", "ShdMapOIT_VS", "ShdMapOIT_PS");
-	s_pShader[SHADER_NORMAL_DEPTH] = new MeshShader(pDev, "Modules/D3D9Client/NewMesh.hlsl", "NormalDepth_VS", "NormalDepth_PS");
+	s_pShader[SHADER_SHADOWMAP] = new MeshShader(pDev, "Modules/MetalClient/NewMesh.hlsl", "ShdMapVS", "ShdMapPS");
+	s_pShader[SHADER_SHADOWMAP_OIT] = new MeshShader(pDev, "Modules/MetalClient/NewMesh.hlsl", "ShdMapOIT_VS", "ShdMapOIT_PS");
+	s_pShader[SHADER_NORMAL_DEPTH] = new MeshShader(pDev, "Modules/MetalClient/NewMesh.hlsl", "NormalDepth_VS", "NormalDepth_PS");
 }
 
 

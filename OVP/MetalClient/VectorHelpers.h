@@ -24,7 +24,7 @@
 #ifndef __VECTORHELPERS_H
 #define __VECTORHELPERS_H
 
-#if defined(_MSC_VER) && (_MSC_VER >= 1900 ) // Microsoft Visual Studio Version 2015 and higher
+#if 1
   // exp2() and log2() are defined in <cmath>
 #define  _constexpr_ constexpr
 

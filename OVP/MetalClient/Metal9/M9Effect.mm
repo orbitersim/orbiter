@@ -1102,3 +1102,19 @@ HRESULT ID3DXConstantTable::SetMatrixArray(IDirect3DDevice9 *, D3DXHANDLE h, con
 	WriteParam(m, m_table->prog->data.data(), mx, count * 64, PT_FLOAT, count, true);
 	return S_OK;
 }
+
+HRESULT ID3DXConstantTable::SetIntArray(IDirect3DDevice9 *, D3DXHANDLE h, const INT *n, UINT count)
+{
+	const Member *m = TableMember(m_table, h);
+	if (!m) return D3DERR_INVALIDCALL;
+	UINT comps = m->matrix ? m->rows * m->cols : m->cols;
+	WriteParam(m, m_table->prog->data.data(), n, count * 4, PT_INT, (count + comps - 1) / comps, false);
+	return S_OK;
+}
+
+HRESULT ID3DXConstantTable::SetBoolArray(IDirect3DDevice9 *d, D3DXHANDLE h, const WINBOOL *b, UINT count)
+{
+	std::vector<INT> v(count);
+	for (UINT i = 0; i < count; i++) v[i] = b[i] ? 1 : 0;
+	return SetIntArray(d, h, v.data(), count);
+}

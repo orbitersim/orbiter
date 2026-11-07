@@ -11,6 +11,9 @@
 #include "TileLabel.h"
 #include "D3D9Pad.h"
 
+class TileLabel;
+class TileManager2Base;
+
 /**
  * \brief Planetary surface rendering engine.
  *

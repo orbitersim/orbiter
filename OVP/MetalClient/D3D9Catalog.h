@@ -16,6 +16,9 @@
 #include <d3dx9.h>
 #include "OrbiterAPI.h"
 
+bool D9TileMipmaps();
+size_t D9TileVertexSize();
+
 template <typename T>
 class D3D9Catalog {
 public:
@@ -127,7 +130,7 @@ public:
 	{
 		mm.lock();
 		size_t ec = 0;
-		for (auto x : Fre) for (auto y : x.second) { es += x.first * sizeof(T); }
+		for (auto x : Fre) for (auto y : x.second) { ec += x.first * sizeof(T); }
 		mm.unlock();
 		return ec;
 	}
@@ -261,7 +264,7 @@ template <typename T>
 class Texmgr : public Objmgr<T>
 {
 public:
-	Texmgr(LPDIRECT3DDEVICE9 pD, std::string n) : Objmgr(pD, n) { }
+	Texmgr(LPDIRECT3DDEVICE9 pD, std::string n) : Objmgr<T>(pD, n) { }
 	~Texmgr() {}
 
 	T New(DWORD size, D3DFORMAT Format)
@@ -272,7 +275,7 @@ public:
 		if (Format == D3DFMT_DXT3) fmt = 3;
 		if (Format == D3DFMT_DXT5) fmt = 4;
 
-		return Objmgr::New(size + (fmt << 16));
+		return Objmgr<T>::New(size + (fmt << 16));
 	}
 
 protected:
@@ -284,14 +287,14 @@ protected:
 
 		UINT size = prm & 0xFFFF;
 		UINT frmt = prm >> 16;
-		UINT Mips = (Config->TileMipmaps == 1) ? 6 : 1;
+		UINT Mips = D9TileMipmaps() ? 6 : 1;
 
 		if (frmt == 1) Format = D3DFMT_X8B8G8R8;
 		if (frmt == 2) Format = D3DFMT_DXT1;
 		if (frmt == 3) Format = D3DFMT_DXT3;
 		if (frmt == 4) Format = D3DFMT_DXT5;
 
-		if(D3DXCreateTexture(pDev, size, size, Mips, 0, Format, D3DPOOL_DEFAULT, &pT) != S_OK)
+		if(D3DXCreateTexture(this->pDev, size, size, Mips, 0, Format, D3DPOOL_DEFAULT, &pT) != S_OK)
 		{
 			oapiWriteLog("Failed to create texture for surface tile. Likely [Out of Video Memory]");
 			abort();
@@ -316,12 +319,12 @@ template <typename T>
 class Vtxmgr : public Objmgr<T>
 {
 public:
-	Vtxmgr(LPDIRECT3DDEVICE9 pD, std::string n) : Objmgr(pD, n) { }
+	Vtxmgr(LPDIRECT3DDEVICE9 pD, std::string n) : Objmgr<T>(pD, n) { }
 protected:
 	T Alloc(DWORD size)
 	{
 		LPDIRECT3DVERTEXBUFFER9 pVB = nullptr;
-		if (pDev->CreateVertexBuffer(size * sizeof(VERTEX_2TEX), D3DUSAGE_DYNAMIC | D3DUSAGE_WRITEONLY, 0, D3DPOOL_DEFAULT, &pVB, NULL) != S_OK)
+		if (this->pDev->CreateVertexBuffer(size * D9TileVertexSize(), D3DUSAGE_DYNAMIC | D3DUSAGE_WRITEONLY, 0, D3DPOOL_DEFAULT, &pVB, NULL) != S_OK)
 		{
 			oapiWriteLog("Failed to create vertex buffer for surface tile. Likely [Out of Video Memory]");
 			abort();
@@ -332,7 +335,7 @@ protected:
 		UINT q = x->Release();
 		assert(q == 0);
 	}
-	size_t UnitSize(DWORD size) { return size * sizeof(VERTEX_2TEX); }
+	size_t UnitSize(DWORD size) { return size * D9TileVertexSize(); }
 };
 
 
@@ -345,12 +348,12 @@ template <typename T>
 class Idxmgr : public Objmgr<T>
 {
 public:
-	Idxmgr(LPDIRECT3DDEVICE9 pD, std::string n) : Objmgr(pD, n) { }
+	Idxmgr(LPDIRECT3DDEVICE9 pD, std::string n) : Objmgr<T>(pD, n) { }
 protected:
 	T Alloc(DWORD size)
 	{
 		LPDIRECT3DINDEXBUFFER9 pIB = nullptr;
-		if (pDev->CreateIndexBuffer(size * sizeof(WORD) * 3, D3DUSAGE_DYNAMIC | D3DUSAGE_WRITEONLY, D3DFMT_INDEX16, D3DPOOL_DEFAULT, &pIB, NULL) != S_OK)
+		if (this->pDev->CreateIndexBuffer(size * sizeof(WORD) * 3, D3DUSAGE_DYNAMIC | D3DUSAGE_WRITEONLY, D3DFMT_INDEX16, D3DPOOL_DEFAULT, &pIB, NULL) != S_OK)
 		{
 			oapiWriteLog("Failed to create index buffer for surface tile. Likely [Out of Video Memory]");
 			abort();

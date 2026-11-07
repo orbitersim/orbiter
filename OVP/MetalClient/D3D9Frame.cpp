@@ -11,6 +11,7 @@
 
 #define _CRT_SECURE_NO_DEPRECATE
 
+#include "OrbiterPlatform.h"
 #include <windows.h>
 #include "GraphicsAPI.h"
 #include "D3D9Frame.h"
@@ -186,6 +187,7 @@ HRESULT CD3DFramework9::Initialize(HWND _hWnd, GraphicsClient::VIDEODATA *vData)
 						dwRenderHeight = mode.Height;
 					}
 				}
+				if (!oplat::IsFullscreen(hWnd)) oplat::SetFullscreen(hWnd, true);
 			}
 			break;
 
@@ -193,11 +195,7 @@ HRESULT CD3DFramework9::Initialize(HWND _hWnd, GraphicsClient::VIDEODATA *vData)
 			case 1:
 			{
 				dwDisplayMode = 1;
-				int x = GetSystemMetrics(SM_CXSCREEN);
-				int y = GetSystemMetrics(SM_CYSCREEN);
-				if (vData->pageflip) x = GetSystemMetrics(SM_CXVIRTUALSCREEN);
-				SetWindowLongA(hWnd, GWL_STYLE, WS_CLIPCHILDREN | WS_VISIBLE);
-				SetWindowPos(hWnd,0, 0,0, x, y, SWP_SHOWWINDOW);
+				if (!oplat::IsFullscreen(hWnd)) oplat::SetFullscreen(hWnd, true);
 				bIsFullscreen = false;
 			}
 			break;
@@ -206,12 +204,7 @@ HRESULT CD3DFramework9::Initialize(HWND _hWnd, GraphicsClient::VIDEODATA *vData)
 			case 2:
 			{
 				dwDisplayMode = 1;
-				RECT rect;
-				SystemParametersInfo(SPI_GETWORKAREA,0,&rect,0);
-				SetWindowLongA(hWnd, GWL_STYLE, WS_CLIPCHILDREN | WS_VISIBLE);
-				int x = GetSystemMetrics(SM_CXSCREEN);
-				if (vData->pageflip) x = rect.right-rect.left;
-				SetWindowPos(hWnd,0,rect.left, rect.top, x, rect.bottom - rect.top, SWP_SHOWWINDOW);
+				if (!oplat::IsFullscreen(hWnd)) oplat::SetFullscreen(hWnd, true);
 				bIsFullscreen = false;
 			}
 			break;
@@ -219,10 +212,7 @@ HRESULT CD3DFramework9::Initialize(HWND _hWnd, GraphicsClient::VIDEODATA *vData)
 	}
 	else {
 		dwDisplayMode = 2;
-		LONG x = GetWindowLongA(hWnd, GWL_STYLE);
-		SetWindowLongA(hWnd, GWL_STYLE, x | WS_CLIPCHILDREN | WS_VISIBLE);
-		if (vData->trystencil)
-			SetWindowPos(hWnd, 0, 0, 0, vData->winw, vData->winh, SWP_SHOWWINDOW | SWP_NOSENDCHANGING);
+		if (vData->trystencil) oplat::SetWindowClientSize(hWnd, vData->winw, vData->winh);
 	}
 
 	// Hardware CAPS Checks --------------------------------------------------
@@ -439,26 +429,26 @@ HRESULT CD3DFramework9::Initialize(HWND _hWnd, GraphicsClient::VIDEODATA *vData)
 	D3DXFONT_DESC fontDesc;
 	fontDesc.Height          = 30;
 	fontDesc.Width           = 22;
-	fontDesc.Weight          = FW_BOLD;
+	fontDesc.Weight          = 700;
 	fontDesc.MipLevels       = 0;
 	fontDesc.Italic          = false;
-	fontDesc.CharSet         = DEFAULT_CHARSET;
-	fontDesc.OutputPrecision = OUT_DEFAULT_PRECIS;
-	fontDesc.Quality         = ANTIALIASED_QUALITY;
-	fontDesc.PitchAndFamily  = DEFAULT_PITCH | FF_DONTCARE;
+	fontDesc.CharSet         = 0;
+	fontDesc.OutputPrecision = 0;
+	fontDesc.Quality         = 4;
+	fontDesc.PitchAndFamily  = 0;
 	strcpy(fontDesc.FaceName, "Arial");
 
 	HR(D3DXCreateFontIndirect(pDevice, &fontDesc, &pLargeFont));
 
 	fontDesc.Height          = 16;
 	fontDesc.Width           = 10;
-	fontDesc.Weight          = FW_NORMAL;
+	fontDesc.Weight          = 400;
 	fontDesc.MipLevels       = 0;
 	fontDesc.Italic          = false;
-	fontDesc.CharSet         = DEFAULT_CHARSET;
-	fontDesc.OutputPrecision = OUT_DEFAULT_PRECIS;
-	fontDesc.Quality         = ANTIALIASED_QUALITY;
-	fontDesc.PitchAndFamily  = DEFAULT_PITCH | FF_DONTCARE;
+	fontDesc.CharSet         = 0;
+	fontDesc.OutputPrecision = 0;
+	fontDesc.Quality         = 4;
+	fontDesc.PitchAndFamily  = 0;
 	strcpy(fontDesc.FaceName, "Arial");
 
 	HR(D3DXCreateFontIndirect(pDevice, &fontDesc, &pSmallFont));
@@ -477,7 +467,7 @@ HRESULT CD3DFramework9::CreateFullscreenMode()
 
 	// Get the dimensions of the screen bounds
 	// Store the rectangle which contains the renderer
-	SetRect(&rcScreenRect, 0, 0, dwRenderWidth, dwRenderHeight);
+	rcScreenRect = { 0, 0, (LONG)dwRenderWidth, (LONG)dwRenderHeight };
 
 	HR(g_pD3DObject->CheckDeviceType(Adapter, D3DDEVTYPE_HAL, D3DFMT_X8R8G8B8, D3DFMT_X8R8G8B8, false));
 

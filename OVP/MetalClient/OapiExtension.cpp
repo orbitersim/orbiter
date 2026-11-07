@@ -6,11 +6,11 @@
 // ==============================================================
 
 #include <algorithm>
+#include <filesystem>
 #include "D3D9Util.h"
 #include "OapiExtension.h"
 #include "D3D9Config.h"
 #include "OrbiterAPI.h"
-#include <psapi.h>
 
 
 // ===========================================================================
@@ -91,86 +91,11 @@ const void *OapiExtension::GetConfigParam (DWORD paramtype)
 //
 void OapiExtension::LogD3D9Modules(void)
 {
-	HMODULE hMods[1024];
-	HANDLE hProcess;
-	DWORD cbNeeded;
-
-	// Get a handle to the process.
-	hProcess = OpenProcess(PROCESS_QUERY_INFORMATION | PROCESS_VM_READ, FALSE, GetCurrentProcessId());
-	if (NULL == hProcess) {
-		return;
-	}
-
-	// Get a list of all the modules in this process.
-	if (EnumProcessModules(hProcess, hMods, sizeof(hMods), &cbNeeded))
-	{
-		for (unsigned int i = 0, n = 0; i < (cbNeeded / sizeof(HMODULE)); ++i)
-		{
-			TCHAR szModName[MAX_PATH];
-
-			if (GetModuleBaseName(hProcess, hMods[i], szModName, ARRAYSIZE(szModName)))
-			{
-				std::string name = std::string(szModName); toUpper(name);
-				// Module of interest?
-				if (name == "D3D9.DLL" || 0 == name.compare(0, 6, "D3DX9_"))
-				{
-					// Get the full path to the module's file.
-					if (GetModuleFileNameEx(hProcess, hMods[i], szModName, ARRAYSIZE(szModName)))
-					{
-
-						/*DWORD crc = 0;
-						FILE *hFile = 0;
-						if (fopen_s(&hFile, szModName, "rb") == 0) {
-							while (true) {
-								int data = fgetc(hFile);
-								if (data == EOF) break;
-								crc = crc ^ ((data&0xFF) << 8);
-								for (int j = 0; j < 8; j++) {
-									if (crc & 0x8000) crc = (crc << 1) ^ 0x1021;
-									else crc = (crc << 1);
-									crc &= 0xFFFF;
-								}
-							}
-							crc &= 0xFFFF;
-							fclose(hFile);
-						}*/
-
-						TCHAR versionString[128] = "";
-						LPDWORD pDummy = 0;
-						DWORD versionInfoSize = GetFileVersionInfoSize(szModName, pDummy);
-						if (versionInfoSize) {
-							DWORD dummy = 0;
-							char *data = new char[versionInfoSize]();
-							if (GetFileVersionInfo(szModName, dummy, versionInfoSize, data))
-							{
-								UINT size = 0;
-								VS_FIXEDFILEINFO *verInfo;
-
-								if (VerQueryValue(data, "\\", (LPVOID*)&verInfo, &size) && size)
-								{
-									sprintf_s(versionString, ARRAYSIZE(versionString),
-										" [v %d.%d.%d.%d]",
-										HIWORD( verInfo->dwProductVersionMS ),
-										LOWORD( verInfo->dwProductVersionMS ),
-										HIWORD( verInfo->dwProductVersionLS ),
-										LOWORD( verInfo->dwProductVersionLS )
-									);
-								}
-							}
-							delete[] data;
-						}
-
-						// Print the module name.
-						auto prefix = (n++ ? "         " : "D3D9 DLLs");
-						oapiWriteLogV("%s  : %s%s",	prefix, szModName, versionString);
-					}
-				}
-			}
-		}
-	}
-
-	// Release the handle to the process.
-	CloseHandle( hProcess );
+	IDirect3D9 *d3d = Direct3DCreate9(D3D_SDK_VERSION);
+	if (!d3d) return;
+	D3DADAPTER_IDENTIFIER9 ai;
+	if (d3d->GetAdapterIdentifier(0, 0, &ai) == S_OK) oapiWriteLogV("D3D9: Metal device %s", ai.Description);
+	d3d->Release();
 }
 
 
@@ -227,12 +152,12 @@ bool OapiExtension::GetConfigParameter(void)
 
 		// Log directory config
 		auto logPath = [](const char *name, const std::string &path) {
-			TCHAR buff[MAX_PATH];
-			if (GetFullPathName(path.c_str(), MAX_PATH, buff, NULL)) {
-				DWORD ftyp = GetFileAttributes(buff);
-				auto result = (ftyp == INVALID_FILE_ATTRIBUTES || !(ftyp & FILE_ATTRIBUTE_DIRECTORY) ? " [[DIR NOT FOUND!]]" : "");
-				oapiWriteLogV("%-11s: %s%s", name, buff, result);
-			}
+			std::string p = path;
+			std::replace(p.begin(), p.end(), '\\', '/');
+			std::error_code ec;
+			std::filesystem::path full = std::filesystem::absolute(p, ec).lexically_normal();
+			auto result = std::filesystem::is_directory(full, ec) ? "" : " [[DIR NOT FOUND!]]";
+			oapiWriteLogV("%-11s: %s%s", name, full.string().c_str(), result);
 		};
 		oapiWriteLog((char*)"---------------------------------------------------------------");
 		logPath("BaseDir"    , ".\\");
@@ -261,16 +186,6 @@ bool OapiExtension::GetConfigParameter(void)
 		oapiCloseFile(f, FILE_IN_ZEROONFAIL);
 	}
 
-	// Check for WINE environment
-	HMODULE hntdll = GetModuleHandle("ntdll.dll");
-	if (NULL != hntdll)
-	{
-		// static const char * (CDECL *pwine_get_version)(void);
-		void *pWineGetVersion = (void *)GetProcAddress(hntdll, "wine_get_version");
-		if (NULL != pWineGetVersion) {
-			runsUnderWINE = true;
-		} // else { Not running WINE }
-	} // else { Not running on NT ?! }
 
 	return true;
 }

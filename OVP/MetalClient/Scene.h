@@ -26,6 +26,8 @@
 #include <list>
 #include <set>
 
+class D3D9CelestialSphere;
+
 class vObject;
 class vPlanet;
 class D3D9ParticleStream;

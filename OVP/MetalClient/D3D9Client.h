@@ -9,14 +9,8 @@
 #ifndef __D3D9CLIENT_H
 #define __D3D9CLIENT_H
 
-// must be defined before windows includes to fix warnins on VS 2003+
-#if defined(_MSC_VER) && (_MSC_VER >= 1300 ) // Microsoft Visual Studio Version 2003 and higher
-//#define _CRT_SECURE_NO_DEPRECATE
-//#define _CRT_NONSTDC_NO_WARNINGS
 #include <fstream>
-#else  // older MSVC++ versions
-#include <fstream.h>
-#endif
+#include <pthread.h>
 
 #include <d3d9.h>
 #include <d3dx9.h>
@@ -168,7 +162,7 @@ public:
 	~D3D9Client ();
 
 
-	HBITMAP gcReadImageFromFile(const char *path);
+	SURFHANDLE gcReadImageFromFile(const char *path);
 
 	/**
 	 * \brief Perform any one-time setup tasks.
@@ -301,7 +295,7 @@ public:
 	 * \param surface size and format description
 	 * \return Should return true on success
 	 */
-	bool SaveSurfaceToClipboard (const D3DSURFACE_DESC * desc);
+	bool SaveSurfaceToClipboard (const D3DSURFACE_DESC * desc, D3DLOCKED_RECT& pRect);
 
 	/**
 	 * \brief Texture release request
@@ -694,7 +688,6 @@ public:
 	 * \note The reference counter for the new surface is set to 1.
 	 * \sa clbkIncrSurfaceRef, clbkReleaseSurface
 	 */
-	SURFHANDLE clbkCreateSurface (HBITMAP hBmp);
 
 	/**
 	 * \brief Increment the reference counter of a surface.
@@ -901,7 +894,6 @@ public:
 	 * \note The source bitmap area is stretched as required to fit the area of
 	 *   the target surface.
 	 */
-	bool clbkCopyBitmap (SURFHANDLE pdds, HBITMAP hbm, int x, int y, int dx, int dy);
 	// @}
 
 
@@ -1005,7 +997,6 @@ public:
 	 * \note Clients which can obtain a Windows GDI handle for a surface should
 	 *   overload this method.
 	 */
-	HDC clbkGetSurfaceDC (SURFHANDLE surf);
 
 	/**
 	 * \brief Release a Windows graphics device interface
@@ -1015,7 +1006,6 @@ public:
 	 * \note Clients which can obtain a Windows GDI handle for a surface should
 	 *   overload this method to release an existing GDI.
 	 */
-	void clbkReleaseSurfaceDC (SURFHANDLE surf, HDC hDC);
 	// @}
 
 	/**
@@ -1071,7 +1061,7 @@ public:
 	void				HackFriendlyHack();
 	void				PickTerrain(DWORD uMsg, int xpos, int ypos);
 	DEVMESHHANDLE		GetDevMesh(MESHHANDLE hMesh);
-	HANDLE				GetMainThread() const {	return hMainThread;	}
+	pthread_t			GetMainThread() const {	return hMainThread;	}
 
 
 	// ==================================================================
@@ -1309,7 +1299,7 @@ private:
 	CD3DFramework9 *		pFramework;
 	const D3DCAPS9 *		pCaps;
 	std::string				scenarioName;
-	HANDLE					hMainThread;
+	pthread_t				hMainThread;
 	WindowManager *			pWM;
 	const char *            pCustomSplashScreen;
 	DWORD                   pSplashTextColor;
@@ -1347,8 +1337,8 @@ private:
 	std::vector<SURFHANDLE> ImTextures;
 	mutable std::list<RenderTgtData> RenderStack;
 
-	HFONT hLblFont1;
-	HFONT hLblFont2;
+	LPD3DXFONT pLblFont1;
+	LPD3DXFONT pLblFont2;
 
 	char pLoadLabel[128];
 	char pLoadItem[128];

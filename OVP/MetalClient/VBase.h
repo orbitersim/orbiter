@@ -11,6 +11,8 @@
 #include "VObject.h"
 #include "Mesh.h"
 
+class vPlanet;
+
 class RunwayLights;
 class TaxiLights;
 
