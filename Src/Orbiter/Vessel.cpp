@@ -335,6 +335,10 @@ void Vessel::SetDefaultState ()
 
 	nforcevec_col = 0;
 	memset(&m_colDebug, 0, sizeof(m_colDebug));
+	m_hullCachePValid = false;
+	m_overlapStateDirty = false;
+	m_overlapPoseValid = false;
+	m_overlapRefPlanet = nullptr;
 
 	proxyT    = -(double)rand()*100.0/(double)RAND_MAX - 1.0;
 	commsT    = -(double)rand()*5.0/(double)RAND_MAX - 1.0;
@@ -353,6 +357,14 @@ void Vessel::DefaultGenericCaps ()
 	mesh_crc           = 0;
 	nanim              = 0;
 	bIsConvexCollider  = true;
+	m_hullStaticValid      = false;
+	m_dockClearZonesValid  = false;
+	m_hullLocalValid       = false;
+	m_hullCachePValid      = false;
+	m_hullVisualValid      = false;
+	m_overlapStateDirty    = false;
+	m_overlapPoseValid     = false;
+	m_overlapRefPlanet     = nullptr;
 	size               = 10.0;
 	clipradius         = 0.0; // flag for clipradius=size
 	vislimit           = spotlimit = 1e-3;
@@ -796,7 +808,8 @@ void Vessel::ModulePostCreation ()
 	if (modIntf.v->Version() >= 1)
 		((VESSEL2*)modIntf.v)->clbkPostCreation ();
 	m_hullCachePValid = false;
-	RefreshCollisionOverlapState();
+	if (g_psys && g_psys->isVessel(this) && g_pOrbiter && g_pOrbiter->Cfg()->CfgPhysicsPrm.bVesselCollision)
+		MarkCollisionOverlapDirty();
 }
 
 // ==============================================================
@@ -885,6 +898,7 @@ void Vessel::RPlace_individual (const Vector &rpos, const Vector &rvel)
 	el_valid = bOrbitStabilised = false; // force update of osculating elements
 
 	// Now update all passively attached child vessels
+	m_hullCachePValid = false;
 	UpdateAttachments();
 	UpdateProxies();
 	UpdateSurfParams();
@@ -904,6 +918,7 @@ void Vessel::SetGlobalOrientation (const Vector &arot)
 		           sinx*siny*cosz-cosx*sinz, sinx*siny*sinz+cosx*cosz, sinx*cosy,
 				   cosx*siny*cosz+sinx*sinz, cosx*siny*sinz-sinx*cosz, cosx*cosy);
 		s0->Q.Set (s0->R);
+		m_hullCachePValid = false;
 		UpdateAttachments();
 	}
 }
@@ -917,6 +932,7 @@ void Vessel::SetRotationMatrix (const Matrix &R)
 	} else {
 		s0->R.Set (R);
 		s0->Q.Set (R);
+		m_hullCachePValid = false;
 		UpdateAttachments();
 	}
 }
@@ -1219,6 +1235,7 @@ bool Vessel::SetTouchdownPoints (const TOUCHDOWNVTX *tdvtx, DWORD ntp)
 		touchdown_vtx[i].compression = dycg + sinth*tr[i].x + sinph*tr[i].z;
 
 	bForceActive = true; // notification flag
+	m_hullCachePValid = false;
 	return true;
 }
 
@@ -1229,6 +1246,7 @@ void Vessel::ClearTouchdownPoints ()
 	if (ntouchdown_vtx) {
 		delete []touchdown_vtx;
 		ntouchdown_vtx = 0;
+		m_hullCachePValid = false;
 	}
 }
 
@@ -2597,6 +2615,7 @@ PortSpec *Vessel::CreateDock (const Vector &pos, const Vector &dir, const Vector
 	dock[ndock]->status = 0;
 	dock[ndock]->owner = this;
 	dock[ndock]->autodock = true;
+	m_dockClearZonesValid = false;
 	return dock[ndock++];
 }
 
@@ -2607,6 +2626,7 @@ void Vessel::SetDockParams (PortSpec *dock, const Vector &pos, const Vector &dir
 	dock->ref.Set (pos);
 	dock->dir.Set (dir);
 	dock->rot.Set (rot);
+	m_dockClearZonesValid = false;
 }
 
 // ==============================================================
@@ -2659,6 +2679,7 @@ bool Vessel::DelDock (DWORD i)
 	delete []dock;
 	dock = tmp;
 	ndock--;
+	m_dockClearZonesValid = false;
 	return true;
 }
 
@@ -2678,6 +2699,7 @@ void Vessel::ClearDockDefinitions ()
 		delete []dock;
 		dock = NULL;
 		ndock = 0;
+		m_dockClearZonesValid = false;
 	}
 }
 
@@ -3332,6 +3354,7 @@ UINT Vessel::InsertMesh (const char *mname, UINT idx, const VECTOR3 *ofs)
 	for (i = 0; i < sizeof(ofs); i++)
 		*((BYTE*)&mesh_crc + (i%4)) += *((BYTE*)&ofs+i); // encode offset
 	ScanMeshCaps();
+	InvalidateHullCache();
 	BroadcastVisMsg (EVENT_VESSEL_INSMESH, idx); // notify visuals
 
 	return idx;
@@ -3358,6 +3381,7 @@ UINT Vessel::InsertMesh (MESHHANDLE hMesh, UINT idx, const VECTOR3 *ofs)
 	for (i = 0; i < sizeof(ofs); i++)
 		*((BYTE*)&mesh_crc + (i%4)) += *((BYTE*)&ofs+i); // encode offset
 	ScanMeshCaps();
+	InvalidateHullCache();
 	BroadcastVisMsg (EVENT_VESSEL_INSMESH, idx); // notify visuals
 
 	return idx;
@@ -3373,6 +3397,7 @@ bool Vessel::DelMesh (UINT idx, bool retain_anim)
 	delete meshlist[idx];
 	meshlist[idx] = 0;
 	ScanMeshCaps();
+	InvalidateHullCache();
 
 	// remove associated animation components
 	if (!retain_anim) {
@@ -3405,6 +3430,7 @@ void Vessel::ClearMeshes (bool retain_anim)
 	nmesh = 0;
 	mesh_crc = 0;
 	ScanMeshCaps();
+	InvalidateHullCache();
 	BroadcastVisMsg (EVENT_VESSEL_DELMESH, (DWORD_PTR)((UINT)-1)); // notify visual
 }
 
@@ -3412,6 +3438,8 @@ bool Vessel::ShiftMesh (UINT idx, const VECTOR3 &ofs)
 {
 	if (idx >= nmesh || !meshlist[idx]) return false;
 	meshlist[idx]->meshofs += ofs;
+	if (meshlist[idx]->vismode & MESHVIS_EXTERNAL)
+		InvalidateHullCache();
 	BroadcastVisMsg (EVENT_VESSEL_MESHOFS, idx);
 	return true;
 }
@@ -3447,9 +3475,12 @@ Mesh *Vessel::CopyMeshFromTemplate (UINT idx)
 
 void Vessel::SetMeshVisibilityMode (UINT meshidx, WORD mode)
 {
-	if (meshidx < nmesh) {
+	if (meshidx < nmesh && meshlist[meshidx]) {
+		WORD prevMode = meshlist[meshidx]->vismode;
 		meshlist[meshidx]->vismode = mode;
 		if (mode & MESHVIS_EXTPASS) extpassmesh = true;
+		if ((prevMode ^ mode) & MESHVIS_EXTERNAL)
+			InvalidateHullCache();
 		BroadcastVisMsg (EVENT_VESSEL_MESHVISMODE, meshidx);
 	}
 }
@@ -3461,6 +3492,14 @@ int Vessel::MeshModified (MESHHANDLE hMesh, UINT grp, DWORD modflag)
 		UINT grp;
 		DWORD modflag;
 	} moddata = { hMesh, grp, modflag };
+
+	bool affectsExternal = (hMesh == 0);
+	for (UINT i = 0; !affectsExternal && i < nmesh; i++) {
+		if (meshlist[i] && meshlist[i]->hMesh == hMesh && (meshlist[i]->vismode & MESHVIS_EXTERNAL))
+			affectsExternal = true;
+	}
+	if (affectsExternal)
+		InvalidateHullCache();
 
 	BroadcastVisMsg (EVENT_VESSEL_MODMESHGROUP, (DWORD_PTR)&grp); // notify visual
 	return 0;
@@ -4747,20 +4786,66 @@ bool Vessel::AddSurfaceForces (Vector *F, Vector *M, const StateVectors *s, doub
 	return true;
 }
 
-// Extracts vertices from all visual meshes into vessel-local coords.
+void Vessel::InvalidateHullCache() {
+	m_hullStaticValid = false;
+	m_dockClearZonesValid = false;
+	m_hullLocalValid = false;
+	m_hullCachePValid = false;
+	m_hullVisualValid = false;
+}
+
+void Vessel::UpdateDockClearZones() {
+	for (auto& slice : m_hullGroupSlices) {
+		slice.isDockClearZone = false;
+		if (ndock == 0 || slice.startIdx + slice.count > m_hullCacheStatic.size()) continue;
+		for (size_t i = 0; i < slice.count; i++) {
+			const VECTOR3& p = m_hullCacheStatic[slice.startIdx + i].pos;
+			for (DWORD d = 0; d < ndock; d++) {
+				if (!dock[d]) continue;
+				double dx = p.x - dock[d]->ref.x;
+				double dy = p.y - dock[d]->ref.y;
+				double dz = p.z - dock[d]->ref.z;
+				if (dx*dx + dy*dy + dz*dz < 9.0) { // 3.0 meters radius
+					slice.isDockClearZone = true;
+					break;
+				}
+			}
+			if (slice.isDockClearZone) break;
+		}
+	}
+	m_dockClearZonesValid = true;
+}
+
+bool Vessel::AnimationCompAffectsCollider(const ANIMATIONCOMP *comp) const {
+	if (!comp) return false;
+	if (comp->trans && comp->trans->mesh != (UINT)-1 && comp->trans->mesh < nmesh) {
+		const MeshList *ml = meshlist[comp->trans->mesh];
+		if (ml && ml->hMesh && (ml->vismode & MESHVIS_EXTERNAL))
+			return true;
+	}
+	for (UINT i = 0; i < comp->nchildren; i++) {
+		if (AnimationCompAffectsCollider(comp->children[i]))
+			return true;
+	}
+	return false;
+}
+
+// Extracts vertices from external visual meshes into vessel-local coords.
 // Decomposes meshes into physical convex sub-colliders by connected triangle components.
-// Only rebuilds when mesh count changes.
 void Vessel::RebuildHullCache() {
 
-  if (m_hullCacheMeshCount == nmesh)
+  if (m_hullStaticValid) {
+    if (!m_dockClearZonesValid)
+      UpdateDockClearZones();
     return; // cache is up to date
+  }
   m_hullCacheStatic.clear();
   m_hullCacheStatic.reserve(4096);
 
   DWORD clusterCounter = 0;
 
   for (UINT mi = 0; mi < nmesh; mi++) {
-    if (!meshlist[mi])
+    if (!meshlist[mi] || !(meshlist[mi]->vismode & MESHVIS_EXTERNAL))
       continue;
     MESHHANDLE hMesh = meshlist[mi]->hMesh;
     if (!hMesh)
@@ -4914,52 +4999,54 @@ void Vessel::RebuildHullCache() {
   });
 
   m_hullGroupSlices.clear();
+  m_hullMeshRanges.assign(nmesh, {0, 0});
+  m_hullGroupRanges.clear();
   if (!m_hullCacheStatic.empty()) {
       HullGroupSlice currentSlice;
       currentSlice.startIdx = 0;
       currentSlice.count = 1;
       currentSlice.isDockClearZone = false;
       UINT curMesh = m_hullCacheStatic[0].meshIdx;
-      UINT curGrp = m_hullCacheStatic[0].groupIdx;
+      DWORD curGrp = m_hullCacheStatic[0].groupIdx;
       DWORD curCls = m_hullCacheStatic[0].clusterIdx;
+      size_t meshStart = 0;
+      size_t grpStart = 0;
 
       for (size_t i = 1; i < m_hullCacheStatic.size(); i++) {
-          if (m_hullCacheStatic[i].meshIdx == curMesh && m_hullCacheStatic[i].groupIdx == curGrp && m_hullCacheStatic[i].clusterIdx == curCls) {
+          const HullVertex& hv = m_hullCacheStatic[i];
+          if (hv.meshIdx == curMesh && hv.groupIdx == curGrp && hv.clusterIdx == curCls) {
               currentSlice.count++;
           } else {
               m_hullGroupSlices.push_back(currentSlice);
               currentSlice.startIdx = i;
               currentSlice.count = 1;
               currentSlice.isDockClearZone = false;
-              curMesh = m_hullCacheStatic[i].meshIdx;
-              curGrp = m_hullCacheStatic[i].groupIdx;
-              curCls = m_hullCacheStatic[i].clusterIdx;
+
+              if (hv.meshIdx != curMesh || hv.groupIdx != curGrp) {
+                  m_hullGroupRanges.push_back({curMesh, curGrp, grpStart, i});
+                  grpStart = i;
+              }
+              if (hv.meshIdx != curMesh) {
+                  if (curMesh < m_hullMeshRanges.size())
+                      m_hullMeshRanges[curMesh] = {meshStart, i};
+                  meshStart = i;
+              }
+
+              curMesh = hv.meshIdx;
+              curGrp = hv.groupIdx;
+              curCls = hv.clusterIdx;
           }
       }
       m_hullGroupSlices.push_back(currentSlice);
+      m_hullGroupRanges.push_back({curMesh, curGrp, grpStart, m_hullCacheStatic.size()});
+      if (curMesh < m_hullMeshRanges.size())
+          m_hullMeshRanges[curMesh] = {meshStart, m_hullCacheStatic.size()};
   }
 
-  // Determine dock clear zones
-  for (auto& slice : m_hullGroupSlices) {
-      slice.isDockClearZone = false;
-      if (ndock == 0) continue;
-      for (size_t i = 0; i < slice.count; i++) {
-          const VECTOR3& p = m_hullCacheStatic[slice.startIdx + i].pos;
-          for (DWORD d = 0; d < ndock; d++) {
-              if (!dock[d]) continue;
-              double dx = p.x - dock[d]->ref.x;
-              double dy = p.y - dock[d]->ref.y;
-              double dz = p.z - dock[d]->ref.z;
-              if (dx*dx + dy*dy + dz*dz < 9.0) { // 3.0 meters radius
-                  slice.isDockClearZone = true;
-                  break;
-              }
-          }
-          if (slice.isDockClearZone) break;
-      }
-  }
+  UpdateDockClearZones();
 
-  m_hullCacheMeshCount = nmesh;
+  m_hullStaticValid = true;
+  m_hullLocalValid = false;
   m_hullCachePValid = false;
   m_hullVisualValid = false;
 }
@@ -4971,6 +5058,7 @@ void Vessel::RebuildConvexHullVisual() {
 
   for (const auto& slice : m_hullGroupSlices) {
       if (slice.count < 3) continue;
+      if (slice.startIdx + slice.count > m_hullCache.size()) continue;
       if (slice.startIdx + slice.count > 65535) continue;
 
       if (slice.count == 3) {
@@ -5445,11 +5533,30 @@ bool Vessel::CheckMeshCollision(const Mesh *m, const Matrix &M_mesh2planet, cons
 }
 
 void Vessel::ApplyAnimationToHullCache() {
+    RebuildHullCache();
+    if (m_hullLocalValid) return;
+
     m_hullCache.resize(m_hullCacheStatic.size());
     for (size_t i = 0; i < m_hullCacheStatic.size(); i++) {
         m_hullCache[i] = m_hullCacheStatic[i].pos;
     }
-    if (nanim == 0) return;
+    m_hullLocalValid = true;
+    m_hullCachePValid = false;
+    m_hullVisualValid = false;
+    if (nanim == 0 || m_hullCacheStatic.empty()) return;
+
+    bool hasActiveColliderAnim = false;
+    for (UINT an = 0; an < nanim; an++) {
+        if (anim[an].state == anim[an].defstate) continue;
+        for (UINT i = 0; i < anim[an].ncomp; i++) {
+            if (AnimationCompAffectsCollider(anim[an].comp[i])) {
+                hasActiveColliderAnim = true;
+                break;
+            }
+        }
+        if (hasActiveColliderAnim) break;
+    }
+    if (!hasActiveColliderAnim) return;
 
     struct Mat4 {
         float m[4][4];
@@ -5476,34 +5583,52 @@ void Vessel::ApplyAnimationToHullCache() {
         }
     };
 
-    std::map<MGROUP_TRANSFORM*, MGROUP_TRANSFORM*> tempTransMap;
+    std::unordered_map<MGROUP_TRANSFORM*, MGROUP_TRANSFORM*> tempTransMap;
     auto GetTrans = [&](MGROUP_TRANSFORM* t) -> MGROUP_TRANSFORM* {
         if (!t) return nullptr;
-        if (tempTransMap.find(t) == tempTransMap.end()) {
-            if (t->Type() == MGROUP_TRANSFORM::ROTATE) tempTransMap[t] = new MGROUP_ROTATE(*(MGROUP_ROTATE*)t);
-            else if (t->Type() == MGROUP_TRANSFORM::TRANSLATE) tempTransMap[t] = new MGROUP_TRANSLATE(*(MGROUP_TRANSLATE*)t);
-            else if (t->Type() == MGROUP_TRANSFORM::SCALE) tempTransMap[t] = new MGROUP_SCALE(*(MGROUP_SCALE*)t);
-            else tempTransMap[t] = new MGROUP_TRANSFORM(*t);
+        auto it = tempTransMap.find(t);
+        if (it == tempTransMap.end()) {
+            MGROUP_TRANSFORM* cloned = nullptr;
+            if (t->Type() == MGROUP_TRANSFORM::ROTATE) cloned = new MGROUP_ROTATE(*(MGROUP_ROTATE*)t);
+            else if (t->Type() == MGROUP_TRANSFORM::TRANSLATE) cloned = new MGROUP_TRANSLATE(*(MGROUP_TRANSLATE*)t);
+            else if (t->Type() == MGROUP_TRANSFORM::SCALE) cloned = new MGROUP_SCALE(*(MGROUP_SCALE*)t);
+            else cloned = new MGROUP_TRANSFORM(*t);
+            tempTransMap.emplace(t, cloned);
+            return cloned;
         }
-        return tempTransMap[t];
+        return it->second;
+    };
+
+    auto groupRangeLess = [](const HullGroupRange& a, const HullGroupRange& b) {
+        if (a.meshIdx != b.meshIdx) return a.meshIdx < b.meshIdx;
+        return a.groupIdx < b.groupIdx;
     };
 
     std::function<void(ANIMATIONCOMP*, const Mat4&)> AnimateComponent = [&](ANIMATIONCOMP* comp, const Mat4& T) {
         MGROUP_TRANSFORM* trans = GetTrans(comp->trans);
-        if (trans && trans->mesh != (UINT)-1 && trans->mesh < nmesh) {
-            for (size_t i = 0; i < m_hullCacheStatic.size(); i++) {
-                if (m_hullCacheStatic[i].meshIdx == trans->mesh) {
-                    bool matchGrp = false;
-                    if (!trans->grp) matchGrp = true;
-                    else {
-                        for (UINT g = 0; g < trans->ngrp; g++) {
-                            if (trans->grp[g] == m_hullCacheStatic[i].groupIdx) {
-                                matchGrp = true; break;
+        if (trans && trans->mesh != (UINT)-1 && trans->mesh < m_hullMeshRanges.size()) {
+            const HullIndexRange& mr = m_hullMeshRanges[trans->mesh];
+            if (mr.startIdx < mr.endIdx) {
+                if (!trans->grp) {
+                    for (size_t idx = mr.startIdx; idx < mr.endIdx; idx++) {
+                        TransformPoint(m_hullCache[idx], T);
+                    }
+                } else {
+                    for (UINT g = 0; g < trans->ngrp; g++) {
+                        DWORD grpId = trans->grp[g];
+                        bool dup = false;
+                        for (UINT prev = 0; prev < g; prev++) {
+                            if (trans->grp[prev] == grpId) { dup = true; break; }
+                        }
+                        if (dup) continue;
+
+                        HullGroupRange key = { trans->mesh, grpId, 0, 0 };
+                        auto it = std::lower_bound(m_hullGroupRanges.begin(), m_hullGroupRanges.end(), key, groupRangeLess);
+                        if (it != m_hullGroupRanges.end() && it->meshIdx == trans->mesh && it->groupIdx == grpId) {
+                            for (size_t idx = it->startIdx; idx < it->endIdx; idx++) {
+                                TransformPoint(m_hullCache[idx], T);
                             }
                         }
-                    }
-                    if (matchGrp) {
-                        TransformPoint(m_hullCache[i], T);
                     }
                 }
             }
@@ -5535,9 +5660,11 @@ void Vessel::ApplyAnimationToHullCache() {
 
     for (UINT an = 0; an < nanim; an++) {
         ANIMATION* A = anim + an;
+        if (A->state == A->defstate) continue;
         for (UINT ii = 0; ii < A->ncomp; ii++) {
             UINT i = (A->state > A->defstate ? ii : A->ncomp - ii - 1);
             ANIMATIONCOMP* AC = A->comp[i];
+            if (!AnimationCompAffectsCollider(AC)) continue;
 
             double s0 = A->defstate;
             if (s0 < AC->state0) s0 = AC->state0;
@@ -5613,7 +5740,10 @@ void Vessel::UpdateHullCacheP() {
     ApplyAnimationToHullCache();
 
 	Planet *refPlanet = (Planet*)(proxyplanet ? proxyplanet : (cbody && cbody->Type() == OBJTP_PLANET ? cbody : nullptr));
-	if (m_hullCache.empty() || !refPlanet) return;
+	if (m_hullCache.empty() || !refPlanet) {
+		m_hullCacheP.clear();
+		return;
+	}
 
 	const StateVectors *svV = (s1->pos.length2() > 0.0 ? s1 : s0);
 	const StateVectors *svP = (refPlanet->s1->pos.length2() > 0.0 ? refPlanet->s1 : refPlanet->s0);
@@ -5662,7 +5792,6 @@ void Vessel::UpdateHullCacheP() {
 	// This ensures that deployed landing gears (which are often visual animations
 	// and missing from static .msh vertices) physically collide with base meshes.
 	if (refPlanet && touchdown_vtx && ntouchdown_vtx > 0) {
-		Planet *pp = refPlanet;
 		size_t tdStart = m_hullCacheP.size();
 		for (DWORD i = 0; i < ntouchdown_vtx; i++) {
 			// Transform local Touchdown Point to Global space
@@ -5695,6 +5824,12 @@ void Vessel::UpdateHullCacheP() {
 				if (m_hullCacheP[i].y > tdSlice.maxP.y) tdSlice.maxP.y = m_hullCacheP[i].y;
 				if (m_hullCacheP[i].z > tdSlice.maxP.z) tdSlice.maxP.z = m_hullCacheP[i].z;
 			}
+			if (tdSlice.minP.x < m_hullMinP.x) m_hullMinP.x = tdSlice.minP.x;
+			if (tdSlice.minP.y < m_hullMinP.y) m_hullMinP.y = tdSlice.minP.y;
+			if (tdSlice.minP.z < m_hullMinP.z) m_hullMinP.z = tdSlice.minP.z;
+			if (tdSlice.maxP.x > m_hullMaxP.x) m_hullMaxP.x = tdSlice.maxP.x;
+			if (tdSlice.maxP.y > m_hullMaxP.y) m_hullMaxP.y = tdSlice.maxP.y;
+			if (tdSlice.maxP.z > m_hullMaxP.z) m_hullMaxP.z = tdSlice.maxP.z;
 			m_hullGroupSlices.push_back(tdSlice);
 		}
 	}
@@ -5704,6 +5839,7 @@ void Vessel::UpdateHullCacheP() {
 // Disabled collision pair tracking for vessels that overlap at spawn or state edit
 namespace {
 	std::vector<std::pair<Vessel*, Vessel*>> s_disabledCollisionPairs;
+	bool s_anyOverlapStateDirty = false;
 	const double OverlapSeparationMargin = 0.25; // [m] clearance required to re-enable collision (somewhat arbitrary, I think this is reasonable)
 
 	std::pair<Vessel*, Vessel*> MakeCanonicalVesselPair(const Vessel *a, const Vessel *b) {
@@ -5713,13 +5849,87 @@ namespace {
 	}
 }
 
+bool Vessel::ComputePlanetLocalPose(Planet *&refPlanet, Vector &posP, Matrix &rotP) const {
+	if (fstatus == FLIGHTSTATUS_LANDED && !attach && proxyplanet) {
+		refPlanet = (Planet*)proxyplanet;
+		posP = sp.ploc;
+		rotP = land_rot;
+		return true;
+	}
+	refPlanet = (Planet*)(proxyplanet ? proxyplanet : (cbody && cbody->Type() == OBJTP_PLANET ? cbody : nullptr));
+	if (!refPlanet || !s0 || !refPlanet->s0) return false;
+
+	const StateVectors *svV = (s1 && s1->pos.length2() > 0.0 ? s1 : s0);
+	const StateVectors *svP = (refPlanet->s1 && refPlanet->s1->pos.length2() > 0.0 ? refPlanet->s1 : refPlanet->s0);
+
+	rotP.Set(svV->R);
+	rotP.tpremul(svP->R);
+	posP.Set(tmul(svP->R, svV->pos - svP->pos));
+	return true;
+}
+
+bool Vessel::MatchesLastOverlapPose() const {
+	if (!m_overlapPoseValid) return false;
+	Planet *refPlanet = nullptr;
+	Vector posP;
+	Matrix rotP;
+	if (!ComputePlanetLocalPose(refPlanet, posP, rotP)) {
+		return m_overlapRefPlanet == nullptr;
+	}
+	if (refPlanet != m_overlapRefPlanet) return false;
+	if ((posP - m_overlapCheckedPosP).length2() > 1e-4) return false; // > 1 cm
+
+	double rotDiff2 = 0.0;
+	for (int i = 0; i < 9; i++) {
+		double d = rotP.data[i] - m_overlapCheckedRotP.data[i];
+		rotDiff2 += d * d;
+	}
+	return rotDiff2 <= 2e-6; // ~0.057 deg
+}
+
+void Vessel::MarkCollisionOverlapDirty() {
+	m_overlapStateDirty = true;
+	s_anyOverlapStateDirty = true;
+}
+
+void Vessel::FlushPendingCollisionOverlapStates() {
+	if (!s_anyOverlapStateDirty) return;
+	s_anyOverlapStateDirty = false;
+	if (!g_psys || !g_pOrbiter || !g_pOrbiter->Cfg()->CfgPhysicsPrm.bVesselCollision) return;
+
+	for (DWORD i = 0; i < g_psys->nVessel(); i++) {
+		Vessel *v = g_psys->GetVessel(i);
+		if (!v || !v->m_overlapStateDirty) continue;
+		v->m_overlapStateDirty = false;
+		for (DWORD j = 0; j < g_psys->nVessel(); j++) {
+			Vessel *other = g_psys->GetVessel(j);
+			if (!other || other == v) continue;
+
+			if (IsCollisionPairDisabled(v, other)) {
+				if (!v->CheckVesselOverlap(other, OverlapSeparationMargin)) {
+					RemoveDisabledCollisionPair(v, other);
+				}
+			} else if (v->CheckVesselOverlap(other, 0.0)) {
+				AddDisabledCollisionPair(v, other);
+			}
+		}
+		if (!v->ComputePlanetLocalPose(v->m_overlapRefPlanet, v->m_overlapCheckedPosP, v->m_overlapCheckedRotP)) {
+			v->m_overlapRefPlanet = nullptr;
+		}
+		v->m_overlapPoseValid = true;
+	}
+}
+
 DWORD Vessel::GetDisabledCollisionPairCount() {
-	if (!g_psys) return 0;
+	if (!g_psys || !g_pOrbiter || !g_pOrbiter->Cfg()->CfgPhysicsPrm.bVesselCollision) return 0;
+	FlushPendingCollisionOverlapStates();
 	return (DWORD)s_disabledCollisionPairs.size();
 }
 
 bool Vessel::GetDisabledCollisionPair(DWORD index, OBJHANDLE *hVessel1, OBJHANDLE *hVessel2) {
-	if (!g_psys || index >= s_disabledCollisionPairs.size()) return false;
+	if (!g_psys || !g_pOrbiter || !g_pOrbiter->Cfg()->CfgPhysicsPrm.bVesselCollision) return false;
+	FlushPendingCollisionOverlapStates();
+	if (index >= s_disabledCollisionPairs.size()) return false;
 	if (hVessel1) *hVessel1 = (OBJHANDLE)s_disabledCollisionPairs[index].first;
 	if (hVessel2) *hVessel2 = (OBJHANDLE)s_disabledCollisionPairs[index].second;
 	return true;
@@ -5746,10 +5956,13 @@ void Vessel::AddDisabledCollisionPair(Vessel *v1, Vessel *v2) {
 void Vessel::RemoveDisabledCollisionPair(const Vessel *v1, const Vessel *v2) {
 	if (!v1 || !v2 || v1 == v2) return;
 	auto key = MakeCanonicalVesselPair(v1, v2);
-	s_disabledCollisionPairs.erase(
-		std::remove(s_disabledCollisionPairs.begin(), s_disabledCollisionPairs.end(), key),
-		s_disabledCollisionPairs.end()
-	);
+	auto oldEnd = s_disabledCollisionPairs.end();
+	auto newEnd = std::remove(s_disabledCollisionPairs.begin(), oldEnd, key);
+	if (newEnd != oldEnd) {
+		s_disabledCollisionPairs.erase(newEnd, oldEnd);
+		key.first->m_overlapPoseValid = false;
+		key.second->m_overlapPoseValid = false;
+	}
 }
 
 void Vessel::RemoveVesselFromDisabledCollisionPairs(const Vessel *v) {
@@ -5774,28 +5987,56 @@ bool Vessel::CheckVesselOverlap(Vessel *v, double margin) {
 	while (my_root->attach && my_root->attach->mate) my_root = my_root->attach->mate;
 	if (v_root == my_root) return false;
 
-	if (supervessel && supervessel == v->supervessel) return false;
+	if (my_root->supervessel && my_root->supervessel == v_root->supervessel) return false;
 
 	const StateVectors *svA = (s1->pos.length2() > 0.0 ? s1 : s0);
 	const StateVectors *svB = (v->s1->pos.length2() > 0.0 ? v->s1 : v->s0);
 	const StateVectors *svP = (ppA->s1->pos.length2() > 0.0 ? ppA->s1 : ppA->s0);
 
-	double rsum = size + v->Size() + margin;
-	if ((svB->pos - svA->pos).length() > rsum + 5.0) return false;
+	double maxDist = size + v->Size() + margin + 5.0;
+	if ((svB->pos - svA->pos).length2() > maxDist * maxDist) return false;
 
 	UpdateHullCacheP();
 	v->UpdateHullCacheP();
 	if (m_hullCacheP.empty() || v->m_hullCacheP.empty()) return false;
 
 	if (bIsConvexCollider && v->bIsConvexCollider) {
-		for (const auto& sliceA : m_hullGroupSlices) {
-			for (const auto& sliceB : v->m_hullGroupSlices) {
-				if (sliceA.maxP.x + margin < sliceB.minP.x || sliceA.minP.x - margin > sliceB.maxP.x) continue;
-				if (sliceA.maxP.y + margin < sliceB.minP.y || sliceA.minP.y - margin > sliceB.maxP.y) continue;
-				if (sliceA.maxP.z + margin < sliceB.minP.z || sliceA.minP.z - margin > sliceB.maxP.z) continue;
+		if (m_hullMaxP.x + margin < v->m_hullMinP.x || m_hullMinP.x - margin > v->m_hullMaxP.x ||
+			m_hullMaxP.y + margin < v->m_hullMinP.y || m_hullMinP.y - margin > v->m_hullMaxP.y ||
+			m_hullMaxP.z + margin < v->m_hullMinP.z || m_hullMinP.z - margin > v->m_hullMaxP.z) {
+			return false;
+		}
 
-				CollisionCore::Simplex simplex;
-				if (CollisionCore::Intersect(&m_hullCacheP[sliceA.startIdx], sliceA.count, &v->m_hullCacheP[sliceB.startIdx], sliceB.count, simplex, margin)) {
+		std::vector<const HullGroupSlice*> activeB;
+		activeB.reserve(v->m_hullGroupSlices.size());
+		Vector activeMinB(1e10, 1e10, 1e10), activeMaxB(-1e10, -1e10, -1e10);
+		for (const auto& sliceB : v->m_hullGroupSlices) {
+			if (m_hullMaxP.x + margin < sliceB.minP.x || m_hullMinP.x - margin > sliceB.maxP.x) continue;
+			if (m_hullMaxP.y + margin < sliceB.minP.y || m_hullMinP.y - margin > sliceB.maxP.y) continue;
+			if (m_hullMaxP.z + margin < sliceB.minP.z || m_hullMinP.z - margin > sliceB.maxP.z) continue;
+			activeB.push_back(&sliceB);
+			if (sliceB.minP.x < activeMinB.x) activeMinB.x = sliceB.minP.x;
+			if (sliceB.minP.y < activeMinB.y) activeMinB.y = sliceB.minP.y;
+			if (sliceB.minP.z < activeMinB.z) activeMinB.z = sliceB.minP.z;
+			if (sliceB.maxP.x > activeMaxB.x) activeMaxB.x = sliceB.maxP.x;
+			if (sliceB.maxP.y > activeMaxB.y) activeMaxB.y = sliceB.maxP.y;
+			if (sliceB.maxP.z > activeMaxB.z) activeMaxB.z = sliceB.maxP.z;
+		}
+		if (activeB.empty()) return false;
+
+		CollisionCore::Simplex simplex;
+		simplex.reserve(4);
+		for (const auto& sliceA : m_hullGroupSlices) {
+			if (sliceA.maxP.x + margin < activeMinB.x || sliceA.minP.x - margin > activeMaxB.x) continue;
+			if (sliceA.maxP.y + margin < activeMinB.y || sliceA.minP.y - margin > activeMaxB.y) continue;
+			if (sliceA.maxP.z + margin < activeMinB.z || sliceA.minP.z - margin > activeMaxB.z) continue;
+
+			for (const HullGroupSlice* sliceB : activeB) {
+				if (sliceA.maxP.x + margin < sliceB->minP.x || sliceA.minP.x - margin > sliceB->maxP.x) continue;
+				if (sliceA.maxP.y + margin < sliceB->minP.y || sliceA.minP.y - margin > sliceB->maxP.y) continue;
+				if (sliceA.maxP.z + margin < sliceB->minP.z || sliceA.minP.z - margin > sliceB->maxP.z) continue;
+
+				if (CollisionCore::Intersect(&m_hullCacheP[sliceA.startIdx], sliceA.count, &v->m_hullCacheP[sliceB->startIdx], sliceB->count, simplex, margin)) {
 					return true;
 				}
 			}
@@ -5812,8 +6053,10 @@ bool Vessel::CheckVesselOverlap(Vessel *v, double margin) {
 		Vector posConc_P(svConc->pos - svP->pos);
 		posConc_P.Set(tmul(svP->R, posConc_P));
 
+		CollisionCore::Simplex simplex;
+		simplex.reserve(4);
 		for (DWORD mi = 0; mi < conc->nmesh; mi++) {
-			if (!conc->meshlist[mi] || !conc->meshlist[mi]->hMesh) continue;
+			if (!conc->meshlist[mi] || !conc->meshlist[mi]->hMesh || !(conc->meshlist[mi]->vismode & MESHVIS_EXTERNAL)) continue;
 			Mesh *m = (Mesh*)conc->meshlist[mi]->hMesh;
 			Vector meshOfsP = mul(M_conc2p, Vector(conc->meshlist[mi]->meshofs.x, conc->meshlist[mi]->meshofs.y, conc->meshlist[mi]->meshofs.z));
 
@@ -5850,7 +6093,6 @@ bool Vessel::CheckVesselOverlap(Vessel *v, double margin) {
 						if (tmaxY + margin < sliceA.minP.y || tminY - margin > sliceA.maxP.y) continue;
 						if (tmaxZ + margin < sliceA.minP.z || tminZ - margin > sliceA.maxP.z) continue;
 
-						CollisionCore::Simplex simplex;
 						if (CollisionCore::Intersect(&conv->m_hullCacheP[sliceA.startIdx], sliceA.count, triPts, 3, simplex, margin)) {
 							return true;
 						}
@@ -5868,7 +6110,7 @@ bool Vessel::CheckVesselOverlap(Vessel *v, double margin) {
 		Vector vRel_AvsB = svA->vel - svB->vel;
 
 		for (DWORD mi = 0; mi < v->nmesh; mi++) {
-			if (!v->meshlist[mi] || !v->meshlist[mi]->hMesh) continue;
+			if (!v->meshlist[mi] || !v->meshlist[mi]->hMesh || !(v->meshlist[mi]->vismode & MESHVIS_EXTERNAL)) continue;
 			Mesh *m = (Mesh*)v->meshlist[mi]->hMesh;
 			Vector meshOfsP = mul(M_B2p, Vector(v->meshlist[mi]->meshofs.x, v->meshlist[mi]->meshofs.y, v->meshlist[mi]->meshofs.z));
 			VECTOR3 mPosP = { (float)(posB_P.x + meshOfsP.x), (float)(posB_P.y + meshOfsP.y), (float)(posB_P.z + meshOfsP.z) };
@@ -5885,7 +6127,7 @@ bool Vessel::CheckVesselOverlap(Vessel *v, double margin) {
 		Vector vRel_BvsA = svB->vel - svA->vel;
 
 		for (DWORD mi = 0; mi < nmesh; mi++) {
-			if (!meshlist[mi] || !meshlist[mi]->hMesh) continue;
+			if (!meshlist[mi] || !meshlist[mi]->hMesh || !(meshlist[mi]->vismode & MESHVIS_EXTERNAL)) continue;
 			Mesh *m = (Mesh*)meshlist[mi]->hMesh;
 			Vector meshOfsP = mul(M_A2p, Vector(meshlist[mi]->meshofs.x, meshlist[mi]->meshofs.y, meshlist[mi]->meshofs.z));
 			VECTOR3 mPosP = { (float)(posA_P.x + meshOfsP.x), (float)(posA_P.y + meshOfsP.y), (float)(posA_P.z + meshOfsP.z) };
@@ -5902,26 +6144,36 @@ bool Vessel::CheckVesselOverlap(Vessel *v, double margin) {
 // through oapiSetVesselState() / oapiSetVesselStateEx()
 
 void Vessel::RefreshCollisionOverlapState() {
-	if (!g_psys) return;
+	m_overlapStateDirty = false;
+	if (!g_psys || !g_pOrbiter || !g_pOrbiter->Cfg()->CfgPhysicsPrm.bVesselCollision) {
+		m_overlapPoseValid = false;
+		return;
+	}
 	m_hullCachePValid = false;
 	for (DWORD i = 0; i < g_psys->nVessel(); i++) {
 		Vessel *other = g_psys->GetVessel(i);
-
 		if (!other || other == this) continue;
-		other->m_hullCachePValid = false;
 
-		if (CheckVesselOverlap(other, 0.0)) {
+		if (IsCollisionPairDisabled(this, other)) {
+			if (!CheckVesselOverlap(other, OverlapSeparationMargin)) {
+				RemoveDisabledCollisionPair(this, other);
+			}
+		} else if (CheckVesselOverlap(other, 0.0)) {
 			AddDisabledCollisionPair(this, other);
-
-		} else if (IsCollisionPairDisabled(this, other) && !CheckVesselOverlap(other, OverlapSeparationMargin)) {
-			RemoveDisabledCollisionPair(this, other);
 		}
 	}
+	if (!ComputePlanetLocalPose(m_overlapRefPlanet, m_overlapCheckedPosP, m_overlapCheckedRotP)) {
+		m_overlapRefPlanet = nullptr;
+	}
+	m_overlapPoseValid = true;
 }
 
 // GJK/EPA Implementation
 
+
+
 void Vessel::ResolveCollisionWith(Vessel *v) {
+	if (fstatus == FLIGHTSTATUS_LANDED && v->fstatus == FLIGHTSTATUS_LANDED) return;
 	if (!proxyplanet || proxyplanet != v->proxyplanet) return;
 
 	Vessel *v_root = v;
@@ -5930,7 +6182,9 @@ void Vessel::ResolveCollisionWith(Vessel *v) {
 	while (my_root->attach && my_root->attach->mate) my_root = my_root->attach->mate;
 	if (v_root == my_root) return;
 
-	if (supervessel && supervessel == v->supervessel) return; // Skip docked vessels
+	SuperVessel *svA = my_root->supervessel;
+	SuperVessel *svB = v_root->supervessel;
+	if (svA && svA == svB) return; // Skip docked vessels
 
 	// Post-undock grace period: skip collision for 5 seconds after undocking
 	// to allow the separation push to clear the vessels' overlaps.
@@ -6000,6 +6254,15 @@ void Vessel::ResolveCollisionWith(Vessel *v) {
 
 	if (bIsConvexCollider && v->bIsConvexCollider) {
 		// Convex-to-Convex (Fast)
+		v->UpdateHullCacheP();
+		if (v->m_hullCacheP.empty()) return;
+
+		if (m_hullMaxP.x < v->m_hullMinP.x || m_hullMinP.x > v->m_hullMaxP.x ||
+			m_hullMaxP.y < v->m_hullMinP.y || m_hullMinP.y > v->m_hullMaxP.y ||
+			m_hullMaxP.z < v->m_hullMinP.z || m_hullMinP.z > v->m_hullMaxP.z) {
+			return;
+		}
+
 		bool dockingApproach = false;
 		if (ndock > 0 && v->ndock > 0) {
 			for (DWORD i = 0; i < ndock; i++) {
@@ -6017,20 +6280,40 @@ void Vessel::ResolveCollisionWith(Vessel *v) {
 			}
 		}
 
-		v->UpdateHullCacheP();
+		std::vector<const HullGroupSlice*> activeB;
+		activeB.reserve(v->m_hullGroupSlices.size());
+		Vector activeMinB(1e10, 1e10, 1e10), activeMaxB(-1e10, -1e10, -1e10);
+		for (const auto& sliceB : v->m_hullGroupSlices) {
+			if (dockingApproach && sliceB.isDockClearZone) continue;
+			if (m_hullMaxP.x < sliceB.minP.x || m_hullMinP.x > sliceB.maxP.x) continue;
+			if (m_hullMaxP.y < sliceB.minP.y || m_hullMinP.y > sliceB.maxP.y) continue;
+			if (m_hullMaxP.z < sliceB.minP.z || m_hullMinP.z > sliceB.maxP.z) continue;
+			activeB.push_back(&sliceB);
+			if (sliceB.minP.x < activeMinB.x) activeMinB.x = sliceB.minP.x;
+			if (sliceB.minP.y < activeMinB.y) activeMinB.y = sliceB.minP.y;
+			if (sliceB.minP.z < activeMinB.z) activeMinB.z = sliceB.minP.z;
+			if (sliceB.maxP.x > activeMaxB.x) activeMaxB.x = sliceB.maxP.x;
+			if (sliceB.maxP.y > activeMaxB.y) activeMaxB.y = sliceB.maxP.y;
+			if (sliceB.maxP.z > activeMaxB.z) activeMaxB.z = sliceB.maxP.z;
+		}
+
+		CollisionCore::Simplex simplex;
+		simplex.reserve(4);
 		for (const auto& sliceA : m_hullGroupSlices) {
-			for (const auto& sliceB : v->m_hullGroupSlices) {
-				if (dockingApproach && (sliceA.isDockClearZone || sliceB.isDockClearZone)) continue;
+			if (dockingApproach && sliceA.isDockClearZone) continue;
+			if (sliceA.maxP.x < activeMinB.x || sliceA.minP.x > activeMaxB.x) continue;
+			if (sliceA.maxP.y < activeMinB.y || sliceA.minP.y > activeMaxB.y) continue;
+			if (sliceA.maxP.z < activeMinB.z || sliceA.minP.z > activeMaxB.z) continue;
 
-				if (sliceA.maxP.x < sliceB.minP.x || sliceA.minP.x > sliceB.maxP.x) continue;
-				if (sliceA.maxP.y < sliceB.minP.y || sliceA.minP.y > sliceB.maxP.y) continue;
-				if (sliceA.maxP.z < sliceB.minP.z || sliceA.minP.z > sliceB.maxP.z) continue;
+			for (const HullGroupSlice* sliceB : activeB) {
+				if (sliceA.maxP.x < sliceB->minP.x || sliceA.minP.x > sliceB->maxP.x) continue;
+				if (sliceA.maxP.y < sliceB->minP.y || sliceA.minP.y > sliceB->maxP.y) continue;
+				if (sliceA.maxP.z < sliceB->minP.z || sliceA.minP.z > sliceB->maxP.z) continue;
 
-				CollisionCore::Simplex simplex;
-				if (CollisionCore::Intersect(&m_hullCacheP[sliceA.startIdx], sliceA.count, &v->m_hullCacheP[sliceB.startIdx], sliceB.count, simplex)) {
+				if (CollisionCore::Intersect(&m_hullCacheP[sliceA.startIdx], sliceA.count, &v->m_hullCacheP[sliceB->startIdx], sliceB->count, simplex)) {
 					Vector normal, contactPtGlobal;
 					double depth;
-					if (CollisionCore::Penetration(&m_hullCacheP[sliceA.startIdx], sliceA.count, &v->m_hullCacheP[sliceB.startIdx], sliceB.count, simplex, normal, depth, contactPtGlobal)) {
+					if (CollisionCore::Penetration(&m_hullCacheP[sliceA.startIdx], sliceA.count, &v->m_hullCacheP[sliceB->startIdx], sliceB->count, simplex, normal, depth, contactPtGlobal)) {
 						if (!bestRes.hit || depth > bestRes.depth) {
 							bestRes.hit = true;
 							bestRes.depth = depth;
@@ -6077,8 +6360,10 @@ void Vessel::ResolveCollisionWith(Vessel *v) {
 			}
 		}
 
+		CollisionCore::Simplex simplex;
+		simplex.reserve(4);
 		for (DWORD mi = 0; mi < conc->nmesh; mi++) {
-			if (!conc->meshlist[mi] || !conc->meshlist[mi]->hMesh) continue;
+			if (!conc->meshlist[mi] || !conc->meshlist[mi]->hMesh || !(conc->meshlist[mi]->vismode & MESHVIS_EXTERNAL)) continue;
 			Mesh *m = (Mesh*)conc->meshlist[mi]->hMesh;
 			Vector meshOfsP = mul(M_conc2p, Vector(conc->meshlist[mi]->meshofs.x, conc->meshlist[mi]->meshofs.y, conc->meshlist[mi]->meshofs.z));
 
@@ -6128,7 +6413,6 @@ void Vessel::ResolveCollisionWith(Vessel *v) {
 						if (tmaxY < sliceA.minP.y || tminY > sliceA.maxP.y) continue;
 						if (tmaxZ < sliceA.minP.z || tminZ > sliceA.maxP.z) continue;
 
-						CollisionCore::Simplex simplex;
 						if (CollisionCore::Intersect(&conv->m_hullCacheP[sliceA.startIdx], sliceA.count, triPts, 3, simplex)) {
 							Vector normal, contactPtGlobal;
 							double depth;
@@ -6177,7 +6461,7 @@ void Vessel::ResolveCollisionWith(Vessel *v) {
 		Vector vRel_AvsB = s1->vel - v->s1->vel;
 
 		for (DWORD mi = 0; mi < v->nmesh; mi++) {
-			if (!v->meshlist[mi] || !v->meshlist[mi]->hMesh) continue;
+			if (!v->meshlist[mi] || !v->meshlist[mi]->hMesh || !(v->meshlist[mi]->vismode & MESHVIS_EXTERNAL)) continue;
 			Mesh *m = (Mesh*)v->meshlist[mi]->hMesh;
 			Vector meshOfsP = mul(M_B2p, Vector(v->meshlist[mi]->meshofs.x, v->meshlist[mi]->meshofs.y, v->meshlist[mi]->meshofs.z));
 			VECTOR3 mPosP = { (float)(posB_P.x + meshOfsP.x), (float)(posB_P.y + meshOfsP.y), (float)(posB_P.z + meshOfsP.z) };
@@ -6202,7 +6486,7 @@ void Vessel::ResolveCollisionWith(Vessel *v) {
 			Vector vRel_BvsA = v->s1->vel - s1->vel;
 
 			for (DWORD mi = 0; mi < nmesh; mi++) {
-				if (!meshlist[mi] || !meshlist[mi]->hMesh) continue;
+				if (!meshlist[mi] || !meshlist[mi]->hMesh || !(meshlist[mi]->vismode & MESHVIS_EXTERNAL)) continue;
 				Mesh *m = (Mesh*)meshlist[mi]->hMesh;
 				Vector meshOfsP = mul(M_A2p, Vector(meshlist[mi]->meshofs.x, meshlist[mi]->meshofs.y, meshlist[mi]->meshofs.z));
 				VECTOR3 mPosP = { (float)(posA_P.x + meshOfsP.x), (float)(posA_P.y + meshOfsP.y), (float)(posA_P.z + meshOfsP.z) };
@@ -6241,21 +6525,30 @@ void Vessel::ResolveCollisionWith(Vessel *v) {
 			rawContactPtGlobal = s1->pos + mul(s1->R, Vector(bestRes.contactPtLocal.x, bestRes.contactPtLocal.y, bestRes.contactPtLocal.z));
 		}
 
-		Vector rA = rawContactPtGlobal - s1->pos;
-		Vector rB = rawContactPtGlobal - v->s1->pos;
+		VesselBase *bodyA = svA ? (VesselBase*)svA : (VesselBase*)my_root;
+		VesselBase *bodyB = svB ? (VesselBase*)svB : (VesselBase*)v_root;
+		StateVectors *sA = bodyA->s1;
+		StateVectors *sB = bodyB->s1;
+		double massA = bodyA->Mass();
+		double massB = bodyB->Mass();
+		const Vector &pmiA = bodyA->PMI();
+		const Vector &pmiB = bodyB->PMI();
+
+		Vector rA = rawContactPtGlobal - sA->pos;
+		Vector rB = rawContactPtGlobal - sB->pos;
 
 		double rA_len = rA.length();
 		double rB_len = rB.length();
 
 		// For the contact point used in force-vector display, use the midpoint
-		Vector contactPtGlobal = (s1->pos + rA + v->s1->pos + rB) * 0.5;
+		Vector contactPtGlobal = (sA->pos + rA + sB->pos + rB) * 0.5;
 
-		Vector omegaA_global = mul(s1->R, s1->omega);
-		Vector omegaB_global = mul(v->s1->R, v->s1->omega);
+		Vector omegaA_global = mul(sA->R, sA->omega);
+		Vector omegaB_global = mul(sB->R, sB->omega);
 
 		// All cross products MUST remain in the left-handed convention to avoid inverse spins and negative effective mass.
-		Vector velA = s1->vel + crossp(rA, omegaA_global);
-		Vector velB = v->s1->vel + crossp(rB, omegaB_global);
+		Vector velA = sA->vel + crossp(rA, omegaA_global);
+		Vector velB = sB->vel + crossp(rB, omegaB_global);
 		Vector vRelContact = velA - velB;
 
 		double relVelAlongNormal = dotp(vRelContact, normGlobal);
@@ -6266,55 +6559,68 @@ void Vessel::ResolveCollisionWith(Vessel *v) {
 			return;
 		}
 
-		double linearRelVel = dotp(s1->vel - v->s1->vel, normGlobal);
+		double linearRelVel = dotp(sA->vel - sB->vel, normGlobal);
 		double relVelForImpulse = relVelAlongNormal;
 
 		// If already separating, no impulse
 		if (relVelForImpulse > 0) relVelForImpulse = 0.0;
 
 		// Inverse Inertia Tensors
-		Vector invI_A(1.0 / (PMI().x * Mass()), 1.0 / (PMI().y * Mass()), 1.0 / (PMI().z * Mass()));
-		Vector invI_B(1.0 / (v->PMI().x * v->Mass()), 1.0 / (v->PMI().y * v->Mass()), 1.0 / (v->PMI().z * v->Mass()));
+		double pmiMaxA = max(pmiA.x, max(pmiA.y, pmiA.z));
+		double pmiMaxB = max(pmiB.x, max(pmiB.y, pmiB.z));
+		Vector pmiEffA(max(pmiA.x, 0.25 * pmiMaxA), max(pmiA.y, 0.25 * pmiMaxA), max(pmiA.z, 0.25 * pmiMaxA));
+		Vector pmiEffB(max(pmiB.x, 0.25 * pmiMaxB), max(pmiB.y, 0.25 * pmiMaxB), max(pmiB.z, 0.25 * pmiMaxB));
+		Vector invI_A(1.0 / (pmiEffA.x * massA), 1.0 / (pmiEffA.y * massA), 1.0 / (pmiEffA.z * massA));
+		Vector invI_B(1.0 / (pmiEffB.x * massB), 1.0 / (pmiEffB.y * massB), 1.0 / (pmiEffB.z * massB));
 
-		double e = 1.0; // Perfectly rigid body restitution
+		double e = 0.2; // Inelastic structural restitution for spacecraft collisions
 
 		// Again, Orbiter's left-handed convention means where v = r x w, torque is tau = F x r.
 		Vector crossA = crossp(normGlobal, rA);
 		Vector crossB = crossp(normGlobal, rB);
-		Vector crossA_local = tmul(s1->R, crossA);
-		Vector crossB_local = tmul(v->s1->R, crossB);
+		Vector crossA_local = tmul(sA->R, crossA);
+		Vector crossB_local = tmul(sB->R, crossB);
 		Vector iIT_crossA_local = crossA_local * invI_A;
 		Vector iIT_crossB_local = crossB_local * invI_B;
-		Vector iIT_crossA_global = mul(s1->R, iIT_crossA_local);
-		Vector iIT_crossB_global = mul(v->s1->R, iIT_crossB_local);
+		Vector iIT_crossA_global = mul(sA->R, iIT_crossA_local);
+		Vector iIT_crossB_global = mul(sB->R, iIT_crossB_local);
 
 		// Angular effect is the dot product of the contact point velocity generated by the unit torque (v = r x w)
 		double angularEffect = dotp(crossp(rA, iIT_crossA_global) + crossp(rB, iIT_crossB_global), normGlobal);
-		double denom = (1.0 / Mass()) + (1.0 / v->Mass()) + angularEffect;
+		double denom = (1.0 / massA) + (1.0 / massB) + angularEffect;
 		if (denom < 1e-8) denom = 1e-8;
+		double rotShare = angularEffect / denom;
+		if (relVelAlongNormal < 0.0) {
+			double linClosing = min(0.0, linearRelVel);
+			double rotClosing = min(0.0, relVelAlongNormal - linClosing);
+			relVelForImpulse = linClosing + rotShare * rotClosing;
+			if (relVelForImpulse < relVelAlongNormal) relVelForImpulse = relVelAlongNormal;
+		} else {
+			relVelForImpulse = 0.0;
+		}
 		double j = -(1.0 + e) * relVelForImpulse / denom;
 
 #ifdef VESSEL_COLLISION_DEBUG
 		// Logs
-		double KE_pre_lin = 0.5 * Mass() * s1->vel.length2() + 0.5 * v->Mass() * v->s1->vel.length2();
-		Vector omA_loc_pre = s1->omega;
-		Vector omB_loc_pre = v->s1->omega;
-		double KE_pre_rot = 0.5 * Mass() * (PMI().x * omA_loc_pre.x * omA_loc_pre.x + PMI().y * omA_loc_pre.y * omA_loc_pre.y + PMI().z * omA_loc_pre.z * omA_loc_pre.z)
-		                   + 0.5 * v->Mass() * (v->PMI().x * omB_loc_pre.x * omB_loc_pre.x + v->PMI().y * omB_loc_pre.y * omB_loc_pre.y + v->PMI().z * omB_loc_pre.z * omB_loc_pre.z);
+		double KE_pre_lin = 0.5 * massA * sA->vel.length2() + 0.5 * massB * sB->vel.length2();
+		Vector omA_loc_pre = sA->omega;
+		Vector omB_loc_pre = sB->omega;
+		double KE_pre_rot = 0.5 * massA * (pmiA.x * omA_loc_pre.x * omA_loc_pre.x + pmiA.y * omA_loc_pre.y * omA_loc_pre.y + pmiA.z * omA_loc_pre.z * omA_loc_pre.z)
+		                   + 0.5 * massB * (pmiB.x * omB_loc_pre.x * omB_loc_pre.x + pmiB.y * omB_loc_pre.y * omB_loc_pre.y + pmiB.z * omB_loc_pre.z * omB_loc_pre.z);
 		double KE_pre = KE_pre_lin + KE_pre_rot;
-		Vector P_pre = s1->vel * Mass() + v->s1->vel * v->Mass();
+		Vector P_pre = sA->vel * massA + sB->vel * massB;
 		oapiWriteLogV("VCOL[%s<->%s] T=%.3f depth=%.4f e=%.2f", Name(), v->Name(), td.SimT1, bestRes.depth, e);
 		oapiWriteLogV("  normal=(%.4f,%.4f,%.4f) vN=%.4f vN_imp=%.4f linVN=%.4f",
 			normGlobal.x, normGlobal.y, normGlobal.z, relVelAlongNormal, relVelForImpulse, linearRelVel);
 		oapiWriteLogV("  rA=(%.2f,%.2f,%.2f)|%.2f rB=(%.2f,%.2f,%.2f)|%.2f rA_raw|%.2f rB_raw|%.2f",
 			rA.x, rA.y, rA.z, rA.length(), rB.x, rB.y, rB.z, rB.length(), rA_len, rB_len);
 		oapiWriteLogV("  j=%.4f massA=%.1f massB=%.1f angEff=%.6f denom=%.6f",
-			j, Mass(), v->Mass(), angularEffect, denom);
+			j, massA, massB, angularEffect, denom);
 #endif
 
 		Vector impulse = normGlobal * j;
-		Vector deltaVelA = impulse / Mass();
-		Vector deltaVelB = -(impulse / v->Mass());
+		Vector deltaVelA = impulse / massA;
+		Vector deltaVelB = -(impulse / massB);
 
 		// Normal impulse +j*n is applied to A (pushes A away from B).
 		// Torque on A = (+j*n) x rA = j * (n x rA).
@@ -6325,32 +6631,35 @@ void Vessel::ResolveCollisionWith(Vessel *v) {
 		Vector deltaOmegaB = -(iIT_crossB_local * j);
 
 		// Tangential Friction
-		Vector vRel_t = vRelContact - (normGlobal * relVelAlongNormal);
+		Vector velA_postNorm = (sA->vel + deltaVelA) + crossp(rA, mul(sA->R, sA->omega + deltaOmegaA));
+		Vector velB_postNorm = (sB->vel + deltaVelB) + crossp(rB, mul(sB->R, sB->omega + deltaOmegaB));
+		Vector vRelContact_postNorm = velA_postNorm - velB_postNorm;
+		Vector vRel_t = vRelContact_postNorm - (normGlobal * dotp(vRelContact_postNorm, normGlobal));
 		double vt_len = vRel_t.length();
 		if (vt_len > 1e-4) {
 			Vector tangent = vRel_t / vt_len;
 			// Tangential force on A is -jt * tangent. Torque is (-tangent) x rA = - (tangent x rA).
 			Vector crossA_t = crossp(tangent, rA);
 			Vector crossB_t = crossp(tangent, rB);
-			Vector iIT_crossA_t_local = tmul(s1->R, crossA_t) * invI_A;
-			Vector iIT_crossB_t_local = tmul(v->s1->R, crossB_t) * invI_B;
-			Vector iIT_crossA_t_global = mul(s1->R, iIT_crossA_t_local);
-			Vector iIT_crossB_t_global = mul(v->s1->R, iIT_crossB_t_local);
+			Vector iIT_crossA_t_local = tmul(sA->R, crossA_t) * invI_A;
+			Vector iIT_crossB_t_local = tmul(sB->R, crossB_t) * invI_B;
+			Vector iIT_crossA_t_global = mul(sA->R, iIT_crossA_t_local);
+			Vector iIT_crossB_t_global = mul(sB->R, iIT_crossB_t_local);
 
 			// Angular effect (left-handed velocity - (v = r x w))
 			double angularEffect_t = dotp(crossp(rA, iIT_crossA_t_global) + crossp(rB, iIT_crossB_t_global), tangent);
-			double denom_t = (1.0 / Mass()) + (1.0 / v->Mass()) + angularEffect_t;
+			double denom_t = (1.0 / massA) + (1.0 / massB) + angularEffect_t;
 			if (denom_t < 1e-8) denom_t = 1e-8;
 			double effectiveMass_t = 1.0 / denom_t;
 
 			double jt = vt_len * effectiveMass_t;
-			double mu = 0.6;
+			double mu = 0.15;
 			if (jt > mu * j) jt = mu * j;
 
 			// Friction impulse on A is -jt*tangent
 			Vector frictionImpulse = tangent * jt;
-			deltaVelA -= frictionImpulse / Mass();
-			deltaVelB += frictionImpulse / v->Mass();
+			deltaVelA -= frictionImpulse / massA;
+			deltaVelB += frictionImpulse / massB;
 			// Torque on A = (-jt * tangent) x rA = -jt * crossA_t
 			deltaOmegaA -= iIT_crossA_t_local * jt;
 			deltaOmegaB += iIT_crossB_t_local * jt;
@@ -6365,46 +6674,51 @@ void Vessel::ResolveCollisionWith(Vessel *v) {
 		// (low normal approach velocity), and only dampens the spin component
 		// around the contact normal to avoid killing a legit tumble
 		double closingSpeed = relVelAlongNormal < 0 ? -relVelAlongNormal : 0.0;
-		if (td.SimDT > 0.0 && closingSpeed < 0.5) {
-			Vector omA_g = mul(s1->R, s1->omega);
-			Vector omB_g = mul(v->s1->R, v->s1->omega);
+		if (td.SimDT > 0.0 && relVelAlongNormal <= 0.0 && closingSpeed < 0.5) {
+			Vector omA_g = mul(sA->R, sA->omega);
+			Vector omB_g = mul(sB->R, sB->omega);
 			Vector omega_rel_g = omA_g - omB_g;
 
 			double omega_normal = dotp(omega_rel_g, normGlobal);
-			Vector omega_damp_g = normGlobal * (omega_normal * min(0.3, td.SimDT * 3.0));
-			deltaOmegaA -= tmul(s1->R, omega_damp_g);
-			deltaOmegaB += tmul(v->s1->R, omega_damp_g);
+			Vector dampAxisA_loc = tmul(sA->R, normGlobal);
+			Vector dampAxisB_loc = tmul(sB->R, normGlobal);
+			double invIA_n = dotp(dampAxisA_loc * invI_A, dampAxisA_loc);
+			double invIB_n = dotp(dampAxisB_loc * invI_B, dampAxisB_loc);
+			double invISum = invIA_n + invIB_n;
+			double dampImpulse = (invISum > 1e-12) ? (omega_normal * min(0.3, td.SimDT * 3.0) / invISum) : 0.0;
+			deltaOmegaA -= (dampAxisA_loc * invI_A) * dampImpulse;
+			deltaOmegaB += (dampAxisB_loc * invI_B) * dampImpulse;
 		}
 
 		// Cap angular velocity gain per collision (Relaxed significantly to allow angular momentum transfer)
 		double maxOmegaGain = 10.0; // Flat cap to prevent pure numerical explosions, without killing legit spin
-		Vector newOmA = s1->omega + deltaOmegaA;
-		if (newOmA.length() > s1->omega.length() + maxOmegaGain && newOmA.length() > 1e-6)
-			deltaOmegaA = newOmA.unit() * (s1->omega.length() + maxOmegaGain) - s1->omega;
-		Vector newOmB = v->s1->omega + deltaOmegaB;
-		if (newOmB.length() > v->s1->omega.length() + maxOmegaGain && newOmB.length() > 1e-6)
-			deltaOmegaB = newOmB.unit() * (v->s1->omega.length() + maxOmegaGain) - v->s1->omega;
+		Vector newOmA = sA->omega + deltaOmegaA;
+		if (newOmA.length() > sA->omega.length() + maxOmegaGain && newOmA.length() > 1e-6)
+			deltaOmegaA = newOmA.unit() * (sA->omega.length() + maxOmegaGain) - sA->omega;
+		Vector newOmB = sB->omega + deltaOmegaB;
+		if (newOmB.length() > sB->omega.length() + maxOmegaGain && newOmB.length() > 1e-6)
+			deltaOmegaB = newOmB.unit() * (sB->omega.length() + maxOmegaGain) - sB->omega;
 
 		// Positional correction: push-out along normal with a small margin
 		// to prevent persistent overlap. Velocity-proportional margin is
 		// clamped to the penetration depth to avoid overshoot at low framerates.
-		double totalMass = Mass() + v->Mass();
-		double velMargin = min(closingSpeed * td.SimDT * 0.5, bestRes.depth * 0.5);
+		double totalMass = massA + massB;
+		double velMargin = 0.0;
 		double pushOutMag = bestRes.depth * 1.01 + velMargin;
-		Vector deltaPosA = normGlobal * (pushOutMag * (v->Mass() / totalMass));
-		Vector deltaPosB = -(normGlobal * (pushOutMag * (Mass() / totalMass)));
+		Vector deltaPosA = normGlobal * (pushOutMag * (massB / totalMass));
+		Vector deltaPosB = -(normGlobal * (pushOutMag * (massA / totalMass)));
 
 #ifdef VESSEL_COLLISION_DEBUG
 		// Logs
-		Vector velA_post = s1->vel + deltaVelA;
-		Vector velB_post = v->s1->vel + deltaVelB;
-		Vector omA_post = s1->omega + deltaOmegaA;
-		Vector omB_post = v->s1->omega + deltaOmegaB;
-		double KE_post_lin = 0.5 * Mass() * velA_post.length2() + 0.5 * v->Mass() * velB_post.length2();
-		double KE_post_rot = 0.5 * Mass() * (PMI().x * omA_post.x * omA_post.x + PMI().y * omA_post.y * omA_post.y + PMI().z * omA_post.z * omA_post.z)
-		                   + 0.5 * v->Mass() * (v->PMI().x * omB_post.x * omB_post.x + v->PMI().y * omB_post.y * omB_post.y + v->PMI().z * omB_post.z * omB_post.z);
+		Vector velA_post = sA->vel + deltaVelA;
+		Vector velB_post = sB->vel + deltaVelB;
+		Vector omA_post = sA->omega + deltaOmegaA;
+		Vector omB_post = sB->omega + deltaOmegaB;
+		double KE_post_lin = 0.5 * massA * velA_post.length2() + 0.5 * massB * velB_post.length2();
+		double KE_post_rot = 0.5 * massA * (pmiA.x * omA_post.x * omA_post.x + pmiA.y * omA_post.y * omA_post.y + pmiA.z * omA_post.z * omA_post.z)
+		                   + 0.5 * massB * (pmiB.x * omB_post.x * omB_post.x + pmiB.y * omB_post.y * omB_post.y + pmiB.z * omB_post.z * omB_post.z);
 		double KE_post = KE_post_lin + KE_post_rot;
-		Vector P_post = velA_post * Mass() + velB_post * v->Mass();
+		Vector P_post = velA_post * massA + velB_post * massB;
 		double dKE = KE_post - KE_pre;
 		Vector dP = P_post - P_pre;
 		oapiWriteLogV("  dVelA=(%.4f,%.4f,%.4f) dVelB=(%.4f,%.4f,%.4f)",
@@ -6425,7 +6739,7 @@ void Vessel::ResolveCollisionWith(Vessel *v) {
 		// Debug visualization data for both vessels
 		{
 			Vector nLocal = tmul(s1->R, normGlobal);
-			Vector rAlocal = tmul(s1->R, rA);
+			Vector rAlocal = tmul(s1->R, rawContactPtGlobal - s1->pos);
 			Vector impLocal = tmul(s1->R, impulse);
 			m_colDebug.active = true;
 			m_colDebug.contactPt = {rAlocal.x, rAlocal.y, rAlocal.z};
@@ -6438,7 +6752,7 @@ void Vessel::ResolveCollisionWith(Vessel *v) {
 		}
 		{
 			Vector nLocalB = tmul(v->s1->R, -normGlobal);
-			Vector rBlocal = tmul(v->s1->R, rB);
+			Vector rBlocal = tmul(v->s1->R, rawContactPtGlobal - v->s1->pos);
 			Vector impLocalB = tmul(v->s1->R, -impulse);
 			v->m_colDebug.active = true;
 			v->m_colDebug.contactPt = {rBlocal.x, rBlocal.y, rBlocal.z};
@@ -6452,79 +6766,89 @@ void Vessel::ResolveCollisionWith(Vessel *v) {
 
 		double cooldownEnd = td.SimT1 + 1.0;
 
-		// Apply to entire stack
-		for (DWORD idx = 0; idx < g_psys->nVessel(); idx++) {
-			Vessel *vj = g_psys->GetVessel(idx);
-			Vessel *vj_root = vj;
-			while (vj_root->attach && vj_root->attach->mate) vj_root = vj_root->attach->mate;
+		auto applyToAssembly = [&](Vessel *root, SuperVessel *sv, const Vector &dPos, const Vector &dVel, const Vector &dOmega) {
+			if (sv) {
+				if (sv->fstatus == FLIGHTSTATUS_LANDED)
+					sv->Activate(true);
+				sv->s1->pos += dPos;
+				sv->s1->vel += dVel;
+				sv->s1->omega += dOmega;
+				sv->rpos_base = sv->s1->pos; sv->rpos_add.Set(0,0,0);
+				sv->rvel_base = sv->s1->vel; sv->rvel_add.Set(0,0,0);
+				sv->bOrbitStabilised = false;
+				if (sv->cbody) {
+					sv->cpos = sv->s1->pos - sv->cbody->s1->pos;
+					sv->cvel = sv->s1->vel - sv->cbody->s1->vel;
+				}
+				for (DWORD i = 0; i < sv->nv; i++) {
+					Vessel *vj = sv->vlist[i].vessel;
+					sv->ComponentStateVectors(sv->s1, vj->s1, i);
+					vj->rpos_base = vj->s1->pos; vj->rpos_add.Set(0,0,0);
+					vj->rvel_base = vj->s1->vel; vj->rvel_add.Set(0,0,0);
+					vj->UpdateSurfParams();
+					vj->bOrbitStabilised = false;
+					vj->el_valid = false;
+					vj->bForceActive = true;
+					vj->m_hullCachePValid = false;
+					if (cooldownEnd > vj->collisionCooldownT)
+						vj->collisionCooldownT = cooldownEnd;
+					if (vj->cbody) {
+						vj->cpos = vj->s1->pos - vj->cbody->s1->pos;
+						vj->cvel = vj->s1->vel - vj->cbody->s1->vel;
+					}
+					if (vj->nforcevec_col < 10 && td.SimDT > 0.0) {
+						Vector F_global = dVel * (vj->Mass() / td.SimDT);
+						vj->col_forcevec[vj->nforcevec_col] = tmul(vj->s1->R, F_global);
+						vj->col_forcepos[vj->nforcevec_col] = tmul(vj->s1->R, contactPtGlobal - vj->s1->pos);
+						vj->nforcevec_col++;
+					}
+					vj->UpdateAttachments();
+				}
+				return;
+			}
+			for (DWORD idx = 0; idx < g_psys->nVessel(); idx++) {
+				Vessel *vj = g_psys->GetVessel(idx);
+				Vessel *vj_root = vj;
+				while (vj_root->attach && vj_root->attach->mate) vj_root = vj_root->attach->mate;
+				if (vj_root == root) {
+					if (vj->fstatus == FLIGHTSTATUS_LANDED) {
+						vj->fstatus = FLIGHTSTATUS_FREEFLIGHT;
+						vj->bSurfaceContact = false;
+						if (vj->proxybase) vj->proxybase->ReportTakeoff (vj);
+						if (vj->lstatus == 3 || vj->lstatus == 5) vj->lstatus = 1;
+						vj->rpos_base = vj->s1->pos; vj->rpos_add.Set(0,0,0);
+						vj->s1->vel += vj->rvel_add;
+						vj->rvel_base = vj->s1->vel; vj->rvel_add.Set(0,0,0);
+						vj->s1->omega.Set(0,0,0);
+					}
+					vj->s1->pos += dPos;
+					vj->s1->vel += dVel;
+					vj->s1->omega += dOmega;
+					vj->rpos_base = vj->s1->pos; vj->rpos_add.Set(0,0,0);
+					vj->rvel_base = vj->s1->vel; vj->rvel_add.Set(0,0,0);
+					vj->UpdateSurfParams();
+					vj->bOrbitStabilised = false;
+					vj->el_valid = false;
+					vj->bForceActive = true;
+					vj->m_hullCachePValid = false;
+					if (cooldownEnd > vj->collisionCooldownT)
+						vj->collisionCooldownT = cooldownEnd;
+					if (vj->cbody) {
+						vj->cpos = vj->s1->pos - vj->cbody->s1->pos;
+						vj->cvel = vj->s1->vel - vj->cbody->s1->vel;
+					}
+					if (vj->nforcevec_col < 10 && td.SimDT > 0.0) {
+						Vector F_global = dVel * (vj->Mass() / td.SimDT);
+						vj->col_forcevec[vj->nforcevec_col] = tmul(vj->s1->R, F_global);
+						vj->col_forcepos[vj->nforcevec_col] = tmul(vj->s1->R, contactPtGlobal - vj->s1->pos);
+						vj->nforcevec_col++;
+					}
+				}
+			}
+		};
 
-			if (vj_root == my_root) {
-				if (vj->fstatus == FLIGHTSTATUS_LANDED) {
-					vj->fstatus = FLIGHTSTATUS_FREEFLIGHT;
-					vj->bSurfaceContact = false;
-					if (vj->proxybase) vj->proxybase->ReportTakeoff (vj);
-					if (vj->lstatus == 3 || vj->lstatus == 5) vj->lstatus = 1;
-					vj->rpos_base = vj->s1->pos; vj->rpos_add.Set(0,0,0);
-					vj->s1->vel += vj->rvel_add;
-					vj->rvel_base = vj->s1->vel; vj->rvel_add.Set(0,0,0);
-					vj->s1->omega.Set(0,0,0);
-				}
-				vj->s1->pos += deltaPosA;
-				vj->s1->vel += deltaVelA;
-				vj->s1->omega += deltaOmegaA;
-				vj->rpos_base = vj->s1->pos; vj->rpos_add.Set(0,0,0);
-				vj->rvel_base = vj->s1->vel; vj->rvel_add.Set(0,0,0);
-				vj->UpdateSurfParams();
-				vj->bOrbitStabilised = false;
-				vj->el_valid = false;
-				vj->bForceActive = true;
-				if (cooldownEnd > vj->collisionCooldownT)
-					vj->collisionCooldownT = cooldownEnd;
-				if (vj->cbody) {
-					vj->cpos = vj->s1->pos - vj->cbody->s1->pos;
-					vj->cvel = vj->s1->vel - vj->cbody->s1->vel;
-				}
-				if (vj->nforcevec_col < 10 && td.SimDT > 0.0) {
-					Vector F_global = deltaVelA * (vj->Mass() / td.SimDT);
-					vj->col_forcevec[vj->nforcevec_col] = tmul(vj->s1->R, F_global);
-					vj->col_forcepos[vj->nforcevec_col] = tmul(vj->s1->R, contactPtGlobal - vj->s1->pos);
-					vj->nforcevec_col++;
-				}
-			}
-			else if (vj_root == v_root) {
-				if (vj->fstatus == FLIGHTSTATUS_LANDED) {
-					vj->fstatus = FLIGHTSTATUS_FREEFLIGHT;
-					vj->bSurfaceContact = false;
-					if (vj->proxybase) vj->proxybase->ReportTakeoff (vj);
-					if (vj->lstatus == 3 || vj->lstatus == 5) vj->lstatus = 1;
-					vj->rpos_base = vj->s1->pos; vj->rpos_add.Set(0,0,0);
-					vj->s1->vel += vj->rvel_add;
-					vj->rvel_base = vj->s1->vel; vj->rvel_add.Set(0,0,0);
-					vj->s1->omega.Set(0,0,0);
-				}
-				vj->s1->pos += deltaPosB;
-				vj->s1->vel += deltaVelB;
-				vj->s1->omega += deltaOmegaB;
-				vj->rpos_base = vj->s1->pos; vj->rpos_add.Set(0,0,0);
-				vj->rvel_base = vj->s1->vel; vj->rvel_add.Set(0,0,0);
-				vj->UpdateSurfParams();
-				vj->bOrbitStabilised = false;
-				vj->el_valid = false;
-				vj->bForceActive = true;
-				if (cooldownEnd > vj->collisionCooldownT)
-					vj->collisionCooldownT = cooldownEnd;
-				if (vj->cbody) {
-					vj->cpos = vj->s1->pos - vj->cbody->s1->pos;
-					vj->cvel = vj->s1->vel - vj->cbody->s1->vel;
-				}
-				if (vj->nforcevec_col < 10 && td.SimDT > 0.0) {
-					Vector F_global = deltaVelB * (vj->Mass() / td.SimDT);
-					vj->col_forcevec[vj->nforcevec_col] = tmul(vj->s1->R, F_global);
-					vj->col_forcepos[vj->nforcevec_col] = tmul(vj->s1->R, contactPtGlobal - vj->s1->pos);
-					vj->nforcevec_col++;
-				}
-			}
-		}
+		applyToAssembly(my_root, svA, deltaPosA, deltaVelA, deltaOmegaA);
+		applyToAssembly(v_root, svB, deltaPosB, deltaVelB, deltaOmegaB);
 
 		m_hullCachePValid = false;
 		v->m_hullCachePValid = false;
@@ -6604,7 +6928,7 @@ void Vessel::Update (bool force)
 		}
 	}
 
-	if (proxyplanet && !bFRplayback)
+	if (proxyplanet)
 		m_hullCachePValid = false; // reset cache for this frame
 
 	if (proxyplanet && fstatus != FLIGHTSTATUS_LANDED && !bFRplayback) {
@@ -6799,6 +7123,7 @@ void Vessel::UpdatePassive ()
 	proxybody = prnt->proxybody;
 	proxyplanet = prnt->proxyplanet;
 	fstatus = prnt->fstatus;
+	m_hullCachePValid = false;
 
 	if (proxybody) UpdateSurfParams();
 	if (fstatus != FLIGHTSTATUS_LANDED) {
@@ -6826,6 +7151,7 @@ void Vessel::PostUpdate ()
 	if (proxyplanet && !bFRplayback) {
 		// Vessel-to-vessel collisions
 		if (g_pOrbiter->Cfg()->CfgPhysicsPrm.bVesselCollision) {
+			FlushPendingCollisionOverlapStates();
 			for (DWORD i = 0; i < g_psys->nVessel(); i++) {
 				Vessel *v = g_psys->GetVessel(i);
 				if (v > this) ResolveCollisionWith(v);
@@ -7653,6 +7979,11 @@ ANIMATIONCOMP *Vessel::AddAnimationComponent (UINT an, double state0, double sta
 		parent->children[parent->nchildren++] = ac;
 	}
 	A->ncomp++;
+	if (A->state != A->defstate && AnimationCompAffectsCollider(ac)) {
+		m_hullLocalValid = false;
+		m_hullVisualValid = false;
+		m_hullCachePValid = false;
+	}
 	return ac;
 }
 
@@ -7714,6 +8045,9 @@ bool Vessel::DelAnimationComponent (UINT an, ANIMATIONCOMP *comp)
 
 	// delete component itself
 	delete comp;
+	m_hullLocalValid = false;
+	m_hullVisualValid = false;
+	m_hullCachePValid = false;
 
 	return true;
 }
@@ -7723,7 +8057,16 @@ bool Vessel::SetAnimation (UINT an, double state)
 	if (an >= nanim) return false;
 	if (anim[an].state != state) {
 		anim[an].state = state;
-		m_hullCachePValid = false;
+		if (m_hullLocalValid || m_hullCachePValid || m_hullVisualValid) {
+			for (UINT i = 0; i < anim[an].ncomp; i++) {
+				if (AnimationCompAffectsCollider(anim[an].comp[i])) {
+					m_hullLocalValid = false;
+					m_hullVisualValid = false;
+					m_hullCachePValid = false;
+					break;
+				}
+			}
+		}
 	}
 	return true;
 }
@@ -7759,6 +8102,9 @@ bool Vessel::DelAnimation (UINT an)
 	}
 #endif
 	A.state = A.defstate = 0;
+	m_hullLocalValid = false;
+	m_hullVisualValid = false;
+	m_hullCachePValid = false;
 	return true;
 }
 
@@ -7786,6 +8132,9 @@ void Vessel::ClearAnimations (bool reset)
 		anim = NULL;
 	}
 	nanim = 0;
+	m_hullLocalValid = false;
+	m_hullVisualValid = false;
+	m_hullCachePValid = false;
 }
 
 bool Vessel::LoadModule (ifstream &classf)
@@ -9732,6 +10081,7 @@ void VESSEL::ShiftCentreOfMass (const VECTOR3 &shift)
 		vessel->AddRPos (gdr);
 		if (vessel->supervessel) vessel->supervessel->NotifyShiftVesselOrigin (vessel, dr);
 	}
+	vessel->m_hullCachePValid = false;
 	g_pOrbiter->NotifyObjectJump (vessel, gdr);
 	if (vessel->bFRrecord) vessel->FRecorder_Save (true);
 }
@@ -9961,10 +10311,21 @@ const VECTOR3 *VESSEL::GetCollisionClearZones (DWORD &nBoxes) const
 
 	vessel->m_clearZoneCache.clear();
 	for (const auto& slice : vessel->m_hullGroupSlices) {
-		if (slice.isDockClearZone) {
-			vessel->m_clearZoneCache.push_back({slice.minP.x, slice.minP.y, slice.minP.z});
-			vessel->m_clearZoneCache.push_back({slice.maxP.x, slice.maxP.y, slice.maxP.z});
+		if (!slice.isDockClearZone || slice.count == 0 || slice.startIdx + slice.count > vessel->m_hullCache.size())
+			continue;
+		VECTOR3 bmin = vessel->m_hullCache[slice.startIdx];
+		VECTOR3 bmax = bmin;
+		for (size_t i = 1; i < slice.count; i++) {
+			const VECTOR3& p = vessel->m_hullCache[slice.startIdx + i];
+			if (p.x < bmin.x) bmin.x = p.x;
+			if (p.y < bmin.y) bmin.y = p.y;
+			if (p.z < bmin.z) bmin.z = p.z;
+			if (p.x > bmax.x) bmax.x = p.x;
+			if (p.y > bmax.y) bmax.y = p.y;
+			if (p.z > bmax.z) bmax.z = p.z;
 		}
+		vessel->m_clearZoneCache.push_back(bmin);
+		vessel->m_clearZoneCache.push_back(bmax);
 	}
 
 	if (vessel->m_clearZoneCache.empty()) {

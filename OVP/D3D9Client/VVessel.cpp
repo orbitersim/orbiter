@@ -864,6 +864,7 @@ void vVessel::RenderColliders()
 	} else {
 		// Draw the physical collision meshes as green wireframes
 		for (UINT i = 0; i < vessel->GetMeshCount(); i++) {
+			if (!(vessel->GetMeshVisibilityMode(i) & MESHVIS_EXTERNAL)) continue;
 			MESHHANDLE hMesh = vessel->GetMeshTemplate(i);
 			if (!hMesh) continue;
 			VECTOR3 meshOfs;

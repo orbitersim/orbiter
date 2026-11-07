@@ -787,7 +787,15 @@ void SuperVessel::Update (bool force)
 			Flin += vFlin;
 		}
 
+		bool savedCanStabilise = bCanUpdateStabilised;
+		for (i = 0; i < nv; i++) {
+			if (vlist[i].vessel->collisionCooldownT > td.SimT0) {
+				bCanUpdateStabilised = false;
+				break;
+			}
+		}
 		RigidBody::Update (force);
+		bCanUpdateStabilised = savedCanStabilise;
 
 		// update state parameters for all sub-vessels
 		for (i = 0; i < nv; i++) {
