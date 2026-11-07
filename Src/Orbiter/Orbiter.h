@@ -91,6 +91,8 @@ public:
 	void TogglePlanetariumMode();
 	void ToggleLabelDisplay();
 	const char *KeyState() const;
+	void HandleKeyDown(WPARAM wParam, LPARAM lParam);
+	void HandleKeyUp(WPARAM wParam, LPARAM lParam);
 
 	// dialog box processing
 	HWND OpenDialog (int id, DLGPROC pDlg, void *context = 0); // This version expects the dialog resource in the Orbiter instance
@@ -174,7 +176,6 @@ public:
 
 	// DirectInput components
 	inline CDIFramework7 *GetDInput() const { return pDI->GetDIFrame(); }
-	inline LPDIRECTINPUTDEVICE8 GetKbdDevice() const { return pDI->GetKbdDevice(); }
 	inline LPDIRECTINPUTDEVICE8 GetJoyDevice() const { return pDI->GetJoyDevice(); }
 
 	// memory monitor
@@ -319,14 +320,14 @@ protected:
 	HRESULT UserInput ();
 	void KbdInputImmediate_System    (char *kstate);
 	void KbdInputImmediate_OnRunning (char *buffer);
-	void KbdInputBuffered_System     (char *kstate, DIDEVICEOBJECTDATA *dod, DWORD n);
-	void KbdInputBuffered_OnRunning  (char *kstate, DIDEVICEOBJECTDATA *dod, DWORD n);
+	void KbdInputBuffered_System     (char *kstate, uint8_t key);
+	void KbdInputBuffered_OnRunning  (char *kstate, uint8_t key);
 	void UserJoyInput_System (DIJOYSTATE2 *js);
 	void UserJoyInput_OnRunning (DIJOYSTATE2 *js);
 	bool MouseEvent (UINT event, DWORD state, DWORD x, DWORD y);
 	bool BroadcastMouseEvent (UINT event, DWORD state, DWORD x, DWORD y);
 	bool BroadcastImmediateKeyboardEvent (char *kstate);
-	void BroadcastBufferedKeyboardEvent (char *kstate, DIDEVICEOBJECTDATA *dod, DWORD n);
+	void BroadcastBufferedKeyboardEvent (char *kstate, uint8_t key);
 
 	void BroadcastGlobalInit();
 

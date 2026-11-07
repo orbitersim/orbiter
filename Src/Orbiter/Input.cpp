@@ -45,18 +45,6 @@ void DInput::SetRenderWindow(HWND hWnd)
 	m_hWnd = hWnd;
 }
 
-bool DInput::CreateKbdDevice()
-{
-	if (!m_hWnd) return false; // no render window defined
-
-	if (FAILED (diframe->CreateKbdDevice (m_hWnd))) {
-		LOGOUT("ERROR: Could not create keyboard device");
-		return false; // we need the keyboard, so give up
-	}
-	GetKbdDevice()->Acquire();
-	return true;
-}
-
 bool DInput::CreateJoyDevice ()
 {
 	if (!m_hWnd) return false; // no render window defined

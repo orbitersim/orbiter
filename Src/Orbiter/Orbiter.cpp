@@ -713,12 +713,6 @@ HWND Orbiter::CreateRenderWindow (Config *pCfg, const char *scenario)
 	if (hRenderWnd) {
 		bActive = true;
 
-		// Create keyboard device
-		if (!pDI->CreateKbdDevice ()) {
-			CloseSession ();
-			return 0;
-		}
-
 		// Create joystick device
 		if (pDI->CreateJoyDevice ())
 			plZ4 = 1; // invalidate
@@ -1981,6 +1975,37 @@ const char *Orbiter::KeyState() const
 	return simkstate;
 }
 
+void Orbiter::HandleKeyDown(WPARAM wParam, LPARAM lParam)
+{
+    UINT scan = (lParam >> 16) & 0xFF;
+
+    if (lParam & (1 << 24))
+        scan |= 0x80; // DirectInput extended-key encoding
+
+    simkstate[scan] = 0x80;
+
+	if(scan && bSession) {
+		BroadcastBufferedKeyboardEvent (simkstate, scan);
+		KbdInputBuffered_System (simkstate, scan);
+		if (bRunning) KbdInputBuffered_OnRunning (simkstate, scan);
+	}
+}
+
+void Orbiter::HandleKeyUp(WPARAM wParam, LPARAM lParam)
+{
+    UINT scan = (lParam >> 16) & 0xFF;
+
+    if (lParam & (1 << 24))
+        scan |= 0x80;
+
+    simkstate[scan] = 0;
+
+	if(scan && bSession) {
+		BroadcastBufferedKeyboardEvent (simkstate, scan);
+		if (bRunning) KbdInputBuffered_OnRunning (simkstate, scan);
+	}
+}
+
 //-----------------------------------------------------------------------------
 // Name: UserInput()
 // Desc: Process user input via DirectInput keyboard and joystick (but not
@@ -1988,67 +2013,38 @@ const char *Orbiter::KeyState() const
 //-----------------------------------------------------------------------------
 HRESULT Orbiter::UserInput ()
 {
-	static char buffer[256];
-	DIDEVICEOBJECTDATA dod[10];
-	LPDIRECTINPUTDEVICE8 didev;
-	DWORD i, dwItems = 10;
-	HRESULT hr;
 	bool skipkbd = false;
 
-	memset(simkstate, 0, 256);
-	for (i = 0; i < 15; i++) ctrlKeyboard[i] = ctrlJoystick[i] = 0; // reset keyboard and joystick attitude requests
+	for (int i = 0; i < 15; i++) ctrlKeyboard[i] = ctrlJoystick[i] = 0; // reset keyboard and joystick attitude requests
 
 	// skip keyboard if dialogs are open
 	if ((g_input && g_input->IsActive()) ||
 	    (g_select && g_select->IsActive())) skipkbd = true;
 
-	if (didev = GetDInput()->GetKbdDevice()) {
-		ImGuiIO& io = ImGui::GetIO();
+	ImGuiIO& io = ImGui::GetIO();
 
-		// When focus-follows-mouse is active and the mouse is not over any
-		// ImGui window, route keyboard input to the simulation even though
-		// ImGui's WantCaptureKeyboard may still be true (NavEnableKeyboard
-		// keeps ImGui's internal focus alive after a click).
-		bool imguiWantsKeyboard = io.WantCaptureKeyboard &&
-			(pConfig->CfgUIPrm.MouseFocusMode == 0 || io.WantCaptureMouse);
+	// When focus-follows-mouse is active and the mouse is not over any
+	// ImGui window, route keyboard input to the simulation even though
+	// ImGui's WantCaptureKeyboard may still be true (NavEnableKeyboard
+	// keeps ImGui's internal focus alive after a click).
+	bool imguiWantsKeyboard = io.WantCaptureKeyboard &&
+		(pConfig->CfgUIPrm.MouseFocusMode == 0 || io.WantCaptureMouse);
 
-		// keyboard input: immediate key interpretation
-		hr = didev->GetDeviceState (sizeof(buffer), &buffer);
-		if ((hr == DIERR_NOTACQUIRED || hr == DIERR_INPUTLOST) && SUCCEEDED (didev->Acquire()))
-			hr = didev->GetDeviceState (sizeof(buffer), &buffer);
-
-		// Direct input bypasses the proc loop so we skip it here
-		if (SUCCEEDED (hr) && !imguiWantsKeyboard)
-			for (i = 0; i < 256; i++)
-				simkstate[i] |= buffer[i];
-		bool consume = BroadcastImmediateKeyboardEvent (simkstate);
-		if (!skipkbd && !consume) {
-			KbdInputImmediate_System (simkstate);
-			if (bRunning) KbdInputImmediate_OnRunning (simkstate);
-		}
-
-		// keyboard input: buffered key events
-		hr = didev->GetDeviceData (sizeof(DIDEVICEOBJECTDATA), dod, &dwItems, 0);
-		if ((hr == DIERR_NOTACQUIRED || hr == DIERR_INPUTLOST) && SUCCEEDED (didev->Acquire()))
-			hr = didev->GetDeviceData (sizeof(DIDEVICEOBJECTDATA), dod, &dwItems, 0);
-		if (SUCCEEDED (hr) && !imguiWantsKeyboard) {
-			BroadcastBufferedKeyboardEvent (buffer, dod, dwItems);
-			if (!skipkbd) {
-				KbdInputBuffered_System (buffer, dod, dwItems);
-				if (bRunning) KbdInputBuffered_OnRunning (buffer, dod, dwItems);
-			}
-		}
-		//if (hr == DI_BUFFEROVERFLOW) MessageBeep (-1);
+	// keyboard input: immediate key interpretation
+	bool consume = BroadcastImmediateKeyboardEvent (simkstate);
+	if (!skipkbd && !consume) {
+		KbdInputImmediate_System (simkstate);
+		if (bRunning) KbdInputImmediate_OnRunning (simkstate);
 	}
 
-	for (i = 0; i < 15; i++) ctrlTotal[i] = ctrlKeyboard[i]; // update attitude requests
+	for (int i = 0; i < 15; i++) ctrlTotal[i] = ctrlKeyboard[i]; // update attitude requests
 
 	// joystick input
 	DIJOYSTATE2 js;
 	if (pDI->PollJoystick (&js)) {
 		UserJoyInput_System (&js);                  // general joystick functions
 		if (bRunning) UserJoyInput_OnRunning (&js); // joystick vessel control functions
-		for (i = 0; i < 15; i++) ctrlTotal[i] += ctrlJoystick[i]; // update thrust requests
+		for (int i = 0; i < 15; i++) ctrlTotal[i] += ctrlJoystick[i]; // update thrust requests
 	}
 
 	g_camera->UpdateMouse();
@@ -2068,16 +2064,13 @@ bool Orbiter::SendKbdBuffered(DWORD key, DWORD *mod, DWORD nmod, bool onRunningO
 {
 	if (onRunningOnly && !bRunning) return false;
 
-	DIDEVICEOBJECTDATA dod;
-	dod.dwData = 0x80;
-	dod.dwOfs = key;
 	char buffer[256];
 	memset (buffer, 0, 256);
 	for (int i = 0; i < nmod; i++)
 		buffer[mod[i]] = 0x80;
-	BroadcastBufferedKeyboardEvent (buffer, &dod, 1);
-	KbdInputBuffered_System (buffer, &dod, 1);
-	KbdInputBuffered_OnRunning (buffer, &dod, 1);
+	BroadcastBufferedKeyboardEvent (buffer, key);
+	KbdInputBuffered_System (buffer, key);
+	KbdInputBuffered_OnRunning (buffer, key);
 	return true;
 }
 
@@ -2274,61 +2267,57 @@ void Orbiter::KbdInputImmediate_OnRunning (char *kstate)
 // Desc: General user keyboard buffered key interpretation. Processes keys
 //       which are also interpreted when simulation is paused
 //-----------------------------------------------------------------------------
-void Orbiter::KbdInputBuffered_System (char *kstate, DIDEVICEOBJECTDATA *dod, DWORD n)
+void Orbiter::KbdInputBuffered_System (char *kstate, uint8_t key)
 {
-	for (DWORD i = 0; i < n; i++) {
+	if (!(kstate[key] & 0x80)) return; // only process key down events
 
-		if (!(dod[i].dwData & 0x80)) continue; // only process key down events
-		DWORD key = dod[i].dwOfs;
+	if (keymap.IsLogicalKey(key, kstate, OAPI_LKEY_Pause))                TogglePause();
+	else if (keymap.IsLogicalKey(key, kstate, OAPI_LKEY_Quicksave))            Quicksave();
+	else if (keymap.IsLogicalKey(key, kstate, OAPI_LKEY_StepIncFOV))           SetFOV(ceil((g_camera->Aperture() * DEG + 1e-6) / 5.0) * 5.0 * RAD);
+	else if (keymap.IsLogicalKey(key, kstate, OAPI_LKEY_StepDecFOV))           SetFOV(floor((g_camera->Aperture() * DEG - 1e-6) / 5.0) * 5.0 * RAD);
+	else if (keymap.IsLogicalKey(key, kstate, OAPI_LKEY_MainMenu)) { 
+		CFG_UIPRM &prm = g_pOrbiter->Cfg()->CfgUIPrm;
+		prm.MenuMode = prm.MenuMode == 0 ? 2:0;
+	}
+	else if (keymap.IsLogicalKey(key, kstate, OAPI_LKEY_DlgHelp))              pDlgMgr->EnsureEntry<DlgHelp>();
+	else if (keymap.IsLogicalKey(key, kstate, OAPI_LKEY_DlgCamera))            pDlgMgr->EnsureEntry<DlgCamera>();
+	else if (keymap.IsLogicalKey(key, kstate, OAPI_LKEY_DlgSimspeed))          pDlgMgr->EnsureEntry<DlgTacc>();
+	else if (keymap.IsLogicalKey(key, kstate, OAPI_LKEY_DlgCustomCmd))         pDlgMgr->EnsureEntry<DlgFunction>();
+	else if (keymap.IsLogicalKey(key, kstate, OAPI_LKEY_DlgInfo))              pDlgMgr->EnsureEntry<DlgInfo>();
+	else if (keymap.IsLogicalKey(key, kstate, OAPI_LKEY_DlgMap))               pDlgMgr->EnsureEntry<DlgMap>();
+	else if (keymap.IsLogicalKey(key, kstate, OAPI_LKEY_DlgRecorder))          pDlgMgr->EnsureEntry<DlgRecorder>();
+	else if (keymap.IsLogicalKey(key, kstate, OAPI_LKEY_ToggleCamInternal))    SetView(g_focusobj, !g_camera->IsExternal());
+	else if (keymap.IsLogicalKey(key, kstate, OAPI_LKEY_DlgVisHelper))         pDlgMgr->EnsureEntry<DlgOptions>()->SwitchPage("Visual helpers");
+	else if (keymap.IsLogicalKey(key, kstate, OAPI_LKEY_DlgCapture))           pDlgMgr->EnsureEntry<DlgCapture>();
+	else if (keymap.IsLogicalKey(key, kstate, OAPI_LKEY_DlgSelectVessel))      pDlgMgr->EnsureEntry<DlgFocus>();
+	else if (keymap.IsLogicalKey(key, kstate, OAPI_LKEY_DlgOptions))           pDlgMgr->EnsureEntry<DlgOptions>();
+	else if (keymap.IsLogicalKey(key, kstate, OAPI_LKEY_TogglePlanetarium))    TogglePlanetariumMode();
+	else if (keymap.IsLogicalKey(key, kstate, OAPI_LKEY_ToggleLabels))         ToggleLabelDisplay();
+	else if (keymap.IsLogicalKey (key, kstate, OAPI_LKEY_ToggleRecPlay)) {
+		if (bPlayback) EndPlayback();
+		else ToggleRecorder ();
+	} else if (keymap.IsLogicalKey (key, kstate, OAPI_LKEY_Quit)) {
+		if (hRenderWnd) PostMessage (hRenderWnd, WM_CLOSE, 0, 0);
+	} else if (keymap.IsLogicalKey (key, kstate, OAPI_LKEY_SelectPrevVessel)) {
+		if (g_pfocusobj) SetFocusObject (g_pfocusobj);
+	}
 
-		if (keymap.IsLogicalKey(key, kstate, OAPI_LKEY_Pause))                TogglePause();
-		else if (keymap.IsLogicalKey(key, kstate, OAPI_LKEY_Quicksave))            Quicksave();
-		else if (keymap.IsLogicalKey(key, kstate, OAPI_LKEY_StepIncFOV))           SetFOV(ceil((g_camera->Aperture() * DEG + 1e-6) / 5.0) * 5.0 * RAD);
-		else if (keymap.IsLogicalKey(key, kstate, OAPI_LKEY_StepDecFOV))           SetFOV(floor((g_camera->Aperture() * DEG - 1e-6) / 5.0) * 5.0 * RAD);
-		else if (keymap.IsLogicalKey(key, kstate, OAPI_LKEY_MainMenu)) { 
-			CFG_UIPRM &prm = g_pOrbiter->Cfg()->CfgUIPrm;
-			prm.MenuMode = prm.MenuMode == 0 ? 2:0;
-		}
-		else if (keymap.IsLogicalKey(key, kstate, OAPI_LKEY_DlgHelp))              pDlgMgr->EnsureEntry<DlgHelp>();
-		else if (keymap.IsLogicalKey(key, kstate, OAPI_LKEY_DlgCamera))            pDlgMgr->EnsureEntry<DlgCamera>();
-		else if (keymap.IsLogicalKey(key, kstate, OAPI_LKEY_DlgSimspeed))          pDlgMgr->EnsureEntry<DlgTacc>();
-		else if (keymap.IsLogicalKey(key, kstate, OAPI_LKEY_DlgCustomCmd))         pDlgMgr->EnsureEntry<DlgFunction>();
-		else if (keymap.IsLogicalKey(key, kstate, OAPI_LKEY_DlgInfo))              pDlgMgr->EnsureEntry<DlgInfo>();
-		else if (keymap.IsLogicalKey(key, kstate, OAPI_LKEY_DlgMap))               pDlgMgr->EnsureEntry<DlgMap>();
-		else if (keymap.IsLogicalKey(key, kstate, OAPI_LKEY_DlgRecorder))          pDlgMgr->EnsureEntry<DlgRecorder>();
-		else if (keymap.IsLogicalKey(key, kstate, OAPI_LKEY_ToggleCamInternal))    SetView(g_focusobj, !g_camera->IsExternal());
-		else if (keymap.IsLogicalKey(key, kstate, OAPI_LKEY_DlgVisHelper))         pDlgMgr->EnsureEntry<DlgOptions>()->SwitchPage("Visual helpers");
-		else if (keymap.IsLogicalKey(key, kstate, OAPI_LKEY_DlgCapture))           pDlgMgr->EnsureEntry<DlgCapture>();
-		else if (keymap.IsLogicalKey(key, kstate, OAPI_LKEY_DlgSelectVessel))      pDlgMgr->EnsureEntry<DlgFocus>();
-		else if (keymap.IsLogicalKey(key, kstate, OAPI_LKEY_DlgOptions))           pDlgMgr->EnsureEntry<DlgOptions>();
-		else if (keymap.IsLogicalKey(key, kstate, OAPI_LKEY_TogglePlanetarium))    TogglePlanetariumMode();
-		else if (keymap.IsLogicalKey(key, kstate, OAPI_LKEY_ToggleLabels))         ToggleLabelDisplay();
-		else if (keymap.IsLogicalKey (key, kstate, OAPI_LKEY_ToggleRecPlay)) {
-			if (bPlayback) EndPlayback();
-			else ToggleRecorder ();
-		} else if (keymap.IsLogicalKey (key, kstate, OAPI_LKEY_Quit)) {
-			if (hRenderWnd) PostMessage (hRenderWnd, WM_CLOSE, 0, 0);
-		} else if (keymap.IsLogicalKey (key, kstate, OAPI_LKEY_SelectPrevVessel)) {
-			if (g_pfocusobj) SetFocusObject (g_pfocusobj);
-		}
+	if (g_camera->IsInternal()) {
+		if      (keymap.IsLogicalKey (key, kstate, OAPI_LKEY_CockpitResetCam))  g_camera->ResetCockpitDir();
+		else if (keymap.IsLogicalKey (key, kstate, OAPI_LKEY_TogglePanelMode))  g_pane->TogglePanelMode();
+		else if (keymap.IsLogicalKey (key, kstate, OAPI_LKEY_PanelSwitchLeft))  g_pane->SwitchPanel (0);
+		else if (keymap.IsLogicalKey (key, kstate, OAPI_LKEY_PanelSwitchRight)) g_pane->SwitchPanel (1);
+		else if (keymap.IsLogicalKey (key, kstate, OAPI_LKEY_PanelSwitchUp))    g_pane->SwitchPanel (2);
+		else if (keymap.IsLogicalKey (key, kstate, OAPI_LKEY_PanelSwitchDown))  g_pane->SwitchPanel (3);
 
-		if (g_camera->IsInternal()) {
-			if      (keymap.IsLogicalKey (key, kstate, OAPI_LKEY_CockpitResetCam))  g_camera->ResetCockpitDir();
-			else if (keymap.IsLogicalKey (key, kstate, OAPI_LKEY_TogglePanelMode))  g_pane->TogglePanelMode();
-			else if (keymap.IsLogicalKey (key, kstate, OAPI_LKEY_PanelSwitchLeft))  g_pane->SwitchPanel (0);
-			else if (keymap.IsLogicalKey (key, kstate, OAPI_LKEY_PanelSwitchRight)) g_pane->SwitchPanel (1);
-			else if (keymap.IsLogicalKey (key, kstate, OAPI_LKEY_PanelSwitchUp))    g_pane->SwitchPanel (2);
-			else if (keymap.IsLogicalKey (key, kstate, OAPI_LKEY_PanelSwitchDown))  g_pane->SwitchPanel (3);
+		else if (keymap.IsLogicalKey (key, kstate, OAPI_LKEY_CockpitDontLean))    g_focusobj->LeanCamera (0); // g_camera->MoveTo (Vector(0,0,0)), g_camera->ResetCockpitDir();
+		else if (keymap.IsLogicalKey (key, kstate, OAPI_LKEY_CockpitLeanForward)) g_focusobj->LeanCamera (1); // g_camera->MoveTo (g_focusobj->camdr_fwd), g_camera->ResetCockpitDir();
+		else if (keymap.IsLogicalKey (key, kstate, OAPI_LKEY_CockpitLeanLeft))    g_focusobj->LeanCamera (2); // g_camera->MoveTo (g_focusobj->camdr_left), g_camera->ResetCockpitDir(60*RAD, g_camera->ctheta0);
+		else if (keymap.IsLogicalKey (key, kstate, OAPI_LKEY_CockpitLeanRight))   g_focusobj->LeanCamera (3); // g_camera->MoveTo (g_focusobj->camdr_right), g_camera->ResetCockpitDir(-60*RAD, g_camera->ctheta0);
 
-			else if (keymap.IsLogicalKey (key, kstate, OAPI_LKEY_CockpitDontLean))    g_focusobj->LeanCamera (0); // g_camera->MoveTo (Vector(0,0,0)), g_camera->ResetCockpitDir();
-			else if (keymap.IsLogicalKey (key, kstate, OAPI_LKEY_CockpitLeanForward)) g_focusobj->LeanCamera (1); // g_camera->MoveTo (g_focusobj->camdr_fwd), g_camera->ResetCockpitDir();
-			else if (keymap.IsLogicalKey (key, kstate, OAPI_LKEY_CockpitLeanLeft))    g_focusobj->LeanCamera (2); // g_camera->MoveTo (g_focusobj->camdr_left), g_camera->ResetCockpitDir(60*RAD, g_camera->ctheta0);
-			else if (keymap.IsLogicalKey (key, kstate, OAPI_LKEY_CockpitLeanRight))   g_focusobj->LeanCamera (3); // g_camera->MoveTo (g_focusobj->camdr_right), g_camera->ResetCockpitDir(-60*RAD, g_camera->ctheta0);
-
-			else if (keymap.IsLogicalKey (key, kstate, OAPI_LKEY_HUDColour))        g_pane->ToggleHUDColour();
-		} else {
-			if (keymap.IsLogicalKey (key, kstate, OAPI_LKEY_ToggleTrackMode))  g_camera->SetTrackMode ((ExtCamMode)(((int)g_camera->GetExtMode()+1)%3));
-		}
+		else if (keymap.IsLogicalKey (key, kstate, OAPI_LKEY_HUDColour))        g_pane->ToggleHUDColour();
+	} else {
+		if (keymap.IsLogicalKey (key, kstate, OAPI_LKEY_ToggleTrackMode))  g_camera->SetTrackMode ((ExtCamMode)(((int)g_camera->GetExtMode()+1)%3));
 	}
 }
 
@@ -2336,46 +2325,42 @@ void Orbiter::KbdInputBuffered_System (char *kstate, DIDEVICEOBJECTDATA *dod, DW
 // Name: KbdInputBuffered_OnRunning ()
 // Desc: User keyboard buffered key interpretation in running simulation
 //-----------------------------------------------------------------------------
-void Orbiter::KbdInputBuffered_OnRunning (char *kstate, DIDEVICEOBJECTDATA *dod, DWORD n)
+void Orbiter::KbdInputBuffered_OnRunning (char *kstate, uint8_t key)
 {
-	for (DWORD i = 0; i < n; i++) {
+	bool bdown = (kstate[key] & 0x80) != 0;
 
-		DWORD key = dod[i].dwOfs;
-		bool bdown = (dod[i].dwData & 0x80) != 0;
+	if (g_focusobj->ConsumeBufferedKey (key, bdown, kstate)) // offer key to vessel for processing
+		return;
+	if (!bdown) // only process key down events
+		return;
+	if (key == OAPI_KEY_LSHIFT || key == OAPI_KEY_RSHIFT) return;    // we don't process modifier keys
 
-		if (g_focusobj->ConsumeBufferedKey (key, bdown, kstate)) // offer key to vessel for processing
-			continue;
-		if (!bdown) // only process key down events
-			continue;
-		if (key == OAPI_KEY_LSHIFT || key == OAPI_KEY_RSHIFT) continue;    // we don't process modifier keys
+	// simulation speed control
+	if      (keymap.IsLogicalKey (key, kstate, OAPI_LKEY_IncSimSpeed)) IncWarpFactor ();
+	else if (keymap.IsLogicalKey (key, kstate, OAPI_LKEY_DecSimSpeed)) DecWarpFactor ();
 
-		// simulation speed control
-		if      (keymap.IsLogicalKey (key, kstate, OAPI_LKEY_IncSimSpeed)) IncWarpFactor ();
-		else if (keymap.IsLogicalKey (key, kstate, OAPI_LKEY_DecSimSpeed)) DecWarpFactor ();
+	if (KEYMOD_CONTROL (kstate)) {    // CTRL-Key combinations
 
-		if (KEYMOD_CONTROL (kstate)) {    // CTRL-Key combinations
+		//switch (key) {
+		//case OAPI_KEY_F3:    // switch focus to previous vessel
+		//	if (g_pfocusobj) SetFocusObject (g_pfocusobj);
+		//	break;
+		//}
 
-			//switch (key) {
-			//case OAPI_KEY_F3:    // switch focus to previous vessel
-			//	if (g_pfocusobj) SetFocusObject (g_pfocusobj);
-			//	break;
-			//}
+	} else if (KEYMOD_SHIFT (kstate)) {  // Shift-key combinations (reserved for MFD control)
 
-		} else if (KEYMOD_SHIFT (kstate)) {  // Shift-key combinations (reserved for MFD control)
+		int id = (KEYDOWN (kstate, OAPI_KEY_LSHIFT) ? 0 : 1);
+		g_pane->MFDConsumeKeyBuffered (id, key);
 
-			int id = (KEYDOWN (kstate, DIK_LSHIFT) ? 0 : 1);
-			g_pane->MFDConsumeKeyBuffered (id, key);
+	} else if (KEYMOD_ALT (kstate)) {    // ALT-Key combinations
 
-		} else if (KEYMOD_ALT (kstate)) {    // ALT-Key combinations
+	} else { // unmodified keys
 
-		} else { // unmodified keys
-
-			//switch (key) {
-			//case DIK_F3:       // switch vessel
-			//	OpenDialogEx (IDD_JUMPVESSEL, (DLGPROC)SelVessel_DlgProc, DLG_CAPTIONCLOSE | DLG_CAPTIONHELP);
-			//	break;
-			//}
-		}
+		//switch (key) {
+		//case OAPI_KEY_F3:       // switch vessel
+		//	OpenDialogEx (IDD_JUMPVESSEL, (DLGPROC)SelVessel_DlgProc, DLG_CAPTIONCLOSE | DLG_CAPTIONHELP);
+		//	break;
+		//}
 	}
 }
 
@@ -2497,19 +2482,16 @@ bool Orbiter::BroadcastImmediateKeyboardEvent (char *kstate)
 	return consume;
 }
 
-void Orbiter::BroadcastBufferedKeyboardEvent (char *kstate, DIDEVICEOBJECTDATA *dod, DWORD n)
+void Orbiter::BroadcastBufferedKeyboardEvent (char *kstate, uint8_t key)
 {
-	for (DWORD i = 0; i < n; i++) {
 		bool consume = false;
-		if (!(dod[i].dwData & 0x80)) continue; // only process key down events
-		DWORD key = dod[i].dwOfs;
+		if (!(kstate[key] & 0x80)) return; // only process key down events
 
-		for (auto it = m_Plugin.begin(); it != m_Plugin.end(); it++)
-			if (it->pModule && it->pModule->clbkProcessKeyboardBuffered(key, kstate, bRunning))
-				consume = true;
-
-		if (consume) dod[i].dwData = 0; // remove key from process queue
-	}
+		for (auto it = m_Plugin.begin(); it != m_Plugin.end(); it++) {
+			if(it->pModule) {
+				it->pModule->clbkProcessKeyboardBuffered(key, kstate, bRunning);
+			}
+		}
 }
 
 //-----------------------------------------------------------------------------
@@ -2530,14 +2512,23 @@ LRESULT Orbiter::MsgProc (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 
 	// *** User Keyboard Input ***
 	case WM_CHAR:
+	case WM_KEYUP:
 	case WM_KEYDOWN: {
-		ImGuiIO& io = ImGui::GetIO();
-		bool imguiWantsKbd = io.WantCaptureKeyboard &&
-			(pConfig->CfgUIPrm.MouseFocusMode == 0 || io.WantCaptureMouse);
-		if (imguiWantsKbd) {
-			return 0;
-		}
+			ImGuiIO& io = ImGui::GetIO();
+			bool imguiWantsKbd = io.WantCaptureKeyboard &&
+				(pConfig->CfgUIPrm.MouseFocusMode == 0 || io.WantCaptureMouse);
+			if (imguiWantsKbd) {
+				return 0;
+			}
+			switch (uMsg) {
+				case WM_KEYUP: HandleKeyUp(wParam, lParam); break;
+				case WM_KEYDOWN: HandleKeyDown(wParam, lParam); break;
+			}
 		} break;
+
+	case WM_KILLFOCUS:
+		memset(simkstate, 0, sizeof(simkstate));
+		break;
 
 	// Mouse event handler
 	case WM_LBUTTONDOWN:

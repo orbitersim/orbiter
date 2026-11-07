@@ -17,8 +17,6 @@
 CDIFramework7::CDIFramework7 ()
 {
 	m_pDI             = NULL;
-	m_pdidKbdDevice   = NULL;
-	m_pdidMouseDevice = NULL;
 	m_pdidJoyDevice   = NULL;
 	jList.nJoy        = 0;
 }
@@ -130,54 +128,9 @@ HRESULT CDIFramework7::CreateDevice (HWND hWnd, LPDIRECTINPUT8 pDI,
 		return E_FAIL;
 	}
 
-	if (guidDevice == GUID_SysKeyboard)
-		m_pdidKbdDevice = pDIDevice;
-	else if (guidDevice == GUID_SysMouse)
-		m_pdidMouseDevice = pDIDevice;
-	else
-		m_pdidJoyDevice = pDIDevice;
+	m_pdidJoyDevice = pDIDevice;
 
 	return S_OK;
-}
-
-//-----------------------------------------------------------------------------
-// Name: CreateKbdDevice()
-// Desc: Creates a DirectInput device for the keyboard
-//-----------------------------------------------------------------------------
-HRESULT CDIFramework7::CreateKbdDevice (HWND hWnd)
-{
-	HRESULT hr;
-	if (FAILED (hr = CreateDevice (hWnd, m_pDI, m_pdidKbdDevice, GUID_SysKeyboard,
-		&c_dfDIKeyboard, DISCL_NONEXCLUSIVE | DISCL_FOREGROUND))) return hr;
-
-	// set buffer size for storage of buffered key events
-	DIPROPDWORD dipdw;
-	dipdw.diph.dwSize = sizeof(DIPROPDWORD);
-	dipdw.diph.dwHeaderSize = sizeof(DIPROPHEADER);
-	dipdw.diph.dwObj = 0;
-	dipdw.diph.dwHow = DIPH_DEVICE;
-	dipdw.dwData = 10;
-	return m_pdidKbdDevice->SetProperty (DIPROP_BUFFERSIZE, &dipdw.diph);
-}
-
-//-----------------------------------------------------------------------------
-// Name: CreateMouseDevice()
-// Desc: Creates a DirectInput device for the mouse
-//-----------------------------------------------------------------------------
-HRESULT CDIFramework7::CreateMouseDevice (HWND hWnd)
-{
-	HRESULT hr;
-	if (FAILED (hr = CreateDevice (hWnd, m_pDI, m_pdidMouseDevice, GUID_SysMouse,
-		&c_dfDIMouse, DISCL_NONEXCLUSIVE | DISCL_FOREGROUND))) return hr;
-
-	// switch mouse to absolute mode
-	DIPROPDWORD diprw;
-	diprw.diph.dwSize       = sizeof (DIPROPDWORD);
-	diprw.diph.dwHeaderSize = sizeof (DIPROPHEADER);
-	diprw.diph.dwObj        = 0;
-	diprw.diph.dwHow        = DIPH_DEVICE;
-	diprw.dwData            = DIPROPAXISMODE_ABS;
-	return m_pdidMouseDevice->SetProperty (DIPROP_AXISMODE, &diprw.diph);
 }
 
 //-----------------------------------------------------------------------------
@@ -206,16 +159,6 @@ void CDIFramework7::DestroyJoyDevice()
 //-----------------------------------------------------------------------------
 void CDIFramework7::DestroyDevices()
 {
-	if (m_pdidKbdDevice) {
-		m_pdidKbdDevice->Unacquire ();
-		m_pdidKbdDevice->Release ();
-		m_pdidKbdDevice = NULL;
-	}
-	if (m_pdidMouseDevice) {
-		m_pdidMouseDevice->Unacquire ();
-		m_pdidMouseDevice->Release ();
-		m_pdidMouseDevice = NULL;
-	}
 	DestroyJoyDevice();
 }
 
