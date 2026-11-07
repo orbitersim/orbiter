@@ -526,3 +526,71 @@ const char *GetCommandLineA(void)
 	});
 	return line.c_str();
 }
+
+namespace {
+
+// Converts an MSVC *scanf_s format and argument list (where %s, %c and %[
+// take an extra buffer size) into a standard format and pointer list.
+int ScanfSecure(const char *fmt, va_list ap, std::string &out, void **ptrs, int maxPtrs)
+{
+	int n = 0;
+	for (const char *p = fmt; *p; p++) {
+		if (*p != '%') { out += *p; continue; }
+		out += '%';
+		p++;
+		if (*p == '%') { out += '%'; continue; }
+		bool suppress = false;
+		if (*p == '*') { suppress = true; out += '*'; p++; }
+		std::string width;
+		while (isdigit((unsigned char)*p)) width += *p++;
+		std::string len;
+		while (*p == 'h' || *p == 'l' || *p == 'L' || *p == 'z' || *p == 'j' || *p == 't' || *p == 'q' || *p == 'I') len += *p++;
+		char conv = *p;
+		if (!conv) break;
+		std::string spec;
+		if (conv == '[') {
+			spec += *p++;
+			if (*p == '^') spec += *p++;
+			if (*p == ']') spec += *p++;
+			while (*p && *p != ']') spec += *p++;
+			if (*p) spec += *p;
+		} else {
+			spec += conv;
+		}
+		if (suppress) { out += width + len + spec; continue; }
+		void *ptr = va_arg(ap, void *);
+		if (conv == 's' || conv == 'c' || conv == '[') {
+			unsigned size = va_arg(ap, unsigned);
+			if (width.empty() && conv != 'c' && size > 0) width = std::to_string(size - 1);
+		}
+		out += width + len + spec;
+		if (n < maxPtrs) ptrs[n++] = ptr;
+	}
+	return n;
+}
+
+}
+
+int sscanf_s(const char *buf, const char *fmt, ...)
+{
+	void *p[32] = {};
+	std::string f;
+	va_list ap;
+	va_start(ap, fmt);
+	ScanfSecure(fmt, ap, f, p, 32);
+	va_end(ap);
+	return sscanf(buf, f.c_str(), p[0], p[1], p[2], p[3], p[4], p[5], p[6], p[7], p[8], p[9], p[10], p[11], p[12], p[13], p[14], p[15],
+		p[16], p[17], p[18], p[19], p[20], p[21], p[22], p[23], p[24], p[25], p[26], p[27], p[28], p[29], p[30], p[31]);
+}
+
+int fscanf_s(FILE *file, const char *fmt, ...)
+{
+	void *p[32] = {};
+	std::string f;
+	va_list ap;
+	va_start(ap, fmt);
+	ScanfSecure(fmt, ap, f, p, 32);
+	va_end(ap);
+	return fscanf(file, f.c_str(), p[0], p[1], p[2], p[3], p[4], p[5], p[6], p[7], p[8], p[9], p[10], p[11], p[12], p[13], p[14], p[15],
+		p[16], p[17], p[18], p[19], p[20], p[21], p[22], p[23], p[24], p[25], p[26], p[27], p[28], p[29], p[30], p[31]);
+}

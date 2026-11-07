@@ -631,8 +631,8 @@ OCOMPAT_API void GetSystemTime(SYSTEMTIME *st);
 #define _vsnprintf vsnprintf
 #define fprintf_s fprintf
 #define vfprintf_s vfprintf
-#define sscanf_s sscanf
-#define fscanf_s fscanf
+OCOMPAT_API int sscanf_s(const char *buf, const char *fmt, ...);
+OCOMPAT_API int fscanf_s(FILE *f, const char *fmt, ...);
 #define _byteswap_ulong __builtin_bswap32
 #define _byteswap_ushort __builtin_bswap16
 #define _byteswap_uint64 __builtin_bswap64
