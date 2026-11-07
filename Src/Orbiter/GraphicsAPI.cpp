@@ -248,7 +248,8 @@ HWND GraphicsClient::clbkCreateRenderWindow ()
 	desc.title = g_strAppTitle;
 	desc.width = VideoData.winw;
 	desc.height = VideoData.winh;
-	desc.fullscreen = VideoData.fullscreen;
+	desc.fullscreen = VideoData.fullscreen && !g_pOrbiter->Cfg()->CfgCmdlinePrm.bHidden;
+	desc.visible = !g_pOrbiter->Cfg()->CfgCmdlinePrm.bHidden;
 	desc.resizable = false;
 	desc.proc = RenderWindowProc;
 	desc.userData = this;

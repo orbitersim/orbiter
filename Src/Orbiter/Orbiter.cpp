@@ -977,7 +977,7 @@ INT Orbiter::Run ()
 					if (bActive) UserInput ();
 					bRenderOnce = TRUE;
 				}
-				if (bRunning && bCapture) {
+				if (bRunning && (bCapture || !pConfig->CfgCmdlinePrm.CaptureDir.empty())) {
 					CaptureVideoFrame ();
 				}
 			}
@@ -1361,10 +1361,13 @@ VOID Orbiter::Quicksave ()
 void Orbiter::CaptureVideoFrame ()
 {
 	if (gclient) {
-		if (video_skip_count == pConfig->CfgCapturePrm.SequenceSkip) {
+		const CFG_CMDLINEPRM &cl = pConfig->CfgCmdlinePrm;
+		bool cmdline = !cl.CaptureDir.empty();
+		if (video_skip_count == (cmdline ? cl.CaptureSkip : pConfig->CfgCapturePrm.SequenceSkip)) {
 			char fname[256];
-			sprintf (fname, "%s\\%04d", pConfig->CfgCapturePrm.SequenceDir, pConfig->CfgCapturePrm.SequenceStart++);
-			oapi::ImageFileFormat fmt = (oapi::ImageFileFormat)pConfig->CfgCapturePrm.ImageFormat;
+			if (cmdline) sprintf (fname, "%s/%04d", cl.CaptureDir.c_str(), pConfig->CfgCapturePrm.SequenceStart++);
+			else sprintf (fname, "%s\\%04d", pConfig->CfgCapturePrm.SequenceDir, pConfig->CfgCapturePrm.SequenceStart++);
+			oapi::ImageFileFormat fmt = cmdline ? oapi::IMAGE_PNG : (oapi::ImageFileFormat)pConfig->CfgCapturePrm.ImageFormat;
 			float quality = (float)pConfig->CfgCapturePrm.ImageQuality/10.0f;
 			gclient->clbkSaveSurfaceToImage (0, fname, fmt, quality);
 			video_skip_count = 0;

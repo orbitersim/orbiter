@@ -74,7 +74,10 @@ namespace orbiter {
 			KEY_MAXSYSTIME,
 			KEY_MAXSIMTIME,
 			KEY_FRAMECOUNT,
-			KEY_PLUGIN
+			KEY_PLUGIN,
+			KEY_HIDDEN,
+			KEY_CAPTURE,
+			KEY_CAPTURESKIP
 		};
 
 	protected:

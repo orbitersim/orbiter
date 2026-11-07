@@ -291,6 +291,9 @@ struct CFG_CMDLINEPRM {
 	double MaxSimTime;          // Max session runtime (sim time). 0 = unlimited
 	std::string LaunchScenario; // if not empty, start scenario instantly without opening Launchpad
 	std::list<std::string> LoadPlugins; // list of plugins to load
+	bool   bHidden = false;     // run without showing the render window
+	std::string CaptureDir;     // if not empty, save every rendered frame (after CaptureSkip) to this folder
+	int    CaptureSkip = 0;     // frames to skip between captures
 };
 
 // =============================================================
