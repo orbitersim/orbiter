@@ -113,8 +113,8 @@ HRESULT IDirect3D9::GetDeviceCaps(UINT, D3DDEVTYPE type, D3DCAPS9 *caps)
 	caps->MaxSimultaneousTextures = 16;
 	caps->MaxTextureBlendStages = 8;
 	caps->MaxPointSize = 64.0f;
-	caps->MaxPrimitiveCount = 0xFFFFFFFF;
-	caps->MaxVertexIndex = 0xFFFFFFFF;
+	caps->MaxPrimitiveCount = 0xFFFFF;
+	caps->MaxVertexIndex = 0xFFFFFF;
 	caps->MaxStreams = 8;
 	caps->MaxStreamStride = 2048;
 	caps->VertexShaderVersion = D3DVS_VERSION(3, 0);

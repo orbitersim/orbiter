@@ -478,8 +478,9 @@ void D3D9CelestialSphere::RenderStars(ID3DXEffect *FX)
 	// render in chunks, because some graphics cards have a limit in the
 	// vertex list size
 	UINT i, j, numPasses = 0;
-	int bgidx = min(255, (int)(GetSkyBrightness() * 256.0));
-	int ns = m_starCutoffIdx[bgidx];
+	double brt = GetSkyBrightness();
+	int bgidx = std::isfinite(brt) ? max(0, min(255, (int)(brt * 256.0))) : 0;
+	int ns = max(0, min((int)m_nsVtx, (int)m_starCutoffIdx[bgidx]));
 
 	HR(m_pDevice->SetVertexDeclaration(pPosColorDecl));
 	HR(FX->Begin(&numPasses, D3DXFX_DONOTSAVESTATE));

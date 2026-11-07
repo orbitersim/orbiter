@@ -1259,7 +1259,8 @@ HRESULT D3DXFilterTexture(IDirect3DBaseTexture9 *tex, const PALETTEENTRY *, UINT
 	if (srcLevel + 1 >= t->levels) return S_OK;
 	if (t->type == TT_3D) return S_OK;
 	if (!t->IsSystem() && srcLevel == 0 && t->fi->kind == FK_PLAIN && t->tex) {
-		[t->dev->BlitEncoder() generateMipmapsForTexture:t->tex];
+		id<MTLTexture> mt = t->tex;
+		t->dev->EncodeBlit(^(id<MTLBlitCommandEncoder> b) { [b generateMipmapsForTexture:mt]; });
 		return S_OK;
 	}
 	for (UINT face = 0; face < t->Faces(); face++) {

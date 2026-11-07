@@ -10,6 +10,7 @@
 #include <memory>
 #include <functional>
 #include <dispatch/dispatch.h>
+#include <pthread.h>
 
 namespace m9 {
 
@@ -298,7 +299,14 @@ struct Device {
 	id<MTLBuffer> visBuffer = nil;
 	UINT visNext = 0;
 
-	std::unordered_map<uint64_t, id<MTLRenderPipelineState>> pipelines;
+	struct PipelineBinding { uint32_t index; MTLTextureType texType; bool depth; uint32_t size; };
+	struct PipelineEntry {
+		id<MTLRenderPipelineState> pso = nil;
+		std::vector<PipelineBinding> vtex, ftex, vsamp, fsamp, vbuf, fbuf;
+	};
+	std::unordered_map<uint64_t, PipelineEntry> pipelines;
+	id<MTLTexture> dummy2D = nil, dummyCube = nil, dummy3D = nil, dummyDepth = nil;
+	id<MTLTexture> Dummy(MTLTextureType type, bool depth);
 	std::unordered_map<uint64_t, id<MTLDepthStencilState>> dsStates;
 	std::unordered_map<uint64_t, id<MTLSamplerState>> samplers;
 	std::vector<UploadChunk> chunks;
@@ -313,6 +321,10 @@ struct Device {
 	id<MTLCommandBuffer> Cmd();
 	id<MTLRenderCommandEncoder> RenderEncoder();
 	id<MTLBlitCommandEncoder> BlitEncoder();
+	// Encode a blit; from threads other than the device thread it runs in its own command buffer
+	void EncodeBlit(void (^fn)(id<MTLBlitCommandEncoder>), bool wait = false);
+	bool OnDeviceThread() const { return pthread_equal(pthread_self(), owner); }
+	pthread_t owner = {};
 	void EndEncoders();
 	void Submit(bool wait);
 	void WaitIdle();
@@ -325,7 +337,7 @@ struct Device {
 	HRESULT Draw(D3DPRIMITIVETYPE type, UINT vertexStart, UINT vertexCount, const void *upVerts, UINT upStride,
 		IDirect3DIndexBuffer9 *ib, const void *upIndices, D3DFORMAT upIndexFmt, UINT indexStart, UINT indexCount, INT baseVertex);
 	bool BindState(id<MTLRenderCommandEncoder> enc, const void *upVerts, UINT upStride, UINT upCount);
-	id<MTLRenderPipelineState> Pipeline(id<MTLFunction> vfn, id<MTLFunction> ffn, const Decl *decl, const UINT *strides);
+	const PipelineEntry *Pipeline(id<MTLFunction> vfn, id<MTLFunction> ffn, const Decl *decl, const UINT *strides);
 	id<MTLDepthStencilState> DepthStencil();
 	id<MTLSamplerState> Sampler(UINT idx);
 	void ClearInPass(DWORD flags, D3DCOLOR color, float z, DWORD stencil, const D3DRECT *rect);

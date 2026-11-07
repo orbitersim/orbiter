@@ -1640,6 +1640,8 @@ LRESULT D3D9Client::RenderWndProc (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM l
 
 
 
+	if ((!bRunning || !scene) && uMsg >= 0x0200 && uMsg <= 0x020E) return 0;
+
 	switch (uMsg)
 	{
 		case WM_MOUSELEAVE:

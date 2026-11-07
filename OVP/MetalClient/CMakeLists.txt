@@ -105,7 +105,6 @@ set(SourceFiles
 	WindowMgr.cpp
 	ZTreeMgr.cpp
 	Tilemgr2_imp.hpp
-	${imgui_SOURCE_DIR}/backends/imgui_impl_metal.mm
 	ClientImGui.mm
 )
 
@@ -133,7 +132,7 @@ set_target_properties(MetalClient
 	COMPILE_DEFINITIONS D3D9CLIENT_EXPORTS
 	FOLDER OVP
 )
-set_source_files_properties(${imgui_SOURCE_DIR}/backends/imgui_impl_metal.mm ClientImGui.mm PROPERTIES COMPILE_OPTIONS -fobjc-arc)
+set_source_files_properties(ClientImGui.mm PROPERTIES COMPILE_OPTIONS -fobjc-arc)
 
 add_custom_command(
 	TARGET MetalClient PRE_BUILD

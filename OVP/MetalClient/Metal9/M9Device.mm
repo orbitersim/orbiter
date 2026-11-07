@@ -150,6 +150,7 @@ bool Device::Init(HWND hWnd, D3DPRESENT_PARAMETERS *ppIn)
 {
 	mtl = MTLCreateSystemDefaultDevice();
 	if (!mtl) return false;
+	owner = pthread_self();
 	queue = [mtl newCommandQueueWithMaxCommandBufferCount:16];
 	SetDefaults();
 	visBuffer = [mtl newBufferWithLength:8 * 4096 options:MTLResourceStorageModeShared];
@@ -410,6 +411,23 @@ id<MTLRenderCommandEncoder> Device::RenderEncoder()
 	return renc;
 }
 
+void Device::EncodeBlit(void (^fn)(id<MTLBlitCommandEncoder>), bool wait)
+{
+	if (OnDeviceThread()) {
+		fn(BlitEncoder());
+		if (wait) Submit(true);
+		return;
+	}
+	@autoreleasepool {
+		id<MTLCommandBuffer> c = [queue commandBuffer];
+		id<MTLBlitCommandEncoder> b = [c blitCommandEncoder];
+		fn(b);
+		[b endEncoding];
+		[c commit];
+		if (wait) [c waitUntilCompleted];
+	}
+}
+
 id<MTLBlitCommandEncoder> Device::BlitEncoder()
 {
 	if (benc) return benc;
@@ -531,7 +549,7 @@ static void PassFormats(Device *d, MTLPixelFormat color[4], MTLPixelFormat &dept
 	if (!SurfImpl(d->rt[0]) && z) samples = z->tex->samples;
 }
 
-id<MTLRenderPipelineState> Device::Pipeline(id<MTLFunction> vfn, id<MTLFunction> ffn, const Decl *dcl, const UINT *strides)
+const Device::PipelineEntry *Device::Pipeline(id<MTLFunction> vfn, id<MTLFunction> ffn, const Decl *dcl, const UINT *strides)
 {
 	MTLPixelFormat color[4], depth, stencil;
 	NSUInteger samples;
@@ -558,7 +576,7 @@ id<MTLRenderPipelineState> Device::Pipeline(id<MTLFunction> vfn, id<MTLFunction>
 	h = Mix(h, rs[D3DRS_FILLMODE] == D3DFILL_POINT);
 
 	auto it = pipelines.find(h);
-	if (it != pipelines.end()) return it->second;
+	if (it != pipelines.end()) return it->second.pso ? &it->second : nullptr;
 
 	MTLRenderPipelineDescriptor *pd = [MTLRenderPipelineDescriptor new];
 	pd.vertexFunction = vfn;
@@ -624,10 +642,66 @@ id<MTLRenderPipelineState> Device::Pipeline(id<MTLFunction> vfn, id<MTLFunction>
 	if (rs[D3DRS_FILLMODE] == D3DFILL_POINT) pd.inputPrimitiveTopology = MTLPrimitiveTopologyClassPoint;
 
 	NSError *err = nil;
-	id<MTLRenderPipelineState> ps = [mtl newRenderPipelineStateWithDescriptor:pd error:&err];
+	MTLAutoreleasedRenderPipelineReflection refl = nil;
+	id<MTLRenderPipelineState> ps = [mtl newRenderPipelineStateWithDescriptor:pd options:MTLPipelineOptionBindingInfo reflection:&refl error:&err];
 	if (!ps) Log("pipeline (%s, %s) failed: %s", vfn.name.UTF8String, ffn.name.UTF8String, err.localizedDescription.UTF8String);
-	pipelines[h] = ps;
-	return ps;
+	PipelineEntry &e = pipelines[h];
+	e.pso = ps;
+	auto collect = [](NSArray<id<MTLBinding>> *bindings, std::vector<PipelineBinding> &tex, std::vector<PipelineBinding> &samp, std::vector<PipelineBinding> &buf) {
+		for (id<MTLBinding> b in bindings) {
+			if (!b.used) continue;
+			if (b.type == MTLBindingTypeTexture) {
+				id<MTLTextureBinding> tb = (id<MTLTextureBinding>)b;
+				tex.push_back({(uint32_t)b.index, tb.textureType, tb.isDepthTexture != NO, 0});
+			} else if (b.type == MTLBindingTypeSampler) {
+				samp.push_back({(uint32_t)b.index, MTLTextureType2D, false, 0});
+			} else if (b.type == MTLBindingTypeBuffer) {
+				id<MTLBufferBinding> bb = (id<MTLBufferBinding>)b;
+				buf.push_back({(uint32_t)b.index, MTLTextureType2D, false, (uint32_t)bb.bufferDataSize});
+			}
+		}
+	};
+	if (refl) {
+		collect(refl.vertexBindings, e.vtex, e.vsamp, e.vbuf);
+		collect(refl.fragmentBindings, e.ftex, e.fsamp, e.fbuf);
+	}
+	return ps ? &e : nullptr;
+}
+
+id<MTLTexture> Device::Dummy(MTLTextureType type, bool depth)
+{
+	auto make = [&](MTLTextureType t, MTLPixelFormat pf) {
+		MTLTextureDescriptor *d = [MTLTextureDescriptor new];
+		d.textureType = t;
+		d.pixelFormat = pf;
+		d.width = d.height = 1;
+		d.depth = 1;
+		d.storageMode = MTLStorageModePrivate;
+		d.usage = MTLTextureUsageShaderRead | MTLTextureUsageRenderTarget;
+		id<MTLTexture> tex = [mtl newTextureWithDescriptor:d];
+		if (pf == MTLPixelFormatDepth32Float) {
+			MTLRenderPassDescriptor *rp = [MTLRenderPassDescriptor renderPassDescriptor];
+			rp.depthAttachment.texture = tex;
+			rp.depthAttachment.loadAction = MTLLoadActionClear;
+			rp.depthAttachment.clearDepth = 1.0;
+			rp.depthAttachment.storeAction = MTLStoreActionStore;
+			id<MTLCommandBuffer> c = [queue commandBuffer];
+			[[c renderCommandEncoderWithDescriptor:rp] endEncoding];
+			[c commit];
+		} else {
+			d.usage = MTLTextureUsageShaderRead;
+			d.storageMode = MTLStorageModeShared;
+			tex = [mtl newTextureWithDescriptor:d];
+			uint32_t zero[6] = {};
+			for (NSUInteger s = 0; s < (t == MTLTextureTypeCube ? 6 : 1); s++)
+				[tex replaceRegion:MTLRegionMake3D(0, 0, 0, 1, 1, 1) mipmapLevel:0 slice:s withBytes:zero bytesPerRow:4 bytesPerImage:4];
+		}
+		return tex;
+	};
+	if (depth) return dummyDepth ? dummyDepth : (dummyDepth = make(MTLTextureType2D, MTLPixelFormatDepth32Float));
+	if (type == MTLTextureTypeCube) return dummyCube ? dummyCube : (dummyCube = make(MTLTextureTypeCube, MTLPixelFormatRGBA8Unorm));
+	if (type == MTLTextureType3D) return dummy3D ? dummy3D : (dummy3D = make(MTLTextureType3D, MTLPixelFormatRGBA8Unorm));
+	return dummy2D ? dummy2D : (dummy2D = make(MTLTextureType2D, MTLPixelFormatRGBA8Unorm));
 }
 
 id<MTLDepthStencilState> Device::DepthStencil()
@@ -745,9 +819,9 @@ bool Device::BindState(id<MTLRenderCommandEncoder> enc, const void *upVerts, UIN
 	for (int s = 0; s < 8; s++) strides[s] = streams[s].stride;
 	if (upVerts) strides[0] = upStride;
 
-	id<MTLRenderPipelineState> pso = Pipeline(vfn, ffn, dcl, strides);
-	if (!pso) return false;
-	[enc setRenderPipelineState:pso];
+	const PipelineEntry *pe = Pipeline(vfn, ffn, dcl, strides);
+	if (!pe) return false;
+	[enc setRenderPipelineState:pe->pso];
 	[enc setDepthStencilState:DepthStencil()];
 	[enc setStencilReferenceValue:rs[D3DRS_STENCILREF] & 0xFF];
 
@@ -800,43 +874,63 @@ bool Device::BindState(id<MTLRenderCommandEncoder> enc, const void *upVerts, UIN
 	[enc setVertexBuffer:zeroBuffer offset:0 atIndex:30];
 
 	// constants
+	id<MTLTexture> ftex[32] = {}, vtex[32] = {};
+	bool vconst = false, fconst = false;
 	if (fx) {
 		if (!fx->data.empty()) {
 			UINT off;
 			id<MTLBuffer> b = Upload(fx->data.data(), (UINT)fx->data.size(), off);
 			[enc setVertexBuffer:b offset:off atIndex:0];
 			[enc setFragmentBuffer:b offset:off atIndex:0];
+			vconst = fconst = true;
 		}
 		for (auto &p : fx->params) {
-			if (p->textureSlot < 0) continue;
+			if (p->textureSlot < 0 || p->textureSlot >= 32) continue;
 			id<MTLTexture> t = p->texture && p->texture->Impl() ? p->texture->Impl()->SampleTexture() : nil;
-			[enc setFragmentTexture:t atIndex:p->textureSlot];
-			[enc setVertexTexture:t atIndex:p->textureSlot];
+			ftex[p->textureSlot] = vtex[p->textureSlot] = t;
 		}
 	} else {
 		if (vp && !vp->data.empty()) {
 			UINT off;
 			id<MTLBuffer> b = Upload(vp->data.data(), (UINT)vp->data.size(), off);
 			[enc setVertexBuffer:b offset:off atIndex:0];
+			vconst = true;
 		}
 		if (fp && !fp->data.empty()) {
 			UINT off;
 			id<MTLBuffer> b = Upload(fp->data.data(), (UINT)fp->data.size(), off);
 			[enc setFragmentBuffer:b offset:off atIndex:0];
+			fconst = true;
 		}
 		for (int i = 0; i < 16; i++) {
-			if (!textures[i]) continue;
-			Texture *t = textures[i]->Impl();
-			[enc setFragmentTexture:t ? t->SampleTexture() : nil atIndex:i];
-			[enc setFragmentSamplerState:Sampler(i) atIndex:i];
+			Texture *t = textures[i] ? textures[i]->Impl() : nullptr;
+			ftex[i] = t ? t->SampleTexture() : nil;
 		}
 		for (int i = 0; i < 4; i++) {
-			if (!textures[16 + i]) continue;
-			Texture *t = textures[16 + i]->Impl();
-			[enc setVertexTexture:t ? t->SampleTexture() : nil atIndex:i];
-			[enc setVertexSamplerState:Sampler(16 + i) atIndex:i];
+			Texture *t = textures[16 + i] ? textures[16 + i]->Impl() : nullptr;
+			vtex[i] = t ? t->SampleTexture() : nil;
 		}
 	}
+	auto pick = [&](id<MTLTexture> t, const PipelineBinding &b) -> id<MTLTexture> {
+		if (t && t.textureType == b.texType && ((t.pixelFormat == MTLPixelFormatDepth32Float || t.pixelFormat == MTLPixelFormatDepth32Float_Stencil8 || t.pixelFormat == MTLPixelFormatDepth16Unorm) == b.depth)) return t;
+		return Dummy(b.texType, b.depth);
+	};
+	for (const auto &b : pe->ftex) [enc setFragmentTexture:pick(b.index < 32 ? ftex[b.index] : nil, b) atIndex:b.index];
+	for (const auto &b : pe->vtex) [enc setVertexTexture:pick(b.index < 32 ? vtex[b.index] : nil, b) atIndex:b.index];
+	for (const auto &b : pe->fsamp) [enc setFragmentSamplerState:Sampler(b.index < 16 ? b.index : 0) atIndex:b.index];
+	for (const auto &b : pe->vsamp) [enc setVertexSamplerState:Sampler(b.index < 4 ? 16 + b.index : 16) atIndex:b.index];
+	auto fillBuffers = [&](const std::vector<PipelineBinding> &bufs, bool vertex, bool haveConst) {
+		for (const auto &b : bufs) {
+			if (b.index >= 20 || b.index == 29 || (b.index == 0 && haveConst)) continue;
+			UINT off;
+			id<MTLBuffer> z = Upload(nullptr, std::max(16u, b.size), off);
+			memset((uint8_t *)z.contents + off, 0, std::max(16u, b.size));
+			if (vertex) [enc setVertexBuffer:z offset:off atIndex:b.index];
+			else [enc setFragmentBuffer:z offset:off atIndex:b.index];
+		}
+	};
+	fillBuffers(pe->vbuf, true, vconst);
+	fillBuffers(pe->fbuf, false, fconst);
 	M9FragState fs = {(int)rs[D3DRS_ALPHATESTENABLE], (float)(rs[D3DRS_ALPHAREF] & 0xFF) / 255.0f, (int)rs[D3DRS_ALPHAFUNC], 0};
 	[enc setFragmentBytes:&fs length:sizeof(fs) atIndex:29];
 	return true;
@@ -1093,11 +1187,13 @@ void Device::Blit(Surface *src, const RECT *srcRect, Surface *dst, const RECT *d
 
 	bool sameSize = (sr.right - sr.left) == (dr.right - dr.left) && (sr.bottom - sr.top) == (dr.bottom - dr.top);
 	if (sameSize && st->fi->pf == dt->fi->pf && st->samples == 1 && dt->samples == 1) {
-		id<MTLBlitCommandEncoder> b = BlitEncoder();
-		[b copyFromTexture:st->tex sourceSlice:(st->type == TT_CUBE ? src->face : 0) sourceLevel:src->level
-			sourceOrigin:MTLOriginMake(sr.left, sr.top, 0) sourceSize:MTLSizeMake(sr.right - sr.left, sr.bottom - sr.top, 1)
-			toTexture:dt->tex destinationSlice:(dt->type == TT_CUBE ? dst->face : 0) destinationLevel:dst->level
-			destinationOrigin:MTLOriginMake(dr.left, dr.top, 0)];
+		id<MTLTexture> stex = st->tex, dtex = dt->tex;
+		NSUInteger ss = st->type == TT_CUBE ? src->face : 0, sl = src->level, ds = dt->type == TT_CUBE ? dst->face : 0, dl = dst->level;
+		EncodeBlit(^(id<MTLBlitCommandEncoder> b) {
+			[b copyFromTexture:stex sourceSlice:ss sourceLevel:sl
+				sourceOrigin:MTLOriginMake(sr.left, sr.top, 0) sourceSize:MTLSizeMake(sr.right - sr.left, sr.bottom - sr.top, 1)
+				toTexture:dtex destinationSlice:ds destinationLevel:dl destinationOrigin:MTLOriginMake(dr.left, dr.top, 0)];
+		});
 		return;
 	}
 	if (st->fi->kind == FK_COMPRESSED || dt->fi->kind == FK_COMPRESSED) return;
@@ -1221,7 +1317,7 @@ HRESULT SwapChain::Present()
 		oplat::GetDrawableSize(hWnd, &w, &h);
 		CGSize want = CGSizeMake(pp.BackBufferWidth, pp.BackBufferHeight);
 		if (!CGSizeEqualToSize(layer.drawableSize, want)) layer.drawableSize = want;
-		id<CAMetalDrawable> drawable = [layer nextDrawable];
+		id<CAMetalDrawable> drawable = IsWindowVisible(hWnd) ? [layer nextDrawable] : nil;
 		if (!drawable) {
 			dev->Submit(false);
 			return S_OK;

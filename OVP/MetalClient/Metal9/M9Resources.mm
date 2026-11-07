@@ -223,11 +223,14 @@ void Texture::Upload(UINT face, UINT level, const uint8_t *data, UINT pitch, con
 		for (UINT y = 0; y < rows; y++)
 			memcpy(dst + ((size_t)z * rows + y) * gpuPitch, src + ((size_t)z * rows + y) * srcPitch, gpuPitch);
 
-	id<MTLBlitCommandEncoder> b = dev->BlitEncoder();
-	[b copyFromBuffer:staging sourceOffset:0 sourceBytesPerRow:gpuPitch sourceBytesPerImage:(NSUInteger)gpuPitch * rows
-		sourceSize:MTLSizeMake(rg.size.width, rg.size.height, type == TT_3D ? rg.size.depth : 1)
-		toTexture:tex destinationSlice:(type == TT_CUBE ? face : 0) destinationLevel:level
-		destinationOrigin:MTLOriginMake(rg.origin.x, rg.origin.y, type == TT_3D ? rg.origin.z : 0)];
+	id<MTLTexture> t = tex;
+	NSUInteger dslice = type == TT_CUBE ? face : 0, depthCount = type == TT_3D ? rg.size.depth : 1, oz = type == TT_3D ? rg.origin.z : 0;
+	dev->EncodeBlit(^(id<MTLBlitCommandEncoder> b) {
+		[b copyFromBuffer:staging sourceOffset:0 sourceBytesPerRow:gpuPitch sourceBytesPerImage:(NSUInteger)gpuPitch * rows
+			sourceSize:MTLSizeMake(rg.size.width, rg.size.height, depthCount)
+			toTexture:t destinationSlice:dslice destinationLevel:level
+			destinationOrigin:MTLOriginMake(rg.origin.x, rg.origin.y, oz)];
+	});
 }
 
 void Texture::Download(UINT face, UINT level, uint8_t *data, UINT pitch, const RECT *rect)
@@ -238,11 +241,13 @@ void Texture::Download(UINT face, UINT level, uint8_t *data, UINT pitch, const R
 	UINT rows = RowCount(fi, (UINT)rg.size.height);
 	UINT gpuPitch = fi->kind == FK_COMPRESSED ? RowPitch(fi, (UINT)rg.size.width) : (UINT)rg.size.width * fi->gpuBytes;
 	id<MTLBuffer> staging = [dev->mtl newBufferWithLength:(size_t)gpuPitch * rows options:MTLResourceStorageModeShared];
-	id<MTLBlitCommandEncoder> b = dev->BlitEncoder();
-	[b copyFromTexture:tex sourceSlice:(type == TT_CUBE ? face : 0) sourceLevel:level sourceOrigin:rg.origin
-		sourceSize:MTLSizeMake(rg.size.width, rg.size.height, 1) toBuffer:staging destinationOffset:0
-		destinationBytesPerRow:gpuPitch destinationBytesPerImage:(NSUInteger)gpuPitch * rows];
-	dev->Submit(true);
+	id<MTLTexture> t = tex;
+	NSUInteger slice = type == TT_CUBE ? face : 0;
+	dev->EncodeBlit(^(id<MTLBlitCommandEncoder> b) {
+		[b copyFromTexture:t sourceSlice:slice sourceLevel:level sourceOrigin:rg.origin
+			sourceSize:MTLSizeMake(rg.size.width, rg.size.height, 1) toBuffer:staging destinationOffset:0
+			destinationBytesPerRow:gpuPitch destinationBytesPerImage:(NSUInteger)gpuPitch * rows];
+	}, true);
 	const uint8_t *src = (const uint8_t *)staging.contents;
 	if (fi->kind == FK_CONVERTED) {
 		ConvertFromGpu(fi, src, gpuPitch, data, pitch, (UINT)rg.size.width, rows);
@@ -466,7 +471,8 @@ void IDirect3DBaseTexture9::GenerateMipSubLevels()
 {
 	if (!m_tex || !m_tex->tex || m_tex->levels < 2) return;
 	if (m_tex->fi->kind == FK_COMPRESSED || m_tex->fi->kind == FK_DEPTH) return;
-	[m_tex->dev->BlitEncoder() generateMipmapsForTexture:m_tex->tex];
+	id<MTLTexture> t = m_tex->tex;
+	m_tex->dev->EncodeBlit(^(id<MTLBlitCommandEncoder> b) { [b generateMipmapsForTexture:t]; });
 }
 
 // ---------------------------------------------------------------------------
