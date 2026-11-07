@@ -22,12 +22,10 @@ public:
 
 	void SetRenderWindow(HWND hWnd);
 
-	bool CreateKbdDevice();
 	bool CreateJoyDevice ();
 	void DestroyDevices ();
 
 	inline CDIFramework7 *GetDIFrame() const { return diframe; }
-	inline const LPDIRECTINPUTDEVICE8 GetKbdDevice() const { return diframe->GetKbdDevice(); }
 	inline const LPDIRECTINPUTDEVICE8 GetJoyDevice() const { return diframe->GetJoyDevice(); }
 
 	void OptionChanged(DWORD cat, DWORD item);

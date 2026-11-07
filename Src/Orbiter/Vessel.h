@@ -1132,7 +1132,7 @@ public:
 	int ConsumeDirectKey (char *buffer);
 	// Keyboard handler for immediate keys
 
-	int ConsumeBufferedKey (DWORD key, bool down, char *kstate);
+	int ConsumeBufferedKey (uint8_t key, bool down, char *kstate);
 	// Keyboard handler for buffered keys
 
 	void Update (bool force = false);

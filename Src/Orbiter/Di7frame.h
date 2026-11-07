@@ -20,11 +20,8 @@
 class CDIFramework7
 {
 	LPDIRECTINPUT8       m_pDI;             // DInput object
-	LPDIRECTINPUTDEVICE8 m_pdidKbdDevice;   // keyboard device
-	LPDIRECTINPUTDEVICE8 m_pdidMouseDevice; // mouse device
 	LPDIRECTINPUTDEVICE8 m_pdidJoyDevice;   // joystick device
 	GUID                 m_guidJoystick;    // GUID for the joystick
-	BOOL                 m_bUseKbd;
 	BOOL                 m_bUseJoy;
 
 	struct JLIST {
@@ -55,16 +52,12 @@ public:
 		LPDIRECTINPUTDEVICE8 pDIDevice, GUID guidDevice, const DIDATAFORMAT *pdidDataFormat,
 		DWORD dwFlags);
 
-	HRESULT CreateKbdDevice (HWND hWnd);
-	HRESULT CreateMouseDevice (HWND hWnd);
 	HRESULT CreateJoyDevice (HWND hWnd, DWORD idx = 0);
 
 	void DestroyJoyDevice();
 	void DestroyDevices();
 
 	// accessor functions
-	inline LPDIRECTINPUTDEVICE8 GetKbdDevice() { return m_pdidKbdDevice; }
-	inline LPDIRECTINPUTDEVICE8 GetMouseDevice() { return m_pdidMouseDevice; }
 	inline LPDIRECTINPUTDEVICE8 GetJoyDevice() { return m_pdidJoyDevice; }
 };
 
