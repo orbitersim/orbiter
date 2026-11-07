@@ -180,6 +180,10 @@ typedef HKEY *PHKEY;
 #define INVALID_HANDLE_VALUE ((HANDLE)(intptr_t)-1)
 #define MAXDWORD 0xffffffff
 #define MAXLONG 0x7fffffff
+#define MAXINT 0x7fffffff
+#define MAXINT32 0x7fffffff
+#define MININT ((int)0x80000000)
+#define MAXUINT32 0xffffffffu
 
 typedef struct tagRECT { LONG left, top, right, bottom; } RECT, *PRECT, *LPRECT;
 typedef const RECT *LPCRECT;
@@ -215,7 +219,7 @@ typedef struct tagBITMAP { LONG bmType, bmWidth, bmHeight, bmWidthBytes; WORD bm
 #define BI_RGB 0
 #define BI_BITFIELDS 3
 
-typedef HRESULT (*FARPROC)();
+typedef INT_PTR (*FARPROC)();
 typedef INT_PTR (*DLGPROC)(HWND, UINT, WPARAM, LPARAM);
 typedef LRESULT (*WNDPROC)(HWND, UINT, WPARAM, LPARAM);
 typedef void (*TIMERPROC)(HWND, UINT, UINT_PTR, DWORD);
@@ -538,14 +542,9 @@ OCOMPAT_API HMODULE LoadLibraryExA(const char *path, HANDLE file, DWORD flags);
 OCOMPAT_API WINBOOL FreeLibrary(HMODULE h);
 OCOMPAT_API void *GetProcAddressImpl(HMODULE h, const char *name);
 #ifdef __cplusplus
-struct OCompatProc {
-	void *p;
-	template<typename T> operator T*() const { return reinterpret_cast<T*>(p); }
-	explicit operator bool() const { return p != nullptr; }
-};
-inline OCompatProc GetProcAddress(HMODULE h, const char *name) { return OCompatProc{ GetProcAddressImpl(h, name) }; }
+inline FARPROC GetProcAddress(HMODULE h, const char *name) { return reinterpret_cast<FARPROC>(GetProcAddressImpl(h, name)); }
 #else
-#define GetProcAddress GetProcAddressImpl
+#define GetProcAddress(h, n) ((FARPROC)GetProcAddressImpl(h, n))
 #endif
 OCOMPAT_API DWORD GetModuleFileNameA(HMODULE h, char *buf, DWORD size);
 #define GetModuleFileName GetModuleFileNameA
@@ -677,6 +676,18 @@ OCOMPAT_API int _findclose(intptr_t h);
 
 #ifdef __cplusplus
 
+inline errno_t memcpy_s(void *dst, size_t n, const void *src, size_t count) {
+	if (!dst || (count && !src) || count > n) return 22;
+	memcpy(dst, src, count);
+	return 0;
+}
+inline int lstrlen(const char *s) { return s ? (int)strlen(s) : 0; }
+inline char *lstrcpy(char *d, const char *s) { return strcpy(d, s); }
+inline int lstrcmp(const char *a, const char *b) { return strcmp(a, b); }
+inline int lstrcmpi(const char *a, const char *b) { return strcasecmp(a, b); }
+#ifndef MAKEFOURCC
+#define MAKEFOURCC(c0, c1, c2, c3) ((DWORD)(BYTE)(c0) | ((DWORD)(BYTE)(c1) << 8) | ((DWORD)(BYTE)(c2) << 16) | ((DWORD)(BYTE)(c3) << 24))
+#endif
 inline errno_t strcpy_s(char *dst, size_t n, const char *src) {
 	if (!dst || !n) return 22;
 	size_t len = src ? strlen(src) : 0;
@@ -744,5 +755,6 @@ OCOMPAT_API int MultiByteToWideChar(UINT codepage, DWORD flags, const char *src,
 OCOMPAT_API int WideCharToMultiByte(UINT codepage, DWORD flags, const wchar_t *src, int srclen, char *dst, int dstlen, const char *defchar, WINBOOL *useddef);
 
 #include "winuser_compat.h"
+#include "winthread_compat.h"
 
 #endif

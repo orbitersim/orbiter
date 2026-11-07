@@ -2,6 +2,7 @@ add_library(OrbiterPlatform SHARED
 	compat_win.cpp
 	pathfix.c
 	moduleinfo.cpp
+	compat_thread.cpp
 	mac/platform_mac.mm
 	mac/joystick_mac.mm
 	mac/image_mac.mm

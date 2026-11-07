@@ -12,10 +12,14 @@
 #include <thread>
 #include <chrono>
 #include <filesystem>
+#include <mutex>
+#include <unordered_map>
 
 namespace {
 
 thread_local DWORD g_lastError = 0;
+std::mutex g_moduleLock;
+std::unordered_map<void *, int> g_moduleRefs;
 thread_local std::string g_lastLoadError;
 
 std::string NormalisePath(const char *path)
@@ -152,6 +156,9 @@ HMODULE LoadLibraryA(const char *path)
 		const char *err = dlerror();
 		g_lastLoadError = err ? err : "unknown error";
 		g_lastError = 126;
+	} else {
+		std::lock_guard<std::mutex> lk(g_moduleLock);
+		g_moduleRefs[h]++;
 	}
 	return (HMODULE)h;
 }
@@ -164,8 +171,18 @@ HMODULE LoadLibraryExA(const char *path, HANDLE, DWORD)
 WINBOOL FreeLibrary(HMODULE h)
 {
 	if (!h) return FALSE;
-	if (auto detach = (void (*)())dlsym((void *)h, "OrbiterModuleDetach"))
-		detach();
+	bool last = true;
+	{
+		std::lock_guard<std::mutex> lk(g_moduleLock);
+		auto it = g_moduleRefs.find((void *)h);
+		if (it != g_moduleRefs.end()) {
+			last = --it->second <= 0;
+			if (last) g_moduleRefs.erase(it);
+		}
+	}
+	if (last)
+		if (auto detach = (void (*)())dlsym((void *)h, "OrbiterModuleDetach"))
+			detach();
 	return dlclose(h) == 0;
 }
 
@@ -201,7 +218,26 @@ DWORD GetModuleFileNameA(HMODULE h, char *buf, DWORD size)
 HMODULE GetModuleHandleA(const char *name)
 {
 	if (!name) return (HMODULE)dlopen(nullptr, RTLD_NOLOAD | RTLD_LAZY);
-	return (HMODULE)dlopen(ModulePath(name).c_str(), RTLD_NOLOAD | RTLD_LAZY);
+	std::string want = ModulePath(name);
+	size_t slash = want.rfind('/');
+	std::string leaf = slash == std::string::npos ? want : want.substr(slash + 1);
+	for (uint32_t i = 0, n = _dyld_image_count(); i < n; i++) {
+		const char *img = _dyld_get_image_name(i);
+		if (!img) continue;
+		const char *base = strrchr(img, '/');
+		base = base ? base + 1 : img;
+		bool match = slash == std::string::npos ? strcasecmp(base, leaf.c_str()) == 0 : strcasecmp(img, want.c_str()) == 0;
+		if (!match && slash != std::string::npos) {
+			std::error_code ec;
+			match = std::filesystem::equivalent(img, want, ec);
+		}
+		if (match) {
+			void *h = dlopen(img, RTLD_NOLOAD | RTLD_LAZY);
+			if (h) dlclose(h);
+			return (HMODULE)h;
+		}
+	}
+	return nullptr;
 }
 
 DWORD GetLastError(void) { return g_lastError ? g_lastError : (DWORD)errno; }
