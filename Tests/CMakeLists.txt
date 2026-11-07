@@ -10,8 +10,7 @@ FetchContent_MakeAvailable(Catch2)
 
 # Utility function
 function(add_test_file test_name)
-	add_executable(${test_name} "${test_name}.cpp" ImGuiContextStub.cpp)
-	set_target_properties(${test_name} PROPERTIES ENABLE_EXPORTS ON)
+	add_executable(${test_name} "${test_name}.cpp")
 
 	set_target_properties( ${test_name} PROPERTIES RUNTIME_OUTPUT_DIRECTORY "${ORBITER_BINARY_ROOT_DIR}" )
 

@@ -131,34 +131,34 @@ set(Orbiter_depends
 	Orbitersdk
 )
 
-# Orbiter executable (graphics server version)
-add_executable(Orbiter ${common_src})
+add_library(OrbiterCore SHARED ${common_src})
 
+set_target_properties(OrbiterCore
+	PROPERTIES
+	LIBRARY_OUTPUT_DIRECTORY ${ORBITER_BINARY_ROOT_DIR}
+	INSTALL_NAME_DIR "@rpath"
+	FOLDER Core
+)
+
+target_include_directories(OrbiterCore PUBLIC ${Orbiter_includes} ${TRACY_CLIENT_INCLUDE} ${imgui_SOURCE_DIR}/ ${imgui_SOURCE_DIR}/backends ${implot_SOURCE_DIR}/)
+target_link_libraries(OrbiterCore ${Orbiter_common_libs} ${Orbiter_libs} ${TRACY_CLIENT})
+target_compile_options(OrbiterCore PRIVATE "$<$<COMPILE_LANGUAGE:OBJCXX>:-fobjc-arc>")
+set_property(SOURCE ${imgui_SOURCE_DIR}/backends/imgui_impl_metal.mm PROPERTY COMPILE_OPTIONS "-fobjc-arc")
+add_dependencies(OrbiterCore ${Orbiter_depends})
+
+add_executable(Orbiter Main.cpp)
 set_target_properties(Orbiter
 	PROPERTIES
 	RUNTIME_OUTPUT_DIRECTORY ${ORBITER_BINARY_ROOT_DIR}
 	OUTPUT_NAME Orbiter
-	VS_DEBUGGER_WORKING_DIRECTORY ${ORBITER_BINARY_ROOT_DIR}
+	BUILD_RPATH "@executable_path"
+	INSTALL_RPATH "@executable_path"
 	FOLDER Core
 )
+target_link_libraries(Orbiter OrbiterCore)
 
-target_include_directories(Orbiter PUBLIC ${Orbiter_includes} ${TRACY_CLIENT_INCLUDE} ${imgui_SOURCE_DIR}/ ${imgui_SOURCE_DIR}/backends ${implot_SOURCE_DIR}/)
-
-target_link_libraries(Orbiter ${Orbiter_common_libs} ${Orbiter_libs} ${TRACY_CLIENT})
-target_compile_options(Orbiter PRIVATE "$<$<COMPILE_LANGUAGE:OBJCXX>:-fobjc-arc>")
-set_property(SOURCE ${imgui_SOURCE_DIR}/backends/imgui_impl_metal.mm PROPERTY COMPILE_OPTIONS "-fobjc-arc")
-
-add_dependencies(Orbiter ${Orbiter_depends})
-
-# Installation: Orbiter executable (graphics-server versions)
-install(TARGETS Orbiter	RUNTIME DESTINATION ${ORBITER_INSTALL_ROOT_DIR})
-
-# If the standard Orbiter executable is not built...
-set_target_properties(Orbiter PROPERTIES ENABLE_EXPORTS 1)
-
-# ...we have to use the NG version to export the API links
-install(FILES $<TARGET_LINKER_FILE:Orbiter>	DESTINATION ${ORBITER_INSTALL_SDK_DIR}/lib)
-
+install(TARGETS Orbiter RUNTIME DESTINATION ${ORBITER_INSTALL_ROOT_DIR})
+install(TARGETS OrbiterCore LIBRARY DESTINATION ${ORBITER_INSTALL_ROOT_DIR})
 
 string(TIMESTAMP DATE "%d %b %Y")
 string(TIMESTAMP VERSION "%y%m%d")

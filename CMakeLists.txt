@@ -135,9 +135,7 @@ set_target_properties(CopyData
 
 set(OrbiterTgt Orbiter)
 
-# Modules resolve the Orbiter API against the running executable at load time,
-# the same way Windows modules bind to Orbiter.exe's export table.
-set(ORBITER_LIB "-Wl,-undefined,dynamic_lookup")
+set(ORBITER_LIB OrbiterCore "-Wl,-undefined,dynamic_lookup")
 set(ORBITER_SDK_LIB "-Wl,-force_load,$<TARGET_FILE:Orbitersdk>" OrbiterPlatform)
 set(LUAINTERPRETER_LIB $<TARGET_LINKER_FILE:LuaInterpreter>)
 

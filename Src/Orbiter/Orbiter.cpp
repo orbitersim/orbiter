@@ -180,7 +180,7 @@ static std::string JoinArgs (int argc, char **argv)
 // main()
 // Application entry containing message loop
 
-int main (int argc, char **argv)
+extern "C" __attribute__((visibility("default"))) int OrbiterMain (int argc, char **argv)
 {
 	SetRootDirectory();
 	oplat::Init();
