@@ -51,7 +51,7 @@ TEST_CASE("Text with printf codes is logged literally", "[log]")
 	SetLogVerbosity(false);
 	LogOut("module %s, API %06d", "XRSound", 241030);   // with arguments it is still a format
 
-	SetLastError(ERROR_BAD_EXE_FORMAT);   // the system text contains "%1"
+	SetLastError(ENOEXEC);
 	LogOut_LastError("func", "file.cpp", 1);
 	SetLastError(0x20000001);             // no system text for this code
 	LogOut_LastError("func", "file.cpp", 2);

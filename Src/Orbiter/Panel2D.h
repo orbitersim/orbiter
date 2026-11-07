@@ -16,6 +16,8 @@
 #include <windows.h>
 #include "Mfd.h"
 
+class Pane;
+
 // =======================================================================
 // class Panel2D
 

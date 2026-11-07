@@ -9,12 +9,11 @@ add_subdirectory(zlib)
 add_subdirectory(imgui)
 
 ## LFS
-add_library(lfs SHARED luafilesystem/src/lfs.c)
-install(TARGETS lfs	DESTINATION ${ORBITER_BINARY_ROOT_DIR})
+add_library(lfs MODULE luafilesystem/src/lfs.c)
 install(TARGETS lfs DESTINATION ${ORBITER_INSTALL_SDK_DIR}/Utils/)
 target_include_directories(lfs PUBLIC Lua)
 target_link_libraries(lfs lua)
-SET_TARGET_PROPERTIES(lfs PROPERTIES LINK_FLAGS "/DEF:\"${CMAKE_CURRENT_SOURCE_DIR}/luafilesystem/src/lfs.def\"")
+set_target_properties(lfs PROPERTIES PREFIX "" SUFFIX ".so")
 
 install(TARGETS lfs	DESTINATION ${ORBITER_BINARY_ROOT_DIR})
 

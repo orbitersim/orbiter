@@ -14,69 +14,64 @@
 #include "DlgFunction.h"
 #include "DlgRecorder.h"
 #include "DlgHelp.h"
-#include "ConsoleManager.h"
-#include "resource.h"
+#include "OrbiterPlatform.h"
 
 extern PlanetarySystem* g_psys;
 extern Vessel* g_focusobj;
 extern TimeData td;
 
-static DWORD WINAPI InputProc(LPVOID);
-static INT_PTR CALLBACK ServerDlgProc(HWND, UINT, WPARAM, LPARAM);
 static void ConsoleOut(const char* msg);
 
-static HANDLE hMutex = 0;
-static HANDLE s_hStdO = NULL;
-static char cConsoleCmd[1024] = "\0";
-static orbiter::ConsoleNG* s_console = NULL; // access to console instance from message callback functions
-
 orbiter::ConsoleNG::ConsoleNG(Orbiter* pOrbiter)
-    : m_pOrbiter(pOrbiter)
-    , m_hWnd(NULL)
-    , m_hStatWnd(NULL)
-    , m_hThread(NULL)
+	: m_pOrbiter(pOrbiter)
+	, m_bStats(false)
+	, m_statTick(0)
 {
-    static PCSTR title = "Orbiter Server Console";
-    static SIZE_T stackSize = 4096;
-
-    s_console = this;
-
-    ConsoleManager::ShowConsole(true);
-    DWORD id;
-    SetConsoleTitle(title);
-    m_hWnd = GetConsoleWindow();
-	if (ConsoleManager::IsConsoleExclusive())
-		DeleteMenu(GetSystemMenu(m_hWnd, false), SC_CLOSE, MF_BYCOMMAND);
-    m_hThread = CreateThread(NULL, stackSize, InputProc, this, 0, &id);
-    s_hStdO = GetStdHandle(STD_OUTPUT_HANDLE);
-    SetLogOutFunc(&ConsoleOut); // clone log output to console
+	const CFG_CMDLINEPRM& prm = pOrbiter->Cfg()->CfgCmdlinePrm;
+	bool scripted = !prm.LaunchScenario.empty() && prm.bFastExit &&
+		(prm.FrameLimit || prm.MaxSysTime > 0.0 || prm.MaxSimTime > 0.0);
+	oplat::ConsoleMode mode = scripted ? oplat::CONSOLE_OUTPUT_ONLY :
+		oplat::StdinIsTerminal() ? oplat::CONSOLE_TERMINAL : oplat::CONSOLE_WINDOW;
+	oplat::ConsoleOpen("Orbiter Server Console", mode);
+	SetLogOutFunc(&ConsoleOut); // clone log output to console
 }
 
 orbiter::ConsoleNG::~ConsoleNG()
 {
-	DestroyStatDlg();
 	SetLogOutFunc(0);
-	if (WaitForSingleObject(m_hThread, 1000) == WAIT_TIMEOUT) {
-		TerminateThread(m_hThread, 0);
-	}
-	if (hMutex) {
-		CloseHandle(hMutex);
-		hMutex = 0;
-	}
-	s_console = NULL;
-	s_hStdO = NULL;
+	oplat::ConsoleSetStatus("");
+	oplat::ConsoleClose();
 }
 
 bool orbiter::ConsoleNG::ParseCmd()
 {
-	if (!cConsoleCmd[0]) return false;
-	char cmd[1024], cbuf[256], * pc, * ppc;
+	if (m_bStats) UpdateStats();
+	std::string line;
+	bool any = false;
+	while (oplat::ConsolePoll(line)) {
+		char cmd[1024];
+		strncpy(cmd, line.c_str(), sizeof(cmd) - 1);
+		cmd[sizeof(cmd) - 1] = '\0';
+		any |= ParseLine(cmd);
+		if (!m_pOrbiter->IsSessionActive()) break;
+	}
+	return any;
+}
 
-	WaitForSingleObject(hMutex, 1000);
-	strcpy(cmd, cConsoleCmd + 1);
-	cConsoleCmd[0] = '\0';
-	ReleaseMutex(hMutex);
+void orbiter::ConsoleNG::UpdateStats()
+{
+	DWORD t = GetTickCount();
+	if (t - m_statTick < 1000) return;
+	m_statTick = t;
+	char cbuf[512];
+	snprintf(cbuf, sizeof(cbuf), "SysT %0.0fs   SimT %0.0fs   MJD %0.5f   Warp %0.1fx   dt %f   FPS %0.1f   Vessels %zu",
+		td.SysT0, td.SimT0, td.MJD0, td.Warp(), td.SimDT, td.FPS(), g_psys ? g_psys->nVessel() : (size_t)0);
+	oplat::ConsoleSetStatus(cbuf);
+}
 
+bool orbiter::ConsoleNG::ParseLine(char* cmd)
+{
+	char cbuf[256], *pc, *ppc;
 	DWORD i;
 	if (!_strnicmp(cmd, "help", 4)) {
 		pc = trim_string(cmd + 4);
@@ -214,8 +209,10 @@ bool orbiter::ConsoleNG::ParseCmd()
 		Echo(cbuf);
 	}
 	else if (!_strnicmp(cmd, "gui", 3)) {
-		if (!DestroyStatDlg())
-			m_hStatWnd = CreateDialog(m_pOrbiter->GetInstance(), MAKEINTRESOURCE(IDD_SERVER), m_hWnd, ServerDlgProc);
+		m_bStats = !m_bStats;
+		m_statTick = 0;
+		if (m_bStats) UpdateStats();
+		else oplat::ConsoleSetStatus("");
 	}
 	else if (!_strnicmp(cmd, "dlg", 3)) {
 		DialogManager* pDlgMgr = m_pOrbiter->DlgMgr();
@@ -253,87 +250,7 @@ void orbiter::ConsoleNG::EchoIntro() const
 	Echo("Type \"exit\" to return to the Launchpad dialog.\n");
 }
 
-bool orbiter::ConsoleNG::DestroyStatDlg()
-{
-	if (m_hStatWnd) {
-		DestroyWindow(m_hStatWnd);
-		m_hStatWnd = NULL;
-		return true;
-	}
-	else
-		return false;
-}
-
-
-DWORD WINAPI InputProc(LPVOID context)
-{
-	DWORD count, c;
-	char cbuf[1024];
-	HANDLE hStdI = GetStdHandle(STD_INPUT_HANDLE);
-	HANDLE hStdO = GetStdHandle(STD_OUTPUT_HANDLE);
-	orbiter::ConsoleNG* console = (orbiter::ConsoleNG*)context;
-	SetConsoleMode(hStdI, ENABLE_LINE_INPUT | ENABLE_ECHO_INPUT | ENABLE_PROCESSED_INPUT);
-	SetConsoleTextAttribute(hStdI, FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE | FOREGROUND_INTENSITY);
-	hMutex = CreateMutex(NULL, FALSE, NULL);
-	if (!hMutex)
-		return 1;
-	for (;;) {
-		if (!ReadConsole(hStdI, cbuf, 1024, &count, NULL))
-			break; // Console not available, exiting
-		WriteConsole(hStdO, "> ", 2, &c, NULL);
-
-		WaitForSingleObject(hMutex, 1000);
-		cConsoleCmd[0] = 'x';
-		strncpy(cConsoleCmd + 1, cbuf, count);
-		cConsoleCmd[count - 1] = '\0'; // eliminates CR
-		ReleaseMutex(hMutex);
-
-		// handle "exit" directly so we can terminate the console thread in an orderly fashion
-		if (!strncmp(cbuf, "exit\r\n", 6)) {
-			break;
-		}
-	}
-	return 0;
-}
-
-INT_PTR CALLBACK ServerDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
-{
-	switch (uMsg) {
-	case WM_INITDIALOG:
-		SetTimer(hDlg, 1, 1000, NULL);
-		return TRUE;
-	case WM_TIMER:
-		if (s_console)
-			s_console->GetOrbiter()->UpdateServerWnd(hDlg);
-		return 0;
-	case WM_COMMAND:
-		switch (LOWORD(wParam)) {
-		case IDOK:
-			if (s_console)
-				s_console->GetOrbiter()->CloseSession();
-		}
-		break;
-	case WM_CLOSE:
-		if (s_console)
-			s_console->DestroyStatDlg();
-		return 0;
-	case WM_DESTROY:
-		KillTimer(hDlg, 1);
-		return 0;
-	}
-	return FALSE;
-}
-
 void ConsoleOut(const char* msg)
 {
-	if (!s_hStdO) return;
-	DWORD count;
-	CONSOLE_SCREEN_BUFFER_INFO csbi;
-	SetConsoleTextAttribute(s_hStdO, FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE);
-	GetConsoleScreenBufferInfo(s_hStdO, &csbi);
-	csbi.dwCursorPosition.X = 0;
-	SetConsoleCursorPosition(s_hStdO, csbi.dwCursorPosition);
-	WriteConsole(s_hStdO, msg, strlen(msg), &count, NULL);
-	SetConsoleTextAttribute(s_hStdO, FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE | FOREGROUND_INTENSITY);
-	WriteConsole(s_hStdO, "\n> ", 3, &count, NULL);
+	oplat::ConsoleWrite(msg);
 }

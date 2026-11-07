@@ -15,7 +15,6 @@ target_include_directories(ScnEditor
 target_link_libraries(ScnEditor
 	${ORBITER_LIB}
 	${ORBITER_SDK_LIB}
-	${ORBITER_DLGCTRL_LIB}
 	comctl32.lib
 )
 
@@ -38,7 +37,6 @@ add_custom_target(deploy_api
 add_dependencies(ScnEditor
 	${OrbiterTgt}
 	Orbitersdk
-	DlgCtrl
 	deploy_api
 )
 
@@ -55,6 +53,4 @@ install(FILES ScnEdit.png
 	DESTINATION ${ORBITER_INSTALL_TEXTURES_DIR}/MenuInfoBar
 )
 
-if(ORBITER_MAKE_DOC)
-	add_subdirectory(Help)
-endif()
+add_subdirectory(Help)

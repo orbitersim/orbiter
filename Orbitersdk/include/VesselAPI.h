@@ -5698,27 +5698,6 @@ public:
 	 */
 	virtual void clbkVisualDestroyed (VISHANDLE vis, int refcount);
 
-	/**
-	 * \brief HUD redraw notification
-	 *
-	 * Called when the vessel's head-up display (HUD) needs to be redrawn
-	 * (usually at each time step, unless the HUD is turned off).
-	 * Overwriting this function allows to implement vessel-specific
-	 * modifications of the HUD display (or to suppress the HUD altogether).
-	 * \param mode HUD mode (see HUD_* constants in OrbiterAPI.h)
-	 * \param hps pointer to a HUDPAINTSPEC structure
-	 * \param hDC GDI drawing device context
-	 * \default Draws a standard HUD display with Orbiter's default display
-	 *   layout.
-	 * \deprecated This method contains a device-dependent drawing context and
-	 *   may not work with all graphics clients. It has been superseded by
-	 *   VESSEL3::clbkDrawHUD.
-	 * \note For vessels derived from VESSEL3 orbiter will not call this method,
-	 *   but will call the VESSEL3::clbkDrawHUD method instead. The VESSEL3
-	 *   version uses a generic \e Sketchpad drawing context instead of a HDC.
-	 * \sa VESSEL3::clbkDrawHUD, \ref progflow1
-	 */
-	virtual void clbkDrawHUD (int mode, const HUDPAINTSPEC *hps, HDC hDC);
 
 	/**
 	 * \brief Reaction Control System mode change notification.

@@ -6,7 +6,6 @@
 #include "Pane.h"
 #include "Camera.h"
 #include "Vessel.h"
-#include "Texture.h"
 #include "Log.h"
 #include "Util.h"
 

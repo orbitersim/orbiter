@@ -10,27 +10,35 @@
 #define __TABOPTIONS_H
 
 #include "LpadTab.h"
-#include "OptionsPages.h"
+#include <memory>
+#include <string>
+#include <vector>
+
+class DlgOptions;
 
 namespace orbiter {
 
-	class OptionsTab : public orbiter::LaunchpadTab, public OptionsPageContainer {
+	class OptionsTab : public LaunchpadTab {
 	public:
-		OptionsTab(const orbiter::LaunchpadDialog* lp);
-		void Create();
+		OptionsTab(LaunchpadDialog* lp);
+		~OptionsTab();
 
-		bool DynamicSize() const { return true; }
-
+		void Draw();
+		bool OpenHelp();
 		void LaunchpadShowing(bool show);
 
-		void SetConfig(Config* cfg);
-
-		bool OpenHelp();
-
-		BOOL OnInitDialog(HWND hWnd, WPARAM wParam, LPARAM lParam);
-		BOOL OnSize(int w, int h);
-		BOOL OnNotify(HWND hDlg, int idCtrl, LPNMHDR pnmh);
+	private:
+		struct Page {
+			std::string name;
+			const char* helptopic;
+			void (DlgOptions::* func)();
+			bool child;
+		};
+		std::vector<Page> m_pages;
+		std::unique_ptr<DlgOptions> m_opt;
+		size_t m_page;
 	};
+
 }
 
 #endif // !__TABOPTIONS_H

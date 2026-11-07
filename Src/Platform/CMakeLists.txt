@@ -1,7 +1,12 @@
 add_library(OrbiterPlatform SHARED
 	compat_win.cpp
 	pathfix.c
+	moduleinfo.cpp
 	mac/platform_mac.mm
+	mac/joystick_mac.mm
+	mac/image_mac.mm
+	mac/help_mac.mm
+	mac/console_mac.mm
 )
 
 target_include_directories(OrbiterPlatform
@@ -16,6 +21,10 @@ target_link_libraries(OrbiterPlatform
 	PUBLIC "-framework IOKit"
 	PUBLIC "-framework GameController"
 	PUBLIC "-framework UniformTypeIdentifiers"
+	PUBLIC "-framework ImageIO"
+	PUBLIC "-framework CoreGraphics"
+	PUBLIC "-framework Carbon"
+	PUBLIC "-framework WebKit"
 )
 
 target_compile_options(OrbiterPlatform PRIVATE "$<$<COMPILE_LANGUAGE:OBJCXX>:-fobjc-arc>")

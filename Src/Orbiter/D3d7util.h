@@ -50,8 +50,6 @@ struct VERTEX_TL2TEX {
 };
 #define FVF_TL2TEX ( D3DFVF_XYZRHW | D3DFVF_DIFFUSE | D3DFVF_SPECULAR | D3DFVF_TEX2 | D3DFVF_TEXCOORDSIZE2(0) | D3DFVF_TEXCOORDSIZE2(1) )
 
-VERTEX_XYZ  *GetVertexXYZ  (DWORD n);
-VERTEX_XYZC *GetVertexXYZC (DWORD n);
 // Return pointer to static vertex buffer of given type of at least size n
 
 inline void MATRIX4toD3DMATRIX (const MATRIX4 &M, D3DMATRIX &D)

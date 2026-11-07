@@ -21,6 +21,8 @@
 #include "elevmgr.h"
 #include "CamAPI.h"
 
+class Orbiter;
+
 class Body;
 class Planet;
 class Base;

@@ -32,7 +32,6 @@ target_include_directories(${VESSEL_NAME}
 target_link_libraries(${VESSEL_NAME}
 	${ORBITER_LIB}
 	${ORBITER_SDK_LIB}
-	${ORBITER_DLGCTRL_LIB}
 	UxTheme.lib
 	$<TARGET_LINKER_FILE:Atlantis_Tank>
 	imgui

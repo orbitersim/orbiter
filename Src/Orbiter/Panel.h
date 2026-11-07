@@ -13,6 +13,8 @@
 #include <windows.h>
 #include <fstream>
 
+class Pane;
+
 // =======================================================================
 // class Panel
 
@@ -46,13 +48,13 @@ public:
 	void Move (LONG dx, LONG dy);
 	// scrolls panel by the specified amount in x and y
 
-	void Point2Screen (long srcX, long srcY, long &tgtX, long &tgtY) const;
+	void Point2Screen (LONG srcX, LONG srcY, LONG &tgtX, LONG &tgtY) const;
 	// converts point from unscaled panel space to viewport space
 
 	void Area2Screen (const RECT &srcR, RECT &tgtR) const;
 	// converts rectangle from unscaled panel space to viewport space
 
-	void DefineBackground (HBITMAP hBmp, DWORD flag, DWORD ck = (DWORD)-1);
+	void DefineBackground (SURFHANDLE hSurf, DWORD flag, DWORD ck = (DWORD)-1);
 
 	void DefineArea (int aid, const RECT &pos, int draw_mode, int mouse_mode, int bkmode);
 	void ReleaseAreas ();

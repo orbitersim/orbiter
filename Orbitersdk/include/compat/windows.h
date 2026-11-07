@@ -13,6 +13,9 @@
 #include <ctype.h>
 #include <unistd.h>
 #include <math.h>
+#include <time.h>
+#include <assert.h>
+#include <errno.h>
 
 #if defined(__cplusplus)
 #include <cstring>
@@ -87,6 +90,7 @@ typedef uint64_t DWORD64;
 typedef uint64_t QWORD;
 typedef int64_t LONGLONG;
 typedef uint64_t ULONGLONG;
+typedef uint64_t DWORDLONG;
 typedef int64_t LONG64;
 typedef uint64_t ULONG64;
 typedef int64_t __int64;
@@ -236,16 +240,36 @@ typedef DWORD (*LPTHREAD_START_ROUTINE)(LPVOID);
 #define TEXT(s) s
 #define _T(s) s
 
+#ifndef S_OK
 #define S_OK ((HRESULT)0)
+#endif
+#ifndef S_FALSE
 #define S_FALSE ((HRESULT)1)
+#endif
+#ifndef E_FAIL
 #define E_FAIL ((HRESULT)0x80004005)
+#endif
+#ifndef E_NOTIMPL
 #define E_NOTIMPL ((HRESULT)0x80004001)
+#endif
+#ifndef E_INVALIDARG
 #define E_INVALIDARG ((HRESULT)0x80070057)
+#endif
+#ifndef E_OUTOFMEMORY
 #define E_OUTOFMEMORY ((HRESULT)0x8007000E)
+#endif
+#ifndef E_POINTER
 #define E_POINTER ((HRESULT)0x80004003)
+#endif
+#ifndef SUCCEEDED
 #define SUCCEEDED(hr) (((HRESULT)(hr)) >= 0)
+#endif
+#ifndef FAILED
 #define FAILED(hr) (((HRESULT)(hr)) < 0)
+#endif
+#ifndef MAKE_HRESULT
 #define MAKE_HRESULT(sev, fac, code) ((HRESULT)(((unsigned long)(sev) << 31) | ((unsigned long)(fac) << 16) | ((unsigned long)(code))))
+#endif
 #define ERROR_SUCCESS 0L
 #define NO_ERROR 0L
 
@@ -496,6 +520,12 @@ OCOMPAT_API WINBOOL MessageBeep(UINT type);
 OCOMPAT_API void OutputDebugStringA(const char *str);
 #define OutputDebugString OutputDebugStringA
 #define DebugBreak() __builtin_debugtrap()
+#ifndef _ASSERTE
+#define _ASSERTE(e) assert(e)
+#endif
+#ifndef _ASSERT
+#define _ASSERT(e) assert(e)
+#endif
 #define __debugbreak() __builtin_debugtrap()
 
 OCOMPAT_API HMODULE LoadLibraryA(const char *path);
@@ -524,6 +554,7 @@ OCOMPAT_API HMODULE GetModuleHandleA(const char *name);
 OCOMPAT_API DWORD GetLastError(void);
 OCOMPAT_API void SetLastError(DWORD err);
 OCOMPAT_API const char *OCompatModuleSuffix(void);
+OCOMPAT_API const char *OCompatLastLoadError(void);
 
 OCOMPAT_API DWORD GetCurrentDirectoryA(DWORD size, char *buf);
 #define GetCurrentDirectory GetCurrentDirectoryA
@@ -690,6 +721,9 @@ inline int vsprintf_s(char *dst, size_t n, const char *fmt, va_list ap) { return
 inline int _vsnprintf_s(char *dst, size_t n, size_t count, const char *fmt, va_list ap) { return vsnprintf(dst, count < n ? count + 1 : n, fmt, ap); }
 #pragma clang diagnostic pop
 
+inline errno_t localtime_s(struct tm *out, const time_t *t) { return localtime_r(t, out) ? 0 : 22; }
+inline errno_t gmtime_s(struct tm *out, const time_t *t) { return gmtime_r(t, out) ? 0 : 22; }
+
 inline errno_t fopen_s(FILE **f, const char *name, const char *mode) {
 	*f = fopen(name, mode);
 	return *f ? 0 : 2;
@@ -703,6 +737,11 @@ template<size_t N> inline errno_t _strlwr_s(char (&s)[N]) { _strlwr(s); return 0
 template<size_t N> inline errno_t _strupr_s(char (&s)[N]) { _strupr(s); return 0; }
 
 #endif
+
+#define CP_ACP 0
+#define CP_UTF8 65001
+OCOMPAT_API int MultiByteToWideChar(UINT codepage, DWORD flags, const char *src, int srclen, wchar_t *dst, int dstlen);
+OCOMPAT_API int WideCharToMultiByte(UINT codepage, DWORD flags, const wchar_t *src, int srclen, char *dst, int dstlen, const char *defchar, WINBOOL *useddef);
 
 #include "winuser_compat.h"
 

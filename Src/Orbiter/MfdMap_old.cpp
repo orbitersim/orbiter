@@ -474,26 +474,13 @@ SURFHANDLE Instrument_MapOld::LoadBitmap (const char *cbuf, int *w, int *h)
 
 	// Load bitmap
 	char *path = g_pOrbiter->TexPath (cbuf, ".bmp");
-	HBITMAP hbm = (HBITMAP)LoadImage (GetModuleHandle(NULL), path, IMAGE_BITMAP, 0, 0, LR_CREATEDIBSECTION);
-	if (!hbm)
-		hbm = (HBITMAP)LoadImage (NULL, path, IMAGE_BITMAP, 0, 0, LR_LOADFROMFILE|LR_CREATEDIBSECTION);
-	if (!hbm)
+	SURFHANDLE surf = gc->clbkLoadSurface (path, OAPISURFACE_RENDERTARGET, true);
+	if (!surf)
 		return NULL;
-	// Get bitmap size
-	BITMAP bm;
-	GetObject (hbm, sizeof(bm), &bm);
-	*w = bm.bmWidth;
-	*h = bm.bmHeight;
-	// Create surface
-	SURFHANDLE surf = gc->clbkCreateSurfaceEx (*w, *h, OAPISURFACE_RENDERTARGET);
-	// Copy bitmap
-	if (surf) {
-		if (!gc->clbkCopyBitmap (surf, hbm, 0, 0, *w, *h)) {
-			gc->clbkReleaseSurface (surf);
-			surf = NULL;
-		}
-	}
-	DeleteObject (hbm);
+	DWORD sw, sh;
+	gc->clbkGetSurfaceSize (surf, &sw, &sh);
+	*w = (int)sw;
+	*h = (int)sh;
 	return surf;
 }
 

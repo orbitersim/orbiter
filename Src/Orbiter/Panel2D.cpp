@@ -5,8 +5,6 @@
 #include "Panel2D.h"
 #include "Pane.h"
 #include "Vessel.h"
-#include <zmouse.h>
-
 using namespace std;
 
 extern Orbiter *g_pOrbiter;

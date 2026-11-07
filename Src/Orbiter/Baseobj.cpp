@@ -379,14 +379,6 @@ void MeshObject::UpdateShadow (Vector &fromsun, double azim)
 	az = (float)fromsun.z;
 }
 
-void MeshObject::Render (LPDIRECT3DDEVICE7 dev, bool day)
-{
-}
-
-void MeshObject::RenderShadow (LPDIRECT3DDEVICE7 dev)
-{
-}
-
 // ==============================================================================
 // class Block (simple buildings etc.)
 
@@ -2168,10 +2160,6 @@ void RunwayLights::Setup ()
 	end2.x = vtx[1].x, end2.y = vtx[1].y, end2.z = vtx[1].z;
 }
 
-void RunwayLights::Render (LPDIRECT3DDEVICE7 dev, bool day)
-{
-}
-
 void RunwayLights::VertexArray (DWORD count, const Vector &cpos, const Vector &pos, const Vector &ofs, double size, POSTEXVERTEX *&Vtx)
 {
 	size *= 0.15; // for distance resizing (see below bsize)
@@ -2470,10 +2458,6 @@ int BeaconArray::Read (istream &is)
 			sscanf (cp+3, "%f%f%f", &col_r, &col_g, &col_b);
 	} while (_stricmp (label, "END"));
 	return 0;
-}
-
-void BeaconArray::Render (LPDIRECT3DDEVICE7 dev, bool day)
-{
 }
 
 void BeaconArray::Update ()
@@ -3257,41 +3241,6 @@ void Train2::UpdateShadow (Vector &fromsun, double az)
 	}
 }
 
-void Train2::Render (LPDIRECT3DDEVICE7 dev, bool day)
-{
-	int i;
-	NTVERTEX *vtx = dyndata->rail;
-	DWORD ambient;
-
-	dev->SetRenderState (D3DRENDERSTATE_ALPHABLENDENABLE, TRUE);
-	dev->SetTexture (0, day ? dyndata->dtex : dyndata->ntex);
-
-	if (!day) {
-		dev->GetRenderState (D3DRENDERSTATE_AMBIENT, &ambient);
-		dev->SetRenderState (D3DRENDERSTATE_AMBIENT, ambient*16);
-	}
-
-	// render girders
-	for (i = 0; i <= dyndata->ng; i++) {
-		dev->DrawPrimitive (D3DPT_TRIANGLESTRIP, D3DFVF_VERTEX, vtx, 6, NULL); vtx += 6;
-		dev->DrawPrimitive (D3DPT_TRIANGLESTRIP, D3DFVF_VERTEX, vtx, 6, NULL); vtx += 6;
-	}
-	// render traverses
-	for (i = 0; i < dyndata->ng; i++) {
-		dev->DrawPrimitive (D3DPT_TRIANGLESTRIP, D3DFVF_VERTEX, vtx, 4, NULL); vtx += 4;
-		dev->DrawPrimitive (D3DPT_TRIANGLESTRIP, D3DFVF_VERTEX, vtx, 4, NULL); vtx += 4;
-	}
-
-	dev->SetRenderState (D3DRENDERSTATE_ALPHABLENDENABLE, FALSE);
-	if (!day) dev->SetRenderState (D3DRENDERSTATE_AMBIENT, ambient);
-}
-
-void Train2::RenderShadow (LPDIRECT3DDEVICE7 dev)
-{
-	dev->DrawPrimitive (
-		D3DPT_TRIANGLESTRIP, D3DFVF_XYZ /*| D3DFVF_DIFFUSE*/, dyndata->rshvtx, (dyndata->ng+1)*2, NULL);
-}
-
 // ==============================================================================
 // class SolarPlant (self-aligning solar panel array)
 
@@ -3343,45 +3292,6 @@ int SolarPlant::Read (istream &is)
 	} while (_stricmp (label, "END"));
 	npanel = nrow*ncol;
 	return 0;
-}
-
-void SolarPlant::Render (LPDIRECT3DDEVICE7 dev, bool)
-{
-	int i, j;
-
-	// check for flashing panels
-	Vector pc, cdir (tmul (base->GRot(), g_camera->GPos()-base->GPos()));
-	bool anyflash = false;
-	double alpha;
-	for (i = 0; i < npanel; i++) {
-		pc.Set (cdir.x - ppos[i].x, cdir.y - ppos[i].y, cdir.z - ppos[i].z);
-		pc.unify();
-		alpha = dotp (pc, nml);
-		if (alpha > 0.999) {
-			anyflash = flash[i] = true;
-			for (j = i*4; j < (i+1)*4; j++) Vtx[j].tu += 0.25;
-		}
-	}
-
-	// render panels and stands
-	dev->SetTexture (0, tex);
-	dev->SetRenderState (D3DRENDERSTATE_ALPHABLENDENABLE, TRUE);
-	dev->DrawIndexedPrimitive (
-		D3DPT_TRIANGLELIST, D3DFVF_VERTEX, Vtx, nVtx, Idx, nIdx, 0);
-	if (anyflash)
-		for (i = 0; i < npanel; i++)
-			if (flash[i]) {
-				for (j = i*4; j < (i+1)*4; j++) Vtx[j].tu -= 0.25;
-				flash[i] = false;
-			}
-	dev->SetRenderState (D3DRENDERSTATE_ALPHABLENDENABLE, FALSE);
-}
-
-void SolarPlant::RenderShadow (LPDIRECT3DDEVICE7 dev)
-{
-	if (have_shadows)
-		dev->DrawIndexedPrimitive (
-			D3DPT_TRIANGLELIST, D3DFVF_XYZ /*| D3DFVF_DIFFUSE*/, ShVtx, nShVtx, ShIdx, nShIdx, 0);
 }
 
 void SolarPlant::Activate ()

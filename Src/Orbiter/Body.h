@@ -12,6 +12,8 @@
 #include "OrbiterAPI.h"
 #include "Config.h"
 
+class PlanetarySystem;
+
 class Elements;
 class CelestialBody;
 class Body;

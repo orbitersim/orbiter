@@ -14,6 +14,8 @@
 #include "Orbiter.h"
 #include "Mfd.h"
 
+class Pane;
+
 // =======================================================================
 // class DefaultPanel
 
@@ -25,7 +27,6 @@ public:
 	~DefaultPanel ();
 
 	// Restore all devices (e.g. after render window is re-openend
-	void RestoreDeviceObjects (LPDIRECT3D7 d3d, LPDIRECT3DDEVICE7 dev);
 
 	// Render the glass cockpit overlay on top of the target surface
 	void Render ();

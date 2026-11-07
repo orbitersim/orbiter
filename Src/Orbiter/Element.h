@@ -9,6 +9,8 @@
 #include "Vecmat.h"
 #include "Astro.h"
 
+class Vessel;
+
 // =======================================================================
 // class Elements
 

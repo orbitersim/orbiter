@@ -23,9 +23,6 @@
 #include "Util.h"
 #include "Log.h"
 #include "OrbiterAPI.h"
-#include "Vobject.h"
-#include <zmouse.h>
-
 using namespace std;
 
 extern Orbiter *g_pOrbiter;
@@ -939,30 +936,8 @@ void Camera::Update ()
 	ExtCtrlMode = 0;
 	if (ECC) ExtCtrlMode = UpdateExternalControl (ECC);
 
-	// get a list of current visuals
-	double dist, calt, dist_proxy = 1e100;
-	VObject **vobj, *vo;
-	const Body *bd;
-	int i, nobj;
-	nobj = 0; vobj = 0;
-	for (i = 0; i < nobj; i++) {
-		bd = (vo = vobj[i])->GetBody();
-		if (!external_view && bd == (Body*)g_focusobj &&
-			!g_focusobj->HasExtpassMeshes()) continue;
-		dist = vo->CDist() - bd->ClipRadius();
-		if (bd->Type() == OBJTP_PLANET) {
-			if (dist < 50e3) {
-				dist = 0; // suppress dynamic nearplane if in proximity of the surface
-			} else if (((Planet*)bd)->CloudParam (calt)) {
-				double lowc;
-				if (dist > calt) dist -= calt;
-				else if (dist < (lowc = 0.99985*(calt+bd->Size())-bd->Size()))
-					dist = lowc-dist;
-				else dist = 4.0;
-			}
-		}
-		if (dist < dist_proxy) dist_proxy = dist;
-	}
+	double dist, dist_proxy = 1e100;
+	int i;
 
 	// find the largest apparent planet
 	double ralt_proxy = 1e100;

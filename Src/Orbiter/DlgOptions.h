@@ -15,6 +15,7 @@
 
 #include "OrbiterAPI.h"
 #include <string>
+#include <vector>
 
 class CelestialBody;
 class DlgOptions: public ImGuiDialog {
@@ -25,19 +26,18 @@ public:
 	std::string currentPage;
 	std::string featuretarget;
 
-	//TODO: add when converting Launchpad
-	//void DrawVisual();
-	//void DrawPhysics();
+	void DrawVisual();
+	void DrawPhysics();
 	void DrawInstrument();
 	void DrawVessel();
 	void DrawUI();
-	 void DrawJoystick();
+	void DrawJoystick();
 	void DrawCelSphere();
 	void DrawVisHelper();
-	 void DrawPlanetarium();
-	 void DrawLabels();
-	 void DrawForces();
-	 void DrawAxes();
+	void DrawPlanetarium();
+	void DrawLabels();
+	void DrawForces();
+	void DrawAxes();
 
 	void AddCbodyNode(const CelestialBody *cbody);
 
@@ -64,6 +64,7 @@ public:
 	std::vector<std::pair<std::string, std::string>> m_pathBgImage;
 	std::string currentstarmap;
 	std::string currentbgimage;
+	int elevInterp;
 };
 
 #endif // !__DLGOPTIONS_H

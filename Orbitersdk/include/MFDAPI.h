@@ -36,6 +36,8 @@ class Instrument;
  */
 // ======================================================================
 
+class Instrument_User;
+
 class OAPIFUNC MFD {
 	friend class MFD2;
 
@@ -60,16 +62,6 @@ public:
 	 */
 	virtual ~MFD();
 
-	/**
-	 * \brief Callback function: Orbiter calls this method when the MFD needs to update its display.
-	 * \param hDC Windows device context for drawing on the MFD display surface.
-	 * \note The frequency at which this function is called corresponds to the "MFD
-	 *	refresh rate" setting in Orbiter's parameter settings, unless a redraw is forced
-	 *	by InvalidateDisplay().
-	 * \deprecated This method is deprecated. %MFD implementations should derive from MFD2
-	 *   and use the device-independent \ref MFD2::Update(oapi::Sketchpad*) method instead.
-	 */
-	virtual void Update (HDC hDC) = 0;
 
 	/**	
 	 * \brief Force a display update in the next frame.
@@ -96,57 +88,8 @@ public:
 	 */
 	void InvalidateButtons ();
 
-	/**
-	 * \brief Displays a title string in the upper left corner of the MFD display.
-	 * \param hDC device context
-	 * \param title title string (null-terminated)
-	 * \note This method should be called from within Update()
-	 * \note The title string can contain up to approx. 35 characters when displayed in the
-	 *	 default Courier MFD font.
-	 * \note This method switches the text colour of the GDI context to white.
-	 * \deprecated This method is deprecated. %MFD implementations should derive from MFD2
-	 *   and use the device-independent \ref MFD2::Title method instead.
-	 */
-	void Title (HDC hDC, const char *title) const;
 
-	/**
-	 * \brief Selects a predefined pen into the device context.
-	 * \param hDC Windows device context
-	 * \param i pen index
-	 * \return Handle of pen being replaced.
-	 * \note Currently supported are pen indices 0-5, where\n\n
-	 *		0 = solid, HUD display colour\n
-	 *		1 = solid, light green\n
-	 *		2 = solid, medium green\n
-	 *		3 = solid, medium yellow\n
-	 *		4 = solid, dark yellow\n
-	 *		5 = solid, medium grey\n\n
-	 * \note In principle, an MFD mode may create its own pen resources using the
-	 *	 standard Windows CreatePen function, but using predefined pens is
-	 *   preferred to provide a consistent MFD look.
-	 * \deprecated This method is deprecated. %MFD implementations should derive from MFD2
-	 *   and use the device-independent \ref MFD2::GetDefaultPen method instead.
-	 */
-	HPEN SelectDefaultPen (HDC hDC, DWORD i) const;
 
-	/**
-	 * \brief Selects a predefined MFD font into the device context
-	 * \param hDC Windows device context
-	 * \param i font index
-	 * \return Handle of font being replaced.
-	 * \note Currently supported are font indices 0-3, where \n\n
-	 *		0 = standard MFD font (<tt>Courier, fixed pitch</tt>)\n
-	 *		1 = small font (<tt>Arial, variable pitch</tt>)\n
-	 *		2 = small font, rotated 90 degrees (<tt>Arial, variable pitch</tt>)\n
-	 *      3 = medium font, (<tt>Arial, variable pitch</tt>)\n\n
-	 * \note In principle, an MFD mode may create its own fonts using the standard
-	 *   Windows CreateFont function, but using the predefined fonts is preferred to
-	 *   provide a consistent MFD look.
-	 * \note Default fonts are scaled automatically according to the MFD display size.
-	 * \deprecated This method is deprecated. %MFD implementations should derive from MFD2
-	 *   and use the device-independent \ref MFD2::GetDefaultFont method instead.
-	 */
-	HFONT SelectDefaultFont (HDC hDC, DWORD i) const;
 
 	/** 
 	 * \brief MFD keyboard handler for buffered keys.
@@ -314,11 +257,6 @@ public:
 	 */
 	inline DWORD GetHeight() const { return H; }
 
-	/**
-	 * \brief Dummy implementation of GDI-specific base class method.
-	 * \note Derived classes should overload the \ref Update(oapi::Sketchpad*) method instead.
-	 */
-	void Update (HDC hDC) {}
 
 	/**
 	 * \brief Callback function: Orbiter calls this method when the MFD needs to update its display.
@@ -416,7 +354,7 @@ public:
  * This class is derived from MFD and provides a template for MFD modes containing 2D
  * graphs. An example is the ascent profile recorder in the samples\\CustomMFD folder.
  */
-class OAPIFUNC GraphMFD: public MFD {
+class OAPIFUNC GraphMFD: public MFD2 {
 public:
 	/**
 	 * \brief Constructor. Creates a new GraphMFD.
@@ -505,7 +443,7 @@ public:
 	 * \note This function should be called from Update to paint the graph(s) into the
 	 *   provided device context.
 	 */
-	void Plot (HDC hDC, int g, int h0, int h1, const char *title = 0);
+	void Plot (oapi::Sketchpad *skp, int g, int h0, int h1, const char *title = 0);
 
 	/**
 	 * \brief Determines the range of an array of data.

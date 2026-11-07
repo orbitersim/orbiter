@@ -8,6 +8,8 @@
 
 #include "Celbody.h"
 
+class VStar;
+
 class Star: public CelestialBody {
 	friend class VStar;
 

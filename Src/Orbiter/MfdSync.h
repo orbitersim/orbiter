@@ -10,6 +10,8 @@
 
 #include "Mfd.h"
 
+class Pane;
+
 class Instrument_OSync: public Instrument {
 	friend class Pane;
 public:

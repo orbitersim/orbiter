@@ -39,7 +39,6 @@ char Key2Char[256] = {
 	' ','A','S','D','F','G','H','J','K','L',';','\'','`',' ',
 	'\\','Z','X','C','V','B','N','M',',','.','/'};
 
-HPEN Instrument::hdefpen[MAXPEN] = {0};
 
 struct Instrument::DrawResource Instrument::draw[MAXDEFCOL][2] = {0};
 
@@ -170,23 +169,12 @@ void Instrument::GlobalInit (oapi::GraphicsClient *gc)
 			draw[i][j].dashpen  = (gc ? gc->clbkCreatePen (2, 0, draw[i][j].col) : NULL);
 		}
 	}
-
-	// Deprecated pens
-	COLORREF pencol[MAXPEN] = {
-		RGB(0,255,0), RGB(0,255,0), RGB(0,128,0),
-		RGB(128,128,0), RGB(64,64,0), RGB(128,128,128)
-	};
-	for (i = 0; i < MAXPEN; i++) {
-		hdefpen[i] = CreatePen (PS_SOLID, 0, pencol[i]);
-	}
 }
 
 void Instrument::GlobalExit (oapi::GraphicsClient *gc)
 {
 	int i, j;
 
-	for (i = 0; i < MAXPEN; i++)
-		DeleteObject (hdefpen[i]);
 	for (i = 0; i < MAXDEFCOL; i++) {
 		for (j = 0; j < 2; j++) {
 			if (gc && draw[i][j].solidpen) gc->clbkReleasePen (draw[i][j].solidpen);
@@ -475,7 +463,6 @@ Instrument::Instrument (Pane *_pane, INT_PTR _id, const Spec &spec, Vessel *_ves
 	id   = _id;
 	flag = spec.flag;
 	vessel = _vessel;
-	use_skp_interface = true;
 	instrDT = g_pOrbiter->Cfg()->CfgLogicPrm.InstrUpdDT;
 	updT = td.SimT0-1.0;
 	updSysT = td.SysT0-1.0;
@@ -697,7 +684,7 @@ void Instrument::AllocSurface (DWORD w, DWORD h)
 	if (IsRuningInExternMFD())
 	{
 		DWORD attrib = OAPISURFACE_NOALPHA;
-		attrib |= (use_skp_interface ? OAPISURFACE_RENDERTARGET | OAPISURFACE_TEXTURE : OAPISURFACE_GDI | OAPISURFACE_TEXTURE);
+		attrib |= OAPISURFACE_RENDERTARGET | OAPISURFACE_TEXTURE;
 		surf = gc->clbkCreateSurfaceEx(w, h, attrib);
 		//tex = gc->clbkCreateSurfaceEx(w, h, attrib); // no need for tex
 		if (surf) ClearSurface();
@@ -707,7 +694,7 @@ void Instrument::AllocSurface (DWORD w, DWORD h)
 	DWORD s_attrib = 0;
 	DWORD t_attrib = OAPISURFACE_RENDERTARGET | OAPISURFACE_TEXTURE | 0;
 
-	s_attrib |= (use_skp_interface ? OAPISURFACE_RENDERTARGET : OAPISURFACE_GDI | OAPISURFACE_TEXTURE);
+	s_attrib |= OAPISURFACE_RENDERTARGET;
 	
 	// Add mipmaps in virtual cockpit mode
 	t_attrib |= (pane->panelmode == 3 ? OAPISURFACE_MIPMAPS : 0);
@@ -759,33 +746,6 @@ void Instrument::EndDraw (oapi::Sketchpad *skp)
 		gc->clbkReleaseSketchpad (skp);
 }
 
-HDC Instrument::BeginDrawHDC ()
-{
-	HDC hDC;
-	if (gc && (hDC = gc->clbkGetSurfaceDC (surf))) {
-		SetTextColor (hDC, draw[0][0].col);
-		SelectObject (hDC, mfdfont[0]->GetGDIFont());
-		SetBkMode (hDC, TRANSPARENT);
-		SelectObject (hDC, GetStockObject (NULL_BRUSH));
-		SelectObject (hDC, hdefpen[0]);
-		if (pane->GetPanelMode() == 1) {
-			Rectangle (hDC, 0, 0, IW, IH);
-		}
-		return hDC;
-	} else {
-		return 0;
-	}
-}
-
-void Instrument::EndDrawHDC (HDC hDC)
-{
-	if (gc && hDC) {
-		SelectObject (hDC, GetStockObject (NULL_PEN));
-		SelectObject (hDC, GetStockObject (NULL_BRUSH));
-		gc->clbkReleaseSurfaceDC (surf, hDC);
-	}
-}
-
 bool Instrument::Update (double upDTscale)
 {
 	if (!gc) return false;
@@ -796,18 +756,10 @@ bool Instrument::Update (double upDTscale)
 		blink = !blink;
 		ClearSurface ();
 		UpdateBlt ();
-		if (use_skp_interface) {
-			oapi::Sketchpad *skp = BeginDraw();
-			if (skp) {
-				UpdateDraw (skp);
-				EndDraw (skp);
-			}
-		} else {
-			HDC hDC = BeginDrawHDC();
-			if (hDC) {
-				UpdateDraw (hDC);
-				EndDrawHDC (hDC);
-			}
+		oapi::Sketchpad *skp = BeginDraw();
+		if (skp) {
+			UpdateDraw (skp);
+			EndDraw (skp);
 		}
 		if (tex) gc->clbkBlt (tex, 0, 0, surf); // 'tex' not used in ExternMFD
 		updT = td.SimT1 + instrDT * upDTscale;
@@ -839,12 +791,6 @@ oapi::Font *Instrument::GetDefaultFont (DWORD fontidx)
 	return (fontidx < 4 ? mfdfont[fontidx] : 0);
 }
 
-HFONT Instrument::SelectDefaultFont (HDC hDC, DWORD i)
-{
-	// obsolete
-	return (i < 4 ? (HFONT)SelectObject (hDC, mfdfont[i]->GetGDIFont()) : 0);
-}
-
 oapi::Pen *Instrument::GetDefaultPen (DWORD colidx, DWORD intens, DWORD style)
 {
 	if (colidx >= MAXDEFCOL || intens >= 2) return 0;
@@ -856,12 +802,6 @@ oapi::Pen *Instrument::GetDefaultPen (DWORD colidx, DWORD intens, DWORD style)
 		default:
 			return 0;
 	}
-}
-
-HPEN Instrument::SelectDefaultPen (HDC hDC, DWORD i)
-{
-	// obsolete
-	return (i < 6 ? (HPEN)SelectObject (hDC, hdefpen[i]) : 0);
 }
 
 DWORD Instrument::GetDefaultColour (DWORD colidx, DWORD intens) const
@@ -876,13 +816,6 @@ void Instrument::DisplayTitle (oapi::Sketchpad *skp, const char *title) const
 {
 	skp->SetTextColor (col_grey1);
 	skp->Text (cw/2, 0, title, strlen(title));
-}
-
-void Instrument::DisplayTitle (HDC hDC, const char *title) const
-{
-	// obsolete
-	SetTextColor (hDC, col_grey1);
-	TextOut (hDC, cw/2, 0, title, strlen(title));
 }
 
 void Instrument::DisplayModes (int page)

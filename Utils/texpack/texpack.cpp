@@ -5,7 +5,7 @@
 #include <string>
 #include <windows.h>
 #include <direct.h>
-#include <Shlwapi.h>
+#include <filesystem>
 #include <zlib.h>
 
 #define TREE_DEFLATE 1
@@ -121,7 +121,7 @@ void MemTree::AddLevel(int lvl)
 {
 	char lvlpath[256];
 	sprintf(lvlpath, "%s\\%02d", path, lvl);
-	if (PathFileExists(lvlpath)) {
+	if (std::filesystem::exists(lvlpath)) {
 		WIN32_FIND_DATA fdata, fdata2;
 		strcat(lvlpath, "\\*");
 		HANDLE h = FindFirstFile(lvlpath, &fdata);
@@ -692,7 +692,7 @@ bool exist_file(const char *root, const char *layer, const char *ext, int lvl, i
 {
 	char path[256];
 	sprintf(path, "%s\\%s\\%02d\\%06d\\%06d.%s", root, layer, lvl, ilat, ilng, ext);
-	return PathFileExists(path) == TRUE;
+	return std::filesystem::exists(path);
 }
 
 DWORD deflate_node_data(BYTE *inp, DWORD ninp, BYTE *outp, DWORD noutp)

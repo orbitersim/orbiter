@@ -13,6 +13,9 @@
 #include "OrbiterAPI.h"
 #include "PinesGrav.h"
 
+class CELBODY;
+class CELBODY2;
+
 // Module interface methods - OBSOLETE
 typedef void   (*OPLANET_SetPrecision)(double prec);
 typedef int    (*OPLANET_Ephemeris)(double mjd, double *ret, int &format);

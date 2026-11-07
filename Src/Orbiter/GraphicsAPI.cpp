@@ -6,8 +6,6 @@
 
 #include "Orbiter.h"
 #include "Launchpad.h"
-#include "LpadTab.h"
-#include "TabVideo.h"
 #include "Psys.h"
 #include "Pane.h"
 #include "VCockpit.h"
@@ -15,8 +13,7 @@
 #include "DlgMgr.h"
 #include "Log.h"
 #include "Util.h"
-#include "resource.h"
-#include <wincodec.h>
+#include "OrbiterPlatform.h"
 #include <filesystem>
 namespace fs = std::filesystem;
 
@@ -28,13 +25,15 @@ extern Pane *g_pane;
 
 using namespace oapi;
 
-const char *strWndClass = "Orbiter Render Window";
+extern const TCHAR *g_strAppTitle;
 
-OAPIFUNC LRESULT CALLBACK WndProc (HWND, UINT, WPARAM, LPARAM);
 // Render window callback (calls RenderWndProc)
-
-OAPIFUNC INT_PTR CALLBACK LaunchpadVideoWndProc (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
-// 'Video' tab window callback
+static LRESULT RenderWindowProc (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
+{
+	GraphicsClient *gc = (GraphicsClient*)oplat::GetWindowUserData (hWnd);
+	if (gc) return gc->RenderWndProc (hWnd, uMsg, wParam, lParam);
+	else return DefWindowProc (hWnd, uMsg, wParam, lParam);
+}
 
 // ======================================================================
 // class GraphicsClient
@@ -55,24 +54,13 @@ GraphicsClient::GraphicsClient (HINSTANCE hInstance): Module (hInstance)
 	VideoData.winh = 768;
 	surfBltTgt = RENDERTGT_NONE;
 	splashFont = 0;
-
-    // Create WIC factory for formatted image output
-    HRESULT hr = CoCreateInstance (
-        CLSID_WICImagingFactory,
-        NULL,
-        CLSCTX_INPROC_SERVER,
-        IID_PPV_ARGS(&m_pIWICFactory)
-    );
-	if (hr != S_OK)
-		m_pIWICFactory = NULL;
-		
+	hRenderWnd = NULL;
 }
 
 // ======================================================================
 
 GraphicsClient::~GraphicsClient ()
 {
-	if (hVid) SetWindowLongPtr (hVid, GWLP_USERDATA, 0);
 	if (splashFont) clbkReleaseFont (splashFont);
 }
 
@@ -80,19 +68,6 @@ GraphicsClient::~GraphicsClient ()
 
 bool GraphicsClient::clbkInitialise ()
 {
-    // Register a window class for the render window
-    WNDCLASS wndClass = {0, ::WndProc, 0, 0, hModule,
-		LoadIcon (g_pOrbiter->GetInstance(), MAKEINTRESOURCE(IDI_MAIN_ICON)),
-		LoadCursor (NULL, IDC_ARROW),
-		(HBRUSH)GetStockObject (WHITE_BRUSH),
-		NULL, strWndClass};
-    RegisterClass (&wndClass);
-
-	if (clbkUseLaunchpadVideoTab() && g_pOrbiter->Launchpad()) {
-		hVid = g_pOrbiter->Launchpad()->GetTab(PG_VID)->TabWnd();
-		SetWindowLongPtr (hVid, GWLP_USERDATA, (LONG_PTR)this);
-	} else hVid = NULL;
-
 	// set default parameters from config data
 	Config *cfg = g_pOrbiter->Cfg();
 	VideoData.fullscreen = cfg->CfgDevPrm.bFullscreen;
@@ -109,7 +84,8 @@ bool GraphicsClient::clbkInitialise ()
 
 	char fname[256];
 	GetModuleFileName(hModule, fname, 256);
-	((orbiter::DefVideoTab*)g_pOrbiter->Launchpad()->GetTab(PG_VID))->OnGraphicsClientLoaded(this, fname);
+	if (g_pOrbiter->Launchpad())
+		g_pOrbiter->Launchpad()->OnGraphicsClientLoaded(this, fname);
 
 	return true;
 }
@@ -201,15 +177,6 @@ bool GraphicsClient::PlanetTexturePath(const char* planetname, char* path) const
 
 // ======================================================================
 
-DWORD GraphicsClient::GetPopupList (const HWND **hPopupWnd) const
-{
-	DialogManager *dlgmgr = g_pOrbiter->DlgMgr();
-	if (dlgmgr) return dlgmgr->GetDlgList (hPopupWnd);
-	else return 0;
-}
-
-// ======================================================================
-
 SURFHANDLE GraphicsClient::GetVCHUDSurface (const VCHUDSPEC **hudspec) const
 {
 	VirtualCockpit *vc;
@@ -277,18 +244,15 @@ const void *GraphicsClient::GetConfigParam (DWORD paramtype) const
 
 HWND GraphicsClient::clbkCreateRenderWindow ()
 {
-	HWND hWnd;
-
-	if (VideoData.fullscreen) {
-		hWnd = CreateWindow (strWndClass, "", // dummy window
-			WS_POPUP | WS_EX_TOPMOST| WS_VISIBLE,
-			CW_USEDEFAULT, CW_USEDEFAULT, 10, 10, 0, 0, hModule, (LPVOID)this);
-	} else {
-		hWnd = CreateWindow (strWndClass, "",
-			WS_OVERLAPPED | WS_CAPTION | WS_SYSMENU | WS_VISIBLE,
-			CW_USEDEFAULT, CW_USEDEFAULT, VideoData.winw, VideoData.winh, 0, 0, hModule, (LPVOID)this);
-	}
-	return hWnd;
+	oplat::WindowDesc desc;
+	desc.title = g_strAppTitle;
+	desc.width = VideoData.winw;
+	desc.height = VideoData.winh;
+	desc.fullscreen = VideoData.fullscreen;
+	desc.resizable = false;
+	desc.proc = RenderWindowProc;
+	desc.userData = this;
+	return oplat::OpenWindow (desc);
 }
 
 // ======================================================================
@@ -341,20 +305,17 @@ void GraphicsClient::ShowDefaultSplash ()
 	//const DWORD bmw = rw, bmh = (rw*10)/16; // source image is 1920x1200, i.e. 16/20 aspect ratio
 	const DWORD bmw = min(rw, (rh*16)/10);
 	const DWORD bmh = (bmw*10)/16;
-	HMODULE hMod = GetModuleHandle(NULL);
-	HRSRC hRsrc = FindResource(hMod,MAKEINTRESOURCE(IDR_IMAGE1), "IMAGE");
-	HGLOBAL hGlob = LoadResource(hMod, hRsrc);
-	BYTE *pBuf = (BYTE*)LockResource(hGlob);
-	DWORD nBuf = SizeofResource(hMod,hRsrc);
-	HBITMAP hbm = ReadImageFromMemory (pBuf, nBuf, bmw, bmh);
-
 	// copy splash screen to viewport
-	SURFHANDLE surf = GraphicsClient::clbkCreateSurface (hbm);
+	SURFHANDLE surf = clbkLoadSurface ("Images/Splash.jpg", OAPISURFACE_RENDERTARGET, true);
 	DWORD tgtx = 0, tgty = 0;
 	if (bmw < rw) tgtx = (rw-bmw)/2;
 	if (bmh < rh) tgty = (rh-bmh)/2;
-	if (surf) clbkBlt (NULL, tgtx, tgty, surf, 0, 0, bmw, bmh);
-	clbkReleaseSurface (surf);
+	if (surf) {
+		DWORD sw, sh;
+		clbkGetSurfaceSize (surf, &sw, &sh);
+		clbkScaleBlt (NULL, tgtx, tgty, bmw, bmh, surf, 0, 0, sw, sh);
+		clbkReleaseSurface (surf);
+	}
 
 	oapi::Sketchpad *skp = clbkGetSketchpad (NULL);
 	skp->SetBackgroundMode (oapi::Sketchpad::BK_TRANSPARENT);
@@ -375,102 +336,28 @@ void GraphicsClient::ShowDefaultSplash ()
 
 // ======================================================================
 
-#define DIB_WIDTHBYTES(bits) ((((bits) + 31)>>5)<<2)
-
-// Image decoding engine: extract an image from a decoder and rescale it to the desired size
-// Return as bitmap
-HBITMAP ReadImageFromDecoder (IWICImagingFactory *m_pIWICFactory, IWICBitmapDecoder *piDecoder, UINT w, UINT h)
+bool GraphicsClient::ReadImageFromMemory (BYTE *pBuf, DWORD nBuf, std::vector<BYTE> &bgra, UINT &w, UINT &h)
 {
-	IWICBitmapFrameDecode *piFrame = NULL;
-	IWICFormatConverter *piConvertedFrame = NULL;
-	IWICBitmapScaler *piScaler = NULL;
-
-	UINT nWidth, nHeight, nFrame, nCount = 0;
-	piDecoder->GetFrameCount(&nCount);
-	nFrame = nCount-1;
-
-	piDecoder->GetFrame(nFrame, &piFrame);
-	piFrame->GetSize(&nWidth, &nHeight);
-
-	m_pIWICFactory->CreateFormatConverter(&piConvertedFrame);
-	piConvertedFrame->Initialize(
-		piFrame,                        // Source frame to convert
-        GUID_WICPixelFormat32bppBGR,     // The desired pixel format
-        WICBitmapDitherTypeNone,         // The desired dither pattern
-        NULL,                            // The desired palette
-        0.f,                             // The desired alpha threshold
-        WICBitmapPaletteTypeCustom       // Palette translation type
-    );
-
-	if (!w) w = nWidth;
-	if (!h) h = nHeight;
-	UINT nStride = DIB_WIDTHBYTES(w * 32);
-	UINT nImage = nStride * h;
-	m_pIWICFactory->CreateBitmapScaler(&piScaler);
-	piScaler->Initialize(piConvertedFrame, w, h, WICBitmapInterpolationModeFant);
-
-	HDC hdcScreen = GetDC(NULL);
-	BITMAPINFO bminfo;
-	ZeroMemory(&bminfo, sizeof(bminfo));
-	bminfo.bmiHeader.biSize   = sizeof(BITMAPINFOHEADER);
-	bminfo.bmiHeader.biWidth  = w;
-	bminfo.bmiHeader.biHeight = -(LONG)h;
-	bminfo.bmiHeader.biPlanes = 1;
-	bminfo.bmiHeader.biBitCount = 32;
-	bminfo.bmiHeader.biCompression = BI_RGB;
-	void *pvImageBits = NULL;
-	HBITMAP hDIBBitmap = CreateDIBSection (hdcScreen, &bminfo, DIB_RGB_COLORS, &pvImageBits, NULL, 0);
-	ReleaseDC (NULL, hdcScreen);
-
-	piScaler->CopyPixels(NULL, nStride, nImage, reinterpret_cast<BYTE*>(pvImageBits));
-
-	piFrame->Release();
-	piConvertedFrame->Release();
-	piScaler->Release();
-
-	return hDIBBitmap;
+	oplat::Image img;
+	if (!oplat::LoadImageMemory (pBuf, nBuf, img, (int)w, (int)h))
+		return false;
+	w = img.width;
+	h = img.height;
+	bgra.swap (img.bgra);
+	return true;
 }
 
 // ======================================================================
 
-HBITMAP GraphicsClient::ReadImageFromMemory (BYTE *pBuf, DWORD nBuf, UINT w, UINT h)
+bool GraphicsClient::ReadImageFromFile (const char *fname, std::vector<BYTE> &bgra, UINT &w, UINT &h)
 {
-	IWICBitmapDecoder *piDecoder = NULL;
-	
-	IWICStream *piStream;
-	m_pIWICFactory->CreateStream(&piStream);
-	piStream->InitializeFromMemory(pBuf,nBuf);
-	m_pIWICFactory->CreateDecoderFromStream (piStream, NULL, WICDecodeMetadataCacheOnDemand, &piDecoder);
-
-	piStream->Release();
-	if (piDecoder) {
-		HBITMAP hDIBBitmap = ReadImageFromDecoder (m_pIWICFactory, piDecoder, w, h);
-		piDecoder->Release();
-		return hDIBBitmap;
-	} else {
-		LOGOUT_WARN("Couldn't create decoder for memory image data");
-		return 0;
-	}
-}
-
-// ======================================================================
-
-HBITMAP GraphicsClient::ReadImageFromFile (const char *fname, UINT w, UINT h)
-{
-	wchar_t wcbuf[256];
-	mbstowcs (wcbuf, fname, 256);
-
-	IWICBitmapDecoder *piDecoder = NULL;
-	m_pIWICFactory->CreateDecoderFromFilename (wcbuf, NULL, GENERIC_READ, WICDecodeMetadataCacheOnDemand, &piDecoder);
-
-	if (piDecoder) {
-		HBITMAP hDIBBitmap = ReadImageFromDecoder (m_pIWICFactory, piDecoder, w, h);
-		piDecoder->Release();
-		return hDIBBitmap;
-	} else {
-		LOGOUT_WARN("Couldn't create decoder for image file: %s (does it exist?)", fname);
-		return 0;
-	}
+	oplat::Image img;
+	if (!oplat::LoadImageFile (fname, img, (int)w, (int)h))
+		return false;
+	w = img.width;
+	h = img.height;
+	bgra.swap (img.bgra);
+	return true;
 }
 
 // ======================================================================
@@ -479,78 +366,16 @@ bool GraphicsClient::WriteImageDataToFile (const ImageData &data,
 	const char *fname, ImageFileFormat fmt, float quality)
 {
 	const char *extension[4] = {".bmp", ".png", ".jpg", ".tif"};
-
-	const GUID FormatGUID[4] = {
-		GUID_ContainerFormatBmp,
-		GUID_ContainerFormatPng,
-		GUID_ContainerFormatJpeg,
-		GUID_ContainerFormatTiff,
-	};
-
-	HRESULT hr = S_OK;
-	// Note: hr should be checked after every function returning it.
-	// The rest of the code should only be executed if SUCCEEDED(hr)
-
-	if (!m_pIWICFactory)
+	if (fmt < IMAGE_BMP || fmt > IMAGE_TIF)
 		return false;
-
-	if (data.bpp != 24)
-		return false;  // can only deal with 24bit images for now
-
-	if (data.stride != ((data.width * data.bpp + 31) & ~31) >> 3)
+	if (data.bpp != 24 && data.bpp != 32)
 		return false;
-
 	if (data.bufsize < data.stride * data.height)
 		return false;
-	UINT bufsize = data.stride * data.height;
 
-	wchar_t wcbuf[256];
-	char cbuf[256];
-	strcpy (cbuf, fname);
-	strcat (cbuf, extension[fmt]);
-	mbstowcs (wcbuf, cbuf, 256);
-
-	IWICStream *piStream = NULL;
-	IWICBitmapEncoder *piEncoder = NULL;
-	IWICBitmapFrameEncode *piBitmapFrame = NULL;
-	IPropertyBag2 *pPropertybag = NULL;
-
-	hr = m_pIWICFactory->CreateStream (&piStream);
-	hr = piStream->InitializeFromFilename(wcbuf, GENERIC_WRITE);
-	if ((hr & 0xFF) == ERROR_PATH_NOT_FOUND && MakePath(fname)) {
-		hr = piStream->InitializeFromFilename(wcbuf, GENERIC_WRITE);
-	}
-
-	hr = m_pIWICFactory->CreateEncoder (FormatGUID[fmt], NULL, &piEncoder);
-	hr = piEncoder->Initialize (piStream, WICBitmapEncoderNoCache);
-	hr = piEncoder->CreateNewFrame (&piBitmapFrame, &pPropertybag);
-
-	// customize output
-	PROPBAG2 option = { 0 };
-	option.pstrName = (wchar_t*)L"ImageQuality";
-	VARIANT varValue;
-	VariantInit (&varValue);
-	varValue.vt = VT_R4;
-	varValue.fltVal = quality;
-	hr = pPropertybag->Write(1,&option,&varValue);
-	hr = piBitmapFrame->Initialize (pPropertybag);
-
-	hr = piBitmapFrame->SetSize (data.width, data.height);
-
-	WICPixelFormatGUID formatGUID = GUID_WICPixelFormat24bppBGR;
-	hr = piBitmapFrame->SetPixelFormat(&formatGUID);
-
-	hr = IsEqualGUID(formatGUID, GUID_WICPixelFormat24bppBGR) ? S_OK : E_FAIL;
-
-	hr = piBitmapFrame->WritePixels(data.height, data.stride, bufsize, data.data);
-
-	hr = piBitmapFrame->Commit ();
-	hr = piEncoder->Commit ();
-
-	piBitmapFrame->Release();
-	piEncoder->Release();
-	piStream->Release();
-	return true;
+	std::string path = std::string(fname) + extension[fmt];
+	return oplat::SaveImageFile (path, data.data, data.width, data.height, data.stride, data.bpp,
+		(oplat::ImageFileType)fmt, quality);
 }
 
 // ======================================================================
@@ -566,22 +391,6 @@ void GraphicsClient::clbkRender2DPanel (SURFHANDLE *hSurf, MESHHANDLE hMesh, MAT
 {
 	// if not implemented by the client, just use default (opaque) rendering
 	clbkRender2DPanel (hSurf, hMesh, T, additive);
-}
-
-// ======================================================================
-
-SURFHANDLE GraphicsClient::clbkCreateSurface (HBITMAP hBmp)
-{
-	BITMAP bm;
-	GetObject (hBmp, sizeof(bm), &bm);
-	SURFHANDLE surf = clbkCreateSurface (bm.bmWidth, bm.bmHeight);
-	if (surf) {
-		if (!clbkCopyBitmap (surf, hBmp, 0, 0, 0, 0)) {
-			clbkReleaseSurface (surf);
-			surf = NULL;
-		}
-	}
-	return surf;
 }
 
 // ======================================================================
@@ -608,69 +417,20 @@ int GraphicsClient::clbkEndBltGroup ()
 
 // ======================================================================
 
-bool GraphicsClient::clbkCopyBitmap (SURFHANDLE pdds, HBITMAP hbm,
-    int x, int y, int dx, int dy)
-{
-    HDC                     hdcImage;
-    HDC                     hdc;
-    BITMAP                  bm;
-    //DDSURFACEDESC2          ddsd;
-    //HRESULT                 hr;
-	DWORD                   surfW, surfH;
-
-    if (hbm == NULL || pdds == NULL)
-        return false;
-    //
-    // Select bitmap into a memoryDC so we can use it.
-    //
-    hdcImage = CreateCompatibleDC(NULL);
-    if (!hdcImage)
-        OutputDebugString("createcompatible dc failed\n");
-    SelectObject(hdcImage, hbm);
-    //
-    // Get size of the bitmap
-    //
-    GetObject(hbm, sizeof(bm), &bm);
-    dx = dx == 0 ? bm.bmWidth : dx;     // Use the passed size, unless zero
-    dy = dy == 0 ? bm.bmHeight : dy;
-    //
-    // Get size of surface.
-    //
-	clbkGetSurfaceSize (pdds, &surfW, &surfH);
-    //ddsd.dwSize = sizeof(ddsd);
-    //ddsd.dwFlags = DDSD_HEIGHT | DDSD_WIDTH;
-    //pdds->GetSurfaceDesc(&ddsd);
-
-	if (hdc = clbkGetSurfaceDC (pdds)) {
-        StretchBlt(hdc, 0, 0, surfW, surfH, hdcImage, x, y,
-                   dx, dy, SRCCOPY);
-		clbkReleaseSurfaceDC (pdds, hdc);
-    }
-	DeleteDC(hdcImage);
-    return true;
-}
-
-// ======================================================================
-
 HWND GraphicsClient::InitRenderWnd (HWND hWnd)
 {
-	if (!hWnd) { // create a dummy window
-		hWnd = CreateWindow (strWndClass, "",
-			WS_POPUP | WS_VISIBLE,
-			CW_USEDEFAULT, CW_USEDEFAULT, 10, 10, 0, 0, hModule, 0);
+	if (!hWnd) { // create a hidden window to receive input
+		oplat::WindowDesc desc;
+		desc.title = "Orbiter";
+		desc.width = 10;
+		desc.height = 10;
+		desc.visible = false;
+		desc.metal = false;
+		hWnd = oplat::OpenWindow (desc);
 	}
-	SetWindowLongPtr (hWnd, GWLP_USERDATA, (LONG_PTR)this);
 	// store class instance with window for access in the message handler
-
-	char title[256], cbuf[128];
-	extern const TCHAR *g_strAppTitle;
-	strcpy (title, g_strAppTitle);
-	GetWindowText (hWnd, cbuf, 128);
-	if (cbuf[0]) {
-		strcat (title, " ");
-		strcat (title, cbuf);
-	}
-	SetWindowText (hWnd, title);
+	oplat::SetWindowUserData (hWnd, this);
+	oplat::SetWindowProc (hWnd, RenderWindowProc);
 	hRenderWnd = hWnd;
 	return hRenderWnd;
 }
@@ -689,14 +449,6 @@ LRESULT GraphicsClient::RenderWndProc (HWND hWnd, UINT uMsg, WPARAM wParam, LPAR
 }
 
 // ======================================================================
-
-INT_PTR GraphicsClient::LaunchpadVideoWndProc (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
-{
-	return FALSE;
-}
-
-// ==================================================================
-// Functions for the celestial sphere
 
 const std::vector<GraphicsClient::LABELLIST>& GraphicsClient::GetCelestialMarkers() const
 {
@@ -887,27 +639,6 @@ void ScreenAnnotation::Render ()
 
 // ======================================================================
 // Nonmember functions
-
-//-----------------------------------------------------------------------
-// Name: WndProc()
-// Desc: Static msg handler which passes messages from the render window
-//       to the application class.
-//-----------------------------------------------------------------------
-DLLEXPORT LRESULT CALLBACK WndProc (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
-{
-	GraphicsClient *gc = (GraphicsClient*)GetWindowLongPtr (hWnd, GWLP_USERDATA);
-	if (gc) return gc->RenderWndProc (hWnd, uMsg, wParam, lParam);
-	else return DefWindowProc (hWnd, uMsg, wParam, lParam);
-}
-
-// ======================================================================
-
-DLLEXPORT INT_PTR CALLBACK LaunchpadVideoWndProc (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
-{
-	GraphicsClient *gc = (GraphicsClient*)GetWindowLongPtr (hWnd, GWLP_USERDATA);
-	if (gc) return gc->LaunchpadVideoWndProc (hWnd, uMsg, wParam, lParam);
-	else return FALSE;
-}
 
 // ======================================================================
 // API interface: register/unregister the graphics client

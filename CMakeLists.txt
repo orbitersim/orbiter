@@ -14,6 +14,7 @@ if(NOT APPLE)
 endif()
 
 set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 set(CMAKE_OBJCXX_STANDARD 17)
@@ -132,7 +133,6 @@ set(OrbiterTgt Orbiter)
 # the same way Windows modules bind to Orbiter.exe's export table.
 set(ORBITER_LIB "-Wl,-undefined,dynamic_lookup")
 set(ORBITER_SDK_LIB "-Wl,-force_load,$<TARGET_FILE:Orbitersdk>" OrbiterPlatform)
-set(ORBITER_DLGCTRL_LIB $<TARGET_FILE:DlgCtrl>)
 set(LUAINTERPRETER_LIB $<TARGET_LINKER_FILE:LuaInterpreter>)
 
 set(SPICE_BUILD TRUE)
@@ -188,6 +188,7 @@ option(ORBITER_TRACY_PROFILER
 )
 
 include(cmake/tracy.cmake)
+include(cmake/OrbiterHelp.cmake)
 
 if (ORBITER_MAKE_DOC)
 	find_package(Doxygen REQUIRED)
@@ -233,6 +234,7 @@ add_subdirectory(Utils)
 add_subdirectory(Orbitersdk)
 add_subdirectory(OVP)
 add_subdirectory(Sound)
+add_subdirectory(Html)
 
 if(ORBITER_MAKE_DOC)
 	add_subdirectory(Doc)

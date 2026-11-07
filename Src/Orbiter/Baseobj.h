@@ -90,11 +90,9 @@ public:
 	// Note that this function is for updates according to changes in sun position.
 	// Fast changing shadows due to dynamic objects should be updated in 'Update'
 
-	virtual void Render (LPDIRECT3DDEVICE7 dev, bool day=true) {}
 	// Object renders itself or part of itself. Only objects which set
 	// OBJSPEC_RENDERBEFORESHADOW and/or OBJESPEC_RENDERAFTERSHADOW need to implement this
 
-	virtual void RenderShadow (LPDIRECT3DDEVICE7 dev) {}
 	// Object renders its own shadow or part of it.
 	// Only objects which set OBJSPEC_RENDERSHADOW need to implement this
 
@@ -153,8 +151,6 @@ public:
 	Mesh *ExportShadowMesh (double &elev);
 	Mesh *GetCollisionMesh ();
 	void UpdateShadow (Vector &fromsun, double az);
-	void Render (LPDIRECT3DDEVICE7 dev, bool day=true);
-	void RenderShadow (LPDIRECT3DDEVICE7 dev);
 	
 private:
 	bool LoadMesh (char *fname); // load mesh into local buffer
@@ -390,7 +386,6 @@ public:
 	BeaconArray (const Base *_base);
 	DWORD GetSpecs() const { return OBJSPEC_RENDERAFTERSHADOW | OBJSPEC_UPDATEVERTEX | (bCollision ? OBJSPEC_COLLISION : 0); }
 	int Read (std::istream &is);
-	void Render (LPDIRECT3DDEVICE7 dev, bool day=true);
 	void Update ();
 	void Activate ();
 	void Deactivate();
@@ -455,7 +450,6 @@ public:
 	void Setup ();
 	DWORD GetSpecs() const { return OBJSPEC_RENDERAFTERSHADOW | OBJSPEC_UPDATEVERTEX | (bCollision ? OBJSPEC_COLLISION : 0); }
 	int Read (std::istream &is);
-	void Render (LPDIRECT3DDEVICE7 dev, bool day=true);
 	void Update ();
 	void Activate ();
 	void Deactivate ();
@@ -589,8 +583,6 @@ public:
 	void UpdateShadow (Vector &fromsun, double az);
 	void Activate ();
 	void Deactivate ();
-	void Render (LPDIRECT3DDEVICE7 dev, bool day);
-	void RenderShadow (LPDIRECT3DDEVICE7 dev);
 
 private:
 	D3DVALUE height;            // height of supports over ground
@@ -618,8 +610,6 @@ public:
 	~SolarPlant ();
 	int Read (std::istream &is);
 	DWORD GetSpecs() const { return OBJSPEC_RENDERAFTERSHADOW | OBJSPEC_RENDERSHADOW | OBJSPEC_UPDATEVERTEX | (bCollision ? OBJSPEC_COLLISION : 0); }
-	void Render (LPDIRECT3DDEVICE7 dev, bool day=true);
-	void RenderShadow (LPDIRECT3DDEVICE7 dev);
 	void Update ();
 	void UpdateShadow (Vector &fromsun, double az);
 	void Activate ();

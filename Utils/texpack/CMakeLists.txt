@@ -6,7 +6,7 @@ add_executable(texpack
 )
 
 target_link_libraries(texpack
-	Shlwapi.lib
+	OrbiterPlatform
 	zlib
 )
 

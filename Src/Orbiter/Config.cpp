@@ -857,9 +857,8 @@ void Config::SetDefaults ()
 	bEchoAll = bEchoAll_default;
 	memset (&rLaunchpad, 0, sizeof(RECT));
 
-	RECT r;
-	GetWindowRect (GetDesktopWindow(), &r);
-	CfgDevPrm_default.WinW = r.right-r.left; CfgDevPrm_default.WinH = r.bottom-r.top;
+	CfgDevPrm_default.WinW = GetSystemMetrics (SM_CXSCREEN) * 3 / 4;
+	CfgDevPrm_default.WinH = GetSystemMetrics (SM_CYSCREEN) * 3 / 4;
 	// use the screen size as the default render window size
 
 	AmbientColour = 0x0c0c0c0c;

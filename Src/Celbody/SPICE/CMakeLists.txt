@@ -7,22 +7,9 @@ set(CELBODY "spice")
 
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/Modules/Celbody)
 
-if(NOT BUILD64 AND CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
-  set(SPICE_PLATFORM "cspice/win_x86/")
-  set(SPICE_LIB_EXTENSION ".lib")
-endif()
-if(NOT BUILD64 AND CMAKE_CXX_COMPILER_ID STREQUAL "GNUCXX")
-	set(SPICE_PLATFORM "cspice/linux_x86/")
-  set(SPICE_LIB_EXTENSION ".a")
-endif()
-if(BUILD64 AND CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
-	set(SPICE_PLATFORM "cspice/win_x64/")
-  set(SPICE_LIB_EXTENSION ".lib")
-endif()
-if(BUILD64 AND CMAKE_CXX_COMPILER_ID STREQUAL "GNUCXX")
-	set(SPICE_PLATFORM "cspice/linux_x64/")
-  set(SPICE_LIB_EXTENSION ".a")
-endif()
+# CSPICE N0067 for Apple Silicon, from the NAIF toolkit (MacM1_OSX_clang_64bit)
+set(SPICE_PLATFORM "cspice/macos_arm64")
+set(SPICE_LIB_EXTENSION ".a")
 
 add_library(${CELBODY} SHARED
   spice.cpp  

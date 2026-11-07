@@ -75,3 +75,50 @@ __attribute__((visibility("default"))) std::string SaveFileDialog(const std::str
 enum CursorShape { CURSOR_ARROW = 0, CURSOR_WAIT, CURSOR_CROSS, CURSOR_HAND, CURSOR_IBEAM, CURSOR_RESIZE_EW, CURSOR_RESIZE_NS };
 
 }
+
+namespace oplat {
+
+struct Image {
+	int width = 0;
+	int height = 0;
+	std::vector<uint8_t> bgra;
+};
+
+enum ImageFileType { IMGFILE_BMP = 0, IMGFILE_PNG, IMGFILE_JPG, IMGFILE_TIF };
+
+__attribute__((visibility("default"))) bool LoadImageFile(const std::string &path, Image &img, int width = 0, int height = 0);
+__attribute__((visibility("default"))) bool LoadImageMemory(const void *data, size_t size, Image &img, int width = 0, int height = 0);
+__attribute__((visibility("default"))) bool SaveImageFile(const std::string &path, const uint8_t *pixels, int width, int height, int stride, int bpp, ImageFileType type, float quality);
+
+}
+
+namespace oplat {
+
+// Read the category and description an Orbiter module declares with
+// ORBITER_MODULE_INFO, without loading the module.
+__attribute__((visibility("default"))) bool ReadModuleInfo(const std::string &path, std::string &category, std::string &description);
+
+}
+
+namespace oplat {
+
+// Show a help page in the help window. 'dir' is the folder holding the pages,
+// 'page' the page (with optional #anchor) relative to it, 'toc' an optional
+// HTML Help contents file (.hhc) used for the sidebar.
+__attribute__((visibility("default"))) void ShowHelp(const std::string &dir, const std::string &page, const std::string &toc, const std::string &title);
+
+}
+
+namespace oplat {
+
+enum ConsoleMode { CONSOLE_OUTPUT_ONLY, CONSOLE_TERMINAL, CONSOLE_WINDOW };
+
+// Text console used when Orbiter runs without a graphics engine.
+__attribute__((visibility("default"))) void ConsoleOpen(const std::string &title, ConsoleMode mode);
+__attribute__((visibility("default"))) void ConsoleClose();
+__attribute__((visibility("default"))) void ConsoleWrite(const std::string &text);
+__attribute__((visibility("default"))) bool ConsolePoll(std::string &line);
+__attribute__((visibility("default"))) void ConsoleSetStatus(const std::string &status);
+__attribute__((visibility("default"))) bool StdinIsTerminal();
+
+}

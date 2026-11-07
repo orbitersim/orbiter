@@ -46,7 +46,6 @@ target_include_directories(ShuttleA
 target_link_libraries(ShuttleA
 	${ORBITER_LIB}
 	${ORBITER_SDK_LIB}
-	${ORBITER_DLGCTRL_LIB}
 	lua::lib
 )
 
@@ -90,7 +89,6 @@ add_custom_command(
 add_dependencies(ShuttleA
 	${OrbiterTgt}
 	Orbitersdk
-	DlgCtrl
 	ShuttleA_Prerequisites
 )
 
@@ -118,6 +116,4 @@ install(DIRECTORY ${THUMBNAIL_SOURCE_DIR}/
 	DESTINATION ${ORBITER_INSTALL_ROOT_DIR}/Images/Vessels/Default
 )
 
-if(ORBITER_MAKE_DOC)
-	add_subdirectory(Help)
-endif()
+add_subdirectory(Help)

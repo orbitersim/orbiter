@@ -322,7 +322,6 @@ void Vessel::SetDefaultState ()
 	rpressure           = g_pOrbiter->Cfg()->CfgPhysicsPrm.bRadiationPressure;
 	Lift = Drag = SideForce = 0.0;
 	attach_status.pname = 0;
-	hudskp              = NULL;
 	next_hullvtx        = 0;
 
 	lightfac            = 1.0;
@@ -7340,12 +7339,9 @@ void Vessel::ModuleSignalNavmode (int mode, bool active)
 
 void Vessel::DrawHUD (HUD *hud, oapi::Sketchpad *skp)
 {
-	if (modIntf.v->Version() >= 1) {
-		bool drawn = false;
-		if (modIntf.v->Version() >= 2) {
-			drawn = ((VESSEL3*)modIntf.v)->clbkDrawHUD (hud->Mode(), hud->PaintSpec(), skp);
-		}
-	} else
+	if (modIntf.v->Version() >= 2)
+		((VESSEL3*)modIntf.v)->clbkDrawHUD (hud->Mode(), hud->PaintSpec(), skp);
+	else
 		hud->DrawDefault (skp);
 }
 
@@ -11113,12 +11109,6 @@ void VESSEL2::clbkVisualCreated (VISHANDLE vis, int refcount)
 
 void VESSEL2::clbkVisualDestroyed (VISHANDLE vis, int refcount)
 {
-}
-
-void VESSEL2::clbkDrawHUD (int mode, const HUDPAINTSPEC *hps, HDC hDC)
-{
-	if (vessel->hudskp && vessel->hudskp->GetDC() == hDC)
-		g_pane->DrawDefaultHUD (vessel->hudskp);
 }
 
 void VESSEL2::clbkRCSMode (int mode)

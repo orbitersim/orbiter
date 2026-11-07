@@ -320,4 +320,15 @@ namespace oapi {
 
 }; // namespace oapi
 
+/**
+ * \brief Declares the category and description shown for a module in the
+ *   Launchpad "Modules" and "Video" tabs.
+ * \param category Category name, e.g. "Graphics engines" or "MFD modes"
+ * \param description Description shown when the module is selected
+ * \note Use once per module, at file scope in one of its source files.
+ */
+#define ORBITER_MODULE_INFO(category, description) \
+	extern "C" __attribute__((used, section("__TEXT,__orbinfo"))) \
+	const char orbiter_module_info[] = category "\0" description
+
 #endif // !__MODULEAPI_H

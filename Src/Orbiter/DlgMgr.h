@@ -7,110 +7,24 @@
 #define STRICT 1
 #include <windows.h>
 
-#include "DialogWin.h"
 #include "Orbiter.h"
 #include <list>
 #include "imgui.h"
 #include "imgui_extras.h"
 class ImGuiDialog;
 
-class oapi::GraphicsClient;
+namespace oapi { class GraphicsClient; }
 extern Orbiter *g_pOrbiter;
-
-struct DIALOGENTRY {
-	DialogWin *dlg;
-	struct DIALOGENTRY *prev, *next;
-};
 
 class DialogManager {
 public:
 	DialogManager(Orbiter *orbiter, HWND hAppWnd);
 	~DialogManager();
 
-	void Init (HWND hAppWnd);
-	void Clear ();
-
-	inline HWND OpenDialog (HINSTANCE hInst, int id, HWND hParent, DLGPROC pDlg, void *context)
-	{ return OpenDialogEx (hInst, id, hParent, pDlg, 0, context); }
-
-	HWND OpenDialogEx (HINSTANCE hInst, int id, HWND hParent, DLGPROC pDlg, DWORD flag, void *context);
-
-	bool CloseDialog (HWND hDlg);
-
-	void *GetDialogContext (HWND hDlg);
-	inline DWORD Size() const { return nEntry; }
-	HWND GetNextEntry (HWND hWnd) const;
-
-	bool AddTitleButton (DWORD msg, HBITMAP hBmp, DWORD flag);
-	DWORD GetTitleButtonState (HWND hDlg, DWORD msg);
-	bool SetTitleButtonState (HWND hDlg, DWORD msg, DWORD state);
-
-	DIALOGENTRY *AddWindow (HINSTANCE hInst, HWND hWnd, HWND hParent, DWORD flag);
-
-	HWND AddEntry (HINSTANCE hInst, int id, HWND hParent, DLGPROC pDlg, DWORD flag, void *context);
-	HWND AddEntry (DialogWin *dlg);
-
-	bool DelEntry (HWND hDlg, HINSTANCE hInst, int id);
-	// remove dialog entry. If either 'hDlg' or 'id' is 0,
-	// only the other component is checked
-
-	HWND IsEntry (HINSTANCE hInst, int id);
-	// Returns window handle of dialog with identifier 'id' if it is in the list
-	// Otherwise returns 0
-
-	inline DWORD GetDlgList (const HWND **hDlgList) const
-	{ *hDlgList = DlgList; return nList; }
-	// Returns current dialog window list
-
-	void UpdateDialogs();
-	// periodic dialog updates
-
-	void BroadcastMessage (DWORD msg, void *data);
-	// broadcast a message to all open dialog windows, using the WM_USER+10 channel
-
 private:
-	void AddList (HWND hWnd);
-	void DelList (HWND hWnd);
-	// add/remove window handle from window list
-
-	DWORD nEntry;
-	DIALOGENTRY *firstEntry, *lastEntry;
-	mutable DIALOGENTRY *searchEntry;
-
-	HWND *DlgList;
-	DWORD nList, nListBuf;
-
 	Orbiter *pOrbiter;
 	oapi::GraphicsClient *gc;
 	HWND hWnd;
-
-	static LRESULT FAR PASCAL OrbiterCtrl_Level_MsgProc (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
-	// MessageHandler for slider custom control
-
-	// ====================================================================
-	// Tread management for dialog thread
-	// ====================================================================
-
-public:
-	void OpenDialogAsync (HINSTANCE hInst, int id, HWND hParent, DLGPROC pDlg, DWORD flag, void *context);
-
-protected:
-	void StartDialogThread ();
-	// start the dialog handler thread (during render window creation)
-
-	void DestroyDialogThread ();
-	// kill the dialog handler thread (during render window destruction)
-
-	void AddEntryAsync (HINSTANCE hInst, int id, HWND hParent, DLGPROC pDlg, DWORD flag, void *context);
-
-private:
-	HANDLE hThread;          // thread handle
-	DWORD thid;              // dialog thread id
-
-	// ====================================================================
-	// End tread management
-	// ====================================================================
-
 
 	// ====================================================================
 	// ImGui management
@@ -190,7 +104,5 @@ private:
 	ImFont *monoFont;
 	ImFont *manuscriptFont;
 };
-
-INT_PTR OrbiterDefDialogProc (HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam);
 
 #endif // !__DLGMGR_H

@@ -36,8 +36,6 @@ template<typename... Args> void LogOut_Warning(const char* func, const char* fil
 void LogOut_WarningVA(const char* func, const char* file, int line, const char* msg, va_list ap);
 void LogOut_Obsolete(const char* func, const char* msg = 0);      // Write obsolete-function warning to log file
 void LogOut_LastError (const char *func, const char *file, int line);             // Write formatted string from GetLastError
-void LogOut_DDErr (HRESULT hr, const char *func, const char *file, int line);     // Write DirectDraw error to log file
-void LogOut_DIErr (HRESULT hr, const char *func, const char *file, int line);     // Write DirectInput error to log file
 
 // Message formatting components
 void LogOut_Error_Start();
@@ -59,14 +57,11 @@ void PrintModules();
 #define LOGOUT_ERR_FILENOTFOUND_MSG(file,msg,...) { \
 	LogOut_Error_Start(); \
 	LogOut("File not found: %s", file); \
-	LogOut(msg, __VA_ARGS__); \
+	LogOut(msg, ##__VA_ARGS__); \
 	LogOut_Location(__FUNCTION__,__FILE__,__LINE__); \
 	LogOut_Error_End(); \
 }
-#define LOGOUT_DDERR(hr) LogOut_DDErr(hr,__FUNCTION__,__FILE__,__LINE__)
-#define LOGOUT_DIERR(hr) LogOut_DIErr(hr,__FUNCTION__,__FILE__,__LINE__)
 #define LOGOUT_DPERR(hr) LogOut_DPErr(hr,__FUNCTION__,__FILE__,__LINE__)
-#define LOGOUT_DDERR_ONCE(hr) {static bool bout=true; if(bout) {LogOut_DDErr(hr,__FUNCTION__,__FILE__,__LINE__);bout=false;}}
 #define LOGOUT_OBSOLETE {static bool bout=true; if(bout) {LogOut_Obsolete(__FUNCTION__);bout=false;}}
 #else
 #define INITLOG(x,app)
@@ -76,8 +71,6 @@ void PrintModules();
 #define LOGOUT_LASTERR()
 #define LOGOUT_WARN(msg,...)
 #define LOGOUT_ERR_FILENOTFOUND(file)
-#define LOGOUT_DDERR(hr)
-#define LOGOUT_DIERR(hr)
 #define LOGOUT_DPERR(hr)
 #define LOGOUT_OBSOLETE
 #endif

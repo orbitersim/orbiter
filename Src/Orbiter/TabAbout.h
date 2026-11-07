@@ -2,8 +2,8 @@
 // Licensed under the MIT License
 
 //-----------------------------------------------------------------------------
-// Launchpad tab definition: class AboutTab
-// Tab for "about" page
+// Launchpad tab declaration: AboutTab
+// Version, credits and links
 //-----------------------------------------------------------------------------
 
 #ifndef __TABABOUT_H
@@ -15,15 +15,12 @@ namespace orbiter {
 
 	class AboutTab : public LaunchpadTab {
 	public:
-		AboutTab(const LaunchpadDialog* lp);
+		AboutTab(LaunchpadDialog* lp);
 
-		void Create();
-		bool OpenHelp();
-
-		BOOL OnMessage(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
+		void Draw();
 
 	private:
-		static INT_PTR CALLBACK AboutProc(HWND, UINT, WPARAM, LPARAM);
+		bool m_openLicense;
 	};
 
 }

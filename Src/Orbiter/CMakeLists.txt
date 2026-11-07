@@ -1,8 +1,6 @@
 # Copyright (c) Martin Schweiger
 # Licensed under the MIT License
 
-# SAFESEH linker flag must be turned off because the DX7 libraries don't support it'
-set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -SAFESEH:NO")
 FetchContent_MakeAvailable(imgui)
 FetchContent_MakeAvailable(implot)
 
@@ -30,11 +28,10 @@ set(common_src
 	State.cpp
 	Vecmat.cpp
 	VectorMap.cpp
-    ConsoleManager.cpp
 	TimeData.cpp
 # Launchpad
 	Launchpad.cpp
-	LpadTab.cpp
+	LaunchpadRenderer.mm
 	TabAbout.cpp
 	TabExtra.cpp
 	TabModule.cpp
@@ -42,8 +39,6 @@ set(common_src
 	TabScenario.cpp
 	TabVideo.cpp
 # Dialogs
-	CustomControls.cpp
-	DialogWin.cpp
 	DlgCamera.cpp
 	DlgCapture.cpp
 	DlgFocus.cpp
@@ -56,9 +51,7 @@ set(common_src
 	DlgOptions.cpp
 	DlgRecorder.cpp
 	DlgTacc.cpp
-	htmlctrl.c
 	Select.cpp
-	OptionsPages.cpp
 # Body classes
 	Body.cpp
 	BodyIntegrator.cpp
@@ -108,18 +101,15 @@ set(common_src
 	ModuleAPI.cpp
 	OrbiterAPI.cpp
 # Graphics utils
-	D3d7util.cpp
 	D3dmath.cpp
-	Di7frame.cpp
 # Utils
 	Log.cpp
 	Memstat.cpp
 	Util.cpp
 	ZTreeMgr.cpp
-# Resources
-	Orbiter.rc
-	Orbiter.ico
-	${imgui_SOURCE_DIR}/backends/imgui_impl_win32.cpp
+# ImGui platform and renderer backends
+	imgui_impl_orbiter.cpp
+	${imgui_SOURCE_DIR}/backends/imgui_impl_metal.mm
 )
 
 set(Orbiter_includes
@@ -127,28 +117,18 @@ set(Orbiter_includes
 	${CMAKE_SOURCE_DIR}/Orbitersdk/include
 	${CMAKE_SOURCE_DIR}/OVP
 	${CMAKE_CURRENT_BINARY_DIR}
-	${HTMLHELP_INCLUDE_DIR}
 )
 
 set(Orbiter_common_libs
-	Winmm.dll
-	comctl32.lib
-	UxTheme.lib
-	version.lib
-	${HTML_HELP_LIBRARY}
 	zlib
-	${HTMLHELP_LIB}
-	$<TARGET_FILE:Orbitersdk>
-	$<TARGET_FILE:DlgCtrl>
+	Orbitersdk
+	OrbiterPlatform
 )
 set(Orbiter_libs
-	dxguid.lib
-	dinput8.lib
 )
 
 set(Orbiter_depends
 	Orbitersdk
-	DlgCtrl
 )
 
 # Orbiter executable (graphics server version)
@@ -156,17 +136,17 @@ add_executable(Orbiter ${common_src})
 
 set_target_properties(Orbiter
 	PROPERTIES
-	LINK_FLAGS "/SUBSYSTEM:CONSOLE /ENTRY:WinMainCRTStartup"
 	RUNTIME_OUTPUT_DIRECTORY ${ORBITER_BINARY_ROOT_DIR}
 	OUTPUT_NAME Orbiter
 	VS_DEBUGGER_WORKING_DIRECTORY ${ORBITER_BINARY_ROOT_DIR}
-	COMPILE_DEFINITIONS "NOGRAPHICS;DIRECTINPUT_VERSION=0x0800"
 	FOLDER Core
 )
 
 target_include_directories(Orbiter PUBLIC ${Orbiter_includes} ${TRACY_CLIENT_INCLUDE} ${imgui_SOURCE_DIR}/ ${imgui_SOURCE_DIR}/backends ${implot_SOURCE_DIR}/)
 
 target_link_libraries(Orbiter ${Orbiter_common_libs} ${Orbiter_libs} ${TRACY_CLIENT})
+target_compile_options(Orbiter PRIVATE "$<$<COMPILE_LANGUAGE:OBJCXX>:-fobjc-arc>")
+set_property(SOURCE ${imgui_SOURCE_DIR}/backends/imgui_impl_metal.mm PROPERTY COMPILE_OPTIONS "-fobjc-arc")
 
 add_dependencies(Orbiter ${Orbiter_depends})
 
@@ -179,11 +159,6 @@ set_target_properties(Orbiter PROPERTIES ENABLE_EXPORTS 1)
 # ...we have to use the NG version to export the API links
 install(FILES $<TARGET_LINKER_FILE:Orbiter>	DESTINATION ${ORBITER_INSTALL_SDK_DIR}/lib)
 
-# Copy library to its Orbitersdk/lib location so that external project integrated into the build can find it
-add_custom_command(TARGET ${OrbiterTgt}	POST_BUILD
-	COMMAND ${CMAKE_COMMAND} -E make_directory ${ORBITER_BINARY_SDK_DIR}/lib
-	COMMAND ${CMAKE_COMMAND} -E copy ${ORBITER_LIB} ${ORBITER_BINARY_SDK_DIR}/lib/ 
-)
 
 string(TIMESTAMP DATE "%d %b %Y")
 string(TIMESTAMP VERSION "%y%m%d")

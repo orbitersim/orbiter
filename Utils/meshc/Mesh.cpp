@@ -544,60 +544,6 @@ void Mesh::ReleaseTextures ()
 	}
 }
 
-DWORD Mesh::Render (LPDIRECT3DDEVICE7 dev)
-{
-	DWORD i, mi, pmi, ti, pti, zb = 0, gcount = 0, wrap, owrap = 0;
-
-	if (!GrpSetup) Setup();
-	dev->ComputeSphereVisibility (GrpCnt, GrpRad, nGrp, 0, GrpVis);
-	LPDIRECTDRAWSURFACE7 ptex = 0;
-
-	static D3DMATERIAL7 defmat = {{1,1,1,1},{1,1,1,1},{0,0,0,1},{0,0,0,1},0};
-
-	for (i = 0; i < nGrp; i++) {
-
-		if (GrpVis[i] & D3DSTATUS_DEFAULT)
-			continue; // group outside frustrum
-
-		// set material
-		mi = Grp[i].MtrlIdx;
-		if (mi != SPEC_INHERIT && (!i || mi != pmi)) {
-			dev->SetMaterial (mi != SPEC_DEFAULT ? Mtrl+mi : &defmat);
-			pmi = mi;
-		}
-
-		// set texture
-		ti = Grp[i].TexIdx;
-		if (ti != SPEC_INHERIT && (!i || (ti != pti))) {
-			//dev->SetTexture (0, ti != SPEC_DEFAULT ? Tex[ti] : 0);
-			pti = ti;
-		}
-
-		if (zb = Grp[i].zBias)
-			dev->SetRenderState (D3DRENDERSTATE_ZBIAS, zb);
-
-		wrap = 0;
-		if (Grp[i].Flags & 0x03) { // wrap flag
-			if (Grp[i].Flags & 0x01) wrap |= D3DWRAP_U;
-			if (Grp[i].Flags & 0x02) wrap |= D3DWRAP_V;
-		}
-		if (wrap != owrap)
-			dev->SetRenderState (D3DRENDERSTATE_WRAP0, owrap = wrap);
-
-		dev->DrawIndexedPrimitive (
-			D3DPT_TRIANGLELIST, D3DFVF_VERTEX,
-			Grp[i].Vtx, Grp[i].nVtx, Grp[i].Idx, Grp[i].nIdx, 0);
-		gcount++;
-	}
-
-	//if (nGrp > 1 || Grp[0].MtrlIdx != SPEC_INHERIT)
-	//	g_scene->SetDefaultMaterial();
-	if (zb) dev->SetRenderState (D3DRENDERSTATE_ZBIAS, 0);
-	if (owrap) dev->SetRenderState (D3DRENDERSTATE_WRAP0, 0);
-
-	return gcount;
-}
-
 istream &operator>> (istream &is, Mesh &mesh)
 {
 	char cbuf[256], comment[256];

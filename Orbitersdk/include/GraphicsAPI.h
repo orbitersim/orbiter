@@ -14,10 +14,8 @@
 #include "Orbitersdk.h"
 #include <stdio.h>
 #include <windows.h>
+#include <vector>
 
-#ifndef _WIN32
-typedef void *HDC;
-#endif
 
 /// \defgroup cfgprm Configuration parameter identifiers
 /// Used by GraphicsClient::GetConfigParam()
@@ -365,7 +363,6 @@ struct FogParam {
 };
 
 class Orbiter;
-struct IWICImagingFactory;
 
 namespace oapi {
 
@@ -808,20 +805,16 @@ public:
 	 */
 	virtual LRESULT RenderWndProc (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
 
+
 	/**
-	 * \brief Message handler for 'video' tab in Orbiter Launchpad dialog
+	 * \brief Draws the client's settings in the Launchpad 'Video' tab
 	 *
-	 * Overload this method to display and retrieve video parameters using
-	 * the Launchpad video tab. This method acts like a standard Windows dialog
-	 * message handler.
-	 * \param hWnd window handle for video tab
-	 * \param uMsg Windows message
-	 * \param wParam WPARAM message value
-	 * \param lParam LPARAM message value
-	 * \return The return value depends on the message type and the action taken.
-	 * \default Do nothing, return FALSE.
+	 * Called once per frame while the Launchpad 'Video' tab is shown, inside
+	 * an ImGui child region. The client uses ImGui widgets to present its
+	 * video options and stores them when they change.
+	 * \default Do nothing.
 	 */
-	virtual INT_PTR LaunchpadVideoWndProc (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
+	virtual void clbkLaunchpadVideoTab () {}
 
 	/**
 	 * \brief Structure containing default video options, as stored in
@@ -852,19 +845,6 @@ public:
 	 */
 	inline VIDEODATA *GetVideoData() { return &VideoData; }
 
-	/**
-	 * \brief returns a list of popup windows owned by the render window.
-	 * \param [out] hPopupWnd on exit, points to a list of window handles
-	 * \return Number of entries in the list.
-	 * \note The list returned by this method contains the handles of 
-	 *   popup windows that are to be rendered on top of the render viewport
-	 *   (e.g. dialog boxes).
-	 * \note A client can use this list if it requires a special method of
-	 *   displaying the popup windows. Typically, this is the case in fullscreen
-	 *   render modes, where the dialog contents may need to be blitted manually
-	 *   into the render surface.
-	 */
-	DWORD GetPopupList (const HWND **hPopupWnd) const;
 
 	/**
 	 * \brief Fullscreen mode flag
@@ -1110,16 +1090,6 @@ public:
 	 */
 	virtual SURFHANDLE clbkCreateTexture (DWORD w, DWORD h) { return NULL; }
 
-	/**
-	 * \brief Create an offscreen surface from a bitmap
-	 * \param hBmp bitmap handle
-	 * \return surface handle, or NULL to indicate failure
-	 * \default Creates a surface of the same size as the bitmap, and
-	 *   uses clbkCopyBitmap to copy the bitmap over.
-	 * \note The reference counter for the new surface is set to 1.
-	 * \sa clbkIncrSurfaceRef, clbkReleaseSurface
-	 */
-	virtual SURFHANDLE clbkCreateSurface (HBITMAP hBmp);
 
 	/**
 	 * \brief Increment the reference counter of a surface.
@@ -1319,19 +1289,6 @@ public:
 	virtual bool clbkFillSurface (SURFHANDLE surf, DWORD tgtx, DWORD tgty, DWORD w, DWORD h, DWORD col) const
 	{ return false; }
 
-	/**
-	 * \brief Copy a bitmap object into a surface
-	 * \param pdds surface handle
-	 * \param hbm bitmap handle
-	 * \param x left edge of source bitmap area to be copied
-	 * \param y top edge of source bitmap area to be copied
-	 * \param dx width of source bitmap area to be copied
-	 * \param dy height of source bitmap area to be copied
-	 * \return \e true on success, \e false if surface or bitmap handle are invalid.
-	 * \note The source bitmap area is stretched as required to fit the area of
-	 *   the target surface.
-	 */
-	virtual bool clbkCopyBitmap (SURFHANDLE pdds, HBITMAP hbm, int x, int y, int dx, int dy);
 	// @}
 
 
@@ -1421,30 +1378,6 @@ public:
 	//@}
 
 
-	// ==================================================================
-	/// \name GDI-related methods
-	// @{
-
-	/**
-	 * \brief Return a Windows graphics device interface handle for a surface
-	 * \param surf surface handle
-	 * \return GDI handle, or NULL on failure
-	 * \default None, returns NULL.
-	 * \note Clients which can obtain a Windows GDI handle for a surface should
-	 *   overload this method.
-	 */
-	virtual HDC clbkGetSurfaceDC (SURFHANDLE surf) { return NULL; }
-
-	/**
-	 * \brief Release a Windows graphics device interface
-	 * \param surf surface handle
-	 * \param hDC GDI handle
-	 * \default None.
-	 * \note Clients which can obtain a Windows GDI handle for a surface should
-	 *   overload this method to release an existing GDI.
-	 */
-	virtual void clbkReleaseSurfaceDC (SURFHANDLE surf, HDC hDC) {}
-	// @}
 
 	/**
 	 * \brief Constructs a synthetic elevation grid for a tile by interpolating 
@@ -1719,27 +1652,27 @@ protected:
 	 * \brief Read an image from a memory buffer
 	 * \param pBuf pointer to memory buffer
 	 * \param nBuf size of memory buffer
-	 * \param w width of image after scaling (0 to keep original width)
-	 * \param h height of image after scaling (0 to keep original height)
+	 * \param bgra receives the pixels as 32-bit BGRA rows, top row first
+	 * \param w width of image after scaling (0 to keep original width). On exit, the image width.
+	 * \param h height of image after scaling (0 to keep original height). On exit, the image height.
+	 * \return true on success
 	 * \note This function automatically recognises different image formats
 	 *   in the memory buffer (bmp, jpg, png, tif)
-	 * \note This function can be used to read in an image from a resource
-	 *   stored in the executable file (see Windows API functions
-	 *   LoadResource, LockResource, SizeofResource)
 	 * \sa ReadImageFromFile, WriteImageDataToFile
 	 */
-	HBITMAP ReadImageFromMemory (BYTE *pBuf, DWORD nBuf, UINT w, UINT h);
+	bool ReadImageFromMemory (BYTE *pBuf, DWORD nBuf, std::vector<BYTE> &bgra, UINT &w, UINT &h);
 
 	/**
-	 * \brief Read an image from a file into a bitmap
+	 * \brief Read an image from a file
 	 * \param fname file name
-	 * \param fmt image format
-	 * \param w width of image after scaling (0 to keep original width)
-	 * \param h height of image after scaling (0 to keep original height)
+	 * \param bgra receives the pixels as 32-bit BGRA rows, top row first
+	 * \param w width of image after scaling (0 to keep original width). On exit, the image width.
+	 * \param h height of image after scaling (0 to keep original height). On exit, the image height.
+	 * \return true on success
 	 * \note This function can read different image formats (bmp, jpg, png, tif)
 	 * \sa ReadImageFromMemory, WriteImageDataToFile
 	 */
-	HBITMAP ReadImageFromFile (const char *fname, UINT w=0, UINT h=0);
+	bool ReadImageFromFile (const char *fname, std::vector<BYTE> &bgra, UINT &w, UINT &h);
 
 	/**
 	 * \brief Returns the graphics module instance handle
@@ -1751,14 +1684,6 @@ protected:
 	 */
 	inline HINSTANCE OrbiterInstance () const { return hOrbiterInst; }
 
-	/**
-	 * \brief Returns the window handle of the 'video' tab of the Orbiter
-	 *   Launchpad dialog.
-	 *
-	 * If clbkUseLanuchpadVideoTab() is overloaded to return false, this
-	 * function will return NULL.
-	 */
-	HWND LaunchpadVideoTab() const { return hVid; }
 
 	// ==================================================================
 	// Functions for the celestial sphere
@@ -1832,7 +1757,6 @@ public:
 	DWORD GetSurfaceMarkerLegend (OBJHANDLE hObj, const LABELTYPE **lspec) const;
 	// @}
 
-	HWND hVid;              ///< Window handle of Launchpad video tab, if available
 
 protected:
 	SURFHANDLE surfBltTgt;  ///< target surface for a blitting group (-1=none, NULL=main window render surface)
@@ -1855,7 +1779,6 @@ private:
 	HINSTANCE hOrbiterInst; // orbiter core instance handle
 	VIDEODATA VideoData;    // the standard video options from config
 
-	IWICImagingFactory *m_pIWICFactory; // Windows Image Component factory instance
 };
 
 

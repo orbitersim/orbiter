@@ -23,6 +23,9 @@
 #include "Select.h"
 #include <d3d.h>
 
+class MFD;
+class MFD2;
+
 #define ELN 256           // polygon resolution for orbit trajectory
 #define ELNH (ELN/2)
 #define ELNQ (ELN/4)
@@ -43,7 +46,7 @@ public:
 };
 
 class Pane;
-class oapi::GraphicsClient;
+namespace oapi { class GraphicsClient; }
 
 static char work_kstate[256];
 inline char *KstateSet (int key) {
@@ -71,7 +74,6 @@ public:
 
 	Instrument (Pane *_pane, INT_PTR _id, const Spec &spec, Vessel *_vessel, bool defer_alloc=false);
 	virtual ~Instrument ();
-	virtual void RestoreDeviceObjects (LPDIRECT3D7 d3d, LPDIRECT3DDEVICE7 dev) {}
 	virtual int Type () const = 0;                 // mode id
 	virtual char ModeSelKey () const = 0;          // mode selection key
 	virtual HELPCONTEXT *HelpTopic () const { return 0; } // help topic (CHM file address) if available
@@ -110,7 +112,6 @@ public:
 
 	virtual bool Update (double upDTscale);
 	virtual void UpdateDraw (oapi::Sketchpad *skp) = 0;
-	virtual void UpdateDraw (HDC hDC) {}
 	virtual void UpdateBlt () {}
 	virtual void Timejump ();
 	void Refresh (); // force refresh
@@ -126,9 +127,6 @@ public:
 	void DisplayTitle (oapi::Sketchpad *skp, const char *title) const;
 	// to be called from UpdateDraw
 
-	void DisplayTitle (HDC hDC, const char *title) const;
-	// obsolete
-
 	void DisplayModes (int page);
 
 	oapi::Sketchpad *BeginDraw ();
@@ -137,8 +135,6 @@ public:
 	// BeginDraw also draws a rectangle around the border of the instrument
 	// note that BLT operations are not allowed between Begin and End
 
-	HDC BeginDrawHDC ();
-	void EndDrawHDC (HDC hDC);
 	// Compatibility versions
 
 	// ******************************************************************
@@ -251,13 +247,11 @@ protected:
 	oapi::Font *GetDefaultFont (DWORD fontidx);
 	// Returns a predefined font resource
 
-	HFONT SelectDefaultFont (HDC hDC, DWORD i);
 	// obsolete
 
 	oapi::Pen *GetDefaultPen (DWORD colidx, DWORD intens=0, DWORD style=1);
 	// Returns a predefined pen resource
 
-	HPEN SelectDefaultPen (HDC hDC, DWORD i);
 	// obsolete
 
 	DWORD GetDefaultColour (DWORD colidx, DWORD intens) const;
@@ -283,7 +277,6 @@ protected:
 
 	// Drawing resources
 	oapi::Font *mfdfont[4];     // MFD font resources
-	bool use_skp_interface;     // true if drawing through Sketchpad, false for HDC
 
 public:
 	static struct DrawResource { // MFD drawing resources
@@ -292,7 +285,6 @@ public:
 		oapi::Pen *dashpen;
 	} draw[MAXDEFCOL][2];  // first index: colour scheme, second index: intensity (0=bright, 1=dim)
 
-	static HPEN hdefpen[MAXPEN];       // deprecated pen resources
 
 	static void GlobalInit (oapi::GraphicsClient *gc);
 	static void GlobalExit (oapi::GraphicsClient *gc);

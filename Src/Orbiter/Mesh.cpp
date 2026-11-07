@@ -298,7 +298,6 @@ bool Mesh::DeleteGroup (DWORD grp)
 	} else if (grp < nGrp && grp > 0) { // delete selected group
 		if (Grp[grp].Vtx) { delete []Grp[grp].Vtx; Grp[grp].Vtx = NULL; }
 		if (Grp[grp].Idx) { delete []Grp[grp].Idx; Grp[grp].Idx = NULL; }
-		if (Grp[grp].VtxBuf) Grp[grp].VtxBuf->Release();
 
 		// redo group
 		GroupSpec * tmp_Grp = new GroupSpec[nGrp - 1]; TRACENEW
@@ -450,7 +449,6 @@ void Mesh::Clear ()
 		delete []Grp[i].Idx;
 		Grp[i].Vtx = NULL;
 		Grp[i].Idx = NULL;
-		if (Grp[i].VtxBuf) Grp[i].VtxBuf->Release();
 	}
 	if (nGrp) {
 		delete []Grp;
@@ -520,10 +518,6 @@ void Mesh::TranslateGroup (DWORD grp, D3DVALUE dx, D3DVALUE dy, D3DVALUE dz)
 		GrpCnt[grp].x += dx;
 		GrpCnt[grp].y += dy;
 		GrpCnt[grp].z += dz;
-	}
-	if (Grp[grp].VtxBuf) { // make this more efficient!
-		Grp[grp].VtxBuf->Release();
-		Grp[grp].VtxBuf = 0;
 	}
 }
 
@@ -798,19 +792,10 @@ const char* Mesh::GetName() const
 void Mesh::SetName(const char* n)
 {
 	if (n) {
-		int len = lstrlen(n) + 1;
+		int len = strlen(n) + 1;
 		name = new char[len];
 		strcpy_s(name, len, n);
 	}
-}
-
-DWORD Mesh::Render (LPDIRECT3DDEVICE7 dev)
-{
-	return 0;
-}
-
-void Mesh::RenderGroup (LPDIRECT3DDEVICE7 dev, DWORD grp, bool setstate) const
-{
 }
 
 istream &operator>> (istream &is, Mesh &mesh)

@@ -28,6 +28,21 @@
 #include "Vesselbase.h"
 #include "Log.h"
 
+class DefaultPanel;
+class HUD_Docking;
+class Instrument_Comms;
+class Instrument_Docking;
+class Instrument_HSI;
+class Instrument_Landing;
+class Orbiter;
+class Pane;
+class ReentryStream;
+class SuperVessel;
+class VESSEL;
+class VESSEL2;
+class VESSEL3;
+class VVessel;
+
 class Elements;
 class CelestialBody;
 class Planet;
@@ -40,7 +55,7 @@ class Nav;
 class Nav_IDS;
 class Nav_XPDR;
 class ExhaustStream;
-class oapi::Sketchpad;
+namespace oapi { class Sketchpad; }
 class LightEmitter;
 class Select;
 class InputBox;
@@ -1815,7 +1830,6 @@ protected:
 	int orthoaxis;       // auxiliary flag
 	int animcount;       // animation request ref count
 
-	oapi::Sketchpad *hudskp;    // hack: hud drawing instance (for callback)
 
 	LiftCoeffFunc LiftCoeff;    // function pointer for aoa-dependent lift coeff calculation - OBSOLETE
 

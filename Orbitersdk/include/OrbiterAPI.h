@@ -35,6 +35,8 @@
 
 extern "C" {
 #include <lua/lua.h>
+
+class Camera;
 }
 
 #define DLLEXPORT __attribute__((visibility("default")))
@@ -1608,12 +1610,10 @@ typedef struct {
 	MFDMODESPECEX *spec;
 } MFDMODEOPENSPEC;
 
-#pragma pack(push,1)
 typedef struct {
 	const char *line1, *line2;
 	char selchar;
 } MFDBUTTONMENU;
-#pragma pack(pop)
 
 
 // ===========================================================================
@@ -2305,22 +2305,6 @@ public:
 	*/
 	virtual char *Description ();
 	
-	/**
-	* \brief Opens a dialog box associated with the launchpad item.
-	* \param hInst module instance handle
-	* \param hLaunchpad launchpad window handle
-	* \param resId integer resource ID of the dialog box
-	* \param pDlg dialog box message handler
-	* \return Currently this function always returns \e true.
-	* \note This function is usually called in the body of LaunchpadItem::clbkOpen().
-	* \note It is an alternative to the standard Windows DialogBox function. It has the
-	*  advantage that a pointer to the LaunchpadItem instance is passed as lParam
-	*  to the message handler with the \c WM_INITDIALOG message. In all
-	*  subsequent calls to the handler, the LaunchpadItem instance pointer can be
-	*  obtained with a call to <i>GetWindowLongPtr (hWnd, DWLP_USER)</i>, where hWnd
-	*  is the dialog box handle passed to the message handler.
-	*/
-	virtual bool OpenDialog (HINSTANCE hInst, HWND hLaunchpad, int resId, DLGPROC pDlg);
 
 	/**
 	* \brief This method is called whenever the user opens the item by double-clicking on the list or
@@ -2331,7 +2315,7 @@ public:
 	* \note The derived class can use this function to open a dialog box or some other
 	*  means of allowing the user to set addon-specific parameters.
 	*/
-	virtual bool clbkOpen (HWND hLaunchpad);
+	virtual bool clbkOpen ();
 
 	/**
 	* \brief This method is called whenever the item should write its current state to a file.
@@ -5225,13 +5209,12 @@ OAPIFUNC void oapiRegisterExternMFD (ExternMFD *emfd, const MFDSPEC &spec);
 OAPIFUNC bool oapiUnregisterExternMFD (ExternMFD *emfd);
 
 	/**
-	* \brief Register the background bitmap for a custom panel.
-	* \param hBmp bitmap handle
+	* \brief Register the background image for a custom panel.
+	* \param hSurf surface containing the panel background, e.g. from oapiLoadSurface.
+	*   Orbiter takes ownership of the surface.
 	* \param flag property bit flags (see notes)
 	* \param ck transparency colour key
 	* \note This function will normally be called in the body of ovcLoadPanel.
-	* \note Typically the bitmap will be stored as a resource in the DLL and obtained by
-	*  a call to the Windows function LoadBitmap(...).
 	* \note \a flag defines panel properties and can be a combination of the following bitmasks:
 	*   - \c PANEL_ATTACH_{LEFT/RIGHT/TOP/BOTTOM}
 	*   - \c PANEL_MOVOUT_{LEFT/RIGHT/TOP/BOTTOM}
@@ -5247,7 +5230,7 @@ OAPIFUNC bool oapiUnregisterExternMFD (ExternMFD *emfd);
 	*   does not appear anywhere in the opaque part of the panel.
 	* \sa oapiRegisterPanelArea
 	*/
-OAPIFUNC void oapiRegisterPanelBackground (HBITMAP hBmp, DWORD flag = PANEL_ATTACH_BOTTOM|PANEL_MOVEOUT_BOTTOM,
+OAPIFUNC void oapiRegisterPanelBackground (SURFHANDLE hSurf, DWORD flag = PANEL_ATTACH_BOTTOM|PANEL_MOVEOUT_BOTTOM,
 				                           DWORD ck = (DWORD)-1);
 
 	/**
@@ -5531,43 +5514,7 @@ OAPIFUNC oapi::Brush *oapiCreateBrush (DWORD col);
  */
 OAPIFUNC void oapiReleaseBrush (oapi::Brush *brush);
 
-/**
- * \brief Obtain a Windows device context handle (HDC) for a surface.
- * \param surf surface handle
- * \return device context handle, or NULL if not supported.
- * \warning This function uses a device-dependent drawing context handle
- *   and may not work with all graphics clients. It has been superseded by
- *   oapiGetSketchpad.
- * \note This function returns a valid device handle only when Orbiter is
- *   using its inline graphics client, or if an external client is attached
- *   that supports GDI drawing. In all other cases, the function returns
- *   NULL. Therefore, the caller should always check the returned value before
- *   using it.
- * \note If a nonzero HDC was returned, it should be released with
- *   \ref oapiReleaseDC after drawing.
- * \note Most graphics clients must lock the surface data buffer (and copy it
- *   to main memory, if necessary) before GDI access can be provided. This
- *   means that read/write access to the surface (e.g. for blitting) may be
- *   disabled between oapiGetDC and oapiReleaseDC, and should be avoided.
- * \sa oapiReleaseDC, oapiGetSketchpad
- */
-OAPIFUNC HDC oapiGetDC (SURFHANDLE surf);
 
-/**
- * \brief Release a GDI drawing device context handle.
- * \param surf surface handle
- * \param hDC device context handle
- * \warning This function uses a device-dependent drawing context handle
- *   and may not work with all graphics clients. It has been superseded by
- *   oapiReleaseSketchpad.
- * \note Use this function to release a device context previously acquired
- *   with \ref oapiGetDC.
- * \note Standard Windows device context rules apply. For example, any custom
- *   device objects loaded via SelectObject must be unloaded before calling
- *   oapiReleaseDC.
- * \sa oapiGetDC, oapiGetSketchpad, oapiReleaseSketchpad
- */
-OAPIFUNC void oapiReleaseDC (SURFHANDLE surf, HDC hDC);
 //@}
 
 
@@ -5629,25 +5576,6 @@ OAPIFUNC SURFHANDLE oapiLoadSurfaceEx(const char* fname, DWORD attrib, bool bPat
 OAPIFUNC bool oapiSaveSurface(const char* fname, SURFHANDLE hSrf, oapi::ImageFileFormat fmt, float quality = 0.7f);
 
 
-	/**
-	* \brief Create a surface from a bitmap. Bitmap surfaces are typically used for blitting
-	*  operations during instrument panel redraws.
-	* \param hBmp bitmap handle
-	* \param release_bmp flag for bitmap release
-	* \return Handle to the new surface.
-	* \note The easiest way to access bitmaps is by storing them as resources in the
-	*  module, and loading them via a call to LoadBitmap.
-	* \note Do not use this function with a bitmap generated by CreateBitmap. To create
-	*  a surface of specified dimensions, use oapiCreateSurface (width, height) instead.
-	* \note If \e release_bmp==true, then oapiCreateSurface() will destroy the bitmap after
-	*  creating a surface from it (i.e. the hBmp handle will be invalid after the
-	*  function returns), otherwise the module is responsible for destroying the
-	*  bitmap by a call to DestroyObject when it is no longer needed.
-	* \note Surfaces should be destroyed by calling oapiDestroySurface when they are
-	*  no longer needed.
-	* \sa oapiDestroySurface
-	*/
-OAPIFUNC SURFHANDLE oapiCreateSurface (HBITMAP hBmp, bool release_bmp = true);
 
 	/**
 	* \brief Create a surface that can be used as a texture for a 3-D object.
@@ -6097,27 +6025,6 @@ OAPIFUNC bool       oapiUnregisterCustomCmd (int cmdId);
 OAPIFUNC int        oapiRegisterCustomMenuCmd (const char *label, const char *imagepath, CustomFunc func, void *context);
 OAPIFUNC void       oapiUnregisterCustomMenuCmd (int cmdId);
 
-	/**
-	* \brief Open a dialog box defined as a Windows resource.
-	* \param hDLLInst module instance handle (as obtained from InitModule)
-	* \param resourceId dialog resource identifier
-	* \param msgProc pointer to Windows message handler
-	* \param context optional user-defined pointer
-	* \return handle of the new dialog box, or NULL if the dialog was open already.
-	* \note Use oapiOpenDialog() instead of standard Windows methods such as
-	*  CreateWindow or DialogBox, to make sure the dialog works in fullscreen mode.
-	* \note Only one instance of a dialog box can be open at a time. A second call to
-	*  oapiOpenDialog() with the same dialog id will fail and return NULL.
-	* \note The interface of the message handler is as follows:
-	* \code INT_PTR CALLBACK MsgProc ( HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam) \endcode
-	* \note See standard Windows documentation for usage of the dialog message handler.
-	* \note The context pointer can be set to user-defined data which can be retrieved
-	*  via the oapiGetDialogContext() function. This allows to pass data into the message handler.
-	* \note Note that oapiGetDialogContext() can not be used when processing the
-	* \c WM_INITDIALOG message. In this case, the context pointer can be acessed via lParam instead.
-	* \sa oapiFindDialog, oapiCloseDialog, oapiOpenDialogEx
-	*/
-OAPIFUNC HWND       oapiOpenDialog (HINSTANCE hDLLInst, int resourceId, DLGPROC msgProc, void *context = 0);
 
 	/**
 	* \brief Open a dialog box specified by an ImGuiDialog object.
@@ -6127,44 +6034,8 @@ OAPIFUNC HWND       oapiOpenDialog (HINSTANCE hDLLInst, int resourceId, DLGPROC 
 	*/
 OAPIFUNC void       oapiOpenDialog (ImGuiDialog *dlg);
 
-	/**
-	* \brief Open a dialog box defined as a Windows resource. This version provides additional
-	*  functionality compared to oapiOpenDialog().
-	* \param hDLLInst module instance handle (as obtained from InitModule)
-	* \param resourceId dialog resource identifier
-	* \param msgProc pointer to Windows message handler
-	* \param flag bit-flags to define dialog box options (see notes)
-	* \param context optional user-defined pointer
-	* \return handle of the new dialog box, or NULL if the box could not be opened.
-	* \note The flag parameter can be a combination of the following values:
-	* - \c DLG_ALLOWMULTI: Allows multiple instances of the same dialog resource
-	*  to be open simultaneously.\n
-	* - \c DLG_CAPTIONCLOSE: Shows a Close button in the dialog title bar.
-	*  Pressing it produces an \c IDCANCEL notification to the message procedure.\n
-	* - \c DLG_CAPTIONHELP: Shows a Help button in the dialog title bar. Pressing it
-	*  produces an \c IDHELP notification to the message procedure.
-	* \note If customised title bar buttons are requested, the dialog box template should
-	* not contain standard title buttons, by omitting the \c WS_SYSMENU window style.
-	* \note Additional buttons can be created by using the oapiAddTitleButton function.
-	* \sa oapiFindDialog, oapiCloseDialog, oapiGetDialogContext
-	*/
-OAPIFUNC HWND       oapiOpenDialogEx (HINSTANCE hDLLInst, int resourceId, DLGPROC msgProc, DWORD flag = 0, void *context = 0);
 
-	/**
-	* \brief Returns the window handle of an open dialog box, or NULL if the specified dialog box is not open.
-	* \param hDLLInst module instance handle (as obtained from InitModule)
-	* \param resourceId dialog resource identifier
-	* \return Window handle of dialog box, or NULL if the dialog was not found.
-	*/
-OAPIFUNC HWND       oapiFindDialog (HINSTANCE hDLLInst, int resourceId);
 
-	/**
-	* \brief Close a dialog box.
-	* \param hDlg dialog window handle (as obtained by oapiOpenDialog)
-	* \note This function should be called in response to an \c IDCANCEL message in the
-	*  dialog message handler to close a dialog which was opened by oapiOpenDialog().
-	*/
-OAPIFUNC void       oapiCloseDialog (HWND hDlg);
 
 	/**
 	* \brief Close a dialog box.
@@ -6181,88 +6052,11 @@ OAPIFUNC void       oapiCloseDialog (ImGuiDialog *dlg);
 	*/
 OAPIFUNC void      oapiAddNotification(int type, const char *title, const char *content = "");
 
-	/**
-	* \brief Retrieves the context pointer of a dialog box which has been defined during the call to oapiOpenDialog().
-	* \param hDlg dialog window handle
-	* \note  This function returns NULL if no context pointer was specified in oapiOpenDialog().
-	* \n <b> Typical usage:</b>\n
-	* \code
-	* SURFHANDLE surf = m_mfd->GetDisplaySurface();
-	* if (surf) {
-	* 	ImVec2 uv_min = ImVec2(0.0f, 0.0f);                 // Top-left
-	* 	ImVec2 uv_max = ImVec2(1.0f, 1.0f);                 // Lower-right
-	* 	ImVec4 tint_col = ImVec4(1.0f, 1.0f, 1.0f, 1.0f);   // No tint
-	* 	ImVec4 border_col = ImVec4(1.0f, 1.0f, 1.0f, 0.0f);
-	* 	ImTextureID txt = oapiGetImTextureID(surf);
-	* 	ImGui::Image(txt, ImVec2(sz.x, sz.y), uv_min, uv_max, tint_col, border_col);
-	* }
-	* \endcode
-	* 
-	*/
-OAPIFUNC void      *oapiGetDialogContext (HWND hDlg);
 
-OAPIFUNC bool       oapiRegisterWindow (HINSTANCE hDLLInst, HWND hWnd, DWORD flag = 0);
 
-	/**
-	* \brief Adds a custom button in the title bar of a dialog box.
-	* \param msgid The message identifier generated by pressing the button
-	* \param hBmp bitmap containing the button images.
-	* \param flag additional parameters (see notes)
-	* \return \e true if the button could be created, \e false otherwise.
-	* \note oapiAddTitleButton can only be called while processing the
-	*  \c WM_INITDIALOG message in the dialog message procedure.
-	* \note Up to 5 buttons can be created in the title bar, including the standard buttons
-	*  defined in the call to oapiOpenDialogEx.
-	* \note Whenever the users left-clicks on the button, a \c WM_COMMAND message is
-	*  generated in the message procedure, where the low-word of the WPARAM
-	*  parameter is set to msgid.
-	* \note The button size defined in the bitmap should be 15x15 pixels large. Their
-	*  look should conform to Orbiter's standard dialog buttons.
-	* \note The following bit-flags in the flag parameter are currently supported:
-	*  \c DLG_CB_TWOSTATE: The button has two states, and clicking on it will flip
-	*  between the two states.
-	* \note If the \c DLG_CB_TWOSTATE flag is set, the bitmap must be 15x30 pixels
-	*  large, containing two images, where the upper image represents the initial
-	*  state, and the lower image represents the "checked" state.
-	* \note If the \c DLG_CB_TWOSTATE flag is set, the button state (0 or 1) is passed in
-	*  the high-word of the WPARAM parameter whenever the dialog is notified of a button press.
-	*/
-OAPIFUNC bool       oapiAddTitleButton (DWORD msgid, HBITMAP hBmp, DWORD flag);
 
-OAPIFUNC DWORD      oapiGetTitleButtonState (HWND hDlg, DWORD msgid);
 
-OAPIFUNC bool       oapiSetTitleButtonState (HWND hDlg, DWORD msgid, DWORD state);
 
-	/**
-	* \brief Default Orbiter dialog message handler.
-	* \details This function should be called from the message handler of all
-	* dialogs created with oapiOpenDialog to perform default actions
-	* for any messages not processed in the handler.
-	* \n<b> Parameters:</b> \n
-	* The parameters passed to the message handler.
-	* \return The value returned by oapiDefDialogProc should be returned by the message handler.
-	* \n <b> Typical usage:</b>\n
-	* \code
-	* INT_PTR CALLBACK MsgProc (HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
-	* {
-	*   switch (uMsg) {
-	*   case WM_COMMAND:
-	*      switch (LOWORD (wParam)) {
-	*      case IDCANCEL: // dialog closed by user
-	*         CloseDlg (hDlg);
-	*         return TRUE;
-	*       }
-	*       break;
-	*       // add more messages to be processed here
-	*   }
-	*   return oapiDefDialogProc (hDlg, uMsg, wParam, lParam);
-	* }
-	* \endcode
-	* \note oapiDefDialogProc currently only processes the WM_SETCURSOR message,
-	*  and always returns \e false.
-	* \sa oapiCloseDialog, oapiFindDialog, oapiOpenDialog
-	*/
-OAPIFUNC INT_PTR oapiDefDialogProc (HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam);
 
 	/**
 	 * \brief Opens the ingame help window on the specified help page.
@@ -6405,7 +6199,7 @@ OAPIFUNC void oapiWriteLogV (const char *format, ...);
 	* \param ... List of output parameters. Must match the parameter flags in the format string.
 	* \sa oapiWriteLog, oapiWriteLogV
 	*/
-#define oapiWriteLogError(format, ...) __writeLogError(__FUNCTION__,__FILE__,__LINE__, format, __VA_ARGS__)
+#define oapiWriteLogError(format, ...) __writeLogError(__FUNCTION__,__FILE__,__LINE__, format, ##__VA_ARGS__)
 OAPIFUNC void __writeLogError(const char *func, const char *file, int line, const char *format, ...);
 
    /**

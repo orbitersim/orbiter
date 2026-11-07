@@ -5,7 +5,6 @@
 #include "Panel.h"
 #include "Pane.h"
 #include "Vessel.h"
-#include "Texture.h"
 #include "Log.h"
 
 using namespace std;
@@ -137,19 +136,18 @@ void Panel::MFDMoved ()
 	}
 }
 
-void Panel::DefineBackground (HBITMAP hBmp, DWORD flag, DWORD _ck)
+void Panel::DefineBackground (SURFHANDLE hSurf, DWORD flag, DWORD _ck)
 {
-	if (!gc) return;
-
-	//HRESULT res;
-	BITMAP bm;
+	if (!gc || !hSurf) return;
 
 	if (surf) gc->clbkReleaseSurface (surf);
+	surf = hSurf;
 
-	// bitmap size
-    GetObject (hBmp, sizeof(bm), &bm);
-    srcW = bm.bmWidth;
-	srcH = bm.bmHeight;
+	// image size
+	DWORD sw, sh;
+	gc->clbkGetSurfaceSize (surf, &sw, &sh);
+	srcW = (LONG)sw;
+	srcH = (LONG)sh;
 	tgtW = (int)(scale*srcW);
 	tgtH = (int)(scale*srcH);
 
@@ -171,12 +169,6 @@ void Panel::DefineBackground (HBITMAP hBmp, DWORD flag, DWORD _ck)
 		}
 	}
 
-	if (!(surf = gc->clbkCreateSurface (srcW, srcH))) return;
-	if (!gc->clbkCopyBitmap (surf, hBmp, 0, 0, 0, 0)) {
-		gc->clbkReleaseSurface (surf);
-		surf = NULL;
-		return;
-	}
 
 	X0 = ((LONG)pane->W - tgtW)/2;
 
@@ -357,7 +349,7 @@ void Panel::RegisterMFD (int id, const MFDSPEC &spec)
 	mfd[id].exist = true;
 }
 
-void Panel::Point2Screen (long srcX, long srcY, long &tgtX, long &tgtY) const
+void Panel::Point2Screen (LONG srcX, LONG srcY, LONG &tgtX, LONG &tgtY) const
 {
 	if (scaled) {
 		srcX = (long)(srcX*scale);

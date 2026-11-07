@@ -11,6 +11,8 @@
 #include "Planet.h"
 #include <functional>
 
+class Body;
+
 class Vessel;
 class SuperVessel;
 struct TimeJumpData;

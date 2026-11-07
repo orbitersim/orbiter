@@ -55,7 +55,6 @@ Instrument_User::Instrument_User (Pane *_pane, INT_PTR _id, const Spec &spec, Ve
 	mfd->instr = this;
 	mfd->cw = cw;
 	mfd->ch = ch;
-	use_skp_interface = (mfd2 != 0);
 	AllocSurface (IW, IH);
 	mfd->RecallStatus();
 }
@@ -79,17 +78,7 @@ Instrument_User::~Instrument_User ()
 
 void Instrument_User::UpdateDraw (oapi::Sketchpad *skp)
 {
-	if (mfd2) {
-		mfd2->Update (skp);
-	} else if (mfd) {
-		HDC hDC = skp->GetDC ();
-		if (hDC) mfd->Update (hDC); // this should directly use skp
-	}
-}
-
-void Instrument_User::UpdateDraw (HDC hDC)
-{
-	if (hDC && mfd) mfd->Update (hDC);
+	if (mfd2) mfd2->Update (skp);
 }
 
 bool Instrument_User::ReadParams (ifstream &ifs)
@@ -123,7 +112,6 @@ bool Instrument_User::ReadParams (ifstream &ifs)
 	mfd->cw = cw;
 	mfd->ch = ch;
 	mfd->ReadStatus ((FILEHANDLE)&ifs);
-	use_skp_interface = (mfd2 != 0);
 	AllocSurface (IW, IH);
 	return true;
 }
@@ -156,12 +144,6 @@ MFD::MFD (DWORD w, DWORD h, VESSEL *vessel)
 MFD::~MFD ()
 {}
 
-void MFD::Title (HDC hDC, const char *title) const
-{
-	// GDI legacy code
-	instr->DisplayTitle (hDC, title);
-}
-
 void MFD::InvalidateDisplay ()
 {
 	instr->Refresh();
@@ -171,19 +153,6 @@ void MFD::InvalidateButtons ()
 {
 	instr->RepaintButtons ();
 }
-
-HPEN MFD::SelectDefaultPen (HDC hDC, DWORD i) const
-{
-	// GDI legacy code
-	return instr->SelectDefaultPen (hDC, i);
-}
-
-HFONT MFD::SelectDefaultFont (HDC hDC, DWORD i) const
-{
-	// GDI legacy code
-	return instr->SelectDefaultFont (hDC, i);
-}
-
 
 // =======================================================================
 // Impementation of module interface class MFD
@@ -224,7 +193,7 @@ DWORD MFD2::GetDefaultColour (DWORD colidx, DWORD intens) const
 // =======================================================================
 
 GraphMFD::GraphMFD (DWORD w, DWORD h, VESSEL *vessel)
-: MFD (w, h, vessel)
+: MFD2 (w, h, vessel)
 {
 	ngraph  = 0;
 }
@@ -357,8 +326,16 @@ void GraphMFD::SetAxisTitle (int g, int axis, char *title)
 		strncpy (graph[g].absc_title, title, 63);
 }
 
-void GraphMFD::Plot (HDC hDC, int g, int h0, int h1, const char *title)
+void GraphMFD::Plot (oapi::Sketchpad *skp, int g, int h0, int h1, const char *title)
 {
+	static oapi::Pen *pen[6] = {0};
+	if (!pen[0]) {
+		const COLORREF col[6] = { RGB(0,255,0), RGB(0,255,0), RGB(0,128,0), RGB(128,128,0), RGB(64,64,0), RGB(128,128,128) };
+		for (int k = 0; k < 6; k++) pen[k] = oapiCreatePen (1, 1, col[k]);
+	}
+	auto selectPen = [&](int k) { skp->SetPen (k >= 0 && k < 6 ? pen[k] : pen[0]); };
+	auto selectFont = [&](int k) { skp->SetFont (GetDefaultFont (k)); };
+	skp->SetBrush (NULL);
 	GRAPH &gf = graph[g];
 	char cbuf[64];
 	float minx, maxx, miny, maxy, ixrange, iyrange, f;
@@ -370,30 +347,30 @@ void GraphMFD::Plot (HDC hDC, int g, int h0, int h1, const char *title)
 	ixrange = (x1-x0)/(maxx-minx);
 	iyrange = (y0-y1)/(maxy-miny);
 
-	SelectDefaultFont (hDC, 1);
-	SetTextColor (hDC, 0x00A000);
+	selectFont (1);
+	skp->SetTextColor (0x00A000);
 
 	// abscissa ticks/labels
-	SelectDefaultPen (hDC, 3);
-	SetTextAlign (hDC, TA_CENTER);
+	selectPen (3);
+	skp->SetTextAlign (oapi::Sketchpad::CENTER);
 	for (f = gf.absc_tickmin; f <= gf.absc_max; f += gf.absc_dtick) {
 		x = x0 + (int)((f-minx)*ixrange+0.5);
-		MoveToEx (hDC, x, y0, 0);
-		LineTo (hDC, x, y1);
+		skp->MoveTo (x, y0);
+		skp->LineTo (x, y1);
 		sprintf (cbuf, "%0.0f", f*gf.absc_tickscale);
-		TextOut (hDC, x, y0, cbuf, strlen(cbuf));
+		skp->Text (x, y0, cbuf, strlen(cbuf));
 	}
 	if (gf.absc_minortick > 1) {
-		SelectDefaultPen (hDC, 4);
+		selectPen (4);
 		for (f = gf.absc_tickmin, i = 0; f > gf.absc_min; f -= gf.absc_dtick/(float)gf.absc_minortick, i++) {
 			if (!(i%gf.absc_minortick)) continue;
 			x = x0 + (int)((f-minx)*ixrange+0.5);
-			MoveToEx (hDC, x, y0, 0); LineTo (hDC, x, y1);
+			skp->MoveTo (x, y0); skp->LineTo (x, y1);
 		}
 		for (f = gf.absc_tickmin, i = 0; f < gf.absc_max; f += gf.absc_dtick/(float)gf.absc_minortick, i++) {
 			if (!(i%gf.absc_minortick)) continue;
 			x = x0 + (int)((f-minx)*ixrange+0.5);
-			MoveToEx (hDC, x, y0, 0); LineTo (hDC, x, y1);
+			skp->MoveTo (x, y0); skp->LineTo (x, y1);
 		}
 	}
 	if (gf.absc_title[0]) {
@@ -401,50 +378,50 @@ void GraphMFD::Plot (HDC hDC, int g, int h0, int h1, const char *title)
 		oss << gf.absc_title;
 		if (gf.absc_tickscale != 1.0f) oss << " x " << 1.0/gf.absc_tickscale;
 		oss << '\0';
-		TextOut (hDC, (x0+x1)/2, y0+(3*ch)/4, oss.str().c_str(), strlen(oss.str().c_str()));
+		skp->Text ((x0+x1)/2, y0+(3*ch)/4, oss.str().c_str(), strlen(oss.str().c_str()));
 	}
 
 	// ordinate ticks/labels
-	SelectDefaultPen (hDC, 3);
-	SetTextAlign (hDC, TA_RIGHT);
+	selectPen (3);
+	skp->SetTextAlign (oapi::Sketchpad::RIGHT);
 	for (f = gf.data_tickmin; f <= gf.data_max; f += gf.data_dtick) {
 		y = y0 - (int)((f-miny)*iyrange+0.5);
-		MoveToEx (hDC, x0, y, 0);
-		LineTo (hDC, x1, y);
+		skp->MoveTo (x0, y);
+		skp->LineTo (x1, y);
 		sprintf (cbuf, "%0.0f", f*gf.data_tickscale);
-		TextOut (hDC, x0, y-ch/2, cbuf, strlen(cbuf));
+		skp->Text (x0, y-ch/2, cbuf, strlen(cbuf));
 	}
 	if (gf.data_minortick > 1) {
-		SelectDefaultPen (hDC, 4);
+		selectPen (4);
 		for (f = gf.data_tickmin, i = 0; f > gf.data_min; f -= gf.data_dtick/(float)gf.data_minortick, i++) {
 			if (!(i%gf.data_minortick)) continue;
 			y = y0 - (int)((f-miny)*iyrange+0.5);
-			MoveToEx (hDC, x0, y, 0); LineTo (hDC, x1, y);
+			skp->MoveTo (x0, y); skp->LineTo (x1, y);
 		}
 		for (f = gf.data_tickmin, i = 0; f < gf.data_max; f += gf.data_dtick/(float)gf.data_minortick, i++) {
 			if (!(i%gf.data_minortick)) continue;
 			y = y0 - (int)((f-miny)*iyrange+0.5);
-			MoveToEx (hDC, x0, y, 0); LineTo (hDC, x1, y);
+			skp->MoveTo (x0, y); skp->LineTo (x1, y);
 		}
 	}
-	SetTextAlign (hDC, TA_CENTER);
+	skp->SetTextAlign (oapi::Sketchpad::CENTER);
 	if (gf.data_title[0]) {
-		SelectDefaultFont (hDC, 2);
+		selectFont (2);
 		ostringstream oss(cbuf, 64);
 		oss << gf.data_title;
 		if (gf.data_tickscale != 1.0f) oss << " x " << 1.0/gf.data_tickscale;
 		oss << '\0';
-		TextOut (hDC, 0, (y0+y1)/2, oss.str().c_str(), strlen(oss.str().c_str()));
+		skp->Text (0, (y0+y1)/2, oss.str().c_str(), strlen(oss.str().c_str()));
 	}
 
 	// plot frame
-	SelectDefaultPen (hDC, 2);
-	Rectangle (hDC, x0, y1, x1+1, y0+1);
+	selectPen (2);
+	skp->Rectangle (x0, y1, x1+1, y0+1);
 
 	// plot line
 	for (pl = 0; pl < gf.nplot; pl++) {
 		GRAPH::PLOT &p = gf.plot[pl];
-		SelectDefaultPen (hDC, p.col);
+		selectPen (p.col);
 		float fx, fy, pfx=0, pfy=0, xa, ya, xb, yb;
 		bool clip, vis;
 		int sample = (p.ofs ? *p.ofs : 0);
@@ -472,7 +449,7 @@ void GraphMFD::Plot (HDC hDC, int g, int h0, int h1, const char *title)
 						if (xb > maxx) vis = false;
 						else ya += (maxx-xa)/(xb-xa)*(yb-ya), xa = maxx;
 					}
-					if (vis) MoveToEx (hDC, x0 + (int)((xa-minx)*ixrange), y0 - (int)((ya-miny)*iyrange), 0);
+					if (vis) skp->MoveTo (x0 + (int)((xa-minx)*ixrange), y0 - (int)((ya-miny)*iyrange));
 				} else vis = true;
 
 				if (vis) { // clip second point
@@ -495,7 +472,7 @@ void GraphMFD::Plot (HDC hDC, int g, int h0, int h1, const char *title)
 						else yb += (maxx-xb)/(xa-xb)*(ya-yb), xb = maxx;
 						clip = true;
 					}
-					if (vis) LineTo (hDC, x0 + (int)((xb-minx)*ixrange), y0 - (int)((yb-miny)*iyrange));
+					if (vis) skp->LineTo (x0 + (int)((xb-minx)*ixrange), y0 - (int)((yb-miny)*iyrange));
 				} else clip = true;
 			}
 			pfx = fx, pfy = fy;
@@ -503,9 +480,9 @@ void GraphMFD::Plot (HDC hDC, int g, int h0, int h1, const char *title)
 	}
 
 	if (title) {
-		SelectDefaultFont (hDC, 1);
-		SetTextColor (hDC, 0x00FF00);
-		TextOut (hDC, (x0+x1)/2, y1, title, strlen(title));
+		selectFont (1);
+		skp->SetTextColor (0x00FF00);
+		skp->Text ((x0+x1)/2, y1, title, strlen(title));
 	}
 }
 

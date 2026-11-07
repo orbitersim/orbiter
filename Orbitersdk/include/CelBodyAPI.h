@@ -376,6 +376,8 @@ protected:
 */
 // ======================================================================
 
+class ATMOSPHERE;
+
 class OAPIFUNC CELBODY2: public CELBODY {
 	friend class ATMOSPHERE;
 

@@ -1784,9 +1784,9 @@ DLLEXPORT void oapiVCRegisterHUD (const VCHUDSPEC *spec)
 		g_pane->RegisterVCHUD (spec);
 }
 
-DLLEXPORT void oapiRegisterPanelBackground (HBITMAP hBmp, DWORD flag, DWORD ck)
+DLLEXPORT void oapiRegisterPanelBackground (SURFHANDLE hSurf, DWORD flag, DWORD ck)
 {
-	g_pane->RegisterPanelBackground (hBmp, flag, ck);
+	g_pane->RegisterPanelBackground (hSurf, flag, ck);
 }
 
 DLLEXPORT void oapiRegisterPanelArea (int id, const RECT &pos, int draw_event, int mouse_event, int bkmode)
@@ -1967,22 +1967,6 @@ DLLEXPORT void oapiReleaseBrush (oapi::Brush *brush)
 	if (gc) gc->clbkReleaseBrush (brush);
 }
 
-DLLEXPORT HDC oapiGetDC (SURFHANDLE surf)
-{
-	oapi::GraphicsClient *gc = g_pOrbiter->GetGraphicsClient();
-	HDC hDC = NULL;
-	if (gc && surf)
-		hDC = gc->clbkGetSurfaceDC (surf);
-	return hDC;
-}
-
-DLLEXPORT void oapiReleaseDC (SURFHANDLE surf, HDC hDC)
-{
-	oapi::GraphicsClient *gc = g_pOrbiter->GetGraphicsClient();
-	if (gc && surf && hDC)
-		gc->clbkReleaseSurfaceDC (surf, hDC);
-}
-
 DLLEXPORT bool oapiGetSurfaceSize(SURFHANDLE hSrf, int *width, int *height)
 {
 	oapi::GraphicsClient* gc = g_pOrbiter->GetGraphicsClient();
@@ -2003,15 +1987,6 @@ DLLEXPORT SURFHANDLE oapiCreateSurfaceEx (int width, int height, DWORD attrib)
 		//DWORD attrib = OAPISURFACE_RENDERTARGET | OAPISURFACE_GDI | OAPISURFACE_SKETCHPAD;
 		surf = gc->clbkCreateSurfaceEx (width, height, attrib);
 	}
-	return surf;
-}
-
-DLLEXPORT SURFHANDLE oapiCreateSurface (HBITMAP hBmp, bool release_bmp)
-{
-	oapi::GraphicsClient *gc = g_pOrbiter->GetGraphicsClient();
-	SURFHANDLE surf = NULL;
-	if (gc) surf = gc->clbkCreateSurface (hBmp);
-	if (release_bmp) DeleteObject ((HGDIOBJ)hBmp);
 	return surf;
 }
 
@@ -2045,8 +2020,7 @@ DLLEXPORT void oapiClearSurfaceColourKey (SURFHANDLE surf)
 {
 	if (!surf) return;
 	oapi::GraphicsClient *gc = g_pOrbiter->GetGraphicsClient();
-	//if (gc) gc->clbClearSurfaceColourKey (surf); // TODO
-	((LPDIRECTDRAWSURFACE7)surf)->SetColorKey (DDCKEY_SRCBLT, 0);
+	if (gc) gc->clbkSetSurfaceColourKey (surf, SURF_NO_CK);
 }
 
 DLLEXPORT DWORD oapiGetColour (DWORD red, DWORD green, DWORD blue)
@@ -2136,7 +2110,7 @@ DLLEXPORT bool oapiAcceptDelayedKey (char key, double interval)
 
 DLLEXPORT LAUNCHPADITEM_HANDLE oapiRegisterLaunchpadItem (LaunchpadItem *item, LAUNCHPADITEM_HANDLE parent)
 {
-	return (LAUNCHPADITEM_HANDLE)g_pOrbiter->Launchpad()->RegisterExtraParam (item, (HTREEITEM)parent);
+	return (LAUNCHPADITEM_HANDLE)g_pOrbiter->Launchpad()->RegisterExtraParam (item, (orbiter::ExtraItem*)parent);
 }
 
 DLLEXPORT bool oapiUnregisterLaunchpadItem (LaunchpadItem *item)
@@ -2146,7 +2120,7 @@ DLLEXPORT bool oapiUnregisterLaunchpadItem (LaunchpadItem *item)
 
 DLLEXPORT LAUNCHPADITEM_HANDLE oapiFindLaunchpadItem (const char *name, LAUNCHPADITEM_HANDLE parent)
 {
-	return g_pOrbiter->Launchpad()->FindExtraParam (name, (HTREEITEM)parent);
+	return (LAUNCHPADITEM_HANDLE)g_pOrbiter->Launchpad()->FindExtraParam (name, (const orbiter::ExtraItem*)parent);
 }
 
 DLLEXPORT DWORD oapiRegisterCustomCmd (char *label, char *desc, CustomFunc func, void *context)
@@ -2169,71 +2143,22 @@ DLLEXPORT void oapiUnregisterCustomMenuCmd (int cmdId)
 	return g_pOrbiter->UnregisterMenuCmd (cmdId);
 }
 
-DLLEXPORT HWND oapiOpenDialog (HINSTANCE hDLLInst, int resourceId, DLGPROC msgProc, void *context)
-{
-	return g_pOrbiter->OpenDialog (hDLLInst, resourceId, msgProc, context);
-}
-
-DLLEXPORT HWND oapiOpenDialogEx (HINSTANCE hDLLInst, int resourceId, DLGPROC msgProc, DWORD flag, void *context)
-{
-	return g_pOrbiter->OpenDialogEx (hDLLInst, resourceId, msgProc, flag, context);
-}
-
 DLLEXPORT void oapiOpenDialog(ImGuiDialog *e)
 {
-	g_pOrbiter->DlgMgr()->AddEntry(e);
+	if (DialogManager *dmgr = g_pOrbiter->DlgMgr())
+		dmgr->AddEntry(e);
+	else if (g_pOrbiter->Launchpad())
+		g_pOrbiter->Launchpad()->OpenDialog(e);
 	e->Activate();
-}
-
-DLLEXPORT HWND oapiFindDialog (HINSTANCE hDLLInst, int resourceId)
-{
-	return g_pOrbiter->IsDialog (hDLLInst, resourceId);
-}
-
-DLLEXPORT void oapiCloseDialog (HWND hDlg)
-{
-	g_pOrbiter->CloseDialog (hDlg);
 }
 
 DLLEXPORT void oapiCloseDialog(ImGuiDialog *e)
 {
-	DialogManager *dmgr = g_pOrbiter->DlgMgr();
-	if(dmgr)
+	if (!g_pOrbiter) return;
+	if (DialogManager *dmgr = g_pOrbiter->DlgMgr())
 		dmgr->DelEntry(e);
-}
-
-DLLEXPORT void *oapiGetDialogContext (HWND hDlg)
-{
-	DialogManager *dlgmgr = g_pOrbiter->DlgMgr();
-	return (dlgmgr ? dlgmgr->GetDialogContext (hDlg) : NULL);
-}
-
-DLLEXPORT bool oapiRegisterWindow (HINSTANCE hDLLInst, HWND hWnd, DWORD flag)
-{
-	return g_pOrbiter->RegisterWindow (hDLLInst, hWnd, flag); 
-}
-
-DLLEXPORT bool oapiAddTitleButton (DWORD msgid, HBITMAP hBmp, DWORD flag)
-{
-	DialogManager *dlgmgr = g_pOrbiter->DlgMgr();
-	return (dlgmgr ? dlgmgr->AddTitleButton (msgid, hBmp, flag) : false);
-}
-
-DLLEXPORT DWORD oapiGetTitleButtonState (HWND hDlg, DWORD msgid)
-{
-	DialogManager *dlgmgr = g_pOrbiter->DlgMgr();
-	return (dlgmgr ? dlgmgr->GetTitleButtonState (hDlg, msgid) : 0);
-}
-
-DLLEXPORT bool oapiSetTitleButtonState (HWND hDlg, DWORD msgid, DWORD state)
-{
-	DialogManager *dlgmgr = g_pOrbiter->DlgMgr();
-	return (dlgmgr ? dlgmgr->SetTitleButtonState (hDlg, msgid, state) : false);
-}
-
-DLLEXPORT INT_PTR oapiDefDialogProc (HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
-{
-	return OrbiterDefDialogProc (hDlg, uMsg, wParam, lParam);
+	if (g_pOrbiter->Launchpad())
+		g_pOrbiter->Launchpad()->CloseDialog(e);
 }
 
 DLLEXPORT bool oapiOpenHelp (HELPCONTEXT *hcontext)
@@ -2581,10 +2506,10 @@ DLLEXPORT DWORD oapiDeflate (const BYTE *inp, DWORD ninp, BYTE *outp, DWORD nout
 
 DLLEXPORT DWORD oapiInflate (const BYTE *inp, DWORD ninp, BYTE *outp, DWORD noutp)
 {
-	DWORD ndata = noutp;
+	uLongf ndata = noutp;
 	if (uncompress (outp, &ndata, inp, ninp) != Z_OK)
 		return 0;
-	return ndata;
+	return (DWORD)ndata;
 }
 
 // ------------------------------------------------------------------------------

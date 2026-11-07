@@ -2,71 +2,54 @@
 // Licensed under the MIT License
 
 //-----------------------------------------------------------------------------
-// Launchpad tab declaration: class ModuleTab
-// Tab for module activation/deactivation
+// Launchpad tab declaration: ModuleTab
+// Plugin module activation
 //-----------------------------------------------------------------------------
 
 #ifndef __TABMODULE_H
 #define __TABMODULE_H
 
 #include "LpadTab.h"
-#include "CustomControls.h"
+#include <string>
+#include <vector>
 
 namespace orbiter {
 
 	class ModuleTab : public LaunchpadTab {
 	public:
-		ModuleTab(const LaunchpadDialog* lp);
-		~ModuleTab();
+		ModuleTab(LaunchpadDialog* lp);
 
-		void Create();
-		BOOL OnInitDialog(HWND hWnd, WPARAM wParam, LPARAM lParam);
+		void Draw();
 
 		void GetConfig(const Config* cfg);
 		void SetConfig(Config* cfg);
 
-		bool OpenHelp();
-
-		bool DynamicSize() const { return true; }
-
-		BOOL OnSize(int w, int h);
-
-		BOOL OnNotify(HWND hDlg, int idCtrl, LPNMHDR pnmh);
-
-		BOOL OnMessage(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
-
 	protected:
-		void Show();
-
 		void RefreshLists();
-		// Update active and inactive module lists
+		// Update the list of available modules
+
+		void SetActive(size_t idx, bool active);
+		// activate or deactivate a module
 
 		void DeactivateAll();
 		// deactivate all modules
 
-		void ActivateFromList();
-		// synchronises module activation with list by activating/deactivating
-		// appropriate modules
-
-		void InitActivation();
-		// activate modules listed in config file and tick entries in list
-
-		void ExpandCollapseAll(bool expand);
-		HTREEITEM GetCategoryItem(char* cat);
-
 	private:
-		SplitterCtrl splitListDesc;  // splitter control for module list(left) and description(right)
-		RECT r_bt0, r_bt1, r_bt2;
-		RECT r_lst0, r_dsc0;     // REMOVE!
-		RECT r_pane;             // initial position of list/description splitter pane
-
-		struct MODULEREC {
-			char* name;
-			char* info;
+		struct ModuleRec {
+			std::string name;
+			std::string info;
 			bool active;
 			bool locked;
-		} **modulerec;
-		int nmodulerec;
+		};
+		struct Category {
+			std::string name;
+			std::vector<size_t> modules;
+		};
+		std::vector<ModuleRec> m_modules;
+		std::vector<Category> m_categories;
+		int m_sel;
+		int m_expand;
+		float m_listWidth;
 	};
 
 }

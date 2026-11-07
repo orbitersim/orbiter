@@ -41,6 +41,7 @@ HWND g_keyCapture = nullptr;
 int g_cursorHideCount = 0;
 bool g_cursorHidden = false;
 bool g_relativeMouse = false;
+double g_virtualX = 0, g_virtualY = 0;
 
 struct OPKeyMap {
 	unsigned short mac;
@@ -214,6 +215,12 @@ void ApplyCursorVisibility()
 
 - (void)mouseMsg:(NSEvent *)e msg:(UINT)msg
 {
+	if (g_relativeMouse && (e.type == NSEventTypeMouseMoved || e.type == NSEventTypeLeftMouseDragged ||
+		e.type == NSEventTypeRightMouseDragged || e.type == NSEventTypeOtherMouseDragged)) {
+		CGFloat sc = NSScreen.mainScreen.backingScaleFactor;
+		g_virtualX += e.deltaX * sc;
+		g_virtualY += e.deltaY * sc;
+	}
 	Dispatch(self.owner, msg, MouseKeyFlags(e), [self mouseLParam:e]);
 }
 
@@ -618,6 +625,12 @@ void SetCursorHidden(bool hidden)
 void SetRelativeMouse(bool enabled)
 {
 	if (g_relativeMouse == enabled) return;
+	if (enabled) {
+		NSPoint p = [NSEvent mouseLocation];
+		CGFloat sc = NSScreen.mainScreen.backingScaleFactor;
+		g_virtualX = p.x * sc;
+		g_virtualY = (MainScreenHeight() - p.y) * sc;
+	}
 	g_relativeMouse = enabled;
 	CGAssociateMouseAndMouseCursorPosition(enabled ? false : true);
 	ApplyCursorVisibility();
@@ -796,6 +809,11 @@ int GetSystemMetrics(int index)
 
 WINBOOL GetCursorPos(POINT *pt)
 {
+	if (g_relativeMouse) {
+		pt->x = (LONG)lround(g_virtualX);
+		pt->y = (LONG)lround(g_virtualY);
+		return TRUE;
+	}
 	NSPoint p = [NSEvent mouseLocation];
 	CGFloat sc = NSScreen.mainScreen.backingScaleFactor;
 	pt->x = (LONG)(p.x * sc);
@@ -805,9 +823,13 @@ WINBOOL GetCursorPos(POINT *pt)
 
 WINBOOL SetCursorPos(int x, int y)
 {
+	if (g_relativeMouse) {
+		g_virtualX = x;
+		g_virtualY = y;
+		return TRUE;
+	}
 	CGFloat sc = NSScreen.mainScreen.backingScaleFactor;
 	CGWarpMouseCursorPosition(CGPointMake(x / sc, y / sc));
-	if (g_relativeMouse) CGAssociateMouseAndMouseCursorPosition(false);
 	return TRUE;
 }
 

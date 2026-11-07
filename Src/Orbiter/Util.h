@@ -65,8 +65,6 @@ inline void EulerAngles (const Matrix &R, VECTOR3 &e)
 double rand1();
 // uniformly distributed random number, range [0,1]
 
-RECT GetClientPos (HWND hWnd, HWND hChild);
-void SetClientPos (HWND hWnd, HWND hChild, RECT &r);
 
 // Floating point output stream formatter
 struct FltFormatter

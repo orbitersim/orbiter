@@ -21,7 +21,7 @@
 
 #include "OrbiterAPI.h"
 #include <assert.h>
-#include <xmmintrin.h>
+#include <arm_neon.h>
 
 #if defined(_MSC_VER) && (_MSC_VER < 1920 ) // Microsoft Visual Studio Version 2017 and lower
 #include <algorithm>
@@ -562,7 +562,7 @@ namespace oapi {
 			return D3DXVECTOR4(x, y, z, w);
 		}
 #endif
-		__m128 xm;
+		float32x4_t xm;
 		float data[4];
 		struct { float x, y, z, w; };
 		struct { float r, g, b, a; };
@@ -904,12 +904,6 @@ public:
 	 */
 	virtual ~Font () {}
 
-	/**
-	 * \brief Return the GDI handle for the font, if available.
-	 * \return GDI font handle
-	 * \note Non-GDI clients should not overload this method.
-	 */
-	virtual HFONT GetGDIFont () const { return 0; }
 };
 
 
@@ -1346,11 +1340,6 @@ public:
 	 */
 	inline SURFHANDLE GetSurface() const { return surf; }
 
-	/**
-	 * \brief Obsolete function. Will return NULL.
-	 * \return NULL
-	 */
-	virtual HDC GetDC() { return NULL; }
 
 	/**
 	 * \brief Draw a text string using WCHAR.

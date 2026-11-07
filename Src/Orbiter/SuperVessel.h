@@ -42,6 +42,8 @@
 #include "Vesselbase.h"
 #include "Vessel.h"
 
+class Vessel;
+
 typedef struct {     // vessel component specs
 	Vessel *vessel;     // vessel pointer
 	Vector rpos;        // rel vessel position in SuperVessel coords

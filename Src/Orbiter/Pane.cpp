@@ -80,8 +80,6 @@ Pane::Pane (oapi::GraphicsClient *gclient, HWND hwnd, int width, int height, int
 	mfdTex_blank = NULL;
 	if (gc) {
 		mfdTex_blank = gc->clbkCreateTexture (2,2);
-		static DDBLTFX bltfx = {sizeof(DDBLTFX), 0};
-		bltfx.dwFillColor = 0;
 		gc->clbkFillSurface (mfdTex_blank, 0);
 	}
 }
@@ -106,13 +104,6 @@ Pane::~Pane ()
 	if (hud)      delete hud;
 	if (blinkmesh.mesh2d) oapiDeleteMesh (blinkmesh.mesh2d);
 	if (mfdTex_blank) gc->clbkReleaseSurface (mfdTex_blank);
-}
-
-void Pane::RestoreDeviceObjects (LPDIRECT3D7 d3d, LPDIRECT3DDEVICE7 dev)
-{
-	if (defpanel) defpanel->RestoreDeviceObjects (d3d, dev);
-	for (int i = 0; i < MAXMFD; i++)
-		if (mfd[i].instr) mfd[i].instr->RestoreDeviceObjects (d3d, dev);
 }
 
 void Pane::FocusChanged (const Vessel *focus)
@@ -1192,15 +1183,10 @@ void Pane::RepaintMFDButtons (INT_PTR id, Instrument *instr)
 	}
 }
 
-void Pane::RegisterPanelBackground (HBITMAP hBmp, DWORD flag, DWORD ck)
+void Pane::RegisterPanelBackground (SURFHANDLE hSurf, DWORD flag, DWORD ck)
 {
-	if (panel) panel->DefineBackground (hBmp, flag, ck);
-	DeleteObject ((HGDIOBJ)hBmp);
-}
-
-void Pane::RegisterPanelBackground (SURFHANDLE hSurf, DWORD flag)
-{
-	// todo
+	if (panel) panel->DefineBackground (hSurf, flag, ck);
+	else if (gc && hSurf) gc->clbkReleaseSurface (hSurf);
 }
 
 void Pane::RegisterPanelArea (int aid, const RECT &pos, int draw_mode, int mouse_mode, int bkmode)

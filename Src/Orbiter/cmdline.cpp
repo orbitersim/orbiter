@@ -235,13 +235,8 @@ void orbiter::CommandLine::ApplyOption(const Key* key, const std::string& value)
 
 void orbiter::CommandLine::PrintHelpAndExit() const
 {
-	// Get console output
-	if (AttachConsole(ATTACH_PARENT_PROCESS) || AllocConsole()) {
-		freopen("CONOUT$", "w", stdout);
-	}
-
 	std::cout << "\nOrbiter Space Flight Simulator" << std::endl;
-	std::cout << "orbiter.exe [options]\n\n";
+	std::cout << "Orbiter [options]\n\n";
 	std::cout << "Options:\n";
 	std::cout << "  --help, -h: Print this help page and exit.\n";
 	std::cout << "  --scenario=<scn>, -S <scn>: Launch scenario <scn>\n";
@@ -253,7 +248,7 @@ void orbiter::CommandLine::PrintHelpAndExit() const
 	std::cout << "  --maxsystime=<t>, -T <t>: Terminate session after <t> seconds\n";
 	std::cout << "  --maxsimtime=<t>, -t <t>: Terminate session at simulation time <t>\n";
 	std::cout << "  --maxframes=<f>: Terminate session after <f> time frames\n";
-	std::cout << "  --plugin=<pg>, -p <pg>: Load plugin <pg> (from Modules\\Plugin\\<pg>.dll)\n";
+	std::cout << "  --plugin=<pg>, -p <pg>: Load plugin <pg> (from Modules/Plugin/<pg>.dylib)\n";
 	std::cout << std::endl;
 
 	exit(0);

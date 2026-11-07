@@ -145,7 +145,6 @@ public:
 
 	void Clear ();
 
-	DWORD Render (LPDIRECT3DDEVICE7 dev);
 	// render the mesh using device dev
 	// return value is the number of rendered groups
 

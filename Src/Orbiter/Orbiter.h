@@ -9,12 +9,15 @@
 #include "Select.h"
 #include "Keymap.h"
 #include <stdio.h>
-#include <commctrl.h>
 #include "Mesh.h"
 #include "TimeData.h"
 #include <chrono>
 
-class DInput;
+class DlgFunction;
+class DynamicMenuBar;
+class ScriptInterface;
+
+class InputManager;
 class Config;
 class State;
 class Body;
@@ -68,7 +71,6 @@ public:
 	void OutputLoadStatus (const char *msg, int line);
 	void OutputLoadTick (int line, bool ok = true);
 	void TerminateOnError();
-	void UpdateServerWnd (HWND hWnd);
 	void InitRotationMode ();
 	void ExitRotationMode ();
 	bool StickyFocus() const { return bKeepFocus; }
@@ -92,18 +94,10 @@ public:
 	void ToggleLabelDisplay();
 	const char *KeyState() const;
 
-	// dialog box processing
-	HWND OpenDialog (int id, DLGPROC pDlg, void *context = 0); // This version expects the dialog resource in the Orbiter instance
-	HWND OpenDialog (HINSTANCE hInst, int id, DLGPROC pDlg, void *context = 0); // use this version for for calls from external dlls
-	HWND OpenDialogEx (int id, DLGPROC pDlg, DWORD flag = 0, void *context = 0); // extended version
-	HWND OpenDialogEx (HINSTANCE hInst, int id, DLGPROC pDlg, DWORD flag = 0, void *context = 0); // extended version
+	// help
 	void OpenHelp (const HELPCONTEXT *hcontext);
 	void OpenLaunchpadHelp (HELPCONTEXT *hcontext);
 	HELPCONTEXT DefaultHelpPage(const char* topic);
-	//void OpenDialogAsync (int id, DLGPROC pDlg, void *context = 0);
-	void CloseDialog (HWND hDlg);
-	HWND IsDialog (HINSTANCE hInst, DWORD resId);
-	bool RegisterWindow (HINSTANCE hInstance, HWND hWnd, DWORD flag);
 
 	void UpdateDeallocationProgress();
 
@@ -168,14 +162,13 @@ public:
 	inline State*  PState() const { return pState; }
 	inline bool    IsActive() const { return bActive; } // temporary
 	inline bool    IsRunning() const { return bRunning; }
+	inline bool    IsSessionActive() const { return bSession; }
 	inline bool    UseStencil() const { return bUseStencil; }
 	inline void    SetFastExit (bool fexit) { bFastExit = fexit; }
-	inline bool    UseHtmlInline() { return (pConfig->CfgDebugPrm.bHtmlScnDesc == 1 || pConfig->CfgDebugPrm.bHtmlScnDesc == 2 && !bWINEenv); }
+	inline bool    UseHtmlInline() { return pConfig->CfgDebugPrm.bHtmlScnDesc != 0; }
 
-	// DirectInput components
-	inline CDIFramework7 *GetDInput() const { return pDI->GetDIFrame(); }
-	inline LPDIRECTINPUTDEVICE8 GetKbdDevice() const { return pDI->GetKbdDevice(); }
-	inline LPDIRECTINPUTDEVICE8 GetJoyDevice() const { return pDI->GetJoyDevice(); }
+	// user input devices
+	inline InputManager *GetInput() const { return pDI; }
 
 	// memory monitor
 	MemStat *memstat;
@@ -202,9 +195,6 @@ public:
 
 	Keymap keymap;
 	// keyboard mapper
-
-	bool ActivateRoughType();   // suppress font smoothing
-	bool DeactivateRoughType(); // re-enable font smoothing
 
 	// Flight recorder
 	char *FRsysname;             // system event playback name
@@ -301,12 +291,6 @@ public:
 	inline bool FillSurface (SURFHANDLE surf, DWORD tgtx, DWORD tgty, DWORD w, DWORD h, DWORD col)
 	{ return (gclient ? gclient->clbkFillSurface (surf, tgtx, tgty, w, h, col) : false); }
 
-	inline HDC GetSurfaceDC (SURFHANDLE surf)
-	{ return (gclient ? gclient->clbkGetSurfaceDC (surf) : NULL); }
-
-	inline void ReleaseSurfaceDC (SURFHANDLE surf, HDC hDC)
-	{ if (gclient) gclient->clbkReleaseSurfaceDC (surf, hDC); }
-
 	bool SendKbdBuffered(DWORD key, DWORD *mod = 0, DWORD nmod = 0, bool onRunningOnly = false);
 	// Simulate a buffered keypress with an optional list of modifier keys
 
@@ -319,14 +303,14 @@ protected:
 	HRESULT UserInput ();
 	void KbdInputImmediate_System    (char *kstate);
 	void KbdInputImmediate_OnRunning (char *buffer);
-	void KbdInputBuffered_System     (char *kstate, DIDEVICEOBJECTDATA *dod, DWORD n);
-	void KbdInputBuffered_OnRunning  (char *kstate, DIDEVICEOBJECTDATA *dod, DWORD n);
-	void UserJoyInput_System (DIJOYSTATE2 *js);
-	void UserJoyInput_OnRunning (DIJOYSTATE2 *js);
+	void KbdInputBuffered_System     (char *kstate, const std::vector<KeyEvent> &events);
+	void KbdInputBuffered_OnRunning  (char *kstate, const std::vector<KeyEvent> &events);
+	void UserJoyInput_System (JoyState *js);
+	void UserJoyInput_OnRunning (JoyState *js);
 	bool MouseEvent (UINT event, DWORD state, DWORD x, DWORD y);
 	bool BroadcastMouseEvent (UINT event, DWORD state, DWORD x, DWORD y);
 	bool BroadcastImmediateKeyboardEvent (char *kstate);
-	void BroadcastBufferedKeyboardEvent (char *kstate, DIDEVICEOBJECTDATA *dod, DWORD n);
+	void BroadcastBufferedKeyboardEvent (char *kstate, std::vector<KeyEvent> &events);
 
 	void BroadcastGlobalInit();
 
@@ -352,9 +336,6 @@ protected:
 	void ApplyWarpFactor ();
 	// broadcast new warp factor to components and modules
 
-    HRESULT InitDeviceObjects ();
-	HRESULT RestoreDeviceObjects ();
-    HRESULT DeleteDeviceObjects ();
 
 private:
 	Config         *pConfig;
@@ -362,16 +343,14 @@ private:
 	orbiter::LaunchpadDialog *m_pLaunchpad;
 	DialogManager  *pDlgMgr;
 	orbiter::ConsoleNG* m_pConsole;    // The console window opened when Orbiter server is launched without a graphics client
-	DInput         *pDI;
+	InputManager   *pDI;
 	HINSTANCE       hInst;         // orbiter instance handle
 	HWND            hRenderWnd;    // render window handle (NULL if no render support)
-	HWND            hBk;           // background window handle (demo mode only)
 	BOOL            bRenderOnce;   // flag for single frame render request
 	BOOL            bEnableLighting;
 	bool			bUseStencil;   // render device provides stencil buffer (and user requests it)
 	bool            bKeepFocus;    // disable focus switch on mouse move (during rotations)
 	bool            bStartVideoTab; // Open Launchpad dialog on video tab
-	bool            bWINEenv;      // we are running under Linux/WINE
 	bool            ignorefirst;   // flag for first joystick action
 	long            plZ4;          // previous joystick throttle setting
 	int             video_skip_count; // count skipped frames for frame sequence capturing
@@ -403,8 +382,6 @@ private:
 	bool            bPlayback;     // true if flight is being played back
 	bool            bCapture;      // capturing frame sequence is active
 	bool            bFastExit;     // terminate on simulation end?
-	bool            bSysClearType; // is cleartype enabled on the user's system?
-	bool            bRoughType;    // font-smoothing disabled?
 
 	// Manual joystick/keyboard attitude inputs
 	DWORD ctrlJoystick[15];

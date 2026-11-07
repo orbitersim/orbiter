@@ -5,9 +5,7 @@ add_subdirectory(Atlantis)
 add_subdirectory(Atlantis_SRB)
 add_subdirectory(Atlantis_Tank)
 add_subdirectory(AtlantisConfig)
-if(ORBITER_MAKE_DOC)
-	add_subdirectory(Help)
-endif()
+add_subdirectory(Help)
 
 set(ORBITER_SAMPLES ${ORBITER_INSTALL_ROOT_DIR}/Orbitersdk/samples)
 

@@ -8,313 +8,758 @@
 #define OAPI_IMPLEMENTATION
 
 #include <windows.h>
-#include <commctrl.h>
-#include <winuser.h>
 #include "Launchpad.h"
 #include "TabExtra.h"
 #include "Orbiter.h"
 #include "Rigidbody.h"
-#include "Log.h"
 #include "Help.h"
-#include "resource.h"
-#include "resource2.h"
-
-using std::max;
+#include "imgui.h"
+#include <algorithm>
 
 extern Orbiter *g_pOrbiter;
+extern CFG_PHYSICSPRM CfgPhysicsPrm_default;
+extern CFG_INSTRUMENTPRM CfgInstrumentPrm_default;
+extern CFG_DEBUGPRM CfgDebugPrm_default;
 
-//-----------------------------------------------------------------------------
+namespace {
+
+	const char *DEGSTR = "\xC2\xB0";
+
+	//-------------------------------------------------------------------------
+	// Base class for the settings dialogs of the built-in "Extra" items
+
+	class ExtraDialog : public ImGuiDialog {
+	public:
+		ExtraDialog (const char *title, Config *cfg, float width, const char *help = nullptr, bool reset = true)
+			: ImGuiDialog (title), m_cfg (cfg), m_width (width), m_help (help), m_reset (reset) {}
+
+		void Open ()
+		{
+			if (!active) {
+				m_error.clear ();
+				Init ();
+			}
+			oapiOpenDialog (this);
+		}
+
+		void Display () override
+		{
+			const float em = ImGui::GetFontSize ();
+			ImGuiViewport *vp = ImGui::GetMainViewport ();
+			ImGui::SetNextWindowPos (vp->GetCenter (), ImGuiCond_Appearing, ImVec2 (0.5f, 0.5f));
+			ImGui::SetNextWindowSizeConstraints (ImVec2 (m_width * em, 0.0f), ImVec2 (m_width * em, FLT_MAX));
+			if (ImGui::Begin (name.c_str (), &active, ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoSavedSettings)) {
+				DrawContent ();
+				if (!m_error.empty ()) {
+					ImGui::Spacing ();
+					ImGui::PushStyleColor (ImGuiCol_Text, ImVec4 (1.0f, 0.45f, 0.4f, 1.0f));
+					ImGui::TextWrapped ("%s", m_error.c_str ());
+					ImGui::PopStyleColor ();
+				}
+				ImGui::Spacing ();
+				ImGui::Separator ();
+				ImGui::Spacing ();
+				float bw = em * 5.0f;
+				if (ImGui::Button ("OK", ImVec2 (bw, 0))) {
+					m_error.clear ();
+					if (Store ()) active = false;
+				}
+				ImGui::SameLine ();
+				if (ImGui::Button ("Cancel", ImVec2 (bw, 0)))
+					active = false;
+				if (m_reset) {
+					ImGui::SameLine ();
+					if (ImGui::Button ("Reset", ImVec2 (bw, 0))) {
+						m_error.clear ();
+						Reset ();
+					}
+				}
+				if (m_help) {
+					ImGui::SameLine (ImGui::GetContentRegionMax ().x - bw);
+					if (ImGui::Button ("Help", ImVec2 (bw, 0)))
+						OpenDefaultHelp (m_help);
+				}
+			}
+			ImGui::End ();
+			if (!active) OnClose ();
+		}
+
+	protected:
+		void OnDraw () override {}
+		virtual void Init () = 0;
+		virtual void Reset () = 0;
+		virtual bool Store () = 0;
+		virtual void DrawContent () = 0;
+
+		bool Error (const char *msg) { m_error = msg; return false; }
+
+		void Note (const char *text)
+		{
+			ImGui::PushStyleColor (ImGuiCol_Text, ImGui::GetStyleColorVec4 (ImGuiCol_TextDisabled));
+			ImGui::TextWrapped ("%s", text);
+			ImGui::PopStyleColor ();
+		}
+
+		void Label (const char *text)
+		{
+			ImGui::AlignTextToFramePadding ();
+			ImGui::TextWrapped ("%s", text);
+		}
+
+		Config *m_cfg;
+		float m_width;
+		const char *m_help;
+		bool m_reset;
+		std::string m_error;
+	};
+
+	//-------------------------------------------------------------------------
+	// Dynamic state propagators
+
+	class DynamicsDialog : public ExtraDialog {
+	public:
+		DynamicsDialog (Config *cfg) : ExtraDialog ("Dynamic state propagators", cfg, 44.0f, "extra_linprop") {}
+
+	protected:
+		static inline const int PropId[NPROP_METHOD] = {
+			PROP_RK2, PROP_RK4, PROP_RK5, PROP_RK6, PROP_RK7, PROP_RK8,
+			PROP_SY2, PROP_SY4, PROP_SY6, PROP_SY8
+		};
+
+		void Set (const CFG_PHYSICSPRM &prm)
+		{
+			const CFG_PHYSICSPRM &def = CfgPhysicsPrm_default;
+			n = std::max (1, std::min ((int)MAX_PROP_LEVEL, prm.nLPropLevel));
+			for (int i = 0; i < MAX_PROP_LEVEL; i++) {
+				const CFG_PHYSICSPRM &src = (i < prm.nLPropLevel ? prm : def);
+				mode[i] = 0;
+				for (int j = 0; j < NPROP_METHOD; j++)
+					if (src.PropMode[i] == PropId[j]) { mode[i] = j; break; }
+				ttgt[i] = src.PropTTgt[i];
+				atgt[i] = src.PropATgt[i] * DEG;
+				tlim[i] = src.PropTLim[i];
+				alim[i] = src.PropALim[i] * DEG;
+				if (tlim[i] >= 1e9) tlim[i] = 5.0 * ttgt[i];
+				if (alim[i] >= 1e9) alim[i] = 2.0 * atgt[i];
+			}
+			submax = prm.PropSubMax;
+		}
+		void Init () override { Set (m_cfg->CfgPhysicsPrm); }
+		void Reset () override { Set (CfgPhysicsPrm_default); }
+
+		bool Store () override
+		{
+			char cbuf[256];
+			for (int i = 0; i < n; i++) {
+				if (mode[i] < 0 || mode[i] >= NPROP_METHOD) {
+					snprintf (cbuf, sizeof (cbuf), "Invalid propagator for integration stage %d.", i + 1);
+					return Error (cbuf);
+				}
+				if (ttgt[i] <= 0) {
+					snprintf (cbuf, sizeof (cbuf), "Invalid time step target for integration stage %d.", i + 1);
+					return Error (cbuf);
+				}
+				if (atgt[i] <= 0) {
+					snprintf (cbuf, sizeof (cbuf), "Invalid angle step target for integration stage %d.", i + 1);
+					return Error (cbuf);
+				}
+				if (i < n - 1) {
+					if (tlim[i] <= 0) {
+						snprintf (cbuf, sizeof (cbuf), "Invalid time step limit for integration stage %d -> %d.", i + 1, i + 2);
+						return Error (cbuf);
+					}
+					if (alim[i] <= 0) {
+						snprintf (cbuf, sizeof (cbuf), "Invalid angle step limit for integration stage %d -> %d.", i + 1, i + 2);
+						return Error (cbuf);
+					}
+					if (i > 0 && (tlim[i] <= tlim[i - 1] || alim[i] <= alim[i - 1]))
+						return Error ("Step limits must be in ascending order");
+				}
+			}
+			if (submax < 1)
+				return Error ("Invalid value for max. subsamples (integer value >= 1 required).");
+
+			CFG_PHYSICSPRM &prm = m_cfg->CfgPhysicsPrm;
+			prm.nLPropLevel = n;
+			for (int i = 0; i < n; i++) {
+				prm.PropMode[i] = PropId[mode[i]];
+				prm.PropTTgt[i] = ttgt[i];
+				prm.PropATgt[i] = atgt[i] * RAD;
+				prm.PropTLim[i] = (i < n - 1 ? tlim[i] : 1e10);
+				prm.PropALim[i] = (i < n - 1 ? alim[i] * RAD : 1e10);
+			}
+			prm.PropSubMax = submax;
+			return true;
+		}
+
+		void DrawContent () override
+		{
+			const float em = ImGui::GetFontSize ();
+			char hdr[4][64];
+			snprintf (hdr[0], 64, "Target time [s]");
+			snprintf (hdr[1], 64, "Target rotation [%s]", DEGSTR);
+			snprintf (hdr[2], 64, "Limit time [s]");
+			snprintf (hdr[3], 64, "Limit rotation [%s]", DEGSTR);
+
+			ImGui::SeparatorText ("Integration stages");
+			if (ImGui::BeginTable ("##stages", 6, ImGuiTableFlags_SizingFixedFit)) {
+				ImGui::TableSetupColumn ("Active");
+				ImGui::TableSetupColumn ("Propagator", ImGuiTableColumnFlags_WidthStretch);
+				for (int k = 0; k < 4; k++)
+					ImGui::TableSetupColumn (hdr[k], ImGuiTableColumnFlags_WidthFixed, em * 6.5f);
+				ImGui::TableHeadersRow ();
+				for (int i = 0; i < MAX_PROP_LEVEL; i++) {
+					ImGui::PushID (i);
+					ImGui::TableNextRow ();
+					ImGui::TableNextColumn ();
+					bool act = i < n;
+					ImGui::BeginDisabled (!((i == n - 1 && i > 0) || i == n));
+					if (ImGui::Checkbox ("##act", &act))
+						n = act ? i + 1 : i;
+					ImGui::EndDisabled ();
+					if (i < n) {
+						ImGui::TableNextColumn ();
+						ImGui::SetNextItemWidth (-FLT_MIN);
+						if (ImGui::BeginCombo ("##prop", RigidBody::PropagatorStr (mode[i]))) {
+							for (int j = 0; j < NPROP_METHOD; j++)
+								if (ImGui::Selectable (RigidBody::PropagatorStr (j), mode[i] == j))
+									mode[i] = j;
+							ImGui::EndCombo ();
+						}
+						ImGui::TableNextColumn ();
+						ImGui::SetNextItemWidth (-FLT_MIN);
+						ImGui::InputDouble ("##ttgt", ttgt + i, 0.0, 0.0, "%0.2f");
+						ImGui::TableNextColumn ();
+						ImGui::SetNextItemWidth (-FLT_MIN);
+						ImGui::InputDouble ("##atgt", atgt + i, 0.0, 0.0, "%0.1f");
+						if (i < n - 1) {
+							ImGui::TableNextColumn ();
+							ImGui::SetNextItemWidth (-FLT_MIN);
+							ImGui::InputDouble ("##tlim", tlim + i, 0.0, 0.0, "%0.2f");
+							ImGui::TableNextColumn ();
+							ImGui::SetNextItemWidth (-FLT_MIN);
+							ImGui::InputDouble ("##alim", alim + i, 0.0, 0.0, "%0.1f");
+						}
+					}
+					ImGui::PopID ();
+				}
+				ImGui::EndTable ();
+			}
+
+			ImGui::SeparatorText ("Parameters");
+			ImGui::AlignTextToFramePadding ();
+			ImGui::TextUnformatted ("Max. subsamples");
+			ImGui::SameLine ();
+			ImGui::SetNextItemWidth (em * 6.0f);
+			ImGui::InputInt ("##submax", &submax, 0, 0);
+		}
+
+		int n;
+		int mode[MAX_PROP_LEVEL];
+		double ttgt[MAX_PROP_LEVEL], atgt[MAX_PROP_LEVEL], tlim[MAX_PROP_LEVEL], alim[MAX_PROP_LEVEL];
+		int submax;
+	};
+
+	//-------------------------------------------------------------------------
+	// Orbit stabilisation
+
+	class StabilisationDialog : public ExtraDialog {
+	public:
+		StabilisationDialog (Config *cfg) : ExtraDialog ("Orbit stabilisation parameters", cfg, 30.0f, "extra_orbitstab") {}
+
+	protected:
+		void Set (const CFG_PHYSICSPRM &prm)
+		{
+			enable = prm.bOrbitStabilise;
+			plimit = prm.Stabilise_PLimit * 100.0;
+			slimit = prm.Stabilise_SLimit * 100.0;
+			psub = prm.PPropSubLimit * 100.0;
+			psubmax = prm.PPropSubMax;
+			pstep = prm.PPropStepLimit * 100.0;
+		}
+		void Init () override { Set (m_cfg->CfgPhysicsPrm); }
+		void Reset () override { Set (CfgPhysicsPrm_default); }
+
+		bool Store () override
+		{
+			if (plimit < 0.0 || plimit > 100.0) return Error ("Invalid perturbation limit.");
+			if (slimit < 0.0) return Error ("Invalid step limit.");
+			if (psub < 0.0) return Error ("Invalid subsampling target step.");
+			if (psubmax < 1) return Error ("Invalid subsampling steps.");
+			if (pstep < 0.0) return Error ("Invalid perturbation limit value.");
+			CFG_PHYSICSPRM &prm = m_cfg->CfgPhysicsPrm;
+			prm.bOrbitStabilise = enable;
+			prm.Stabilise_PLimit = plimit * 0.01;
+			prm.Stabilise_SLimit = slimit * 0.01;
+			prm.PPropSubLimit = psub * 0.01;
+			prm.PPropSubMax = psubmax;
+			prm.PPropStepLimit = pstep * 0.01;
+			return true;
+		}
+
+		void Row (const char *label, double *v, const char *unit)
+		{
+			ImGui::TableNextRow ();
+			ImGui::TableNextColumn (); Label (label);
+			ImGui::TableNextColumn ();
+			ImGui::SetNextItemWidth (-FLT_MIN);
+			ImGui::PushID (label);
+			ImGui::InputDouble ("##v", v, 0.0, 0.0, "%0.4g");
+			ImGui::PopID ();
+			ImGui::TableNextColumn ();
+			ImGui::AlignTextToFramePadding ();
+			ImGui::TextUnformatted (unit);
+		}
+
+		bool BeginRows (const char *id)
+		{
+			if (!ImGui::BeginTable (id, 3)) return false;
+			const float em = ImGui::GetFontSize ();
+			ImGui::TableSetupColumn ("##l", ImGuiTableColumnFlags_WidthStretch);
+			ImGui::TableSetupColumn ("##v", ImGuiTableColumnFlags_WidthFixed, em * 5.0f);
+			ImGui::TableSetupColumn ("##u", ImGuiTableColumnFlags_WidthFixed, em * 7.0f);
+			return true;
+		}
+
+		void DrawContent () override
+		{
+			ImGui::Checkbox ("Enable orbit stabilisation", &enable);
+			ImGui::BeginDisabled (!enable);
+			ImGui::SeparatorText ("Orbit step limit");
+			if (BeginRows ("##t1")) {
+				Row ("Enable stabilisation for orbit steps larger than", &slimit, "% of full orbit");
+				ImGui::EndTable ();
+			}
+			ImGui::SeparatorText ("Gravitational field perturbation limit");
+			if (BeginRows ("##t2")) {
+				Row ("Suppress stabilisation if gravity perturbations are greater than", &plimit, "% of total field");
+				ImGui::EndTable ();
+			}
+			ImGui::SeparatorText ("Subsampling of perturbation integration");
+			if (BeginRows ("##t3")) {
+				Row ("Target orbit step", &psub, "% of full orbit");
+				ImGui::TableNextRow ();
+				ImGui::TableNextColumn (); Label ("Max. steps");
+				ImGui::TableNextColumn ();
+				ImGui::SetNextItemWidth (-FLT_MIN);
+				ImGui::InputInt ("##psubmax", &psubmax, 0, 0);
+				ImGui::EndTable ();
+			}
+			ImGui::SeparatorText ("Perturbation model");
+			if (BeginRows ("##t4")) {
+				Row ("Suppress nonspherical gravity perturbations for orbit steps greater than", &pstep, "% of full orbit");
+				ImGui::EndTable ();
+			}
+			ImGui::EndDisabled ();
+		}
+
+		bool enable;
+		double plimit, slimit, psub, pstep;
+		int psubmax;
+	};
+
+	//-------------------------------------------------------------------------
+	// MFD parameters
+
+	class MfdConfigDialog : public ExtraDialog {
+	public:
+		MfdConfigDialog (Config *cfg) : ExtraDialog ("MFD parameters", cfg, 24.0f, "extra_mfdconfig") {}
+
+	protected:
+		void Set (const CFG_INSTRUMENTPRM &prm)
+		{
+			pow2 = prm.bMfdPow2;
+			hires = prm.MfdHiresThreshold;
+			vcsize = (prm.VCMFDSize == 256 ? 0 : prm.VCMFDSize == 512 ? 1 : 2);
+		}
+		void Init () override { Set (m_cfg->CfgInstrumentPrm); }
+		void Reset () override { Set (CfgInstrumentPrm_default); }
+
+		bool Store () override
+		{
+			if (hires < 8) return Error ("Invalid hires texture threshold (integer value >= 8 required).");
+			CFG_INSTRUMENTPRM &prm = m_cfg->CfgInstrumentPrm;
+			prm.MfdHiresThreshold = hires;
+			prm.bMfdPow2 = pow2;
+			prm.VCMFDSize = 256 << vcsize;
+			return true;
+		}
+
+		void DrawContent () override
+		{
+			ImGui::SeparatorText ("MFD texture size: 2D panels");
+			ImGui::TextUnformatted ("Enforce pow2 MFD display texture sizes");
+			ImGui::RadioButton ("No", &pow2, 0); ImGui::SameLine ();
+			ImGui::RadioButton ("Yes", &pow2, 1); ImGui::SameLine ();
+			ImGui::RadioButton ("Auto", &pow2, 2);
+			ImGui::AlignTextToFramePadding ();
+			ImGui::TextUnformatted ("Switch to hires texture at MFD size");
+			ImGui::SameLine ();
+			ImGui::SetNextItemWidth (ImGui::GetFontSize () * 5.0f);
+			ImGui::InputInt ("##hires", &hires, 0, 0);
+			ImGui::SeparatorText ("MFD texture size: virtual cockpits");
+			ImGui::RadioButton ("256 x 256", &vcsize, 0); ImGui::SameLine ();
+			ImGui::RadioButton ("512 x 512", &vcsize, 1); ImGui::SameLine ();
+			ImGui::RadioButton ("1024 x 1024", &vcsize, 2);
+		}
+
+		int pow2, hires, vcsize;
+	};
+
+	//-------------------------------------------------------------------------
+	// Shutdown options
+
+	class ShutdownDialog : public ExtraDialog {
+	public:
+		ShutdownDialog (Config *cfg) : ExtraDialog ("Shutdown options", cfg, 24.0f, "extra_shutdown") {}
+
+	protected:
+		void Init () override { mode = m_cfg->CfgDebugPrm.ShutdownMode; }
+		void Reset () override { mode = CfgDebugPrm_default.ShutdownMode; }
+		bool Store () override { m_cfg->CfgDebugPrm.ShutdownMode = mode; return true; }
+
+		void DrawContent () override
+		{
+			ImGui::SeparatorText ("After closing simulation window");
+			ImGui::RadioButton ("De-allocate memory and display launchpad dialog", &mode, 0);
+			ImGui::RadioButton ("Respawn Orbiter process", &mode, 1);
+			ImGui::RadioButton ("Terminate Orbiter process", &mode, 2);
+		}
+
+		int mode;
+	};
+
+	//-------------------------------------------------------------------------
+	// Fixed time steps
+
+	class FixedStepDialog : public ExtraDialog {
+	public:
+		FixedStepDialog (Config *cfg) : ExtraDialog ("Fixed time steps", cfg, 24.0f, "extra_fixedstep") {}
+
+	protected:
+		void Set (const CFG_DEBUGPRM &prm)
+		{
+			double cmd = m_cfg->CfgCmdlinePrm.FixedStep;
+			locked = (cmd != 0.0);
+			fixed = locked || prm.FixedStep != 0.0;
+			step = locked ? cmd : (prm.FixedStep ? prm.FixedStep : 0.01);
+		}
+		void Init () override { Set (m_cfg->CfgDebugPrm); }
+		void Reset () override { Set (CfgDebugPrm_default); }
+
+		bool Store () override
+		{
+			if (locked) return true;
+			if (!fixed) {
+				m_cfg->CfgDebugPrm.FixedStep = 0.0;
+				return true;
+			}
+			if (step <= 0.0) return Error ("Invalid frame interval length");
+			m_cfg->CfgDebugPrm.FixedStep = step;
+			return true;
+		}
+
+		void DrawContent () override
+		{
+			ImGui::BeginDisabled (locked);
+			ImGui::Checkbox ("Enable fixed time step length", &fixed);
+			ImGui::BeginDisabled (!fixed);
+			ImGui::AlignTextToFramePadding ();
+			ImGui::TextUnformatted ("Fixed time step length per frame [s]");
+			ImGui::SameLine ();
+			ImGui::SetNextItemWidth (ImGui::GetFontSize () * 5.0f);
+			ImGui::InputDouble ("##step", &step, 0.0, 0.0, "%0.4g");
+			ImGui::EndDisabled ();
+			ImGui::EndDisabled ();
+		}
+
+		bool locked, fixed;
+		double step;
+	};
+
+	//-------------------------------------------------------------------------
+	// Rendering options
+
+	class RenderingDialog : public ExtraDialog {
+	public:
+		RenderingDialog (Config *cfg) : ExtraDialog ("Debug rendering options", cfg, 20.0f) {}
+
+	protected:
+		void Set (const CFG_DEBUGPRM &prm) { wire = prm.bWireframeMode; norm = prm.bNormaliseNormals; }
+		void Init () override { Set (m_cfg->CfgDebugPrm); }
+		void Reset () override { Set (CfgDebugPrm_default); }
+		bool Store () override
+		{
+			m_cfg->CfgDebugPrm.bWireframeMode = wire;
+			m_cfg->CfgDebugPrm.bNormaliseNormals = norm;
+			return true;
+		}
+		void DrawContent () override
+		{
+			ImGui::Checkbox ("Render objects as wire frames", &wire);
+			ImGui::Checkbox ("Force normalisation of normals", &norm);
+		}
+
+		bool wire, norm;
+	};
+
+	//-------------------------------------------------------------------------
+	// Performance settings
+
+	class PerformanceDialog : public ExtraDialog {
+	public:
+		PerformanceDialog (Config *cfg) : ExtraDialog ("Performance settings", cfg, 24.0f, "extra_performance") {}
+
+	protected:
+		void Set (const CFG_DEBUGPRM &prm) { disable = prm.bDisableSmoothFont; force = prm.bForceReenableSmoothFont; }
+		void Init () override { Set (m_cfg->CfgDebugPrm); }
+		void Reset () override { Set (CfgDebugPrm_default); }
+		bool Store () override
+		{
+			m_cfg->CfgDebugPrm.bDisableSmoothFont = disable;
+			m_cfg->CfgDebugPrm.bForceReenableSmoothFont = force;
+			return true;
+		}
+		void DrawContent () override
+		{
+			ImGui::SeparatorText ("Font smoothing");
+			ImGui::Checkbox ("Disable font smoothing while Orbiter is running", &disable);
+			Note ("Font smoothing provides better text display in MFD instruments, but can seriously degrade performance on some computers. Disable font smoothing if you are experiencing performance issues, such as periodic stutters.");
+			ImGui::Spacing ();
+			ImGui::Checkbox ("Enforce font smoothing on exit", &force);
+			Note ("Orbiter usually restores the original font smoothing setting on exit. Tick this option to enforce font smoothing on exiting Orbiter even if it was not active at the start.");
+		}
+
+		bool disable, force;
+	};
+
+	//-------------------------------------------------------------------------
+	// Launchpad options
+
+	class LaunchpadOptionsDialog : public ExtraDialog {
+	public:
+		LaunchpadOptionsDialog (Config *cfg) : ExtraDialog ("Launchpad options", cfg, 24.0f) {}
+
+	protected:
+		void Set (const CFG_DEBUGPRM &prm) { html = prm.bHtmlScnDesc; screen = prm.bSaveExitScreen; }
+		void Init () override { Set (m_cfg->CfgDebugPrm); }
+		void Reset () override { Set (CfgDebugPrm_default); }
+		bool Store () override
+		{
+			m_cfg->CfgDebugPrm.bHtmlScnDesc = html;
+			m_cfg->CfgDebugPrm.bSaveExitScreen = screen;
+			return true;
+		}
+		void DrawContent () override
+		{
+			ImGui::SeparatorText ("Scenario description format");
+			ImGui::RadioButton ("Inline HTML", &html, 1);
+			ImGui::RadioButton ("Simple text display", &html, 0);
+			ImGui::RadioButton ("Auto detect", &html, 2);
+			ImGui::SeparatorText ("Scenario screenshot");
+			ImGui::Checkbox ("Save a screenshot on closing a simulation session", &screen);
+			Note ("If activated, the screenshot is displayed in the description of the \"Current state\" scenario.");
+		}
+
+		int html;
+		bool screen;
+	};
+
+	//-------------------------------------------------------------------------
+	// Logfile options
+
+	class LogfileDialog : public ExtraDialog {
+	public:
+		LogfileDialog (Config *cfg) : ExtraDialog ("Logfile options", cfg, 24.0f) {}
+
+	protected:
+		void Init () override { verbose = m_cfg->CfgDebugPrm.bVerboseLog; }
+		void Reset () override { verbose = CfgDebugPrm_default.bVerboseLog; }
+		bool Store () override { m_cfg->CfgDebugPrm.bVerboseLog = verbose; return true; }
+		void DrawContent () override
+		{
+			ImGui::SeparatorText ("Output format");
+			ImGui::Checkbox ("Verbose output", &verbose);
+			Note ("Verbose output logs many events during the simulation session, such as texture loads. This can help identifying problems, but it may also slightly affect performance, and will create very large log files.");
+		}
+
+		bool verbose;
+	};
+
+}
+
+//=============================================================================
 // ExtraTab class
 
-orbiter::ExtraTab::ExtraTab (const LaunchpadDialog *lp): LaunchpadTab (lp)
+orbiter::ExtraTab::ExtraTab (LaunchpadDialog *lp): LaunchpadTab (lp, "Extra", "tab_extra")
 {
-	m_internalPrm = 0;
+	m_sel = nullptr;
+	m_listWidth = 260.0f;
+
+	ExtraItem *ht;
+	ht = Register (new ExtraPropagation (this));
+	Register (new ExtraDynamics (this), ht);
+	Register (new ExtraStabilisation (this), ht);
+	ht = Register (new ExtraInstruments (this));
+	Register (new ExtraMfdConfig (this), ht);
+	Register (new ExtraVesselConfig (this));
+	Register (new ExtraPlanetConfig (this));
+	ht = Register (new ExtraDebug (this));
+	Register (new ExtraShutdown (this), ht);
+	Register (new ExtraFixedStep (this), ht);
+	Register (new ExtraRenderingOptions (this), ht);
+	Register (new ExtraLaunchpadOptions (this), ht);
+	Register (new ExtraLogfileOptions (this), ht);
+	Register (new ExtraPerformanceSettings (this), ht);
 }
 
 //-----------------------------------------------------------------------------
 
 orbiter::ExtraTab::~ExtraTab ()
 {
-	// at this point, only the internally created entries should be left
-	// so they should be safe to delete
-	if (m_ExtPrm.size() > m_internalPrm)
-		LOGOUT_WARN("Orphaned Launchpad Extra entries: %d. Some plugins may not have un-registered their entries.",
-			m_ExtPrm.size() - m_internalPrm);
-	for (int i = 0; i < m_ExtPrm.size(); i++)
-		delete m_ExtPrm[i];
+	for (auto it = m_builtin.rbegin (); it != m_builtin.rend (); ++it) {
+		pLp->UnregisterExtraParam (*it);
+		delete *it;
+	}
+	m_builtin.clear ();
 }
 
 //-----------------------------------------------------------------------------
 
-void orbiter::ExtraTab::Create ()
+orbiter::ExtraItem *orbiter::ExtraTab::Register (BuiltinLaunchpadItem *item, ExtraItem *parent)
 {
-	hTab = CreateTab (IDD_PAGE_EXT);
-
-	r_lst0 = GetClientPos (hTab, GetDlgItem (hTab, IDC_EXT_LIST));  // REMOVE!
-	r_dsc0 = GetClientPos (hTab, GetDlgItem (hTab, IDC_EXT_TEXT));  // REMOVE!
-	r_pane  = GetClientPos (hTab, GetDlgItem (hTab, IDC_EXT_SPLIT1));
-	r_edit0 = GetClientPos (hTab, GetDlgItem (hTab, IDC_EXT_OPEN));
-	splitListDesc.SetHwnd (GetDlgItem (hTab, IDC_EXT_SPLIT1), GetDlgItem (hTab, IDC_EXT_LIST), GetDlgItem (hTab, IDC_EXT_TEXT));
+	m_builtin.push_back (item);
+	ExtraItem *node = pLp->RegisterExtraParam (item, parent);
+	item->hItem = (LAUNCHPADITEM_HANDLE)node;
+	return node;
 }
 
 //-----------------------------------------------------------------------------
 
 void orbiter::ExtraTab::GetConfig (const Config *cfg)
 {
-	HTREEITEM ht;
-	ht = RegisterExtraParam(new ExtraPropagation(this), NULL); TRACENEW
-	RegisterExtraParam(new ExtraDynamics(this), ht); TRACENEW
-	RegisterExtraParam(new ExtraStabilisation(this), ht); TRACENEW
-	ht = RegisterExtraParam(new ExtraInstruments(this), NULL); TRACENEW
-	RegisterExtraParam(new ExtraMfdConfig(this), ht); TRACENEW
-	RegisterExtraParam(new ExtraVesselConfig(this), NULL); TRACENEW
-	RegisterExtraParam(new ExtraPlanetConfig(this), NULL); TRACENEW
-	ht = RegisterExtraParam(new ExtraDebug(this), NULL); TRACENEW
-	RegisterExtraParam(new ExtraShutdown(this), ht); TRACENEW
-	RegisterExtraParam(new ExtraFixedStep(this), ht); TRACENEW
-	RegisterExtraParam(new ExtraRenderingOptions(this), ht); TRACENEW
-	RegisterExtraParam(new ExtraLaunchpadOptions(this), ht); TRACENEW
-	RegisterExtraParam(new ExtraLogfileOptions(this), ht); TRACENEW
-	RegisterExtraParam(new ExtraPerformanceSettings(this), ht); TRACENEW
-	m_internalPrm = m_ExtPrm.size();
-	SetWindowText (GetDlgItem (hTab, IDC_EXT_TEXT), "Advanced and addon-specific configuration parameters.\r\n\r\nClick on an item to get a description.\r\n\r\nDouble-click to open or expand.");
 	int listw = cfg->CfgWindowPos.LaunchpadExtListWidth;
-	if (!listw) {
-		RECT r;
-		GetClientRect (GetDlgItem (hTab, IDC_EXT_LIST), &r);
-		listw = r.right;
-	}
-	splitListDesc.SetStaticPane (SplitterCtrl::PANE1, listw);
+	m_listWidth = listw > 0 ? (float)listw : 260.0f;
 }
 
 //-----------------------------------------------------------------------------
 
 void orbiter::ExtraTab::SetConfig (Config *cfg)
 {
-	cfg->CfgWindowPos.LaunchpadExtListWidth = splitListDesc.GetPaneWidth (SplitterCtrl::PANE1);
+	cfg->CfgWindowPos.LaunchpadExtListWidth = (int)m_listWidth;
 }
 
 //-----------------------------------------------------------------------------
 
-bool orbiter::ExtraTab::OpenHelp ()
+bool orbiter::ExtraTab::Exists (const LaunchpadItem *item, const std::list<std::unique_ptr<ExtraItem>> &list) const
 {
-	OpenTabHelp ("tab_extra");
-	return true;
-}
-
-//-----------------------------------------------------------------------------
-
-BOOL orbiter::ExtraTab::OnSize (int w, int h)
-{
-	int dw = w - (int)(pos0.right-pos0.left);
-	int dh = h - (int)(pos0.bottom-pos0.top);
-	int w0 = r_pane.right - r_pane.left; // initial splitter pane width
-	int h0 = r_pane.bottom - r_pane.top; // initial splitter pane height
-
-	// the elements below may need updating
-	int lstw0 = r_lst0.right-r_lst0.left;
-	int lsth0 = r_lst0.bottom-r_lst0.top;
-	int dscw0 = r_dsc0.right-r_dsc0.left;
-	int wg  = r_dsc0.right - r_lst0.left - lstw0 - dscw0;  // gap width
-	int wl  = lstw0 + (dw*lstw0)/(lstw0+dscw0);
-	wl = max (wl, lstw0/2);
-	int xr = r_lst0.left+wl+wg;
-	int wr = max(10,lstw0+dscw0+dw-wl);
-
-	///SetWindowPos (GetDlgItem (hTab, IDC_EXT_LIST), NULL,
-	//	0, 0, wl, lsth0+dh,
-	//	SWP_NOACTIVATE|SWP_NOMOVE|SWP_NOOWNERZORDER|SWP_NOZORDER);
-	//SetWindowPos (GetDlgItem (hTab, IDC_EXT_TEXT), NULL,
-	//	xr, r_dsc0.top, wr, lsth0+dh,
-	//	SWP_NOACTIVATE|SWP_NOOWNERZORDER|SWP_NOZORDER);
-	SetWindowPos (GetDlgItem (hTab, IDC_EXT_SPLIT1), NULL,
-		0, 0, w0+dw, h0+dh,
-		SWP_NOACTIVATE|SWP_NOMOVE|SWP_NOOWNERZORDER|SWP_NOZORDER);
-	SetWindowPos (GetDlgItem (hTab, IDC_EXT_OPEN), NULL,
-		r_edit0.left, r_edit0.top+dh, 0, 0,
-		SWP_NOACTIVATE|SWP_NOSIZE|SWP_NOOWNERZORDER|SWP_NOZORDER);
-
-	return NULL;
-}
-
-//-----------------------------------------------------------------------------
-
-HTREEITEM orbiter::ExtraTab::RegisterExtraParam (LaunchpadItem *item, HTREEITEM parent)
-{
-	// first check that the item doesn't already exist
-	HTREEITEM hti = FindExtraParam (item->Name(), parent);
-	if (hti) return hti;
-
-	// add extra parameter instance to list
-	m_ExtPrm.push_back(item);
-
-	// if a name is provided, add item to tree list
-	char *name = item->Name();
-	if (name) {
-		TV_INSERTSTRUCT tvis;
-		tvis.item.mask = TVIF_TEXT | TVIF_PARAM;
-		tvis.item.pszText = name;
-		tvis.item.lParam = (LPARAM)item;
-		tvis.hInsertAfter = TVI_LAST;
-		tvis.hParent = (parent ? parent : NULL);
-		hti = TreeView_InsertItem (GetDlgItem (hTab, IDC_EXT_LIST), &tvis);
-	} else hti = 0;
-	item->hItem = (LAUNCHPADITEM_HANDLE)hti;
-	return hti;
-}
-
-//-----------------------------------------------------------------------------
-
-bool orbiter::ExtraTab::UnregisterExtraParam (LaunchpadItem *item)
-{
-	for (auto it = m_ExtPrm.begin(); it != m_ExtPrm.end(); it++) {
-		if (*it == item) {
-			TreeView_DeleteItem(GetDlgItem(hTab, IDC_EXT_LIST), item->hItem); // remove entry from UI
-			item->clbkWriteConfig(); // allow item to save state before removing
-			m_ExtPrm.erase(it);        // delete the container - the actual item has to be deleted by the caller
-			return true;
-		}
-	}
+	for (auto &n : list)
+		if (n->item == item || Exists (item, n->children)) return true;
 	return false;
 }
 
 //-----------------------------------------------------------------------------
 
-HTREEITEM orbiter::ExtraTab::FindExtraParam (const char *name, const HTREEITEM parent)
+void orbiter::ExtraTab::OpenItem (LaunchpadItem *item)
 {
-	HTREEITEM hti = FindExtraParamChild (parent);
-	if (!name) return hti; // no name given - return first child
+	if (item) item->clbkOpen ();
+}
 
-	char cbuf[256];
-	HWND hCtrl = GetDlgItem (hTab, IDC_EXT_LIST);
-	TV_ITEM tvi;
-	tvi.pszText = cbuf;
-	tvi.cchTextMax = 256;
-	tvi.hItem = hti;
-	tvi.mask = TVIF_HANDLE | TVIF_TEXT;
-	
-	// step through the list
-	while (TreeView_GetItem (hCtrl, &tvi)) {
-		if (!_stricmp (name, tvi.pszText)) return tvi.hItem;
-		tvi.hItem = TreeView_GetNextSibling (hCtrl, tvi.hItem);
+//-----------------------------------------------------------------------------
+
+void orbiter::ExtraTab::DrawNode (const ExtraItem *node)
+{
+	const char *name = node->item->Name ();
+	if (!name) return;
+	bool leaf = true;
+	for (auto &c : node->children)
+		if (c->item->Name ()) { leaf = false; break; }
+
+	ImGuiTreeNodeFlags flags = ImGuiTreeNodeFlags_SpanAvailWidth | ImGuiTreeNodeFlags_OpenOnArrow | ImGuiTreeNodeFlags_OpenOnDoubleClick | ImGuiTreeNodeFlags_NavLeftJumpsToParent;
+	if (leaf) flags |= ImGuiTreeNodeFlags_Leaf | ImGuiTreeNodeFlags_NoTreePushOnOpen;
+	if (node->item == m_sel) flags |= ImGuiTreeNodeFlags_Selected;
+
+	ImGui::PushID (node);
+	bool open = ImGui::TreeNodeEx ("##item", flags, "%s", name);
+	if (ImGui::IsItemClicked () && !ImGui::IsItemToggledOpen ())
+		m_sel = node->item;
+	if (ImGui::IsItemHovered () && ImGui::IsMouseDoubleClicked (ImGuiMouseButton_Left))
+		OpenItem (node->item);
+	if (ImGui::IsItemFocused () && (ImGui::IsKeyPressed (ImGuiKey_Enter) || ImGui::IsKeyPressed (ImGuiKey_KeypadEnter)))
+		OpenItem (node->item);
+	if (!leaf && open) {
+		for (auto &c : node->children)
+			DrawNode (c.get ());
+		ImGui::TreePop ();
 	}
-
-	return 0;
+	ImGui::PopID ();
 }
 
 //-----------------------------------------------------------------------------
 
-HTREEITEM orbiter::ExtraTab::FindExtraParamChild (const HTREEITEM parent)
+void orbiter::ExtraTab::Draw ()
 {
-	HWND hCtrl = GetDlgItem (hTab, IDC_EXT_LIST);
-	if (parent) return TreeView_GetChild (hCtrl, parent);
-	else        return TreeView_GetRoot (hCtrl);
-}
+	const float sc = pLp->UIScale ();
+	const ImGuiStyle &style = ImGui::GetStyle ();
+	const auto &items = pLp->ExtraItems ();
+	if (m_sel && !Exists (m_sel, items))
+		m_sel = nullptr;
 
-//-----------------------------------------------------------------------------
+	float footer = ImGui::GetFrameHeight () + style.ItemSpacing.y;
+	float h = ImGui::GetContentRegionAvail ().y - footer;
 
-void orbiter::ExtraTab::WriteExtraParams ()
-{
-	for (auto it = m_ExtPrm.begin(); it != m_ExtPrm.end(); it++)
-		(*it)->clbkWriteConfig();
-}
+	ImGui::BeginChild ("##extlist", ImVec2 (m_listWidth * sc, h), ImGuiChildFlags_Borders | ImGuiChildFlags_ResizeX);
+	for (auto &n : items)
+		DrawNode (n.get ());
+	m_listWidth = ImGui::GetWindowWidth () / sc;
+	ImGui::EndChild ();
 
-//-----------------------------------------------------------------------------
-
-BOOL orbiter::ExtraTab::OnNotify(HWND hDlg, int idCtrl, LPNMHDR pnmh)
-{
-	if (idCtrl == IDC_EXT_LIST) {
-		NM_TREEVIEW* pnmtv = (NM_TREEVIEW FAR*)pnmh;
-		switch (pnmtv->hdr.code) {
-		case TVN_SELCHANGED: {
-			LaunchpadItem* func = (LaunchpadItem*)pnmtv->itemNew.lParam;
-			char* desc = func->Description();
-			if (desc) SetWindowText(GetDlgItem(hDlg, IDC_EXT_TEXT), desc);
-			else SetWindowText(GetDlgItem(hDlg, IDC_EXT_TEXT), "");
-			} return TRUE;
-		case NM_DBLCLK: {
-			TVITEM tvi;
-			tvi.hItem = TreeView_GetSelection(GetDlgItem(hDlg, IDC_EXT_LIST));
-			tvi.mask = TVIF_PARAM;
-			if (TreeView_GetItem(GetDlgItem(hDlg, IDC_EXT_LIST), &tvi) && tvi.lParam) {
-				BuiltinLaunchpadItem* func = (BuiltinLaunchpadItem*)tvi.lParam;
-				func->clbkOpen(LaunchpadWnd());
-			}
-			} return TRUE;
+	ImGui::SameLine ();
+	ImGui::BeginChild ("##extdesc", ImVec2 (0, h), ImGuiChildFlags_Borders);
+	if (m_sel) {
+		const char *desc = m_sel->Description ();
+		if (desc) {
+			std::string d (desc);
+			d.erase (std::remove (d.begin (), d.end (), '\r'), d.end ());
+			ImGui::TextWrapped ("%s", d.c_str ());
 		}
 	}
-	return FALSE;
+	ImGui::EndChild ();
+
+	ImGui::BeginDisabled (!m_sel);
+	if (ImGui::Button ("Edit"))
+		OpenItem (m_sel);
+	ImGui::EndDisabled ();
 }
 
-//-----------------------------------------------------------------------------
+//=============================================================================
+// Built-in "Extra" items
 
-BOOL orbiter::ExtraTab::OnMessage(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
-{
-	NM_TREEVIEW *pnmtv;
-
-	switch (uMsg) {
-	case WM_COMMAND:
-		switch (LOWORD(wParam)) {
-		case IDC_EXT_OPEN: {
-			TVITEM tvi;
-			tvi.hItem = TreeView_GetSelection (GetDlgItem (hWnd, IDC_EXT_LIST));
-			tvi.mask = TVIF_PARAM;
-			if (TreeView_GetItem (GetDlgItem (hWnd, IDC_EXT_LIST), &tvi) && tvi.lParam) {
-				BuiltinLaunchpadItem *func = (BuiltinLaunchpadItem*)tvi.lParam;
-				func->clbkOpen (LaunchpadWnd());
-			}
-			} return TRUE;
-		}
-		break;
-	}
-	return FALSE;
-}
-
-
-// ****************************************************************************
-// ****************************************************************************
-
-//-----------------------------------------------------------------------------
-// Additional functions (under the "Extra" tab)
-//-----------------------------------------------------------------------------
-
-BuiltinLaunchpadItem::BuiltinLaunchpadItem (const orbiter::ExtraTab *tab): LaunchpadItem ()
+BuiltinLaunchpadItem::BuiltinLaunchpadItem (orbiter::ExtraTab *tab): LaunchpadItem ()
 {
 	pTab = tab;
 }
 
-bool BuiltinLaunchpadItem::OpenDialog (HWND hParent, int resid, DLGPROC pDlg)
+BuiltinLaunchpadItem::~BuiltinLaunchpadItem ()
 {
-	return LaunchpadItem::OpenDialog (pTab->AppInstance(), hParent, resid, pDlg);
+	if (m_dlg)
+		pTab->Launchpad ()->CloseDialog (m_dlg.get ());
 }
 
-void BuiltinLaunchpadItem::Error (const char *msg)
+Config *BuiltinLaunchpadItem::Cfg () const
 {
-	MessageBox (pTab->LaunchpadWnd(), msg, "Orbiter configuration error", MB_OK|MB_ICONERROR);
+	return pTab->Cfg ();
 }
 
-INT_PTR CALLBACK BuiltinLaunchpadItem::DlgProc (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
+void BuiltinLaunchpadItem::Open (ImGuiDialog *dlg)
 {
-	switch (uMsg) {
-	case WM_INITDIALOG:
-		SetWindowLongPtr (hWnd, DWLP_USER, lParam);
-		return TRUE;
-	case WM_COMMAND:
-		switch (LOWORD (wParam)) {
-		case IDCANCEL:
-			EndDialog (hWnd, 0);
-		}
-		break;
-	case WM_CLOSE:
-		EndDialog (hWnd, 0);
-		return 0;
-	}
-	return FALSE;
+	if (!m_dlg) m_dlg.reset (dlg);
+	else delete dlg;
+	static_cast<ExtraDialog*> (m_dlg.get ())->Open ();
 }
 
 //-----------------------------------------------------------------------------
 // Physics engine
-//-----------------------------------------------------------------------------
 
 char *ExtraPropagation::Name ()
 {
@@ -326,15 +771,6 @@ char *ExtraPropagation::Description ()
 	return (char*)"Select and configure the time propagation methods Orbiter uses to update vessel positions and velocities from one time frame to the next.";
 }
 
-//-----------------------------------------------------------------------------
-// Physics engine: Parameters for dynamic state propagation
-//-----------------------------------------------------------------------------
-
-int ExtraDynamics::PropId[NPROP_METHOD] = {
-	PROP_RK2, PROP_RK4, PROP_RK5, PROP_RK6, PROP_RK7, PROP_RK8,
-	PROP_SY2, PROP_SY4, PROP_SY6, PROP_SY8
-};
-
 char *ExtraDynamics::Name ()
 {
 	return (char*)"Dynamic state propagators";
@@ -345,420 +781,11 @@ char *ExtraDynamics::Description ()
 	return (char*)"Select the numerical integration methods used for dynamic state updates.\r\n\r\nState propagators affect the accuracy and stability of spacecraft orbits and trajectory calculations.";
 }
 
-bool ExtraDynamics::clbkOpen (HWND hParent)
+bool ExtraDynamics::clbkOpen ()
 {
-	OpenDialog (hParent, IDD_EXTRA_DYNAMICS, DlgProc);
+	Open (m_dlg ? nullptr : new DynamicsDialog (Cfg ()));
 	return true;
 }
-
-void ExtraDynamics::InitDialog (HWND hWnd)
-{
-	DWORD i, j;
-	for (i = 0; i < 5; i++) {
-		SendDlgItemMessage (hWnd, IDC_PROP_PROP0+i, CB_RESETCONTENT, 0, 0);
-		for (j = 0; j < NPROP_METHOD; j++)
-			SendDlgItemMessage (hWnd, IDC_PROP_PROP0+i, CB_ADDSTRING, 0, (LPARAM)RigidBody::PropagatorStr(j));
-	}
-	SetDialog (hWnd, pTab->Cfg()->CfgPhysicsPrm);
-}
-
-void ExtraDynamics::ResetDialog (HWND hWnd)
-{
-	extern CFG_PHYSICSPRM CfgPhysicsPrm_default;
-	SetDialog (hWnd, CfgPhysicsPrm_default);
-}
-
-void ExtraDynamics::SetDialog (HWND hWnd, const CFG_PHYSICSPRM &prm)
-{
-	char cbuf[64];
-	int i, j;
-	int n = prm.nLPropLevel;
-	for (i = 0; i < 5; i++) {
-		SendDlgItemMessage (hWnd, IDC_PROP_ACTIVE0+i, BM_SETCHECK, i < n ? BST_CHECKED : BST_UNCHECKED, 0);
-		EnableWindow (GetDlgItem (hWnd, IDC_PROP_ACTIVE0+i), i < n-1 || i > n || i == 0 ? FALSE : TRUE);
-		ShowWindow (GetDlgItem (hWnd, IDC_PROP_PROP0+i), i < n ? SW_SHOW : SW_HIDE);
-		ShowWindow (GetDlgItem (hWnd, IDC_PROP_TTGT0+i), i < n ? SW_SHOW : SW_HIDE);
-		ShowWindow (GetDlgItem (hWnd, IDC_PROP_ATGT0+i), i < n ? SW_SHOW : SW_HIDE);
-		if (i < 4) {
-			ShowWindow (GetDlgItem (hWnd, IDC_PROP_TLIMIT01+i), i < n-1 ? SW_SHOW : SW_HIDE);
-			ShowWindow (GetDlgItem (hWnd, IDC_PROP_ALIMIT01+i), i < n-1 ? SW_SHOW : SW_HIDE);
-		}
-		if (i < n) {
-			int id = prm.PropMode[i];
-			for (j = 0; j < NPROP_METHOD; j++)
-				if (id == PropId[j]) {
-					SendDlgItemMessage (hWnd, IDC_PROP_PROP0+i, CB_SETCURSEL, j, 0);
-					break;
-				}
-			sprintf (cbuf, "%0.2f", prm.PropTTgt[i]);
-			SetWindowText (GetDlgItem (hWnd, IDC_PROP_TTGT0+i), cbuf);
-			sprintf (cbuf, "%0.1f", prm.PropATgt[i]*DEG);
-			SetWindowText (GetDlgItem (hWnd, IDC_PROP_ATGT0+i), cbuf);
-			if (i < n-1) {
-				sprintf (cbuf, "%0.2f", prm.PropTLim[i]);
-				SetWindowText (GetDlgItem (hWnd, IDC_PROP_TLIMIT01+i), cbuf);
-				sprintf (cbuf, "%0.1f", prm.PropALim[i]*DEG);
-				SetWindowText (GetDlgItem (hWnd, IDC_PROP_ALIMIT01+i), cbuf);
-			}
-		}
-	}
-	sprintf (cbuf, "%d", prm.PropSubMax);
-	SetWindowText (GetDlgItem (hWnd, IDC_PROP_MAXSAMPLE), cbuf);
-}
-
-void ExtraDynamics::Activate (HWND hWnd, int which)
-{
-	int i = which-IDC_PROP_ACTIVE0;
-	int check = SendDlgItemMessage (hWnd, which, BM_GETCHECK, 0, 0);
-	if (check == BST_CHECKED) {
-		if (i < 4) EnableWindow (GetDlgItem (hWnd, which+1), TRUE);
-		if (i > 0) EnableWindow (GetDlgItem (hWnd, which-1), FALSE);
-		ShowWindow (GetDlgItem (hWnd, IDC_PROP_PROP0+i), SW_SHOW);
-		ShowWindow (GetDlgItem (hWnd, IDC_PROP_TTGT0+i), SW_SHOW);
-		ShowWindow (GetDlgItem (hWnd, IDC_PROP_ATGT0+i), SW_SHOW);
-		if (i > 0) {
-			ShowWindow (GetDlgItem (hWnd, IDC_PROP_TLIMIT01+i-1), SW_SHOW);
-			ShowWindow (GetDlgItem (hWnd, IDC_PROP_ALIMIT01+i-1), SW_SHOW);
-		}
-	} else {
-		if (i > 1) EnableWindow (GetDlgItem (hWnd, which-1), TRUE);
-		if (i < 4) EnableWindow (GetDlgItem (hWnd, which+1), FALSE);
-		ShowWindow (GetDlgItem (hWnd, IDC_PROP_PROP0+i), SW_HIDE);
-		ShowWindow (GetDlgItem (hWnd, IDC_PROP_TTGT0+i), SW_HIDE);
-		ShowWindow (GetDlgItem (hWnd, IDC_PROP_ATGT0+i), SW_HIDE);
-		if (i > 0) {
-			ShowWindow (GetDlgItem (hWnd, IDC_PROP_TLIMIT01+i-1), SW_HIDE);
-			ShowWindow (GetDlgItem (hWnd, IDC_PROP_ALIMIT01+i-1), SW_HIDE);
-		}
-	}
-}
-
-bool ExtraDynamics::StoreParams (HWND hWnd)
-{
-	char cbuf[256];
-	int i, n = 0;
-	double ttgt[MAX_PROP_LEVEL], atgt[MAX_PROP_LEVEL], tlim[MAX_PROP_LEVEL], alim[MAX_PROP_LEVEL];
-	int mode[MAX_PROP_LEVEL];
-	for (i = 0; i < MAX_PROP_LEVEL; i++) {
-		if (SendDlgItemMessage (hWnd, IDC_PROP_ACTIVE0+i, BM_GETCHECK, 0, 0) == BST_CHECKED)
-			n++;
-	}
-	for (i = 0; i < n; i++) {
-		mode[i] = SendDlgItemMessage (hWnd, IDC_PROP_PROP0+i, CB_GETCURSEL, 0, 0);
-		if (mode[i] == CB_ERR) {
-			sprintf (cbuf, "Invalid propagator for integration stage %d.", i+1);
-			Error (cbuf);
-			return false;
-		}
-		GetWindowText (GetDlgItem (hWnd, IDC_PROP_TTGT0+i), cbuf, 256);
-		if ((sscanf (cbuf, "%lf", ttgt+i) != 1) || (ttgt[i] <= 0)) {
-			sprintf (cbuf, "Invalid time step target for integration stage %d.", i+1);
-			Error (cbuf);
-			return false;
-		}
-		GetWindowText (GetDlgItem (hWnd, IDC_PROP_ATGT0+i), cbuf, 256);
-		if ((sscanf (cbuf, "%lf", atgt+i) != 1) || (atgt[i] <= 0)) {
-			sprintf (cbuf, "Invalid angle step target for integration stage %d.", i+1);
-			Error (cbuf);
-			return false;
-		}
-		if (i < n-1) {
-			GetWindowText (GetDlgItem (hWnd, IDC_PROP_TLIMIT01+i), cbuf, 256);
-			if ((sscanf (cbuf, "%lf", tlim+i) != 1) || (tlim[i] <= 0)) {
-				sprintf (cbuf, "Invalid time step limit for integration stage %d -> %d.", i+1, i+2);
-				Error (cbuf);
-				return false;
-			}
-			GetWindowText (GetDlgItem (hWnd, IDC_PROP_ALIMIT01+i), cbuf, 256);
-			if ((sscanf (cbuf, "%lf", alim+i) != 1) || (alim[i] <= 0)) {
-				sprintf (cbuf, "Invalid angle step limit for integration stage %d -> %d.", i+1, i+2);
-				Error (cbuf);
-				return false;
-			}
-			if (i > 0 && (tlim[i] <= tlim[i-1] || alim[i] <= alim[i-1])) {
-				Error ("Step limits must be in ascending order");
-				return false;
-			}
-		}
-	}
-
-	Config *cfg = pTab->Cfg();
-	cfg->CfgPhysicsPrm.nLPropLevel = n;
-	for (i = 0; i < n; i++) {
-		cfg->CfgPhysicsPrm.PropMode[i] = PropId[mode[i]];
-		cfg->CfgPhysicsPrm.PropTTgt[i] = ttgt[i];
-		cfg->CfgPhysicsPrm.PropATgt[i] = atgt[i]*RAD;
-		cfg->CfgPhysicsPrm.PropTLim[i] = (i < n-1 ? tlim[i] : 1e10);
-		cfg->CfgPhysicsPrm.PropALim[i] = (i < n-1 ? alim[i]*RAD : 1e10);
-	}
-
-	GetWindowText (GetDlgItem (hWnd, IDC_PROP_MAXSAMPLE), cbuf, 256);
-	if ((sscanf (cbuf, "%d", &i) != 1) || i < 1) {
-		Error ("Invalid value for max. subsamples (integer value >= 1 required).");
-		return false;
-	} else {
-		cfg->CfgPhysicsPrm.PropSubMax = i;
-	}
-
-	return true;
-}
-
-bool ExtraDynamics::OpenHelp (HWND hWnd)
-{
-	OpenDefaultHelp (hWnd, "extra_linprop");
-	return true;
-}
-
-INT_PTR CALLBACK ExtraDynamics::DlgProc (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
-{
-	switch (uMsg) {
-	case WM_INITDIALOG:
-		((ExtraDynamics*)lParam)->InitDialog (hWnd);
-		break;
-	case WM_COMMAND:
-		switch (LOWORD(wParam)) {
-		case IDC_PROP_ACTIVE0:
-		case IDC_PROP_ACTIVE1:
-		case IDC_PROP_ACTIVE2:
-		case IDC_PROP_ACTIVE3:
-		case IDC_PROP_ACTIVE4:
-			((ExtraDynamics*)GetWindowLongPtr (hWnd, DWLP_USER))->Activate (hWnd, LOWORD(wParam));
-			break;
-		case IDC_RESET:
-			((ExtraDynamics*)GetWindowLongPtr (hWnd, DWLP_USER))->ResetDialog (hWnd);
-			return 0;
-		case IDCHELP:
-			((ExtraDynamics*)GetWindowLongPtr (hWnd, DWLP_USER))->OpenHelp (hWnd);
-			return 0;
-		case IDOK:
-			if (((ExtraDynamics*)GetWindowLongPtr (hWnd, DWLP_USER))->StoreParams (hWnd))
-				EndDialog (hWnd, 0);
-			break;
-		}
-		break;
-	}
-	return BuiltinLaunchpadItem::DlgProc (hWnd, uMsg, wParam, lParam);
-}
-
-//-----------------------------------------------------------------------------
-// Physics engine: Parameters for angular state propagation
-//-----------------------------------------------------------------------------
-#ifdef UNDEF
-
-int ExtraAngDynamics::PropId[NAPROP_METHOD] = {
-	PROP_RK2, PROP_RK4, PROP_RK5, PROP_RK6, PROP_RK7, PROP_RK8
-};
-
-char *ExtraAngDynamics::Name ()
-{
-	return "Angular state propagators";
-}
-
-char *ExtraAngDynamics::Description ()
-{
-	static char *desc = "Select the numerical integration method for dynamic angular state updates.\r\n\r\nAngular propagators affect the simulation accuracy and stability of rotating vessels.";
-	return desc;
-}
-
-bool ExtraAngDynamics::clbkOpen (HWND hParent)
-{
-	OpenDialog (hParent, IDD_EXTRA_ADYNAMICS, DlgProc);
-	return true;
-}
-
-void ExtraAngDynamics::InitDialog (HWND hWnd)
-{
-	static char *label[NAPROP_METHOD] = {
-		"Runge-Kutta, 2nd order (RK2)", "Runge-Kutta, 4th order (RK4)", "Runge-Kutta, 5th order (RK5)",
-		"Runge-Kutta, 6th order (RK6)", "Runge-Kutta, 7th order (RK7)", "Runge-Kutta, 8th order (RK8)"
-	};
-
-	int i, j;
-	for (i = 0; i < 5; i++) {
-		SendDlgItemMessage (hWnd, IDC_COMBO1+i, CB_RESETCONTENT, 0, 0);
-		for (j = 0; j < NAPROP_METHOD; j++)
-			SendDlgItemMessage (hWnd, IDC_COMBO1+i, CB_ADDSTRING, 0, (LPARAM)label[j]);
-	}
-	SetDialog (hWnd, pTab->Cfg()->CfgPhysicsPrm);
-}
-
-void ExtraAngDynamics::ResetDialog (HWND hWnd)
-{
-	extern CFG_PHYSICSPRM CfgPhysicsPrm_default;
-	SetDialog (hWnd, CfgPhysicsPrm_default);
-}
-
-void ExtraAngDynamics::SetDialog (HWND hWnd, const CFG_PHYSICSPRM &prm)
-{
-	char cbuf[64];
-	int i, j;
-	int n = prm.nAPropLevel;
-	for (i = 0; i < 5; i++) {
-		SendDlgItemMessage (hWnd, IDC_CHECK1+i, BM_SETCHECK, i < n ? BST_CHECKED : BST_UNCHECKED, 0);
-		EnableWindow (GetDlgItem (hWnd, IDC_CHECK1+i), i < n-1 || i > n || i == 0 ? FALSE : TRUE);
-		ShowWindow (GetDlgItem (hWnd, IDC_COMBO1+i), i < n ? SW_SHOW : SW_HIDE);
-		if (i < 4) {
-			ShowWindow (GetDlgItem (hWnd, IDC_EDIT1+i), i < n-1 ? SW_SHOW : SW_HIDE);
-			ShowWindow (GetDlgItem (hWnd, IDC_EDIT5+i), i < n-1 ? SW_SHOW : SW_HIDE);
-		}
-		if (i < n) {
-			int id = prm.APropMode[i];
-			for (j = 0; j < NAPROP_METHOD; j++)
-				if (id == PropId[j]) {
-					SendDlgItemMessage (hWnd, IDC_COMBO1+i, CB_SETCURSEL, j, 0);
-					break;
-				}
-			if (i < n-1) {
-				sprintf (cbuf, "%0.2f", prm.APropTLimit[i]);
-				SetWindowText (GetDlgItem (hWnd, IDC_EDIT1+i), cbuf);
-				sprintf (cbuf, "%0.1f", prm.PropALimit[i]*DEG);
-				SetWindowText (GetDlgItem (hWnd, IDC_EDIT5+i), cbuf);
-			}
-		}
-	}
-	sprintf (cbuf, "%0.1f", prm.APropSubLimit*DEG);
-	SetWindowText (GetDlgItem (hWnd, IDC_EDIT9), cbuf);
-	sprintf (cbuf, "%d", prm.APropSubMax);
-	SetWindowText (GetDlgItem (hWnd, IDC_EDIT10), cbuf);
-	sprintf (cbuf, "%0.1f", prm.APropCouplingLimit*DEG);
-	SetWindowText (GetDlgItem (hWnd, IDC_EDIT11), cbuf);
-	sprintf (cbuf, "%0.1f", prm.APropTorqueLimit*DEG);
-	SetWindowText (GetDlgItem (hWnd, IDC_EDIT12), cbuf);
-}
-
-void ExtraAngDynamics::Activate (HWND hWnd, int which)
-{
-	int i = which-IDC_CHECK1;
-	int check = SendDlgItemMessage (hWnd, which, BM_GETCHECK, 0, 0);
-	if (check == BST_CHECKED) {
-		if (i < 4) EnableWindow (GetDlgItem (hWnd, which+1), TRUE);
-		if (i > 0) EnableWindow (GetDlgItem (hWnd, which-1), FALSE);
-		ShowWindow (GetDlgItem (hWnd, IDC_COMBO1+i), SW_SHOW);
-		if (i > 0) {
-			ShowWindow (GetDlgItem (hWnd, IDC_EDIT1+i-1), SW_SHOW);
-			ShowWindow (GetDlgItem (hWnd, IDC_EDIT5+i-1), SW_SHOW);
-		}
-	} else {
-		if (i > 1) EnableWindow (GetDlgItem (hWnd, which-1), TRUE);
-		if (i < 4) EnableWindow (GetDlgItem (hWnd, which+1), FALSE);
-		ShowWindow (GetDlgItem (hWnd, IDC_COMBO1+i), SW_HIDE);
-		if (i > 0) {
-			ShowWindow (GetDlgItem (hWnd, IDC_EDIT1+i-1), SW_HIDE);
-			ShowWindow (GetDlgItem (hWnd, IDC_EDIT5+i-1), SW_HIDE);
-		}
-	}
-}
-
-bool ExtraAngDynamics::StoreParams (HWND hWnd)
-{
-	char cbuf[256];
-	int i, n = 0;
-	double val, tlimit[5], alimit[5], couplim, torqlim;
-	int mode[5];
-	for (i = 0; i < 5; i++) {
-		if (SendDlgItemMessage (hWnd, IDC_CHECK1+i, BM_GETCHECK, 0, 0) == BST_CHECKED)
-			n++;
-	}
-	for (i = 0; i < n-1; i++) {
-		GetWindowText (GetDlgItem (hWnd, IDC_EDIT1+i), cbuf, 256);
-		if ((sscanf (cbuf, "%lf", tlimit+i) != 1) || (tlimit[i] <= 0)) {
-			Error ("Invalid step limit entry.");
-			return false;
-		}
-		GetWindowText (GetDlgItem (hWnd, IDC_EDIT5+i), cbuf, 256);
-		if ((sscanf (cbuf, "%lf", alimit+i) != 1) || (alimit[i] <= 0)) {
-			Error ("Invalid angle step limit entry.");
-			return false;
-		}
-		if (i > 0 && (tlimit[i] <= tlimit[i-1] || alimit[i] <= alimit[i-1])) {
-			Error ("Step limits must be in ascending order");
-			return false;
-		}
-	}
-	for (i = 0; i < n; i++) {
-		mode[i] = SendDlgItemMessage (hWnd, IDC_COMBO1+i, CB_GETCURSEL, 0, 0);
-		if (mode[i] == CB_ERR) {
-			Error ("Invalid propagator.");
-			return false;
-		}
-	}
-	GetWindowText (GetDlgItem (hWnd, IDC_EDIT11), cbuf, 256);
-	if ((sscanf (cbuf, "%lf", &couplim) != 1) || (couplim < 0.0)) {
-		Error ("Invalid coupling step limit");
-		return false;
-	}
-	GetWindowText (GetDlgItem (hWnd, IDC_EDIT12), cbuf, 256);
-	if ((sscanf (cbuf, "%lf", &torqlim) != 1) || (torqlim < couplim)) {
-		Error ("Torque step limit must be greater than coupling limit");
-		return false;
-	}
-
-	Config *cfg = pTab->Cfg();
-	cfg->CfgPhysicsPrm.nAPropLevel = n;
-	for (i = 0; i < n; i++) {
-		cfg->CfgPhysicsPrm.APropMode[i] = PropId[mode[i]];
-		cfg->CfgPhysicsPrm.APropTLimit[i] = (i < n-1 ? tlimit[i]     : 1e10);
-		cfg->CfgPhysicsPrm.PropALimit[i] = (i < n-1 ? alimit[i]*RAD : 1e10);
-	}
-	cfg->CfgPhysicsPrm.APropCouplingLimit = couplim*RAD;
-	cfg->CfgPhysicsPrm.APropTorqueLimit = torqlim*RAD;
-
-	GetWindowText (GetDlgItem (hWnd, IDC_EDIT9), cbuf, 256);
-	if ((sscanf (cbuf, "%lf", &val) != 1 || val < 0)) {
-		Error ("Invalid subsampling target step.");
-		return false;
-	} else cfg->CfgPhysicsPrm.APropSubLimit = val*RAD;
-	GetWindowText (GetDlgItem (hWnd, IDC_EDIT10), cbuf, 256);
-	if ((sscanf (cbuf, "%d", &i) != 1) || (i < 1)) {
-		Error ("Invalid subsampling steps.");
-		return false;
-	} else cfg->CfgPhysicsPrm.APropSubMax = i;
-
-	return true;
-}
-
-bool ExtraAngDynamics::OpenHelp (HWND hWnd)
-{
-	OpenDefaultHelp (hWnd, pTab->Launchpad()->GetInstance(), "extra_angprop");
-	return true;
-}
-
-INT_PTR CALLBACK ExtraAngDynamics::DlgProc (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
-{
-	switch (uMsg) {
-	case WM_INITDIALOG:
-		((ExtraAngDynamics*)lParam)->InitDialog (hWnd);
-		break;
-	case WM_COMMAND:
-		switch (LOWORD(wParam)) {
-		case IDC_CHECK1:
-		case IDC_CHECK2:
-		case IDC_CHECK3:
-		case IDC_CHECK4:
-		case IDC_CHECK5:
-			((ExtraAngDynamics*)GetWindowLongPtr (hWnd, DWLP_USER))->Activate (hWnd, LOWORD(wParam));
-			break;
-		case IDC_BUTTON1:
-			((ExtraAngDynamics*)GetWindowLongPtr (hWnd, DWLP_USER))->ResetDialog (hWnd);
-			return 0;
-		case IDC_BUTTON2:
-			((ExtraAngDynamics*)GetWindowLongPtr (hWnd, DWLP_USER))->OpenHelp (hWnd);
-			return 0;
-		case IDOK:
-			if (((ExtraAngDynamics*)GetWindowLongPtr (hWnd, DWLP_USER))->StoreParams (hWnd))
-				EndDialog (hWnd, 0);
-			break;
-		}
-		break;
-	}
-	return BuiltinLaunchpadItem::DlgProc (hWnd, uMsg, wParam, lParam);
-}
-
-#endif
-
-//-----------------------------------------------------------------------------
-// Physics engine: Parameters for orbit stabilisation
-//-----------------------------------------------------------------------------
 
 char *ExtraStabilisation::Name ()
 {
@@ -770,128 +797,14 @@ char *ExtraStabilisation::Description ()
 	return (char*)"Select the parameters that determine the conditions when Orbiter switches between dynamic and stabilised state updates.";
 }
 
-bool ExtraStabilisation::clbkOpen (HWND hParent)
+bool ExtraStabilisation::clbkOpen ()
 {
-	OpenDialog (hParent, IDD_EXTRA_STABILISATION, DlgProc);
+	Open (m_dlg ? nullptr : new StabilisationDialog (Cfg ()));
 	return true;
 }
 
-void ExtraStabilisation::InitDialog (HWND hWnd)
-{
-	SetDialog (hWnd, pTab->Cfg()->CfgPhysicsPrm);
-}
-
-void ExtraStabilisation::ResetDialog (HWND hWnd)
-{
-	extern CFG_PHYSICSPRM CfgPhysicsPrm_default;
-	SetDialog (hWnd, CfgPhysicsPrm_default);
-}
-
-void ExtraStabilisation::SetDialog (HWND hWnd, const CFG_PHYSICSPRM &prm)
-{
-	char cbuf[256];
-	SendDlgItemMessage (hWnd, IDC_STAB_ENABLE, BM_SETCHECK, prm.bOrbitStabilise ? BST_CHECKED : BST_UNCHECKED, 0);
-	sprintf (cbuf, "%0.4g", prm.Stabilise_PLimit*100.0);
-	SetWindowText (GetDlgItem (hWnd, IDC_EDIT1), cbuf);
-	sprintf (cbuf, "%0.4g", prm.Stabilise_SLimit*100.0);
-	SetWindowText (GetDlgItem (hWnd, IDC_EDIT2), cbuf);
-	sprintf (cbuf, "%0.4g", prm.PPropSubLimit*100.0);
-	SetWindowText (GetDlgItem (hWnd, IDC_EDIT3), cbuf);
-	sprintf (cbuf, "%d", prm.PPropSubMax);
-	SetWindowText (GetDlgItem (hWnd, IDC_EDIT4), cbuf);
-	sprintf (cbuf, "%0.4g", prm.PPropStepLimit*100.0);
-	SetWindowText (GetDlgItem (hWnd, IDC_EDIT5), cbuf);
-	ToggleEnable (hWnd);
-}
-
-bool ExtraStabilisation::StoreParams (HWND hWnd)
-{
-	char cbuf[256];
-	int i;
-	double plimit, slimit, val;
-	Config *cfg = pTab->Cfg();
-	GetWindowText (GetDlgItem (hWnd, IDC_EDIT1), cbuf, 256);
-	if (sscanf (cbuf, "%lf", &plimit) != 1 || plimit < 0.0 || plimit > 100.0) {
-		Error ("Invalid perturbation limit.");
-		return false;
-	}
-	GetWindowText (GetDlgItem (hWnd, IDC_EDIT2), cbuf, 256);
-	if (sscanf (cbuf, "%lf", &slimit) != 1 || slimit < 0.0) {
-		Error ("Invalid step limit.");
-		return false;
-	}
-	GetWindowText (GetDlgItem (hWnd, IDC_EDIT3), cbuf, 256);
-	if ((sscanf (cbuf, "%lf", &val) != 1 || val < 0)) {
-		Error ("Invalid subsampling target step.");
-		return false;
-	} else cfg->CfgPhysicsPrm.PPropSubLimit = val*0.01;
-	GetWindowText (GetDlgItem (hWnd, IDC_EDIT4), cbuf, 256);
-	if ((sscanf (cbuf, "%d", &i) != 1) || (i < 1)) {
-		Error ("Invalid subsampling steps.");
-		return false;
-	} else cfg->CfgPhysicsPrm.PPropSubMax = i;
-	GetWindowText (GetDlgItem (hWnd, IDC_EDIT5), cbuf, 256);
-	if ((sscanf (cbuf, "%lf", &val) != 1 || val < 0)) {
-		Error ("Invalid perturbation limit value.");
-		return false;
-	} else cfg->CfgPhysicsPrm.PPropStepLimit = val*0.01;
-
-	cfg->CfgPhysicsPrm.bOrbitStabilise = (SendDlgItemMessage (hWnd, IDC_STAB_ENABLE, BM_GETCHECK, 0, 0) == BST_CHECKED);
-	cfg->CfgPhysicsPrm.Stabilise_PLimit = plimit * 0.01;
-	cfg->CfgPhysicsPrm.Stabilise_SLimit = slimit * 0.01;
-	return true;
-}
-
-void ExtraStabilisation::ToggleEnable (HWND hWnd)
-{
-	int i;
-	bool bstab = (SendDlgItemMessage (hWnd, IDC_STAB_ENABLE, BM_GETCHECK, 0, 0) == BST_CHECKED);
-	for (i = IDC_EDIT1; i <= IDC_EDIT5; i++)
-		EnableWindow (GetDlgItem (hWnd, i), bstab);
-	for (i = IDC_STATIC1; i <= IDC_STATIC13; i++)
-		EnableWindow (GetDlgItem (hWnd, i), bstab);
-}
-
-bool ExtraStabilisation::OpenHelp (HWND hWnd)
-{
-	OpenDefaultHelp (hWnd, "extra_orbitstab");
-	return true;
-}
-
-INT_PTR CALLBACK ExtraStabilisation::DlgProc (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
-{
-	switch (uMsg) {
-	case WM_INITDIALOG:
-		((ExtraStabilisation*)lParam)->InitDialog (hWnd);
-		break;
-	case WM_COMMAND:
-		switch (LOWORD (wParam)) {
-		case IDC_STAB_ENABLE:
-			if (HIWORD (wParam) == BN_CLICKED) {
-				((ExtraStabilisation*)GetWindowLongPtr (hWnd, DWLP_USER))->ToggleEnable (hWnd);
-				return TRUE;
-			}
-			break;
-		case IDC_BUTTON1:
-			((ExtraStabilisation*)GetWindowLongPtr (hWnd, DWLP_USER))->ResetDialog (hWnd);
-			return 0;
-		case IDC_BUTTON2:
-			((ExtraStabilisation*)GetWindowLongPtr (hWnd, DWLP_USER))->OpenHelp (hWnd);
-			return 0;
-		case IDOK:
-			if (((ExtraStabilisation*)GetWindowLongPtr (hWnd, DWLP_USER))->StoreParams(hWnd))
-				EndDialog (hWnd, 0);
-			break;
-		}
-		break;
-	}
-	return BuiltinLaunchpadItem::DlgProc (hWnd, uMsg, wParam, lParam);
-}
-
-
-//=============================================================================
+//-----------------------------------------------------------------------------
 // Instruments and panels
-//=============================================================================
 
 char *ExtraInstruments::Name ()
 {
@@ -903,11 +816,7 @@ char *ExtraInstruments::Description ()
 	return (char*)"Select general configuration parameters for spacecraft instruments, MFD displays and instrument panels.";
 }
 
-//-----------------------------------------------------------------------------
-// Instruments and panels: MFDs
-//-----------------------------------------------------------------------------
-
-char *ExtraMfdConfig::Name()
+char *ExtraMfdConfig::Name ()
 {
 	return (char*)"MFD parameter configuration";
 }
@@ -917,108 +826,14 @@ char *ExtraMfdConfig::Description ()
 	return (char*)"Select display parameters for multifunctional displays (MFD).";
 }
 
-bool ExtraMfdConfig::clbkOpen (HWND hParent)
+bool ExtraMfdConfig::clbkOpen ()
 {
-	OpenDialog (hParent, IDD_EXTRA_MFDCONFIG, DlgProc);
+	Open (m_dlg ? nullptr : new MfdConfigDialog (Cfg ()));
 	return true;
 }
 
-void ExtraMfdConfig::InitDialog (HWND hWnd)
-{
-	SetDialog (hWnd, pTab->Cfg()->CfgInstrumentPrm);
-}
-
-void ExtraMfdConfig::ResetDialog (HWND hWnd)
-{
-	extern CFG_INSTRUMENTPRM CfgInstrumentPrm_default;
-	SetDialog (hWnd, CfgInstrumentPrm_default);
-}
-
-void ExtraMfdConfig::SetDialog (HWND hWnd, const CFG_INSTRUMENTPRM &prm)
-{
-	char cbuf[256];
-	int i, idx;
-	for (i = 0; i < 3; i++)
-		SendDlgItemMessage (hWnd, IDC_RADIO1+i, BM_SETCHECK, i == prm.bMfdPow2 ? BST_CHECKED : BST_UNCHECKED, 0);
-	sprintf (cbuf, "%d", prm.MfdHiresThreshold);
-	SetWindowText (GetDlgItem (hWnd, IDC_EDIT1), cbuf);
-
-	idx = (prm.VCMFDSize == 256 ? 0 : prm.VCMFDSize == 512 ? 1 : 2);
-	for (i = 0; i < 3; i++)
-		SendDlgItemMessage (hWnd, IDC_RADIO4+i, BM_SETCHECK, i == idx ? BST_CHECKED : BST_UNCHECKED, 0);
-}
-
-bool ExtraMfdConfig::StoreParams (HWND hWnd)
-{
-	Config *cfg = pTab->Cfg();
-	char cbuf[256];
-	int i, size, check;
-	GetWindowText (GetDlgItem (hWnd, IDC_EDIT1), cbuf, 256);
-	if ((sscanf (cbuf, "%d", &size) != 1) || size < 8) {
-		return false;
-	} else
-		cfg->CfgInstrumentPrm.MfdHiresThreshold = size;
-
-	for (i = 0; i < 3; i++) {
-		check = SendDlgItemMessage (hWnd, IDC_RADIO1+i, BM_GETCHECK, 0, 0);
-		if (check == BST_CHECKED) {
-			cfg->CfgInstrumentPrm.bMfdPow2 = i;
-			break;
-		}
-	}
-
-	size = 256;
-	for (i = 0; i < 3; i++) {
-		check = SendDlgItemMessage (hWnd, IDC_RADIO4+i, BM_GETCHECK, 0, 0);
-		if (check == BST_CHECKED) {
-			cfg->CfgInstrumentPrm.VCMFDSize = size;
-			break;
-		}
-		size *= 2;
-	}
-
-	return true;
-}
-
-void ExtraMfdConfig::ToggleEnable (HWND hWnd)
-{
-	// todo
-}
-
-bool ExtraMfdConfig::OpenHelp (HWND hWnd)
-{
-	OpenDefaultHelp (hWnd, "extra_mfdconfig");
-	return true;
-}
-
-INT_PTR CALLBACK ExtraMfdConfig::DlgProc (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
-{
-	switch (uMsg) {
-	case WM_INITDIALOG:
-		((ExtraMfdConfig*)lParam)->InitDialog (hWnd);
-		break;
-	case WM_COMMAND:
-		switch (LOWORD (wParam)) {
-		case IDC_BUTTON1:
-			((ExtraMfdConfig*)GetWindowLongPtr (hWnd, DWLP_USER))->ResetDialog (hWnd);
-			return 0;
-		case IDC_BUTTON2:
-			((ExtraMfdConfig*)GetWindowLongPtr (hWnd, DWLP_USER))->OpenHelp (hWnd);
-			return 0;
-		case IDOK:
-			if (((ExtraMfdConfig*)GetWindowLongPtr (hWnd, DWLP_USER))->StoreParams (hWnd))
-				EndDialog (hWnd, 0);
-			break;
-		}
-		break;
-	}
-	return BuiltinLaunchpadItem::DlgProc (hWnd, uMsg, wParam, lParam);
-}
-
-
-//=============================================================================
-// Root item for vessel configurations (sub-items to be added by modules)
-//=============================================================================
+//-----------------------------------------------------------------------------
+// Root items for vessel and planet configurations (sub-items added by modules)
 
 char *ExtraVesselConfig::Name ()
 {
@@ -1030,10 +845,6 @@ char *ExtraVesselConfig::Description ()
 	return (char*)"Configure spacecraft parameters";
 }
 
-//=============================================================================
-// Root item for planet configurations (sub-items to be added by modules)
-//=============================================================================
-
 char *ExtraPlanetConfig::Name ()
 {
 	return (char*)"Celestial body configuration";
@@ -1044,9 +855,8 @@ char *ExtraPlanetConfig::Description ()
 	return (char*)"Configure options for celestial objects";
 }
 
-//=============================================================================
+//-----------------------------------------------------------------------------
 // Debugging parameters
-//=============================================================================
 
 char *ExtraDebug::Name ()
 {
@@ -1058,10 +868,6 @@ char *ExtraDebug::Description ()
 	return (char*)"Various options that are useful for debugging and special tasks. Not generally used for standard simulation sessions.";
 }
 
-//-----------------------------------------------------------------------------
-// Debugging parameters: shutdown options
-//-----------------------------------------------------------------------------
-
 char *ExtraShutdown::Name ()
 {
 	return (char*)"Orbiter shutdown options";
@@ -1072,72 +878,11 @@ char *ExtraShutdown::Description ()
 	return (char*)"Set the behaviour of Orbiter after closing the simulation window: return to Launchpad, respawn or terminate.";
 }
 
-bool ExtraShutdown::clbkOpen (HWND hParent)
+bool ExtraShutdown::clbkOpen ()
 {
-	OpenDialog (hParent, IDD_EXTRA_SHUTDOWN, DlgProc);
+	Open (m_dlg ? nullptr : new ShutdownDialog (Cfg ()));
 	return true;
 }
-
-void ExtraShutdown::InitDialog (HWND hWnd)
-{
-	SetDialog (hWnd, pTab->Cfg()->CfgDebugPrm);
-}
-
-void ExtraShutdown::ResetDialog (HWND hWnd)
-{
-	extern CFG_DEBUGPRM CfgDebugPrm_default;
-	SetDialog (hWnd, CfgDebugPrm_default);
-}
-
-void ExtraShutdown::SetDialog (HWND hWnd, const CFG_DEBUGPRM &prm)
-{
-	for (int i = 0; i < 3; i++)
-		SendDlgItemMessage (hWnd, IDC_RADIO1+i, BM_SETCHECK, (i==prm.ShutdownMode ? BST_CHECKED:BST_UNCHECKED), 0);
-}
-
-bool ExtraShutdown::StoreParams (HWND hWnd)
-{
-	Config *cfg = pTab->Cfg();
-	int mode;
-	for (mode = 0; mode < 2; mode++)
-		if (SendDlgItemMessage (hWnd, IDC_RADIO1+mode, BM_GETCHECK, 0, 0) == BST_CHECKED) break;
-	cfg->CfgDebugPrm.ShutdownMode = mode;
-	return true;
-}
-
-bool ExtraShutdown::OpenHelp (HWND hWnd)
-{
-	OpenDefaultHelp (hWnd, "extra_shutdown");
-	return true;
-}
-
-INT_PTR CALLBACK ExtraShutdown::DlgProc (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
-{
-	switch (uMsg) {
-	case WM_INITDIALOG:
-		((ExtraShutdown*)lParam)->InitDialog (hWnd);
-		break;
-	case WM_COMMAND:
-		switch (LOWORD (wParam)) {
-		case IDC_BUTTON1:
-			((ExtraShutdown*)GetWindowLongPtr (hWnd, DWLP_USER))->ResetDialog (hWnd);
-			return 0;
-		case IDC_BUTTON2:
-			((ExtraShutdown*)GetWindowLongPtr (hWnd, DWLP_USER))->OpenHelp (hWnd);
-			return 0;
-		case IDOK:
-			if (((ExtraShutdown*)GetWindowLongPtr (hWnd, DWLP_USER))->StoreParams (hWnd))
-				EndDialog (hWnd, 0);
-			break;
-		}
-		break;
-	}
-	return BuiltinLaunchpadItem::DlgProc (hWnd, uMsg, wParam, lParam);
-}
-
-//-----------------------------------------------------------------------------
-// Debugging parameters: fixed time steps
-//-----------------------------------------------------------------------------
 
 char *ExtraFixedStep::Name ()
 {
@@ -1149,109 +894,11 @@ char *ExtraFixedStep::Description ()
 	return (char*)"This option assigns a fixed simulation time interval to each frame. Useful for debugging, and when numerical accuracy and stability of the dynamic propagators are important (for example, to generate trajectory data or when recording high-fidelity playbacks).\r\n\r\nWarning: Selecting this option leads to nonlinear time flow and a simulation that is no longer real-time.";
 }
 
-bool ExtraFixedStep::clbkOpen (HWND hParent)
+bool ExtraFixedStep::clbkOpen ()
 {
-	OpenDialog (hParent, IDD_EXTRA_FIXEDSTEP, DlgProc);
+	Open (m_dlg ? nullptr : new FixedStepDialog (Cfg ()));
 	return true;
 }
-
-void ExtraFixedStep::InitDialog (HWND hWnd)
-{
-	SetDialog (hWnd, pTab->Cfg()->CfgDebugPrm);
-}
-
-void ExtraFixedStep::ResetDialog (HWND hWnd)
-{
-	extern CFG_DEBUGPRM CfgDebugPrm_default;
-	SetDialog (hWnd, CfgDebugPrm_default);
-}
-
-void ExtraFixedStep::SetDialog (HWND hWnd, const CFG_DEBUGPRM &prm)
-{
-	char cbuf[256];
-	double step = prm.FixedStep;
-
-	if (pTab->Cfg()->CfgCmdlinePrm.FixedStep) {
-		// fixed step is set by command line options - disable the dialog
-		SendDlgItemMessage(hWnd, IDC_CHECK1, BM_SETCHECK, BST_CHECKED, 0);
-		sprintf(cbuf, "%0.4g", pTab->Cfg()->CfgCmdlinePrm.FixedStep);
-		SetWindowText(GetDlgItem(hWnd, IDC_EDIT1), cbuf);
-		EnableWindow(GetDlgItem(hWnd, IDC_CHECK1), FALSE);
-		EnableWindow(GetDlgItem(hWnd, IDC_EDIT1), FALSE);
-	}
-	else {
-		SendDlgItemMessage(hWnd, IDC_CHECK1, BM_SETCHECK, step ? BST_CHECKED : BST_UNCHECKED, 0);
-		sprintf(cbuf, "%0.4g", step ? step : 0.01);
-		SetWindowText(GetDlgItem(hWnd, IDC_EDIT1), cbuf);
-		ToggleEnable(hWnd);
-	}
-}
-
-bool ExtraFixedStep::StoreParams (HWND hWnd)
-{
-	Config *cfg = pTab->Cfg();
-	bool fixed = (SendDlgItemMessage (hWnd, IDC_CHECK1, BM_GETCHECK, 0, 0) == BST_CHECKED);
-	if (!fixed) {
-		cfg->CfgDebugPrm.FixedStep = 0;
-	} else {
-		char cbuf[256];
-		double dt;
-		GetWindowText (GetDlgItem (hWnd, IDC_EDIT1), cbuf, 256);
-		if (sscanf (cbuf, "%lf", &dt) != 1 || dt <= 0) {
-			Error ("Invalid frame interval length");
-			return false;
-		}
-		cfg->CfgDebugPrm.FixedStep = dt;
-	}
-	return true;
-}
-
-void ExtraFixedStep::ToggleEnable (HWND hWnd)
-{
-	bool fixed = (SendDlgItemMessage (hWnd, IDC_CHECK1, BM_GETCHECK, 0, 0) == BST_CHECKED);
-	EnableWindow (GetDlgItem (hWnd, IDC_STATIC1), fixed);
-	EnableWindow (GetDlgItem (hWnd, IDC_EDIT1), fixed);
-}
-
-bool ExtraFixedStep::OpenHelp (HWND hWnd)
-{
-	OpenDefaultHelp (hWnd, "extra_fixedstep");
-	return true;
-}
-
-INT_PTR CALLBACK ExtraFixedStep::DlgProc (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
-{
-	switch (uMsg) {
-	case WM_INITDIALOG:
-		((ExtraFixedStep*)lParam)->InitDialog (hWnd);
-		break;
-	case WM_COMMAND:
-		switch (LOWORD (wParam)) {
-		case IDC_CHECK1:
-			if (HIWORD (wParam) == BN_CLICKED) {
-				((ExtraFixedStep*)GetWindowLongPtr (hWnd, DWLP_USER))->ToggleEnable (hWnd);
-				return TRUE;
-			}
-			break;
-		case IDC_BUTTON1:
-			((ExtraFixedStep*)GetWindowLongPtr (hWnd, DWLP_USER))->ResetDialog (hWnd);
-			return 0;
-		case IDC_BUTTON2:
-			((ExtraFixedStep*)GetWindowLongPtr (hWnd, DWLP_USER))->OpenHelp (hWnd);
-			return 0;
-		case IDOK:
-			if (((ExtraFixedStep*)GetWindowLongPtr (hWnd, DWLP_USER))->StoreParams (hWnd))
-				EndDialog (hWnd, 0);
-			break;
-		}
-		break;
-	}
-	return BuiltinLaunchpadItem::DlgProc (hWnd, uMsg, wParam, lParam);
-}
-
-//-----------------------------------------------------------------------------
-// Debugging parameters: rendering options
-//-----------------------------------------------------------------------------
 
 char *ExtraRenderingOptions::Name ()
 {
@@ -1263,64 +910,11 @@ char *ExtraRenderingOptions::Description ()
 	return (char*)"Some rendering options that can be used for debugging problems.";
 }
 
-bool ExtraRenderingOptions::clbkOpen (HWND hParent)
+bool ExtraRenderingOptions::clbkOpen ()
 {
-	OpenDialog (hParent, IDD_EXTRA_DBGRENDER, DlgProc);
+	Open (m_dlg ? nullptr : new RenderingDialog (Cfg ()));
 	return true;
 }
-
-void ExtraRenderingOptions::InitDialog (HWND hWnd)
-{
-	SetDialog (hWnd, pTab->Cfg()->CfgDebugPrm);
-}
-
-void ExtraRenderingOptions::ResetDialog (HWND hWnd)
-{
-	extern CFG_DEBUGPRM CfgDebugPrm_default;
-	SetDialog (hWnd, CfgDebugPrm_default);
-}
-
-void ExtraRenderingOptions::SetDialog (HWND hWnd, const CFG_DEBUGPRM &prm)
-{
-	SendDlgItemMessage (hWnd, IDC_CHECK1, BM_SETCHECK, prm.bWireframeMode ? BST_CHECKED : BST_UNCHECKED, 0);
-	SendDlgItemMessage (hWnd, IDC_CHECK2, BM_SETCHECK, prm.bNormaliseNormals ? BST_CHECKED : BST_UNCHECKED, 0);
-}
-
-bool ExtraRenderingOptions::StoreParams (HWND hWnd)
-{
-	Config *cfg = pTab->Cfg();
-	cfg->CfgDebugPrm.bWireframeMode = (SendDlgItemMessage (hWnd, IDC_CHECK1, BM_GETCHECK, 0, 0) == BST_CHECKED);
-	cfg->CfgDebugPrm.bNormaliseNormals = (SendDlgItemMessage (hWnd, IDC_CHECK2, BM_GETCHECK, 0, 0) == BST_CHECKED);
-	return true;
-}
-
-INT_PTR CALLBACK ExtraRenderingOptions::DlgProc (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
-{
-	switch (uMsg) {
-	case WM_INITDIALOG:
-		((ExtraRenderingOptions*)lParam)->InitDialog (hWnd);
-		break;
-	case WM_COMMAND:
-		switch (LOWORD (wParam)) {
-		case IDC_BUTTON1:
-			((ExtraRenderingOptions*)GetWindowLongPtr (hWnd, DWLP_USER))->ResetDialog (hWnd);
-			return 0;
-	//	case IDC_BUTTON2:
-	//		((ExtraTimerSettings*)GetWindowLongPtr (hWnd, DWLP_USER))->OpenHelp (hWnd);
-	//		return 0;
-		case IDOK:
-			if (((ExtraRenderingOptions*)GetWindowLongPtr (hWnd, DWLP_USER))->StoreParams (hWnd))
-				EndDialog (hWnd, 0);
-			break;
-		}
-		break;
-	}
-	return BuiltinLaunchpadItem::DlgProc (hWnd, uMsg, wParam, lParam);
-}
-
-//-----------------------------------------------------------------------------
-// Debugging parameters: performance options
-//-----------------------------------------------------------------------------
 
 char *ExtraPerformanceSettings::Name ()
 {
@@ -1329,78 +923,14 @@ char *ExtraPerformanceSettings::Name ()
 
 char *ExtraPerformanceSettings::Description ()
 {
-	return (char*)"This option can be used to modify Windows environment parameters that can improve the simulator performance.";
+	return (char*)"This option can be used to modify environment parameters that can improve the simulator performance.";
 }
 
-bool ExtraPerformanceSettings::clbkOpen (HWND hParent)
+bool ExtraPerformanceSettings::clbkOpen ()
 {
-	OpenDialog (hParent, IDD_EXTRA_PERFORMANCE, DlgProc);
+	Open (m_dlg ? nullptr : new PerformanceDialog (Cfg ()));
 	return true;
 }
-
-void ExtraPerformanceSettings::InitDialog (HWND hWnd)
-{
-	SetDialog (hWnd, pTab->Cfg()->CfgDebugPrm);
-}
-
-void ExtraPerformanceSettings::ResetDialog (HWND hWnd)
-{
-	extern CFG_DEBUGPRM CfgDebugPrm_default;
-	SetDialog (hWnd, CfgDebugPrm_default);
-}
-
-void ExtraPerformanceSettings::SetDialog (HWND hWnd, const CFG_DEBUGPRM &prm)
-{
-	SendDlgItemMessage (hWnd, IDC_CHECK1, BM_SETCHECK, prm.bDisableSmoothFont ? BST_CHECKED : BST_UNCHECKED, 0);
-	SendDlgItemMessage (hWnd, IDC_CHECK2, BM_SETCHECK, prm.bForceReenableSmoothFont ? BST_CHECKED : BST_UNCHECKED, 0);
-}
-
-bool ExtraPerformanceSettings::StoreParams (HWND hWnd)
-{
-	Config *cfg = pTab->Cfg();
-	cfg->CfgDebugPrm.bDisableSmoothFont = (SendDlgItemMessage (hWnd, IDC_CHECK1, BM_GETCHECK, 0, 0) == BST_CHECKED ? true : false);
-	cfg->CfgDebugPrm.bForceReenableSmoothFont = (SendDlgItemMessage (hWnd, IDC_CHECK2, BM_GETCHECK, 0, 0) == BST_CHECKED ? true : false);
-	if (cfg->CfgDebugPrm.bDisableSmoothFont)
-		g_pOrbiter->ActivateRoughType();
-	else
-		g_pOrbiter->DeactivateRoughType();
-	return true;
-}
-
-bool ExtraPerformanceSettings::OpenHelp (HWND hWnd)
-{
-	OpenDefaultHelp (hWnd, "extra_performance");
-	return true;
-}
-
-INT_PTR CALLBACK ExtraPerformanceSettings::DlgProc (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
-{
-	switch (uMsg) {
-	case WM_INITDIALOG:
-		((ExtraPerformanceSettings*)lParam)->InitDialog (hWnd);
-		break;
-	case WM_COMMAND:
-		switch (LOWORD (wParam)) {
-		case IDC_BUTTON1:
-			((ExtraPerformanceSettings*)GetWindowLongPtr (hWnd, DWLP_USER))->ResetDialog (hWnd);
-			return 0;
-		case IDC_BUTTON2:
-			((ExtraPerformanceSettings*)GetWindowLongPtr (hWnd, DWLP_USER))->OpenHelp (hWnd);
-			return 0;
-		case IDOK:
-			if (((ExtraPerformanceSettings*)GetWindowLongPtr (hWnd, DWLP_USER))->StoreParams (hWnd))
-				EndDialog (hWnd, 0);
-			break;
-		}
-		break;
-	}
-	return BuiltinLaunchpadItem::DlgProc (hWnd, uMsg, wParam, lParam);
-}
-
-
-//-----------------------------------------------------------------------------
-// Debugging parameters: launchpad options
-//-----------------------------------------------------------------------------
 
 char *ExtraLaunchpadOptions::Name ()
 {
@@ -1412,76 +942,11 @@ char *ExtraLaunchpadOptions::Description ()
 	return (char*)"Configure the behaviour of the Orbiter Launchpad dialog.";
 }
 
-bool ExtraLaunchpadOptions::clbkOpen (HWND hParent)
+bool ExtraLaunchpadOptions::clbkOpen ()
 {
-	OpenDialog (hParent, IDD_EXTRA_LAUNCHPAD, DlgProc);
+	Open (m_dlg ? nullptr : new LaunchpadOptionsDialog (Cfg ()));
 	return true;
 }
-
-void ExtraLaunchpadOptions::InitDialog (HWND hWnd)
-{
-	SetDialog (hWnd, pTab->Cfg()->CfgDebugPrm);
-}
-
-void ExtraLaunchpadOptions::ResetDialog (HWND hWnd)
-{
-	extern CFG_DEBUGPRM CfgDebugPrm_default;
-	SetDialog (hWnd, CfgDebugPrm_default);
-}
-
-void ExtraLaunchpadOptions::SetDialog (HWND hWnd, const CFG_DEBUGPRM &prm)
-{
-	int i;
-	for (i = 0; i < 3; i++)
-		SendDlgItemMessage (hWnd, IDC_RADIO1+i, BM_SETCHECK, prm.bHtmlScnDesc == i ? BST_CHECKED : BST_UNCHECKED, 0);
-	SendDlgItemMessage (hWnd, IDC_CHECK1, BM_SETCHECK, prm.bSaveExitScreen ? BST_CHECKED : BST_UNCHECKED, 0);
-}
-
-bool ExtraLaunchpadOptions::StoreParams (HWND hWnd)
-{
-	int i;
-	Config *cfg = pTab->Cfg();
-	cfg->CfgDebugPrm.bSaveExitScreen = (SendDlgItemMessage (hWnd, IDC_CHECK1, BM_GETCHECK, 0, 0) == BST_CHECKED ? true : false);
-	for (i = 0; i < 3; i++) {
-		if (SendDlgItemMessage (hWnd, IDC_RADIO1+i, BM_GETCHECK, 0, 0) == BST_CHECKED) {
-			break;
-		}
-	}
-	if (i != cfg->CfgDebugPrm.bHtmlScnDesc) {
-		cfg->CfgDebugPrm.bHtmlScnDesc = i;
-		MessageBox (NULL, "You need to restart Orbiter for these changes to take effect.", "Orbiter settings", MB_OK | MB_ICONEXCLAMATION);
-	}
-	return true;
-}
-
-INT_PTR CALLBACK ExtraLaunchpadOptions::DlgProc (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
-{
-	switch (uMsg) {
-	case WM_INITDIALOG:
-		((ExtraLaunchpadOptions*)lParam)->InitDialog (hWnd);
-		break;
-	case WM_COMMAND:
-		switch (LOWORD (wParam)) {
-		case IDC_BUTTON1:
-			((ExtraLaunchpadOptions*)GetWindowLongPtr (hWnd, DWLP_USER))->ResetDialog (hWnd);
-			return 0;
-		//case IDC_BUTTON2:
-		//	((ExtraLaunchpadOptions*)GetWindowLongPtr (hWnd, DWLP_USER))->OpenHelp (hWnd);
-		//	return 0;
-		case IDOK:
-			if (((ExtraLaunchpadOptions*)GetWindowLongPtr (hWnd, DWLP_USER))->StoreParams (hWnd))
-				EndDialog (hWnd, 0);
-			break;
-		}
-		break;
-	}
-	return BuiltinLaunchpadItem::DlgProc (hWnd, uMsg, wParam, lParam);
-}
-
-
-//-----------------------------------------------------------------------------
-// Debugging parameters: logfile options
-//-----------------------------------------------------------------------------
 
 char *ExtraLogfileOptions::Name ()
 {
@@ -1493,63 +958,15 @@ char *ExtraLogfileOptions::Description ()
 	return (char*)"Configure options for log file output.";
 }
 
-bool ExtraLogfileOptions::clbkOpen (HWND hParent)
+bool ExtraLogfileOptions::clbkOpen ()
 {
-	OpenDialog (hParent, IDD_EXTRA_LOGFILE, DlgProc);
+	Open (m_dlg ? nullptr : new LogfileDialog (Cfg ()));
 	return true;
 }
 
-void ExtraLogfileOptions::InitDialog (HWND hWnd)
-{
-	SetDialog (hWnd, pTab->Cfg()->CfgDebugPrm);
-}
-
-void ExtraLogfileOptions::ResetDialog (HWND hWnd)
-{
-	extern CFG_DEBUGPRM CfgDebugPrm_default;
-	SetDialog (hWnd, CfgDebugPrm_default);
-}
-
-void ExtraLogfileOptions::SetDialog (HWND hWnd, const CFG_DEBUGPRM &prm)
-{
-	SendDlgItemMessage (hWnd, IDC_CHECK1, BM_SETCHECK, prm.bVerboseLog ? BST_CHECKED : BST_UNCHECKED, 0);
-}
-
-bool ExtraLogfileOptions::StoreParams (HWND hWnd)
-{
-	Config *cfg = pTab->Cfg();
-	cfg->CfgDebugPrm.bVerboseLog = (SendDlgItemMessage (hWnd, IDC_CHECK1, BM_GETCHECK, 0, 0) == BST_CHECKED ? true : false);
-	return true;
-}
-
-INT_PTR CALLBACK ExtraLogfileOptions::DlgProc (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
-{
-	switch (uMsg) {
-	case WM_INITDIALOG:
-		((ExtraLogfileOptions*)lParam)->InitDialog (hWnd);
-		break;
-	case WM_COMMAND:
-		switch (LOWORD (wParam)) {
-		case IDC_BUTTON1:
-			((ExtraLogfileOptions*)GetWindowLongPtr(hWnd, DWLP_USER))->ResetDialog (hWnd);
-			return 0;
-		//case IDC_BUTTON2:
-		//	((ExtraLogfileOptions*)GetWindowLongPtr (hWnd, DWLP_USER))->OpenHelp (hWnd);
-		//	return 0;
-		case IDOK:
-			if (((ExtraLogfileOptions*)GetWindowLongPtr (hWnd, DWLP_USER))->StoreParams (hWnd))
-				EndDialog (hWnd, 0);
-			break;
-		}
-		break;
-	}
-	return BuiltinLaunchpadItem::DlgProc (hWnd, uMsg, wParam, lParam);
-}
-
-//-----------------------------------------------------------------------------
+//=============================================================================
 // class LaunchpadItem: addon-defined items for the "Extra" tab
 // Interface in OrbiterAPI.h
-//-----------------------------------------------------------------------------
 
 LaunchpadItem::LaunchpadItem ()
 {
@@ -1569,13 +986,7 @@ char *LaunchpadItem::Description ()
 	return 0;
 }
 
-bool LaunchpadItem::OpenDialog (HINSTANCE hInst, HWND hLaunchpad, int resId, DLGPROC pDlg)
-{
-	DialogBoxParam (hInst, MAKEINTRESOURCE (resId), hLaunchpad, pDlg, (LPARAM)this);
-	return true;
-}
-
-bool LaunchpadItem::clbkOpen (HWND hLaunchpad)
+bool LaunchpadItem::clbkOpen ()
 {
 	return false;
 }

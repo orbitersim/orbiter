@@ -91,7 +91,7 @@ public:
 		MenuItem(MenuItem&& other) noexcept {
 			*this = std::move(other);
 		}
-		MenuItem& MenuItem::operator=(MenuItem&& other) noexcept {
+		MenuItem& operator=(MenuItem&& other) noexcept {
 			label = std::move(other.label);
 			texture = other.texture;
 			other.texture = NULL;

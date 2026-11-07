@@ -2,42 +2,64 @@
 // Licensed under the MIT License
 
 // =======================================================================
-// DirectInput user interface class
+// User input: keyboard state and events, and joystick
 // =======================================================================
 
 #ifndef __INPUT_H
 #define __INPUT_H
 
-#include "Di7frame.h"
+#include <windows.h>
+#include <string>
+#include <vector>
 
-class DInput {
+class Orbiter;
+
+struct JoyState {
+	LONG lX, lY, lZ;
+	LONG lRx, lRy, lRz;
+	LONG rglSlider[2];
+	DWORD rgdwPOV[4];
+	BYTE rgbButtons[128];
+};
+
+struct KeyEvent {
+	DWORD key;
+	bool down;
+};
+
+class InputManager {
 	friend class Orbiter;
 
 public:
-	DInput (Orbiter *pOrbiter);
-	~DInput ();
+	InputManager (Orbiter *pOrbiter);
+	~InputManager ();
 
-	HRESULT Create (HINSTANCE hInst);
+	HRESULT Create ();
 	void Destroy ();
 
-	void SetRenderWindow(HWND hWnd);
+	void SetRenderWindow (HWND hWnd);
 
-	bool CreateKbdDevice();
+	bool CreateKbdDevice ();
 	bool CreateJoyDevice ();
 	void DestroyDevices ();
 
-	inline CDIFramework7 *GetDIFrame() const { return diframe; }
-	inline const LPDIRECTINPUTDEVICE8 GetKbdDevice() const { return diframe->GetKbdDevice(); }
-	inline const LPDIRECTINPUTDEVICE8 GetJoyDevice() const { return diframe->GetJoyDevice(); }
+	bool HasKeyboard () const { return m_bKbd; }
 
-	void OptionChanged(DWORD cat, DWORD item);
+	void GetKeyState (char kstate[256]) const;
+	void TakeKeyEvents (std::vector<KeyEvent> &events);
 
-	bool PollJoystick (DIJOYSTATE2 *js);
+	std::vector<std::string> Joysticks () const;
+	DWORD NumJoysticks () const { return (DWORD)Joysticks().size(); }
+
+	void OptionChanged (DWORD cat, DWORD item);
+
+	bool PollJoystick (JoyState *js);
+	LONG ThrottleValue (const JoyState &js) const;
 
 	struct JoyProp {
-		bool bThrottle;  // joystick has throttle control
-		bool bRudder;    // joystick has rudder control
-		int ThrottleOfs; // throttle data offset
+		bool bThrottle;
+		bool bRudder;
+		int ThrottleAxis;
 	};
 
 protected:
@@ -45,9 +67,10 @@ protected:
 
 private:
 	Orbiter *orbiter;
-	CDIFramework7 *diframe;
 	JoyProp joyprop;
 	HWND m_hWnd;
+	bool m_bKbd;
+	bool m_bJoy;
 };
 
 #endif // !__INPUT_H

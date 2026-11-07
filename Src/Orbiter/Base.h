@@ -10,6 +10,8 @@
 #include "Body.h"
 #include "Nav.h"
 
+class VBase;
+
 class Planet;
 class PlanetarySystem;
 class Vessel;

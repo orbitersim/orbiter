@@ -2,8 +2,8 @@
 // Licensed under the MIT License
 
 //-----------------------------------------------------------------------------
-// Launchpad tab declaration: class DefVideoTab
-// Tab for default video device parameters
+// Launchpad tab declaration: DefVideoTab
+// Graphics engine selection
 //-----------------------------------------------------------------------------
 
 #ifndef __TABVIDEO_H
@@ -11,45 +11,43 @@
 
 #include "LpadTab.h"
 #include <filesystem>
+#include <string>
+#include <vector>
 namespace fs = std::filesystem;
+
+namespace oapi { class GraphicsClient; }
 
 namespace orbiter {
 
 	class DefVideoTab : public LaunchpadTab {
 	public:
-		DefVideoTab(const LaunchpadDialog* lp);
-		~DefVideoTab();
+		DefVideoTab(LaunchpadDialog* lp);
 
-		void Create();
+		void Draw();
 
-		BOOL OnInitDialog(HWND hWnd, WPARAM wParam, LPARAM lParam);
+		void Activated();
 
-		void OnGraphicsClientLoaded(oapi::GraphicsClient* gc, const PSTR moduleName);
+		void OnGraphicsClientLoaded(oapi::GraphicsClient* gc, const char* moduleName);
 
 		void SetConfig(Config* cfg);
 
-		bool OpenHelp();
-
-		BOOL OnMessage(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
-
 	protected:
-		void ShowInterface(HWND hTab, bool show);
+		void EnumerateClients();
 
-		void EnumerateClients(HWND hTab);
-
-		void ScanDir(HWND hTab, const fs::path &dir);
+		void ScanDir(const fs::path& dir);
 		// scan directory dir (relative to Orbiter root) for graphics clients
-		// and enter them in the combo box
 
-		void SelectClientIndex(UINT idx);
-
-		void SetInfoString(PCSTR str);
-
-		static INT_PTR CALLBACK InfoProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
+		void SelectClientIndex(size_t idx);
 
 	private:
-		UINT idxClient;
-		char* strInfo;
+		struct Client {
+			std::string name;
+			std::string path;
+			std::string info;
+		};
+		std::vector<Client> m_clients;
+		size_t idxClient;
+		std::string strInfo;
 	};
 
 }

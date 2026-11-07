@@ -18,3 +18,5 @@ set_target_properties(meshc
 install(TARGETS meshc
 	DESTINATION ${ORBITER_INSTALL_SDK_DIR}/Utils
 )
+
+target_link_libraries(meshc OrbiterPlatform)

@@ -12,7 +12,6 @@ target_include_directories(Rcontrol
 target_link_libraries(Rcontrol
 	${ORBITER_LIB}
 	${ORBITER_SDK_LIB}
-	${ORBITER_DLGCTRL_LIB}
 	imgui
 )
 

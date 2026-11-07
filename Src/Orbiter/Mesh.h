@@ -193,11 +193,9 @@ public:
 
 	void Clear ();
 
-	DWORD Render (LPDIRECT3DDEVICE7 dev);
 	// render the mesh using device dev
 	// return value is the number of rendered groups
 
-	void RenderGroup (LPDIRECT3DDEVICE7 dev, DWORD grp, bool setstate = true) const;
 	// render a single mesh group
 	// if setstate=false, the group render parameters are skipped
 

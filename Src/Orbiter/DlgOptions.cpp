@@ -22,6 +22,7 @@ DlgOptions::DlgOptions(): ImGuiDialog(ICON_FA_LIST_CHECK " Orbiter: Options", {6
 	m_pathStarmap.clear();
 	m_pathBgImage.clear();
 	featuretarget = "Select...";
+	elevInterp = g_pOrbiter->Cfg()->CfgVisualPrm.ElevMode < 2 ? 1 : 2;
 
 	std::ifstream ifs(g_pOrbiter->Cfg()->ConfigPath("CSphere/bkgimage"));
 	if (ifs) {
@@ -72,8 +73,10 @@ DlgOptions::DlgOptions(): ImGuiDialog(ICON_FA_LIST_CHECK " Orbiter: Options", {6
 			}
 		}
 	}
-	std::ifstream fcfg(g_pOrbiter->Cfg()->ConfigPath(g_psys->Name().c_str()));
-	g_psys->ScanLabelLists(fcfg);
+	if (g_psys) {
+		std::ifstream fcfg(g_pOrbiter->Cfg()->ConfigPath(g_psys->Name().c_str()));
+		g_psys->ScanLabelLists(fcfg);
+	}
 }
 
 void DlgOptions::OnDraw()
@@ -146,11 +149,13 @@ void DlgOptions::DrawVessel()
 		g_pOrbiter->OnOptionChanged(OPTCAT_VESSEL, OPTITEM_VESSEL_LIMITEDFUEL);
 	if(ImGui::Checkbox("Auto-refuel on pad", &logic.bPadRefuel))
 		g_pOrbiter->OnOptionChanged(OPTCAT_VESSEL, OPTITEM_VESSEL_PADREFUEL);
+	ImGui::BeginDisabled(g_psys != nullptr);
 	const char *fmodels[] = {	"Simple", "Realistic" };
 	ImGui::SliderEnum("Flight model", &logic.FlightModelLevel, fmodels, 2);
 
 	const char *dmodel[] = {"No damage", "Allow damage"};
 	ImGui::SliderEnum("Damage model", &logic.DamageSetting, dmodel, 2);
+	ImGui::EndDisabled();
 }
 void DlgOptions::DrawUI()
 {
@@ -162,30 +167,34 @@ void DlgOptions::DrawUI()
 void DlgOptions::DrawJoystick()
 {
 	ImGui::SeparatorText("Joystick device");
-	DWORD ndev;
-	DIDEVICEINSTANCE* joylist;
-	g_pOrbiter->GetDInput()->GetJoysticks(&joylist, &ndev);
+	std::vector<std::string> joylist;
+	if (g_pOrbiter->GetInput())
+		joylist = g_pOrbiter->GetInput()->Joysticks();
+	DWORD ndev = (DWORD)joylist.size();
 	DWORD &jidx = g_pOrbiter->Cfg()->CfgJoystickPrm.Joy_idx;
 
 	const char *preview = "<Disabled>";
 	if(jidx > 0 && jidx <= ndev) {
-		preview = joylist[jidx - 1].tszProductName;
+		preview = joylist[jidx - 1].c_str();
 	}
 
 	if(ImGui::BeginAnimatedCombo("##joydev", preview)) {
 		bool selected = jidx == 0;
 		if(ImGui::Selectable("<Disabled>", &selected)) {
 			jidx = 0;
+			g_pOrbiter->OnOptionChanged(OPTCAT_JOYSTICK, OPTITEM_JOYSTICK_DEVICE);
 		}
 		if (selected) {
 			ImGui::SetItemDefaultFocus();
 		}
-		for (int i = 0; i < ndev; i++) {
+		for (DWORD i = 0; i < ndev; i++) {
 			selected = jidx == (i+1);
-			if(ImGui::Selectable(joylist[i].tszProductName, &selected)) {
+			ImGui::PushID((int)i);
+			if(ImGui::Selectable(joylist[i].c_str(), &selected)) {
 				jidx = i + 1;
 				g_pOrbiter->OnOptionChanged(OPTCAT_JOYSTICK, OPTITEM_JOYSTICK_DEVICE);
 			}
+			ImGui::PopID();
 			if (selected) {
 				ImGui::SetItemDefaultFocus();
 			}
@@ -244,6 +253,11 @@ void DlgOptions::DrawCelSphere()
 				prm.mag_hi = prm.mag_lo-0.01;
 		}
 		changed |= ImGui::SliderDouble("Min brightness", &prm.brt_min, 0.01, 1.0, "%0.2f");
+		ImGui::TextUnformatted("Magnitude-brightness mapping");
+		ImGui::SameLine();
+		if (ImGui::RadioButton("Linear", !prm.map_log)) { prm.map_log = false; changed = true; }
+		ImGui::SameLine();
+		if (ImGui::RadioButton("Exponential", prm.map_log)) { prm.map_log = true; changed = true; }
 
 		if(changed)
 			g_pOrbiter->OnOptionChanged(OPTCAT_CELSPHERE, OPTITEM_CELSPHERE_STARDISPLAYPARAM);
@@ -259,7 +273,7 @@ void DlgOptions::DrawCelSphere()
 			for(const auto &starmap: m_pathStarmap) {
 				if(ImGui::Selectable(starmap.first.c_str(), starmap.second == g_pOrbiter->Cfg()->CfgVisualPrm.StarImagePath)) {
 					strcpy(g_pOrbiter->Cfg()->CfgVisualPrm.StarImagePath, starmap.second.c_str());
-					currentstarmap = starmap.second;
+					currentstarmap = starmap.first;
 					g_pOrbiter->OnOptionChanged(OPTCAT_CELSPHERE, OPTITEM_CELSPHERE_STARIMAGECHANGED);
 				}
 			}
@@ -292,15 +306,27 @@ void DlgOptions::DrawCelSphere()
 void DlgOptions::DrawVisHelper()
 {
 	ImGui::SeparatorText("Visual helpers");
-	ImGui::Text("Options for displaying markers and gridlines on the celestial");
-	ImGui::Text("sphere, labels for planetary surface features, as weel as coordinate");
-	ImGui::Text("axis and force vectors");
+	ImGui::TextWrapped("Options for displaying markers and gridlines on the celestial sphere, labels for planetary surface features, as well as coordinate axes and force vectors.");
+	ImGui::Spacing();
 
 	CFG_VISHELPPRM &prm = g_pOrbiter->Cfg()->CfgVisHelpPrm;
-	ImGui::CheckboxFlags("Planetarium mode (F9)",          &prm.flagPlanetarium, PLN_ENABLE);
-	ImGui::CheckboxFlags("Surface/object labels (Alt-F9)", &prm.flagMarkers,     MKR_ENABLE);
-	ImGui::CheckboxFlags("Body force vectors",             &prm.flagBodyForce,   BFV_ENABLE);
-	ImGui::CheckboxFlags("Object frame axis",              &prm.flagFrameAxes,   FAV_ENABLE);
+	struct { const char *label; int *flag; int bit; const char *page; const char *button; } items[] = {
+		{"Planetarium mode (F9)",          &prm.flagPlanetarium, PLN_ENABLE, "      Planetarium", "Planetarium options"},
+		{"Surface/object labels (Alt-F9)", &prm.flagMarkers,     MKR_ENABLE, "      Labels",      "Label options"},
+		{"Body force vectors",             &prm.flagBodyForce,   BFV_ENABLE, "      Body forces", "Body force options"},
+		{"Object frame axes",              &prm.flagFrameAxes,   FAV_ENABLE, "      Object axes", "Frame axis options"},
+	};
+	if (ImGui::BeginTable("##vishelp", 2)) {
+		for (auto &it : items) {
+			ImGui::TableNextRow();
+			ImGui::TableNextColumn();
+			ImGui::CheckboxFlags(it.label, it.flag, it.bit);
+			ImGui::TableNextColumn();
+			if (ImGui::Button(it.button))
+				SwitchPage(it.page);
+		}
+		ImGui::EndTable();
+	}
 }
 void DlgOptions::DrawPlanetarium()
 {
@@ -328,22 +354,24 @@ void DlgOptions::DrawPlanetarium()
 		ImGui::EndChild();
 		ImGui::SameLine();
 		ImGui::BeginChild("##right");
-			ImGui::SeparatorText("Celestical markers");
+			ImGui::SeparatorText("Celestial markers");
 
 			changed |= ImGui::CheckboxFlags("Show markers", &prm.flagPlanetarium, PLN_CCMARK);
-		
-			std::vector<oapi::GraphicsClient::LABELLIST> &list = g_psys->LabelList();
-			ImGui::BeginDisabled(!(prm.flagPlanetarium & PLN_CCMARK));
-				bool lblchanged = false;
-				for(auto &lbl: list) {
-					lblchanged |= ImGui::Selectable(lbl.name.c_str(), &lbl.active);
-				}
 
-				if(lblchanged) {
-					std::ifstream fcfg(g_pOrbiter->Cfg()->ConfigPath(g_psys->Name().c_str()));
-					g_psys->ScanLabelLists(fcfg);
-				}
-			ImGui::EndDisabled();
+			if (g_psys) {
+				std::vector<oapi::GraphicsClient::LABELLIST> &list = g_psys->LabelList();
+				ImGui::BeginDisabled(!(prm.flagPlanetarium & PLN_CCMARK));
+					bool lblchanged = false;
+					for(auto &lbl: list) {
+						lblchanged |= ImGui::Selectable(lbl.name.c_str(), &lbl.active);
+					}
+
+					if(lblchanged) {
+						std::ifstream fcfg(g_pOrbiter->Cfg()->ConfigPath(g_psys->Name().c_str()));
+						g_psys->ScanLabelLists(fcfg);
+					}
+				ImGui::EndDisabled();
+			}
 		ImGui::EndChild();
 	ImGui::EndDisabled();
 	if(changed)
@@ -402,6 +430,7 @@ void DlgOptions::DrawLabels()
 			ImGui::SeparatorText("Surface features");
 			changed |= ImGui::CheckboxFlags("Features", &prm.flagMarkers, MKR_LMARK);
 			ImGui::BeginDisabled(!(prm.flagMarkers & MKR_LMARK));
+			if (g_psys) {
 				if(ImGui::BeginAnimatedCombo("##featuretarget", featuretarget.c_str(), ImGuiComboFlags_HeightLarge)) {
 					for (int i = 0; i < g_psys->nStar(); i++)
 						AddCbodyNode (g_psys->GetStar(i));
@@ -434,6 +463,7 @@ void DlgOptions::DrawLabels()
 					}
 					ImGui::EndChild();
 				}
+			}
 			ImGui::EndDisabled();
 		ImGui::EndChild();
 	ImGui::EndDisabled();
@@ -499,10 +529,94 @@ void DlgOptions::DrawAxes()
 		ImGui::BeginChild("##right");
 			ImGui::SeparatorText("Display");
 			ImGui::CheckboxFlags("Show negative axis", &prm.flagFrameAxes, FAV_NEGATIVE);
-			ImGui::BeginDisabled(!(prm.flagFrameAxes, FAV_NEGATIVE));
-				ImGui::SliderFloat("Scale", &prm.scaleFrameAxes, 0.25, 4.0, "%0.2f", ImGuiSliderFlags_AlwaysClamp);
-				ImGui::SliderFloat("Opacity", &prm.opacFrameAxes, 0.0, 1.0, "%0.2f", ImGuiSliderFlags_AlwaysClamp);
-			ImGui::EndDisabled();
+			ImGui::SliderFloat("Scale", &prm.scaleFrameAxes, 0.25, 4.0, "%0.2f", ImGuiSliderFlags_AlwaysClamp);
+			ImGui::SliderFloat("Opacity", &prm.opacFrameAxes, 0.0, 1.0, "%0.2f", ImGuiSliderFlags_AlwaysClamp);
 		ImGui::EndChild();
 
 	ImGui::EndDisabled();}
+
+void DlgOptions::DrawVisual()
+{
+	CFG_VISUALPRM &prm = g_pOrbiter->Cfg()->CfgVisualPrm;
+	ImGui::SeparatorText("Planetary effects");
+	if (ImGui::BeginTable("##planfx", 2)) {
+		ImGui::TableNextColumn(); ImGui::Checkbox("Cloud layers", &prm.bClouds);
+		ImGui::TableNextColumn();
+		ImGui::BeginDisabled(!prm.bClouds);
+		ImGui::Checkbox("Cloud shadows", &prm.bCloudShadows);
+		ImGui::EndDisabled();
+		ImGui::TableNextColumn(); ImGui::Checkbox("Horizon haze", &prm.bHaze);
+		ImGui::TableNextColumn(); ImGui::Checkbox("Distance fog", &prm.bFog);
+		ImGui::TableNextColumn(); ImGui::Checkbox("Specular water reflections", &prm.bWaterreflect);
+		ImGui::TableNextColumn();
+		ImGui::BeginDisabled(!prm.bWaterreflect);
+		ImGui::Checkbox("Specular ripples", &prm.bSpecularRipple);
+		ImGui::EndDisabled();
+
+		ImGui::TableNextColumn(); ImGui::Checkbox("Planet night lights, at level (0-1)", &prm.bNightlights);
+		ImGui::TableNextColumn();
+		ImGui::BeginDisabled(!prm.bNightlights);
+		ImGui::SetNextItemWidth(ImGui::GetFontSize() * 5.0f);
+		if (ImGui::InputDouble("##ltlevel", &prm.LightBrightness, 0.0, 0.0, "%0.2f"))
+			prm.LightBrightness = std::max(0.0, std::min(1.0, prm.LightBrightness));
+		ImGui::EndDisabled();
+
+		bool elev = prm.ElevMode != 0;
+		ImGui::TableNextColumn();
+		if (ImGui::Checkbox("Surface elevation, using", &elev))
+			prm.ElevMode = elev ? elevInterp : 0;
+		ImGui::TableNextColumn();
+		ImGui::BeginDisabled(!elev);
+		const char *interp[] = { "linear interpolation", "cubic interpolation" };
+		int idx = elevInterp - 1;
+		ImGui::SetNextItemWidth(ImGui::GetFontSize() * 11.0f);
+		if (ImGui::Combo("##elevmode", &idx, interp, 2)) {
+			elevInterp = idx + 1;
+			prm.ElevMode = elevInterp;
+		}
+		ImGui::EndDisabled();
+
+		ImGui::TableNextColumn(); ImGui::AlignTextToFramePadding(); ImGui::TextUnformatted("Max. resolution level (1-21)");
+		ImGui::TableNextColumn();
+		int lvl = (int)prm.PlanetMaxLevel;
+		ImGui::SetNextItemWidth(ImGui::GetFontSize() * 5.0f);
+		if (ImGui::InputInt("##maxlevel", &lvl, 0, 0))
+			prm.PlanetMaxLevel = (DWORD)std::max(1, std::min((int)SURF_MAX_PATCHLEVEL2, lvl));
+		ImGui::EndTable();
+	}
+
+	ImGui::SeparatorText("General effects");
+	if (ImGui::BeginTable("##genfx", 2)) {
+		ImGui::TableNextColumn(); ImGui::Checkbox("Vessel shadows", &prm.bVesselShadows);
+		ImGui::TableNextColumn(); ImGui::Checkbox("Reentry flames", &prm.bReentryFlames);
+		ImGui::TableNextColumn(); ImGui::Checkbox("Object shadows", &prm.bShadows);
+		ImGui::TableNextColumn(); ImGui::Checkbox("Particle streams", &prm.bParticleStreams);
+		ImGui::TableNextColumn(); ImGui::Checkbox("Specular object reflections", &prm.bSpecular);
+		ImGui::TableNextColumn(); ImGui::Checkbox("Local light sources", &prm.bLocalLight);
+		ImGui::TableNextColumn(); ImGui::AlignTextToFramePadding(); ImGui::TextUnformatted("Ambient light level (0-255)");
+		ImGui::TableNextColumn();
+		int amb = (int)prm.AmbientLevel;
+		ImGui::SetNextItemWidth(ImGui::GetFontSize() * 5.0f);
+		if (ImGui::InputInt("##ambient", &amb, 0, 0))
+			g_pOrbiter->Cfg()->SetAmbientLevel((DWORD)std::max(0, std::min(255, amb)));
+		ImGui::EndTable();
+	}
+
+	ImGui::Spacing();
+	ImGui::PushStyleColor(ImGuiCol_Text, ImGui::GetStyleColorVec4(ImGuiCol_TextDisabled));
+	ImGui::TextWrapped("Some graphics clients may ignore, override or extend some of these settings.");
+	ImGui::PopStyleColor();
+}
+
+void DlgOptions::DrawPhysics()
+{
+	CFG_PHYSICSPRM &prm = g_pOrbiter->Cfg()->CfgPhysicsPrm;
+	ImGui::SeparatorText("Perturbations");
+	ImGui::Checkbox("Nonspherical gravity sources", &prm.bNonsphericalGrav);
+	ImGui::Checkbox("Radiation pressure", &prm.bRadiationPressure);
+	ImGui::Checkbox("Gravity-gradient torque", &prm.bDistributedMass);
+	ImGui::Checkbox("Atmospheric wind effects", &prm.bAtmWind);
+	ImGui::SeparatorText("Collisions");
+	ImGui::Checkbox("Vessel-to-base", &prm.bBaseCollision);
+	ImGui::Checkbox("Vessel-to-vessel", &prm.bVesselCollision);
+}

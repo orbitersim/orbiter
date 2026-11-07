@@ -387,12 +387,6 @@ void DefaultPanel::InitDeviceObjects ()
 	mfdFont = gc->clbkCreateFont (fh1, true, "Sans");
 }
 
-void DefaultPanel::RestoreDeviceObjects (LPDIRECT3D7 d3d, LPDIRECT3DDEVICE7 dev)
-{
-	// This method is currently only supported by the inline client
-	rcsmode = -1;
-}
-
 void DefaultPanel::DestroyDeviceObjects ()
 {
 	if (gc) {

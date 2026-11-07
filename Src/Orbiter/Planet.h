@@ -23,6 +23,9 @@
 #include "Orbiter.h"
 #include <functional>
 #include <filesystem>
+
+class VPlanet;
+template<class T> class TileManager2;
 namespace fs = std::filesystem;
 
 #define FILETYPE_MARKER 1

@@ -727,10 +727,7 @@ void CelestialBody::RegisterModule (char *dllname)
 		// dynamic integration from a zero relative state; both are wrong silently, so the failure is logged
 		// with the meaning of the two usual causes: a DLL built for the other architecture, and a DLL whose
 		// runtime library (for example an older Visual C++ redistributable) is not installed.
-		const DWORD err = GetLastError();
-		const char *hint = (err == ERROR_BAD_EXE_FORMAT) ? ": the DLL was built for a different architecture than this Orbiter" :
-		                   (err == ERROR_MOD_NOT_FOUND)  ? ": the DLL or one of its dependencies, such as a runtime library it was built against, is missing" : "";
-		LOGOUT_WARN("Celestial body %s: ephemeris module %s.dll could not be loaded (Windows error %lu%s); the body falls back to the orbital elements in its config file, if it has any", name.c_str(), dllname, err, hint);
+		LOGOUT_WARN("Celestial body %s: ephemeris module %s could not be loaded (%s); the body falls back to the orbital elements in its config file, if it has any", name.c_str(), dllname, OCompatLastLoadError());
 		return;
 	}
 

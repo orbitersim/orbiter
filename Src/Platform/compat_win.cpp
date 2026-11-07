@@ -16,6 +16,7 @@
 namespace {
 
 thread_local DWORD g_lastError = 0;
+thread_local std::string g_lastLoadError;
 
 std::string NormalisePath(const char *path)
 {
@@ -141,6 +142,7 @@ void FillSystemTime(SYSTEMTIME *st, bool local)
 extern "C" {
 
 const char *OCompatModuleSuffix(void) { return ".dylib"; }
+const char *OCompatLastLoadError(void) { return g_lastLoadError.c_str(); }
 
 HMODULE LoadLibraryA(const char *path)
 {
@@ -148,7 +150,7 @@ HMODULE LoadLibraryA(const char *path)
 	void *h = dlopen(p.c_str(), RTLD_NOW | RTLD_LOCAL);
 	if (!h) {
 		const char *err = dlerror();
-		fprintf(stderr, "LoadLibrary(%s): %s\n", p.c_str(), err ? err : "unknown error");
+		g_lastLoadError = err ? err : "unknown error";
 		g_lastError = 126;
 	}
 	return (HMODULE)h;
@@ -417,5 +419,55 @@ void *_aligned_malloc(size_t size, size_t align)
 }
 
 void _aligned_free(void *p) { free(p); }
+
+int MultiByteToWideChar(UINT, DWORD, const char *src, int srclen, wchar_t *dst, int dstlen)
+{
+	if (!src) return 0;
+	size_t n = srclen < 0 ? strlen(src) + 1 : (size_t)srclen;
+	const unsigned char *p = (const unsigned char *)src, *end = p + n;
+	int count = 0;
+	while (p < end) {
+		uint32_t c = *p++;
+		if (c >= 0xC0) {
+			int extra = c >= 0xF0 ? 3 : c >= 0xE0 ? 2 : 1;
+			c &= (0x3F >> extra);
+			while (extra-- && p < end && (*p & 0xC0) == 0x80) c = (c << 6) | (*p++ & 0x3F);
+		} else if (c >= 0x80) {
+			c = 0xFFFD;
+		}
+		if (dst && dstlen) {
+			if (count >= dstlen) return 0;
+			dst[count] = (wchar_t)c;
+		}
+		count++;
+	}
+	return count;
+}
+
+int WideCharToMultiByte(UINT, DWORD, const wchar_t *src, int srclen, char *dst, int dstlen, const char *, WINBOOL *useddef)
+{
+	if (useddef) *useddef = FALSE;
+	if (!src) return 0;
+	size_t n = srclen < 0 ? wcslen(src) + 1 : (size_t)srclen;
+	int count = 0;
+	auto put = [&](char ch) -> bool {
+		if (dst && dstlen) {
+			if (count >= dstlen) return false;
+			dst[count] = ch;
+		}
+		count++;
+		return true;
+	};
+	for (size_t i = 0; i < n; i++) {
+		uint32_t c = (uint32_t)src[i];
+		bool ok;
+		if (c < 0x80) ok = put((char)c);
+		else if (c < 0x800) ok = put((char)(0xC0 | (c >> 6))) && put((char)(0x80 | (c & 0x3F)));
+		else if (c < 0x10000) ok = put((char)(0xE0 | (c >> 12))) && put((char)(0x80 | ((c >> 6) & 0x3F))) && put((char)(0x80 | (c & 0x3F)));
+		else ok = put((char)(0xF0 | (c >> 18))) && put((char)(0x80 | ((c >> 12) & 0x3F))) && put((char)(0x80 | ((c >> 6) & 0x3F))) && put((char)(0x80 | (c & 0x3F)));
+		if (!ok) return 0;
+	}
+	return count;
+}
 
 }

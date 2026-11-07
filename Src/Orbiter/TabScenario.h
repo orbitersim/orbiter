@@ -9,84 +9,95 @@
 #ifndef __TABSCENARIO_H
 #define __TABSCENARIO_H
 
-#include <CommCtrl.h>
 #include "LpadTab.h"
-#include "CustomControls.h"
 #include <filesystem>
+#include <string>
+#include <vector>
 namespace fs = std::filesystem;
 
 namespace orbiter {
 
 	class ScenarioTab : public orbiter::LaunchpadTab {
 	public:
-		ScenarioTab(const orbiter::LaunchpadDialog* lp);
+		ScenarioTab(LaunchpadDialog* lp);
 		~ScenarioTab();
 
-		void Create();
+		void Draw();
 
 		void GetConfig(const Config* cfg);
 		void SetConfig(Config* cfg);
 
-		bool OpenHelp();
-
-		bool DynamicSize() const { return true; }
-
-		BOOL OnSize(int w, int h);
-
-		int GetSelScenario(char* scn, int len);
-		// returns name of currently selected scenario file
-		// (without path or extension)
-
+		void Activated();
 		void LaunchpadShowing(bool show);
 
-		BOOL OnNotify(HWND hDlg, int idCtrl, LPNMHDR pnmh);
-
-		BOOL OnMessage(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
-
-	protected:
-		void RefreshList(bool preserveSelection);
-		// refresh the scenario list
-
-		void ScanDirectory(const fs::path &path, HTREEITEM hti);
-		// scan scenario files from a subdirectory
-
-		void ScenarioChanged();
-		// Respond to a user scenario selection
-
-		void SaveCurScenario();
-		// open dialog to allow saving of current scenario, if available
-
-		int SaveCurScenarioAs(const char* name, char* desc, bool replace = false);
-		// copy current scenario file into 'name', replacing description with 'desc'.
-		// return value: 0=ok, 1=failed, 2=file exists (only checked if replace=false)
-
-		void ClearQSFolder();
-		// remove all scenarios in the quicksave folder
-
-		void OpenScenarioHelp();
-		// open the help file associated with the current scenario
+		std::string SelectedScenario() const;
+		// path of the selected scenario relative to the scenario folder,
+		// without extension. Empty if a folder or nothing is selected.
 
 	private:
-		static INT_PTR CALLBACK SaveProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
-		// callback function for "scenario save" dialog
+		struct Node {
+			std::string name;
+			bool dir;
+			std::vector<Node> children;
+			bool operator== (const Node& n) const { return name == n.name && dir == n.dir && children == n.children; }
+		};
 
-		static DWORD WINAPI threadWatchScnList(LPVOID pPrm);
-		// thread function for scenario list watcher
+		struct Run {
+			std::string text;
+			std::string url;
+		};
 
-		SplitterCtrl splitListDesc;  // splitter control for scenario list(left) and description(right)
-		HIMAGELIST imglist;      // image list for scenario icons
-		int treeicon_idx[4];     // icon indices for scenario tree
-		char scnhelp[128];       // scenario help string, if available
-		RECT r_list0;            // initial position of scenario list - REMOVE!
-		RECT r_desc0;            // initial position of description block - REMOVE!
-		RECT r_pane;             // initial position of list/description splitter pane
-		RECT r_save0;            // initial position of "save current" button
-		RECT r_clear0;           // initial position of "clear quicksaves" button
-		RECT r_info0;            // initial position of "info" button
-		RECT r_pause0;           // initial position of "start paused" button
-		int infoId;              // IDC_SCN_HTML or IDC_SCN_INFO, depending on which is active
-		bool htmldesc;           // Use embedded html viewer for scenario description
-		HANDLE hThread;          // scenario directory tree watcher
+		struct Block {
+			enum Type { HEADING, TEXT, BULLET, IMAGE } type;
+			std::vector<Run> runs;
+			bool tight = false;
+			std::string image;
+			bool fullWidth = false;
+			bool loaded = false;
+			void* tex = nullptr;
+			int w = 0, h = 0;
+		};
+
+		fs::path ScnDir() const;
+		void RefreshList(bool preserveSelection);
+		void ScanDirectory(const fs::path& path, Node& node);
+		const Node* FindNode(const std::string& path) const;
+		void Select(const std::string& path, bool reveal);
+		void DrawNode(const Node& node, const std::string& path);
+
+		void LoadDescription();
+		void ClearDescription();
+		void DrawDescription();
+		void DrawRuns(const std::vector<Run>& runs);
+		void ParseText(const std::string& text);
+		void ParseHtml(const std::string& html, const fs::path& base);
+
+		void DrawSaveDialog();
+		void DrawClearDialog();
+		void BeginClearQuicksaves();
+		int SaveCurScenarioAs(const std::string& name, const std::string& desc, bool replace);
+		// 0=ok, 1=failed, 2=file exists (only checked if replace=false)
+
+		Node m_root;
+		std::string m_sel;
+		bool m_selDir;
+		bool m_reveal;
+		std::vector<Block> m_desc;
+		fs::path m_descBase;
+		int m_descMode;
+		double m_lastScan;
+		float m_listWidth;
+		bool m_paused;
+
+		bool m_openSave;
+		bool m_openNoState;
+		char m_saveName[64];
+		char m_saveDesc[4096];
+		bool m_saveExists;
+		std::string m_saveError;
+
+		bool m_openClear;
+		std::vector<std::string> m_quicksaves;
 	};
 
 }

@@ -42,6 +42,8 @@ if(MSVC)
 else()
   target_link_libraries(lua-exe PUBLIC m)
   target_link_libraries(lua PUBLIC m)
+  target_compile_definitions(lua PUBLIC LUA_USE_POSIX LUA_USE_DLOPEN)
+  target_compile_definitions(lua-exe PUBLIC LUA_USE_POSIX LUA_USE_DLOPEN)
 endif()
 
 set_target_properties(lua PROPERTIES

@@ -18,6 +18,16 @@
 #include "hud.h"
 #include "Select.h"
 
+class DefaultPanel;
+class HUD_Docking;
+class HUD_Orbit;
+class HUD_Surface;
+class Instrument;
+class MenuInfoBar;
+class Panel;
+class Panel2D;
+class VirtualCockpit;
+
 #define MSG_KILLVESSEL    0x1000
 #define MSG_KILLNAVSENDER 0x1001
 #define MSG_CREATEVESSEL  0x1002
@@ -65,7 +75,6 @@ public:
 	int BitsPerPixel() const { return BPP; }
 	// Return pane dimensions
 
-	void RestoreDeviceObjects (LPDIRECT3D7 d3d, LPDIRECT3DDEVICE7 dev);
 	// Restore all devices (e.g. after render window is re-openend
 
 	void Update (double simt, double syst);
@@ -216,8 +225,7 @@ public:
 	Panel2D *GetPanel2D() { return panel2d; }
 	Panel *GetPanel2D_old() { return panel; }
 
-	void RegisterPanelBackground (HBITMAP hBmp, DWORD flag, DWORD ck);
-	void RegisterPanelBackground (SURFHANDLE hSurf, DWORD flag);
+	void RegisterPanelBackground (SURFHANDLE hSurf, DWORD flag, DWORD ck);
 	void RegisterPanelArea (int id, const RECT &pos, int draw_mode, int mouse_mode, int bkmode);
 	void SetPanelNeighbours (int left, int right, int top, int bottom);
 	void SetVCNeighbours (int left, int right, int top, int bottom);

@@ -2,35 +2,21 @@
 // Licensed under the MIT License
 
 #include "Memstat.h"
-
-bool MemStat::bLib = false;
-HMODULE MemStat::hLib = 0;
+#include <mach/mach.h>
 
 MemStat::MemStat ()
 {
-	if (!bLib) {
-		hLib = LoadLibrary ("Psapi.dll");
-		bLib = true;
-	}
-    hProc = GetCurrentProcess();
-    active = (hLib != NULL && hProc != NULL);
-	if (active) {
-		pGetProcessMemoryInfo = (Proc_GetProcessMemoryInfo)GetProcAddress (hLib, "GetProcessMemoryInfo");
-	} else {
-		pGetProcessMemoryInfo = 0;
-	}
 }
 
 MemStat::~MemStat ()
 {
-    if (hProc) CloseHandle (hProc);
 }
 
 long MemStat::HeapUsage ()
 {
-	if (pGetProcessMemoryInfo) {
-	    PROCESS_MEMORY_COUNTERS pmc;
-		pGetProcessMemoryInfo (hProc, &pmc, sizeof(pmc));
-		return (long)pmc.WorkingSetSize;
-	} else return 0;
+	task_vm_info_data_t info;
+	mach_msg_type_number_t count = TASK_VM_INFO_COUNT;
+	if (task_info (mach_task_self (), TASK_VM_INFO, (task_info_t)&info, &count) != KERN_SUCCESS)
+		return 0;
+	return (long)info.phys_footprint;
 }
