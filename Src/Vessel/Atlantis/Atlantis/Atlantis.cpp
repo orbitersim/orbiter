@@ -2716,7 +2716,8 @@ int Atlantis::clbkConsumeBufferedKey (DWORD key, bool down, char *kstate)
 			dap_entry_enabled = !dap_entry_enabled;
 			return 1;  // KEY CONSUMED
 		}
-		if (key == OAPI_KEY_SUBTRACT || key == OAPI_KEY_ADD) {
+		if (GetAltitude (ALTMODE_GROUND) < 10000.0 &&
+			(key == OAPI_KEY_SUBTRACT || key == OAPI_KEY_ADD)) {
 			// Keypad '-' opens and '+' closes the command at 0.25 per second.
 			spdbrk_cmd = key == OAPI_KEY_SUBTRACT ? (down ? +1.0 : 0.0) : (down ? -1.0 : 0.0);
 			return 1;  // KEY CONSUMED
@@ -2796,7 +2797,7 @@ int Atlantis::clbkConsumeBufferedKey (DWORD key, bool down, char *kstate)
 
 int Atlantis::clbkConsumeDirectKey (char *kstate)
 {
-	if (status >= 4) {
+	if (status >= 4 && GetAltitude (ALTMODE_GROUND) < 10000.0) {
 		// Prevent Orbiter's default main/retro thrust controls during reentry.
 		if (KEYDOWN (kstate, OAPI_KEY_ADD))
 			RESETKEY (kstate, OAPI_KEY_ADD);
