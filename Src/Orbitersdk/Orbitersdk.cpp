@@ -7,40 +7,67 @@
 // ========================================================================
 
 #include <windows.h>
+#include <dlfcn.h>
+#include <mach-o/dyld.h>
 #include <fstream>
 #include <stdio.h>
 
-#define DLLCLBK extern "C" __declspec(dllexport)
-#define OAPIFUNC __declspec(dllimport)
+#define DLLCLBK extern "C" __attribute__((visibility("default")))
 
-BOOL WINAPI DllMain (HINSTANCE hModule,
-					 DWORD ul_reason_for_call,
-					 LPVOID lpReserved)
+extern void InitLib (HINSTANCE hModule);
+extern void ExitLib (HINSTANCE hModule);
+extern int Date2Int (char *date);
+
+namespace {
+
+HINSTANCE g_hThisModule = NULL;
+
+HINSTANCE ThisModuleHandle ()
 {
-	OAPIFUNC void InitLib (HINSTANCE hModule);
-	typedef void (*DLLEXIT)(HINSTANCE);
-	static DLLEXIT DLLExit;
+	Dl_info info;
+	if (!dladdr((const void*)&ThisModuleHandle, &info) || !info.dli_fname)
+		return NULL;
+	void *h = dlopen(info.dli_fname, RTLD_NOLOAD | RTLD_LAZY);
+	if (h) dlclose(h);
+	return (HINSTANCE)h;
+}
 
-	switch (ul_reason_for_call) {
-	case DLL_PROCESS_ATTACH:
-		InitLib (hModule);
-		DLLExit = (DLLEXIT)GetProcAddress (hModule, "ExitModule");
-		if (!DLLExit) DLLExit = (DLLEXIT)GetProcAddress (hModule, "opcDLLExit");
-		break;
-	case DLL_PROCESS_DETACH:
-		if (DLLExit) (*DLLExit)(hModule);
-		break;
+bool IsMainExecutable ()
+{
+	Dl_info info;
+	if (!dladdr((const void*)&ThisModuleHandle, &info))
+		return false;
+	return info.dli_fbase == (const void*)_dyld_get_image_header(0);
+}
+
+bool g_attached = false;
+
+}
+
+__attribute__((constructor)) static void OrbiterModuleAttach ()
+{
+	if (IsMainExecutable())
+		return;
+	g_hThisModule = ThisModuleHandle();
+	if (g_hThisModule) {
+		g_attached = true;
+		InitLib(g_hThisModule);
 	}
-	return TRUE;
+}
+
+DLLCLBK void OrbiterModuleDetach ()
+{
+	if (g_attached) {
+		g_attached = false;
+		ExitLib(g_hThisModule);
+	}
 }
 
 int oapiGetModuleVersion ()
 {
 	static int v = 0;
-	if (!v) {
-		OAPIFUNC int Date2Int (char *date);
+	if (!v)
 		v = Date2Int ((char*)__DATE__);
-	}
 	return v;
 }
 
@@ -50,4 +77,3 @@ DLLCLBK int GetModuleVersion (void)
 }
 
 void dummy () {}
-

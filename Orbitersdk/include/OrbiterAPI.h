@@ -37,10 +37,9 @@ extern "C" {
 #include <lua/lua.h>
 }
 
-// Assumes MS VC++ compiler. Modify these statements for other compilers
-#define DLLEXPORT __declspec(dllexport)
-#define DLLIMPORT __declspec(dllimport)
-#define DLLCLBK extern "C" __declspec(dllexport)
+#define DLLEXPORT __attribute__((visibility("default")))
+#define DLLIMPORT
+#define DLLCLBK extern "C" __attribute__((visibility("default")))
 
 #ifdef OAPI_IMPLEMENTATION
 #define OAPIFUNC DLLEXPORT
@@ -48,7 +47,6 @@ extern "C" {
 #define OAPIFUNC DLLIMPORT
 #endif
 
-#pragma warning(disable: 4201)
 
 // Message loop return type - maintain backward compatibility for 32-bit
 #ifdef _WIN64

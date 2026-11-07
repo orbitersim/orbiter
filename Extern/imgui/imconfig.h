@@ -147,16 +147,16 @@ namespace ImGui
 struct ImGuiContext;
 
 #ifdef EXPORT_IMGUI_CONTEXT
-extern __declspec(dllexport) struct ImGuiContext* GImGui;  // Current implicit context pointer
+extern __attribute__((visibility("default"))) struct ImGuiContext* GImGui;  // Current implicit context pointer
 #else
-extern __declspec(dllimport) struct ImGuiContext* GImGui;  // Current implicit context pointer
+extern struct ImGuiContext* GImGui;  // Current implicit context pointer
 #endif
 
 struct ImPlotContext;
 #ifdef EXPORT_IMGUI_CONTEXT
-extern __declspec(dllexport) struct ImPlotContext* GImPlot;  // Current implicit context pointer
+extern __attribute__((visibility("default"))) struct ImPlotContext* GImPlot;  // Current implicit context pointer
 #else
-extern __declspec(dllimport) struct ImPlotContext* GImPlot;  // Current implicit context pointer
+extern struct ImPlotContext* GImPlot;  // Current implicit context pointer
 #endif
 #define GImGui GImGui
 #define GImPlot GImPlot

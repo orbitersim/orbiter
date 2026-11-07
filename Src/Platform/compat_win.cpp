@@ -1,0 +1,421 @@
+#include <windows.h>
+#include <dlfcn.h>
+#include <fnmatch.h>
+#include <dirent.h>
+#include <sys/stat.h>
+#include <mach-o/dyld.h>
+#include <mach/mach_time.h>
+#include <time.h>
+#include <errno.h>
+#include <string>
+#include <vector>
+#include <thread>
+#include <chrono>
+#include <filesystem>
+
+namespace {
+
+thread_local DWORD g_lastError = 0;
+
+std::string NormalisePath(const char *path)
+{
+	std::string s = path ? path : "";
+	for (char &c : s)
+		if (c == '\\') c = '/';
+	return s;
+}
+
+std::string ModulePath(const char *path)
+{
+	std::string s = NormalisePath(path);
+	size_t n = s.size();
+	if (n >= 4 && strcasecmp(s.c_str() + n - 4, ".dll") == 0)
+		s = s.substr(0, n - 4) + ".dylib";
+	return s;
+}
+
+struct FindState {
+	DIR *dir = nullptr;
+	std::string dirPath;
+	std::string pattern;
+};
+
+bool NextMatch(FindState *fs, std::string &name, struct stat &st)
+{
+	while (dirent *e = readdir(fs->dir)) {
+		if (fnmatch(fs->pattern.c_str(), e->d_name, FNM_CASEFOLD) != 0)
+			continue;
+		std::string full = fs->dirPath.empty() ? e->d_name : fs->dirPath + "/" + e->d_name;
+		if (stat(full.c_str(), &st) != 0)
+			continue;
+		name = e->d_name;
+		return true;
+	}
+	return false;
+}
+
+FindState *OpenFind(const char *pattern)
+{
+	std::string p = NormalisePath(pattern);
+	size_t slash = p.rfind('/');
+	auto *fs = new FindState;
+	fs->dirPath = slash == std::string::npos ? "" : p.substr(0, slash);
+	fs->pattern = slash == std::string::npos ? p : p.substr(slash + 1);
+	if (fs->pattern == "*.*")
+		fs->pattern = "*";
+	fs->dir = opendir(fs->dirPath.empty() ? "." : fs->dirPath.c_str());
+	if (!fs->dir) {
+		delete fs;
+		return nullptr;
+	}
+	return fs;
+}
+
+void CloseFind(FindState *fs)
+{
+	if (fs->dir) closedir(fs->dir);
+	delete fs;
+}
+
+DWORD AttribsFromStat(const struct stat &st, const std::string &name)
+{
+	DWORD a = 0;
+	if (S_ISDIR(st.st_mode)) a |= FILE_ATTRIBUTE_DIRECTORY;
+	if (!(st.st_mode & S_IWUSR)) a |= FILE_ATTRIBUTE_READONLY;
+	if (!name.empty() && name[0] == '.' && name != "." && name != "..") a |= FILE_ATTRIBUTE_HIDDEN;
+	if (!a) a = FILE_ATTRIBUTE_NORMAL;
+	return a;
+}
+
+void FillFindData(WIN32_FIND_DATAA *d, const std::string &name, const struct stat &st)
+{
+	memset(d, 0, sizeof(*d));
+	d->dwFileAttributes = AttribsFromStat(st, name);
+	uint64_t size = (uint64_t)st.st_size;
+	d->nFileSizeLow = (DWORD)(size & 0xffffffff);
+	d->nFileSizeHigh = (DWORD)(size >> 32);
+	uint64_t ft = ((uint64_t)st.st_mtimespec.tv_sec + 11644473600ull) * 10000000ull + st.st_mtimespec.tv_nsec / 100;
+	d->ftLastWriteTime.dwLowDateTime = (DWORD)ft;
+	d->ftLastWriteTime.dwHighDateTime = (DWORD)(ft >> 32);
+	d->ftCreationTime = d->ftLastAccessTime = d->ftLastWriteTime;
+	strncpy(d->cFileName, name.c_str(), MAX_PATH - 1);
+}
+
+void FillFindData(_finddata_t *d, const std::string &name, const struct stat &st)
+{
+	memset(d, 0, sizeof(*d));
+	DWORD a = AttribsFromStat(st, name);
+	d->attrib = (a & FILE_ATTRIBUTE_DIRECTORY ? _A_SUBDIR : 0) | (a & FILE_ATTRIBUTE_READONLY ? _A_RDONLY : 0) | (a & FILE_ATTRIBUTE_HIDDEN ? _A_HIDDEN : 0);
+	d->size = (uint32_t)st.st_size;
+	d->time_write = st.st_mtimespec.tv_sec;
+	d->time_create = st.st_birthtimespec.tv_sec;
+	d->time_access = st.st_atimespec.tv_sec;
+	strncpy(d->name, name.c_str(), MAX_PATH - 1);
+}
+
+uint64_t NowNanos()
+{
+	static mach_timebase_info_data_t tb = [] { mach_timebase_info_data_t t; mach_timebase_info(&t); return t; }();
+	return mach_absolute_time() * tb.numer / tb.denom;
+}
+
+void FillSystemTime(SYSTEMTIME *st, bool local)
+{
+	struct timespec ts;
+	clock_gettime(CLOCK_REALTIME, &ts);
+	struct tm t;
+	if (local) localtime_r(&ts.tv_sec, &t);
+	else gmtime_r(&ts.tv_sec, &t);
+	st->wYear = (WORD)(t.tm_year + 1900);
+	st->wMonth = (WORD)(t.tm_mon + 1);
+	st->wDayOfWeek = (WORD)t.tm_wday;
+	st->wDay = (WORD)t.tm_mday;
+	st->wHour = (WORD)t.tm_hour;
+	st->wMinute = (WORD)t.tm_min;
+	st->wSecond = (WORD)t.tm_sec;
+	st->wMilliseconds = (WORD)(ts.tv_nsec / 1000000);
+}
+
+}
+
+extern "C" {
+
+const char *OCompatModuleSuffix(void) { return ".dylib"; }
+
+HMODULE LoadLibraryA(const char *path)
+{
+	std::string p = ModulePath(path);
+	void *h = dlopen(p.c_str(), RTLD_NOW | RTLD_LOCAL);
+	if (!h) {
+		const char *err = dlerror();
+		fprintf(stderr, "LoadLibrary(%s): %s\n", p.c_str(), err ? err : "unknown error");
+		g_lastError = 126;
+	}
+	return (HMODULE)h;
+}
+
+HMODULE LoadLibraryExA(const char *path, HANDLE, DWORD)
+{
+	return LoadLibraryA(path);
+}
+
+WINBOOL FreeLibrary(HMODULE h)
+{
+	if (!h) return FALSE;
+	if (auto detach = (void (*)())dlsym((void *)h, "OrbiterModuleDetach"))
+		detach();
+	return dlclose(h) == 0;
+}
+
+void *GetProcAddressImpl(HMODULE h, const char *name)
+{
+	return dlsym(h ? (void *)h : RTLD_DEFAULT, name);
+}
+
+DWORD GetModuleFileNameA(HMODULE h, char *buf, DWORD size)
+{
+	if (!buf || !size) return 0;
+	std::string path;
+	if (!h) {
+		uint32_t n = 0;
+		_NSGetExecutablePath(nullptr, &n);
+		std::vector<char> tmp(n + 1);
+		if (_NSGetExecutablePath(tmp.data(), &n) == 0) path = tmp.data();
+	} else {
+		for (uint32_t i = 0, n = _dyld_image_count(); i < n; i++) {
+			const char *name = _dyld_get_image_name(i);
+			void *hh = dlopen(name, RTLD_NOLOAD | RTLD_LAZY);
+			if (hh) {
+				dlclose(hh);
+				if (hh == (void *)h) { path = name; break; }
+			}
+		}
+	}
+	strncpy(buf, path.c_str(), size - 1);
+	buf[size - 1] = '\0';
+	return (DWORD)strlen(buf);
+}
+
+HMODULE GetModuleHandleA(const char *name)
+{
+	if (!name) return (HMODULE)dlopen(nullptr, RTLD_NOLOAD | RTLD_LAZY);
+	return (HMODULE)dlopen(ModulePath(name).c_str(), RTLD_NOLOAD | RTLD_LAZY);
+}
+
+DWORD GetLastError(void) { return g_lastError ? g_lastError : (DWORD)errno; }
+void SetLastError(DWORD err) { g_lastError = err; }
+
+DWORD GetCurrentDirectoryA(DWORD size, char *buf)
+{
+	if (!getcwd(buf, size)) return 0;
+	return (DWORD)strlen(buf);
+}
+
+WINBOOL SetCurrentDirectoryA(const char *path) { return chdir(NormalisePath(path).c_str()) == 0; }
+WINBOOL CreateDirectoryA(const char *path, void *) { return mkdir(NormalisePath(path).c_str(), 0755) == 0; }
+WINBOOL DeleteFileA(const char *path) { return unlink(NormalisePath(path).c_str()) == 0; }
+WINBOOL MoveFileA(const char *src, const char *dst) { return rename(NormalisePath(src).c_str(), NormalisePath(dst).c_str()) == 0; }
+
+WINBOOL CopyFileA(const char *src, const char *dst, WINBOOL failIfExists)
+{
+	std::error_code ec;
+	auto opt = failIfExists ? std::filesystem::copy_options::none : std::filesystem::copy_options::overwrite_existing;
+	return std::filesystem::copy_file(NormalisePath(src), NormalisePath(dst), opt, ec) && !ec;
+}
+
+DWORD GetFileAttributesA(const char *path)
+{
+	struct stat st;
+	std::string p = NormalisePath(path);
+	if (stat(p.c_str(), &st) != 0) return INVALID_FILE_ATTRIBUTES;
+	size_t slash = p.rfind('/');
+	return AttribsFromStat(st, slash == std::string::npos ? p : p.substr(slash + 1));
+}
+
+HANDLE FindFirstFileA(const char *pattern, WIN32_FIND_DATAA *data)
+{
+	FindState *fs = OpenFind(pattern);
+	if (!fs) return INVALID_HANDLE_VALUE;
+	std::string name;
+	struct stat st;
+	if (!NextMatch(fs, name, st)) {
+		CloseFind(fs);
+		return INVALID_HANDLE_VALUE;
+	}
+	FillFindData(data, name, st);
+	return (HANDLE)fs;
+}
+
+WINBOOL FindNextFileA(HANDLE h, WIN32_FIND_DATAA *data)
+{
+	if (!h || h == INVALID_HANDLE_VALUE) return FALSE;
+	std::string name;
+	struct stat st;
+	if (!NextMatch((FindState *)h, name, st)) return FALSE;
+	FillFindData(data, name, st);
+	return TRUE;
+}
+
+WINBOOL FindClose(HANDLE h)
+{
+	if (!h || h == INVALID_HANDLE_VALUE) return FALSE;
+	CloseFind((FindState *)h);
+	return TRUE;
+}
+
+intptr_t _findfirst(const char *pattern, struct _finddata_t *data)
+{
+	FindState *fs = OpenFind(pattern);
+	if (!fs) return -1;
+	std::string name;
+	struct stat st;
+	if (!NextMatch(fs, name, st)) {
+		CloseFind(fs);
+		return -1;
+	}
+	FillFindData(data, name, st);
+	return (intptr_t)fs;
+}
+
+int _findnext(intptr_t h, struct _finddata_t *data)
+{
+	if (h == -1 || !h) return -1;
+	std::string name;
+	struct stat st;
+	if (!NextMatch((FindState *)h, name, st)) return -1;
+	FillFindData(data, name, st);
+	return 0;
+}
+
+int _findclose(intptr_t h)
+{
+	if (h == -1 || !h) return -1;
+	CloseFind((FindState *)h);
+	return 0;
+}
+
+DWORD GetTickCount(void) { return (DWORD)(NowNanos() / 1000000ull); }
+ULONGLONG GetTickCount64(void) { return NowNanos() / 1000000ull; }
+DWORD timeGetTime(void) { return GetTickCount(); }
+UINT timeBeginPeriod(UINT) { return 0; }
+UINT timeEndPeriod(UINT) { return 0; }
+
+WINBOOL QueryPerformanceCounter(LARGE_INTEGER *c)
+{
+	c->QuadPart = (LONGLONG)NowNanos();
+	return TRUE;
+}
+
+WINBOOL QueryPerformanceFrequency(LARGE_INTEGER *f)
+{
+	f->QuadPart = 1000000000ll;
+	return TRUE;
+}
+
+void Sleep(DWORD ms) { std::this_thread::sleep_for(std::chrono::milliseconds(ms)); }
+void GetLocalTime(SYSTEMTIME *st) { FillSystemTime(st, true); }
+void GetSystemTime(SYSTEMTIME *st) { FillSystemTime(st, false); }
+
+void OutputDebugStringA(const char *str) { fputs(str, stderr); }
+
+int _mkdir(const char *path) { return mkdir(NormalisePath(path).c_str(), 0755); }
+
+char *_strlwr(char *s)
+{
+	for (char *p = s; *p; p++) *p = (char)tolower((unsigned char)*p);
+	return s;
+}
+
+char *_strupr(char *s)
+{
+	for (char *p = s; *p; p++) *p = (char)toupper((unsigned char)*p);
+	return s;
+}
+
+static char *FormatInt(unsigned long long v, bool neg, char *buf, int radix)
+{
+	char tmp[72];
+	int n = 0;
+	do { int d = (int)(v % radix); tmp[n++] = (char)(d < 10 ? '0' + d : 'a' + d - 10); v /= radix; } while (v);
+	char *p = buf;
+	if (neg) *p++ = '-';
+	while (n) *p++ = tmp[--n];
+	*p = '\0';
+	return buf;
+}
+
+char *_itoa(int value, char *buf, int radix)
+{
+	bool neg = radix == 10 && value < 0;
+	unsigned long long v = neg ? (unsigned long long)(-(long long)value) : (unsigned long long)(unsigned)value;
+	return FormatInt(v, neg, buf, radix);
+}
+
+char *_ltoa(long value, char *buf, int radix)
+{
+	bool neg = radix == 10 && value < 0;
+	unsigned long long v = neg ? (unsigned long long)(-(long long)value) : (unsigned long long)(unsigned long)value;
+	return FormatInt(v, neg, buf, radix);
+}
+
+char *_ultoa(unsigned long value, char *buf, int radix) { return FormatInt(value, false, buf, radix); }
+
+char *_gcvt(double value, int digits, char *buf)
+{
+	sprintf(buf, "%.*g", digits, value);
+	return buf;
+}
+
+void _splitpath(const char *path, char *drive, char *dir, char *fname, char *ext)
+{
+	std::string p = path ? path : "";
+	if (drive) drive[0] = '\0';
+	size_t slash = p.find_last_of("/\\");
+	std::string d = slash == std::string::npos ? "" : p.substr(0, slash + 1);
+	std::string f = slash == std::string::npos ? p : p.substr(slash + 1);
+	size_t dot = f.rfind('.');
+	std::string e = dot == std::string::npos ? "" : f.substr(dot);
+	if (dot != std::string::npos) f = f.substr(0, dot);
+	if (dir) strcpy(dir, d.c_str());
+	if (fname) strcpy(fname, f.c_str());
+	if (ext) strcpy(ext, e.c_str());
+}
+
+void _makepath(char *path, const char *drive, const char *dir, const char *fname, const char *ext)
+{
+	std::string p;
+	if (drive) p += drive;
+	if (dir && *dir) {
+		p += dir;
+		if (p.back() != '/' && p.back() != '\\') p += '/';
+	}
+	if (fname) p += fname;
+	if (ext && *ext) {
+		if (*ext != '.') p += '.';
+		p += ext;
+	}
+	strcpy(path, p.c_str());
+}
+
+char *_fullpath(char *abs, const char *rel, size_t size)
+{
+	std::error_code ec;
+	std::string r = std::filesystem::absolute(NormalisePath(rel), ec).lexically_normal().string();
+	if (ec) return nullptr;
+	if (!abs) return strdup(r.c_str());
+	if (r.size() >= size) return nullptr;
+	strcpy(abs, r.c_str());
+	return abs;
+}
+
+void *_aligned_malloc(size_t size, size_t align)
+{
+	void *p = nullptr;
+	if (align < sizeof(void *)) align = sizeof(void *);
+	if (posix_memalign(&p, align, size) != 0) return nullptr;
+	return p;
+}
+
+void _aligned_free(void *p) { free(p); }
+
+}

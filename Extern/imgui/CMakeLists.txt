@@ -39,3 +39,6 @@ install(FILES ${implot_SOURCE_DIR}/implot.h
 set(IMPLOT_INCLUDE_DIR ${CMAKE_CURRENT_BINARY_DIR}/include)
 file(COPY ${implot_SOURCE_DIR}/implot.h DESTINATION ${IMPLOT_INCLUDE_DIR})
 target_include_directories(implot INTERFACE ${IMPLOT_INCLUDE_DIR})
+
+configure_file(${CMAKE_CURRENT_SOURCE_DIR}/imconfig.h ${imgui_SOURCE_DIR}/imconfig.h COPYONLY)
+configure_file(${CMAKE_CURRENT_SOURCE_DIR}/imconfig.h ${IMGUI_INCLUDE_DIR}/imconfig.h COPYONLY)
