@@ -54,7 +54,7 @@ function(add_core_test_file test_name)
 		PRIVATE ${ORBITER_SOURCE_ROOT_DIR}/Src/Orbiter
 	)
 
-	target_link_libraries(${test_name} Catch2::Catch2WithMain)
+	target_link_libraries(${test_name} Catch2::Catch2WithMain OrbiterPlatform)
 
 	add_test(
 		NAME ${test_name}
@@ -74,7 +74,6 @@ add_core_test_file(Orbiter.Log
 	${ORBITER_SOURCE_ROOT_DIR}/Src/Orbiter/Log.cpp
 	${ORBITER_SOURCE_ROOT_DIR}/Src/Orbiter/TimeData.cpp
 )
-target_link_libraries(Orbiter.Log winmm version)
 add_core_test_file(Orbiter.Config
 	${ORBITER_SOURCE_ROOT_DIR}/Src/Orbiter/Config.cpp
 	${ORBITER_SOURCE_ROOT_DIR}/Src/Orbiter/Vecmat.cpp

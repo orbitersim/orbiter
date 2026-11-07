@@ -70,7 +70,12 @@ set(ORBITER_INSTALL_SDK_DIR ${ORBITER_INSTALL_ROOT_DIR}/Orbitersdk)
 set(EXTERN_DIR "${CMAKE_SOURCE_DIR}/Extern")
 
 set(ORBITER_TOOL_MESHC "$<TARGET_FILE:meshc>")
-set(ldoc $<TARGET_FILE:lua::exe> ${ORBITER_BINARY_ROOT_DIR}/packages/LDoc/ldoc.lua -v --multimodule)
+file(GENERATE OUTPUT ${ORBITER_BINARY_ROOT_DIR}/tools/ldoc.sh CONTENT "#!/bin/sh
+export LUA_PATH='${ORBITER_BINARY_ROOT_DIR}/?.lua;${ORBITER_BINARY_ROOT_DIR}/?/init.lua;;'
+export LUA_CPATH='${ORBITER_BINARY_ROOT_DIR}/?.so;;'
+exec '$<TARGET_FILE:lua::exe>' '${ORBITER_BINARY_ROOT_DIR}/packages/LDoc/ldoc.lua' -v --multimodule \"$@\"
+" FILE_PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE GROUP_READ GROUP_EXECUTE WORLD_READ WORLD_EXECUTE)
+set(ldoc ${ORBITER_BINARY_ROOT_DIR}/tools/ldoc.sh)
 
 find_package(LATEX)
 
@@ -108,6 +113,7 @@ add_compile_options(
 set(CMAKE_BUILD_WITH_INSTALL_RPATH TRUE)
 set(CMAKE_INSTALL_RPATH "@executable_path")
 set(CMAKE_SHARED_LIBRARY_SUFFIX ".dylib")
+set(CMAKE_SHARED_LIBRARY_PREFIX "")
 
 # Copy data and binary assets from source to binary tree to provide a working Orbiter environment
 add_custom_target(CopyData ALL

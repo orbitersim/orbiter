@@ -31,9 +31,7 @@ add_dependencies(LuaInterpreter
 	Orbitersdk
 )
 
-if(ORBITER_BUILD_D3D9CLIENT)
-  add_dependencies(LuaInterpreter	D3D9Client D3D9Client_Interface)
-endif()
+add_dependencies(LuaInterpreter MetalClient_Interface)
 
 if(ORBITER_BUILD_XRSOUND)
   add_dependencies(LuaInterpreter	XRSound_lib	XRSound_assets)
