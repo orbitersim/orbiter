@@ -84,6 +84,12 @@ Device::Device()
 Device::~Device()
 {
 	if (cmd) Submit(true);
+	for (int i = 0; i < 4; i++) {
+		if (rt[i]) rt[i]->Release();
+		rt[i] = nullptr;
+	}
+	if (ds) ds->Release();
+	ds = nullptr;
 	for (auto *c : chains) {
 		c->Destroy();
 		delete c;
@@ -177,7 +183,9 @@ bool Device::Init(HWND hWnd, D3DPRESENT_PARAMETERS *ppIn)
 	pp = sc->pp;
 	chains.push_back(sc);
 	rt[0] = sc->backBuffer;
+	rt[0]->AddRef();
 	ds = sc->depthStencil;
+	if (ds) ds->AddRef();
 	D3DSURFACE_DESC d;
 	rt[0]->GetDesc(&d);
 	viewport = {0, 0, d.Width, d.Height, 0.0f, 1.0f};
@@ -607,7 +615,7 @@ id<MTLRenderPipelineState> Device::Pipeline(id<MTLFunction> vfn, id<MTLFunction>
 			vd.layouts[20 + s].stepFunction = MTLVertexStepFunctionPerVertex;
 		}
 		if (zeroUsed) {
-			vd.layouts[30].stride = 0;
+			vd.layouts[30].stride = 16;
 			vd.layouts[30].stepFunction = MTLVertexStepFunctionConstant;
 			vd.layouts[30].stepRate = 0;
 		}

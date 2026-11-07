@@ -122,7 +122,7 @@ static bool BasicType(const std::string &t, TypeInfo &ti)
 	return false;
 }
 
-static void ParseStructs(const std::string &src, std::map<std::string, Layout> &out)
+static void ParseStructs(const std::string &src, std::map<std::string, Layout> &out, const D3DXMACRO *macros)
 {
 	static const std::regex sr("struct\\s+(\\w+)\\s*\\{([^}]*)\\}");
 	static const std::regex mr("^\\s*(?:constant\\s+)?([A-Za-z_][\\w]*)\\s+([A-Za-z_]\\w*)\\s*(?:\\[\\s*(\\w+)\\s*\\])?\\s*$");
@@ -132,6 +132,9 @@ static void ParseStructs(const std::string &src, std::map<std::string, Layout> &
 		static const std::regex dr("#\\s*define\\s+(\\w+)\\s+(\\d+)");
 		for (auto it = std::sregex_iterator(text.begin(), text.end(), dr); it != std::sregex_iterator(); ++it)
 			defines[(*it)[1].str()] = std::stoi((*it)[2].str());
+		for (const D3DXMACRO *m = macros; m && m->Name; m++) {
+			if (m->Definition && isdigit((unsigned char)m->Definition[0])) defines[m->Name] = atoi(m->Definition);
+		}
 	}
 	for (auto it = std::sregex_iterator(text.begin(), text.end(), sr); it != std::sregex_iterator(); ++it) {
 		Layout L;
@@ -156,7 +159,13 @@ static void ParseStructs(const std::string &src, std::map<std::string, Layout> &
 			UINT n = 0;
 			if (m[3].matched) {
 				std::string cnt = m[3].str();
-				n = isdigit((unsigned char)cnt[0]) ? (UINT)std::stoi(cnt) : (defines.count(cnt) ? (UINT)defines[cnt] : 1);
+				if (isdigit((unsigned char)cnt[0])) n = (UINT)std::stoi(cnt);
+				else if (defines.count(cnt)) n = (UINT)defines[cnt];
+				else {
+					Log("struct %s: unresolved array size %s", L.structName.c_str(), cnt.c_str());
+					ok = false;
+					break;
+				}
 			}
 			Member mb;
 			mb.name = name;
@@ -205,7 +214,7 @@ const Member *Layout::Find(const char *name) const
 	return nullptr;
 }
 
-bool LoadShaderSource(const std::string &pathIn, ShaderSource &src)
+bool LoadShaderSource(const std::string &pathIn, ShaderSource &src, const D3DXMACRO *defines)
 {
 	std::string path = pathIn;
 	for (char &c : path) if (c == '\\') c = '/';
@@ -218,7 +227,7 @@ bool LoadShaderSource(const std::string &pathIn, ShaderSource &src)
 	std::set<std::string> seen;
 	seen.insert(path);
 	if (!Preprocess(path, src.text, seen, 0)) return false;
-	ParseStructs(src.text, src.structs);
+	ParseStructs(src.text, src.structs, defines);
 	std::string text = StripComments(src.text);
 	static const std::regex tr("(texture2d|texture3d|texturecube|depth2d|texture2d_array|texture2d_ms|depthcube)\\s*<[^>]*>\\s+(\\w+)\\s*\\[\\[\\s*texture\\(\\s*(\\d+)\\s*\\)\\s*\\]\\]");
 	for (auto it = std::sregex_iterator(text.begin(), text.end(), tr); it != std::sregex_iterator(); ++it) {
@@ -559,7 +568,7 @@ HRESULT D3DXCreateEffectFromFileA(IDirect3DDevice9 *dev, const char *file, const
 	if (!dev || !file || !effect) return D3DERR_INVALIDCALL;
 	Effect *fx = new Effect();
 	fx->dev = dev->Impl();
-	if (!LoadShaderSource(file, fx->src)) {
+	if (!LoadShaderSource(file, fx->src, defines)) {
 		delete fx;
 		if (errors) {
 			std::string e = std::string("shader source not found: ") + file;
@@ -883,7 +892,7 @@ HRESULT D3DXCompileShaderFromFileA(const char *file, const D3DXMACRO *defines, v
 	Device *dev = CurrentDevice();
 	if (!dev || !file || !function) return D3DERR_INVALIDCALL;
 	ShaderSource src;
-	if (!LoadShaderSource(file, src)) {
+	if (!LoadShaderSource(file, src, defines)) {
 		if (errors) {
 			std::string e = std::string("shader source not found: ") + file;
 			*errors = new ID3DXBuffer(e.c_str(), (DWORD)e.size() + 1);

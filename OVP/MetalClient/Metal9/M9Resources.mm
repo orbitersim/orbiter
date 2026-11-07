@@ -174,7 +174,7 @@ IDirect3DSurface9 *Texture::GetSurface(UINT face, UINT level)
 
 id<MTLTexture> Texture::SampleTexture()
 {
-	return tex;
+	return view ? view : tex;
 }
 
 static MTLRegion RegionFor(const Texture *t, UINT level, const RECT *rect, UINT slice, UINT slices)
@@ -391,13 +391,18 @@ Texture *CreateTexture(Device *dev, TexType type, UINT w, UINT h, UINT d, UINT l
 	td.usage = MTLTextureUsageShaderRead;
 	if (usage & (D3DUSAGE_RENDERTARGET | D3DUSAGE_DEPTHSTENCIL) || fi->kind == FK_DEPTH)
 		td.usage |= MTLTextureUsageRenderTarget;
-	if (fi->hasSwizzle) td.swizzle = fi->swizzle;
+	bool rtSwizzle = fi->hasSwizzle && (td.usage & MTLTextureUsageRenderTarget);
+	if (fi->hasSwizzle && !rtSwizzle) td.swizzle = fi->swizzle;
+	if (rtSwizzle) td.usage |= MTLTextureUsagePixelFormatView;
 	t->tex = [dev->mtl newTextureWithDescriptor:td];
 	if (!t->tex) {
 		Log("texture creation failed (%ux%u, format %u)", w, h, (unsigned)fmt);
 		delete t;
 		return nullptr;
 	}
+	if (rtSwizzle)
+		t->view = [t->tex newTextureViewWithPixelFormat:fi->pf textureType:td.textureType levels:NSMakeRange(0, levels)
+			slices:NSMakeRange(0, type == TT_CUBE ? 6 : 1) swizzle:fi->swizzle];
 	if (t->samples > 1) {
 		MTLTextureDescriptor *md = [MTLTextureDescriptor new];
 		md.textureType = MTLTextureType2DMultisample;

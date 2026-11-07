@@ -5,7 +5,6 @@
 
 using namespace m9;
 
-static IDirect3D9 *g_d3d = nullptr;
 
 static void GetModes(std::vector<D3DDISPLAYMODE> &out)
 {
@@ -29,12 +28,7 @@ static void GetModes(std::vector<D3DDISPLAYMODE> &out)
 IDirect3D9 *Direct3DCreate9(UINT)
 {
 	if (!MTLCreateSystemDefaultDevice()) return nullptr;
-	if (g_d3d) {
-		g_d3d->AddRef();
-		return g_d3d;
-	}
-	g_d3d = new IDirect3D9();
-	return g_d3d;
+	return new IDirect3D9();
 }
 
 UINT IDirect3D9::GetAdapterCount() { return 1; }
@@ -258,10 +252,10 @@ HRESULT IDirect3DDevice9::Reset(D3DPRESENT_PARAMETERS *pp)
 	m_dev->WaitIdle();
 	SwapChain *sc = m_dev->chains[0];
 	for (int i = 0; i < 4; i++) {
-		if (m_dev->rt[i] && m_dev->rt[i] != sc->backBuffer) m_dev->rt[i]->Release();
+		if (m_dev->rt[i]) m_dev->rt[i]->Release();
 		m_dev->rt[i] = nullptr;
 	}
-	if (m_dev->ds && m_dev->ds != sc->depthStencil) m_dev->ds->Release();
+	if (m_dev->ds) m_dev->ds->Release();
 	m_dev->ds = nullptr;
 	sc->Destroy();
 	sc->pp = *pp;
@@ -271,7 +265,9 @@ HRESULT IDirect3DDevice9::Reset(D3DPRESENT_PARAMETERS *pp)
 	m_dev->pp = sc->pp;
 	m_dev->SetDefaults();
 	m_dev->rt[0] = sc->backBuffer;
+	m_dev->rt[0]->AddRef();
 	m_dev->ds = sc->depthStencil;
+	if (m_dev->ds) m_dev->ds->AddRef();
 	m_dev->viewport = {0, 0, sc->pp.BackBufferWidth, sc->pp.BackBufferHeight, 0.0f, 1.0f};
 	m_dev->scissor = {0, 0, (LONG)sc->pp.BackBufferWidth, (LONG)sc->pp.BackBufferHeight};
 	m_dev->passDirty = true;

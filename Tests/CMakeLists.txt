@@ -109,3 +109,12 @@ if (BUILD_ORBITER_SERVER)
 	endforeach()
 
 endif()
+
+add_executable(Metal9.Device Metal9.Device.cpp)
+set_target_properties(Metal9.Device PROPERTIES RUNTIME_OUTPUT_DIRECTORY "${ORBITER_BINARY_ROOT_DIR}")
+target_include_directories(Metal9.Device PRIVATE ${ORBITER_SOURCE_ROOT_DIR}/Src/Platform/include)
+target_link_libraries(Metal9.Device Metal9 OrbiterPlatform Catch2::Catch2WithMain)
+add_custom_command(TARGET Metal9.Device POST_BUILD
+	COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_CURRENT_SOURCE_DIR}/data ${ORBITER_BINARY_ROOT_DIR}/Tests/data)
+add_test(NAME Metal9.Device COMMAND $<TARGET_FILE:Metal9.Device> WORKING_DIRECTORY ${ORBITER_BINARY_ROOT_DIR})
+set_tests_properties(Metal9.Device PROPERTIES TIMEOUT 60)

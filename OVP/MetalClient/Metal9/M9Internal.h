@@ -66,6 +66,7 @@ struct Texture {
 	UINT samples = 1;
 	id<MTLTexture> tex = nil;          // GPU storage (nil for system memory resources)
 	id<MTLTexture> msaa = nil;         // multisample render target, resolved into tex
+	id<MTLTexture> view = nil;         // swizzled view for sampling render targets
 	std::vector<std::vector<uint8_t>> sysmem;   // system memory pool storage, per subresource
 	std::vector<LockState> locks;      // per subresource
 	std::vector<IDirect3DSurface9 *> surfaces; // per subresource (face * levels + level)
@@ -157,7 +158,7 @@ struct ShaderSource {
 	std::map<std::string, int> textureTypes;      // texture name -> 2 (2D), 3 (3D), 6 (cube)
 };
 
-bool LoadShaderSource(const std::string &path, ShaderSource &src);
+bool LoadShaderSource(const std::string &path, ShaderSource &src, const D3DXMACRO *defines = nullptr);
 id<MTLLibrary> CompileLibrary(id<MTLDevice> dev, const ShaderSource &src, const D3DXMACRO *defines, std::string &errors);
 void WriteParam(const Member *m, uint8_t *data, const void *value, UINT bytes, ParamType srcType, UINT count, bool srcMatrix);
 
