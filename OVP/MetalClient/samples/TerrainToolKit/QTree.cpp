@@ -8,6 +8,7 @@
 #include "ToolKit.h"
 #include "gcCoreAPI.h"
 #include <stack>
+#include <filesystem>
 
 // ==================================================================================
 //
@@ -340,35 +341,14 @@ int QTree::SaveTile(int flags, SURFHANDLE hSurf, SURFHANDLE hTemp, DRECT bounds,
 
 	// ---------------------------------------------------------
 
-	DWORD fa = GetFileAttributesA("TerrainToolKit");
-	if (fa == INVALID_FILE_ATTRIBUTES) CreateDirectoryA("TerrainToolKit", NULL);
-	else if ((fa & FILE_ATTRIBUTE_DIRECTORY) == 0) return -1;
-	
-	// ---------------------------------------------------------
-
-	sprintf_s(name, 63, "TerrainToolKit\\%s", dir);
-	fa = GetFileAttributesA(name);
-	if (fa == INVALID_FILE_ATTRIBUTES) CreateDirectoryA(name, NULL);
-	else if ((fa & FILE_ATTRIBUTE_DIRECTORY) == 0) return -2;
-
-	// ---------------------------------------------------------
-
-	sprintf_s(name, 63, "TerrainToolKit\\%s\\%02d", dir, level + 4);
-	fa = GetFileAttributesA(name);
-	if (fa == INVALID_FILE_ATTRIBUTES) CreateDirectoryA(name, NULL);
-	else if ((fa & FILE_ATTRIBUTE_DIRECTORY) == 0) return -3;
-
-	// ---------------------------------------------------------
-
-	sprintf_s(name, 63, "TerrainToolKit\\%s\\%02d\\%06d", dir, level +4, ilat);
-	fa = GetFileAttributesA(name);
-	if (fa == INVALID_FILE_ATTRIBUTES) CreateDirectoryA(name, NULL);
-	else if ((fa & FILE_ATTRIBUTE_DIRECTORY) == 0) return -4;
-
+	snprintf(name, MAX_PATH, "TerrainToolKit/%s/%02d/%06d", dir, level + 4, ilat);
+	std::error_code ec;
+	std::filesystem::create_directories(name, ec);
+	if (!std::filesystem::is_directory(name, ec)) return -1;
 
 	//----------------------------------------------------------
 
-	sprintf_s(name, 63, "TerrainToolKit\\%s\\%02d\\%06d\\%06d.dds", dir, level + 4, ilat, ilng);
+	snprintf(name, MAX_PATH, "TerrainToolKit/%s/%02d/%06d/%06d.dds", dir, level + 4, ilat, ilng);
 
 	Sketchpad *pSkp = oapiGetSketchpad(hTemp);
 
@@ -420,7 +400,7 @@ int QTree::SaveTile(int flags, SURFHANDLE hSurf, SURFHANDLE hTemp, DRECT bounds,
 	int sl = 0;
 	if (st.pNode) sl = st.pNode->level + 4;
 
-	sprintf_s(test, MAX_PATH, "%s\\%02d\\%06d\\%06d.dds", dir, level + 4, ilat, ilng);
+	snprintf(test, MAX_PATH, "%s/%02d/%06d/%06d.dds", dir, level + 4, ilat, ilng);
 	oapiWriteLogV("BAKING.. Name = %s,  Tgt(x=%d, y=%d, w=%d, h=%d) Src(x=%d, y=%d, w=%d, h=%d) SubTexLvl=%d", test, tgt.left, tgt.top, tw, th, src.left, src.top, sw, sh, sl);
 
 	return 0;

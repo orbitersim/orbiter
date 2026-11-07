@@ -135,7 +135,7 @@ def rewrite_cpp(path, methods):
         if '#define' in line and 'binder_start' in line:
             out.append(line)
             for m in methods:
-                out.append('\tif (strcmp(name,"%s")==0) *ppFnc = &gcCore2::%s;' % (m['fnc'], m['fnc']))
+                out.append('\tif (strcmp(name,"%s")==0) *ppFnc = (void *)&gcCore2::%s;' % (m['fnc'], m['fnc']))
             while i < len(lines):
                 line2 = lines[i]
                 i += 1

@@ -6,10 +6,9 @@
 // ==============================================================
 
 #include "D3D9Client.h"
-#include "resource.h"
+#include "imgui.h"
 #include "D3D9Config.h"
 #include "AtmoControls.h"
-#include "Commctrl.h"
 #include "vObject.h"
 #include "vPlanet.h"
 #include "Mesh.h"
@@ -18,7 +17,6 @@
 
 using namespace oapi;
 
-extern HINSTANCE g_hInst;
 extern D3D9Client *g_client;
 
 // ==============================================================
@@ -69,7 +67,19 @@ ScatterParams::ScatterParams() :
 
 namespace AtmoControls {
 
-
+class AtmoDialog : public ImGuiDialog
+{
+public:
+	AtmoDialog() : ImGuiDialog("Atmospheric controls###D3D9AtmoControls", { 900.0f, 420.0f }) {}
+	void Display() override;
+	void OnDraw() override;
+	void OnClose() override;
+	void Hide()
+	{
+		active = false;
+		oapiCloseDialog(this);
+	}
+};
 
 ScatterParams defs;
 ScatterParams *param = NULL;
@@ -79,14 +89,29 @@ std::vector<sValue> Values;
 
 DWORD atmpage = 0;
 DWORD atmmode = 0;
-DWORD dwCmd = NULL;
-HWND hDlg = NULL;
+DWORD dwCmd = 0;
+AtmoDialog *dlg = NULL;
 vPlanet *vObj = NULL;
+bool bVisualize = false;
+
+struct sGroup {
+	const char *title[2];
+	int first, last;
+};
+
+static const sGroup Groups[] = {
+	{ { "Twilight and ambient settings", "" }, 0, 2 },
+	{ { "Wavelength and scale height settings", "" }, 3, 7 },
+	{ { "Terrain", "" }, 8, 10 },
+	{ { "Rayleigh settings", "" }, 11, 12 },
+	{ { "Mie settings", "Water rendering" }, 13, 16 },
+	{ { "Custom settings", "" }, 17, 19 }
+};
 
 
 // ==============================================================
 
-void SetToolTip(int vid, PTSTR pszText)
+void SetToolTip(int vid, const char *pszText)
 {
 	if (!pszText) return;
 	for (auto& x : Values) if (x.sprm == vid) {
@@ -97,55 +122,31 @@ void SetToolTip(int vid, PTSTR pszText)
 
 // ==============================================================
 
-void InitToolTips()
-{
-	if (!hDlg) return;
-
-	for (auto& s : Slider)
-	{
-		if (!s.hWnd || !s.hwndTip) return;
-
-		if (s.val && s.val->tooltip.size() > 2)
-		{
-			TOOLINFO toolInfo = { 0 };
-			toolInfo.cbSize = sizeof(toolInfo);
-			toolInfo.hwnd = hDlg;
-			toolInfo.uFlags = TTF_IDISHWND | TTF_SUBCLASS;
-			toolInfo.uId = (UINT_PTR)s.hWnd;
-			toolInfo.lpszText = LPSTR(s.val->tooltip.c_str());
-			SendMessage(s.hwndTip, TTM_UPDATETIPTEXT, 0, (LPARAM)&toolInfo);
-			SendMessage(s.hwndTip, TTM_ACTIVATE, TRUE, 0);
-		}
-		else {
-			SendMessage(s.hwndTip, TTM_ACTIVATE, FALSE, 0);
-		}
-	}
-}
-
-// ==============================================================
-
 void Create()
 {
 	vObj = NULL;
-	hDlg = NULL;
+	bVisualize = false;
 
 	dwCmd = oapiRegisterCustomCmd((char*)"D3D9 Atmospheric Controls", (char*)"This dialog allows to control various atmospheric parameters and effects", OpenDlgClbk, NULL);
 
+	dlg = new AtmoDialog();
+
+	Slider.clear();
+	Values.clear();
 	Slider.resize(ATM_SLIDER_COUNT);
 
-	for (int i = 0; i < ATM_SLIDER_COUNT; i++) {
-		Slider[i].res = IDC_ATM_S1 + i;
-		Slider[i].dsp = IDC_ATD_S1 + i;
-		Slider[i].lbl = IDC_ATL_S1 + i;
+	for (auto &s : Slider) {
+		s.pos = 0.0f;
+		s.val = nullptr;
 	}
 
 	// Style flags
-	// 0x1 = unit in [km] 
+	// 0x1 = unit in [km]
 	// 0x2 = same for orbital and surface setup
 	// 0x8 = x^2 "linearization"
 	// 0x10 = x^0.5 "linearization"
 	// 0x20 = x^4 "linearization"
-	// 0x40 = no 'lerp', special handling 
+	// 0x40 = no 'lerp', special handling
 
 	// Slider ID, Value ID, Page ID, Label, min, max, flags
 
@@ -183,50 +184,50 @@ void Create()
 	ConfigValue(17,  23, 1, " ", 0.01, 1.0);
 
 
-	SetToolTip(0, (char*)"Light travel distance behind terminator");
-	SetToolTip(1, (char*)"Green wave lenght. (Green balance)");
-	SetToolTip(2, (char*)"Terrain brightness during twilight");
-	SetToolTip(3, (char*)"Main control for atmospheric rayleigh color composition (4.0 for the Earth)");
-	SetToolTip(12, (char*)"Main control for atmospheric mie color composition");
-	SetToolTip(9, (char*)"Atmosphere Ray scale height (7km - 9km for the Earth)");
-	SetToolTip(11, (char*)"Atmosphere Mie scale height (0.6km - 2km for the Earth)");
+	SetToolTip(0, "Light travel distance behind terminator");
+	SetToolTip(1, "Green wave lenght. (Green balance)");
+	SetToolTip(2, "Terrain brightness during twilight");
+	SetToolTip(3, "Main control for atmospheric rayleigh color composition (4.0 for the Earth)");
+	SetToolTip(12, "Main control for atmospheric mie color composition");
+	SetToolTip(9, "Atmosphere Ray scale height (7km - 9km for the Earth)");
+	SetToolTip(11, "Atmosphere Mie scale height (0.6km - 2km for the Earth)");
 	// -------------------------------------------------------
-	SetToolTip(13, (char*)"Terrain/Ocean brightness control (default 1.0)");
-	SetToolTip(16, (char*)"Terrain/Ocean gamma control value (default 1.0)");
-	SetToolTip(19, (char*)"Terrain light and shadow boost");
+	SetToolTip(13, "Terrain/Ocean brightness control (default 1.0)");
+	SetToolTip(16, "Terrain/Ocean gamma control value (default 1.0)");
+	SetToolTip(19, "Terrain light and shadow boost");
 	// -------------------------------------------------------
-	SetToolTip(5, (char*)"Overall control for rayleigh scattering (i.e. Haze stickness, atmosphere transparency, optical depth");
-	SetToolTip(4, (char*)"Rayleigh in-scatter out-scatter ratio (1.0 nominal)");
-	SetToolTip(6, (char*)"Building lighting level");
+	SetToolTip(5, "Overall control for rayleigh scattering (i.e. Haze stickness, atmosphere transparency, optical depth");
+	SetToolTip(4, "Rayleigh in-scatter out-scatter ratio (1.0 nominal)");
+	SetToolTip(6, "Building lighting level");
 	// -------------------------------------------------------
-	SetToolTip(7, (char*)"Overall scale factor for mie scattering. (Mie-particle density)");
-	SetToolTip(8, (char*)"Directional strength of Henyey-Greenstein phase function");
-	SetToolTip(14, (char*)"Mie in-scatter out-scatter ratio (1.0 nominal)");
+	SetToolTip(7, "Overall scale factor for mie scattering. (Mie-particle density)");
+	SetToolTip(8, "Directional strength of Henyey-Greenstein phase function");
+	SetToolTip(14, "Mie in-scatter out-scatter ratio (1.0 nominal)");
 	// -------------------------------------------------------
-	SetToolTip(10, (char*)"Altitude for cloud lighting calculations");
-	SetToolTip(15, (char*)"'HDR' Exposure factor");
-	SetToolTip(17, (char*)"Omnidirectional mie scattering scale factor");
-	SetToolTip(18, (char*)"[Dual purpose] Clouds intensity [on surface]. Multiscatter light level [on orbit]");
+	SetToolTip(10, "Altitude for cloud lighting calculations");
+	SetToolTip(15, "'HDR' Exposure factor");
+	SetToolTip(17, "Omnidirectional mie scattering scale factor");
+	SetToolTip(18, "[Dual purpose] Clouds intensity [on surface]. Multiscatter light level [on orbit]");
 	// -------------------------------------------------------
-	SetToolTip(20, (char*)"Water normal map strength");
-	SetToolTip(21, (char*)"Water reflectivity");
-	SetToolTip(22, (char*)"Water color / transparency");
-	SetToolTip(23, (char*)"Unused");
+	SetToolTip(20, "Water normal map strength");
+	SetToolTip(21, "Water reflectivity");
+	SetToolTip(22, "Water color / transparency");
+	SetToolTip(23, "Unused");
 }
 
 // ==============================================================
 
 bool IsActive()
 {
-	return (hDlg!=NULL);
+	return dlg && dlg->IsActive();
 }
 
 // ==============================================================
 
 bool Visualize()
 {
-	if (!hDlg) return false;
-	return SendDlgItemMessage(hDlg, IDC_ATM_DISPLAY, BM_GETCHECK, 0, 0) == BST_CHECKED;
+	if (!IsActive()) return false;
+	return bVisualize;
 }
 
 // ==============================================================
@@ -234,51 +235,36 @@ bool Visualize()
 void Release()
 {
 	if (dwCmd) oapiUnregisterCustomCmd(dwCmd);
-	dwCmd = NULL;
+	dwCmd = 0;
+	if (dlg) {
+		oapiCloseDialog(dlg);
+		delete dlg;
+		dlg = NULL;
+	}
+	vObj = NULL;
+	param = NULL;
 }
 
 // ==============================================================
 
 void OpenDlgClbk(void *context)
 {
-	HWND l_hDlg = oapiOpenDialog(g_hInst, IDD_D3D9SCATTER, WndProc);
+	if (IsActive()) {
+		oapiOpenDialog(dlg);
+		return;
+	}
 
-	if (l_hDlg) hDlg = l_hDlg; // otherwise open already
-	else return;
+	oapiOpenDialog(dlg);
 
 	Scene *scene = g_client->GetScene();
-	
+
+	vObj = NULL;
 	if (scene) vObj = scene->GetCameraNearVisual();
 
 	if (vObj) param = vObj->GetAtmoParams(atmmode);
 	else      param = &defs;
 
-	SendDlgItemMessageA(hDlg, IDC_ATM_MODE, CB_RESETCONTENT, 0, 0);
-	SendDlgItemMessageA(hDlg, IDC_ATM_MODE, CB_ADDSTRING, 0, (LPARAM)"Auto");
-	SendDlgItemMessageA(hDlg, IDC_ATM_MODE, CB_ADDSTRING, 0, (LPARAM)"Surface");
-	SendDlgItemMessageA(hDlg, IDC_ATM_MODE, CB_ADDSTRING, 0, (LPARAM)"Low Orbit");
-	SendDlgItemMessageA(hDlg, IDC_ATM_MODE, CB_ADDSTRING, 0, (LPARAM)"High Orbit");
-	SendDlgItemMessageA(hDlg, IDC_ATM_MODE, CB_SETCURSEL, atmmode, 0);
-
-	SendDlgItemMessageA(hDlg, IDC_ATM_PAGE, CB_RESETCONTENT, 0, 0);
-	SendDlgItemMessageA(hDlg, IDC_ATM_PAGE, CB_ADDSTRING, 0, (LPARAM)"Atmospheric Controls");
-	SendDlgItemMessageA(hDlg, IDC_ATM_PAGE, CB_ADDSTRING, 0, (LPARAM)"Water and Sun-glare");
-	SendDlgItemMessageA(hDlg, IDC_ATM_PAGE, CB_SETCURSEL, atmpage, 0);
-
-	for (auto& s : Slider)
-	{
-		s.hWnd = GetDlgItem(hDlg, s.res);
-		s.hwndTip = CreateWindowEx(NULL, TOOLTIPS_CLASS, NULL, WS_POPUP | TTS_ALWAYSTIP | TTS_BALLOON, CW_USEDEFAULT, CW_USEDEFAULT, CW_USEDEFAULT, CW_USEDEFAULT, hDlg, NULL, g_hInst, NULL);
-		TOOLINFO toolInfo = { 0 };
-		toolInfo.cbSize = sizeof(toolInfo);
-		toolInfo.hwnd = hDlg;
-		toolInfo.uFlags = TTF_IDISHWND | TTF_SUBCLASS;
-		toolInfo.uId = (UINT_PTR)s.hWnd;	
-		toolInfo.lpszText = "ToolTip";
-		SendMessage(s.hwndTip, TTM_ADDTOOL, 0, (LPARAM)&toolInfo);
-	}
-
-	SetTimer(hDlg, 0, 1000, NULL);
+	if (scene) SetVisual(scene->GetCameraNearVisual());
 
 	atmpage = 0;
 	InitPage(atmpage);
@@ -295,30 +281,6 @@ void InitPage(int p)
 		Slider[v.slider].val = &v;
 	}
 
-	for (auto& s : Slider) {
-		if (s.val) SetWindowTextA(GetDlgItem(hDlg, s.lbl), s.val->lbl.c_str());
-		else SetWindowTextA(GetDlgItem(hDlg, s.lbl), " ");
-	}
-
-	if (p == 0) {
-		SetWindowTextA(GetDlgItem(hDlg, IDC_ATG1), "Twilight and Ambient settings");
-		SetWindowTextA(GetDlgItem(hDlg, IDC_ATG2), "Wavelenght and Scale height settings");
-		SetWindowTextA(GetDlgItem(hDlg, IDC_ATG3), "Terrain");
-		SetWindowTextA(GetDlgItem(hDlg, IDC_ATG4), "Rayleigh settings");
-		SetWindowTextA(GetDlgItem(hDlg, IDC_ATG5), "Mie settings");
-		SetWindowTextA(GetDlgItem(hDlg, IDC_ATG6), "Custom settings");
-	}
-
-	if (p == 1) {
-		SetWindowTextA(GetDlgItem(hDlg, IDC_ATG1), " ");
-		SetWindowTextA(GetDlgItem(hDlg, IDC_ATG2), " ");
-		SetWindowTextA(GetDlgItem(hDlg, IDC_ATG3), " ");
-		SetWindowTextA(GetDlgItem(hDlg, IDC_ATG4), " ");
-		SetWindowTextA(GetDlgItem(hDlg, IDC_ATG5), "Water Rendering");
-		SetWindowTextA(GetDlgItem(hDlg, IDC_ATG6), " ");
-	}
-
-	InitToolTips();
 	UpdateSliders();
 }
 
@@ -345,6 +307,7 @@ void ConfigValue(int sid, int vid, int pid, string lbl, double min, double max, 
 	v.style = style;
 	v.page = pid;
 	v.sprm = vid;
+	v.id = vid;
 	v.slider = sid - 1;
 	v.lbl = lbl;
 	Values.push_back(v);
@@ -357,9 +320,8 @@ void SetSlider(sSlider& s)
 	if (!vObj) return;
 	if (!s.val) return;
 
-	auto pos = SendDlgItemMessage(hDlg, s.res, TBM_GETPOS, 0, 0);
 	auto v = s.val;
-	double x = (1000.0-double(pos))/1000.0;
+	double x = double(s.pos);
 
 	assert(v->sprm >= 0 && v->sprm < ATM_DATA_COUNT);
 
@@ -368,7 +330,7 @@ void SetSlider(sSlider& s)
 	if (v->style & 32) x = pow(x, 4.0);
 
 	double val = v->min * (1.0 - x) + v->max * x;
-		
+
 	if (v->style&2) {
 		vObj->GetAtmoParams(1)->data[v->sprm] = val;
 		vObj->GetAtmoParams(2)->data[v->sprm] = val;
@@ -379,7 +341,6 @@ void SetSlider(sSlider& s)
 	}
 
 	UpdateSlider(s, false); // Update value display
-	return;
 }
 
 // ==============================================================
@@ -403,30 +364,22 @@ void UpdateSlider(sSlider& q, bool bSetPos)
 		double val = param->data[v->sprm];
 
 		if (bSetPos) {
-
-			SendDlgItemMessage(hDlg, q.res, TBM_SETRANGEMAX, 1, 1000);
-			SendDlgItemMessage(hDlg, q.res, TBM_SETRANGEMIN, 1, 0);
-			SendDlgItemMessage(hDlg, q.res, TBM_SETTICFREQ, 1, 0);
-
 			double x = (val - v->min) / (v->max - v->min);
 			if (v->style & 8) x = sqrt(x);
 			if (v->style & 16) x = x * x;
 			if (v->style & 32) x = pow(x, 0.25);
-			DWORD dpos = 1000 - DWORD(x * 1000.0);
-
-			SendDlgItemMessage(hDlg, q.res, TBM_SETPOS, 1, dpos);
+			q.pos = float(std::clamp(x, 0.0, 1.0));
 		}
 
-		if (v->style & 1) sprintf_s(buf, 128, "%.1lf k", val);
-		else sprintf_s(buf, 128, "%.3lf", val);
+		if (v->style & 1) snprintf(buf, 128, "%.1lf k", val);
+		else snprintf(buf, 128, "%.3lf", val);
 	}
 	else {
-		strcpy_s(buf, 32, " ");
-		SendDlgItemMessage(hDlg, q.res, TBM_SETPOS, 1, 0);
+		buf[0] = 0;
+		q.pos = 0.0f;
 	}
-	
-	SetWindowTextA(GetDlgItem(hDlg, q.dsp), buf);
-	return;
+
+	q.dsp = buf;
 }
 
 // ==============================================================
@@ -446,9 +399,9 @@ void SetVisual(vObject *vo)
 		return;
 	}
 
-	if (!hDlg || !dwCmd) return;
-	
-	OBJHANDLE hObj = vo->GetObjectA();
+	if (!IsActive() || !dwCmd) return;
+
+	OBJHANDLE hObj = vo->GetObject();
 
 	if (oapiGetObjectType(hObj)!=OBJTP_PLANET) {
 		LogErr("Invalid Object Type in AtmoControls");
@@ -465,121 +418,151 @@ void SetVisual(vObject *vo)
 	UpdateSliders();
 }
 
+// ==============================================================
+
+void AtmoDialog::Display()
+{
+	char title[256];
+	snprintf(title, sizeof(title), "Atmospheric controls");
+
+	if (vObj) {
+		string file = "??";
+		auto cfg = Config->AtmoCfg.find(vObj->GetName());
+		if (cfg != Config->AtmoCfg.end()) file = cfg->second;
+
+		param = vObj->GetAtmoParams(atmmode);
+
+		double vd = 0.5f;
+		if (atmmode == 0) vd = param->cfg_alt < 0.9999f ? param->cfg_alt : 1.0 - param->cfg_halt;
+
+		snprintf(title, sizeof(title), "Atmospheric controls [%s]", vObj->GetName());
+		if (vObj->GetAtmoMode() == 1) snprintf(title, sizeof(title), "Atmospheric controls [%s][%s] [Surface] (%3.1f%%)", file.c_str(), vObj->GetName(), (1.0 - vd) * 100.0);
+		if (vObj->GetAtmoMode() == 2) snprintf(title, sizeof(title), "Atmospheric controls [%s][%s] [LowOrbit] (%3.1f%%)", file.c_str(), vObj->GetName(), vd * 100.0);
+		if (vObj->GetAtmoMode() == 3) snprintf(title, sizeof(title), "Atmospheric controls [%s][%s] [HighOrbit] (%3.1f%%)", file.c_str(), vObj->GetName(), (1.0 - vd) * 100.0);
+	}
+
+	string wnd = string(title) + "###D3D9AtmoControls";
+
+	ImGui::SetNextWindowSize(ImVec2(defaultSize.width, defaultSize.height), ImGuiCond_FirstUseEver);
+	if (ImGui::Begin(wnd.c_str(), &active, ImGuiWindowFlags_AlwaysAutoResize)) OnDraw();
+	ImGui::End();
+	if (!active) OnClose();
+}
 
 // ==============================================================
-// Dialog message handler
 
-INT_PTR CALLBACK WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
+void AtmoDialog::OnClose()
 {
-	static bool bOrbOld = false;
+	oapiCloseDialog(this);
+}
 
-	switch (uMsg) {
+// ==============================================================
 
-	case WM_INITDIALOG:
-	{
-		vObject *vPl = g_client->GetScene()->GetCameraNearVisual();
-		SetVisual(vPl);
-		return true;
+void AtmoDialog::OnDraw()
+{
+	static const char *pages[] = { "Atmospheric controls", "Water and sun-glare" };
+	static const char *modes[] = { "Auto", "Surface", "Low orbit", "High orbit" };
+
+	UpdateSliders();
+
+	float fs = ImGui::GetFontSize();
+	float sw = fs * 3.2f;
+	float sh = fs * 14.0f;
+
+	int page = int(atmpage);
+	ImGui::SetNextItemWidth(fs * 14.0f);
+	if (ImGui::Combo("##page", &page, pages, 2)) {
+		atmpage = DWORD(page);
+		InitPage(atmpage);
 	}
 
-	case WM_TIMER:
-	{
-		if (vObj) {	
-			char title[256]; string file = "??";
-			sprintf_s(title, 256, "Atmospheric Controls [%s]", vObj->GetName());
+	bool bFirstGroup = true;
 
-			auto cfg = Config->AtmoCfg.find(vObj->GetName());
-			if (cfg != Config->AtmoCfg.end()) file = cfg->second;
+	for (const sGroup &g : Groups) {
 
-			param = vObj->GetAtmoParams(atmmode);
+		bool bAny = false;
+		for (int i = g.first; i <= g.last; i++) if (Slider[i].val) bAny = true;
+		if (!bAny) continue;
 
-			double vd = 0.5f;
-			if (atmmode == 0) vd = param->cfg_alt < 0.9999f ? param->cfg_alt : 1.0 - param->cfg_halt;
+		if (!bFirstGroup) ImGui::SameLine(0.0f, fs * 1.5f);
+		bFirstGroup = false;
 
-			if (vObj->GetAtmoMode() == 1) sprintf_s(title, 256, "Atmospheric Controls [%s][%s] [Surface] (%3.1f%%)", file.c_str(), vObj->GetName(), (1.0 - vd) * 100.0);
-			if (vObj->GetAtmoMode() == 2) sprintf_s(title, 256, "Atmospheric Controls [%s][%s] [LowOrbit] (%3.1f%%)", file.c_str(), vObj->GetName(), vd * 100.0);
-			if (vObj->GetAtmoMode() == 3) sprintf_s(title, 256, "Atmospheric Controls [%s][%s] [HighOrbit] (%3.1f%%)", file.c_str(), vObj->GetName(), (1.0 - vd) * 100.0);
-		
-			SetWindowTextA(hDlg, title);
+		ImGui::BeginGroup();
+		const char *gt = g.title[atmpage ? 1 : 0];
+		ImGui::TextUnformatted(gt[0] ? gt : " ");
+		ImGui::Separator();
+
+		for (int i = g.first; i <= g.last; i++) {
+
+			sSlider &s = Slider[i];
+			if (i != g.first) ImGui::SameLine();
+
+			ImGui::BeginGroup();
+			ImGui::PushID(i);
+
+			const char *lbl = s.val ? s.val->lbl.c_str() : "";
+			float tw = ImGui::CalcTextSize(lbl).x;
+			float x0 = ImGui::GetCursorPosX();
+			ImGui::SetCursorPosX(x0 + std::max(0.0f, (sw - tw) * 0.5f));
+			ImGui::TextUnformatted(lbl);
+			ImGui::SetCursorPosX(x0);
+
+			ImGui::BeginDisabled(s.val == nullptr);
+			ImGui::SetCursorPosX(x0 + (sw - ImGui::GetFrameHeight()) * 0.5f);
+			if (ImGui::VSliderFloat("##s", ImVec2(ImGui::GetFrameHeight(), sh), &s.pos, 0.0f, 1.0f, "")) SetSlider(s);
+			if (s.val && s.val->tooltip.size() > 2) ImGui::SetItemTooltip("%s", s.val->tooltip.c_str());
+			ImGui::EndDisabled();
+
+			tw = ImGui::CalcTextSize(s.dsp.c_str()).x;
+			ImGui::SetCursorPosX(x0 + std::max(0.0f, (sw - tw) * 0.5f));
+			ImGui::TextUnformatted(s.dsp.c_str());
+			ImGui::SetCursorPosX(x0);
+			ImGui::Dummy(ImVec2(sw, 0.0f));
+
+			ImGui::PopID();
+			ImGui::EndGroup();
+		}
+
+		ImGui::EndGroup();
+	}
+
+	ImGui::Separator();
+
+	int mode = int(atmmode);
+	ImGui::AlignTextToFramePadding();
+	ImGui::TextUnformatted("Configuration");
+	ImGui::SameLine();
+	ImGui::SetNextItemWidth(fs * 7.0f);
+	if (ImGui::Combo("##mode", &mode, modes, 4)) atmmode = DWORD(mode);
+
+	ImGui::SameLine();
+	if (ImGui::Button("Copy to surface")) {
+		if (vObj && vObj->GetAtmoParams(1) != param) memcpy(vObj->GetAtmoParams(1), param, sizeof(ScatterParams));
+	}
+	ImGui::SameLine();
+	if (ImGui::Button("Copy to low orbit")) {
+		if (vObj && vObj->GetAtmoParams(2) != param) memcpy(vObj->GetAtmoParams(2), param, sizeof(ScatterParams));
+	}
+	ImGui::SameLine();
+	if (ImGui::Button("Copy to high orbit")) {
+		if (vObj && vObj->GetAtmoParams(3) != param) memcpy(vObj->GetAtmoParams(3), param, sizeof(ScatterParams));
+	}
+	ImGui::SameLine();
+	ImGui::Checkbox("Visualize scatter tables", &bVisualize);
+
+	ImGui::SameLine();
+	if (ImGui::Button("Load settings")) {
+		if (vObj) {
+			vObj->LoadAtmoConfig();
 			UpdateSliders();
 		}
-		break;	
 	}
-
-	case WM_VSCROLL:
-	{
-		if (LOWORD(wParam) == TB_THUMBTRACK || LOWORD(wParam) == TB_ENDTRACK || LOWORD(wParam) == TB_THUMBPOSITION) {
-			for (auto& s : Slider) if (s.hWnd == HWND(lParam)) {
-				SetSlider(s);
-				return false;
-			}
-		}
-		return false;
+	ImGui::SameLine();
+	if (ImGui::Button("Save settings")) {
+		if (vObj) vObj->SaveAtmoConfig();
 	}
-
-	case WM_COMMAND:
-
-		switch (LOWORD(wParam))
-		{
-			case IDCANCEL:  
-			case IDOK:
-				oapiCloseDialog(hWnd);
-				hDlg = NULL;
-				return TRUE;
-
-			case IDC_ATM_LOAD:
-				if (vObj) {
-					vObj->LoadAtmoConfig();
-					UpdateSliders();
-				}
-				break;
-
-			case IDC_ATM_SAVE:
-				if (vObj) vObj->SaveAtmoConfig();
-				break;
-
-			case IDC_ATM_COPYTO:
-				if (vObj) {
-					if (vObj->GetAtmoParams(1) != param) memcpy(vObj->GetAtmoParams(1), param, sizeof(ScatterParams));			
-				}
-				break;
-
-			case IDC_ATM_COPYLOW:
-				if (vObj) {
-					if (vObj->GetAtmoParams(2) != param) memcpy(vObj->GetAtmoParams(2), param, sizeof(ScatterParams));
-				}
-				break;
-
-			case IDC_ATM_COPYHIGH:
-				if (vObj) {
-					if (vObj->GetAtmoParams(3) != param) memcpy(vObj->GetAtmoParams(3), param, sizeof(ScatterParams));
-				}
-				break;
-
-			case IDC_ATM_MODE:
-				if (HIWORD(wParam)==CBN_SELCHANGE) {
-					atmmode = DWORD(SendDlgItemMessage(hWnd, IDC_ATM_MODE, CB_GETCURSEL, 0, 0));
-				}
-				break;
-
-			case IDC_ATM_PAGE:
-				if (HIWORD(wParam) == CBN_SELCHANGE) {
-					atmpage = DWORD(SendDlgItemMessage(hWnd, IDC_ATM_PAGE, CB_GETCURSEL, 0, 0));
-					InitPage(atmpage);
-				}
-				break;
-
-			default: 
-				//LogErr("LOWORD(%hu), HIWORD(0x%hX)",LOWORD(wParam),HIWORD(wParam));
-				break;
-		}
-		break;
-	}
-
-	return oapiDefDialogProc(hWnd, uMsg, wParam, lParam);;
+	ImGui::SameLine();
+	if (ImGui::Button("Close")) Hide();
 }
 
 } //namespace
-
-
-

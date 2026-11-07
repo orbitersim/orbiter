@@ -1,7 +1,6 @@
 
 
 #include "OrbiterAPI.h"
-#include <Windows.h>
 #include "gcCoreAPI.h"
 
 #pragma once

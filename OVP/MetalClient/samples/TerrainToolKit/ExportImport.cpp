@@ -3,26 +3,26 @@
 // Licensed under the MIT License
 // ==================================================================
 
-#include <Windows.h>
-#include <windowsx.h>
 #include "OrbiterAPI.h"
 #include "VesselAPI.h"
 #include "ModuleAPI.h"
 #include "DrawAPI.h"
 #include "gcCoreAPI.h"
 #include "ToolKit.h"
-#include "resource.h"
 #include "gcPropertyTree.h"
 #include "QTree.h"
-#include <Commctrl.h>
+#include "OrbiterPlatform.h"
+#include "imgui.h"
 #include <vector>
 #include <list>
+#include <chrono>
+#include <filesystem>
+#include <algorithm>
+#include <cctype>
 
 using namespace std;
 
 extern ToolKit *g_pTK;
-
-BOOL CALLBACK gDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam);
 
 // =================================================================================================
 // Abort Import Process, Release resources...
@@ -50,7 +50,7 @@ void ToolKit::StopImport()
 //
 void ToolKit::Export()
 {
-	int what = SendDlgItemMessage(hCtrlDlg, IDC_WHAT, CB_GETCURSEL, 0, 0);
+	int what = iWhat;
 	int flags = gcTileFlags::TREE | gcTileFlags::CACHE;
 	int srff = 0;
 
@@ -60,15 +60,21 @@ void ToolKit::Export()
 		ExportElev();
 		return;
 	}
+
+	if (selection.area.size() == 0 || selw == 0 || selh == 0) {
+		oapiAddNotification(OAPINOTIF_INFO, "Terrain ToolKit", "You need to drag a box around the export area first.");
+		return;
+	}
 	
 	SURFHANDLE hSrf = oapiCreateSurfaceEx(selw * 512, selh * 512, OAPISURFACE_RENDERTARGET | srff);
 
 	if (hSrf) {
 
 		Sketchpad *pSkp = oapiGetSketchpad(hSrf);
-		pSkp->SetBlendState(Sketchpad::BlendState::COPY);
 
 		if (pSkp) {
+
+			pSkp->SetBlendState(Sketchpad::BlendState::COPY);
 
 			for (auto se : selection.area)
 			{
@@ -86,11 +92,12 @@ void ToolKit::Export()
 			oapiReleaseSketchpad(pSkp);
 		}
 
-
-		if (SaveFile(SaveImage)) {
-			if (!pCore->SaveSurface(SaveImage.lpstrFile, hSrf)) {
-				oapiWriteLogV("Failed to create a file [%s]", SaveImage.lpstrFile);
-			}	
+		string path;
+		if (SaveFile(path)) {
+			if (!pCore->SaveSurface(path.c_str(), hSrf)) {
+				oapiWriteLogV("Failed to create a file [%s]", path.c_str());
+				oapiAddNotification(OAPINOTIF_ERROR, "Terrain ToolKit", ("Failed to create a file " + path).c_str());
+			}
 		}
 
 		oapiReleaseTexture(hSrf);
@@ -103,47 +110,37 @@ void ToolKit::Export()
 //
 void ToolKit::ExportElev()
 {
-
 	for (selentry se : selection.area)
 	{
 		INT16 *pElev = se.pNode->GetElevation();
 		if (!pElev) {
 			char msg[256];
-			sprintf_s(msg, 256, "Tile (iLng=%d, iLat=%d) has no elevation for level %d", se.pNode->ilng, se.pNode->ilat, selection.slvl);
-			MessageBoxA(pCore->GetRenderWindow(), msg, "Error:", MB_OK);
+			snprintf(msg, 256, "Tile (iLng=%d, iLat=%d) has no elevation for level %d", se.pNode->ilng, se.pNode->ilat, selection.slvl);
+			oapiAddNotification(OAPINOTIF_ERROR, "Terrain ToolKit", msg);
 			return;
 		}
 	}
 
+	string path = oplat::SaveFileDialog("Export elevation", "", "", { "dds" });
+	if (path.empty()) return;
 
-	if (GetSaveFileNameA(&SaveElevation)) 
-	{
-		int type = 0;
+	string ext = std::filesystem::path(path).extension().string();
+	std::transform(ext.begin(), ext.end(), ext.begin(), [](unsigned char c) { return (char)std::tolower(c); });
+	if (ext.empty()) path += ".dds";
+	else if (ext != ".dds") {
+		oapiAddNotification(OAPINOTIF_ERROR, "Terrain ToolKit", "Invalid file type");
+		return;
+	}
 
-		// Pick the file type from a file name
-		if (strstr(SaveImage.lpstrFile, ".dds") || strstr(SaveImage.lpstrFile, ".DDS")) type = 1;
+	int fmt = 0;
 
-		if (type == 0) {
-			// If above fails then use selected "filter" to appeand file "id".
-			if (SaveImage.nFilterIndex == 0) strcat_s(SaveImage.lpstrFile, MAX_PATH, ".dds"), type = 1;
+	SURFHANDLE hSrf = GetBaseElevation(fmt);
+
+	if (hSrf) {
+		if (!pCore->SaveSurface(path.c_str(), hSrf)) {
+			oapiAddNotification(OAPINOTIF_ERROR, "Terrain ToolKit", "Failed to save a file");
 		}
-
-		if (type == 0) {
-			MessageBoxA(pCore->GetRenderWindow(), "Invalid File Type", "Error:", MB_OK);
-			return;
-		}
-
-		int fmt = 0;
-
-		SURFHANDLE hSrf = GetBaseElevation(fmt);
-
-		if (hSrf) {
-			if (!pCore->SaveSurface(SaveImage.lpstrFile, hSrf)) {
-				MessageBoxA(pCore->GetRenderWindow(), "Failed to Save a file", "Error:", MB_OK);
-				return;
-			}	
-			oapiReleaseTexture(hSrf);
-		}
+		oapiReleaseTexture(hSrf);
 	}
 }
 
@@ -152,157 +149,195 @@ void ToolKit::ExportElev()
 //
 void ToolKit::BakeImport()
 {
-
-	if (MessageBox(pCore->GetRenderWindow(), "Bake and Write the tiles in 'OrbiterRoot/TerrainToolKit/' Folder ?", "Are you sure", MB_YESNO | MB_ICONEXCLAMATION) != IDYES) return;
+	if (bake.active) return;
 
 	bool bWater = IsLayerValid(Layer::LayerType::WATER);
 	bool bNight = IsLayerValid(Layer::LayerType::NIGHT);
 	bool bSurf = IsLayerValid(Layer::LayerType::TEXTURE);
 
+	bake.phases.clear();
 
-	progress = 0;
-
-	int nTiles = selection.area.size();
-	nTiles += (nTiles / 2 + nTiles / 4 + nTiles / 8);
-	
-	hProgDlg = CreateDialogParamA(hModule, MAKEINTRESOURCE(IDD_PROGRESS), hAppMainWnd, (DLGPROC)gDlgProc, 0);
-	SendDlgItemMessage(hProgDlg, IDC_PROGBAR, PBM_SETRANGE, 0, MAKELONG(0, nTiles));
-	SendDlgItemMessage(hProgDlg, IDC_PROGBAR, PBM_SETPOS, 0, 0);
-
-	ShowWindow(hProgDlg, SW_SHOW);
-
-	// ------------------------------------------------------------------
-	//
-	if (bSurf) 
-	{
-		SURFHANDLE hTemp = oapiCreateSurfaceEx(512, 512, OAPISURFACE_PF_XRGB | OAPISURFACE_RENDERTARGET | OAPISURFACE_TEXTURE);
-
-		int levels = pProp->GetComboBoxSelection(hBLvs) + 1;
-		int flags = gcTileFlags::TEXTURE | gcTileFlags::CACHE | gcTileFlags::TREE;
-
-		SetWindowText(hProgDlg, "Baking Surface:");
-		list<QTree*> parents;
-
-		for (auto s : selection.area)
-		{
-			if (s.pNode->SaveTile(flags, hOverlaySrf, hTemp, selection.bounds, selection.slvl, 1.0f) < 0) 
-			{
-				oapiWriteLogV("ERROR: s.pNode->SaveTile() failed");
-				return;
-			}
-			MakeProgress();
-			parents.push_back(s.pNode->GetParent());
-		}
-
-		parents.unique();
-		BakeParents(hOverlaySrf, hTemp, flags, parents, levels);
-
-		oapiReleaseTexture(hTemp);
+	if (bSurf) {
+		bake.phases.push_back({ gcTileFlags::TEXTURE | gcTileFlags::CACHE | gcTileFlags::TREE, hOverlaySrf,
+			OAPISURFACE_PF_XRGB | OAPISURFACE_RENDERTARGET | OAPISURFACE_TEXTURE, "Baking surface" });
 	}
 
-
-	// ------------------------------------------------------------------
-	//
-	if (bNight || bWater)
-	{
-		SURFHANDLE hTemp = oapiCreateSurfaceEx(512, 512, OAPISURFACE_PF_ARGB | OAPISURFACE_RENDERTARGET | OAPISURFACE_TEXTURE);
-
-		int levels = pProp->GetComboBoxSelection(hBLvs) + 1;
-		int flags = gcTileFlags::MASK | gcTileFlags::CACHE | gcTileFlags::TREE;
-
-		progress = 0;
-		SetWindowText(hProgDlg, "Baking Nightlights:");
-		SendDlgItemMessage(hProgDlg, IDC_PROGBAR, PBM_SETRANGE, 0, MAKELONG(0, nTiles));
-		SendDlgItemMessage(hProgDlg, IDC_PROGBAR, PBM_SETPOS, 0, 0);
-
-		list<QTree*> parents;
-
-		for (auto s : selection.area)
-		{
-			if (s.pNode->SaveTile(flags, hOverlayMsk, hTemp, selection.bounds, selection.slvl, 1.0f) < 0) 
-			{
-				oapiWriteLogV("ERROR: s.pNode->SaveTile() failed");
-				return;
-			}
-			MakeProgress();
-			parents.push_back(s.pNode->GetParent());
-		}
-
-		parents.unique();
-		BakeParents(hOverlayMsk, hTemp, flags, parents, levels);
-
-		oapiReleaseTexture(hTemp);
+	if (bNight || bWater) {
+		bake.phases.push_back({ gcTileFlags::MASK | gcTileFlags::CACHE | gcTileFlags::TREE, hOverlayMsk,
+			OAPISURFACE_PF_ARGB | OAPISURFACE_RENDERTARGET | OAPISURFACE_TEXTURE, "Baking nightlights" });
 	}
 
-	DestroyWindow(hProgDlg);
+	if (bake.phases.empty()) return;
+
+	int nTiles = int(selection.area.size());
+	bake.nTiles = nTiles + (nTiles / 2 + nTiles / 4 + nTiles / 8);
+	bake.active = true;
+	bake.phase = 0;
+	bake.hTemp = NULL;
+
+	BakeNextPhase();
+	if (bake.active) oapiOpenDialog(pBakeDlg);
 }
-
 
 
 // =================================================================================================
 //
-void ToolKit::BakeParents(SURFHANDLE hOvrl, SURFHANDLE hTemp, int flags, list<QTree *> parents, int levels)
+void ToolKit::BakeNextPhase()
 {
-	levels--;
-	list<QTree *> grands;
+	if (bake.hTemp) oapiReleaseTexture(bake.hTemp);
+	bake.hTemp = NULL;
 
-	for (auto qt : parents)
+	if (bake.phase >= bake.phases.size()) {
+		BakeFinish();
+		return;
+	}
+
+	bake.hTemp = oapiCreateSurfaceEx(512, 512, bake.phases[bake.phase].tempfmt);
+	bake.levels = pProp->GetComboBoxSelection(hBLvs) + 1;
+	bake.top = true;
+	bake.index = 0;
+	bake.work.clear();
+	bake.next.clear();
+	progress = 0;
+}
+
+
+// =================================================================================================
+//
+void ToolKit::BakeFinish()
+{
+	if (bake.hTemp) oapiReleaseTexture(bake.hTemp);
+	bake.hTemp = NULL;
+	bake.work.clear();
+	bake.next.clear();
+	bake.active = false;
+}
+
+
+// =================================================================================================
+// Bake one tile. Returns false when baking has ended.
+//
+bool ToolKit::BakeStep()
+{
+	if (!bake.active) return false;
+
+	const BakePhase &ph = bake.phases[bake.phase];
+
+	if (bake.top)
 	{
-		float alpha = 1.0f;
+		if (bake.index < selection.area.size())
+		{
+			selentry &s = selection.area[bake.index++];
+			if (s.pNode->SaveTile(ph.flags, ph.hOvrl, bake.hTemp, selection.bounds, selection.slvl, 1.0f) < 0)
+			{
+				oapiWriteLogV("ERROR: s.pNode->SaveTile() failed");
+				oapiAddNotification(OAPINOTIF_ERROR, "Terrain ToolKit", "Failed to bake a tile");
+				BakeFinish();
+				return false;
+			}
+			MakeProgress();
+			bake.next.push_back(s.pNode->GetParent());
+			return true;
+		}
 
-		if ((qt->HasOwnTex(flags) == false) || (levels > 0))
+		bake.top = false;
+		bake.next.unique();
+		bake.work = bake.next;
+		bake.next.clear();
+		bake.levels--;
+		bake.it = bake.work.begin();
+		return true;
+	}
+
+	while (bake.it != bake.work.end())
+	{
+		QTree *qt = *bake.it++;
+		if (!qt) continue;
+
+		if ((qt->HasOwnTex(ph.flags) == false) || (bake.levels > 0))
 		{
 			MakeProgress();
-			grands.push_back(qt->GetParent());
+			bake.next.push_back(qt->GetParent());
 
-			if (qt->SaveTile(flags, hOvrl, hTemp, selection.bounds, -1, alpha) < 0) 
+			if (qt->SaveTile(ph.flags, ph.hOvrl, bake.hTemp, selection.bounds, -1, 1.0f) < 0)
 			{
 				oapiWriteLogV("ERROR: qt->SaveTile() failed");
-				return;
+				oapiAddNotification(OAPINOTIF_ERROR, "Terrain ToolKit", "Failed to bake a tile");
+				BakeFinish();
+				return false;
 			}
+			return true;
 		}
 	}
 
-	grands.unique();
-	if (grands.size()) BakeParents(hOvrl, hTemp, flags, grands, levels);
+	bake.next.unique();
+
+	if (bake.next.size())
+	{
+		bake.work = bake.next;
+		bake.next.clear();
+		bake.levels--;
+		bake.it = bake.work.begin();
+		return true;
+	}
+
+	bake.phase++;
+	BakeNextPhase();
+	return bake.active;
 }
 
+
+// =================================================================================================
+//
+void ToolKit::DrawBakeProgress()
+{
+	auto t0 = std::chrono::steady_clock::now();
+	while (bake.active && std::chrono::steady_clock::now() - t0 < std::chrono::milliseconds(30)) {
+		if (!BakeStep()) break;
+	}
+
+	if (!bake.active) return;
+
+	char overlay[32];
+	snprintf(overlay, sizeof(overlay), "%d / %d", progress, bake.nTiles);
+	ImGui::TextUnformatted(bake.phases[bake.phase].title.c_str());
+	ImGui::ProgressBar(bake.nTiles > 0 ? float(progress) / float(bake.nTiles) : 0.0f, ImVec2(ImGui::GetFontSize() * 20.0f, 0.0f), overlay);
+}
 
 
 // =================================================================================================
 //
 void ToolKit::OpenImage(Layer::LayerType lr)
 {
-	char buf[MAX_PATH + 32];
+	string path = oplat::OpenFileDialog("Open image", "", { "dds", "png", "jpg", "jpeg", "bmp" });
+	if (path.empty()) return;
+
+	string title = std::filesystem::path(path).filename().string();
 
 	auto Lr = pLr[(int)lr];
 
-	if (GetOpenFileNameA(&SaveImage)) 
+	if (Lr) {
+		if (Lr->hSource) {
+			oapiReleaseTexture(Lr->hSource);
+			Lr->hSource = NULL;
+		}
+		delete Lr;
+		pLr[(int)lr] = NULL;
+	}
+
+	if (path.find(".raw") == string::npos)
 	{
-		if (Lr) {
-			if (Lr->hSource) {
-				oapiReleaseTexture(Lr->hSource);
-				Lr->hSource = NULL;
-			}
+		SURFHANDLE hSrf = oapiLoadSurfaceEx(path.c_str(), OAPISURFACE_TEXTURE, true);
+
+		if (!hSrf) {
+			oapiAddNotification(OAPINOTIF_ERROR, "Terrain ToolKit", ("Unable to load file " + path).c_str());
+			return;
 		}
 
-		if (string(SaveImage.lpstrFile).find(".raw") == string::npos)
-		{
-
-			SURFHANDLE hSrf = oapiLoadSurfaceEx(SaveImage.lpstrFile, OAPISURFACE_TEXTURE, true);
-
-			if (!hSrf) {
-				sprintf_s(buf, 32 + MAX_PATH, "Unable to load file [%s]", SaveImage.lpstrFile);
-				MessageBoxA(hAppMainWnd, buf, "Error:", MB_OK);
-				return;
-			}
-
-			pLr[(int)lr] = new Layer(pProp, pCore, hSrf, lr, string(SaveImage.lpstrFileTitle));			
-		}
-		else 
-		{
-			pLr[(int)lr] = new Layer(pProp, pCore, NULL, lr, string(SaveImage.lpstrFileTitle));
-		}
+		pLr[(int)lr] = new Layer(pProp, pCore, hSrf, lr, title);
+	}
+	else
+	{
+		pLr[(int)lr] = new Layer(pProp, pCore, NULL, lr, title);
 	}
 }
-

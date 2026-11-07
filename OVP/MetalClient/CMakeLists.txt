@@ -121,7 +121,6 @@ target_include_directories(MetalClient PRIVATE
 	${imgui_SOURCE_DIR}/backends/
 )
 
-target_compile_options(MetalClient PRIVATE -ferror-limit=0)
 target_link_libraries(MetalClient
 	${ORBITER_LIB}
 	${ORBITER_SDK_LIB}

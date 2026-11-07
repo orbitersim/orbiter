@@ -4,14 +4,14 @@
 // Licensed under the MIT License
 // ==================================================================
 
-#include <math.h>
+#include <cmath>
 #include "Tools.h"
 #include "OrbiterAPI.h"
 #include "VesselAPI.h"
 #include <stdio.h>
 #include <time.h>
 #include <assert.h>
-#include <intrin.h>
+#include <string.h>
 
 char ValueToText_Str[32];
 
@@ -24,7 +24,7 @@ const char *ValueToText(double real, int digits)
 	memset(temp, 0, 32);
 	memset(ValueToText_Str, 0, 32);
 
-	if (_isnan(real)) { strcpy_s(ValueToText_Str, 32, "NAN"); return ValueToText_Str; }
+	if (std::isnan(real)) { snprintf(ValueToText_Str, 32, "NAN"); return ValueToText_Str; }
 
 	double v = fabs(real);
 	int n;

@@ -13,7 +13,7 @@
 // =================================================================================
 
 
-#include "mfdapi.h"
+#include "MFDAPI.h"
 #include "Shell.h"
 
 // Header of true MFD
@@ -120,7 +120,7 @@ OAPI_MSGTYPE ShellMFD::MsgProc(UINT msg, UINT mfd, WPARAM wparam, LPARAM lparam)
 
 		// Create new Shell MFD and bind true MFD into the shell
 		//
-		return (LONG_PTR) new ShellMFD(LOWORD(wparam), HIWORD(wparam), (VESSEL*)lparam, MFDList[mfdLast-1].hTrue, mfd);
+		return (OAPI_MSGTYPE) new ShellMFD(LOWORD(wparam), HIWORD(wparam), (VESSEL*)lparam, MFDList[mfdLast-1].hTrue, mfd);
 	}
 
     return 0;
@@ -164,11 +164,6 @@ bool ShellMFD::Update(Sketchpad *pSkp)
 {
 	if (hTrue) return hTrue->Update(pSkp);
 	return true;
-}
-
-void ShellMFD::Update (HDC hDC)
-{
-		
 }
 
 void ShellMFD::WriteStatus (FILEHANDLE scn) const

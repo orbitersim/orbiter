@@ -14,10 +14,9 @@
 #define NOIMAGE
 #define NOTAPE
 
-#include <windows.h>
 #include <stdio.h>
 #include <math.h>
-#include <malloc.h>
+#include <stdlib.h>
 #include "Reference.h"
 #include "Tools.h"
 #include "VesselAPI.h"

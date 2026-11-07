@@ -69,11 +69,8 @@ struct sValue {
 };
 
 struct sSlider {
-	HWND hWnd;
-	HWND hwndTip;	// ToolTip
-	int res;		// Slider resource id
-	int dsp;		// Slider display resource id
-	int lbl;		// Slider label resource id 
+	float pos;		// Slider position [0, 1], 1 = max
+	string dsp;		// Value display
 	sValue* val;
 };
 
@@ -100,8 +97,6 @@ namespace AtmoControls {
 	void		SetSlider(sSlider& s);
 	void		UpdateSliders();
 	bool		Visualize();
-
-	INT_PTR CALLBACK WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
 };
 
 #endif // !__ATMOCONTROLS_H

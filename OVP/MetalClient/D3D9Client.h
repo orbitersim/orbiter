@@ -550,7 +550,7 @@ public:
 	 * \return The return value depends on the message type and the action taken.
 	 * \default Do nothing, return FALSE.
 	 */
-	INT_PTR LaunchpadVideoWndProc (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
+	void clbkLaunchpadVideoTab () override;
 	/**
 	 * \brief Fullscreen mode flag
 	 * \return true if the client is set up for running in fullscreen

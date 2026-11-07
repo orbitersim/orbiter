@@ -2,31 +2,22 @@
 
 #include <vector>
 #include <string>
-#include <windows.h>
-#include <gcCoreAPI.h>
-#include <gcGUI.h>
-
+#include <functional>
+#include "OrbiterAPI.h"
 
 using namespace std;
-
-void gcPropertyTreeInitialize(HINSTANCE hInst);
-void gcPropertyTreeRelease(HINSTANCE hInst);
-
-#define GCGUI_MSG_SELECTED	0x0001
-
 
 typedef struct gcProperty * HPROP;
 
 
 class gcPropertyTree
 {
-	DWORD alloc_id;
-
 public:
 
 	enum Style { TEXT, TEXTBOX, COMBOBOX, SLIDER };
 	enum Scale { LINEAR, LOG, SQRT, SQUARE };
 	enum Format { NORMAL, LATITUDE, LONGITUDE, UNITS };
+	enum Event { CHANGED, SELECTED };
 
 	typedef struct {
 		Scale scl;
@@ -34,27 +25,27 @@ public:
 		double lfmin, lfmax;
 	} gcSlider;
 
+	typedef std::function<void(HPROP hEntry, WORD id, Event ev)> Callback;
+
 	//		--------------------------------------------------------------------------
 
-			gcPropertyTree(gcGUIApp *_pApp, HWND hWnd, WORD idc, DLGPROC pCall, HFONT hFnt, HINSTANCE hInst);
+			gcPropertyTree(WORD idc, Callback pCall);
 			~gcPropertyTree();
 
 	//		--------------------------------------------------------------------------
 
-	HWND	GetHWND() const;
-	HWND	GetControl(HPROP hEntry);
 	void*	GetUserRef(HPROP hEntry);
 	HPROP	GetEntry(int idx);
-	HPROP	GetEntry(HWND hCtrl);
+	HPROP	GetSelected() const { return pSelected; }
 	void	OpenEntry(HPROP hEntry, bool bOpen = true);
 	void	ShowEntry(HPROP hEntry, bool bShow = true);
+	void	RemoveEntry(HPROP hEntry);
 
 	//		--------------------------------------------------------------------------
 
 	HPROP	AddEditControl(const string &lbl, WORD id, HPROP parent = NULL, const string &text = "", void *pUser = NULL);
 	HPROP	AddComboBox(const string &lbl, WORD id, HPROP parent = NULL, void* pUser = NULL);
 	HPROP	AddSlider(const string &lbl, WORD id, HPROP parent = NULL, void* pUser = NULL);
-	LRESULT SendCtrlMessage(HPROP hCtrl, UINT uMsg, WPARAM wParam, LPARAM lParam);
 
 	//		--------------------------------------------------------------------------
 
@@ -71,12 +62,14 @@ public:
 	void	SetSliderScale(HPROP hSlider, double fmin, double fmax, Scale scl);
 	void	SetSliderValue(HPROP hSlider, double val);
 	double  GetSliderValue(HPROP hSlider);
+
 	//		--------------------------------------------------------------------------
 
 	string	GetTextBoxContent(HPROP hTextBox);
 	void	SetTextBoxContent(HPROP hTextBox, string text);
 
 	//		--------------------------------------------------------------------------
+
 	void	SetComboBoxSelection(HPROP hCombo, int idx);
 	int		GetComboBoxSelection(HPROP hCombo);
 	void	ClearComboBox(HPROP hCombo);
@@ -84,40 +77,20 @@ public:
 
 	//		--------------------------------------------------------------------------
 
-	void	Update();
-	void	Paint(HDC hDC);
-	LRESULT WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
+	void	Draw();
 
 private:
 
-	int		PaintSection(HDC hDC, HPROP hPar, int ident, int wlbl, int y, int lvl);
-	void	PaintIcon(int x, int y, int id);
-	int		GetSubsentionLength(HPROP hP);
+	void	DrawSection(HPROP hPar);
+	void	DrawControl(HPROP hp);
+	float	LabelWidth(HPROP hPar, float indent);
 	void	CopyToClipboard();
-	void	CloseTree(HPROP hp);
-	HWND	CreateEditControl(WORD id, bool bReadOnly = true);
-	HWND	CreateComboBox(WORD id);
-	HWND	CreateSlider(WORD id);
-	bool	HasMoved(HPROP hP, int x, int y);
+	void	Notify(HPROP hp, WORD id, Event ev);
 
-	gcCore2 *pCore;
-	gcGUIApp *pApp;
-	DLGPROC pCallback;
-	HWND  hWnd, hDlg;
-	HDC	hSr, hBM;
-	HFONT hFont;
-	HPEN hPen;
-	HBRUSH hBr0, hBr1, hBr2, hBr4;
-	HBRUSH hBrTit[3];
-	HBITMAP hBuf;
-	HBITMAP	hIcons;
-	HINSTANCE hInst;
-	HPROP pSelected, pDown;
-	int wlbl, hlbl, wmrg, tmrg, bmrg, len;
+	Callback pCallback;
+	HPROP pSelected;
 	WORD idc;
 	std::vector<HPROP> Data;
-	char buffer[256];
-	bool bOdd;
 };
 
 
@@ -127,15 +100,13 @@ typedef struct gcProperty
 	string val;
 	gcProperty *parent;
 	bool bOpen;
-	bool bVisible;
 	bool bChildren;
 	bool bOn;
-	HWND hCtrl;
 	void* pUser;
 	gcPropertyTree::gcSlider *pSlider;
-	RECT rect;
 	gcPropertyTree::Style style;
+	vector<string> items;
+	int sel;
 	WORD idc;
-	int oldx, oldy;
 	DWORD color;
 } gcProperty;

@@ -4,17 +4,17 @@
 // ==================================================================
 
 
-#include <Windows.h>
-#include <windowsx.h>
 #include "OrbiterAPI.h"
 #include "VesselAPI.h"
 #include "ModuleAPI.h"
 #include "DrawAPI.h"
 #include "ToolKit.h"
-#include "resource.h"
 #include "gcPropertyTree.h"
 #include "QTree.h"
-#include <Commctrl.h>
+#include "OrbiterPlatform.h"
+#include <algorithm>
+#include <cctype>
+#include <filesystem>
 #include <vector>
 #include <list>
 
@@ -319,6 +319,9 @@ SURFHANDLE ToolKit::GetBaseElevation(int elev_fmt)
 		}
 	}
 
+	delete[] pInt;
+	delete[] pFloat;
+
 	return hSrf;
 }
 
@@ -328,8 +331,6 @@ SURFHANDLE ToolKit::GetBaseElevation(int elev_fmt)
 void ToolKit::MakeProgress()
 {
 	progress++;
-	SendDlgItemMessage(hProgDlg, IDC_PROGBAR, PBM_SETPOS, progress, 0);
-	UpdateWindow(hProgDlg);
 }
 
 
@@ -365,7 +366,7 @@ void ToolKit::AutoSelectCorners()
 void ToolKit::UpdateTileInfo(int flags, QTree* pF, gcCore::PickGround* pP)
 {
 	if (!pP) return;
-	char name[64];
+	char name[64] = "";
 
 	DWORD color = 0;
 	pProp->SetValue(hCLng, pP->lng, 4, gcPropertyTree::LONGITUDE);
@@ -379,7 +380,6 @@ void ToolKit::UpdateTileInfo(int flags, QTree* pF, gcCore::PickGround* pP)
 		if (!pF->HasOwnTex(flags)) color = 0x000000FF;
 	}
 	pProp->SetValue(hCFil, string(name), color);
-	pProp->Update();
 }
 
 
@@ -387,37 +387,22 @@ void ToolKit::UpdateTileInfo(int flags, QTree* pF, gcCore::PickGround* pP)
 //
 int	ToolKit::SelectedLevel()
 {
-	int select = SendDlgItemMessage(hCtrlDlg, IDC_SELECT, CB_GETCURSEL, 0, 0);
-	return max(select - 1, -1);
+	return max(iSelect - 1, -1);
 }
 
 
 // =================================================================================================
 //
-bool ToolKit::SaveFile(OPENFILENAMEA &SaveImage)
+bool ToolKit::SaveFile(string &path)
 {
-	if (GetSaveFileNameA(&SaveImage)) {
+	path = oplat::SaveFileDialog("Export selection", "", "", { "dds", "png", "jpg", "jpeg", "bmp" });
+	if (path.empty()) return false;
 
-		int type = 0;
+	string ext = std::filesystem::path(path).extension().string();
+	std::transform(ext.begin(), ext.end(), ext.begin(), [](unsigned char c) { return (char)std::tolower(c); });
 
-		// Pick the file type from a file name
-		if (strstr(SaveImage.lpstrFile, ".dds") || strstr(SaveImage.lpstrFile, ".DDS")) type = 1;
-		if (strstr(SaveImage.lpstrFile, ".bmp") || strstr(SaveImage.lpstrFile, ".BMP")) type = 2;
-		if (strstr(SaveImage.lpstrFile, ".png") || strstr(SaveImage.lpstrFile, ".PGN")) type = 3;
-		if (strstr(SaveImage.lpstrFile, ".jpg") || strstr(SaveImage.lpstrFile, ".JPG")) type = 4;
-		if (strstr(SaveImage.lpstrFile, ".jpeg") || strstr(SaveImage.lpstrFile, ".JPEG")) type = 4;
-
-		if (type == 0) {
-			// If above fails then use selected "filter" to appeand file "id".
-			if (SaveImage.nFilterIndex == 0) strcat_s(SaveImage.lpstrFile, MAX_PATH, ".jpg");
-			if (SaveImage.nFilterIndex == 1) strcat_s(SaveImage.lpstrFile, MAX_PATH, ".dds");
-			if (SaveImage.nFilterIndex == 2) strcat_s(SaveImage.lpstrFile, MAX_PATH, ".bmp");
-			if (SaveImage.nFilterIndex == 3) strcat_s(SaveImage.lpstrFile, MAX_PATH, ".png");
-			if (SaveImage.nFilterIndex == 4) strcat_s(SaveImage.lpstrFile, MAX_PATH, ".jpg");
-		}
-		return true;
-	}
-	return false;
+	if (ext != ".dds" && ext != ".bmp" && ext != ".png" && ext != ".jpg" && ext != ".jpeg") path += ".dds";
+	return true;
 }
 
 

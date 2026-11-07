@@ -1,196 +1,315 @@
-// ==============================================================          
+// ==============================================================
 // Copyright (C) 2006-2026 Martin Schweiger
 // Licensed under the MIT License
 // ==============================================================
 
+#define IMGUI_DEFINE_MATH_OPERATORS
 #include "MFDWindow.h"
-#include "resource.h"
-#include <stdio.h> // temporary
+#include "imgui.h"
+#include "imgui_extras.h"
+#include "IconsFontAwesome6.h"
+#include <algorithm>
+#include <cmath>
+#include <cstdio>
+#include <vector>
 
-using std::min;
-using std::max;
+static std::vector<bool> g_usedWindowIds;
 
-#define IDSTICK 999
+static int GetFreeWindowId ()
+{
+	for (size_t i = 0; i < g_usedWindowIds.size(); ++i) {
+		if (!g_usedWindowIds[i]) {
+			g_usedWindowIds[i] = true;
+			return (int)i + 1;
+		}
+	}
+	g_usedWindowIds.push_back(true);
+	return (int)g_usedWindowIds.size();
+}
 
-// ==============================================================
-// prototype definitions
+static void FreeWindowId (int id)
+{
+	int index = id - 1;
+	if (index >= 0 && index < (int)g_usedWindowIds.size())
+		g_usedWindowIds[index] = false;
+}
 
-INT_PTR CALLBACK DlgProc (HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam);
+static DWORD MapImGuiToOAPIKey (ImGuiKey key)
+{
+	switch (key) {
+	case ImGuiKey_Escape: return OAPI_KEY_ESCAPE;
+	case ImGuiKey_1: return OAPI_KEY_1;
+	case ImGuiKey_2: return OAPI_KEY_2;
+	case ImGuiKey_3: return OAPI_KEY_3;
+	case ImGuiKey_4: return OAPI_KEY_4;
+	case ImGuiKey_5: return OAPI_KEY_5;
+	case ImGuiKey_6: return OAPI_KEY_6;
+	case ImGuiKey_7: return OAPI_KEY_7;
+	case ImGuiKey_8: return OAPI_KEY_8;
+	case ImGuiKey_9: return OAPI_KEY_9;
+	case ImGuiKey_0: return OAPI_KEY_0;
+	case ImGuiKey_Minus: return OAPI_KEY_MINUS;
+	case ImGuiKey_Equal: return OAPI_KEY_EQUALS;
+	case ImGuiKey_Backspace: return OAPI_KEY_BACK;
+	case ImGuiKey_Tab: return OAPI_KEY_TAB;
+	case ImGuiKey_Q: return OAPI_KEY_Q;
+	case ImGuiKey_W: return OAPI_KEY_W;
+	case ImGuiKey_E: return OAPI_KEY_E;
+	case ImGuiKey_R: return OAPI_KEY_R;
+	case ImGuiKey_T: return OAPI_KEY_T;
+	case ImGuiKey_Y: return OAPI_KEY_Y;
+	case ImGuiKey_U: return OAPI_KEY_U;
+	case ImGuiKey_I: return OAPI_KEY_I;
+	case ImGuiKey_O: return OAPI_KEY_O;
+	case ImGuiKey_P: return OAPI_KEY_P;
+	case ImGuiKey_LeftBracket: return OAPI_KEY_LBRACKET;
+	case ImGuiKey_RightBracket: return OAPI_KEY_RBRACKET;
+	case ImGuiKey_Enter: return OAPI_KEY_RETURN;
+	case ImGuiKey_LeftCtrl: return OAPI_KEY_LCONTROL;
+	case ImGuiKey_RightCtrl: return OAPI_KEY_RCONTROL;
+	case ImGuiKey_A: return OAPI_KEY_A;
+	case ImGuiKey_S: return OAPI_KEY_S;
+	case ImGuiKey_D: return OAPI_KEY_D;
+	case ImGuiKey_F: return OAPI_KEY_F;
+	case ImGuiKey_G: return OAPI_KEY_G;
+	case ImGuiKey_H: return OAPI_KEY_H;
+	case ImGuiKey_J: return OAPI_KEY_J;
+	case ImGuiKey_K: return OAPI_KEY_K;
+	case ImGuiKey_L: return OAPI_KEY_L;
+	case ImGuiKey_Semicolon: return OAPI_KEY_SEMICOLON;
+	case ImGuiKey_Apostrophe: return OAPI_KEY_APOSTROPHE;
+	case ImGuiKey_GraveAccent: return OAPI_KEY_GRAVE;
+	case ImGuiKey_LeftShift: return OAPI_KEY_LSHIFT;
+	case ImGuiKey_Backslash: return OAPI_KEY_BACKSLASH;
+	case ImGuiKey_Z: return OAPI_KEY_Z;
+	case ImGuiKey_X: return OAPI_KEY_X;
+	case ImGuiKey_C: return OAPI_KEY_C;
+	case ImGuiKey_V: return OAPI_KEY_V;
+	case ImGuiKey_B: return OAPI_KEY_B;
+	case ImGuiKey_N: return OAPI_KEY_N;
+	case ImGuiKey_M: return OAPI_KEY_M;
+	case ImGuiKey_Comma: return OAPI_KEY_COMMA;
+	case ImGuiKey_Period: return OAPI_KEY_PERIOD;
+	case ImGuiKey_Slash: return OAPI_KEY_SLASH;
+	case ImGuiKey_RightShift: return OAPI_KEY_RSHIFT;
+	case ImGuiKey_KeypadMultiply: return OAPI_KEY_MULTIPLY;
+	case ImGuiKey_LeftAlt: return OAPI_KEY_LALT;
+	case ImGuiKey_RightAlt: return OAPI_KEY_RALT;
+	case ImGuiKey_Space: return OAPI_KEY_SPACE;
+	case ImGuiKey_CapsLock: return OAPI_KEY_CAPITAL;
+	case ImGuiKey_F1: return OAPI_KEY_F1;
+	case ImGuiKey_F2: return OAPI_KEY_F2;
+	case ImGuiKey_F3: return OAPI_KEY_F3;
+	case ImGuiKey_F4: return OAPI_KEY_F4;
+	case ImGuiKey_F5: return OAPI_KEY_F5;
+	case ImGuiKey_F6: return OAPI_KEY_F6;
+	case ImGuiKey_F7: return OAPI_KEY_F7;
+	case ImGuiKey_F8: return OAPI_KEY_F8;
+	case ImGuiKey_F9: return OAPI_KEY_F9;
+	case ImGuiKey_F10: return OAPI_KEY_F10;
+	case ImGuiKey_NumLock: return OAPI_KEY_NUMLOCK;
+	case ImGuiKey_ScrollLock: return OAPI_KEY_SCROLL;
+	case ImGuiKey_Keypad7: return OAPI_KEY_NUMPAD7;
+	case ImGuiKey_Keypad8: return OAPI_KEY_NUMPAD8;
+	case ImGuiKey_Keypad9: return OAPI_KEY_NUMPAD9;
+	case ImGuiKey_KeypadSubtract: return OAPI_KEY_SUBTRACT;
+	case ImGuiKey_Keypad4: return OAPI_KEY_NUMPAD4;
+	case ImGuiKey_Keypad5: return OAPI_KEY_NUMPAD5;
+	case ImGuiKey_Keypad6: return OAPI_KEY_NUMPAD6;
+	case ImGuiKey_KeypadAdd: return OAPI_KEY_ADD;
+	case ImGuiKey_Keypad1: return OAPI_KEY_NUMPAD1;
+	case ImGuiKey_Keypad2: return OAPI_KEY_NUMPAD2;
+	case ImGuiKey_Keypad3: return OAPI_KEY_NUMPAD3;
+	case ImGuiKey_Keypad0: return OAPI_KEY_NUMPAD0;
+	case ImGuiKey_KeypadDecimal: return OAPI_KEY_DECIMAL;
+	case ImGuiKey_F11: return OAPI_KEY_F11;
+	case ImGuiKey_F12: return OAPI_KEY_F12;
+	default: return 0;
+	}
+}
+
+struct Layout {
+	float gap;
+	float BW, BH;
+	float ds;
+};
+
+static Layout ComputeLayout (float cw)
+{
+	float fs = ImGui::GetFontSize();
+	Layout l;
+	l.gap = std::max(3.0f, std::round(fs * 0.25f));
+	float bw = (cw * 35.0f) / 300.0f;
+	l.BW = std::round(std::clamp(bw, 2.5f * fs, 5.0f * fs));
+	l.BH = std::round(std::clamp((bw * 2.0f) / 3.0f, ImGui::GetFrameHeight(), 3.0f * fs));
+	l.ds = std::floor(cw - 2.0f * (l.BW + l.gap) - 2.0f * l.gap);
+	return l;
+}
+
+static float ContentHeight (float cw)
+{
+	Layout l = ComputeLayout(cw);
+	return l.ds + 3.0f * l.gap + l.BH;
+}
+
+static float MinContentWidth ()
+{
+	float fs = ImGui::GetFontSize();
+	float cw = 8.0f * fs;
+	while (ComputeLayout(cw).ds < 8.0f * fs) cw += 1.0f;
+	return cw;
+}
+
+static ImVec2 Decoration ()
+{
+	const ImGuiStyle &style = ImGui::GetStyle();
+	return ImVec2(2.0f * style.WindowPadding.x, ImGui::GetFrameHeight() + 2.0f * style.WindowPadding.y);
+}
+
+static void KeepAspect (ImGuiSizeCallbackData *data)
+{
+	ImVec2 dec = Decoration();
+	float minCw = MinContentWidth();
+	float cw = data->DesiredSize.x - dec.x;
+	if (ImGui::GetMouseCursor() == ImGuiMouseCursor_ResizeNS) {
+		float ch = data->DesiredSize.y - dec.y;
+		float lo = minCw, hi = std::max(minCw, 2.0f * ch + 1000.0f);
+		for (int i = 0; i < 40; i++) {
+			float mid = 0.5f * (lo + hi);
+			if (ContentHeight(mid) < ch) lo = mid; else hi = mid;
+		}
+		cw = std::round(hi);
+	}
+	cw = std::max(cw, minCw);
+	data->DesiredSize.x = cw + dec.x;
+	data->DesiredSize.y = ContentHeight(cw) + dec.y;
+}
+
+class DlgExtMFD : public ImGuiDialog {
+public:
+	DlgExtMFD (const std::string &name, MFDWindow *mfd) : ImGuiDialog(name.c_str()), mfd(mfd) {}
+	void Display () override;
+	void OnDraw () override;
+	void OnClose () override { oapiUnregisterExternMFD(mfd); }
+
+private:
+	void MFDButton (int id, const char *label, const ImVec2 &pos, const ImVec2 &size);
+	MFDWindow *mfd;
+};
+
+void DlgExtMFD::Display ()
+{
+	ImVec2 dec = Decoration();
+	float cw = 360.0f;
+	ImGui::SetNextWindowPos(ImGui::GetMousePos() + ImVec2(-10.0f, 10.0f), ImGuiCond_FirstUseEver);
+	ImGui::SetNextWindowSize(ImVec2(cw + dec.x, ContentHeight(cw) + dec.y), ImGuiCond_FirstUseEver);
+	float minCw = MinContentWidth();
+	ImGui::SetNextWindowSizeConstraints(ImVec2(minCw + dec.x, ContentHeight(minCw) + dec.y), ImVec2(FLT_MAX, FLT_MAX), KeepAspect);
+
+	char title[256] = "DX9 MFD [";
+	size_t n = strlen(title);
+	oapiGetObjectName(mfd->GetVessel(), title + n, (int)(sizeof(title) - n - 64));
+	snprintf(title + strlen(title), sizeof(title) - strlen(title), "]###%s", name.c_str());
+
+	bool visible = ImGui::Begin(title, &active, ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse);
+
+	if (ImGui::MenuButton(ICON_FA_CIRCLE_QUESTION, "Help"))
+		mfd->OpenModeHelp();
+
+	bool stick = mfd->GetStickToVessel();
+	if (ImGui::MenuButton(stick ? ICON_FA_THUMBTACK : ICON_FA_THUMBTACK_SLASH,
+		stick ? "Unpin this MFD from the vessel" : "Pin this MFD to the current vessel", ImGui::GetFontSize() * 1.7f))
+		mfd->StickToVessel(!stick);
+
+	if (visible) OnDraw();
+	ImGui::End();
+	if (!active) OnClose();
+}
+
+void DlgExtMFD::MFDButton (int id, const char *label, const ImVec2 &pos, const ImVec2 &size)
+{
+	ImGui::PushID(id);
+	ImGui::SetCursorPos(pos);
+	ImGui::Button(label ? label : "", size);
+	if (ImGui::IsItemActivated()) mfd->ProcessButton(id, PANEL_MOUSE_LBDOWN);
+	if (ImGui::IsItemDeactivated()) mfd->ProcessButton(id, PANEL_MOUSE_LBUP);
+	ImGui::PopID();
+}
+
+void DlgExtMFD::OnDraw ()
+{
+	if (ImGui::IsWindowFocused(ImGuiFocusedFlags_RootAndChildWindows)) {
+		for (int k = ImGuiKey_NamedKey_BEGIN; k < ImGuiKey_NamedKey_END; k++) {
+			if (ImGui::IsKeyPressed((ImGuiKey)k, false)) {
+				DWORD key = MapImGuiToOAPIKey((ImGuiKey)k);
+				if (key) mfd->SendKey(key);
+			}
+		}
+	}
+
+	ImVec2 origin = ImGui::GetCursorStartPos();
+	float cw = ImGui::GetWindowWidth() - Decoration().x;
+	Layout l = ComputeLayout(cw);
+	int ds = std::max(1, (int)l.ds);
+	if (ds != mfd->GetDisplaySize()) mfd->SetDisplaySize(ds);
+
+	ImVec2 dsp = origin + ImVec2(l.BW + 2.0f * l.gap, l.gap);
+	ImVec2 scr = ImGui::GetWindowPos() + dsp;
+	ImGui::GetWindowDrawList()->AddRectFilled(scr, scr + ImVec2((float)ds, (float)ds), IM_COL32_BLACK);
+	SURFHANDLE surf = mfd->GetDisplaySurface();
+	if (surf) {
+		ImGui::SetCursorPos(dsp);
+		ImGui::Image(surf, ImVec2((float)ds, (float)ds));
+	}
+
+	ImVec2 bsz(l.BW, l.BH);
+	float x1 = origin.x + l.gap;
+	float x2 = origin.x + cw - l.gap - l.BW;
+	float y0 = (float)(ds / 7);
+	float dy = (float)((ds * 2) / 13);
+	float y1 = origin.y + y0 - l.BH / 2.0f;
+	for (int i = 0; i < 6; i++) {
+		MFDButton(i, mfd->GetButtonLabel(i), ImVec2(x1, y1 + i * dy), bsz);
+		MFDButton(i + 6, mfd->GetButtonLabel(i + 6), ImVec2(x2, y1 + i * dy), bsz);
+	}
+
+	float cx = dsp.x + ds / 2.0f;
+	float yb = origin.y + ds + 2.0f * l.gap;
+	MFDButton(12, "PWR", ImVec2(cx - (l.BW * 7.0f) / 4.0f, yb), bsz);
+	MFDButton(13, "SEL", ImVec2(cx - l.BW / 2.0f, yb), bsz);
+	MFDButton(14, "MNU", ImVec2(cx + (l.BW * 3.0f) / 4.0f, yb), bsz);
+	ImGui::BeginDisabled();
+	MFDButton(15, "N/A", ImVec2(cx + l.BW * 2.0f, yb), bsz);
+	ImGui::EndDisabled();
+}
 
 // ==============================================================
 // class MFDWindow
 
-MFDWindow::MFDWindow (HINSTANCE _hInst, const MFDSPEC &spec): ExternMFD (spec), hInst(_hInst)
+MFDWindow::MFDWindow (const MFDSPEC &spec): ExternMFD (spec)
 {
-	hSwap = NULL;
-	hBtnFnt = 0;
-	fnth = 0;
 	vstick = false;
-	bFailed = false;
-
-	oapiOpenDialogEx (hInst, IDD_MFD, DlgProc, DLG_ALLOWMULTI|DLG_CAPTIONCLOSE|DLG_CAPTIONHELP, this);
+	windowId = GetFreeWindowId();
+	char cbuf[64];
+	snprintf(cbuf, sizeof(cbuf), "DX9ExtMFD_%d", windowId);
+	window = std::make_unique<DlgExtMFD>(cbuf, this);
+	oapiOpenDialog(window.get());
 }
 
 MFDWindow::~MFDWindow ()
 {
-	gcCore *pCore = gcGetCoreInterface();
-	if (pCore && hSwap) pCore->ReleaseSwap(hSwap);
-	oapiCloseDialog (hDlg);
-	if (hBtnFnt) DeleteObject (hBtnFnt);
-}
-
-void MFDWindow::Initialise (HWND _hDlg)
-{
-	extern HBITMAP g_hPin;
-
-	hDlg = _hDlg;
-	hDsp = GetDlgItem (hDlg, IDC_DISPLAY);
-	
-	for (int i = 0; i < 16; i++)
-		SetWindowLongPtr (GetDlgItem (hDlg, IDC_BUTTON1+i), GWLP_USERDATA, i);
-
-	oapiAddTitleButton (IDSTICK, g_hPin, DLG_CB_TWOSTATE);
-	SetTitle ();
-	gap = 3;
-
-	GetWindowRect(hDlg, &wr);
-	CheckAspect(&wr, 0);
-	Resize();
+	FreeWindowId(windowId);
 }
 
 void MFDWindow::SetVessel (OBJHANDLE hV)
 {
 	ExternMFD::SetVessel (hV);
-	SetTitle ();
 }
 
-void MFDWindow::SetTitle ()
+void MFDWindow::SetDisplaySize (int size)
 {
-	char cbuf[256] = "DX9 MFD [";
-	oapiGetObjectName (hVessel, cbuf+9, 200);
-	strcat_s (cbuf, 250, "]");
-	SetWindowText (hDlg, cbuf);		//<<--- Very odd runtime check failure here why now ???  :jarmonik 5-Aug-2021
-}
-
-void MFDWindow::CheckAspect(LPRECT r, DWORD q)
-{
-	RECT c,b;
-
-	GetClientRect(hDlg, &c);
-	GetWindowRect(hDlg, &b);
-
-	int ew = (b.right - b.left) - (c.right - c.left);
-	int eh = (b.bottom - b.top) - (c.bottom - c.top);
-
-	int bw = (c.right * 35) / 300;
-
-	BW = max(30, min(60, bw));
-	BH = max(15, min(40, (bw * 2) / 3));
-
-	int dspw = (r->right - r->left) - (2 * (BW + gap) + 2 * gap + ew);
-	int dsph = (r->bottom - r->top) - ((BH + 2 * gap) + 2 * gap + ew);
-
-	ds = (dspw + dsph) / 2;
-
-	int w = (gap + BW) * 2 + ds + gap * 2 + ew;
-	int h = (gap + BH) + ds + gap * 2 + eh;
-
-	switch (q) {
-	case WMSZ_BOTTOM:
-	case WMSZ_RIGHT:
-	case WMSZ_BOTTOMRIGHT:
-		r->right = r->left + w;
-		r->bottom = r->top + h;
-		break;
-	default:
-		r->left = r->right - w;
-		r->top = r->bottom - h;
-		break;
-	}
-	return;
-}
-
-void MFDWindow::Resize()
-{
-	RECT r;
-	GetClientRect (hDlg, &r);
-	int bw = (r.right*35)/300;
-	BW = max (30, min (60, bw));
-	BH = max (15, min (40, (bw*2)/3));
-	ds = r.right - (2 * (BW + gap) + 2 * gap);
-	
-	int fh = BW/3;
-
-	if (fh != fnth) {
-		if (hBtnFnt) DeleteObject (hBtnFnt);
-		hBtnFnt = CreateFont (fnth = fh, 0, 0, 0, 0, 0, 0, 0, DEFAULT_CHARSET,
-			OUT_DEFAULT_PRECIS, CLIP_DEFAULT_PRECIS, DEFAULT_QUALITY,
-			DEFAULT_PITCH|FF_DONTCARE, "Arial");
-	}
-
-	DH = DW = ds;
-
-	SetWindowPos(hDsp, NULL, BW + gap * 2, gap, ds, ds, SWP_SHOWWINDOW);
-	
-	int x1 = gap;
-	int x2 = r.right-gap-BW;
-	int dy = (DH*2)/13, y0 = DH/7, y1 = r.top+y0-BH/2;
-	for (int i = 0; i < 6; i++) {
-		SetWindowPos (GetDlgItem (hDlg, IDC_BUTTON1+i), NULL, x1, y1+i*dy, BW, BH, SWP_SHOWWINDOW);
-		SetWindowPos (GetDlgItem (hDlg, IDC_BUTTON7+i), NULL, x2, y1+i*dy, BW, BH, SWP_SHOWWINDOW);
-	}
-	y1 = r.top+DH+gap*2;
-	SetWindowPos (GetDlgItem (hDlg, IDC_BUTTON_DRV), NULL, r.left + DW/2 + (BW*12)/4, y1, BW, BH, SWP_SHOWWINDOW);
-	SetWindowPos (GetDlgItem (hDlg, IDC_BUTTON_PWR), NULL, r.left + DW/2 - (BW*7)/4, y1, BW, BH, SWP_SHOWWINDOW);
-	SetWindowPos (GetDlgItem (hDlg, IDC_BUTTON_SEL), NULL, r.left + DW/2 - BW/2, y1, BW, BH, SWP_SHOWWINDOW);
-	SetWindowPos (GetDlgItem (hDlg, IDC_BUTTON_MNU), NULL, r.left + DW/2 + (BW*3)/4, y1, BW, BH, SWP_SHOWWINDOW);
-
-	if (!bFailed) {
-		gcCore *pCore = gcGetCoreInterface();
-		if (pCore) hSwap = pCore->RegisterSwap(hDsp, hSwap, 0);
-	}
-
-	MFDSPEC spec = {{0,0,DW,DH},6,6,y0,dy};
+	MFDSPEC spec = {{0, 0, size, size}, 6, 6, size / 7, (size * 2) / 13};
 	ExternMFD::Resize (spec);
-
-	InvalidateRect(hDlg, NULL, FALSE);
-}
-
-
-void MFDWindow::RepaintDisplay(HWND hWnd)
-{
-	PAINTSTRUCT ps;
-	HDC hDCtgt = BeginPaint(hWnd, &ps);
-	EndPaint(hWnd, &ps);
-}
-
-void MFDWindow::RepaintButton (HWND hWnd)
-{
-	int id = (int)GetWindowLongPtr (hWnd, GWLP_USERDATA);
-	PAINTSTRUCT ps;
-	HDC hDC = BeginPaint (hWnd, &ps);
-	SelectObject (hDC, GetStockObject (BLACK_PEN));
-	Rectangle (hDC, 0, 0, BW, BH);
-	SetTextAlign (hDC, TA_CENTER);
-	const char *label;
-	if (id < 12) {
-		label = GetButtonLabel (id);
-	} else {
-		static const char *lbl[3] = {"PWR","SEL","MNU"};
-		static const char *drv[2] = {"N/A","N/A"};
-		if (id == 15) label = drv[0];
-		else {
-			label = lbl[id - 12];
-			if (id == 12) SetTextColor(hDC, 0x0000FF);
-		}
-	}
-	if (label) {
-		SetBkMode (hDC, TRANSPARENT);
-		HFONT pFont = (HFONT)SelectObject (hDC, hBtnFnt);
-		TextOut (hDC, BW/2, (BH-fnth)/2, label, lstrlen(label));
-		SelectObject (hDC, pFont);
-	}
-	EndPaint (hWnd, &ps);
 }
 
 void MFDWindow::ProcessButton (int bt, int event)
@@ -209,8 +328,6 @@ void MFDWindow::ProcessButton (int bt, int event)
 			SendKey (OAPI_KEY_GRAVE);
 		break;
 	case 15:
-		if (event == PANEL_MOUSE_LBDOWN) {
-		}
 		break;
 	default:
 		ExternMFD::ProcessButton (bt, event);
@@ -218,121 +335,15 @@ void MFDWindow::ProcessButton (int bt, int event)
 	}
 }
 
-void MFDWindow::clbkRefreshDisplay (SURFHANDLE)
-{
-	if (bFailed) return;
-
-	gcCore *pCore = gcGetCoreInterface();
-	if (!pCore) return;
-
-	if (!hSwap) hSwap = pCore->RegisterSwap(hDsp, hSwap, 0);
-	if (!hSwap) {
-		bFailed = true;
-		return;
-	}
-
-	SURFHANDLE tgt = pCore->GetRenderTarget(hSwap);
-	SURFHANDLE surf = GetDisplaySurface();
-
-	// WARNING: Blit src must be a texture otherwise nVidia driver will crash.
-	if (surf) pCore->StretchRectInScene(tgt, surf);
-	else pCore->ClearSurfaceInScene(tgt, 0);
-
-	pCore->FlipSwap(hSwap);
-}
-
-void MFDWindow::clbkRefreshButtons ()
-{
-	InvalidateRect(GetDlgItem(hDlg, IDC_BUTTON_DRV), NULL, FALSE);
-	for (int i = 0; i < 12; i++)
-		InvalidateRect (GetDlgItem (hDlg, IDC_BUTTON1+i), NULL, FALSE);
-}
-
 void MFDWindow::clbkFocusChanged (OBJHANDLE hFocus)
 {
-	if (!vstick) {
+	if (!vstick)
 		ExternMFD::clbkFocusChanged (hFocus);
-		//SetTitle ();
-	}
 }
 
 void MFDWindow::StickToVessel (bool stick)
 {
 	vstick = stick;
-	if (!vstick) {
+	if (!vstick)
 		SetVessel (oapiGetFocusObject());
-		//SetTitle ();
-	}
 }
-
-// ==============================================================
-// Windows message handler for the dialog box
-
-INT_PTR CALLBACK DlgProc (HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
-{
-	switch (uMsg) {
-	case WM_INITDIALOG:
-		((MFDWindow*)lParam)->Initialise (hDlg);
-		return TRUE;
-	case WM_SIZING:
-		((MFDWindow*)oapiGetDialogContext(hDlg))->CheckAspect(LPRECT(lParam), (DWORD)wParam);
-		return TRUE;
-	case WM_SIZE:
-		((MFDWindow*)oapiGetDialogContext(hDlg))->Resize();
-		return TRUE;
-	case WM_COMMAND:
-		switch (LOWORD (wParam)) {
-		case IDCANCEL:
-			oapiUnregisterExternMFD ((MFDWindow*)oapiGetDialogContext (hDlg));
-			return TRUE;
-		case IDHELP:
-			((MFDWindow*)oapiGetDialogContext(hDlg))->OpenModeHelp ();
-			return TRUE;
-		case IDSTICK:
-			((MFDWindow*)oapiGetDialogContext(hDlg))->StickToVessel (HIWORD(wParam) != 0);
-			return TRUE;
-		}
-		break;
-	}
-	return oapiDefDialogProc (hDlg, uMsg, wParam, lParam);
-}
-
-
-LRESULT CALLBACK MFD_WndProc (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
-{	
-	switch (uMsg) {
-		case WM_ERASEBKGND:
-			return 1;
-		case WM_PAINT: 
-		{
-			MFDWindow *mfdw = (MFDWindow*)oapiGetDialogContext(GetParent(hWnd));
-			mfdw->RepaintDisplay(hWnd);
-			return 0;
-		} 
-	}
-	return DefWindowProc (hWnd, uMsg, wParam, lParam);
-}
-
-
-LRESULT FAR PASCAL MFD_BtnProc (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
-{
-	switch (uMsg) {
-	case WM_PAINT: {
-		MFDWindow *mfdw = (MFDWindow*)oapiGetDialogContext (GetParent (hWnd));
-		mfdw->RepaintButton (hWnd);
-		} return 0;
-	case WM_LBUTTONDOWN: {
-		MFDWindow *mfdw = (MFDWindow*)oapiGetDialogContext (GetParent (hWnd));
-		mfdw->ProcessButton ((int)GetWindowLongPtr(hWnd, GWLP_USERDATA), PANEL_MOUSE_LBDOWN);
-		SetCapture (hWnd);
-		} return 0;
-	case WM_LBUTTONUP: {
-		MFDWindow *mfdw = (MFDWindow*)oapiGetDialogContext (GetParent (hWnd));
-		mfdw->ProcessButton ((int)GetWindowLongPtr(hWnd, GWLP_USERDATA), PANEL_MOUSE_LBUP);
-		ReleaseCapture();
-		} return 0;
-	}
-
-	return DefWindowProc (hWnd, uMsg, wParam, lParam);
-}
-

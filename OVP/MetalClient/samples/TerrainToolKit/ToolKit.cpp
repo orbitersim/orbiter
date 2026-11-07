@@ -4,26 +4,23 @@
 // ==================================================================
 
 
-#define STRICT 1
 #define ORBITER_MODULE
 
-
-#include <Windows.h>
-#include <windowsx.h>
 #include "OrbiterAPI.h"
 #include "VesselAPI.h"
 #include "ModuleAPI.h"
 #include "DrawAPI.h"
 #include "gcCoreAPI.h"
 #include "ToolKit.h"
-#include "resource.h"
 #include "gcPropertyTree.h"
 #include "QTree.h"
-#include <Commctrl.h>
+#include "imgui.h"
 #include <vector>
 #include <list>
 
 using namespace std;
+
+ORBITER_MODULE_INFO("Developer resources and samples", "Terrain and Base Development ToolKit");
 
 ToolKit *g_pTK = NULL;
 gcCore2* g_pCore = NULL;
@@ -38,18 +35,55 @@ const T* ptr(const T& x) { return &x; }
 // D3D9Client Callback Wrappers
 // =================================================================================================
 //
-void __cdecl RenderClbk(int iUser, void *pUser, void *pParam)
+void RenderClbk(int iUser, void *pUser, void *pParam)
 {
 	((ToolKit*)pParam)->clbkRender();
 }
 
-void __cdecl MouseClickClbk(int iUser, void *pUser, void *pParam)
+void MouseClickClbk(int iUser, void *pUser, void *pParam)
 {
 	((ToolKit*)pParam)->clbkMouseClick(iUser, pUser);
 }
 
+static void DrawSelectionClbk(HNODE hNode, void *pUser)
+{
+	((ToolKit*)pUser)->DrawSelectionOptions();
+}
+
+static void DrawImportClbk(HNODE hNode, void *pUser)
+{
+	((ToolKit*)pUser)->DrawImportOptions();
+}
+
+static void DrawPropertiesClbk(HNODE hNode, void *pUser)
+{
+	((ToolKit*)pUser)->DrawProperties();
+}
+
 
 string LngLat(Position p);
+
+
+class BakeDialog : public ImGuiDialog
+{
+public:
+	BakeDialog(ToolKit *pTK) : ImGuiDialog("Baking tiles"), pTK(pTK) {}
+
+	void Display() override
+	{
+		ImGuiViewport *vp = ImGui::GetMainViewport();
+		ImGui::SetNextWindowPos(vp->GetCenter(), ImGuiCond_Appearing, ImVec2(0.5f, 0.5f));
+		ImGuiWindowFlags fl = ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoSavedSettings;
+		if (ImGui::Begin(name.c_str(), NULL, fl)) OnDraw();
+		ImGui::End();
+		if (!pTK->IsBaking()) oapiCloseDialog(this);
+	}
+
+	void OnDraw() override { pTK->DrawBakeProgress(); }
+
+private:
+	ToolKit *pTK;
+};
 
 
 
@@ -83,141 +117,133 @@ DLLCLBK void OpenToolsClbk(void *context)
 
 // ===============================================================================================
 //
-BOOL CALLBACK gDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
+void ToolKit::OnPropertyEvent(HPROP hEntry, WORD id, gcPropertyTree::Event ev)
 {
-	if (g_pTK) return g_pTK->DlgProc(hDlg, uMsg, wParam, lParam);
-	return 0;
+	switch (id)
+	{
+	case IDC_LIGHTNESS:
+	case IDC_BRIGHTNESS:
+	case IDC_GAMMA:
+	case IDC_ALPHA:
+	case IDC_RED:
+	case IDC_GREEN:
+	case IDC_BLUE:
+	case IDC_ALPHAEDG:
+		if (!UpdateOverlays()) oapiWriteLog((char*)"UpdateOverlays() Failed");
+		break;
+
+	case IDC_LAYER:
+		UpdateOverlays();
+		break;
+
+	default:
+		break;
+	}
 }
 
 
 // ===============================================================================================
 //
-BOOL ToolKit::DlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
+void ToolKit::DrawSelectionOptions()
 {
+	static const char *what[] = { "Texture", "Nightlights" };
 
-	switch (uMsg) {
+	ImGui::Checkbox("Display cursor", &bAutoHighlight);
+	ImGui::Checkbox("Display selection", &bDispSel);
 
-	case WM_INITDIALOG:
-		return true;
-
-	case WM_COMMAND:
-	{
-		switch (LOWORD(wParam))
-		{
-		case IDC_LIGHTNESS:
-		case IDC_BRIGHTNESS:
-		case IDC_GAMMA:
-		case IDC_ALPHA:
-		case IDC_RED:
-		case IDC_GREEN:
-		case IDC_BLUE:
-		case IDC_ALPHAEDG:
-		{
-			if (!UpdateOverlays()) oapiWriteLog((char*)"UpdateOverlays() Failed");
-			break;
+	ImGui::TextUnformatted("Export or bake level");
+	ImGui::SetNextItemWidth(-FLT_MIN);
+	char preview[32];
+	if (iSelect == Select::SRender) strcpy(preview, "Current render level");
+	else if (iSelect == Select::SHighestOwn) strcpy(preview, "Highest existing");
+	else snprintf(preview, sizeof(preview), "Level %d", iSelect + 3);
+	if (ImGui::BeginCombo("##select", preview)) {
+		if (ImGui::Selectable("Current render level", iSelect == Select::SRender)) iSelect = Select::SRender;
+		if (ImGui::Selectable("Highest existing", iSelect == Select::SHighestOwn)) iSelect = Select::SHighestOwn;
+		for (int i = 5; i < 22; i++) {
+			char lbl[32]; snprintf(lbl, sizeof(lbl), "Level %d", i);
+			if (ImGui::Selectable(lbl, iSelect == i - 3)) iSelect = i - 3;
 		}
+		ImGui::EndCombo();
+	}
 
-		case IDC_LAYER:
-		{
-			Layer *pLr = (Layer*)pProp->GetUserRef(HPROP(lParam));
-			UpdateOverlays();
-			break;
-		}
+	ImGui::TextUnformatted("What to export");
+	ImGui::SetNextItemWidth(-FLT_MIN);
+	ImGui::Combo("##what", &iWhat, what, IM_ARRAYSIZE(what));
 
-		// Bake level combobox Msg
-		case IDC_STARTIMPORT:
-		{
-			if (selection.selw == 0 || selection.selh == 0) {
-				MessageBox(pCore->GetRenderWindow(), "You need to drag a box around the import area first.", "Info", MB_OK);
-				break;
-			}
-			if (CreateOverlays())
-			{
-				AutoSelectCorners();
-				if (!UpdateOverlays()) oapiWriteLog((char*)"UpdateOverlays() Failed in IDC_STARTIMPORT");
-			}
-			break;
-		}
-
-		case IDC_OPENIMAGE:
-		{
-			OpenImage(Layer::LayerType::TEXTURE);
-			return true;
-		}
-
-		case IDC_OPENELEV:
-		{
-			MessageBox(pCore->GetRenderWindow(), "This feature is not yet implemented.", "Info", MB_OK);
-			//OpenImage(Layer::LayerType::ELEVATION);
-			return true;
-		}
-
-		case IDC_OPENNIGHT:
-		{
-			OpenImage(Layer::LayerType::NIGHT);
-			return true;
-		}
-
-		case IDC_OPENWATER:
-		{
-			OpenImage(Layer::LayerType::WATER);
-			return true;
-		}
-
-		case IDC_OPENMESH:
-		{
-			MessageBox(pCore->GetRenderWindow(), "This feature is not yet implemented.", "Info", MB_OK);
-			return true;
-		}
-
-		case IDC_EDITELEV:
-		{
-			MessageBox(pCore->GetRenderWindow(), "This feature is not yet implemented.", "Info", MB_OK);
-			return true;
-		}
-
-		case IDC_DATAVIEW:
-		{
-			break;
-		}
-
-		case IDC_CALLBACK:
-		{
-			break;
-		}
-
-		case IDC_CORNERS:
-		{
-			AutoSelectCorners();
-			if (!UpdateOverlays()) oapiWriteLog((char*)"UpdateOverlays() Failed in IDC_CORNERS");
-			break;
-		}
-
-		case IDC_STOP:
-		{
-			StopImport();
-			break;
-		}
-
-		case IDC_EXPORT:
-		{
-			Export();
-			break;
-		}
-
-		case IDC_BAKE:
-		{
-			BakeImport();
-			break;
-		}
-		default:
-			break;
-		} // switch(wParam)
-	} // WM_COMMAND
-	} // switch(uMsg)
-	return false;
+	if (ImGui::Button("Export selection")) Export();
 }
 
+
+// ===============================================================================================
+//
+void ToolKit::DrawImportOptions()
+{
+	ImGuiStyle &style = ImGui::GetStyle();
+	ImVec2 bs((ImGui::GetContentRegionAvail().x - style.ItemSpacing.x) * 0.5f, 0.0f);
+
+	ImGui::BeginDisabled(IsBaking());
+
+	if (ImGui::Button("Open surface", bs)) OpenImage(Layer::LayerType::TEXTURE);
+	ImGui::SameLine();
+	ImGui::BeginDisabled();
+	if (ImGui::Button("Open elevation", bs)) oapiAddNotification(OAPINOTIF_INFO, "Terrain ToolKit", "This feature is not yet implemented.");
+	ImGui::EndDisabled();
+
+	if (ImGui::Button("Open water", bs)) OpenImage(Layer::LayerType::WATER);
+	ImGui::SameLine();
+	ImGui::BeginDisabled();
+	if (ImGui::Button("Open mesh", bs)) oapiAddNotification(OAPINOTIF_INFO, "Terrain ToolKit", "This feature is not yet implemented.");
+	ImGui::EndDisabled();
+
+	if (ImGui::Button("Open nightlights", bs)) OpenImage(Layer::LayerType::NIGHT);
+	ImGui::SameLine();
+	ImGui::BeginDisabled();
+	if (ImGui::Button("Edit elevation", bs)) oapiAddNotification(OAPINOTIF_INFO, "Terrain ToolKit", "This feature is not yet implemented.");
+	ImGui::EndDisabled();
+
+	ImGui::Spacing();
+
+	if (ImGui::Button("Start import", bs)) {
+		if (selection.selw == 0 || selection.selh == 0) {
+			oapiAddNotification(OAPINOTIF_INFO, "Terrain ToolKit", "You need to drag a box around the import area first.");
+		}
+		else if (CreateOverlays()) {
+			AutoSelectCorners();
+			if (!UpdateOverlays()) oapiWriteLog((char*)"UpdateOverlays() Failed in IDC_STARTIMPORT");
+		}
+	}
+	ImGui::SameLine();
+	if (ImGui::Button("Reset corners", bs)) {
+		AutoSelectCorners();
+		if (!UpdateOverlays()) oapiWriteLog((char*)"UpdateOverlays() Failed in IDC_CORNERS");
+	}
+
+	if (ImGui::Button("Cancel import", bs)) StopImport();
+	ImGui::SameLine();
+	if (ImGui::Button("Bake", bs)) ImGui::OpenPopup("Bake tiles");
+
+	ImGui::EndDisabled();
+
+	if (ImGui::BeginPopupModal("Bake tiles", NULL, ImGuiWindowFlags_AlwaysAutoResize)) {
+		ImGui::TextUnformatted("Bake and write the tiles in the 'OrbiterRoot/TerrainToolKit/' folder?");
+		if (ImGui::Button("Bake")) {
+			ImGui::CloseCurrentPopup();
+			BakeImport();
+		}
+		ImGui::SameLine();
+		if (ImGui::Button("Cancel")) ImGui::CloseCurrentPopup();
+		ImGui::EndPopup();
+	}
+}
+
+
+// ===============================================================================================
+//
+void ToolKit::DrawProperties()
+{
+	if (pProp) pProp->Draw();
+}
 
 
 
@@ -233,19 +259,32 @@ ToolKit::ToolKit(HINSTANCE hInst) : gcGUIApp(), Module(hInst)
 	pRoot = pFirst = pSecond = NULL;
 	pProp = NULL;
 	dmSphere = NULL;
-	hAppMainWnd = NULL;
 	hOverlaySrf = NULL;
 	hOverlayMsk = NULL;
 	hOverlayElv = NULL;
 	hOverlay = NULL;
 	hGradient = NULL;
+	hRootNode = hCtrlNode = hDataNode = hImpoNode = NULL;
 	down_corner = -1;
 	sel_corner = -1;
 	bGo = false;
+	bImport = false;
+	xpos = ypos = 0;
+	selw = selh = 0;
+	progress = 0;
+	bAutoHighlight = true;
+	bDispSel = true;
+	iSelect = Select::SHighestOwn;
+	iWhat = Select::WTexture;
+	memset(pLr, 0, sizeof(pLr));
+	selection.selw = selection.selh = selection.slvl = 0;
+	selection.pLeftTop = selection.pRightBottom = NULL;
+	bake.active = false;
+	bake.hTemp = NULL;
+	pBakeDlg = new BakeDialog(this);
 
 	// Can do very little here since graphics servises are not yet running 
 	dwCmd = oapiRegisterCustomCmd((char*)"TerrainToolKit", (char*)"ToolKit for terrain and base editing", OpenToolsClbk, this);
-	gcPropertyTreeInitialize(hInst);
 
 	mIdent.Ident();
 }
@@ -256,7 +295,7 @@ ToolKit::ToolKit(HINSTANCE hInst) : gcGUIApp(), Module(hInst)
 ToolKit::~ToolKit()
 {
 	oapiUnregisterCustomCmd(dwCmd);
-	gcPropertyTreeRelease(hModule);
+	delete pBakeDlg;
 }
 
 
@@ -269,7 +308,10 @@ void ToolKit::clbkShutdown()
 
 	pCore->RegisterGenericProc(RenderClbk, GENERICPROC_DELETE, this);
 	pCore->RegisterGenericProc(MouseClickClbk, GENERICPROC_DELETE, this);
-	
+
+	if (bake.active) BakeFinish();
+	oapiCloseDialog(pBakeDlg);
+
 	if (hOverlay) pCore->AddGlobalOverlay(hMgr, _V(0, 0, 0, 0), gcCore::OlayType::RELEASE_ALL, NULL, hOverlay);
 	if (hOverlaySrf) oapiReleaseTexture(hOverlaySrf);
 	if (dmSphere) pCore->ReleaseDevMesh(dmSphere);
@@ -278,6 +320,7 @@ void ToolKit::clbkShutdown()
 	oldsel.area.clear();
 
 	if (pRoot) delete pRoot;	// Delete QTree Tile Manager
+	for (auto &x : pLr) { delete x; x = NULL; }
 	if (pProp) delete pProp;	// Delete Property tree control and sub-controls
 
 	pCore = NULL;
@@ -286,12 +329,12 @@ void ToolKit::clbkShutdown()
 	pRoot = pFirst = pSecond = NULL;
 	pProp = NULL;
 	dmSphere = NULL;
-	hAppMainWnd = NULL;
 	hOverlaySrf = NULL;
 	hOverlayMsk = NULL;
 	hOverlayElv = NULL;
 	hOverlay = NULL;
-	hRootNode = NULL;
+	hRootNode = hCtrlNode = hDataNode = hImpoNode = NULL;
+	bImport = false;
 	down_corner = -1;
 	sel_corner = -1;
 	bGo = false;
@@ -332,16 +375,18 @@ void ToolKit::SetupPlanet(OBJHANDLE hPln)
 //
 bool ToolKit::Initialize()
 {
+	if (bGo) {
+		DisplayWindow(hRootNode);
+		return true;
+	}
+
 	g_pCore = pCore = gcGetCoreInterface();
 	if (!pCore) return false;
 
-	hAppMainWnd = pCore->GetRenderWindow();
-
 	// Must Initialize the base class
 	if (gcGUIApp::Initialize() == false) {
-		MessageBox(hAppMainWnd, "gcGUI is disabled, can't launch", "Error", MB_OK);
+		oapiAddNotification(OAPINOTIF_ERROR, "Terrain ToolKit", "gcGUI is disabled, can't launch");
 		pCore = NULL;
-		hAppMainWnd = NULL;
 		return false;
 	}
 
@@ -385,39 +430,19 @@ bool ToolKit::Initialize()
 
 	// Create GUI Sections --------------------------------------------------------------------------
 	//
-	hRootNode = RegisterApplication("Terrain ToolKit V1.1", NULL, gcGUI::DS_LEFT);
-	//hMainDlg = CreateDialogParamA(hModule, MAKEINTRESOURCE(IDD_MAIN), hAppMainWnd, gDlgProc, 0);
-	//hMainNode = RegisterSubsection(hRootNode, "Main", hMainDlg);
-	hCtrlDlg = CreateDialogParamA(hModule, MAKEINTRESOURCE(IDD_EXPORT), hAppMainWnd, (DLGPROC)gDlgProc, 0);
-	hCtrlNode = RegisterSubsection(hRootNode, "Selection Oprions", hCtrlDlg);
-	hImpoDlg = CreateDialogParam(hModule, MAKEINTRESOURCE(IDD_IMPORT), hAppMainWnd, (DLGPROC)gDlgProc, 0);
-	hImpoNode = RegisterSubsection(hRootNode, "Import Options", hImpoDlg, 0xC0FFE0);
-	hDataDlg  = CreateDialogParam(hModule, MAKEINTRESOURCE(IDD_DATA), hAppMainWnd, (DLGPROC)gDlgProc, 0);
-	hDataNode = RegisterSubsection(hRootNode, "Properties", hDataDlg);
+	hRootNode = RegisterApplication("Terrain ToolKit V1.1", NULL, NULL, gcGUI::DS_LEFT);
+	hCtrlNode = RegisterSubsection(hRootNode, "Selection options", DrawSelectionClbk, this);
+	hImpoNode = RegisterSubsection(hRootNode, "Import options", DrawImportClbk, this);
+	hDataNode = RegisterSubsection(hRootNode, "Properties", DrawPropertiesClbk, this);
 
 	DisplayWindow(hRootNode);
 
-	SendDlgItemMessage(hCtrlDlg, IDC_AUTOHIGHLIGHT, BM_SETCHECK, true, 0);
-	SendDlgItemMessage(hCtrlDlg, IDC_DISPSEL, BM_SETCHECK, true, 0);
+	bAutoHighlight = true;
+	bDispSel = true;
+	iSelect = Select::SHighestOwn;
+	iWhat = Select::WTexture;
 
-	SendDlgItemMessage(hCtrlDlg, IDC_WHAT, CB_RESETCONTENT, 0, 0);
-	SendDlgItemMessage(hCtrlDlg, IDC_WHAT, CB_ADDSTRING, 0, (LPARAM)"Texture");			// 0
-	SendDlgItemMessage(hCtrlDlg, IDC_WHAT, CB_ADDSTRING, 0, (LPARAM)"Nightlights");		// 1
-	//SendDlgItemMessage(hCtrlDlg, IDC_WHAT, CB_ADDSTRING, 0, (LPARAM)"Elevation");		// 2
-	SendDlgItemMessage(hCtrlDlg, IDC_WHAT, CB_SETCURSEL, 0, 0);
-
-	SendDlgItemMessage(hCtrlDlg, IDC_SELECT, CB_RESETCONTENT, 0, 0);
-	SendDlgItemMessage(hCtrlDlg, IDC_SELECT, CB_ADDSTRING, 0, (LPARAM)"Current Render Lvl");	// 0
-	SendDlgItemMessage(hCtrlDlg, IDC_SELECT, CB_ADDSTRING, 0, (LPARAM)"Heighest Existing");		// 1
-	SendDlgItemMessage(hCtrlDlg, IDC_SELECT, CB_SETCURSEL, 1, 0);
-
-	for (int i = 5; i < 22; i++) {
-		char Lbl[32]; sprintf_s(Lbl, 32, "Level %d", i);
-		SendDlgItemMessageA(hCtrlDlg, IDC_SELECT, CB_ADDSTRING, 0, (LPARAM)Lbl);
-	}
-
-
-	pProp = new gcPropertyTree(this, hDataDlg, IDC_DATAVIEW, (DLGPROC)gDlgProc, GetFont(0), GetModule());
+	pProp = new gcPropertyTree(IDC_DATAVIEW, [this](HPROP hEntry, WORD id, gcPropertyTree::Event ev) { OnPropertyEvent(hEntry, id, ev); });
 
 	// ---------------------------------------------------
 	hSecCur = pProp->SubSection("Mouse cursor location");
@@ -428,20 +453,20 @@ bool ToolKit::Initialize()
 	hCFil = pProp->AddEntry("Filename", hSecCur);
 
 	// ---------------------------------------------------
-	hSecExp = pProp->SubSection("Selection and Bake");
+	hSecExp = pProp->SubSection("Selection and bake");
 	// ---------------------------------------------------
-	hSLng = pProp->AddEntry("Min Lng", hSecExp);
-	hSLat = pProp->AddEntry("Min Lat", hSecExp);
-	hMLng = pProp->AddEntry("Max Lng", hSecExp);
-	hMLat = pProp->AddEntry("Max Lat", hSecExp);
+	hSLng = pProp->AddEntry("Min lng", hSecExp);
+	hSLat = pProp->AddEntry("Min lat", hSecExp);
+	hMLng = pProp->AddEntry("Max lng", hSecExp);
+	hMLat = pProp->AddEntry("Max lat", hSecExp);
 	hSXPx = pProp->AddEntry("Width pixels", hSecExp);
 	hSYPx = pProp->AddEntry("Height pixels", hSecExp);
-	hCLvl = pProp->AddEntry("SelectionLvl", hSecExp);
-	hCEdg = pProp->AddSlider("Edge Blend", IDC_ALPHAEDG, hSecExp);
-	hBLvs = pProp->AddComboBox("Lvls to Bake", 0, hSecExp);
+	hCLvl = pProp->AddEntry("Selection level", hSecExp);
+	hCEdg = pProp->AddSlider("Edge blend", IDC_ALPHAEDG, hSecExp);
+	hBLvs = pProp->AddComboBox("Levels to bake", 0, hSecExp);
 
 	for (int i = 0; i < 8; i++) {
-		char buf[8]; sprintf_s(buf, 8, "%d", i);
+		char buf[8]; snprintf(buf, 8, "%d", i);
 		pProp->AddComboBoxItem(hBLvs, buf);
 	}
 	pProp->SetComboBoxSelection(hBLvs, 0);
@@ -449,66 +474,6 @@ bool ToolKit::Initialize()
 	pProp->SetSliderScale(hCEdg, 1.0, 480.0, gcPropertyTree::Scale::LOG);
 	pProp->SetSliderValue(hCEdg, 32.0);
 
-	pProp->Update();
-
-	
-	memset(&SaveImage, 0, sizeof(OPENFILENAME));
-	memset(&SaveDDS, 0, sizeof(OPENFILENAME));
-	memset(&SaveElevation, 0, sizeof(OPENFILENAME));
-	memset(SaveFileName, 0, sizeof(SaveFileName));
-	memset(SaveFileTitle, 0, sizeof(SaveFileTitle));
-
-	SaveImage.hwndOwner = pCore->GetRenderWindow();
-	SaveImage.lStructSize = sizeof(OPENFILENAME);
-	SaveImage.lpstrFile = SaveFileName;
-	SaveImage.nMaxFile = sizeof(SaveFileName);
-	SaveImage.lpstrFileTitle = SaveFileTitle;
-	SaveImage.nMaxFileTitle = sizeof(SaveFileTitle);
-	SaveImage.lpstrInitialDir = "";
-	SaveImage.lpstrDefExt = NULL;
-	SaveImage.lpstrFilter = 
-"Image Files\0*.dds;*.png;*.jpg;*.bmp\0\
-Direct Draw Surface (.dds)\0*.dds\0\
-Windows Bitmap (.bmp)\0*.bmp\0\
-Portable Network Graphics (.png)\0*.png\0\
-JPEG Image (.jpg)\0*.jpg\0";
-	SaveImage.nFilterIndex = 0;
-	SaveImage.Flags = OFN_OVERWRITEPROMPT | OFN_NOCHANGEDIR;
-
-	// ------------------------------------------------------
-
-	SaveDDS.hwndOwner = pCore->GetRenderWindow();
-	SaveDDS.lStructSize = sizeof(OPENFILENAME);
-	SaveDDS.lpstrFile = SaveFileName;
-	SaveDDS.nMaxFile = sizeof(SaveFileName);
-	SaveDDS.lpstrFileTitle = SaveFileTitle;
-	SaveDDS.nMaxFileTitle = sizeof(SaveFileTitle);
-	SaveDDS.lpstrInitialDir = "";
-	SaveDDS.lpstrDefExt = NULL;
-	SaveDDS.lpstrFilter = "Image Files\0*.dds\0Direct Draw Surface (.dds)\0*.dds\0\0";
-	SaveDDS.nFilterIndex = 0;
-	SaveDDS.lpstrFileTitle = NULL;
-	SaveDDS.nMaxFileTitle = 0;
-	SaveDDS.Flags = OFN_OVERWRITEPROMPT | OFN_NOCHANGEDIR;
-
-	// ------------------------------------------------------
-
-	SaveElevation.hwndOwner = pCore->GetRenderWindow();
-	SaveElevation.lStructSize = sizeof(OPENFILENAME);
-	SaveElevation.lpstrFile = SaveFileName;
-	SaveElevation.nMaxFile = sizeof(SaveFileName);
-	SaveElevation.lpstrFileTitle = SaveFileTitle;
-	SaveElevation.nMaxFileTitle = sizeof(SaveFileTitle);
-	SaveElevation.lpstrInitialDir = "";
-	SaveElevation.lpstrDefExt = NULL;
-	SaveElevation.lpstrFilter =
-"Elevation Files\0*.dds\0\
-Direct Draw Surface (.dds)\0*.dds\0\0";
-	SaveElevation.nFilterIndex = 0;
-	SaveElevation.lpstrFileTitle = NULL;
-	SaveElevation.nMaxFileTitle = 0;
-	SaveElevation.Flags = OFN_OVERWRITEPROMPT | OFN_NOCHANGEDIR;
-	
 	bGo = true;
 	return true;
 }
@@ -518,9 +483,7 @@ Direct Draw Surface (.dds)\0*.dds\0\0";
 //
 int ToolKit::SelectionFlags()
 {
-	int what = SendDlgItemMessage(hCtrlDlg, IDC_WHAT, CB_GETCURSEL, 0, 0);
-
-	switch (what) {
+	switch (iWhat) {
 	case Select::WTexture: return gcTileFlags::TEXTURE | gcTileFlags::CACHE | gcTileFlags::TREE;
 	case Select::WNightlight: return gcTileFlags::MASK | gcTileFlags::CACHE | gcTileFlags::TREE;
 	case Select::WElevation: return gcTileFlags::ELEVATION | gcTileFlags::CACHE | gcTileFlags::TREE;
@@ -546,11 +509,10 @@ void ToolKit::clbkRender()
 	if (!hPlanet) return;
 	if (!dmSphere) return;
 
-	bool bGuides = false; // (SendDlgItemMessageA(hCtrlDlg, IDC_GUIDES, BM_GETCHECK, 0, 0) == BST_CHECKED);
-	bool bAutoHighlight = (SendDlgItemMessageA(hCtrlDlg, IDC_AUTOHIGHLIGHT, BM_GETCHECK, 0, 0) == BST_CHECKED);
-	bool bHideClip = (SendDlgItemMessageA(hCtrlDlg, IDC_DISPSEL, BM_GETCHECK, 0, 0) != BST_CHECKED);
+	bool bGuides = false;
+	bool bHideClip = !bDispSel;
 	
-	int select = SendDlgItemMessage(hCtrlDlg, IDC_SELECT, CB_GETCURSEL, 0, 0);
+	int select = iSelect;
 	int flags = SelectionFlags();
 
 	gcCore::PickGround pg; memset(&pg, 0, sizeof(gcCore::PickGround));
@@ -749,8 +711,6 @@ void ToolKit::clbkRender()
 			pCore->RenderMesh(dmSphere, &points[i].mWorld);
 		}
 	}
-
-	pProp->Update();
 }
 
 
@@ -1086,8 +1046,8 @@ void ToolKit::clbkMouseClick(int iUser, void *pData)
 	if (!pRoot) return;
 	if (!pCore) return;
 
-	int select = SendDlgItemMessage(hCtrlDlg, IDC_SELECT, CB_GETCURSEL, 0, 0);
-	int what = SendDlgItemMessage(hCtrlDlg, IDC_WHAT, CB_GETCURSEL, 0, 0);
+	int select = iSelect;
+	int what = iWhat;
 
 	gcCore::PickGround *pPick = (gcCore::PickGround *)pData;
 

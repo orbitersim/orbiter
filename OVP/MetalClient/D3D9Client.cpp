@@ -103,6 +103,8 @@ std::set<Brush *> g_brushes;
 
 extern list<gcGUIApp *> g_gcGUIAppList;
 
+ORBITER_MODULE_INFO("Graphics engines", "Metal graphics client: a render engine for Orbiter on macOS, based on the D3D9 client.");
+
 
 static D3DCOLOR SplashColor(DWORD bgr)
 {
@@ -358,7 +360,7 @@ bool D3D9Client::clbkInitialise()
 
 	//Create the Launchpad video tab interface
 	oapiWriteLog("[D3D9] Initialize VideoTab...");
-	vtab = new VideoTab(this, ModuleInstance(), OrbiterInstance(), LaunchpadVideoTab());
+	vtab = new VideoTab(this);
 	return vtab->Initialise();
 }
 
@@ -1161,7 +1163,6 @@ void D3D9Client::clbkRenderScene()
 	if (bFailed) return;
 	if (!bRunning) return;
 
-	if (pWM) pWM->Animate();
 
 	if (Config->PresentLocation == 1) PresentScene();
 
@@ -1637,7 +1638,6 @@ LRESULT D3D9Client::RenderWndProc (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM l
 		// Obsolete: since moving env/cam stuff in pre-scene
 	}
 
-	if (pWM) if (pWM->MainWindowProc(hWnd, uMsg, wParam, lParam)) return 0;
 
 
 	switch (uMsg)
@@ -1822,12 +1822,6 @@ LRESULT D3D9Client::RenderWndProc (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM l
 // ==============================================================
 // Message handler for Launchpad "video" tab
 
-INT_PTR D3D9Client::LaunchpadVideoWndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
-{
-	_TRACE;
-	if (vtab) return vtab->WndProc(hWnd, uMsg, wParam, lParam);
-	else return false;
-}
 
 // =======================================================================
 
@@ -2951,3 +2945,8 @@ VisObject::~VisObject ()
 {
 }
 
+
+void D3D9Client::clbkLaunchpadVideoTab()
+{
+	if (vtab) vtab->Draw();
+}

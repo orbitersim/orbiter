@@ -1,8 +1,7 @@
 
 #include <list>
 #include <vector>
-#include <windows.h>
-#include <windowsx.h>
+#include <string>
 #include "OrbiterAPI.h"
 #include "VesselAPI.h"
 #include "ModuleAPI.h"
@@ -14,7 +13,7 @@
 
 #pragma once
 
-#define IDC_CALLBACK	3000
+#define IDC_DATAVIEW	1002
 #define IDC_LIGHTNESS	2000
 #define IDC_BRIGHTNESS	2001
 #define IDC_GAMMA		2002
@@ -110,7 +109,7 @@ public:
 				ToolKit(HINSTANCE hDLL);
 				~ToolKit();
 
-	bool		SaveFile(OPENFILENAMEA &SaveImage);
+	bool		SaveFile(string &path);
 	void		Export();
 	void		ExportElev();
 	void		OpenImage(Layer::LayerType lr);
@@ -119,7 +118,12 @@ public:
 	bool		Initialize();
 	bool		IsLayerValid(Layer::LayerType lr);
 	void		SetupPlanet(OBJHANDLE hPln);
-	BOOL		DlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam);
+	void		OnPropertyEvent(HPROP hEntry, WORD id, gcPropertyTree::Event ev);
+	void		DrawSelectionOptions();
+	void		DrawImportOptions();
+	void		DrawProperties();
+	void		DrawBakeProgress();
+	bool		IsBaking() const { return bake.active; }
 
 				// From gcGUIApp
 	void		clbkShutdown();
@@ -157,17 +161,14 @@ private:
 	void		AutoSelectCorners();
 	void		BakeImport();
 	void		StopImport();
-	void		BakeParents(SURFHANDLE hOvrl, SURFHANDLE hTemp, int flags, list<QTree *> parents, int levels);
+	bool		BakeStep();
+	void		BakeNextPhase();
+	void		BakeFinish();
 	void		MakeProgress();
 
 
 	sSelection			selection;
 	sSelection			oldsel;
-	OPENFILENAMEA		SaveImage;
-	OPENFILENAMEA		SaveDDS;
-	OPENFILENAMEA		SaveElevation;
-	char				SaveFileName[MAX_PATH];
-	char				SaveFileTitle[MAX_PATH];
 
 	gcCore::SystemSpecs	sp;
 	Position			points[4];
@@ -200,20 +201,38 @@ private:
 
 	
 
-	HWND				hProgDlg;
+	struct BakePhase {
+		int flags;
+		SURFHANDLE hOvrl;
+		DWORD tempfmt;
+		string title;
+	};
 
-	HWND				hMainDlg;
-	HWND				hCtrlDlg;
-	HWND				hDataDlg;
-	HWND				hImpoDlg;
-	HWND				hAppMainWnd;
+	struct BakeState {
+		bool active;
+		vector<BakePhase> phases;
+		size_t phase;
+		SURFHANDLE hTemp;
+		bool top;
+		size_t index;
+		int levels;
+		list<QTree *> work;
+		list<QTree *>::iterator it;
+		list<QTree *> next;
+		int nTiles;
+	} bake;
+
+	ImGuiDialog			*pBakeDlg;
+
+	bool				bAutoHighlight;
+	bool				bDispSel;
+	int					iSelect;
+	int					iWhat;
 
 	HNODE				hRootNode;
-	HNODE				hMainNode;
 	HNODE				hCtrlNode;
 	HNODE				hDataNode;
 	HNODE				hImpoNode;
-	HNODE				hExpoNode;
 
 	DWORD				dwCmd;
 	bool				bGo;

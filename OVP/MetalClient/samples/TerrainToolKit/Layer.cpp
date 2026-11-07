@@ -4,17 +4,13 @@
 // ==================================================================
 
 
-#include <Windows.h>
-#include <windowsx.h>
 #include "OrbiterAPI.h"
 #include "VesselAPI.h"
 #include "ModuleAPI.h"
 #include "DrawAPI.h"
 #include "ToolKit.h"
-#include "resource.h"
 #include "gcPropertyTree.h"
 #include "QTree.h"
-#include <Commctrl.h>
 #include <vector>
 #include <list>
 
@@ -33,7 +29,8 @@ Layer::Layer(gcPropertyTree* pProp, gcCore2* pCore, SURFHANDLE hSr, LayerType ty
 	string lname = "";
 	bAlpha = true;
 
-	hIFil = hIWid = hIHei = hIFmt = hILog = hISec = hIRes = hIRef = hIWtr = NULL;
+	hIFil = hIWid = hIHei = hIFmt = hILog = hISec = hIRes = hIRef = hITrs = hIWtr = NULL;
+	hSecGfx = hSecClr = NULL;
 	hGLig = hGBri = hGGam = hBRed = hBGrn = hBBlu = NULL;
 
 	switch (type) {
@@ -55,11 +52,11 @@ Layer::Layer(gcPropertyTree* pProp, gcCore2* pCore, SURFHANDLE hSr, LayerType ty
 	
 	hISec = pProp->SubSection(lname);
 	hIFil = pProp->AddEntry("Filename", hISec);
-	hILog = pProp->AddEntry("Log Level", hISec);
+	hILog = pProp->AddEntry("Log level", hISec);
 
 	if (type == LayerType::ELEVATION) {
-		hIRes = pProp->AddEditControl("Elev Scale", IDC_LAYER, hISec, "1.00", this);
-		hIRef = pProp->AddEditControl("Elev Ref", IDC_LAYER, hISec, "0.00", this);
+		hIRes = pProp->AddEditControl("Elev scale", IDC_LAYER, hISec, "1.00", this);
+		hIRef = pProp->AddEditControl("Elev ref", IDC_LAYER, hISec, "0.00", this);
 	}
 
 	if (name.find(".raw") == string::npos) {
@@ -80,29 +77,29 @@ Layer::Layer(gcPropertyTree* pProp, gcCore2* pCore, SURFHANDLE hSr, LayerType ty
 
 	if (type == LayerType::NIGHT) 
 	{
-		hIWtr = pProp->AddComboBox("Has water mask ?", IDC_LAYER, hISec, this);
+		hIWtr = pProp->AddComboBox("Has water mask?", IDC_LAYER, hISec, this);
 		pProp->AddComboBoxItem(hIWtr, "No");
 		pProp->AddComboBoxItem(hIWtr, "Yes");
-		pProp->AddComboBoxItem(hIWtr, "No - All Land");
+		pProp->AddComboBoxItem(hIWtr, "No - all land");
 		pProp->SetComboBoxSelection(hIWtr, 1);
 	}
 
 	if (type == LayerType::TEXTURE || type == LayerType::NIGHT)
 	{
-		hITrs = pProp->AddComboBox("Enable Transparency", IDC_LAYER, hISec, this);
+		hITrs = pProp->AddComboBox("Enable transparency", IDC_LAYER, hISec, this);
 		pProp->AddComboBoxItem(hITrs, "No");
 		pProp->AddComboBoxItem(hITrs, "Yes");
 		pProp->SetComboBoxSelection(hITrs, 0);
 
 		// ---------------------------------------------------
-		hSecGfx = pProp->SubSection("Graphics Adjustments", hISec);
+		hSecGfx = pProp->SubSection("Graphics adjustments", hISec);
 		// ---------------------------------------------------
 		hGLig = pProp->AddSlider("Lightness", IDC_LIGHTNESS, hSecGfx);
 		hGBri = pProp->AddSlider("Brightness", IDC_BRIGHTNESS, hSecGfx);
 		hGGam = pProp->AddSlider("Gamma", IDC_GAMMA, hSecGfx);
 
 		// ---------------------------------------------------
-		hSecClr = pProp->SubSection("Color Balance", hSecGfx);
+		hSecClr = pProp->SubSection("Color balance", hSecGfx);
 		// ---------------------------------------------------
 		hBRed = pProp->AddSlider("Red", IDC_RED, hSecClr);
 		hBGrn = pProp->AddSlider("Green", IDC_GREEN, hSecClr);
@@ -135,6 +132,7 @@ Layer::Layer(gcPropertyTree* pProp, gcCore2* pCore, SURFHANDLE hSr, LayerType ty
 Layer::~Layer()
 {
 	if (hSource) oapiReleaseTexture(hSource);
+	pProp->RemoveEntry(hISec);
 }
 
 
@@ -239,6 +237,5 @@ void Layer::UpdateProps()
 		}
 	}
 	else pProp->OpenEntry(hISec, false);
-	pProp->Update();
 }
 

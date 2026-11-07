@@ -13,7 +13,7 @@
 #include "D3D9Surface.h"
 #include "D3D9Catalog.h"
 #include "Mesh.h"
-#include "psapi.h"
+#include <mach/mach.h>
 #include "DebugControls.h"
 #include <sstream>
 #include <string>
@@ -45,11 +45,11 @@ void D3D9Client::Label(const char *format, ...)
 	va_list args;
 	va_start(args, format);
 			
-	_vsnprintf_s(buffer, 255, 255, format, args);
+	vsnprintf(buffer, sizeof(buffer), format, args);
 
 	va_end(args);
 
-	int len = lstrlen(buffer);
+	int len = int(strlen(buffer));
 	pItemsSkp->Text(20, LabelPos, buffer, len);
 	LabelPos += 22;
 }
@@ -98,9 +98,9 @@ void D3D9Client::RenderControlPanel()
 
 	LPDIRECT3DDEVICE9 dev = pDevice;
 
-	PROCESS_MEMORY_COUNTERS_EX memstats;
-	memstats.cb = sizeof(PROCESS_MEMORY_COUNTERS_EX);
-	GetProcessMemoryInfo(GetCurrentProcess(), (PPROCESS_MEMORY_COUNTERS)&memstats, sizeof(memstats));
+	task_vm_info_data_t vminfo = {};
+	mach_msg_type_number_t vmcount = TASK_VM_INFO_COUNT;
+	if (task_info(mach_task_self(), TASK_VM_INFO, (task_info_t)&vminfo, &vmcount) != KERN_SUCCESS) vminfo.phys_footprint = 0;
 
 
 	
@@ -158,7 +158,7 @@ void D3D9Client::RenderControlPanel()
 		}
 	}
 
-	Label("Application Size.....: %lu MB", memstats.PrivateUsage >> 20);
+	Label("Application Size.....: %llu MB", (unsigned long long)(vminfo.phys_footprint >> 20));
 	Label("Available video mem..: %u MB", dev->GetAvailableTextureMem()>>20);
 	Label("Surface Handles......: %lu", nSurf);
 	Label("SystemMem Surfaces...: %u (%u MB)", sysme_count, sysme_size>>20);

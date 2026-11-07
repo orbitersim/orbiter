@@ -4,17 +4,19 @@
 // ==================================================================
 
 
-#define STRICT 1
 #define ORBITER_MODULE
 
 #include "OrbiterAPI.h"
 #include "VesselAPI.h"
 #include "ModuleAPI.h"
 #include "DrawAPI.h"
-#include <windowsx.h>
+#include <utility>
 #include "gcCoreAPI.h"
 #include "Orbit.h"
 #include "Reference.h"
+
+ORBITER_MODULE_INFO("Miscellaneous",
+	"Orbit drawing in planetarium mode.\r\n\r\nRequires MetalClient.\r\n\r\nNO WARRANTY:\r\nTHE SOFTWARE IS PROVIDED \"AS IS\", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.");
 
 #define NTEMP 5
 
@@ -87,7 +89,7 @@ private:
 // Render HUD Wrapper
 // =================================================================================================
 //
-void __cdecl RenderOrbitClbk(oapi::Sketchpad *pSkp, void *pParam)
+void RenderOrbitClbk(oapi::Sketchpad *pSkp, void *pParam)
 {
 	((Orbits*)pParam)->clbkRender(pSkp);
 }
@@ -567,13 +569,6 @@ void Orbits::DrawOrbit(Sketchpad *pSkp2, COrbit *pOrb, OBJHANDLE hRef, oapi::FVE
 
 // =================================================================================================
 //
-inline void Swap(long *a, long *b)
-{
-	long c = *a; *a = *b; *b = c;
-}
-
-// =================================================================================================
-//
 void Orbits::Label(Sketchpad *pSkp2, IVECTOR2 *pt, VECTOR3 &plnDir, const char *label)
 {
 	int w = 95;
@@ -592,14 +587,14 @@ void Orbits::Label(Sketchpad *pSkp2, IVECTOR2 *pt, VECTOR3 &plnDir, const char *
 
 	// Horizontal Mirroring
 	if (sd.x<0) {
-		Swap(&src.left, &src.right);
+		std::swap(src.left, src.right);
 		xo = -w;
 		tx = -w + 10;
 	}
 
 	// Vertical Mirroring
 	if (sd.y<0) {
-		Swap(&src.top, &src.bottom);
+		std::swap(src.top, src.bottom);
 		yo = -h - 5;
 		ty = -h + 5;
 	}
