@@ -118,6 +118,131 @@ void UpdateCursor(BackendData *bd)
 	}
 }
 
+struct ViewportData {
+	HWND hWnd = nullptr;
+	bool owned = false;
+};
+
+LRESULT ViewportWndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
+
+bool ViewportsActive()
+{
+	return (ImGui::GetIO().ConfigFlags & ImGuiConfigFlags_ViewportsEnable) != 0;
+}
+
+HWND ViewportHwnd(ImGuiViewport *vp)
+{
+	ViewportData *vd = (ViewportData *)vp->PlatformUserData;
+	return vd ? vd->hWnd : (HWND)vp->PlatformHandle;
+}
+
+void CreateViewportWindow(ImGuiViewport *vp)
+{
+	BackendData *bd = Data();
+	ViewportData *vd = IM_NEW(ViewportData)();
+	oplat::WindowDesc d;
+	d.title = "Orbiter";
+	d.width = (int)vp->Size.x;
+	d.height = (int)vp->Size.y;
+	d.borderless = true;
+	d.resizable = false;
+	d.visible = false;
+	d.metal = false;
+	d.proc = ViewportWndProc;
+	vd->hWnd = oplat::OpenWindow(d);
+	vd->owned = true;
+	oplat::SetClientScreenRect(vd->hWnd, (int)vp->Pos.x, (int)vp->Pos.y, (int)vp->Size.x, (int)vp->Size.y);
+	if (bd && bd->hWnd) oplat::AttachChildWindow(bd->hWnd, vd->hWnd);
+	vp->PlatformUserData = vd;
+	vp->PlatformHandle = vd->hWnd;
+	vp->PlatformHandleRaw = oplat::NativeWindow(vd->hWnd);
+}
+
+void DestroyViewportWindow(ImGuiViewport *vp)
+{
+	if (ViewportData *vd = (ViewportData *)vp->PlatformUserData) {
+		if (vd->owned && vd->hWnd) DestroyWindow(vd->hWnd);
+		IM_DELETE(vd);
+	}
+	vp->PlatformUserData = vp->PlatformHandle = vp->PlatformHandleRaw = nullptr;
+}
+
+void ShowViewportWindow(ImGuiViewport *vp)
+{
+	HWND h = ViewportHwnd(vp);
+	if (vp->Flags & ImGuiViewportFlags_NoFocusOnAppearing) oplat::ShowWindowNoActivate(h);
+	else oplat::FocusWindow(h);
+}
+
+ImVec2 GetViewportPos(ImGuiViewport *vp)
+{
+	int x, y, w, h;
+	oplat::GetClientScreenRect(ViewportHwnd(vp), &x, &y, &w, &h);
+	return ImVec2((float)x, (float)y);
+}
+
+void SetViewportPos(ImGuiViewport *vp, ImVec2 pos)
+{
+	HWND hw = ViewportHwnd(vp);
+	int x, y, w, h;
+	oplat::GetClientScreenRect(hw, &x, &y, &w, &h);
+	oplat::SetClientScreenRect(hw, (int)pos.x, (int)pos.y, w, h);
+}
+
+ImVec2 GetViewportSize(ImGuiViewport *vp)
+{
+	int x, y, w, h;
+	oplat::GetClientScreenRect(ViewportHwnd(vp), &x, &y, &w, &h);
+	return ImVec2((float)w, (float)h);
+}
+
+void SetViewportSize(ImGuiViewport *vp, ImVec2 size)
+{
+	HWND hw = ViewportHwnd(vp);
+	int x, y, w, h;
+	oplat::GetClientScreenRect(hw, &x, &y, &w, &h);
+	oplat::SetClientScreenRect(hw, x, y, (int)size.x, (int)size.y);
+}
+
+void SetViewportFocus(ImGuiViewport *vp) { oplat::FocusWindow(ViewportHwnd(vp)); }
+bool GetViewportFocus(ImGuiViewport *vp) { return oplat::IsWindowFocused(ViewportHwnd(vp)); }
+bool GetViewportMinimized(ImGuiViewport *vp) { return oplat::IsWindowMinimized(ViewportHwnd(vp)); }
+void SetViewportTitle(ImGuiViewport *vp, const char *title) { SetWindowTextA(ViewportHwnd(vp), title); }
+void SetViewportAlpha(ImGuiViewport *vp, float alpha) { oplat::SetWindowAlpha(ViewportHwnd(vp), alpha); }
+
+void UpdateMonitors()
+{
+	ImGuiPlatformIO &pio = ImGui::GetPlatformIO();
+	pio.Monitors.resize(0);
+	for (const oplat::Monitor &m : oplat::Monitors()) {
+		ImGuiPlatformMonitor pm;
+		pm.MainPos = ImVec2((float)m.x, (float)m.y);
+		pm.MainSize = ImVec2((float)m.w, (float)m.h);
+		pm.WorkPos = ImVec2((float)m.workX, (float)m.workY);
+		pm.WorkSize = ImVec2((float)m.workW, (float)m.workH);
+		pm.DpiScale = m.scale;
+		pio.Monitors.push_back(pm);
+	}
+}
+
+ImVec2 MousePos(HWND hWnd, LPARAM lParam)
+{
+	ImVec2 p((float)(short)LOWORD(lParam), (float)(short)HIWORD(lParam));
+	if (ViewportsActive()) {
+		int x, y, w, h;
+		oplat::GetClientScreenRect(hWnd, &x, &y, &w, &h);
+		p.x += (float)x;
+		p.y += (float)y;
+	}
+	return p;
+}
+
+bool OwnsWindow(BackendData *bd, HWND hWnd)
+{
+	if (bd->hWnd == hWnd) return true;
+	return ImGui::FindViewportByPlatformHandle(hWnd) != nullptr;
+}
+
 const char *GetClipboard(ImGuiContext *)
 {
 	static char buf[65536];
@@ -140,10 +265,26 @@ bool ImGui_ImplOrbiter_Init(HWND hWnd)
 	bd->time = std::chrono::steady_clock::now();
 	io.BackendPlatformUserData = bd;
 	io.BackendPlatformName = "imgui_impl_orbiter";
-	io.BackendFlags |= ImGuiBackendFlags_HasMouseCursors;
+	io.BackendFlags |= ImGuiBackendFlags_HasMouseCursors | ImGuiBackendFlags_PlatformHasViewports;
 	ImGuiPlatformIO &pio = ImGui::GetPlatformIO();
 	pio.Platform_GetClipboardTextFn = GetClipboard;
 	pio.Platform_SetClipboardTextFn = SetClipboard;
+	pio.Platform_CreateWindow = CreateViewportWindow;
+	pio.Platform_DestroyWindow = DestroyViewportWindow;
+	pio.Platform_ShowWindow = ShowViewportWindow;
+	pio.Platform_SetWindowPos = SetViewportPos;
+	pio.Platform_GetWindowPos = GetViewportPos;
+	pio.Platform_SetWindowSize = SetViewportSize;
+	pio.Platform_GetWindowSize = GetViewportSize;
+	pio.Platform_SetWindowFocus = SetViewportFocus;
+	pio.Platform_GetWindowFocus = GetViewportFocus;
+	pio.Platform_GetWindowMinimized = GetViewportMinimized;
+	pio.Platform_SetWindowTitle = SetViewportTitle;
+	pio.Platform_SetWindowAlpha = SetViewportAlpha;
+	ImGuiViewport *main = ImGui::GetMainViewport();
+	main->PlatformHandle = hWnd;
+	main->PlatformHandleRaw = oplat::NativeWindow(hWnd);
+	UpdateMonitors();
 	return true;
 }
 
@@ -154,7 +295,8 @@ void ImGui_ImplOrbiter_Shutdown()
 	ImGuiIO &io = ImGui::GetIO();
 	io.BackendPlatformName = nullptr;
 	io.BackendPlatformUserData = nullptr;
-	io.BackendFlags &= ~ImGuiBackendFlags_HasMouseCursors;
+	ImGui::DestroyPlatformWindows();
+	io.BackendFlags &= ~(ImGuiBackendFlags_HasMouseCursors | ImGuiBackendFlags_PlatformHasViewports);
 	IM_DELETE(bd);
 }
 
@@ -171,29 +313,44 @@ void ImGui_ImplOrbiter_NewFrame()
 	float dt = std::chrono::duration<float>(now - bd->time).count();
 	io.DeltaTime = dt > 0.0f ? dt : 1.0f / 60.0f;
 	bd->time = now;
+	UpdateMonitors();
+	if (ViewportsActive()) {
+		bool focused = oplat::IsWindowFocused(bd->hWnd);
+		for (ImGuiViewport *vp : ImGui::GetPlatformIO().Viewports)
+			if (vp->PlatformUserData && oplat::IsWindowFocused(ViewportHwnd(vp))) focused = true;
+		if (focused && !bd->mouseButtonsDown) {
+			int x, y;
+			oplat::CursorScreenPos(&x, &y);
+			io.AddMousePosEvent((float)x, (float)y);
+		}
+	}
 	UpdateCursor(bd);
 }
 
 LRESULT ImGui_ImplOrbiter_WndProcHandler(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
 	BackendData *bd = Data();
-	if (!bd || bd->hWnd != hWnd) return 0;
+	if (!bd || !OwnsWindow(bd, hWnd)) return 0;
 	ImGuiIO &io = ImGui::GetIO();
 
 	switch (msg) {
 	case WM_MOUSEMOVE:
-		io.AddMouseSourceEvent(ImGuiMouseSource_Mouse);
-		io.AddMousePosEvent((float)(short)LOWORD(lParam), (float)(short)HIWORD(lParam));
+		{
+			io.AddMouseSourceEvent(ImGuiMouseSource_Mouse);
+			ImVec2 p = MousePos(hWnd, lParam);
+			io.AddMousePosEvent(p.x, p.y);
+		}
 		return 0;
 	case WM_MOUSELEAVE:
-		io.AddMousePosEvent(-FLT_MAX, -FLT_MAX);
+		if (!ViewportsActive()) io.AddMousePosEvent(-FLT_MAX, -FLT_MAX);
 		return 0;
 	case WM_LBUTTONDOWN: case WM_LBUTTONDBLCLK:
 	case WM_RBUTTONDOWN: case WM_RBUTTONDBLCLK:
 	case WM_MBUTTONDOWN: case WM_MBUTTONDBLCLK: {
 		int b = (msg == WM_LBUTTONDOWN || msg == WM_LBUTTONDBLCLK) ? 0 : (msg == WM_RBUTTONDOWN || msg == WM_RBUTTONDBLCLK) ? 1 : 2;
 		bd->mouseButtonsDown |= 1 << b;
-		io.AddMousePosEvent((float)(short)LOWORD(lParam), (float)(short)HIWORD(lParam));
+		ImVec2 p = MousePos(hWnd, lParam);
+		io.AddMousePosEvent(p.x, p.y);
 		io.AddMouseButtonEvent(b, true);
 		return 0;
 	}
@@ -237,4 +394,27 @@ LRESULT ImGui_ImplOrbiter_WndProcHandler(HWND hWnd, UINT msg, WPARAM wParam, LPA
 		return 0;
 	}
 	return 0;
+}
+
+namespace {
+
+LRESULT ViewportWndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
+{
+	ImGui_ImplOrbiter_WndProcHandler(hWnd, msg, wParam, lParam);
+	if (ImGuiViewport *vp = ImGui::GetCurrentContext() ? ImGui::FindViewportByPlatformHandle(hWnd) : nullptr) {
+		switch (msg) {
+		case WM_CLOSE:
+			vp->PlatformRequestClose = true;
+			return 0;
+		case WM_MOVE:
+			vp->PlatformRequestMove = true;
+			break;
+		case WM_SIZE:
+			vp->PlatformRequestResize = true;
+			break;
+		}
+	}
+	return DefWindowProc(hWnd, msg, wParam, lParam);
+}
+
 }

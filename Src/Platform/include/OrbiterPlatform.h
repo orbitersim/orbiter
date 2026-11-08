@@ -35,6 +35,7 @@ struct DisplayMode {
 
 __attribute__((visibility("default"))) void Init();
 __attribute__((visibility("default"))) HWND OpenWindow(const WindowDesc &desc);
+__attribute__((visibility("default"))) HWND OpenBackdropWindow();
 __attribute__((visibility("default"))) void SetWindowProc(HWND hWnd, WNDPROC proc);
 __attribute__((visibility("default"))) WNDPROC GetWindowProc(HWND hWnd);
 __attribute__((visibility("default"))) void SetWindowUserData(HWND hWnd, void *data);
@@ -44,6 +45,22 @@ __attribute__((visibility("default"))) float GetBackingScale(HWND hWnd);
 __attribute__((visibility("default"))) void GetDrawableSize(HWND hWnd, int *w, int *h);
 __attribute__((visibility("default"))) void SetWindowClientSize(HWND hWnd, int w, int h);
 __attribute__((visibility("default"))) void SetWindowPosition(HWND hWnd, int x, int y);
+struct Monitor {
+	int x, y, w, h;
+	int workX, workY, workW, workH;
+	float scale;
+};
+__attribute__((visibility("default"))) void *NativeWindow(HWND hWnd);
+__attribute__((visibility("default"))) void GetClientScreenRect(HWND hWnd, int *x, int *y, int *w, int *h);
+__attribute__((visibility("default"))) void SetClientScreenRect(HWND hWnd, int x, int y, int w, int h);
+__attribute__((visibility("default"))) void ShowWindowNoActivate(HWND hWnd);
+__attribute__((visibility("default"))) void FocusWindow(HWND hWnd);
+__attribute__((visibility("default"))) bool IsWindowFocused(HWND hWnd);
+__attribute__((visibility("default"))) bool IsWindowMinimized(HWND hWnd);
+__attribute__((visibility("default"))) void SetWindowAlpha(HWND hWnd, float alpha);
+__attribute__((visibility("default"))) void AttachChildWindow(HWND parent, HWND child);
+__attribute__((visibility("default"))) std::vector<Monitor> Monitors();
+__attribute__((visibility("default"))) void CursorScreenPos(int *x, int *y);
 __attribute__((visibility("default"))) bool IsFullscreen(HWND hWnd);
 __attribute__((visibility("default"))) void SetFullscreen(HWND hWnd, bool fullscreen);
 __attribute__((visibility("default"))) void SetMinClientSize(HWND hWnd, int w, int h);

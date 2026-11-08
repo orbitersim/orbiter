@@ -2485,6 +2485,13 @@ void D3D9Client::clbkImGuiRenderDrawData()
 	ImGui::Render();
 	ClientImGuiRender(ImGui::GetDrawData(), pBackBuffer);
 
+	ImGuiIO& io = ImGui::GetIO();
+	if (io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable)
+	{
+		ImGui::UpdatePlatformWindows();
+		ImGui::RenderPlatformWindowsDefault();
+	}
+
 	// Release textures that were protected for ImGui usage during the frame
 	for(auto &surf: ImTextures) {
 		clbkReleaseSurface(surf);

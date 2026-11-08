@@ -147,6 +147,14 @@ void ApplyCursorVisibility()
 
 }
 
+@interface OPWindow : NSWindow
+@property (nonatomic, assign) BOOL keyable;
+@end
+
+@implementation OPWindow
+- (BOOL)canBecomeKeyWindow { return self.keyable || [super canBecomeKeyWindow]; }
+@end
+
 @interface OPView : NSView <NSTextInputClient>
 @property (nonatomic, assign) HWND owner;
 @property (nonatomic, assign) BOOL metal;
@@ -464,7 +472,8 @@ HWND OpenWindow(const WindowDesc &d)
 		NSRect vis = screen.visibleFrame;
 		CGFloat s = screen.backingScaleFactor;
 		NSRect content = NSMakeRect(0, 0, d.width / s, d.height / s);
-		NSWindow *w = [[NSWindow alloc] initWithContentRect:content styleMask:style backing:NSBackingStoreBuffered defer:NO];
+		OPWindow *w = [[OPWindow alloc] initWithContentRect:content styleMask:style backing:NSBackingStoreBuffered defer:NO];
+		w.keyable = d.borderless;
 		w.releasedWhenClosed = NO;
 		w.title = [NSString stringWithUTF8String:d.title.c_str()];
 		w.acceptsMouseMovedEvents = YES;
@@ -493,9 +502,29 @@ HWND OpenWindow(const WindowDesc &d)
 		[v updateDrawableSize];
 		g_windows.insert(h);
 		if (d.visible) [w makeKeyAndOrderFront:nil];
+		if (d.borderless) w.collectionBehavior = NSWindowCollectionBehaviorFullScreenAuxiliary;
 		if (d.fullscreen) SetFullscreen(h, true);
 	}
 	Dispatch(h, WM_CREATE, 0, 0);
+	return h;
+}
+
+HWND OpenBackdropWindow()
+{
+	Init();
+	HWND h = new HWND__;
+	@autoreleasepool {
+		NSScreen *screen = NSScreen.mainScreen;
+		NSWindow *w = [[NSWindow alloc] initWithContentRect:screen.frame styleMask:NSWindowStyleMaskBorderless backing:NSBackingStoreBuffered defer:NO];
+		w.releasedWhenClosed = NO;
+		w.backgroundColor = NSColor.blackColor;
+		w.ignoresMouseEvents = YES;
+		w.collectionBehavior = NSWindowCollectionBehaviorStationary | NSWindowCollectionBehaviorIgnoresCycle;
+		[w setFrame:screen.frame display:NO];
+		[w orderFront:nil];
+		h->window = w;
+		g_windows.insert(h);
+	}
 	return h;
 }
 
@@ -537,6 +566,98 @@ void SetWindowPosition(HWND hWnd, int x, int y)
 	if (!hWnd || !hWnd->window) return;
 	float s = Scale(hWnd);
 	[hWnd->window setFrameTopLeftPoint:NSMakePoint(x / s, MainScreenHeight() - y / s)];
+}
+
+void *NativeWindow(HWND hWnd)
+{
+	return hWnd && hWnd->window ? (__bridge void *)hWnd->window : nullptr;
+}
+
+static float DesktopScale()
+{
+	NSScreen *s = [NSScreen screens].firstObject;
+	return s ? (float)s.backingScaleFactor : 1.0f;
+}
+
+void GetClientScreenRect(HWND hWnd, int *x, int *y, int *w, int *h)
+{
+	*x = *y = *w = *h = 0;
+	if (!hWnd || !hWnd->window) return;
+	float s = DesktopScale();
+	NSRect c = [hWnd->window contentRectForFrameRect:hWnd->window.frame];
+	*x = (int)lround(c.origin.x * s);
+	*y = (int)lround((MainScreenHeight() - c.origin.y - c.size.height) * s);
+	*w = (int)lround(c.size.width * s);
+	*h = (int)lround(c.size.height * s);
+}
+
+void SetClientScreenRect(HWND hWnd, int x, int y, int w, int h)
+{
+	if (!hWnd || !hWnd->window) return;
+	float s = DesktopScale();
+	NSRect c = NSMakeRect(x / s, MainScreenHeight() - (y + h) / s, w / s, h / s);
+	[hWnd->window setFrame:[hWnd->window frameRectForContentRect:c] display:YES];
+}
+
+void ShowWindowNoActivate(HWND hWnd)
+{
+	if (hWnd && hWnd->window) [hWnd->window orderFront:nil];
+}
+
+void FocusWindow(HWND hWnd)
+{
+	if (hWnd && hWnd->window) [hWnd->window makeKeyAndOrderFront:nil];
+}
+
+bool IsWindowFocused(HWND hWnd)
+{
+	return hWnd && hWnd->window && hWnd->window.isKeyWindow;
+}
+
+bool IsWindowMinimized(HWND hWnd)
+{
+	return hWnd && hWnd->window && hWnd->window.miniaturized;
+}
+
+void SetWindowAlpha(HWND hWnd, float alpha)
+{
+	if (hWnd && hWnd->window) hWnd->window.alphaValue = alpha;
+}
+
+void AttachChildWindow(HWND parent, HWND child)
+{
+	if (!parent || !parent->window || !child || !child->window) return;
+	[parent->window addChildWindow:child->window ordered:NSWindowAbove];
+}
+
+std::vector<Monitor> Monitors()
+{
+	std::vector<Monitor> out;
+	float s = DesktopScale();
+	double top = MainScreenHeight();
+	for (NSScreen *scr in [NSScreen screens]) {
+		NSRect f = scr.frame, v = scr.visibleFrame;
+		Monitor m;
+		m.x = (int)lround(f.origin.x * s);
+		m.y = (int)lround((top - f.origin.y - f.size.height) * s);
+		m.w = (int)lround(f.size.width * s);
+		m.h = (int)lround(f.size.height * s);
+		m.workX = (int)lround(v.origin.x * s);
+		m.workY = (int)lround((top - v.origin.y - v.size.height) * s);
+		m.workW = (int)lround(v.size.width * s);
+		m.workH = (int)lround(v.size.height * s);
+		m.scale = (float)scr.backingScaleFactor / s;
+		out.push_back(m);
+	}
+	return out;
+}
+
+void CursorScreenPos(int *x, int *y)
+{
+	float s = DesktopScale();
+	NSPoint p = [NSEvent mouseLocation];
+	*x = (int)lround(p.x * s);
+	*y = (int)lround((MainScreenHeight() - p.y) * s);
 }
 
 bool IsFullscreen(HWND hWnd) { return hWnd && hWnd->fullscreen; }
