@@ -154,7 +154,8 @@ void DialogManager::InitImGui()
 	if(!gc) return;
 
 	IMGUI_CHECKVERSION();
-	ImGui::CreateContext();
+	m_imguiCtx = ImGui::CreateContext();
+	ImGui::SetCurrentContext(m_imguiCtx);
 	ImPlot::CreateContext();
 	ImGuiIO& io = ImGui::GetIO();
 	if (!pOrbiter->IsFullscreen())
@@ -184,18 +185,21 @@ void DialogManager::InitImGui()
 
 void DialogManager::ShutdownImGui()
 {
-	if(!gc) return;
+	if(!gc || !m_imguiCtx) return;
 
+	ImGui::SetCurrentContext(m_imguiCtx);
 	gc->clbkImGuiShutdown();
 	ImGui_ImplOrbiter_Shutdown();
 	ImPlot::DestroyContext();
-	ImGui::DestroyContext();
+	ImGui::DestroyContext(m_imguiCtx);
+	m_imguiCtx = nullptr;
 }
 
 void DialogManager::ImGuiNewFrame()
 {
-	if(!gc) return;
+	if(!gc || !m_imguiCtx) return;
 
+	ImGui::SetCurrentContext(m_imguiCtx);
 	gc->clbkImGuiNewFrame();
 	ImGui_ImplOrbiter_NewFrame();
 	ImGui::NewFrame();

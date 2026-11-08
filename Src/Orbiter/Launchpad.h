@@ -124,6 +124,7 @@ namespace orbiter {
 		ExtraTab* pExtra;
 		bool m_bVisible;
 		bool m_bLaunchEnabled;
+		std::string m_pendingLaunch;
 		bool m_bWait;
 		float m_waitProgress;
 		std::list<std::unique_ptr<ExtraItem>> m_extraRoot;

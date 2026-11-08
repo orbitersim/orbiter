@@ -93,6 +93,7 @@ public:
 	}
 
 	void ImGuiNewFrame();
+	struct ImGuiContext *m_imguiCtx = nullptr;
 	ImFont *GetFont(ImGuiFont f);
 
 	void SetMainColor(COLORREF col);

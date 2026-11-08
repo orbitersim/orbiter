@@ -258,8 +258,7 @@ void orbiter::LaunchpadDialog::UpdateConfig ()
 void orbiter::LaunchpadDialog::LaunchScenario (const char *scenario)
 {
 	if (!m_bLaunchEnabled || !scenario || !scenario[0]) return;
-	UpdateConfig ();
-	pApp->Launch (scenario);
+	m_pendingLaunch = scenario;
 }
 
 void orbiter::LaunchpadDialog::RequestExit ()
@@ -479,6 +478,13 @@ void orbiter::LaunchpadDialog::RenderFrame ()
 	ImGui::SetCurrentContext (prev == m_ctx ? m_ctx : prev);
 
 	if (!m_bWait) CheckDemoTimer ();
+
+	if (!m_pendingLaunch.empty ()) {
+		std::string scn;
+		scn.swap (m_pendingLaunch);
+		UpdateConfig ();
+		pApp->Launch (scn.c_str ());
+	}
 }
 
 void orbiter::LaunchpadDialog::DrawWaitPage ()
