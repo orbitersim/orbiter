@@ -214,6 +214,73 @@ const Member *Layout::Find(const char *name) const
 	return nullptr;
 }
 
+static bool IsIdent(char c) { return isalnum((unsigned char)c) || c == '_'; }
+
+static size_t SkipSpaceBack(const std::string &t, size_t i)
+{
+	while (i > 0 && isspace((unsigned char)t[i - 1])) i--;
+	return i;
+}
+
+static size_t SkipSpace(const std::string &t, size_t i)
+{
+	while (i < t.size() && isspace((unsigned char)t[i])) i++;
+	return i;
+}
+
+static void ScanTextures(const std::string &t, ShaderSource &src)
+{
+	for (size_t p = t.find("[["); p != std::string::npos; p = t.find("[[", p + 2)) {
+		size_t q = SkipSpace(t, p + 2);
+		if (t.compare(q, 8, "texture(") != 0) continue;
+		q = SkipSpace(t, q + 8);
+		size_t d = q;
+		while (q < t.size() && isdigit((unsigned char)t[q])) q++;
+		if (q == d) continue;
+		int slot = std::stoi(t.substr(d, q - d));
+		size_t e = SkipSpaceBack(t, p), b = e;
+		while (b > 0 && IsIdent(t[b - 1])) b--;
+		if (b == e) continue;
+		std::string name = t.substr(b, e - b);
+		size_t g = SkipSpaceBack(t, b);
+		if (g == 0 || t[g - 1] != '>') continue;
+		size_t lt = t.rfind('<', g - 1);
+		if (lt == std::string::npos) continue;
+		size_t ke = SkipSpaceBack(t, lt), kb = ke;
+		while (kb > 0 && IsIdent(t[kb - 1])) kb--;
+		std::string kind = t.substr(kb, ke - kb);
+		if (kind != "texture2d" && kind != "texture3d" && kind != "texturecube" && kind != "depth2d" &&
+			kind != "texture2d_array" && kind != "texture2d_ms" && kind != "depthcube") continue;
+		src.textureSlots[name] = slot;
+		src.textureTypes[name] = kind == "texture3d" ? 3 : (kind == "texturecube" || kind == "depthcube") ? 6 : 2;
+	}
+}
+
+static void ScanFunctions(const std::string &t, ShaderSource &src)
+{
+	static const std::regex cr("constant\\s+(\\w+)\\s*&\\s*\\w+\\s*\\[\\[\\s*buffer\\(\\s*0\\s*\\)\\s*\\]\\]");
+	for (const char *kw : {"vertex", "fragment"}) {
+		size_t n = strlen(kw);
+		for (size_t p = t.find(kw); p != std::string::npos; p = t.find(kw, p + n)) {
+			if ((p > 0 && IsIdent(t[p - 1])) || p + n >= t.size() || !isspace((unsigned char)t[p + n])) continue;
+			size_t q = SkipSpace(t, p + n);
+			while (q < t.size() && (IsIdent(t[q]) || t[q] == ':' || t[q] == '<' || t[q] == '>')) q++;
+			size_t nb = SkipSpace(t, q), ne = nb;
+			while (ne < t.size() && IsIdent(t[ne])) ne++;
+			if (ne == nb) continue;
+			size_t op = SkipSpace(t, ne);
+			if (op >= t.size() || t[op] != '(') continue;
+			size_t br = t.find('{', op);
+			if (br == std::string::npos) continue;
+			size_t cp = SkipSpaceBack(t, br);
+			if (cp == 0 || t[cp - 1] != ')') continue;
+			std::string params = t.substr(op + 1, cp - 1 - (op + 1));
+			std::smatch m;
+			if (std::regex_search(params, m, cr)) src.funcConst[t.substr(nb, ne - nb)] = m[1].str();
+		}
+	}
+}
+
 bool LoadShaderSource(const std::string &pathIn, ShaderSource &src, const D3DXMACRO *defines)
 {
 	std::string path = pathIn;
@@ -222,26 +289,24 @@ bool LoadShaderSource(const std::string &pathIn, ShaderSource &src, const D3DXMA
 	size_t slash = path.find_last_of('/');
 	if (dot != std::string::npos && (slash == std::string::npos || dot > slash)) path = path.substr(0, dot);
 	path += ".metal";
+	std::string key = path;
+	for (const D3DXMACRO *d = defines; d && d->Name; d++) key += std::string("|") + d->Name + "=" + (d->Definition ? d->Definition : "1");
+	static std::map<std::string, ShaderSource> cache;
+	auto hit = cache.find(key);
+	if (hit != cache.end()) {
+		src = hit->second;
+		return true;
+	}
+	src = ShaderSource();
 	src.path = path;
-	src.text.clear();
 	std::set<std::string> seen;
 	seen.insert(path);
 	if (!Preprocess(path, src.text, seen, 0)) return false;
 	ParseStructs(src.text, src.structs, defines);
 	std::string text = StripComments(src.text);
-	static const std::regex tr("(texture2d|texture3d|texturecube|depth2d|texture2d_array|texture2d_ms|depthcube)\\s*<[^>]*>\\s+(\\w+)\\s*\\[\\[\\s*texture\\(\\s*(\\d+)\\s*\\)\\s*\\]\\]");
-	for (auto it = std::sregex_iterator(text.begin(), text.end(), tr); it != std::sregex_iterator(); ++it) {
-		std::string kind = (*it)[1].str();
-		src.textureSlots[(*it)[2].str()] = std::stoi((*it)[3].str());
-		src.textureTypes[(*it)[2].str()] = kind == "texture3d" ? 3 : (kind == "texturecube" || kind == "depthcube") ? 6 : 2;
-	}
-	static const std::regex fr("(vertex|fragment)\\s+[\\w:<>]+\\s+(\\w+)\\s*\\(([^{]*)\\)\\s*\\{");
-	static const std::regex cr("constant\\s+(\\w+)\\s*&\\s*\\w+\\s*\\[\\[\\s*buffer\\(\\s*0\\s*\\)\\s*\\]\\]");
-	for (auto it = std::sregex_iterator(text.begin(), text.end(), fr); it != std::sregex_iterator(); ++it) {
-		std::string params = (*it)[3].str();
-		std::smatch m;
-		if (std::regex_search(params, m, cr)) src.funcConst[(*it)[2].str()] = m[1].str();
-	}
+	ScanTextures(text, src);
+	ScanFunctions(text, src);
+	cache[key] = src;
 	return true;
 }
 
