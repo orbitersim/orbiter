@@ -48,7 +48,6 @@ D3DXHANDLE D3D9Effect::eGeometry = 0;
 D3DXHANDLE D3D9Effect::ePlanetTile = 0;
 D3DXHANDLE D3D9Effect::eCloudTech = 0;
 D3DXHANDLE D3D9Effect::eCloudShadow = 0;
-D3DXHANDLE D3D9Effect::eSkyDomeTech = 0;	
 D3DXHANDLE D3D9Effect::eHazeTech = 0;
 
 // Particle effect texhniques
@@ -404,7 +403,6 @@ void D3D9Effect::D3D9TechInit(D3D9Client *_gc, LPDIRECT3DDEVICE9 _pDev, const ch
 	ePanelTechB	 = FX->GetTechniqueByName("PanelTechB");
 	eCloudTech   = FX->GetTechniqueByName("PlanetCloudTech");
 	eCloudShadow = FX->GetTechniqueByName("PlanetCloudShadowTech");
-	eSkyDomeTech = FX->GetTechniqueByName("SkyDomeTech");
 	eArrowTech   = FX->GetTechniqueByName("ArrowTech"); 
 	eAxisTech    = FX->GetTechniqueByName("AxisTech"); 
 	eSimpMesh	 = FX->GetTechniqueByName("SimplifiedTech");

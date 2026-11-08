@@ -103,7 +103,6 @@ public:
 	static D3DXHANDLE	ePlanetTile;
 	static D3DXHANDLE	eCloudTech;
 	static D3DXHANDLE	eCloudShadow;
-	static D3DXHANDLE	eSkyDomeTech;
 	static D3DXHANDLE	eDiffuseTech;
 	static D3DXHANDLE	eEmissiveTech;
 	static D3DXHANDLE	eHazeTech;
