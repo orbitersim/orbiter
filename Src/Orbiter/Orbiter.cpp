@@ -49,6 +49,11 @@
 
 #include "Tracy.hpp"
 
+// Prevent conflicts with KMOD_* from Keymap.h
+#define SDL_DISABLE_OLD_NAMES
+#include <SDL3/SDL.h>
+#include "Input/Controller.h"
+
 namespace fs = std::filesystem;
 
 using namespace std;
@@ -172,6 +177,9 @@ INT WINAPI WinMain (HINSTANCE hInstance, HINSTANCE, LPSTR strCmdLine, INT nCmdSh
 #ifdef _CRTDBG_MAP_ALLOC
 	_CrtSetDbgFlag(_CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF);
 #endif
+
+	SDL_Init(SDL_INIT_JOYSTICK);
+	InputController::GlobalInit();
 
 	// Verify working directory
 	char dir[1024];
@@ -842,12 +850,13 @@ HWND Orbiter::CreateRenderWindow (Config *pCfg, const char *scenario)
 		m_pConsole->EchoIntro();
 
 	// suppress throttle update on launch
+	/*
 	if (pDI->joyprop.bThrottle && pCfg->CfgJoystickPrm.bThrottleIgnore) {
 		DIJOYSTATE2 js;
 		if (pDI->PollJoystick(&js))
 			plZ4 = *(long*)(((BYTE*)&js) + pDI->joyprop.ThrottleOfs) >> 3;
 	}
-
+	*/
 	return hRenderWnd;
 }
 
@@ -2017,6 +2026,8 @@ HRESULT Orbiter::UserInput ()
 
 	for (int i = 0; i < 15; i++) ctrlKeyboard[i] = ctrlJoystick[i] = 0; // reset keyboard and joystick attitude requests
 
+	InputController::PollDevices();
+
 	// skip keyboard if dialogs are open
 	if ((g_input && g_input->IsActive()) ||
 	    (g_select && g_select->IsActive())) skipkbd = true;
@@ -2041,11 +2052,11 @@ HRESULT Orbiter::UserInput ()
 
 	// joystick input
 	DIJOYSTATE2 js;
-	if (pDI->PollJoystick (&js)) {
+//	if (pDI->PollJoystick (&js)) {
 		UserJoyInput_System (&js);                  // general joystick functions
 		if (bRunning) UserJoyInput_OnRunning (&js); // joystick vessel control functions
 		for (int i = 0; i < 15; i++) ctrlTotal[i] += ctrlJoystick[i]; // update thrust requests
-	}
+//	}
 
 	g_camera->UpdateMouse();
 
@@ -2370,10 +2381,14 @@ void Orbiter::KbdInputBuffered_OnRunning (char *kstate, uint8_t key)
 //-----------------------------------------------------------------------------
 void Orbiter::UserJoyInput_System (DIJOYSTATE2 *js)
 {
-	if (LOWORD (js->rgdwPOV[0]) != 0xFFFF) {
-		DWORD dir = js->rgdwPOV[0];
+	int x,y,z,Rz,hat,throttle,alt;
+	InputController::GetInputs(&x, &y, &Rz, &hat, &throttle, &alt);
+
+//	if (LOWORD (js->rgdwPOV[0]) != 0xFFFF) {
+	if (LOWORD (hat) != 0xFFFF) {
+		DWORD dir = hat;
 		if (g_camera->IsExternal()) {  // use the joystick's coolie hat to rotate external camera
-			if (js->rgbButtons[2]) { // shift instrument panel
+			if (alt) { // shift instrument panel
 				if      (dir <  5000 || dir > 31000) g_camera->Rotate (0,  td.SysDT);
 				else if (dir > 13000 && dir < 23000) g_camera->Rotate (0, -td.SysDT);
 				if      (dir >  4000 && dir < 14000) g_camera->Rotate (-td.SysDT, 0);
@@ -2385,7 +2400,7 @@ void Orbiter::UserJoyInput_System (DIJOYSTATE2 *js)
 				else if (dir > 22000 && dir < 32000) g_camera->AddPhi   (-td.SysDT);
 			}
 		} else { // internal view
-			if (js->rgbButtons[2]) { // shift instrument panel
+			if (alt) { // shift instrument panel
 				if      (dir <  5000 || dir > 31000) g_pane->ShiftPanel (0.0,  td.SysDT*pConfig->CfgLogicPrm.PanelScrollSpeed);
 				else if (dir > 13000 && dir < 23000) g_pane->ShiftPanel (0.0, -td.SysDT*pConfig->CfgLogicPrm.PanelScrollSpeed);
 				if      (dir >  4000 && dir < 14000) g_pane->ShiftPanel (-td.SysDT*pConfig->CfgLogicPrm.PanelScrollSpeed, 0.0);
@@ -2406,39 +2421,51 @@ void Orbiter::UserJoyInput_System (DIJOYSTATE2 *js)
 //-----------------------------------------------------------------------------
 void Orbiter::UserJoyInput_OnRunning (DIJOYSTATE2 *js)
 {
+	int x,y,z,Rz,hat,throttle,alt;
+	InputController::GetInputs(&x, &y, &Rz, &hat, &throttle, &alt);
+//	printf("x=%d y=%d Rz=%d hat=%d throttle=%d alt=%d\n", x, y, Rz, hat, throttle, alt);
+
 	if (bEnableAtt) {
-		if (js->lX) {
-			if (js->rgbButtons[2]) { // emulate rudder control
-				if (js->lX > 0) ctrlJoystick[THGROUP_ATT_YAWRIGHT] =   js->lX;
-				else            ctrlJoystick[THGROUP_ATT_YAWLEFT]  =  -js->lX;
+		if (x) {
+			if (alt) { // emulate rudder control
+				if (x > 0) ctrlJoystick[THGROUP_ATT_YAWRIGHT] =   x;
+				else            ctrlJoystick[THGROUP_ATT_YAWLEFT]  =  -x;
 			} else {                 // rotation (bank)
-				if (js->lX > 0) ctrlJoystick[THGROUP_ATT_BANKRIGHT] =  js->lX;
-				else            ctrlJoystick[THGROUP_ATT_BANKLEFT]  = -js->lX;
+				if (x > 0) ctrlJoystick[THGROUP_ATT_BANKRIGHT] =  x;
+				else            ctrlJoystick[THGROUP_ATT_BANKLEFT]  = -x;
 			}
 		}
-		if (js->lY) {                // rotation (pitch) or translation (vertical)
-			if (js->lY > 0) ctrlJoystick[THGROUP_ATT_PITCHUP]   = ctrlJoystick[THGROUP_ATT_UP]    =  js->lY;
-			else            ctrlJoystick[THGROUP_ATT_PITCHDOWN] = ctrlJoystick[THGROUP_ATT_DOWN]  = -js->lY;
+		if (y) {                // rotation (pitch) or translation (vertical)
+			if (y > 0) ctrlJoystick[THGROUP_ATT_PITCHUP]   = ctrlJoystick[THGROUP_ATT_UP]    =  y;
+			else            ctrlJoystick[THGROUP_ATT_PITCHDOWN] = ctrlJoystick[THGROUP_ATT_DOWN]  = -y;
 		}
-		if (js->lRz) {               // rotation (yaw) or translation (transversal)
-			if (js->lRz > 0) ctrlJoystick[THGROUP_ATT_YAWRIGHT] = ctrlJoystick[THGROUP_ATT_RIGHT] =  js->lRz;
-			else             ctrlJoystick[THGROUP_ATT_YAWLEFT]  = ctrlJoystick[THGROUP_ATT_LEFT]  = -js->lRz;
+		if (Rz) {               // rotation (yaw) or translation (transversal)
+			if (Rz > 0) ctrlJoystick[THGROUP_ATT_YAWRIGHT] = ctrlJoystick[THGROUP_ATT_RIGHT] =  Rz;
+			else             ctrlJoystick[THGROUP_ATT_YAWLEFT]  = ctrlJoystick[THGROUP_ATT_LEFT]  = -Rz;
 		}
 	}
-
-	if (pDI->joyprop.bThrottle) { // main thrusters via throttle control
-		long lZ4 = *(long*)(((BYTE*)js)+pDI->joyprop.ThrottleOfs) >> 3;
+	/*
+	for(int i=0;i<15;i++) {
+		printf("%d ", ctrlJoystick[i]);
+	}
+	printf("\n");
+	*/
+//	if (pDI->joyprop.bThrottle) { // main thrusters via throttle control
+		long lZ4 = throttle;//*(long*)(((BYTE*)js)+pDI->joyprop.ThrottleOfs) >> 3;
 		if (lZ4 != plZ4) {
-			if (ignorefirst) {
-				if (abs(lZ4-plZ4) > 10) ignorefirst = false;
-				else return;
-			}
-			double th = -0.008 * (plZ4 = lZ4);
+//			if (ignorefirst) {
+//				if (abs(lZ4-plZ4) > 10) ignorefirst = false;
+//				else return;
+//			}
+//			double th = -0.008 * (plZ4 = lZ4);
+			double th =  throttle < 0 ? throttle / 32768.0f : throttle / 32767.0f;
+
+//			printf("th=%f\n", th);
 			if (th > 1.0) th = 1.0;
 			g_focusobj->SetThrusterGroupLevel (THGROUP_MAIN, th);
 			g_focusobj->SetThrusterGroupLevel (THGROUP_RETRO, 0.0);
 		}
-	}
+//	}
 }
 
 bool Orbiter::MouseEvent (UINT event, DWORD state, DWORD x, DWORD y)
