@@ -300,7 +300,6 @@ Orbiter::Orbiter ()
 	// Initialise timer
 	timeBeginPeriod(1);
 
-	pDI             = new DInput(this); TRACENEW
 	pConfig         = new Config; TRACENEW
 	pState          = NULL;
 	m_pLaunchpad    = NULL;
@@ -392,11 +391,6 @@ HRESULT Orbiter::Create (HINSTANCE hInstance)
 	pConfig->Load(MasterConfigFile);
 	strcpy (cfgpath, pConfig->CfgDirPrm.ConfigDir);   cfglen = strlen (cfgpath);
 
-	if (FAILED (hr = pDI->Create (hInstance))) return hr;
-
-	// validate configuration
-	if (pConfig->CfgJoystickPrm.Joy_idx > GetDInput()->NumJoysticks()) pConfig->CfgJoystickPrm.Joy_idx = 0;
-
 	// Read key mapping from file (or write default keymap)
 	if (!keymap.Read ("keymap.cfg")) keymap.Write ("keymap.cfg");
 
@@ -481,7 +475,6 @@ VOID Orbiter::CloseApp (bool fast_shutdown)
 		DeactivateRoughType();
 
 	if (!fast_shutdown) {
-		delete pDI;
 		if (memstat) delete memstat;
 		if (pConfig)  delete pConfig;
 		if (m_pLaunchpad) delete m_pLaunchpad;
@@ -716,14 +709,8 @@ HWND Orbiter::CreateRenderWindow (Config *pCfg, const char *scenario)
 		m_pConsole = new orbiter::ConsoleNG(this);
 	}
 
-	pDI->SetRenderWindow(hRenderWnd);
-
 	if (hRenderWnd) {
 		bActive = true;
-
-		// Create joystick device
-		if (pDI->CreateJoyDevice ())
-			plZ4 = 1; // invalidate
 	}
 
 	if (gclient) {
@@ -849,14 +836,6 @@ HWND Orbiter::CreateRenderWindow (Config *pCfg, const char *scenario)
 	if (m_pConsole)
 		m_pConsole->EchoIntro();
 
-	// suppress throttle update on launch
-	/*
-	if (pDI->joyprop.bThrottle && pCfg->CfgJoystickPrm.bThrottleIgnore) {
-		DIJOYSTATE2 js;
-		if (pDI->PollJoystick(&js))
-			plZ4 = *(long*)(((BYTE*)&js) + pDI->joyprop.ThrottleOfs) >> 3;
-	}
-	*/
 	return hRenderWnd;
 }
 
@@ -929,8 +908,6 @@ void Orbiter::CloseSession ()
 			it->pModule->clbkSimulationEnd();
 
 		hRenderWnd = NULL;
-		pDI->DestroyDevices();
-		pDI->SetRenderWindow(NULL);
 
 		m_pLaunchpad->ShowWaitPage (false);
 	} else {
@@ -944,7 +921,6 @@ void Orbiter::CloseSession ()
 			it->pModule->clbkSimulationEnd();
 
 		hRenderWnd = NULL;
-		pDI->DestroyDevices();
 		CloseApp (true);
 		if (pConfig->CfgDebugPrm.ShutdownMode == 2 || bFastExit) {
 			LOGOUT("**** Fast process shutdown\r\n");
@@ -1165,8 +1141,6 @@ void Orbiter::OnOptionChanged(DWORD cat, DWORD item)
 {
 	if (gclient)
 		gclient->clbkOptionChanged(cat, item);
-	if (pDI)
-		pDI->OptionChanged(cat, item);
 	if (g_psys)
 		g_psys->OptionChanged(cat, item);
 	if (g_pane)
@@ -2051,12 +2025,9 @@ HRESULT Orbiter::UserInput ()
 	for (int i = 0; i < 15; i++) ctrlTotal[i] = ctrlKeyboard[i]; // update attitude requests
 
 	// joystick input
-	DIJOYSTATE2 js;
-//	if (pDI->PollJoystick (&js)) {
-		UserJoyInput_System (&js);                  // general joystick functions
-		if (bRunning) UserJoyInput_OnRunning (&js); // joystick vessel control functions
-		for (int i = 0; i < 15; i++) ctrlTotal[i] += ctrlJoystick[i]; // update thrust requests
-//	}
+	UserJoyInput_System ();                  // general joystick functions
+	if (bRunning) UserJoyInput_OnRunning (); // joystick vessel control functions
+	for (int i = 0; i < 15; i++) ctrlTotal[i] += ctrlJoystick[i]; // update thrust requests
 
 	g_camera->UpdateMouse();
 
@@ -2379,7 +2350,7 @@ void Orbiter::KbdInputBuffered_OnRunning (char *kstate, uint8_t key)
 // Name: UserJoyInput_System ()
 // Desc: General user joystick input (also functional when paused)
 //-----------------------------------------------------------------------------
-void Orbiter::UserJoyInput_System (DIJOYSTATE2 *js)
+void Orbiter::UserJoyInput_System ()
 {
 	int x,y,z,Rz,hat,throttle,alt;
 	InputController::GetInputs(&x, &y, &Rz, &hat, &throttle, &alt);
@@ -2419,7 +2390,7 @@ void Orbiter::UserJoyInput_System (DIJOYSTATE2 *js)
 // Name: UserJoyInput_OnRunning ()
 // Desc: User joystick input query for running simulation (ship controls etc.)
 //-----------------------------------------------------------------------------
-void Orbiter::UserJoyInput_OnRunning (DIJOYSTATE2 *js)
+void Orbiter::UserJoyInput_OnRunning ()
 {
 	int x,y,z,Rz,hat,throttle,alt;
 	InputController::GetInputs(&x, &y, &Rz, &hat, &throttle, &alt);
@@ -2444,28 +2415,15 @@ void Orbiter::UserJoyInput_OnRunning (DIJOYSTATE2 *js)
 			else             ctrlJoystick[THGROUP_ATT_YAWLEFT]  = ctrlJoystick[THGROUP_ATT_LEFT]  = -Rz;
 		}
 	}
-	/*
-	for(int i=0;i<15;i++) {
-		printf("%d ", ctrlJoystick[i]);
-	}
-	printf("\n");
-	*/
-//	if (pDI->joyprop.bThrottle) { // main thrusters via throttle control
-		long lZ4 = throttle;//*(long*)(((BYTE*)js)+pDI->joyprop.ThrottleOfs) >> 3;
-		if (lZ4 != plZ4) {
-//			if (ignorefirst) {
-//				if (abs(lZ4-plZ4) > 10) ignorefirst = false;
-//				else return;
-//			}
-//			double th = -0.008 * (plZ4 = lZ4);
-			double th =  throttle < 0 ? throttle / 32768.0f : throttle / 32767.0f;
 
-//			printf("th=%f\n", th);
-			if (th > 1.0) th = 1.0;
-			g_focusobj->SetThrusterGroupLevel (THGROUP_MAIN, th);
-			g_focusobj->SetThrusterGroupLevel (THGROUP_RETRO, 0.0);
-		}
-//	}
+	long lZ4 = throttle;
+	if (lZ4 != plZ4) {
+		double th =  throttle < 0 ? throttle / 32768.0f : throttle / 32767.0f;
+
+		if (th > 1.0) th = 1.0;
+		g_focusobj->SetThrusterGroupLevel (THGROUP_MAIN, th);
+		g_focusobj->SetThrusterGroupLevel (THGROUP_RETRO, 0.0);
+	}
 }
 
 bool Orbiter::MouseEvent (UINT event, DWORD state, DWORD x, DWORD y)
