@@ -828,7 +828,7 @@ int RunwayLights::CreateRunwayLights(class vBase *vB, const class Scene *scn, co
 				{
 					VECTOR3 vec; DWORD u, q;
 				
-					int n = sscanf(cbuf, "PAPI %lf %lf %lf %lu %lu", &vec.x, &vec.y, &vec.z, &u, &q);
+					int n = sscanf(cbuf, "PAPI %lf %lf %lf %u %u", &vec.x, &vec.y, &vec.z, &u, &q);
 
 					if (n==3) {
 						lights[numRunwayLights-1]->AddPAPI(vec,  1, 0);
@@ -855,7 +855,7 @@ int RunwayLights::CreateRunwayLights(class vBase *vB, const class Scene *scn, co
 				else if(!strncmp(cbuf, "VASI", 4))
 				{
 					VECTOR3 vec; DWORD e;
-					int n = sscanf(cbuf, "VASI %lf %lf %lf %lu", &vec.x, &vec.y, &vec.z, &e);
+					int n = sscanf(cbuf, "VASI %lf %lf %lf %u", &vec.x, &vec.y, &vec.z, &e);
 					if (n==3) {
 						lights[numRunwayLights-1]->AddVASI(vec, 0);
 						lights[numRunwayLights-1]->AddVASI(vec, 1);

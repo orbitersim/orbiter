@@ -854,7 +854,7 @@ istream &operator>> (istream &is, Mesh &mesh)
 			} else if (!_strnicmp (cbuf, "NONORMAL", 8)) {
 				bnormal = false; calcnml = true;
 			} else if (!_strnicmp (cbuf, "FLAG", 4)) {
-				sscanf (cbuf+4, "%lx", &uflag);
+				sscanf (cbuf+4, "%x", &uflag);
 			} else if (!_strnicmp (cbuf, "FLIP", 4)) {
 				flipidx = true;
 			} else if (!_strnicmp (cbuf, "LABEL", 5)) {

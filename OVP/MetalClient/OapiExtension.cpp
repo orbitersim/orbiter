@@ -123,7 +123,7 @@ bool OapiExtension::GetConfigParameter(void)
 		}
 
 		if (oapiReadItem_string(f, (char*)"ElevationMode", string)) {
-			if (1 == sscanf_s(string, "%lu", &flags)) {
+			if (1 == sscanf_s(string, "%u", &flags)) {
 				elevationMode = flags;
 			}
 		}

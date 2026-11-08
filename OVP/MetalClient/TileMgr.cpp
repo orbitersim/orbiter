@@ -205,7 +205,17 @@ bool TileManager::LoadTileData ()
 	DWORD n, i, j;
 	fread (&n, sizeof(DWORD), 1, file);
 	TILEFILESPEC *tfs = new TILEFILESPEC[n];
-	fread (tfs, sizeof(TILEFILESPEC), n, file);
+	{
+		struct { int32_t sidx, midx; DWORD eidx, flags, subidx[4]; } rec;
+		for (i = 0; i < n; i++) {
+			if (fread (&rec, sizeof(rec), 1, file) != 1) memset (&rec, 0xFF, sizeof(rec));
+			tfs[i].sidx = rec.sidx;
+			tfs[i].midx = rec.midx;
+			tfs[i].eidx = rec.eidx;
+			tfs[i].flags = rec.flags;
+			memcpy (tfs[i].subidx, rec.subidx, sizeof(rec.subidx));
+		}
+	}
 
 	if (bPreloadTile) {
 		if (tilever >= 1) { // convert texture offsets to indices

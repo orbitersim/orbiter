@@ -237,7 +237,7 @@ void LogTrace(const char *format, ...)
 	if (uEnableLog>3) {
 		EnterCriticalSection(&LogCrit);
 		DWORD th = GetCurrentThreadId();
-		fprintf(d3d9client_log, "<font color=Gray>(%s)(0x%lX)</font><font color=DarkGrey> ", my_ctime(), th);
+		fprintf(d3d9client_log, "<font color=Gray>(%s)(0x%X)</font><font color=DarkGrey> ", my_ctime(), th);
 
 		va_list args;
 		va_start(args, format);
@@ -261,7 +261,7 @@ void LogAlw(const char *format, ...)
 	if (uEnableLog>0) {
 		EnterCriticalSection(&LogCrit);
 		DWORD th = GetCurrentThreadId();
-		fprintf(d3d9client_log, "<font color=Gray>(%s)(0x%lX)</font><font color=Olive> ", my_ctime(), th);
+		fprintf(d3d9client_log, "<font color=Gray>(%s)(0x%X)</font><font color=Olive> ", my_ctime(), th);
 
 		va_list args;
 		va_start(args, format);
@@ -288,7 +288,7 @@ void LogDbg(const char *color, const char *format, ...)
 		EnterCriticalSection(&LogCrit);
 
 		DWORD th = GetCurrentThreadId();
-		fprintf(d3d9client_log, "<font color=Gray>(%s)(0x%lX)</font><font color=%s> ", my_ctime(), th, color);
+		fprintf(d3d9client_log, "<font color=Gray>(%s)(0x%X)</font><font color=%s> ", my_ctime(), th, color);
 
 		va_list args;
 		va_start(args, format);
@@ -316,7 +316,7 @@ void LogClr(const char *color, const char *format, ...)
 		EnterCriticalSection(&LogCrit);
 
 		DWORD th = GetCurrentThreadId();
-		fprintf(d3d9client_log, "<font color=Gray>(%s)(0x%lX)</font><font color=%s> ", my_ctime(), th, color);
+		fprintf(d3d9client_log, "<font color=Gray>(%s)(0x%X)</font><font color=%s> ", my_ctime(), th, color);
 
 		va_list args;
 		va_start(args, format);
@@ -344,7 +344,7 @@ void LogOapi(const char *format, ...)
 	if (uEnableLog>0) {
 		EnterCriticalSection(&LogCrit);
 		DWORD th = GetCurrentThreadId();
-		fprintf(d3d9client_log, "<font color=Gray>(%s)(0x%lX)</font><font color=Olive> ", my_ctime(), th);
+		fprintf(d3d9client_log, "<font color=Gray>(%s)(0x%X)</font><font color=Olive> ", my_ctime(), th);
 
 		va_list args;
 		va_start(args, format);
@@ -370,7 +370,7 @@ void LogErr(const char *format, ...)
 	if (uEnableLog>0) {
 		EnterCriticalSection(&LogCrit);
 		DWORD th = GetCurrentThreadId();
-		fprintf(d3d9client_log,"<font color=Gray>(%s)(0x%lX)</font><font color=Red> [ERROR] ", my_ctime(), th);
+		fprintf(d3d9client_log,"<font color=Gray>(%s)(0x%X)</font><font color=Red> [ERROR] ", my_ctime(), th);
 
 		va_list args;
 		va_start(args, format);
@@ -396,7 +396,7 @@ void LogBlu(const char *format, ...)
 	if (uEnableLog>1) {
 		EnterCriticalSection(&LogCrit);
 		DWORD th = GetCurrentThreadId();
-		fprintf(d3d9client_log,"<font color=Gray>(%s)(0x%lX)</font><font color=#1E90FF> ", my_ctime(), th);
+		fprintf(d3d9client_log,"<font color=Gray>(%s)(0x%X)</font><font color=#1E90FF> ", my_ctime(), th);
 
 		va_list args;
 		va_start(args, format);
@@ -420,7 +420,7 @@ void LogWrn(const char *format, ...)
 	if (uEnableLog>1) {
 		EnterCriticalSection(&LogCrit);
 		DWORD th = GetCurrentThreadId();
-		fprintf(d3d9client_log,"<font color=Gray>(%s)(0x%lX)</font><font color=Yellow> [WARNING] ", my_ctime(), th);
+		fprintf(d3d9client_log,"<font color=Gray>(%s)(0x%X)</font><font color=Yellow> [WARNING] ", my_ctime(), th);
 
 		va_list args;
 		va_start(args, format);
@@ -446,7 +446,7 @@ void LogBreak(const char* format, ...)
 
 		EnterCriticalSection(&LogCrit);
 		DWORD th = GetCurrentThreadId();
-		fprintf(d3d9client_log, "<font color=Gray>(%s)(0x%lX)</font><font color=Yellow> [WARNING] ", my_ctime(), th);
+		fprintf(d3d9client_log, "<font color=Gray>(%s)(0x%X)</font><font color=Yellow> [WARNING] ", my_ctime(), th);
 
 		va_list args;
 		va_start(args, format);
@@ -473,7 +473,7 @@ void LogOk(const char *format, ...)
 	if (uEnableLog>2) {
 		EnterCriticalSection(&LogCrit);
 		DWORD th = GetCurrentThreadId();
-		fprintf(d3d9client_log,"<font color=Gray>(%s)(0x%lX)</font><font color=#00FF00> ", my_ctime(), th);
+		fprintf(d3d9client_log,"<font color=Gray>(%s)(0x%X)</font><font color=#00FF00> ", my_ctime(), th);
 
 		va_list args;
 		va_start(args, format);

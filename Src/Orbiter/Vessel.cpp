@@ -8147,7 +8147,7 @@ bool Vessel::LoadModule (ifstream &classf)
 		if (!found) {
 			DWORD code = GetLastError();
 			char errbuf[256];
-			snprintf(errbuf, sizeof(errbuf), "Could not load vessel module: %s (code %lu)", cbuf, code);
+			snprintf(errbuf, sizeof(errbuf), "Could not load vessel module: %s (code %u)", cbuf, code);
 			LOGOUT_ERR (errbuf);
 		}
 		if (modIntf.ovcInit)
