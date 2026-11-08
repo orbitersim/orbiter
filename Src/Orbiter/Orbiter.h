@@ -134,11 +134,11 @@ public:
 	bool KillVessels();
 	// Kill the vessels that have been marked for deletion in the last time step
 
-	inline double ManCtrlLevel (THGROUP_TYPE thgt, DWORD device) const {
+	inline float ManCtrlLevel (THGROUP_TYPE thgt, DWORD device) const {
 		switch (device) {
-		case MANCTRL_KEYBOARD: return 0.001*ctrlKeyboard[thgt];
-		case MANCTRL_JOYSTICK: return 0.001*ctrlJoystick[thgt];
-		default:               return 0.001*ctrlTotal[thgt];
+		case MANCTRL_KEYBOARD: return ctrlKeyboard[thgt];
+		case MANCTRL_JOYSTICK: return ctrlJoystick[thgt];
+		default:               return ctrlTotal[thgt];
 		}
 	}
 
@@ -367,7 +367,7 @@ private:
 	bool            bStartVideoTab; // Open Launchpad dialog on video tab
 	bool            bWINEenv;      // we are running under Linux/WINE
 	bool            ignorefirst;   // flag for first joystick action
-	long            plZ4;          // previous joystick throttle setting
+	float           plZ4;          // previous joystick throttle setting
 	int             video_skip_count; // count skipped frames for frame sequence capturing
 	oapi::ScreenAnnotation **snote;// onscreen annotations
 	DWORD           nsnote;        // number of annotations
@@ -401,9 +401,9 @@ private:
 	bool            bRoughType;    // font-smoothing disabled?
 
 	// Manual joystick/keyboard attitude inputs
-	DWORD ctrlJoystick[15];
-	DWORD ctrlKeyboard[15];
-	DWORD ctrlTotal[15];
+	float ctrlJoystick[15];
+	float ctrlKeyboard[15];
+	float ctrlTotal[15];
 
 	VOID SavePlaybackScn (const char *fname);
 

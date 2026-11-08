@@ -57,13 +57,17 @@ void InputController::PollDevices()
 	}
 }
 
-void InputController::GetInputs(int *x, int *y, int *Rz, int *hat, int *throttle, int *alt)
+void InputController::GetInputs(float *x, float *y, float *Rz, int *hat, float *throttle, int *alt)
 {
-	*x = state.x;
-	*y = state.y;
-	*Rz = state.Rz;
+	auto normalize = [](int v) {
+		return  v < 0 ? v / 32768.0f : v / 32767.0f;
+	};
+
+	*x = normalize(state.x);
+	*y = normalize(state.y);
+	*Rz = normalize(state.Rz);
 	*hat = state.hat;
-	*throttle = state.throttle;
+	*throttle = normalize(state.throttle);
 	*alt = state.alt;
 }
 
