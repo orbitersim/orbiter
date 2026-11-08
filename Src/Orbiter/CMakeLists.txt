@@ -18,7 +18,6 @@ set(common_src
 	Element.cpp
 	elevmgr.cpp
 	Help.cpp
-	Input.cpp
 	Keymap.cpp
 	LightEmitter.cpp
 	Mesh.cpp
@@ -111,7 +110,6 @@ set(common_src
 # Graphics utils
 	D3d7util.cpp
 	D3dmath.cpp
-	Di7frame.cpp
     Input/Controller.cpp
 # Utils
 	Log.cpp
@@ -146,7 +144,6 @@ set(Orbiter_common_libs
 )
 set(Orbiter_libs
 	dxguid.lib
-	dinput8.lib
 )
 
 set(Orbiter_depends
