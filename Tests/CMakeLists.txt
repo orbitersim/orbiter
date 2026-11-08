@@ -118,3 +118,30 @@ add_custom_command(TARGET Metal9.Device POST_BUILD
 	COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_CURRENT_SOURCE_DIR}/data ${ORBITER_BINARY_ROOT_DIR}/Tests/data)
 add_test(NAME Metal9.Device COMMAND $<TARGET_FILE:Metal9.Device> WORKING_DIRECTORY ${ORBITER_BINARY_ROOT_DIR})
 set_tests_properties(Metal9.Device PROPERTIES TIMEOUT 60)
+
+add_test(
+	NAME "Scenario.SanityCheck"
+	COMMAND ${ORBITER_BINARY_ROOT_DIR}/Orbiter "--hidden" "--scenariox=Delta-glider/Smack!" "--maxframes=60"
+	WORKING_DIRECTORY ${ORBITER_BINARY_ROOT_DIR}
+)
+set_tests_properties(Scenario.SanityCheck PROPERTIES TIMEOUT 120)
+
+if(ORBITER_BUILD_METALCLIENT)
+	add_test(
+		NAME "Scenario.MetalRender"
+		COMMAND ${ORBITER_BINARY_ROOT_DIR}/Orbiter "--hidden" "--plugin=MetalClient" "--scenariox=Delta-glider/Smack!" "--maxframes=120"
+		WORKING_DIRECTORY ${ORBITER_BINARY_ROOT_DIR}
+	)
+	set_tests_properties(Scenario.MetalRender PROPERTIES TIMEOUT 180 ENVIRONMENT "MTL_DEBUG_LAYER=1")
+endif()
+
+file(GLOB TestScenarios "${CMAKE_SOURCE_DIR}/Scenarios/Tests/*.scn")
+foreach(Scenario ${TestScenarios})
+	get_filename_component(test_name ${Scenario} NAME_WE)
+	add_test(
+		NAME "Scenario.${test_name}"
+		COMMAND ${ORBITER_BINARY_ROOT_DIR}/Orbiter "--hidden" "--scenariox=Tests/${test_name}"
+		WORKING_DIRECTORY ${ORBITER_BINARY_ROOT_DIR}
+	)
+	set_tests_properties(Scenario.${test_name} PROPERTIES TIMEOUT 120)
+endforeach()
