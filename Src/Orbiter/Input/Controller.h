@@ -125,12 +125,13 @@ class InputController {
 	static inline std::list<Joystick> joysticks;
 	static inline int selectedJoystick;
 	static inline struct {
-		int x,y,Rz,alt,throttle,hat;
+		float x,y,Rz,throttle;
+		int alt, hat;
 	} state;
 public:
     static void GlobalInit();
 	static void PollDevices();
-	static void GetInputs(int *x, int *y, int *Rz, int *hat, int *throttle, int *alt);
+	static void GetInputs(float *x, float *y, float *Rz, int *hat, float *throttle, int *alt);
 	static std::vector<std::pair<int, std::string>> GetControllerList();
 	static void OptionChanged(DWORD cat, DWORD item);
 	static void SelectJoystick(int id);

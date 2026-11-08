@@ -865,7 +865,7 @@ public:
 	void ClearVariableDragElements ();
 	// Remove all drag element definitions
 
-	void ApplyUserAttitudeControls (DWORD *ctrl);
+	void ApplyUserAttitudeControls (float *ctrl);
 	// translate user keyboard/joystick input into RCS or airfoil response (single frame)
 
 	void IncTrim (AIRCTRL_TYPE ctrl);
