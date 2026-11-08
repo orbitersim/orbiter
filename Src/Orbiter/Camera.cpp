@@ -1830,7 +1830,7 @@ void CameraMode_Track::Init (char *str)
 void CameraMode_Track::Store (char *str)
 {
 	static const char *tmstr[6] = {"CURRENT","RELATIVE", "ABSDIR", "GLOBAL", "TARGETTOREF", "TARGETFROMREF"};
-	sprintf (str, "Track:%s%:%0.2f:%s %0.3f %0.3f %0.3f", 
+	sprintf (str, "Track:%s:%0.2f:%s %0.3f %0.3f %0.3f", 
 		target ? ((Body*)target)->Name() : "-", fov,
 		tmstr[tmode], reldist, phi, theta);
 	if (tmode == TM_TARGETTOREF || tmode == TM_TARGETFROMREF) {
