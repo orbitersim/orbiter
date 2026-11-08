@@ -355,6 +355,7 @@ void PANEL_InitResources()
   hVrotSRF=LoadBmp("vrot");
   hVrotBkSRF=LoadBmp("vrotbk");
   hADIBorder=LoadBmp("ADIborder");
+  oapiSetSurfaceColourKey(hADIBorder,0xFF000000);
   hFront_Panel_SRF[1]=LoadBmp("front");
   hFront_Panel_SRF[2]=LoadBmp("Up");
   hFront_Panel_SRF[3]=LoadBmp("left");
