@@ -394,6 +394,7 @@ static void ReadParam(const Member *m, const uint8_t *data, void *out, UINT byte
 
 Effect::~Effect()
 {
+	for (auto &p : params) Rebind(p->texture, (IDirect3DBaseTexture9 *)nullptr);
 	if (dev && dev->effect == this) {
 		dev->effect = nullptr;
 		dev->effectPass = -1;
@@ -730,7 +731,7 @@ HRESULT ID3DXEffect::SetValue(D3DXHANDLE h, const void *data, UINT bytes)
 	EffectParam *p = m_effect->FindParam(h);
 	if (!p) return D3DERR_INVALIDCALL;
 	if (p->textureSlot >= 0) {
-		p->texture = data ? *(IDirect3DBaseTexture9 *const *)data : nullptr;
+		Rebind(p->texture, data ? *(IDirect3DBaseTexture9 *const *)data : (IDirect3DBaseTexture9 *)nullptr);
 		return S_OK;
 	}
 	const Member *m = p->member;
@@ -864,7 +865,7 @@ HRESULT ID3DXEffect::SetTexture(D3DXHANDLE h, IDirect3DBaseTexture9 *tex)
 {
 	EffectParam *p = m_effect->FindParam(h);
 	if (!p || p->textureSlot < 0) return D3DERR_INVALIDCALL;
-	p->texture = tex;
+	Rebind(p->texture, tex);
 	return S_OK;
 }
 

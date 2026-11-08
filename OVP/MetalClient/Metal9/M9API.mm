@@ -612,7 +612,7 @@ HRESULT IDirect3DDevice9::SetTexture(DWORD stage, IDirect3DBaseTexture9 *tex)
 {
 	int i = StageIndex(stage);
 	if (i < 0) return D3DERR_INVALIDCALL;
-	m_dev->textures[i] = tex;
+	Rebind(m_dev->textures[i], tex);
 	return S_OK;
 }
 
@@ -674,6 +674,7 @@ HRESULT IDirect3DDevice9::DrawPrimitiveUP(D3DPRIMITIVETYPE type, UINT primCount,
 {
 	if (!data) return D3DERR_INVALIDCALL;
 	HRESULT hr = m_dev->Draw(type, 0, VertexCount(type, primCount), data, stride, nullptr, nullptr, D3DFMT_UNKNOWN, 0, 0, 0);
+	Rebind(m_dev->streams[0].vb, (IDirect3DVertexBuffer9 *)nullptr);
 	m_dev->streams[0] = {};
 	return hr;
 }
@@ -683,8 +684,9 @@ HRESULT IDirect3DDevice9::DrawIndexedPrimitiveUP(D3DPRIMITIVETYPE type, UINT min
 {
 	if (!data || !indices) return D3DERR_INVALIDCALL;
 	HRESULT hr = m_dev->Draw(type, 0, minIndex + numVertices, data, stride, nullptr, indices, indexFmt, 0, VertexCount(type, primCount), 0);
+	Rebind(m_dev->streams[0].vb, (IDirect3DVertexBuffer9 *)nullptr);
 	m_dev->streams[0] = {};
-	m_dev->indices = nullptr;
+	Rebind(m_dev->indices, (IDirect3DIndexBuffer9 *)nullptr);
 	return hr;
 }
 
@@ -707,7 +709,7 @@ HRESULT IDirect3DDevice9::CreateVertexDeclaration(const D3DVERTEXELEMENT9 *eleme
 
 HRESULT IDirect3DDevice9::SetVertexDeclaration(IDirect3DVertexDeclaration9 *decl)
 {
-	m_dev->decl = decl;
+	Rebind(m_dev->decl, decl);
 	return S_OK;
 }
 
@@ -723,7 +725,7 @@ HRESULT IDirect3DDevice9::SetFVF(DWORD) { return S_OK; }
 
 HRESULT IDirect3DDevice9::SetVertexShader(IDirect3DVertexShader9 *shader)
 {
-	m_dev->vs = shader;
+	Rebind(m_dev->vs, shader);
 	if (shader) {
 		m_dev->effect = nullptr;
 		m_dev->effectPass = -1;
@@ -741,7 +743,7 @@ HRESULT IDirect3DDevice9::GetVertexShader(IDirect3DVertexShader9 **shader)
 
 HRESULT IDirect3DDevice9::SetPixelShader(IDirect3DPixelShader9 *shader)
 {
-	m_dev->ps = shader;
+	Rebind(m_dev->ps, shader);
 	return S_OK;
 }
 
@@ -756,7 +758,9 @@ HRESULT IDirect3DDevice9::GetPixelShader(IDirect3DPixelShader9 **shader)
 HRESULT IDirect3DDevice9::SetStreamSource(UINT stream, IDirect3DVertexBuffer9 *vb, UINT offset, UINT stride)
 {
 	if (stream >= 8) return D3DERR_INVALIDCALL;
-	m_dev->streams[stream] = {vb, offset, stride};
+	Rebind(m_dev->streams[stream].vb, vb);
+	m_dev->streams[stream].offset = offset;
+	m_dev->streams[stream].stride = stride;
 	return S_OK;
 }
 
@@ -774,7 +778,7 @@ HRESULT IDirect3DDevice9::SetStreamSourceFreq(UINT, UINT) { return S_OK; }
 
 HRESULT IDirect3DDevice9::SetIndices(IDirect3DIndexBuffer9 *ib)
 {
-	m_dev->indices = ib;
+	Rebind(m_dev->indices, ib);
 	return S_OK;
 }
 

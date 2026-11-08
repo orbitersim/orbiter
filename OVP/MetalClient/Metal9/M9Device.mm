@@ -84,6 +84,12 @@ Device::Device()
 Device::~Device()
 {
 	if (cmd) Submit(true);
+	for (auto &t : textures) Rebind(t, (IDirect3DBaseTexture9 *)nullptr);
+	for (auto &s : streams) Rebind(s.vb, (IDirect3DVertexBuffer9 *)nullptr);
+	Rebind(indices, (IDirect3DIndexBuffer9 *)nullptr);
+	Rebind(decl, (IDirect3DVertexDeclaration9 *)nullptr);
+	Rebind(vs, (IDirect3DVertexShader9 *)nullptr);
+	Rebind(ps, (IDirect3DPixelShader9 *)nullptr);
 	for (int i = 0; i < 4; i++) {
 		if (rt[i]) rt[i]->Release();
 		rt[i] = nullptr;
