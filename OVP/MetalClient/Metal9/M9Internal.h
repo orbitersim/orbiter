@@ -344,7 +344,8 @@ struct Device {
 	MTLRenderPassDescriptor *PassDescriptor();
 
 	void Blit(Surface *src, const RECT *srcRect, Surface *dst, const RECT *dstRect, bool linear);
-	id<MTLRenderPipelineState> BlitPipeline(MTLPixelFormat fmt, bool depth);
+	id<MTLRenderPipelineState> BlitPipeline(MTLPixelFormat fmt, bool depth, NSUInteger samples = 1);
+	void RefreshMSAA(Texture *t);
 	id<MTLRenderPipelineState> OverlayPipeline(NSString *fragment);
 	id<MTLDepthStencilState> NoDepth();
 	id<MTLDepthStencilState> noDepth = nil;

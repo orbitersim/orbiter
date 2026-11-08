@@ -195,6 +195,7 @@ void Texture::Upload(UINT face, UINT level, const uint8_t *data, UINT pitch, con
 {
 	if (IsSystem()) return;
 	if (!tex) return;
+	if (msaa) msaaDirty = true;
 	MTLRegion rg = RegionFor(this, level, rect, slice, slices);
 	if (type != TT_3D) rg.origin.y = rect ? rg.origin.y : 0;
 	if (type == TT_3D) { rg.origin.z = slice; rg.size.depth = slices; rg.origin.y = rect ? rect->top : 0; }

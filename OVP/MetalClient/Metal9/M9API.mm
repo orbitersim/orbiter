@@ -439,15 +439,6 @@ HRESULT IDirect3DDevice9::StretchRect(IDirect3DSurface9 *src, const RECT *srcRec
 {
 	Surface *s = SurfImpl(src), *d = SurfImpl(dst);
 	if (!s || !d) return D3DERR_INVALIDCALL;
-	if (s->tex->msaa) {
-		m_dev->EndEncoders();
-		MTLRenderPassDescriptor *rp = [MTLRenderPassDescriptor renderPassDescriptor];
-		rp.colorAttachments[0].texture = s->tex->msaa;
-		rp.colorAttachments[0].loadAction = MTLLoadActionLoad;
-		rp.colorAttachments[0].storeAction = MTLStoreActionStoreAndMultisampleResolve;
-		rp.colorAttachments[0].resolveTexture = s->tex->tex;
-		[[m_dev->Cmd() renderCommandEncoderWithDescriptor:rp] endEncoding];
-	}
 	m_dev->Blit(s, srcRect, d, dstRect, filter != D3DTEXF_POINT && filter != D3DTEXF_NONE);
 	return S_OK;
 }

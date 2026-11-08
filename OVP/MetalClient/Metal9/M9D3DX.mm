@@ -787,15 +787,7 @@ bool ReadSub(Texture *t, UINT face, UINT level, std::vector<uint8_t> &out, UINT 
 		return true;
 	}
 	if (!t->tex) return false;
-	if (t->msaa) {
-		t->dev->EndEncoders();
-		MTLRenderPassDescriptor *rp = [MTLRenderPassDescriptor renderPassDescriptor];
-		rp.colorAttachments[0].texture = t->msaa;
-		rp.colorAttachments[0].loadAction = MTLLoadActionLoad;
-		rp.colorAttachments[0].storeAction = MTLStoreActionStoreAndMultisampleResolve;
-		rp.colorAttachments[0].resolveTexture = t->tex;
-		[[t->dev->Cmd() renderCommandEncoderWithDescriptor:rp] endEncoding];
-	}
+	t->dev->EndEncoders();
 	t->Download(face, level, out.data(), pitch, nullptr);
 	return true;
 }

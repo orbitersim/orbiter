@@ -51,6 +51,7 @@ void ClientImGuiRender(ImDrawData *data, IDirect3DSurface9 *target)
 		ImGui_ImplMetal_RenderDrawData(data, cmd, enc);
 		[enc endEncoding];
 		d->passDirty = true;
+		if (m9::Surface *s = SurfImpl(target)) if (s->tex->msaa) s->tex->msaaDirty = true;
 	}
 }
 

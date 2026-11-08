@@ -412,6 +412,12 @@ id<MTLRenderCommandEncoder> Device::RenderEncoder()
 		[renc endEncoding];
 		renc = nil;
 	}
+	for (int i = 0; i < 4; i++) {
+		Surface *s = SurfImpl(rt[i]);
+		if (!s) continue;
+		if (pendingClear && (clearFlags & D3DCLEAR_TARGET)) s->tex->msaaDirty = false;
+		RefreshMSAA(s->tex);
+	}
 	renc = [Cmd() renderCommandEncoderWithDescriptor:PassDescriptor()];
 	passDirty = false;
 	return renc;
@@ -1132,14 +1138,36 @@ id<MTLDepthStencilState> Device::NoDepth()
 	return noDepth;
 }
 
-id<MTLRenderPipelineState> Device::BlitPipeline(MTLPixelFormat fmt, bool depth)
+void Device::RefreshMSAA(Texture *t)
 {
-	uint64_t h = Mix(0xB117ull, fmt | ((uint64_t)depth << 32));
+	if (!t->msaa || !t->msaaDirty) return;
+	t->msaaDirty = false;
+	MTLRenderPassDescriptor *rp = [MTLRenderPassDescriptor renderPassDescriptor];
+	rp.colorAttachments[0].texture = t->msaa;
+	rp.colorAttachments[0].loadAction = MTLLoadActionDontCare;
+	rp.colorAttachments[0].storeAction = MTLStoreActionStore;
+	id<MTLRenderCommandEncoder> enc = [Cmd() renderCommandEncoderWithDescriptor:rp];
+	id<MTLRenderPipelineState> pso = BlitPipeline(t->fi->pf, false, t->samples);
+	if (pso) {
+		[enc setRenderPipelineState:pso];
+		struct { float src[4]; float dst[4]; float depth; float pad[3]; } bp = {{0, 0, 1, 1}, {0, 0, 1, 1}, 0, {0, 0, 0}};
+		[enc setVertexBytes:&bp length:sizeof(bp) atIndex:0];
+		[enc setFragmentTexture:t->tex atIndex:0];
+		[enc setFragmentSamplerState:blitPoint atIndex:0];
+		[enc drawPrimitives:MTLPrimitiveTypeTriangleStrip vertexStart:0 vertexCount:4];
+	}
+	[enc endEncoding];
+}
+
+id<MTLRenderPipelineState> Device::BlitPipeline(MTLPixelFormat fmt, bool depth, NSUInteger samples)
+{
+	uint64_t h = Mix(Mix(0xB117ull, fmt | ((uint64_t)depth << 32)), samples);
 	auto it = blitPipelines.find(h);
 	if (it != blitPipelines.end()) return it->second;
 	MTLRenderPipelineDescriptor *pd = [MTLRenderPipelineDescriptor new];
 	pd.vertexFunction = [utilLib newFunctionWithName:@"BlitVSQuad"];
 	pd.fragmentFunction = [utilLib newFunctionWithName:depth ? @"BlitDepthPS" : @"BlitPS"];
+	pd.rasterSampleCount = samples;
 	if (depth) {
 		pd.depthAttachmentPixelFormat = fmt;
 		if (fmt == MTLPixelFormatDepth32Float_Stencil8) pd.stencilAttachmentPixelFormat = fmt;
@@ -1194,7 +1222,8 @@ void Device::Blit(Surface *src, const RECT *srcRect, Surface *dst, const RECT *d
 	}
 
 	bool sameSize = (sr.right - sr.left) == (dr.right - dr.left) && (sr.bottom - sr.top) == (dr.bottom - dr.top);
-	if (sameSize && st->fi->pf == dt->fi->pf && st->samples == 1 && dt->samples == 1) {
+	if (sameSize && st->fi->pf == dt->fi->pf) {
+		if (dt->msaa) dt->msaaDirty = true;
 		id<MTLTexture> stex = st->tex, dtex = dt->tex;
 		NSUInteger ss = st->type == TT_CUBE ? src->face : 0, sl = src->level, ds = dt->type == TT_CUBE ? dst->face : 0, dl = dst->level;
 		EncodeBlit(^(id<MTLBlitCommandEncoder> b) {
@@ -1209,7 +1238,8 @@ void Device::Blit(Surface *src, const RECT *srcRect, Surface *dst, const RECT *d
 	bool depth = dt->IsDepth();
 	EndEncoders();
 	MTLRenderPassDescriptor *rp = [MTLRenderPassDescriptor renderPassDescriptor];
-	id<MTLTexture> target = dt->msaa ? dt->msaa : dt->tex;
+	id<MTLTexture> target = dt->tex;
+	if (dt->msaa && !depth) dt->msaaDirty = true;
 	if (depth) {
 		rp.depthAttachment.texture = target;
 		rp.depthAttachment.loadAction = MTLLoadActionLoad;
@@ -1219,16 +1249,11 @@ void Device::Blit(Surface *src, const RECT *srcRect, Surface *dst, const RECT *d
 		rp.colorAttachments[0].slice = dt->type == TT_CUBE ? dst->face : 0;
 		rp.colorAttachments[0].level = dst->level;
 		rp.colorAttachments[0].loadAction = MTLLoadActionLoad;
-		if (dt->msaa) {
-			rp.colorAttachments[0].resolveTexture = dt->tex;
-			rp.colorAttachments[0].storeAction = MTLStoreActionStoreAndMultisampleResolve;
-		} else {
-			rp.colorAttachments[0].storeAction = MTLStoreActionStore;
-		}
+		rp.colorAttachments[0].storeAction = MTLStoreActionStore;
 	}
 	id<MTLRenderCommandEncoder> enc = [Cmd() renderCommandEncoderWithDescriptor:rp];
 	id<MTLRenderPipelineState> pso = BlitPipeline(dt->fi->pf, depth);
-	if (pso && !dt->msaa) {
+	if (pso && !(depth && dt->msaa)) {
 		[enc setRenderPipelineState:pso];
 		if (depth) {
 			MTLDepthStencilDescriptor *dd = [MTLDepthStencilDescriptor new];
