@@ -449,8 +449,13 @@ ULONG IUnknownM9::AddRef() { return (ULONG)++m_refs; }
 ULONG IUnknownM9::Release()
 {
 	long r = --m_refs;
-	if (r == 0) delete this;
+	if (r == 0 && m_binds == 0) delete this;
 	return (ULONG)(r < 0 ? 0 : r);
+}
+
+void IUnknownM9::BindRelease()
+{
+	if (--m_binds == 0 && m_refs <= 0) delete this;
 }
 
 HRESULT IDirect3DResource9::GetDevice(IDirect3DDevice9 **ppDevice)

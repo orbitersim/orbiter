@@ -360,10 +360,10 @@ Device *CurrentDevice();
 template<class T> void Rebind(T *&slot, T *value)
 {
 	if (slot == value) return;
-	if (value) value->AddRef();
+	if (value) value->BindRef();
 	T *old = slot;
 	slot = value;
-	if (old) old->Release();
+	if (old) old->BindRelease();
 }
 
 Texture *CreateTexture(Device *dev, TexType type, UINT w, UINT h, UINT d, UINT levels, DWORD usage, D3DFORMAT fmt, D3DPOOL pool, UINT samples);

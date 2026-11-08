@@ -706,9 +706,12 @@ struct IUnknownM9 {
 	virtual ~IUnknownM9() {}
 	ULONG AddRef();
 	ULONG Release();
+	void BindRef() { ++m_binds; }
+	void BindRelease();
 	HRESULT QueryInterface(REFIID, void **) { return E_NOTIMPL; }
 public:
 	long m_refs = 1;
+	long m_binds = 0;
 	friend struct m9::Device;
 };
 
