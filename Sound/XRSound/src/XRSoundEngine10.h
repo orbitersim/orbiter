@@ -44,7 +44,7 @@ public:
 #define XRSOUND_BETA_STR ""
 
 // for use by build version strings
-#ifdef _WIN64
+#if defined(_WIN64) || defined(__LP64__)
 #define ARCH_TYPE "64-bit"
 #else
 #define ARCH_TYPE "32-bit"
