@@ -134,10 +134,20 @@ set_target_properties(MetalClient
 )
 set_source_files_properties(ClientImGui.mm PROPERTIES COMPILE_OPTIONS -fobjc-arc)
 
-add_custom_command(
-	TARGET MetalClient PRE_BUILD
-	COMMAND ${CMAKE_COMMAND} -E copy_directory ${CLIENT_SOURCE_DIR}/shaders/ ${ORBITER_BINARY_ROOT_DIR}/Modules/MetalClient
-)
+file(GLOB CLIENT_SHADERS CONFIGURE_DEPENDS ${CLIENT_SOURCE_DIR}/shaders/*)
+set(CLIENT_SHADER_OUTPUTS)
+foreach(shader ${CLIENT_SHADERS})
+	get_filename_component(shader_name ${shader} NAME)
+	set(shader_out ${ORBITER_BINARY_ROOT_DIR}/Modules/MetalClient/${shader_name})
+	add_custom_command(
+		OUTPUT ${shader_out}
+		COMMAND ${CMAKE_COMMAND} -E copy_if_different ${shader} ${shader_out}
+		DEPENDS ${shader}
+	)
+	list(APPEND CLIENT_SHADER_OUTPUTS ${shader_out})
+endforeach()
+add_custom_target(MetalClientShaders ALL DEPENDS ${CLIENT_SHADER_OUTPUTS})
+add_dependencies(MetalClient MetalClientShaders)
 
 add_dependencies(MetalClient
 	${OrbiterTgt}
