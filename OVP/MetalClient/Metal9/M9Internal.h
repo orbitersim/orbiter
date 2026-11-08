@@ -348,6 +348,8 @@ struct Device {
 	id<MTLRenderPipelineState> OverlayPipeline(NSString *fragment);
 	id<MTLDepthStencilState> NoDepth();
 	id<MTLDepthStencilState> noDepth = nil;
+	std::map<std::string, int> drawLog;
+	bool drawLogActive = false;
 	std::unordered_map<uint64_t, id<MTLRenderPipelineState>> blitPipelines;
 	id<MTLLibrary> utilLib = nil;
 	id<MTLSamplerState> blitLinear = nil, blitPoint = nil;

@@ -819,6 +819,8 @@ bool Device::BindState(id<MTLRenderCommandEncoder> enc, const void *upVerts, UIN
 	for (int s = 0; s < 8; s++) strides[s] = streams[s].stride;
 	if (upVerts) strides[0] = upStride;
 
+	if (const char *skip = getenv("M9_SKIP")) if (ffn && strstr(skip, ffn.name.UTF8String)) return false;
+	if (getenv("M9_DRAWLOG") && drawLogActive) drawLog[std::string(vfn.name.UTF8String) + "/" + (ffn ? ffn.name.UTF8String : "-")]++;
 	const PipelineEntry *pe = Pipeline(vfn, ffn, dcl, strides);
 	if (!pe) return false;
 	[enc setRenderPipelineState:pe->pso];
@@ -1310,6 +1312,15 @@ void SwapChain::Destroy()
 
 HRESULT SwapChain::Present()
 {
+	if (getenv("M9_DRAWLOG")) {
+		static int frame = 0;
+		frame++;
+		if (dev->drawLogActive) {
+			for (auto &c : dev->drawLog) Log("DRAW %s %d", c.first.c_str(), c.second);
+			dev->drawLogActive = false;
+		}
+		if (frame == 250) { dev->drawLog.clear(); dev->drawLogActive = true; }
+	}
 	@autoreleasepool {
 		Surface *bs = SurfImpl(backBuffer);
 		if (!bs) return D3DERR_INVALIDCALL;

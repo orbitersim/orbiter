@@ -47,6 +47,7 @@ struct LData
 	float4 smpH;
 	float3 posW;
 	float cone;
+	float psize [[point_size]];
 };
 
 vertex LData VisibilityVS(LDataIn vin [[stage_in]], constant VisibilityVSConst &cb [[buffer(0)]])
@@ -56,6 +57,7 @@ vertex LData VisibilityVS(LDataIn vin [[stage_in]], constant VisibilityVSConst &
 	outVS.smpH = cb.cbPS.mSVP * float4(vin.posW.xyz, 1.0f);
 	outVS.posW = vin.posW.xyz;
 	outVS.cone = vin.posW.a;
+	outVS.psize = 1.0f;
 	return outVS;
 }
 

@@ -63,6 +63,7 @@ struct StarOutputVS
 {
 	float4 posH    [[position]];
 	float4 col;
+	float  psize   [[point_size]];
 };
 
 vertex StarOutputVS StarTechVS(StarInputVS vrt [[stage_in]], constant Globals &g [[buffer(0)]])
@@ -70,6 +71,7 @@ vertex StarOutputVS StarTechVS(StarInputVS vrt [[stage_in]], constant Globals &g
 	StarOutputVS outVS = {};
 	outVS.posH = g.gWVP * float4(vrt.posL, 1.0f);
 	outVS.col  = vrt.col;
+	outVS.psize = 1.0f;
 	return outVS;
 }
 

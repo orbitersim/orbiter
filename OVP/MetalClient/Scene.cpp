@@ -1179,7 +1179,7 @@ void Scene::ComputeLocalLightsVisibility()
 	D3DSURFACE_DESC desc;
 	pLocalResultsSL->GetDesc(&desc);
 
-	D3DXMatrixOrthoOffCenterLH(&ComputeData.mVP, -0.5f, (float)desc.Width - 0.5f, (float)desc.Height - 0.5f, -0.5f, 0.0f, 1.0f);
+	D3DXMatrixOrthoOffCenterLH(&ComputeData.mVP, 0.0f, (float)desc.Width, (float)desc.Height, 0.0f, 0.0f, 1.0f);
 
 	psgBuffer[GBUF_DEPTH]->GetDesc(&desc);
 

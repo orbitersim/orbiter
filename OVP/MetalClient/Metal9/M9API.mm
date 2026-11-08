@@ -407,7 +407,8 @@ HRESULT IDirect3DDevice9::UpdateTexture(IDirect3DBaseTexture9 *src, IDirect3DBas
 	if (!src || !dst || !src->Impl() || !dst->Impl()) return D3DERR_INVALIDCALL;
 	Texture *s = src->Impl(), *d = dst->Impl();
 	UINT faces = std::min(s->Faces(), d->Faces());
-	UINT offset = s->levels > d->levels ? s->levels - d->levels : 0;
+	UINT offset = 0;
+	while (offset < s->levels && s->LevelWidth(offset) > d->width) offset++;
 	for (UINT f = 0; f < faces; f++) {
 		for (UINT l = 0; l < d->levels && l + offset < s->levels; l++) {
 			Surface *ss = s->GetSurface(f, l + offset)->Impl();
