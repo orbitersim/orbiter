@@ -3,8 +3,14 @@
 #include "tileedit.h"
 #include "tileblock.h"
 
+#include <cstdio>
+#include <cstring>
+
+#include <QFile>
 #include <QFileDialog>
+#include <QFileInfo>
 #include <QMessageBox>
+#include <QSettings>
 
 DlgSurfImport::DlgSurfImport(tileedit *parent)
 	: QDialog(parent)
@@ -22,7 +28,7 @@ DlgSurfImport::DlgSurfImport(tileedit *parent)
 	connect(ui->checkPropagateChanges, SIGNAL(stateChanged(int)), this, SLOT(onPropagateChanges(int)));
 	m_pathEdited = m_metaEdited = false;
 	m_haveMeta = false;
-	memset(&m_metaInfo, 0, sizeof(SurfPatchMetaInfo));
+	m_metaInfo = SurfPatchMetaInfo();
 }
 
 void DlgSurfImport::onOpenFileDialog()
@@ -70,7 +76,7 @@ void DlgSurfImport::onParamFromUser()
 
 void DlgSurfImport::onMetaFileChanged(const QString &name)
 {
-	m_haveMeta = scanMetaFile(name.toLatin1(), m_metaInfo);
+	m_haveMeta = scanMetaFile(QFile::encodeName(name).constData(), m_metaInfo);
 	if (m_haveMeta) {
 		ui->spinLvl->setValue(m_metaInfo.lvl);
 		ui->spinIlat0->setValue(m_metaInfo.ilat0);
@@ -79,7 +85,7 @@ void DlgSurfImport::onMetaFileChanged(const QString &name)
 		ui->spinIlng1->setValue(m_metaInfo.ilng1 - 1);
 	}
 	else {
-		memset(&m_metaInfo, 0, sizeof(SurfPatchMetaInfo));
+		m_metaInfo = SurfPatchMetaInfo();
 		ui->spinLvl->setValue(1);
 		ui->spinIlat0->setValue(0);
 		ui->spinIlat1->setValue(0);
@@ -123,7 +129,7 @@ void DlgSurfImport::accept()
 	m_metaInfo.colourMatch = ui->comboColourmatch->currentIndex();
 
 	SurfTileBlock *sblock = SurfTileBlock::Load(m_metaInfo.lvl, m_metaInfo.ilat0, m_metaInfo.ilat1, m_metaInfo.ilng0, m_metaInfo.ilng1);
-	int res = dxtread_png(ui->editPath->text().toLatin1(), m_metaInfo, sblock->getData());
+	int res = dxtread_png(QFile::encodeName(ui->editPath->text()).constData(), m_metaInfo, sblock->getData());
 	if (res != 0) {
 		QString msg("Error reading PNG file:\n");
 		switch (res) {
@@ -159,8 +165,9 @@ void DlgSurfImport::accept()
 
 bool DlgSurfImport::scanMetaFile(const char *fname, SurfPatchMetaInfo &meta)
 {
-	FILE *f = fopen(fname, "rt");
+	FILE *f = fopen(fname, "r");
 	if (!f) return false;
+	meta.missing.clear();
 
 	int ilat, ilng, n;
 	char str[1024];

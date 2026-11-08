@@ -1,34 +1,38 @@
 #include "dxt_io.h"
+#include <cstdio>
+#include <cstring>
 #include <png.h>
-#include <libdxt.h>
+#include "libdxt.h"
 
 struct DDS_PIXELFORMAT {
-	DWORD dwSize;
-	DWORD dwFlags;
-	DWORD dwFourCC;
-	DWORD dwRGBBitCount;
-	DWORD dwRBitMask;
-	DWORD dwGBitMask;
-	DWORD dwBBitMask;
-	DWORD dwABitMask;
+	uint32_t dwSize;
+	uint32_t dwFlags;
+	uint32_t dwFourCC;
+	uint32_t dwRGBBitCount;
+	uint32_t dwRBitMask;
+	uint32_t dwGBitMask;
+	uint32_t dwBBitMask;
+	uint32_t dwABitMask;
 };
 
 struct DDS_HEADER{
-	DWORD           dwSize;
-	DWORD           dwFlags;
-	DWORD           dwHeight;
-	DWORD           dwWidth;
-	DWORD           dwPitchOrLinearSize;
-	DWORD           dwDepth;
-	DWORD           dwMipMapCount;
-	DWORD           dwReserved1[11];
+	uint32_t           dwSize;
+	uint32_t           dwFlags;
+	uint32_t           dwHeight;
+	uint32_t           dwWidth;
+	uint32_t           dwPitchOrLinearSize;
+	uint32_t           dwDepth;
+	uint32_t           dwMipMapCount;
+	uint32_t           dwReserved1[11];
 	DDS_PIXELFORMAT ddspf;
-	DWORD           dwCaps;
-	DWORD           dwCaps2;
-	DWORD           dwCaps3;
-	DWORD           dwCaps4;
-	DWORD           dwReserved2;
+	uint32_t           dwCaps;
+	uint32_t           dwCaps2;
+	uint32_t           dwCaps3;
+	uint32_t           dwCaps4;
+	uint32_t           dwReserved2;
 };
+
+static_assert(sizeof(DDS_PIXELFORMAT) == 32 && sizeof(DDS_HEADER) == 124, "DDS header must match the on-disk layout");
 
 void setdxt1header(const Image &idata, DDS_HEADER &hdr)
 {
@@ -42,7 +46,7 @@ void setdxt1header(const Image &idata, DDS_HEADER &hdr)
 	hdr.dwPitchOrLinearSize = idata.height * idata.width / 2;
 	hdr.ddspf.dwSize = sizeof(DDS_PIXELFORMAT);
 	hdr.ddspf.dwFlags = 0x4;
-	hdr.ddspf.dwFourCC = *(DWORD*)fourcc;
+	memcpy(&hdr.ddspf.dwFourCC, fourcc, 4);
 	hdr.dwCaps = 0x1000;
 }
 
@@ -50,15 +54,15 @@ void dxt1write(const char *fname, const Image &idata)
 {
 	const char magic[4] = { 'D', 'D', 'S', ' ' };
 	int format = FORMAT_DXT1;
-	byte *dxt1 = new byte[idata.width * idata.height * 4];
+	uint8_t *dxt1 = new uint8_t[idata.width * idata.height * 4];
 
 	// Need to flip RGB order for the compression engine
-	DWORD *inp = new DWORD[idata.width * idata.height];
-	const DWORD *id = idata.data.data();
+	uint32_t *inp = new uint32_t[idata.width * idata.height];
+	const uint32_t *id = idata.data.data();
 	for (int i = 0; i < idata.width*idata.height; i++)
 		inp[i] = 0xff000000 | ((id[i] & 0xff) << 16) | (id[i] & 0xff00) | ((id[i] & 0xff0000) >> 16);
 
-	int n = CompressDXT((const byte*)inp, dxt1, idata.width, idata.height, format);
+	int n = CompressDXT((const uint8_t*)inp, dxt1, idata.width, idata.height, format);
 
 	DDS_HEADER hdr;
 	setdxt1header(idata, hdr);
@@ -78,7 +82,7 @@ bool pngread_tmp(const char *fname, Image &idata)
 	memset(&image, 0, sizeof(png_image));
 	image.version = PNG_IMAGE_VERSION;
 	image.opaque = NULL;
-	if (ok = png_image_begin_read_from_file(&image, fname)) {
+	if ((ok = png_image_begin_read_from_file(&image, fname) != 0)) {
 		image.format = PNG_FORMAT_BGRA;
 		idata.width = image.width;
 		idata.height = image.height;
@@ -132,7 +136,7 @@ int dxtread_png(const char *fname, const SurfPatchMetaInfo &meta, Image &sdata)
 				sdata2.width = w;
 				sdata2.height = h;
 				sdata2.data.resize(w*h);
-				memcpy(sdata2.data.data(), buf, w*h * sizeof(DWORD));
+				memcpy(sdata2.data.data(), buf, w*h * sizeof(uint32_t));
 				switch (meta.colourMatch) {
 				case 1:
 					match_histogram(sdata2, sdata);
@@ -141,29 +145,29 @@ int dxtread_png(const char *fname, const SurfPatchMetaInfo &meta, Image &sdata)
 					match_hue_sat(sdata2, sdata);
 					break;
 				}
-				memcpy(buf, sdata2.data.data(), w*h * sizeof(DWORD));
+				memcpy(buf, sdata2.data.data(), w*h * sizeof(uint32_t));
 			}
 
 			int idx = 0;
 			for (int ih = 0; ih < h; ih++) {
 				for (int iw = 0; iw < w; iw++) {
-					DWORD v;
+					uint32_t v;
 					if (!meta.alphaBlend || buf[idx + 3] == 0xff) {
 						v = 0xff000000 | (buf[idx+2] << 16) | (buf[idx + 1] << 8) | buf[idx];
 						sdata.data[iw + ih*w] = v;
 					} 
 					else if (buf[idx + 3]) {
 						v = 0xff000000;
-						DWORD s = buf[idx + 3];
-						DWORD ch1 = (DWORD)buf[idx+2];
-						DWORD ch2 = (sdata.data[iw + ih*w] >> 16) & 0xFF;
-						DWORD ch = (ch1 * s + ch2 * (255 - s)) / 255;
+						uint32_t s = buf[idx + 3];
+						uint32_t ch1 = (uint32_t)buf[idx+2];
+						uint32_t ch2 = (sdata.data[iw + ih*w] >> 16) & 0xFF;
+						uint32_t ch = (ch1 * s + ch2 * (255 - s)) / 255;
 						v |= ch << 16;
-						ch1 = (DWORD)buf[idx + 1];
+						ch1 = (uint32_t)buf[idx + 1];
 						ch2 = (sdata.data[iw + ih*w] >> 8) & 0xff;
 						ch = (ch1 * s + ch2 * (255 - s)) / 255;
 						v |= ch << 8;
-						ch1 = (DWORD)buf[idx];
+						ch1 = (uint32_t)buf[idx];
 						ch2 = (sdata.data[iw + ih*w] & 0xff);
 						ch = (ch1 * s + ch2 * (255 - s)) / 255;
 						v |= ch;

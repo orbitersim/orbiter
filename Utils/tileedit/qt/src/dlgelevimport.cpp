@@ -3,8 +3,14 @@
 #include "tileedit.h"
 #include "tileblock.h"
 
+#include <cstdio>
+#include <cstring>
+
+#include <QFile>
 #include <QFileDialog>
+#include <QFileInfo>
 #include <QMessageBox>
+#include <QSettings>
 
 DlgElevImport::DlgElevImport(tileedit *parent)
 	: QDialog(parent)
@@ -23,7 +29,7 @@ DlgElevImport::DlgElevImport(tileedit *parent)
 	m_pathEdited = m_metaEdited = false;
 	m_haveMeta = false;
 	m_propagationLevel = ui->spinPropagationLevel->value();
-	memset(&m_metaInfo, 0, sizeof(ElevPatchMetaInfo));
+	m_metaInfo = ElevPatchMetaInfo();
 }
 
 void DlgElevImport::onOpenFileDialog()
@@ -59,7 +65,7 @@ void DlgElevImport::onOpenMetaFileDialog()
 
 void DlgElevImport::onMetaFileChanged(const QString &name)
 {
-	m_haveMeta = scanMetaFile(name.toLatin1(), m_metaInfo);
+	m_haveMeta = scanMetaFile(QFile::encodeName(name).constData(), m_metaInfo);
 	if (m_haveMeta) {
 		ui->labelLvl->setText(QString::number(m_metaInfo.lvl));
 		ui->spinIlat0->setValue(m_metaInfo.ilat0);
@@ -76,7 +82,7 @@ void DlgElevImport::onMetaFileChanged(const QString &name)
 		ui->spinIlng1->setMaximum(m_metaInfo.ilng1 - 1);
 	}
 	else {
-		memset(&m_metaInfo, 0, sizeof(ElevPatchMetaInfo));
+		m_metaInfo = ElevPatchMetaInfo();
 		ui->labelLvl->setText("-");
 		ui->spinIlat0->setValue(0);
 		ui->spinIlat1->setValue(0);
@@ -116,8 +122,9 @@ void DlgElevImport::onPropagateChanges(int state)
 
 bool DlgElevImport::scanMetaFile(const char *fname, ElevPatchMetaInfo &meta)
 {
-	FILE *f = fopen(fname, "rt");
+	FILE *f = fopen(fname, "r");
 	if (!f) return false;
+	meta.missing.clear();
 
 	int ilat, ilng, n;
 	double smin, emin, smean, emean, smax, emax;
@@ -187,7 +194,7 @@ void DlgElevImport::accept()
 		return;
 	}
 	ElevTileBlock *eblock = ElevTileBlock::Load(m_metaInfo.lvl, m_metaInfo.ilat0, m_metaInfo.ilat1, m_metaInfo.ilng0, m_metaInfo.ilng1);
-	if (!elvread_png(ui->editPath->text().toLatin1(), m_metaInfo, eblock->getData())) {
+	if (!elvread_png(QFile::encodeName(ui->editPath->text()).constData(), m_metaInfo, eblock->getData())) {
 		QMessageBox mbox(QMessageBox::Warning, tr("tileedit: Warning"), tr("Error reading PNG file"), QMessageBox::Close);
 		mbox.exec();
 		return;

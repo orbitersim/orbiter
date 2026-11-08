@@ -1,8 +1,9 @@
-#include <windows.h>
 #include <vector>
 #include <algorithm>
-#define _USE_MATH_DEFINES
-#include <math.h>
+#include <climits>
+#include <cmath>
+#include <cstdio>
+#include <cstring>
 #include <png.h>
 #include "elv_io.h"
 
@@ -23,6 +24,8 @@ struct ELEVFILEHEADER { // file header for patch elevation data file
 
 #pragma pack(pop)
 
+static_assert(sizeof(ELEVFILEHEADER) == 100, "ELEVFILEHEADER must match the on-disk layout");
+
 // ==================================================================================
 
 ElevData elvread(const char *fname)
@@ -38,8 +41,10 @@ ElevData elvread(const char *fname)
 		return edata;
 
 	int res = fread(&hdr, sizeof(ELEVFILEHEADER), 1, f);
-	if (res != 1 || strncmp(hdr.id, "ELE\01", 4))
+	if (res != 1 || strncmp(hdr.id, "ELE\01", 4)) {
+		fclose(f);
 		return edata;
+	}
 
 	if (hdr.hdrsize != sizeof(ELEVFILEHEADER)) {
 		fseek(f, hdr.hdrsize, SEEK_SET);
@@ -58,15 +63,15 @@ ElevData elvread(const char *fname)
 		break;
 	case 8:
 		for (i = 0; i < ndat; i++) {
-			UINT8 v;
-			fread(&v, sizeof(UINT8), 1, f);
+			uint8_t v;
+			fread(&v, sizeof(uint8_t), 1, f);
 			e[i] = (double)v * scale + offset;
 		}
 		break;
 	case -16:
 		for (i = 0; i < ndat; i++) {
-			INT16 v;
-			fread(&v, sizeof(INT16), 1, f);
+			int16_t v;
+			fread(&v, sizeof(int16_t), 1, f);
 			e[i] = (double)v * scale + offset;
 		}
 		break;
@@ -93,8 +98,10 @@ bool elvmodread(const char *fname, ElevData &edata)
 		return false;
 
 	int res = fread(&hdr, sizeof(ELEVFILEHEADER), 1, f);
-	if (res != 1 || strncmp(hdr.id, "ELE\01", 4))
+	if (res != 1 || strncmp(hdr.id, "ELE\01", 4)) {
+		fclose(f);
 		return false;
+	}
 
 	if (hdr.hdrsize != sizeof(ELEVFILEHEADER)) {
 		fseek(f, hdr.hdrsize, SEEK_SET);
@@ -110,16 +117,16 @@ bool elvmodread(const char *fname, ElevData &edata)
 		break;
 	case 8: 
 		for (i = 0; i < ndat; i++) {
-			UINT8 v;
-			fread(&v, sizeof(UINT8), 1, f);
+			uint8_t v;
+			fread(&v, sizeof(uint8_t), 1, f);
 			if (v != UCHAR_MAX)
 				e[i] = (double)v * scale + offset;
 		}
 		break;
 	case -16:
 		for (i = 0; i < ndat; i++) {
-			INT16 v;
-			fread(&v, sizeof(INT16), 1, f);
+			int16_t v;
+			fread(&v, sizeof(int16_t), 1, f);
 			if (v != SHRT_MAX)
 				e[i] = (double)v * scale + offset;
 		}
@@ -136,7 +143,7 @@ bool elvmodread(const char *fname, ElevData &edata)
 
 // ==================================================================================
 
-ElevData elvscan(const BYTE *data, int ndata)
+ElevData elvscan(const uint8_t *data, int ndata)
 {
 	const int ndat = TILE_ELEVSTRIDE*TILE_ELEVSTRIDE;
 	ElevData edata;
@@ -167,12 +174,12 @@ ElevData elvscan(const BYTE *data, int ndata)
 			e[i] = offset;
 		break;
 	case 8: {
-		UINT8 *data_uint8 = (UINT8*)data;
+		uint8_t *data_uint8 = (uint8_t*)data;
 		for (i = 0; i < ndat; i++)
 			e[i] = (double)data_uint8[i] * scale + offset;
 		} break;
 	case -16: {
-		INT16 *data_int16 = (INT16*)data;
+		int16_t *data_int16 = (int16_t*)data;
 		for (i = 0; i < ndat; i++)
 			e[i] = (double)data_int16[i] * scale + offset;
 		} break;
@@ -187,7 +194,7 @@ ElevData elvscan(const BYTE *data, int ndata)
 
 // ==================================================================================
 
-bool elvmodscan(const BYTE*data, int ndata, ElevData &edata)
+bool elvmodscan(const uint8_t*data, int ndata, ElevData &edata)
 {
 	const int ndat = TILE_ELEVSTRIDE*TILE_ELEVSTRIDE;
 	ELEVFILEHEADER hdr;
@@ -213,17 +220,17 @@ bool elvmodscan(const BYTE*data, int ndata, ElevData &edata)
 			e[i] = offset;
 		break;
 	case 8: {
-		UINT8 *data_uint8 = (UINT8*)data;
+		uint8_t *data_uint8 = (uint8_t*)data;
 		for (i = 0; i < ndat; i++) {
-			UINT8 v = data_uint8[i];
+			uint8_t v = data_uint8[i];
 			if (v != UCHAR_MAX)
 				e[i] = (double)v * scale + offset;
 		}
 		} break;
 	case -16: {
-		INT16 *data_int16 = (INT16*)data;
+		int16_t *data_int16 = (int16_t*)data;
 		for (i = 0; i < ndat; i++) {
-			INT16 v = data_int16[i];
+			int16_t v = data_int16[i];
 			if (v != SHRT_MAX)
 				e[i] = (double)v * scale + offset;
 		}
@@ -300,14 +307,14 @@ void elvwrite(const char *fname, const ElevData &edata, double latmin, double la
 	fwrite(&hdr, sizeof(ELEVFILEHEADER), 1, f);
 	if (hdr.dtype == 8) {
 		for (int i = 0; i < edata.data.size(); i++) {
-			UINT8 v = (UINT8)((int)(edata.data[i] / hdr.scale) - shift);
-			fwrite(&v, sizeof(UINT8), 1, f);
+			uint8_t v = (uint8_t)((int)(edata.data[i] / hdr.scale) - shift);
+			fwrite(&v, sizeof(uint8_t), 1, f);
 		}
 	}
 	else if (hdr.dtype == -16) {
 		for (int i = 0; i < edata.data.size(); i++) {
-			INT16 v = (INT16)((int)(edata.data[i] / hdr.scale) - shift);
-			fwrite(&v, sizeof(INT16), 1, f);
+			int16_t v = (int16_t)((int)(edata.data[i] / hdr.scale) - shift);
+			fwrite(&v, sizeof(int16_t), 1, f);
 		}
 	}
 	fclose(f);
@@ -377,16 +384,16 @@ void elvmodwrite(const char *fname, const ElevData &edata, const ElevData &ebase
 	fwrite(&hdr, sizeof(ELEVFILEHEADER), 1, f);
 	if (hdr.dtype == 8) {
 		for (int i = 0; i < edata.data.size(); i++) {
-			UINT8 v = fabs(edata.data[i] - ebasedata.data[i]) < EPS ? UCHAR_MAX :
-				(UINT8)((int)(edata.data[i] / hdr.scale) - shift);
-			fwrite(&v, sizeof(UINT8), 1, f);
+			uint8_t v = fabs(edata.data[i] - ebasedata.data[i]) < EPS ? UCHAR_MAX :
+				(uint8_t)((int)(edata.data[i] / hdr.scale) - shift);
+			fwrite(&v, sizeof(uint8_t), 1, f);
 		}
 	}
 	else if (hdr.dtype == -16) {
 		for (int i = 0; i < edata.data.size(); i++) {
-			INT16 v = fabs(edata.data[i] - ebasedata.data[i]) < EPS ? SHRT_MAX :
-				(INT16)((int)(edata.data[i] / hdr.scale) - shift);
-			fwrite(&v, sizeof(INT16), 1, f);
+			int16_t v = fabs(edata.data[i] - ebasedata.data[i]) < EPS ? SHRT_MAX :
+				(int16_t)((int)(edata.data[i] / hdr.scale) - shift);
+			fwrite(&v, sizeof(int16_t), 1, f);
 		}
 	}
 	fclose(f);
@@ -451,7 +458,7 @@ void elvwrite_png(const char *fname, const ElevData &edata, double vmin, double 
 		for (int iw = 0; iw < w; iw++) {
 			double v = edata.data[iw + ih*w];
 			double vmap = (v - vmin)*scale;
-			vmap = max(0.0, min(v16max, vmap));
+			vmap = std::max(0.0, std::min(v16max, vmap));
 			buf[idx++] = (unsigned short)vmap;
 		}
 	}

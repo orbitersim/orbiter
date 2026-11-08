@@ -1,39 +1,26 @@
 # Copyright (c) Martin Schweiger
 # Licensed under the MIT License
 
-if(MFC_FOUND)
-    add_executable(Shipedit
-            Shipedit.cpp
-            Shipedit.rc
-            Mesh.cpp
-            ShipeditDlg.cpp
-            TransformDlg.cpp
-            Vecmat.cpp
-            StdAfx.cpp
-    )
+add_executable(Shipedit
+	Shipedit.cpp
+	Mesh.cpp
+	Vecmat.cpp
+)
 
-    target_include_directories(Shipedit
-            PUBLIC ${ORBITER_SOURCE_DIR}
-    )
+target_include_directories(Shipedit
+	PRIVATE ${ORBITER_SOURCE_DIR}
+)
 
-    set_target_properties(Shipedit
-            PROPERTIES
-            FOLDER Tools
-    )
+target_link_libraries(Shipedit UtilsImGui)
 
-    add_definitions(-D_AFXDLL)
+set_target_properties(Shipedit
+	PROPERTIES
+	FOLDER Tools
+	INSTALL_RPATH "@executable_path/..;@executable_path/../.."
+)
 
-    set_target_properties(Shipedit
-            PROPERTIES
-            LINK_FLAGS "/SUBSYSTEM:WINDOWS"
-            FOLDER Utils
-    )
-
-    install(TARGETS
-            Shipedit
-            RUNTIME
-            DESTINATION ${ORBITER_INSTALL_SDK_DIR}/Utils
-    )
-else()
-    message(WARNING "MFC not found: not building Shipedit utility")
-endif()
+install(TARGETS
+	Shipedit
+	RUNTIME
+	DESTINATION ${ORBITER_INSTALL_SDK_DIR}/Utils
+)

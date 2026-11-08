@@ -5,12 +5,14 @@ add_executable(pltex
 	Pltex.cpp
 )
 
+target_link_libraries(pltex UtilsDDS OrbiterPlatform)
+
 set_target_properties(pltex
 	PROPERTIES
 	FOLDER Tools
+	INSTALL_RPATH "@executable_path/..;@executable_path/../.."
 )
 
-# Installation
 install(TARGETS
 	pltex
 	RUNTIME

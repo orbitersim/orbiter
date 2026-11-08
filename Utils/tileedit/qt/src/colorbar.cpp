@@ -1,7 +1,11 @@
 #include "colorbar.h"
 #include "cmap.h"
-#include "QPainter"
-#include "QResizeEvent"
+#include <algorithm>
+#include <cfloat>
+#include <cstdio>
+#include <cstring>
+#include <QPainter>
+#include <QResizeEvent>
 
 Colorbar::Colorbar(QWidget *parent)
 	: QWidget(parent)
@@ -42,7 +46,7 @@ void Colorbar::setScalarValue(double val)
 	m_overlay->setScalarValue(val);
 }
 
-void Colorbar::setRGBValue(BYTE r, BYTE g, BYTE b)
+void Colorbar::setRGBValue(uint8_t r, uint8_t g, uint8_t b)
 {
 	m_overlay->setRGBValue(r, g, b);
 }
@@ -59,11 +63,11 @@ void Colorbar::paintEvent(QPaintEvent *event)
 	if (m_mode == TILEMODE_ELEVATION || m_mode == TILEMODE_ELEVMOD) {
 		if (m_elevDisplayParam) {
 			const Cmap &cm = cmap(m_elevDisplayParam->cmName);
-			DWORD data[256];
-			memcpy(data, cm, 256 * sizeof(DWORD));
+			uint32_t data[256];
+			memcpy(data, cm, 256 * sizeof(uint32_t));
 			for (int i = 0; i < 256; i++)
 				data[i] |= 0xff000000;
-			QImage qimg((BYTE*)data, 256, 1, QImage::Format_ARGB32);
+			QImage qimg((uint8_t*)data, 256, 1, QImage::Format_ARGB32);
 			painter.drawImage(cbRect, qimg);
 		}
 		else {
@@ -73,20 +77,20 @@ void Colorbar::paintEvent(QPaintEvent *event)
 		}
 	}
 	else if (m_mode == TILEMODE_SURFACE || m_mode == TILEMODE_NIGHTLIGHT) {
-		DWORD data[256 * 3];
+		uint32_t data[256 * 3];
 		for (int i = 0; i < 256; i++) {
 			data[i] = 0xff000000 | (i << 16);
 			data[i + 256] = 0xff000000 | (i << 8);
 			data[i + 256 * 2] = 0xff000000 | i;
 		}
-		QImage qimg((BYTE*)data, 256, 3, QImage::Format_ARGB32);
+		QImage qimg((uint8_t*)data, 256, 3, QImage::Format_ARGB32);
 		painter.drawImage(cbRect, qimg);
 	}
 	else if (m_mode == TILEMODE_WATERMASK) {
-		painter.setPen(QPen("black"));
-		painter.setBrush(QColor("black"));
+		painter.setPen(QPen(Qt::black));
+		painter.setBrush(QColor(Qt::black));
 		painter.drawRect(0, 0, cbRect.width() / 2 - 1, cbRect.height() - 1);
-		painter.setBrush(QColor("white"));
+		painter.setBrush(QColor(Qt::white));
 		painter.drawRect(cbRect.width() / 2, 0, cbRect.width() - cbRect.width() / 2 - 1, cbRect.height() - 1);
 	}
 }
@@ -136,7 +140,7 @@ void ColorbarOverlay::setScalarValue(double val)
 		update();
 }
 
-void ColorbarOverlay::setRGBValue(BYTE r, BYTE g, BYTE b)
+void ColorbarOverlay::setRGBValue(uint8_t r, uint8_t g, uint8_t b)
 {
 	m_r = r;
 	m_g = g;
@@ -161,25 +165,25 @@ void ColorbarOverlay::paintEvent(QPaintEvent *event)
 
 	if (m_mode == TILEMODE_ELEVATION || m_mode == TILEMODE_ELEVMOD) {
 		if (m_val != DBL_MAX) {
-			int x = max(1, min(w - 2, (m_val - m_vmin) / (m_vmax - m_vmin) * w));
+			int x = (int)std::max(1.0, std::min((double)(w - 2), (m_val - m_vmin) / (m_vmax - m_vmin) * w));
 			painter.setPen(m_penIndicator0);
 			painter.drawLine(x, 0, x, cbh - 1);
 			painter.setPen(m_penIndicator1);
 			painter.drawLine(x - 1, 0, x - 1, cbh - 1);
 			painter.drawLine(x + 1, 0, x + 1, cbh - 1);
 		}
-		painter.setPen("black");
-		sprintf(cbuf, "%+0.1lf m", m_vmin);
+		painter.setPen(QColor(Qt::black));
+		snprintf(cbuf, sizeof(cbuf), "%+0.1lf m", m_vmin);
 		painter.drawText(0, h-2, cbuf);
-		sprintf(cbuf, "%+0.1lf m", m_vmax);
+		snprintf(cbuf, sizeof(cbuf), "%+0.1lf m", m_vmax);
 		QString qs(cbuf);
-		painter.drawText(w - fm.width(qs), h-2, qs);
+		painter.drawText(w - fm.horizontalAdvance(qs), h-2, qs);
 		if (m_val != DBL_MAX)
-			sprintf(cbuf, "%+0.1lf m", m_val);
+			snprintf(cbuf, sizeof(cbuf), "%+0.1lf m", m_val);
 		else
-			strcpy(cbuf, "N/A");
+			snprintf(cbuf, sizeof(cbuf), "N/A");
 		QString qv(cbuf);
-		painter.drawText((w - fm.width(qv)) / 2, h-2, qv);
+		painter.drawText((w - fm.horizontalAdvance(qv)) / 2, h-2, qv);
 	}
 	else if (m_mode == TILEMODE_SURFACE || m_mode == TILEMODE_NIGHTLIGHT) {
 		int y0 = 0, y1 = cbh / 3, y2 = (cbh * 2) / 3, y3 = cbh;
@@ -196,34 +200,34 @@ void ColorbarOverlay::paintEvent(QPaintEvent *event)
 		painter.drawLine(xb - 1, y2, xb - 1, y3 - 1);
 		painter.drawLine(xb + 1, y2, xb + 1, y3 - 1);
 
-		painter.setPen("black");
+		painter.setPen(QColor(Qt::black));
 		QString qsmin = QString::number(0);
 		painter.drawText(0, h-2, qsmin);
 		QString qsmax = QString::number(255);
-		painter.drawText(w - fm.width(qsmax), h-2, qsmax);
+		painter.drawText(w - fm.horizontalAdvance(qsmax), h-2, qsmax);
 
-		sprintf(cbuf, "%d / %d / %d", m_r, m_g, m_b);
+		snprintf(cbuf, sizeof(cbuf), "%d / %d / %d", m_r, m_g, m_b);
 		QString qrgb(cbuf);
-		int x0 = (w - fm.width(qrgb)) / 2;
-		painter.setPen(QPen("red"));
-		sprintf(cbuf, "%d", m_r);
+		int x0 = (w - fm.horizontalAdvance(qrgb)) / 2;
+		painter.setPen(QPen(Qt::red));
+		snprintf(cbuf, sizeof(cbuf), "%d", m_r);
 		QString qr(cbuf);
 		painter.drawText(x0, h - 2, qr);
-		x0 += fm.width(qr);
-		painter.setPen(QPen("black"));
+		x0 += fm.horizontalAdvance(qr);
+		painter.setPen(QPen(Qt::black));
 		QString qdash(" / ");
 		painter.drawText(x0, h - 2, qdash);
-		x0 += fm.width(qdash);
-		painter.setPen(QPen("green"));
-		sprintf(cbuf, "%d", m_g);
+		x0 += fm.horizontalAdvance(qdash);
+		painter.setPen(QPen(Qt::darkGreen));
+		snprintf(cbuf, sizeof(cbuf), "%d", m_g);
 		QString qg(cbuf);
 		painter.drawText(x0, h - 2, qg);
-		x0 += fm.width(qg);
-		painter.setPen(QPen("black"));
+		x0 += fm.horizontalAdvance(qg);
+		painter.setPen(QPen(Qt::black));
 		painter.drawText(x0, h - 2, qdash);
-		x0 += fm.width(qdash);
-		painter.setPen(QPen("blue"));
-		sprintf(cbuf, "%d", m_b);
+		x0 += fm.horizontalAdvance(qdash);
+		painter.setPen(QPen(Qt::blue));
+		snprintf(cbuf, sizeof(cbuf), "%d", m_b);
 		QString qb(cbuf);
 		painter.drawText(x0, h - 2, qb);
 	}
@@ -240,7 +244,7 @@ void ColorbarOverlay::paintEvent(QPaintEvent *event)
 			painter.drawRect(w / 2 + 2, 2, w - w / 2 - 5, cbh - 5);
 
 		QString s(isWater ? "Water (specular)" : "Land (diffuse)");
-		painter.setPen(QPen("black"));
-		painter.drawText((w - fm.width(s)) / 2, h - 2, s);
+		painter.setPen(QPen(Qt::black));
+		painter.drawText((w - fm.horizontalAdvance(s)) / 2, h - 2, s);
 	}
 }

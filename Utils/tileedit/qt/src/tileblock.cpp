@@ -1,8 +1,10 @@
 #include "tileblock.h"
 #include "elv_io.h"
 #include <algorithm>
-#define _USE_MATH_DEFINES
-#include <math.h>
+#include <cfloat>
+#include <cmath>
+#include <cstdio>
+#include <cstring>
 
 TileBlock::TileBlock(int lvl, int ilat0, int ilat1, int ilng0, int ilng1)
 {
@@ -210,7 +212,7 @@ SurfTileBlock *SurfTileBlock::Load(int lvl, int ilat0, int ilat1, int ilng0, int
 				for (int ii = 0; ii < yrep; ii++) {
 					for (int j = 0; j < im.width; j++) {
 						for (int jj = 0; jj < xrep; jj++) {
-							DWORD v = im.data[i*im.width + j];
+							uint32_t v = im.data[i*im.width + j];
 							int idx = yofs * stileblock->m_idata.width + xofs + j*xrep + jj;
 							stileblock->m_idata.data[idx] = v;
 						}
@@ -298,7 +300,7 @@ MaskTileBlock *MaskTileBlock::Load(int lvl, int ilat0, int ilat1, int ilng0, int
 				for (int ii = 0; ii < yrep; ii++) {
 					for (int j = 0; j < im.width; j++) {
 						for (int jj = 0; jj < xrep; jj++) {
-							DWORD v = im.data[i*im.width + j];
+							uint32_t v = im.data[i*im.width + j];
 							int idx = yofs * mtileblock->m_idata.width + xofs + j*xrep + jj;
 							mtileblock->m_idata.data[idx] = v;
 						}
@@ -474,10 +476,8 @@ void ElevTileBlock::ExportPNG(const std::string &fname, double vmin, double vmax
 	elvwrite_png(fname.c_str(), m_edata, vmin, vmax);
 
 	// write out metadata into a separate file
-	char fname_meta[1024];
-	strcpy(fname_meta, fname.c_str());
-	strcat(fname_meta, ".hdr");
-	FILE *f = fopen(fname_meta, "wt");
+	std::string fname_meta = fname + ".hdr";
+	FILE *f = fopen(fname_meta.c_str(), "w");
 	if (f) {
 		fprintf(f, "vmin=%lf vmax=%lf scale=%lf offset=%lf type=%d padding=1x1 colormap=0 smin=0 emin=0 smean=0 emean=0 smax=0 emax=0 latmin=%+0.10lf latmax=%+0.10lf lngmin=%+0.10lf lngmax=%+0.10lf\n",
 			vmin/m_edata.dres, vmax/m_edata.dres, m_edata.dres, 0.0, -16, latmin*DEG, latmax*DEG, lngmin*DEG, lngmax*DEG);
@@ -683,10 +683,10 @@ void ElevTileBlock::ExtractImage(Image &img, TileMode mode, int exmin, int exmax
 	}
 	double dscale = (dmax > dmin ? 256.0 / (dmax - dmin) : 1.0);
 
-	int imin = (exmin < 0 ? 0 : max(0, (exmin - 1) * 2 - 1));
-	int imax = (exmax < 0 ? img.width : min((int)img.width, exmax * 2));
-	int jmin = (eymax < 0 ? 0 : max(0, (int)img.height - (eymax - 1) * 2));
-	int jmax = (eymin < 0 ? img.height : min((int)img.height, (int)img.height - (eymin - 1) * 2 + 1));
+	int imin = (exmin < 0 ? 0 : std::max(0, (exmin - 1) * 2 - 1));
+	int imax = (exmax < 0 ? img.width : std::min((int)img.width, exmax * 2));
+	int jmin = (eymax < 0 ? 0 : std::max(0, (int)img.height - (eymax - 1) * 2));
+	int jmax = (eymin < 0 ? img.height : std::min((int)img.height, (int)img.height - (eymin - 1) * 2 + 1));
 
 	const Cmap &cm = cmap(s_elevDisplayParam->cmName);
 	bool useMask = s_elevDisplayParam->useWaterMask && m_waterMask.size();
@@ -696,7 +696,7 @@ void ElevTileBlock::ExtractImage(Image &img, TileMode mode, int exmin, int exmax
 			int ex = (i + 1) / 2 + 1;
 			int ey = (img.height - j) / 2 + 1;
 			double d = m_edata.data[ex + ey * m_edata.width];
-			int v = max(min((int)((d - dmin) * dscale), 255), 0);
+			int v = std::max(std::min((int)((d - dmin) * dscale), 255), 0);
 			img.data[i + j * img.width] = (0xff000000 | cm[v]);
 
 			if (useMask && m_waterMask[i + j * img.width])
@@ -722,10 +722,10 @@ void ElevTileBlock::ExtractModImage(Image &img, TileMode mode, int exmin, int ex
 	}
 	double dscale = (dmax > dmin ? 256.0 / (dmax - dmin) : 1.0);
 
-	int imin = (exmin < 0 ? 0 : max(0, (exmin - 1) * 2 - 1));
-	int imax = (exmax < 0 ? img.width : min((int)img.width, exmax * 2));
-	int jmin = (eymax < 0 ? 0 : max(0, (int)img.height - (eymax - 1) * 2));
-	int jmax = (eymin < 0 ? img.height : min((int)img.height, (int)img.height - (eymin - 1) * 2 + 1));
+	int imin = (exmin < 0 ? 0 : std::max(0, (exmin - 1) * 2 - 1));
+	int imax = (exmax < 0 ? img.width : std::min((int)img.width, exmax * 2));
+	int jmin = (eymax < 0 ? 0 : std::max(0, (int)img.height - (eymax - 1) * 2));
+	int jmax = (eymin < 0 ? img.height : std::min((int)img.height, (int)img.height - (eymin - 1) * 2 + 1));
 
 	const Cmap &cm = cmap(s_elevDisplayParam->cmName);
 	bool useMask = s_elevDisplayParam->useWaterMask && m_waterMask.size();
@@ -737,7 +737,7 @@ void ElevTileBlock::ExtractModImage(Image &img, TileMode mode, int exmin, int ex
 			double d = m_edata.data[ex + ey * m_edata.width];
 			double db = m_edataBase.data[ex + ey * m_edata.width];
 			if (d != db) {
-				int v = max(min((int)((d - dmin) * dscale), 255), 0);
+				int v = std::max(std::min((int)((d - dmin) * dscale), 255), 0);
 				img.data[i + j * img.width] = (0xff000000 | cm[v]);
 			}
 			else {

@@ -1,12 +1,21 @@
 #ifndef TILECANVAS_H
 #define TILECANVAS_H
 
-#include <windows.h>
-#include "QWidget"
-#include "QBoxLayout"
-#include "QPen"
+#include <QWidget>
+#include <QBoxLayout>
+#include <QMouseEvent>
+#include <QPen>
 #include "tile.h"
 #include "tileblock.h"
+
+inline QPoint mouseEventPos(const QMouseEvent *event)
+{
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
+	return event->position().toPoint();
+#else
+	return event->pos();
+#endif
+}
 
 class TileCanvasOverlay;
 class tileedit;
@@ -31,13 +40,17 @@ public:
 	void setIdx(int idx) { m_canvasIdx = idx; }
 	void setTileedit(tileedit *te) { m_tileedit = te; }
 	const Image &getImage() const { return m_img; }
-    void resizeEvent(QResizeEvent *event);
-    void paintEvent(QPaintEvent *event);
-    void enterEvent(QEvent *event);
-    void leaveEvent(QEvent *event);
-    void mouseMoveEvent(QMouseEvent *event);
-	void mousePressEvent(QMouseEvent *event);
-    void mouseReleaseEvent(QMouseEvent *event);
+    void resizeEvent(QResizeEvent *event) override;
+    void paintEvent(QPaintEvent *event) override;
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
+    void enterEvent(QEnterEvent *event) override;
+#else
+    void enterEvent(QEvent *event) override;
+#endif
+    void leaveEvent(QEvent *event) override;
+    void mouseMoveEvent(QMouseEvent *event) override;
+	void mousePressEvent(QMouseEvent *event) override;
+    void mouseReleaseEvent(QMouseEvent *event) override;
     void setTileBlock(const TileBlock *tileBlock, TileMode mode);
 	void updateImage();
 	void setGlyphMode(GlyphMode mode);
@@ -93,10 +106,10 @@ public:
     Glyph glyph() const { return m_glyph; }
     void setGlyph(Glyph glyph);
 	void setCrosshair(double x, double y, double rad);
-    void paintEvent(QPaintEvent *event);
-    void mouseMoveEvent(QMouseEvent *event);
-	void mousePressEvent(QMouseEvent *event);
-    void mouseReleaseEvent(QMouseEvent *event);
+    void paintEvent(QPaintEvent *event) override;
+    void mouseMoveEvent(QMouseEvent *event) override;
+	void mousePressEvent(QMouseEvent *event) override;
+    void mouseReleaseEvent(QMouseEvent *event) override;
 	void setTileBlock(const TileBlock *tileBlock) { m_tileBlock = tileBlock; }
 
 private:
@@ -107,7 +120,6 @@ private:
 	double m_crosshairR;
 	TileCanvas *m_canvas;
 	const TileBlock *m_tileBlock;
-	static QFont s_font;
 };
 
 #endif // TILECANVAS_H

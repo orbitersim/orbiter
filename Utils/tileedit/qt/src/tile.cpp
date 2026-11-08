@@ -3,8 +3,10 @@
 #include "ddsread.h"
 #include <iostream>
 #include <algorithm>
-#include <direct.h>
-#include <dxt_io.h>
+#include <cstdio>
+#include <sys/stat.h>
+#include <sys/types.h>
+#include "dxt_io.h"
 
 int Tile::s_openMode = 0x3;
 TileLoadMode Tile::s_globalLoadMode = TILELOADMODE_ANCESTORSUBSECTION;
@@ -14,13 +16,13 @@ std::string Tile::s_root;
 
 void ensureLayerDir(const char *rootDir, const char *layer, int lvl, int ilat)
 {
-	char path[256];
-	sprintf(path, "%s/%s", rootDir, layer);
-	mkdir(path);
-	sprintf(path, "%s/%s/%02d", rootDir, layer, lvl);
-	mkdir(path);
-	sprintf(path, "%s/%s/%02d/%06d", rootDir, layer, lvl, ilat);
-	mkdir(path);
+	char path[1024];
+	snprintf(path, sizeof(path), "%s/%s", rootDir, layer);
+	mkdir(path, 0755);
+	snprintf(path, sizeof(path), "%s/%s/%02d", rootDir, layer, lvl);
+	mkdir(path, 0755);
+	snprintf(path, sizeof(path), "%s/%s/%02d/%06d", rootDir, layer, lvl, ilat);
+	mkdir(path, 0755);
 }
 
 
@@ -32,7 +34,7 @@ Tile::Tile(int lvl, int ilat, int ilng)
     m_ilat = m_subilat = ilat;
     m_ilng = m_subilng = ilng;
 
-    int sz = 1 << min(lvl+6, 9);
+    int sz = 1 << std::min(lvl+6, 9);
     lat_subrange = std::make_pair(0, sz);
     lng_subrange = std::make_pair(0, sz);
 }
@@ -84,8 +86,8 @@ void Tile::ensureLayerDir()
 void Tile::ensureTmpLayerDir()
 {
 	char cbuf[1024];
-	sprintf(cbuf, "%s/tileedit.tmp", s_root.c_str());
-	mkdir(cbuf);
+	snprintf(cbuf, sizeof(cbuf), "%s/tileedit.tmp", s_root.c_str());
+	mkdir(cbuf, 0755);
 	::ensureLayerDir(cbuf, Layer().c_str(), m_lvl, m_ilat);
 }
 
@@ -116,7 +118,7 @@ int DXT1Tile::TileSize() const
 void DXT1Tile::SaveDXT1()
 {
 	char path[1024];
-	sprintf(path, "%s/%s/%02d/%06d/%06d.dds", s_root.c_str(), Layer().c_str(), m_lvl, m_ilat, m_ilng);
+	snprintf(path, sizeof(path), "%s/%s/%02d/%06d/%06d.dds", s_root.c_str(), Layer().c_str(), m_lvl, m_ilat, m_ilng);
 	ensureLayerDir();
 	dxt1write(path, m_idata);
 }
@@ -124,7 +126,7 @@ void DXT1Tile::SaveDXT1()
 void DXT1Tile::SavePNGtmp()
 {
 	char path[1024];
-	sprintf(path, "%s/tileedit.tmp/%s/%02d/%06d/%06d.png", s_root.c_str(), Layer().c_str(), m_lvl, m_ilat, m_ilng);
+	snprintf(path, sizeof(path), "%s/tileedit.tmp/%s/%02d/%06d/%06d.png", s_root.c_str(), Layer().c_str(), m_lvl, m_ilat, m_ilng);
 	ensureTmpLayerDir();
 	pngwrite_tmp(path, m_idata);
 }
@@ -144,7 +146,7 @@ bool DXT1Tile::LoadDXT1(const ZTreeMgr *mgr, TileLoadMode mode)
 bool DXT1Tile::LoadPNGtmp()
 {
 	char path[1024];
-	sprintf(path, "%s/tileedit.tmp/%s/%02d/%06d/%06d.png", s_root.c_str(), Layer().c_str(), m_lvl, m_ilat, m_ilng);
+	snprintf(path, sizeof(path), "%s/tileedit.tmp/%s/%02d/%06d/%06d.png", s_root.c_str(), Layer().c_str(), m_lvl, m_ilat, m_ilng);
 	bool ok = pngread_tmp(path, m_idata);
 	if (ok && (m_idata.width != TileSize() || m_idata.height != TileSize()))
 		ok = false;
@@ -184,12 +186,12 @@ void DXT1Tile::LoadData(Image &im, int lvl, int ilat, int ilng, const ZTreeMgr *
 {
 	if (s_openMode & 0x1) { // try cache
 		char path[1024];
-		sprintf(path, "%s/%s/%02d/%06d/%06d.dds", s_root.c_str(), Layer().c_str(), lvl, ilat, ilng);
+		snprintf(path, sizeof(path), "%s/%s/%02d/%06d/%06d.dds", s_root.c_str(), Layer().c_str(), lvl, ilat, ilng);
 		im = ddsread(path);
 	}
 	if (im.data.size() == 0 && s_openMode & 0x2 && mgr) { // try archive
-		BYTE *buf;
-		DWORD ndata = mgr->ReadData(lvl, ilat, ilng, &buf);
+		uint8_t *buf;
+		uint32_t ndata = mgr->ReadData(lvl, ilat, ilng, &buf);
 		if (ndata) {
 			im = ddsscan(buf, ndata);
 			mgr->ReleaseData(buf);
@@ -209,7 +211,7 @@ TileBlock *DXT1Tile::ProlongToChildren() const
 	Image &idata = tblock->getData();
 	for (i = 0; i < m_idata.height; i++) {
 		for (j = 0; j < m_idata.width; j++) {
-			DWORD v = m_idata.data[i*m_idata.width + j];
+			uint32_t v = m_idata.data[i*m_idata.width + j];
 			for (ii = 0; ii < 2; ii++)
 				for (jj = 0; jj < 2; jj++)
 					idata.data[(i * 2 + ii)*idata.width + (j * 2 + jj)] = v;
@@ -305,16 +307,16 @@ bool SurfTile::mapToAncestors(int minlvl) const
 
 	for (int y = 0; y < szh; y++) {
 		for (int x = 0; x < szh; x++) {
-			DWORD p1 = m_idata.data[x * 2 + y * 2 * TILE_SURFSTRIDE];
-			DWORD p2 = m_idata.data[x * 2 + 1 + y * 2 * TILE_SURFSTRIDE];
-			DWORD p3 = m_idata.data[x * 2 + (y * 2 + 1) * TILE_SURFSTRIDE];
-			DWORD p4 = m_idata.data[x * 2 + 1 + (y * 2 + 1) * TILE_SURFSTRIDE];
+			uint32_t p1 = m_idata.data[x * 2 + y * 2 * TILE_SURFSTRIDE];
+			uint32_t p2 = m_idata.data[x * 2 + 1 + y * 2 * TILE_SURFSTRIDE];
+			uint32_t p3 = m_idata.data[x * 2 + (y * 2 + 1) * TILE_SURFSTRIDE];
+			uint32_t p4 = m_idata.data[x * 2 + 1 + (y * 2 + 1) * TILE_SURFSTRIDE];
 
-			DWORD c1 = ((DWORD)(p1 & 0xff) + (DWORD)(p2 & 0xff) + (DWORD)(p3 & 0xff) + (DWORD)(p4 & 0xff)) >> 2;
-			DWORD c2 = ((DWORD)((p1 >> 8) & 0xff) + (DWORD)((p2 >> 8) & 0xff) + (DWORD)((p3 >> 8) & 0xff) + (DWORD)((p4 >> 8) & 0xff)) >> 2;
-			DWORD c3 = ((DWORD)((p1 >> 16) & 0xff) + (DWORD)((p2 >> 16) & 0xff) + (DWORD)((p3 >> 16) & 0xff) + (DWORD)((p4 >> 16) & 0xff)) >> 2;
+			uint32_t c1 = ((uint32_t)(p1 & 0xff) + (uint32_t)(p2 & 0xff) + (uint32_t)(p3 & 0xff) + (uint32_t)(p4 & 0xff)) >> 2;
+			uint32_t c2 = ((uint32_t)((p1 >> 8) & 0xff) + (uint32_t)((p2 >> 8) & 0xff) + (uint32_t)((p3 >> 8) & 0xff) + (uint32_t)((p4 >> 8) & 0xff)) >> 2;
+			uint32_t c3 = ((uint32_t)((p1 >> 16) & 0xff) + (uint32_t)((p2 >> 16) & 0xff) + (uint32_t)((p3 >> 16) & 0xff) + (uint32_t)((p4 >> 16) & 0xff)) >> 2;
 
-			DWORD v = 0xff000000 | c1 | (c2 << 8) | (c3 << 16);
+			uint32_t v = 0xff000000 | c1 | (c2 << 8) | (c3 << 16);
 			if (v != idata.data[xofs + x + (yofs + y) * TILE_SURFSTRIDE]) {
 				idata.data[xofs + x + (yofs + y)*TILE_SURFSTRIDE] = v;
 				isModified = true;

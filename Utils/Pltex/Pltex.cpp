@@ -47,14 +47,14 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <io.h>
-#include <conio.h>
-#include <fcntl.h>
-#include <process.h>
-#include <direct.h>
+#include <unistd.h>
+#include <termios.h>
 #include <windows.h>
 #include <math.h>
 #include <ddraw.h>
+#include <algorithm>
+#include <vector>
+#include "DDSWrite.h"
 
 using namespace std;
 
@@ -139,7 +139,6 @@ void SortTextures (const char *rootname);
 void CopyTexturesAtLevel (TILEFILESPEC *td, DWORD baseidx, DWORD lvl, DWORD tgtlvl, DWORD &texidx, DWORD &maskidx,
 	FILE *srctexf, FILE *srcmaskf, FILE *tgttexf, FILE *tgtmaskf);
 
-void SetOutputHeader (BITMAPFILEHEADER &bmfh, BITMAPINFOHEADER &bmih, LONG w, LONG h);
 RGB *BinaryCompress (RGB *src, LONG srcw, LONG srch, LONG tgtw, long tgth);
 
 BYTE *Compress (int nch, BYTE *src, LONG srcw, LONG srch, LONG tgtw, long tgth, int which = HEMISPHERE_BOTH);
@@ -204,7 +203,6 @@ void IncProgress ();
 
 
 const double eps = 1e-10;
-const char *dxtex = ".\\dxtex.exe";
 char g_cwd[256];
 char fname[256] = "\0";
 char aname[256] = "\0";
@@ -227,8 +225,8 @@ int main (int argc, char *argv[])
 	int i;
 	char task;
 
-	if (!_getcwd (g_cwd, 256)) FatalError ("Cannot get working directory");
-	strcat (g_cwd, "\\");
+	if (!getcwd (g_cwd, 256)) FatalError ("Cannot get working directory");
+	strcat (g_cwd, "/");
 
 	for (i = 1; i < argc; i++) {
 		if (argv[i][0] != '-') FatalError ("Command line parsing error");
@@ -795,7 +793,7 @@ void CreateGlobalSurface ()
 	}
 	cout << "\nTo use the new surface in Orbiter:\n";
 	cout << "Rename all output files by replacing '" << fname << "' with the\n";
-	cout << "planet name, and move them to the Orbiter\\Textures2 folder" << endl;
+	cout << "planet name, and move them to the Orbiter/Textures2 folder" << endl;
 }
 
 void CreateLocalArea ()
@@ -1175,7 +1173,7 @@ void CreateLocalArea ()
 	if (mixed)
 		cout << "* rename " << fname << "_tile_lmask.tex to <planet>_tile_lmask.tex\n";
 	cout << "(where <planet> is the name of the planet), and move both files to\n";
-	cout << "the Orbiter\\Textures2 folder" << endl;
+	cout << "the Orbiter/Textures2 folder" << endl;
 	
 }
 
@@ -1386,7 +1384,7 @@ void MergeTextures ()
 	cout << "definition.\n\n\n";
 
 	cout << "Enter the base name for the first set of texture files. This is the\n";
-	cout << "set that will be updated. Example: \"Textures2\\Earth\".\n";
+	cout << "set that will be updated. Example: \"Textures2/Earth\".\n";
 	cout << "The following files must exist:\n";
 	cout << "  <basename1>_tile.bin       (tile descriptor file)\n";
 	cout << "  <basename1>_tile.tex       (surface texture file)\n";
@@ -1490,7 +1488,7 @@ void MergeTextures ()
 	cout << "* rename merge_tile.bin to <planet>_tile.bin\n";
 	cout << "* rename merge_tile.tex to <planet>_tile.tex\n";
 	cout << "(where <planet> is the name of the planet), and overwrite the original\n";
-	cout << "files in the Orbiter\\Textures2 folder." << endl;
+	cout << "files in the Orbiter/Textures2 folder." << endl;
 
 }
 
@@ -1871,30 +1869,7 @@ void CreateCloudMap ()
 
 	cout << endl << "Cloud map written to " << fname << ".tex" << endl;
 	cout << "\nTo use the new cloud map in Orbiter:\n";
-	cout << "Rename to <planet>_cloud.tex and move to Orbiter\\Textures2 folder" << endl;
-}
-
-void SetOutputHeader (BITMAPFILEHEADER &bmfh, BITMAPINFOHEADER &bmih, LONG w, LONG h)
-{
-	char *id = (char*)&bmfh.bfType;
-	id[0] = 'B';
-	id[1] = 'M';
-	bmfh.bfSize = sizeof (BITMAPFILEHEADER) + sizeof (BITMAPINFOHEADER) + w*h*3;
-	bmfh.bfReserved1 = 0;
-	bmfh.bfReserved2 = 0;
-	bmfh.bfOffBits = sizeof (BITMAPINFOHEADER) + sizeof (BITMAPFILEHEADER);
-
-	bmih.biSize = sizeof (BITMAPINFOHEADER);
-	bmih.biWidth = w;
-	bmih.biHeight = h;
-	bmih.biPlanes = 1;
-	bmih.biBitCount = 24;
-	bmih.biCompression = BI_RGB;
-	bmih.biSizeImage = 0;
-	bmih.biXPelsPerMeter = 1;
-	bmih.biYPelsPerMeter = 1;
-	bmih.biClrUsed = 0;
-	bmih.biClrImportant = 0;
+	cout << "Rename to <planet>_cloud.tex and move to Orbiter/Textures2 folder" << endl;
 }
 
 RGB *CompressRGB (RGB *src, LONG srcw, LONG srch, LONG tgtw, long tgth, int which)
@@ -2205,10 +2180,6 @@ void ErodeLights (RGB *limg, Alpha *aimg, LONG imgw, LONG imgh)
 
 DWORD CatDDS (FILE *texf, RGB *img, Alpha *aimg, LONG imgw, LONG imgh, bool force, bool mipmap)
 {
-	const char *bmpname  = "tmp.bmp";
-	const char *abmpname = "tmp_a.bmp";
-	const char *ddsname  = "tmp.dds";
-
 	static RGB *rgbdummy = 0;
 	if (!img) {
 		if (!rgbdummy) {
@@ -2218,28 +2189,12 @@ DWORD CatDDS (FILE *texf, RGB *img, Alpha *aimg, LONG imgw, LONG imgh, bool forc
 		img = rgbdummy;
 	}
 
-	FILE *bmpf;
-	BITMAPFILEHEADER bmfh;
-	BITMAPINFOHEADER bmih;
-	int i, res, ddssize = 0, fh;
+	int i;
 	bool bopaque = false, btransparent = false;
 	int nopaque, ntransparent;
 
-	SetOutputHeader (bmfh, bmih, imgw, imgh);
-	bmpf = fopen (bmpname, "wb");
-	if (!bmpf) FatalError ("Could not open temporary bitmap file.");
-	fwrite (&bmfh, sizeof(BITMAPFILEHEADER), 1, bmpf);
-	fwrite (&bmih, sizeof(BITMAPINFOHEADER), 1, bmpf);
-	fwrite (img, 3, imgw*imgh, bmpf);
-	fclose (bmpf);
-
 	if (aimg) {
-		bmpf = fopen (abmpname, "wb");
-		if (!bmpf) FatalError ("Could not open temporary alpha file.");
-		fwrite (&bmfh, sizeof(BITMAPFILEHEADER), 1, bmpf);
-		fwrite (&bmih, sizeof(BITMAPINFOHEADER), 1, bmpf);
-
-		// make alpha binary black/white, and count opaque/transparent pixels 
+		// make alpha binary black/white, and count opaque/transparent pixels
 		for (i = nopaque = ntransparent = 0; i < imgw*imgh; i++) {
 			if (binary_alpha) {
 				aimg[i] = 255 - aimg[i];   // invert
@@ -2260,38 +2215,15 @@ DWORD CatDDS (FILE *texf, RGB *img, Alpha *aimg, LONG imgw, LONG imgh, bool forc
 			for (i = 0; i < imgw*imgh; i++) aimg[i] = 0;
 			g_nsuppressed++;
 		}
-
-		for (i = 0; i < imgw*imgh; i++) {
-			RGB rgb;
-			rgb.r = rgb.g = rgb.b = aimg[i];
-			fwrite (&rgb, 3, 1, bmpf);
-		}
-		fclose (bmpf);
-
-		res = _spawnl (_P_WAIT, dxtex, dxtex, bmpname, "-a", abmpname, mipmap ? "-m" : "", binary_alpha ? "DXT1" : "DXT5", ddsname, NULL);
-	} else {
-		res = _spawnl (_P_WAIT, dxtex, dxtex, bmpname, mipmap ? "-m" : "", "DXT1", ddsname, NULL);
 	}
-	if (res != 0) FatalError ("Executing dxtex failed.");
 
-	// get file size
-    if ((fh = _open (ddsname, _O_RDONLY)) == -1) FatalError ("Could not open DDS file");
-    ddssize = _filelength (fh);
-	_close (fh);
-	
-	if (force || !aimg || !selective_alpha || (bopaque && btransparent)) {
-		FILE *ddsf = fopen (ddsname, "rb");
-		BYTE *buf = new BYTE[ddssize];
-		fread (buf, 1, ddssize, ddsf);
-		fclose (ddsf);
-		fwrite (buf, 1, ddssize, texf);
-		delete []buf;
-	} else ddssize = 0;
+	if (!(force || !aimg || !selective_alpha || (bopaque && btransparent)))
+		return 0;
 
-	remove (bmpname);
-	remove (ddsname);
-	if (aimg) remove (abmpname);
-	return (DWORD)ddssize;
+	std::vector<BYTE> rgba = ddsw::FromBottomUpBGR ((const BYTE*)img, aimg, imgw, imgh);
+	std::vector<BYTE> dds = ddsw::Encode (rgba.data(), imgw, imgh, (aimg && !binary_alpha) ? ddsw::DXT5 : ddsw::DXT1, mipmap);
+	fwrite (dds.data(), 1, dds.size(), texf);
+	return (DWORD)dds.size();
 }
 
 WORD CatMaskDDS (FILE *texf, RGB *img, Alpha *aimg, LONG imgw, LONG imgh)
@@ -2304,32 +2236,19 @@ WORD CatMaskDDS (FILE *texf, RGB *img, Alpha *aimg, LONG imgw, LONG imgh)
 	// bit 1: patch contains water portion  (alpha)
 	// bit 2: patch contains city lights    (RGB)
 
-	const char *bmpname  = "tmp.bmp";
-	const char *abmpname = "tmp_a.bmp";
-	const char *ddsname  = "tmp.dds";
-
 	static RGB *rgbdummy = 0;
 	static RGB  zero = {0,0,0};
 
-	FILE *bmpf;
-	BITMAPFILEHEADER bmfh;
-	BITMAPINFOHEADER bmih;
-	int res, ddssize, fh;
 	bool bopaque = false, btransparent = false;
 	bool brgb = false, balpha = false;
 	int nlight, nopaque, ntransparent;
 	WORD flag = 0;
-	bool written = true;
-
-	SetOutputHeader (bmfh, bmih, imgw, imgh);
 
 	if (img)  { // city-light texture provided
 		// count light pixels
 		for (LONG i = nlight = 0; i < imgw*imgh; i++) {
 			if ((int)img[i].r + (int)img[i].g + (int)img[i].b > 32*3)
 				nlight++;
-			//else
-			//	img[i].r = img[i].g = img[i].b = 0; // suppress dark pixels to black
 		}
 		if (nlight > imgw*imgh * g_light_tol) { // # light pixels above threshold?
 			brgb = true;
@@ -2346,7 +2265,7 @@ WORD CatMaskDDS (FILE *texf, RGB *img, Alpha *aimg, LONG imgw, LONG imgh)
 	}
 
 	if (aimg) { // land-water mask provided
-		// make alpha binary black/white, and count opaque/transparent pixels 
+		// make alpha binary black/white, and count opaque/transparent pixels
 		for (LONG i = nopaque = ntransparent = 0; i < imgw*imgh; i++) {
 			aimg[i] = 255 - aimg[i];   // invert
 			if (aimg[i] < 128) aimg[i] =   0, ntransparent++;
@@ -2392,51 +2311,10 @@ WORD CatMaskDDS (FILE *texf, RGB *img, Alpha *aimg, LONG imgw, LONG imgh)
 		}
 	}
 
-	// create a bitmap for the RGB channels
-	bmpf = fopen (bmpname, "wb");
-	if (!bmpf) FatalError ("Could not open temporary bitmap file.");
-	fwrite (&bmfh, sizeof(BITMAPFILEHEADER), 1, bmpf);
-	fwrite (&bmih, sizeof(BITMAPINFOHEADER), 1, bmpf);
-	fwrite (img, 3, imgw*imgh, bmpf);
-	fclose (bmpf);
-
-	// create a bitmap for the alpha channel
-	if (balpha) {
-		bmpf = fopen (abmpname, "wb");
-		if (!bmpf) FatalError ("Could not open temporary alpha file.");
-		fwrite (&bmfh, sizeof(BITMAPFILEHEADER), 1, bmpf);
-		fwrite (&bmih, sizeof(BITMAPINFOHEADER), 1, bmpf);
-		for (LONG i = 0; i < imgw*imgh; i++) {
-			RGB rgb;
-			rgb.r = rgb.g = rgb.b = aimg[i];
-			fwrite (&rgb, 3, 1, bmpf);
-		}
-		fclose (bmpf);
-	}
-
-	// now convert to DXT1 texture
-	if (balpha)
-		res = _spawnl (_P_WAIT, dxtex, dxtex, bmpname, "-a", abmpname, "DXT1", ddsname, NULL);
-	else
-		res = _spawnl (_P_WAIT, dxtex, dxtex, bmpname, "DXT1", ddsname, NULL);
-	if (res != 0) FatalError ("Executing dxtex failed.");
-
-	// get file size
-    if ((fh = _open (ddsname, _O_RDONLY)) == -1) FatalError ("Could not open DDS file");
-    ddssize = _filelength (fh);
-	_close (fh);
-	
-	// append to texture file
-	FILE *ddsf = fopen (ddsname, "rb");
-	BYTE *buf = new BYTE[ddssize];
-	fread (buf, 1, ddssize, ddsf);
-	fclose (ddsf);
-	fwrite (buf, 1, ddssize, texf);
-	delete[]buf;
-
-	remove (bmpname);
-	remove (ddsname);
-	if (aimg) remove (abmpname);
+	// convert to DXT1 texture and append to texture file
+	std::vector<BYTE> rgba = ddsw::FromBottomUpBGR ((const BYTE*)img, balpha ? aimg : 0, imgw, imgh);
+	std::vector<BYTE> dds = ddsw::Encode (rgba.data(), imgw, imgh, ddsw::DXT1, false);
+	fwrite (dds.data(), 1, dds.size(), texf);
 	return flag;
 }
 
@@ -2727,9 +2605,20 @@ void DeleteTargets (RGB **tgt, Alpha **atgt, RGB **ltgt)
 void FatalError (const char *msg)
 {
 	cerr << endl << "pltex ERROR: " << msg << endl;
-	cerr << "Press a key to terminate." << endl;
-	while (_kbhit()) _getch();
-	while (!_kbhit());
+	if (isatty (STDIN_FILENO)) {
+		cerr << "Press a key to terminate." << endl;
+		termios oldt, rawt;
+		tcgetattr (STDIN_FILENO, &oldt);
+		rawt = oldt;
+		rawt.c_lflag &= ~(ICANON | ECHO);
+		rawt.c_cc[VMIN] = 1;
+		rawt.c_cc[VTIME] = 0;
+		tcsetattr (STDIN_FILENO, TCSANOW, &rawt);
+		tcflush (STDIN_FILENO, TCIFLUSH);
+		char ch;
+		if (read (STDIN_FILENO, &ch, 1) < 0) ch = 0;
+		tcsetattr (STDIN_FILENO, TCSANOW, &oldt);
+	}
 	exit (1);
 }
 

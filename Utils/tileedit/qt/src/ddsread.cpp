@@ -1,36 +1,40 @@
-#include <windows.h>
+#include <cstdio>
+#include <cstdlib>
+#include <cstring>
 #include <iostream>
 #include "ddsread.h"
 
 struct DDSPIXELFORMAT {
-    DWORD dwSize;
-    DWORD dwFlags;
-    DWORD dwFourCC;
-    DWORD dwRGBBitCount;
-    DWORD dwRBitMask;
-    DWORD dwGBitMask;
-    DWORD dwBBitMask;
-    DWORD dwABitMask;
+    uint32_t dwSize;
+    uint32_t dwFlags;
+    uint32_t dwFourCC;
+    uint32_t dwRGBBitCount;
+    uint32_t dwRBitMask;
+    uint32_t dwGBitMask;
+    uint32_t dwBBitMask;
+    uint32_t dwABitMask;
 };
 
 struct DDSHEADER {
-    DWORD dwSize;
-    DWORD dwFlags;
-    DWORD dwHeight;
-    DWORD dwWidth;
-    DWORD dwLinearSize;
-    DWORD dwDepth;
-    DWORD dwMipmapCount;
-    DWORD dwReserved[11];
+    uint32_t dwSize;
+    uint32_t dwFlags;
+    uint32_t dwHeight;
+    uint32_t dwWidth;
+    uint32_t dwLinearSize;
+    uint32_t dwDepth;
+    uint32_t dwMipmapCount;
+    uint32_t dwReserved[11];
     DDSPIXELFORMAT ddspf;
-    DWORD dwCaps;
-    DWORD dwCaps2;
-    DWORD dwCaps3;
-    DWORD dwCaps4;
-    DWORD dwReserved2;
+    uint32_t dwCaps;
+    uint32_t dwCaps2;
+    uint32_t dwCaps3;
+    uint32_t dwCaps4;
+    uint32_t dwReserved2;
 };
 
-std::vector<DWORD> ExtractDXT1 (WORD *data, DWORD ndata, DWORD height, DWORD width);
+static_assert(sizeof(DDSPIXELFORMAT) == 32 && sizeof(DDSHEADER) == 124, "DDS header must match the on-disk layout");
+
+std::vector<uint32_t> ExtractDXT1 (uint16_t *data, uint32_t ndata, uint32_t height, uint32_t width);
 
 Image ddsread(const char *fname)
 {
@@ -60,9 +64,9 @@ Image ddsread(const char *fname)
         exit(1);
     }
 
-    DWORD ndata = ddsh.dwLinearSize/2;
-    WORD *data = new WORD[ndata];
-    if (fread (data, sizeof(WORD), ndata, f) < ndata) {
+    uint32_t ndata = ddsh.dwLinearSize/2;
+    uint16_t *data = new uint16_t[ndata];
+    if (fread (data, sizeof(uint16_t), ndata, f) < ndata) {
         std::cerr << "ddsread: Unexpected end of file" << std::endl;
         exit(1);
     }
@@ -77,7 +81,7 @@ Image ddsread(const char *fname)
 }
 
 
-Image ddsscan(const BYTE *data, int ndata)
+Image ddsscan(const uint8_t *data, int ndata)
 {
 	Image img;
 
@@ -108,7 +112,7 @@ Image ddsscan(const BYTE *data, int ndata)
 	}
 	ndata = ddsh.dwLinearSize / 2;
 
-	img.data = ExtractDXT1((WORD*)data, ndata, ddsh.dwHeight, ddsh.dwWidth);
+	img.data = ExtractDXT1((uint16_t*)data, ndata, ddsh.dwHeight, ddsh.dwWidth);
 	img.width = ddsh.dwWidth;
 	img.height = ddsh.dwHeight;
 
@@ -116,22 +120,22 @@ Image ddsscan(const BYTE *data, int ndata)
 }
 
 
-std::vector<DWORD> ExtractDXT1 (WORD *data, DWORD ndata, DWORD h, DWORD w)
+std::vector<uint32_t> ExtractDXT1 (uint16_t *data, uint32_t ndata, uint32_t h, uint32_t w)
 {
     int i;
-    WORD *d, c0, c1;
-    DWORD lookup, idx, tgt, shift, xx, yy;
+    uint16_t *d, c0, c1;
+    uint32_t lookup, idx, tgt, shift, xx, yy;
     bool noalpha;
 
-    DWORD len = h*w;
-    DWORD A, R, G, B;
+    uint32_t len = h*w;
+    uint32_t A, R, G, B;
 
     size_t nxblock = w/4;
     size_t nyblock = h/4;
     size_t ofs = 0;
-    WORD r[4], g[4], b[4];
+    uint16_t r[4], g[4], b[4];
 
-    std::vector<DWORD> argb(len);
+    std::vector<uint32_t> argb(len);
 
     for (size_t y = 0; y < nyblock; y++) {
         for (size_t x = 0; x < nxblock; x++) {
@@ -139,7 +143,7 @@ std::vector<DWORD> ExtractDXT1 (WORD *data, DWORD ndata, DWORD h, DWORD w)
             c0 = d[0];
             c1 = d[1];
             noalpha = (c0 > c1);
-            lookup = *(DWORD*)(d+2);
+            memcpy(&lookup, d+2, sizeof(lookup));
 
             r[0] = (c0 >> 11) << 3;
             g[0] = ((c0 >> 5) & 63) << 2;
@@ -164,9 +168,9 @@ std::vector<DWORD> ExtractDXT1 (WORD *data, DWORD ndata, DWORD h, DWORD w)
                 for (xx = 0; xx < 4; xx++) {
                     shift = (xx+yy*4)*2;
                     idx = (lookup >> shift) & 3;
-                    R = (BYTE)r[idx];
-                    G = (BYTE)g[idx];
-                    B = (BYTE)b[idx];
+                    R = (uint8_t)r[idx];
+                    G = (uint8_t)g[idx];
+                    B = (uint8_t)b[idx];
                     A = (idx == 3 && !noalpha ? 0 : 0xFF);
                     //argb[(y*4+yy) + (x*4+xx)*h] = (A << 0x18) | (R << 0x10) | (G << 0x08) | B;
                     argb[(y*4+yy)*w + (x*4+xx)] = (A << 0x18) | (R << 0x10) | (G << 0x08) | B;

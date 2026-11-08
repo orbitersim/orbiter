@@ -42,7 +42,7 @@ public:
     ~tileedit();
 
 	void elevDisplayParamChanged();
-	void setLoadMode(DWORD mode);
+	void setLoadMode(uint32_t mode);
 	void setAncestorMode(TileLoadMode mode);
 
 	void setBlockSize(int bsize);
@@ -62,7 +62,7 @@ private:
 	QString ModeString() const;
 	std::pair<int, int> ElevNodeFromPixCoord(int canvasIdx, int x, int y);
 	void editElevation(int canvasIdx, int x, int y);
-	void setupTreeManagers(std::string &root);
+	void setupTreeManagers(const std::string &root);
 	void releaseTreeManagers();
 
 private slots:
@@ -126,7 +126,7 @@ private:
     int m_ilat;
     int m_ilng;
 
-	DWORD m_openMode;
+	uint32_t m_openMode;
 	TileLoadMode m_globalLoadMode;
 	int m_blocksize;
 

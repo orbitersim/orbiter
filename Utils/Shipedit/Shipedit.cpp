@@ -1,24 +1,34 @@
 // Copyright (c) Martin Schweiger
 // Licensed under the MIT License
 
-// Shipedit.cpp : Defines the class behaviors for the application.
-//
-
+#include <algorithm>
+#include <chrono>
 #include <fstream>
-#include "stdafx.h"
-#include "Shipedit.h"
-#include "ShipeditDlg.h"
-#include "TransformDlg.h"
+#include <sstream>
+#include <string>
+#include "OrbiterPlatform.h"
+#include "UtilApp.h"
+#include "imgui.h"
+#include "Vecmat.h"
+#include "Mesh.h"
 
 using namespace std;
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
+typedef struct {
+	float x1, y1, z1; // vtx 1
+	float x2, y2, z2; // vtx 2
+	float x3, y3, z3; // vtx 3
+	float a, b, c, d; // plane params
+	float d1, d2, d3; // dist of vtx i from opposite edge
+} TriParam;
 
-// prototypes
+typedef struct {
+	int gridx, gridy, gridz;
+	int gridn;
+	float dx, dy, dz;
+	BYTE *grid;
+} VOXGRID;
+
 void srand2();
 double rand2 ();
 bool inside (int ntri, const TriParam *pp, const D3DVECTOR &pos);
@@ -26,171 +36,57 @@ bool xsect (int axis, int ntri, const TriParam *pp, const D3DVECTOR &pos);
 bool intersect (const D3DVECTOR &pos, const D3DVECTOR &dir, const TriParam &pp, D3DVECTOR &X, float &t, bool half);
 bool in_tri (const D3DVECTOR &X, const TriParam &pp);
 bool in_tri_proj (const D3DVECTOR &X, const TriParam &pp, int dir_idx);
-void setup_grid (VOXGRID &g, int level);
 
-/////////////////////////////////////////////////////////////////////////////
-// CShipeditApp
+// ============================================================
+// Mesh analysis
 
-BEGIN_MESSAGE_MAP(CShipeditApp, CWinApp)
-	//{{AFX_MSG_MAP(CShipeditApp)
-	ON_COMMAND(MID_LOAD, OnLoad)
-	ON_COMMAND(MID_SAVEAS, OnSaveas)
-	ON_COMMAND(MID_TRANSLATE, OnTranslate)
-	ON_COMMAND(MID_ROTATE, OnRotate)
-	ON_COMMAND(MID_ZEROLEVEL, OnZerolevel)
-	ON_COMMAND(MID_VOXINT, OnVoxint)
-	ON_COMMAND(MID_MERGEGRP, OnMergegrp)
-	ON_COMMAND(MID_CALCNORMAL, OnCalcnormal)
-	ON_COMMAND(MID_SCALE, OnScale)
-	ON_COMMAND(MID_MIRROR, OnMirror)
-	//}}AFX_MSG_MAP
-	ON_COMMAND(ID_HELP, CWinApp::OnHelp)
-END_MESSAGE_MAP()
+class ShipeditApp {
+public:
+	ShipeditApp ();
+	~ShipeditApp ();
+	void InitMesh ();
+	void ProcessPackage ();
+	void setup_grid (VOXGRID &g, int level);
+	bool scan_gridline (VOXGRID &g, int x, int y, int z, int dir_idx, int ntri, const TriParam *pp);
+	void analyse_grid (VOXGRID &g, double &vol, Vector &com, Vector &cs, Matrix &pmi);
 
-/////////////////////////////////////////////////////////////////////////////
-// CShipeditApp construction
+	Mesh mesh;
+	DWORD ngrp, nvtx, nidx, ntri;  // mesh groups
+	D3DVERTEX *vtx;
+	WORD *idx;
+	TriParam *pp;
+	D3DVECTOR bbmin, bbmax;        // bounding box
+	double bbvol;                  // bb volume
+	Vector bbcs;                   // bb cross sections
+	double vol;                    // volume
+	Vector cg, cg_base, cg_add;    // centre of gravity
+	Vector cs;                     // cross sections
+	Matrix J, J_base, J_add;       // inertia tensor
+	bool bBackgroundOp;
+	bool bCalcValid;
+	int flushcount;
+	int nop, nvol, ncs[3];
+};
 
-CShipeditApp::CShipeditApp()
+ShipeditApp::ShipeditApp ()
 {
-}
-
-/////////////////////////////////////////////////////////////////////////////
-// The one and only CShipeditApp object
-
-CShipeditApp theApp;
-
-/////////////////////////////////////////////////////////////////////////////
-// CShipeditApp initialization
-
-BOOL CShipeditApp::InitInstance()
-{
-	// Standard initialization
-
-	m_pMainDlg = new CShipeditDlg (this);
-	m_pMainWnd = m_pMainDlg;
-	m_pMainDlg->Create (IDD_SHIPEDIT_DIALOG);
-
 	ngrp = nvtx = nidx = ntri = 0;
+	vtx = 0; idx = 0; pp = 0;
 	flushcount = 0;
-	bBackgroundOp = FALSE;
+	bBackgroundOp = false;
+	bCalcValid = false;
+	nop = nvol = 0;
 	srand2();
-	return TRUE;
 }
 
-int CShipeditApp::ExitInstance()
+ShipeditApp::~ShipeditApp ()
 {
-	MessageBeep (-1);
-	delete m_pMainDlg;
 	if (nvtx) delete []vtx;
 	if (nidx) delete []idx;
 	if (ntri) delete []pp;
-	return 0;
 }
 
-void CShipeditApp::OnLoad() 
-{
-	int addmode = 0;
-	if (mesh.nGroup() > 0) { // mesh already loaded - ask for merge or overwrite
-		AddMeshDlg dlg;
-		if (dlg.DoModal() != IDOK) return;
-		addmode = dlg.m_AddMode;
-	}
-	CFileDialog dlg (TRUE, "*.msh", NULL, OFN_FILEMUSTEXIST,
-		"Mesh files (*.msh)|*.msh|All files (*.*)|*.*||",
-		m_pMainWnd);
-	if (dlg.DoModal() == IDOK) {
-		CString path = dlg.GetPathName();
-		ifstream ifs (path);
-		if (ifs) {
-			if (addmode) {
-				Mesh mesh2;
-				ifs >> mesh2;
-				mesh.AddMesh (mesh2);
-			} else {
-				ifs >> mesh;
-			}
-			InitMesh ();
-		}
-	}
-}
-
-void CShipeditApp::OnSaveas() 
-{
-	CFileDialog dlg (FALSE, "*.msh", NULL, OFN_HIDEREADONLY | OFN_OVERWRITEPROMPT,
-		"Mesh files (*.msh)|*.msh|All files (*.*)|*.*||",
-		m_pMainWnd);
-	if (dlg.DoModal() == IDOK) {
-		CString path = dlg.GetPathName();
-		ofstream ofs (path);
-		if (ofs) ofs << mesh;
-	}
-}
-
-void CShipeditApp::OnVoxint() 
-{
-	if (!ngrp) return; // have mesh?
-	GridintDlg dlg (this);
-	dlg.DoModal();
-}
-
-void CShipeditApp::OnTranslate() 
-{
-	if (!ngrp) return; // have mesh?
-	TranslateDlg dlg (&mesh);
-	if (dlg.DoModal() == IDOK)
-		InitMesh();
-}
-
-
-void CShipeditApp::OnRotate() 
-{
-	if (!ngrp) return; // have mesh?
-	RotateDlg dlg (&mesh);
-	dlg.DoModal();
-	InitMesh();
-}
-
-
-void CShipeditApp::OnMirror() 
-{
-	if (!ngrp) return; // have mesh?
-	MirrorDlg dlg (&mesh);
-	if (dlg.DoModal() == IDOK)
-		InitMesh();
-}
-
-void CShipeditApp::OnScale() 
-{
-	if (!ngrp) return; // have mesh?
-	ScaleDlg dlg (&mesh);
-	dlg.DoModal();
-	InitMesh();
-}
-
-
-void CShipeditApp::OnMergegrp() 
-{
-	if (!ngrp) return; // have mesh?
-	MergeDlg dlg (&mesh);
-	if (dlg.DoModal() == IDOK)
-		InitMesh();
-}
-
-void CShipeditApp::OnCalcnormal() 
-{
-	if (!ngrp) return; // have mesh?
-	NormalDlg dlg (&mesh);
-	dlg.DoModal();
-}
-
-void CShipeditApp::OnZerolevel() 
-{
-	ZerolevelDlg dlg (&mesh);
-	if (dlg.DoModal() == IDOK)
-		InitMesh();
-}
-
-void CShipeditApp::InitMesh ()
+void ShipeditApp::InitMesh ()
 {
 	DWORD g, n, i, j;
 
@@ -202,13 +98,6 @@ void CShipeditApp::InitMesh ()
 	ngrp = mesh.nGroup();
 	nvtx = nidx = 0;
 
-//#define ISOLATE_REGION
-#ifdef ISOLATE_REGION
-	ofstream ofs("region.dat");
-	ofstream mshf("region.msh");
-	mshf << "MSHX1\nGROUPS ??\n";
-#endif
-
 	for (g = 0; g < ngrp; g++) {
 		D3DVERTEX *gvtx;
 		WORD *gidx;
@@ -216,54 +105,6 @@ void CShipeditApp::InitMesh ()
 		mesh.GetGroup (g, gvtx, gnvtx, gidx, gnidx);
 		nvtx += gnvtx;
 		nidx += gnidx;
-#ifdef ISOLATE_REGION
-		for (i = 0; i < gnvtx; i++) {
-			//double dx = gvtx[i].x - 2.7;
-			//double dy = gvtx[i].y + 2.9;
-			//double dz = gvtx[i].z + 8.45;
-			//double dst = sqrt (dx*dx + dy*dy + dz*dz);
-			//if (dst < 0.2)
-			if (g == 27 && gvtx[i].z > 10.65 && gvtx[i].z < 10.85)
-				ofs << "G=" << g << ", vtx=" << i << " (" << gvtx[i].x << ' ' << gvtx[i].y << ' ' << gvtx[i].z << ')' << endl;
-		}
-#ifdef UNDEF
-		int tri_entries = 0;
-		for (i = 0; i < gnidx/3; i++) {
-			WORD nd[3] = {gidx[i*3],gidx[i*3+1],gidx[i*3+2]};
-			for (j = 0; j < 3; j++) {
-				if (g != 27) break;
-				if (gvtx[nd[j]].z > 15.75) break;
-				//if (gvtx[nd[j]].x < -1.2 || gvtx[nd[j]].x > 1) break;
-				//if (gvtx[nd[j]].y < -4 || gvtx[nd[j]].y > 0.1) break;
-				//if (gvtx[nd[j]].z < 8.5 || gvtx[nd[j]].z > 10.9) break;
-			}
-			if (j == 3) tri_entries++;
-		}
-		if (tri_entries) {
-			mshf << "MATERIAL 0\nTEXTURE 0\n";
-			mshf << "GEOM " << gnvtx << ' ' << tri_entries << endl;
-			for (i = 0; i < gnvtx; i++)
-				mshf << gvtx[i].x << ' ' << gvtx[i].y << ' ' << gvtx[i].z << ' '
-					 << gvtx[i].nx << ' ' << gvtx[i].ny << ' ' << gvtx[i].nz << ' '
-					 << gvtx[i].tu << ' ' << gvtx[i].tv << endl;
-			for (i = 0; i < gnidx/3; i++) {
-				WORD nd[3] = {gidx[i*3],gidx[i*3+1],gidx[i*3+2]};
-				for (j = 0; j < 3; j++) {
-					if (g != 27) break;
-					if (gvtx[nd[j]].z > 15.75) break;
-					//if (gvtx[nd[j]].x < -1.2 || gvtx[nd[j]].x > 1) break;
-					//if (gvtx[nd[j]].y < -4 || gvtx[nd[j]].y > 0.1) break;
-					//if (gvtx[nd[j]].z < 8.5 || gvtx[nd[j]].z > 10.9) break;
-				}
-				if (j == 3) {
-					ofs << "g=" << g << ", ln=" << i << ": " << nd[0] << ' ' << nd[1] << ' ' << nd[2] << endl;
-					mshf << nd[0] << ' ' << nd[1] << ' ' << nd[2] << endl;
-				}
-			}
-		}
-#endif
-#endif
-			
 	}
 	ntri = nidx/3;
 	vtx = new D3DVERTEX[nvtx];
@@ -336,11 +177,10 @@ void CShipeditApp::InitMesh ()
 	for (i = 0; i < 3; i++) ncs[i] = 0;
 	flushcount = 0;
 	bBackgroundOp = false;
-
-	m_pMainDlg->Refresh();
+	bCalcValid = false;
 }
 
-void CShipeditApp::ProcessPackage ()
+void ShipeditApp::ProcessPackage ()
 {
 	int i, j, n;
 	Vector cg_tmp;
@@ -389,11 +229,10 @@ void CShipeditApp::ProcessPackage ()
 	cs.x = bbcs.x * (double)ncs[0]/(double)nop;
 	cs.y = bbcs.y * (double)ncs[1]/(double)nop;
 	cs.z = bbcs.z * (double)ncs[2]/(double)nop;
-
-	m_pMainDlg->RefreshCalc();
+	bCalcValid = true;
 }
 
-void CShipeditApp::setup_grid (VOXGRID &g, int level)
+void ShipeditApp::setup_grid (VOXGRID &g, int level)
 {
 	g.gridx = level;
 	g.gridy = level;
@@ -406,7 +245,7 @@ void CShipeditApp::setup_grid (VOXGRID &g, int level)
 	g.dz = (bbmax.z-bbmin.z)/g.gridz;
 }
 
-bool CShipeditApp::scan_gridline (VOXGRID &g, int x, int y, int z, int dir_idx, int ntri, const TriParam *pp)
+bool ShipeditApp::scan_gridline (VOXGRID &g, int x, int y, int z, int dir_idx, int ntri, const TriParam *pp)
 {
 	static D3DVECTOR d[6] = {{1,0,0},{0,1,0},{0,0,1},{-1,0,0},{0,-1,0},{0,0,-1}};
 	D3DVECTOR &dir = d[dir_idx];
@@ -488,9 +327,9 @@ bool CShipeditApp::scan_gridline (VOXGRID &g, int x, int y, int z, int dir_idx, 
 		break;
 	}
 	return isinter;
-}		
+}
 
-void CShipeditApp::analyse_grid (VOXGRID &g, double &vol, Vector &com, Vector &cs, Matrix &pmi)
+void ShipeditApp::analyse_grid (VOXGRID &g, double &vol, Vector &com, Vector &cs, Matrix &pmi)
 {
 	int i, j, k, idx, ninside = 0;
 	double x, y, z;
@@ -539,7 +378,7 @@ void CShipeditApp::analyse_grid (VOXGRID &g, double &vol, Vector &com, Vector &c
 		}
 	}
 	cs.x = (bbmax.y-bbmin.y)*(bbmax.z-bbmin.z) * (double)ninside / (double)(g.gridy*g.gridz);
-	
+
 	for (k = ninside = 0; k < g.gridz; k++) {
 		for (i = 0; i < g.gridx; i++) {
 			for (j = 0; j < g.gridy; j++) {
@@ -563,14 +402,6 @@ void CShipeditApp::analyse_grid (VOXGRID &g, double &vol, Vector &com, Vector &c
 		}
 	}
 	cs.z = (bbmax.x-bbmin.x)*(bbmax.y-bbmin.y) * (double)ninside / (double)(g.gridx*g.gridy);
-}
-
-BOOL CShipeditApp::OnIdle (LONG lCount)
-{
-	CWinApp::OnIdle (lCount);
-	if (bBackgroundOp)
-		ProcessPackage ();
-	return bBackgroundOp;
 }
 
 // ============================================================
@@ -648,12 +479,10 @@ bool in_tri (const D3DVECTOR &X, const TriParam &pp)
 	if (den == 0.0) return false;
 	a = ((y2-y1)*(x3-x2) + (x1-x2)*(y3-y2))/den;
 	if (a < 1.0) return false;
-	if (den = x3-x2) {
+	if ((den = x3-x2)) {
 		b = (x1 - x2 + a*(xp-x1))/den;
-	} else if (den = y3-y2) {
+	} else if ((den = y3-y2)) {
 		b = (y1 - y2 + a*(yp-y1))/den;
-	} else if (den = x3-x2) {
-		b = (x1 - x2 + a*(xp-x1))/den;
 	} else return false;
 	if (b < 0.0 || b > 1.0) return false;
 
@@ -673,26 +502,11 @@ bool in_tri_proj (const D3DVECTOR &X, const TriParam &pp, int dir_idx)
 		x1 = pp.x1, x2 = pp.x2, x3 = pp.x3, xp = X.x;
 		y1 = pp.z1, y2 = pp.z2, y3 = pp.z3, yp = X.z;
 		break;
-	case 2: // project on xy axis
+	default: // project on xy axis
 		x1 = pp.x1, x2 = pp.x2, x3 = pp.x3, xp = X.x;
 		y1 = pp.y1, y2 = pp.y2, y3 = pp.y3, yp = X.y;
 		break;
 	}
-#ifdef UNDEF
-	double a, b, den;
-	den = (yp-y1)*(x3-x2) + (x1-xp)*(y3-y2);
-	if (den == 0.0) return false;
-	a = ((y2-y1)*(x3-x2) + (x1-x2)*(y3-y2))/den;
-	if (a < 1.0) return false;
-	if (den = x3-x2) {
-		b = (x1 - x2 + a*(xp-x1))/den;
-	} else if (den = y3-y2) {
-		b = (y1 - y2 + a*(yp-y1))/den;
-	} else if (den = x3-x2) {
-		b = (x1 - x2 + a*(xp-x1))/den;
-	} else return false;
-	if (b < 0.0 || b > 1.0) return false;
-#endif
 	double x_0, x_1, x_2, y_0, y_1, y_2, y0r, yyr, fac;
 	int i;
 	const double EPS = 1e-10;
@@ -700,7 +514,7 @@ bool in_tri_proj (const D3DVECTOR &X, const TriParam &pp, int dir_idx)
 		switch (i) {
 		case 0: x_0 = x1, y_0 = y1, x_1 = x2, y_1 = y2, x_2 = x3, y_2 = y3; break;
 		case 1: x_0 = x2, y_0 = y2, x_1 = x3, y_1 = y3, x_2 = x1, y_2 = y1; break;
-		case 2: x_0 = x3, y_0 = y3, x_1 = x1, y_1 = y1, x_2 = x2, y_2 = y2; break;
+		default: x_0 = x3, y_0 = y3, x_1 = x1, y_1 = y1, x_2 = x2, y_2 = y2; break;
 		}
 		if (fabs (x_1-x_2) < EPS) {
 			if ((x_0 < x_1 && xp > x_1) || (x_0 > x_1 && xp < x_1)) return false;
@@ -720,7 +534,6 @@ static int rtable[rtable_len];
 void srand2()
 {
 	srand (0x12345678);
-	//srand ((unsigned)time (NULL));
 	for (int i = 0; i < rtable_len; i++)
 		rtable[i] = rand();
 }
@@ -728,153 +541,628 @@ void srand2()
 double rand2 ()
 {
 	static const double irmax = 1.0/(double)RAND_MAX;
-	int ridx = (rand()*64)/RAND_MAX;
+	int ridx = (int)(((long long)rand()*64)/RAND_MAX);
+	if (ridx >= rtable_len) ridx = rtable_len-1;
 	int r    = rtable[ridx];
 	rtable[ridx] = rand();
 	return (double)r*irmax;
 }
 
+// ============================================================
+// User interface
 
-/////////////////////////////////////////////////////////////////////////////
-// GridintDlg dialog
+namespace {
 
+ShipeditApp app;
 
-GridintDlg::GridintDlg(CShipeditApp *_app, CWnd* pParent /*=NULL*/)
-: CDialog(GridintDlg::IDD, pParent), app(_app)
+enum Dialog { DLG_NONE, DLG_ADDMESH, DLG_TRANSLATE, DLG_ROTATE, DLG_MIRROR, DLG_SCALE, DLG_MERGE, DLG_NORMALS, DLG_ZEROLEVEL,
+	DLG_GRIDINT, DLG_CHECK, DLG_ABOUT };
+
+const char *DialogTitle (Dialog d)
 {
-	//{{AFX_DATA_INIT(GridintDlg)
-	m_GridDim = 10;
-	//}}AFX_DATA_INIT
+	switch (d) {
+	case DLG_ADDMESH:   return "New mesh";
+	case DLG_TRANSLATE: return "Translate mesh";
+	case DLG_ROTATE:    return "Rotate mesh";
+	case DLG_MIRROR:    return "Mirror coordinates";
+	case DLG_SCALE:     return "Scale mesh";
+	case DLG_MERGE:     return "Merge groups";
+	case DLG_NORMALS:   return "Generate normals";
+	case DLG_ZEROLEVEL: return "Zero level";
+	case DLG_GRIDINT:   return "Grid integration";
+	case DLG_CHECK:     return "Check result";
+	case DLG_ABOUT:     return "About Shipedit";
+	default:            return "";
+	}
 }
 
+Dialog openDlg = DLG_NONE;
+Dialog pendingDlg = DLG_NONE;
 
-void GridintDlg::DoDataExchange(CDataExchange* pDX)
+int addMode = 0;
+float translate[3];
+double rot[3];
+double scale[3];
+int mirrorDir = 0;
+int mergeGrp[2];
+int nmlSelGrp = 0, nmlSelVtx = 0, nmlGroup = 1;
+float zeroLevel = 1e-5f;
+bool zeroVtx = false, zeroNml = false, zeroTex = false;
+int gridDim = 10;
+int gridState = 0; // 0: idle, 1: about to run, 2: running
+char gridMsg[64] = "Parameters";
+char gridVol[64] = "[Undefined]", gridCom[64] = "[Undefined]", gridCs[64] = "[Undefined]";
+char gridPmi[3][64] = {"[Undefined]", "", ""};
+std::string checkMsg;
+
+void OpenDialog (Dialog d)
 {
-	CDialog::DoDataExchange(pDX);
-	//{{AFX_DATA_MAP(GridintDlg)
-	DDX_Text(pDX, IDC_GRIDINT_DIM, m_GridDim);
-	DDV_MinMaxInt(pDX, m_GridDim, 10, 1000);
-	//}}AFX_DATA_MAP
+	pendingDlg = d;
 }
 
+bool HaveMesh ()
+{
+	return app.ngrp != 0;
+}
 
-BEGIN_MESSAGE_MAP(GridintDlg, CDialog)
-	//{{AFX_MSG_MAP(GridintDlg)
-	ON_BN_CLICKED(IDC_GRIDINT_START, OnGridintStart)
-	ON_EN_CHANGE(IDC_GRIDINT_DIM, OnChangeGridintDim)
-	//}}AFX_MSG_MAP
-END_MESSAGE_MAP()
+bool ReadMesh (const std::string &path, Mesh &mesh)
+{
+	std::ifstream ifs (path, std::ios::binary);
+	if (!ifs) return false;
+	std::stringstream ss;
+	ss << ifs.rdbuf ();
+	std::string text = ss.str ();
+	text.erase (std::remove (text.begin (), text.end (), '\r'), text.end ());
+	std::istringstream is (text);
+	is >> mesh;
+	return true;
+}
 
-/////////////////////////////////////////////////////////////////////////////
-// GridintDlg message handlers
+void LoadMesh (int mode)
+{
+	std::string path = oplat::OpenFileDialog ("Load mesh", "", {});
+	if (path.empty ()) return;
+	if (mode) {
+		Mesh mesh2;
+		if (!ReadMesh (path, mesh2)) return;
+		app.mesh.AddMesh (mesh2);
+	} else {
+		if (!ReadMesh (path, app.mesh)) return;
+	}
+	app.InitMesh ();
+}
 
-void GridintDlg::OnGridintStart() 
+void OnLoad ()
+{
+	if (app.mesh.nGroup() > 0) {
+		addMode = 0;
+		OpenDialog (DLG_ADDMESH);
+	} else {
+		utilapp::Defer ([] { LoadMesh (0); });
+	}
+}
+
+void OnSaveAs ()
+{
+	utilapp::Defer ([] {
+		std::string path = oplat::SaveFileDialog ("Save mesh", "", "", {"msh"});
+		if (path.empty ()) return;
+		ofstream ofs (path);
+		if (ofs) ofs << app.mesh;
+	});
+}
+
+void OnCheck ()
+{
+	DWORD i, nremoved, tot_removed = 0;
+	if (app.ngrp) {
+		Mesh &mesh = app.mesh;
+		for (i = 0; i < mesh.nGroup(); i++) {
+			mesh.CheckGroup (i, nremoved);
+			tot_removed += nremoved;
+		}
+		char cbuf[256];
+		if (tot_removed) snprintf (cbuf, sizeof (cbuf), "Removed %u unused vertices from mesh.", (unsigned)tot_removed);
+		else             snprintf (cbuf, sizeof (cbuf), "No problems found");
+		checkMsg = cbuf;
+		OpenDialog (DLG_CHECK);
+	}
+	app.InitMesh();
+}
+
+void ResetGridDialog ()
+{
+	gridState = 0;
+	strcpy (gridMsg, "Parameters");
+	strcpy (gridVol, "[Undefined]");
+	strcpy (gridCom, "[Undefined]");
+	strcpy (gridCs, "[Undefined]");
+	strcpy (gridPmi[0], "[Undefined]");
+	gridPmi[1][0] = gridPmi[2][0] = '\0';
+}
+
+void RunGridIntegration ()
 {
 	int x, y, z;
 	VOXGRID g;
-	char cbuf[256];
 
-	UpdateData();
-	sprintf (cbuf, "Running (d=%d)", m_GridDim);
-	GetDlgItem (IDC_GRIDINT_MSG)->SetWindowText (cbuf);
-
-	app->setup_grid (g, m_GridDim);
+	app.setup_grid (g, gridDim);
 	for (x = z = 0; x < g.gridx; x++) {
 		for (y = 0; y < g.gridy; y++) {
-			app->scan_gridline (g, x, y, z, 2, app->ntri, app->pp);
-			app->scan_gridline (g, x, y, z, 5, app->ntri, app->pp);
+			app.scan_gridline (g, x, y, z, 2, app.ntri, app.pp);
+			app.scan_gridline (g, x, y, z, 5, app.ntri, app.pp);
 		}
 	}
 	for (x = y = 0; x < g.gridx; x++) {
 		for (z = 0; z < g.gridz; z++) {
-			app->scan_gridline (g, x, y, z, 1, app->ntri, app->pp);
-			app->scan_gridline (g, x, y, z, 4, app->ntri, app->pp);
+			app.scan_gridline (g, x, y, z, 1, app.ntri, app.pp);
+			app.scan_gridline (g, x, y, z, 4, app.ntri, app.pp);
 		}
 	}
 	for (x = y = 0; y < g.gridy; y++) {
 		for (z = 0; z < g.gridz; z++) {
-			app->scan_gridline (g, x, y, z, 0, app->ntri, app->pp);
-			app->scan_gridline (g, x, y, z, 3, app->ntri, app->pp);
+			app.scan_gridline (g, x, y, z, 0, app.ntri, app.pp);
+			app.scan_gridline (g, x, y, z, 3, app.ntri, app.pp);
 		}
 	}
-
-//#ifdef UNDEF
-	// use this to find boundary point for arbitrary ray
-	D3DVECTOR pos = {-4.8f, app->bbmin.y, -4.69f}, dir = {0,1,0}, X;
-	float t, tmin = 1e10;
-	for (DWORD i = 0; i < app->ntri; i++) {
-		if (intersect (pos, dir, app->pp[i], X, t, true)) {
-			if (in_tri_proj (X, app->pp[i], 1)) {
-				if (t < tmin) tmin = t;
-			}
-		}
-	}
-	ofstream ofs ("dbg.txt");
-	ofs << "ymin=" << app->bbmin.y+tmin << endl;
-//#endif
 
 	double vol;
 	Vector com, cs;
 	Matrix pmi;
-	app->analyse_grid (g, vol, com, cs, pmi);
-	sprintf (cbuf, "%0.2f", vol);
-	GetDlgItem (IDC_GRIDINT_VOL)->SetWindowText (cbuf);
-	sprintf (cbuf, "%0.2f %0.2f %0.2f", com.x, com.y, com.z);
-	GetDlgItem (IDC_GRIDINT_COM)->SetWindowText (cbuf);
-	sprintf (cbuf, "%0.2f %0.2f %0.2f", cs.x, cs.y, cs.z);
-	GetDlgItem (IDC_GRIDINT_CS)->SetWindowText (cbuf);
-	sprintf (cbuf, "%0.2f %0.2f %0.2f", pmi.m11, pmi.m12, pmi.m13);
-	GetDlgItem (IDC_GRIDINT_PMI1)->SetWindowText (cbuf);
-	sprintf (cbuf, "%0.2f %0.2f %0.2f", pmi.m21, pmi.m22, pmi.m23);
-	GetDlgItem (IDC_GRIDINT_PMI2)->SetWindowText (cbuf);
-	sprintf (cbuf, "%0.2f %0.2f %0.2f", pmi.m31, pmi.m32, pmi.m33);
-	GetDlgItem (IDC_GRIDINT_PMI3)->SetWindowText (cbuf);
+	app.analyse_grid (g, vol, com, cs, pmi);
+	snprintf (gridVol, sizeof (gridVol), "%0.2f", vol);
+	snprintf (gridCom, sizeof (gridCom), "%0.2f %0.2f %0.2f", com.x, com.y, com.z);
+	snprintf (gridCs, sizeof (gridCs), "%0.2f %0.2f %0.2f", cs.x, cs.y, cs.z);
+	snprintf (gridPmi[0], sizeof (gridPmi[0]), "%0.2f %0.2f %0.2f", pmi.m11, pmi.m12, pmi.m13);
+	snprintf (gridPmi[1], sizeof (gridPmi[1]), "%0.2f %0.2f %0.2f", pmi.m21, pmi.m22, pmi.m23);
+	snprintf (gridPmi[2], sizeof (gridPmi[2]), "%0.2f %0.2f %0.2f", pmi.m31, pmi.m32, pmi.m33);
 
 	delete []g.grid;
-	sprintf (cbuf, "Ready (d=%d)", m_GridDim);
-	GetDlgItem (IDC_GRIDINT_MSG)->SetWindowText (cbuf);
+	snprintf (gridMsg, sizeof (gridMsg), "Ready (d=%d)", gridDim);
 	MessageBeep (-1);
 }
 
-void GridintDlg::OnChangeGridintDim() 
+void MergeGroups ()
+{
+	if (mergeGrp[0] == mergeGrp[1]) return;
+	DWORD grp1 = mergeGrp[0]-1, grp2 = mergeGrp[1]-1;
+	Mesh *mesh = &app.mesh;
+	D3DVERTEX *vtx1, *vtx2, *vtx;
+	WORD *idx1, *idx2, *idx;
+	DWORD i, nvtx1, nvtx2, nidx1, nidx2, nvtx, nidx;
+	mesh->GetGroup (grp1, vtx1, nvtx1, idx1, nidx1);
+	mesh->GetGroup (grp2, vtx2, nvtx2, idx2, nidx2);
+	nvtx = nvtx1 + nvtx2;
+	nidx = nidx1 + nidx2;
+	vtx = new D3DVERTEX[nvtx];
+	idx = new WORD[nidx];
+	memcpy (vtx, vtx1, nvtx1*sizeof(D3DVERTEX));
+	memcpy (vtx+nvtx1, vtx2, nvtx2*sizeof(D3DVERTEX));
+	memcpy (idx, idx1, nidx1*sizeof(WORD));
+	memcpy (idx+nidx1, idx2, nidx2*sizeof(WORD));
+	for (i = nidx1; i < nidx; i++)
+		idx[i] += (WORD)nvtx1;
+	mesh->DeleteGroup (grp1 < grp2 ? grp2 : grp1);
+	mesh->DeleteGroup (grp1 < grp2 ? grp1 : grp2);
+	mesh->AddGroup (vtx, nvtx, idx, nidx);
+}
+
+enum { BTN_NONE, BTN_OK, BTN_CANCEL };
+
+int OkCancelResult ()
+{
+	int res = BTN_NONE;
+	ImGui::Spacing ();
+	if (ImGui::Button ("OK", ImVec2 (80 * utilapp::Scale (), 0))) res = BTN_OK;
+	ImGui::SameLine ();
+	if (ImGui::Button ("Cancel", ImVec2 (80 * utilapp::Scale (), 0))) res = BTN_CANCEL;
+	if (res != BTN_NONE) ImGui::CloseCurrentPopup ();
+	return res;
+}
+
+bool OkCancel ()
+{
+	return OkCancelResult () == BTN_OK;
+}
+
+bool CloseButton ()
+{
+	ImGui::Spacing ();
+	if (ImGui::Button ("Close", ImVec2 (80 * utilapp::Scale (), 0))) {
+		ImGui::CloseCurrentPopup ();
+		return true;
+	}
+	return false;
+}
+
+float FieldWidth ()
+{
+	return 120 * utilapp::Scale ();
+}
+
+void DrawDialog ()
+{
+	if (pendingDlg != DLG_NONE) {
+		openDlg = pendingDlg;
+		pendingDlg = DLG_NONE;
+		ImGui::OpenPopup (DialogTitle (openDlg));
+	}
+	if (openDlg == DLG_NONE) return;
+
+	const char *title = DialogTitle (openDlg);
+	ImGui::SetNextWindowPos (ImGui::GetMainViewport ()->GetCenter (), ImGuiCond_Appearing, ImVec2 (0.5f, 0.5f));
+	if (!ImGui::BeginPopupModal (title, nullptr, ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoSavedSettings)) {
+		openDlg = DLG_NONE;
+		return;
+	}
+
+	switch (openDlg) {
+	case DLG_ADDMESH:
+		ImGui::RadioButton ("Replace current mesh", &addMode, 0);
+		ImGui::RadioButton ("Merge into current mesh", &addMode, 1);
+		if (OkCancel ()) {
+			int mode = addMode;
+			utilapp::Defer ([mode] { LoadMesh (mode); });
+		}
+		break;
+
+	case DLG_TRANSLATE:
+		ImGui::SeparatorText ("Translation vector");
+		ImGui::SetNextItemWidth (FieldWidth ());
+		ImGui::InputFloat ("dX", &translate[0], 0, 0, "%g");
+		ImGui::SetNextItemWidth (FieldWidth ());
+		ImGui::InputFloat ("dY", &translate[1], 0, 0, "%g");
+		ImGui::SetNextItemWidth (FieldWidth ());
+		ImGui::InputFloat ("dZ", &translate[2], 0, 0, "%g");
+		if (OkCancel ()) {
+			app.mesh.Translate (translate[0], translate[1], translate[2]);
+			app.InitMesh ();
+		}
+		break;
+
+	case DLG_ROTATE: {
+		static const char *label[3] = {"Rotate around x-axis [deg.]", "Rotate around y-axis [deg.]", "Rotate around z-axis [deg.]"};
+		static const char *button[3] = {"Rotate x", "Rotate y", "Rotate z"};
+		static const Mesh::RotAxis axis[3] = {Mesh::ROTATE_X, Mesh::ROTATE_Y, Mesh::ROTATE_Z};
+		ImGui::SeparatorText ("Rotation");
+		for (int i = 0; i < 3; i++) {
+			ImGui::PushID (i);
+			ImGui::AlignTextToFramePadding ();
+			ImGui::TextUnformatted (label[i]);
+			ImGui::SameLine (220 * utilapp::Scale ());
+			ImGui::SetNextItemWidth (80 * utilapp::Scale ());
+			if (ImGui::InputDouble ("##rot", &rot[i], 0, 0, "%g"))
+				rot[i] = std::clamp (rot[i], -360.0, 360.0);
+			ImGui::SameLine ();
+			if (ImGui::Button (button[i]))
+				app.mesh.Rotate (axis[i], (float)(RAD*rot[i]));
+			ImGui::PopID ();
+		}
+		if (CloseButton ()) app.InitMesh ();
+		break;
+	}
+
+	case DLG_MIRROR:
+		ImGui::SeparatorText ("Mirror direction");
+		ImGui::RadioButton ("Mirror x", &mirrorDir, 0);
+		ImGui::RadioButton ("Mirror y", &mirrorDir, 1);
+		ImGui::RadioButton ("Mirror z", &mirrorDir, 2);
+		if (OkCancel ()) {
+			switch (mirrorDir) {
+			case 0: app.mesh.Mirror (Mesh::MIRROR_X); break;
+			case 1: app.mesh.Mirror (Mesh::MIRROR_Y); break;
+			case 2: app.mesh.Mirror (Mesh::MIRROR_Z); break;
+			}
+			app.InitMesh ();
+		}
+		break;
+
+	case DLG_SCALE: {
+		ImGui::SeparatorText ("Scaling factor");
+		ImGui::SetNextItemWidth (FieldWidth ());
+		ImGui::InputDouble ("Scale X", &scale[0], 0, 0, "%g");
+		ImGui::SetNextItemWidth (FieldWidth ());
+		ImGui::InputDouble ("Scale Y", &scale[1], 0, 0, "%g");
+		ImGui::SetNextItemWidth (FieldWidth ());
+		ImGui::InputDouble ("Scale Z", &scale[2], 0, 0, "%g");
+		int res = OkCancelResult ();
+		if (res == BTN_OK)
+			app.mesh.Scale ((float)scale[0], (float)scale[1], (float)scale[2]);
+		if (res != BTN_NONE) app.InitMesh ();
+		break;
+	}
+
+	case DLG_MERGE: {
+		int maxgrp = (int)app.mesh.nGroup();
+		char cbuf[64];
+		ImGui::SeparatorText ("Merge");
+		snprintf (cbuf, sizeof (cbuf), "Merge group (1-%d)", maxgrp);
+		ImGui::SetNextItemWidth (FieldWidth ());
+		if (ImGui::InputInt (cbuf, &mergeGrp[0])) mergeGrp[0] = std::clamp (mergeGrp[0], 1, maxgrp);
+		snprintf (cbuf, sizeof (cbuf), "with group (1-%d)", maxgrp);
+		ImGui::SetNextItemWidth (FieldWidth ());
+		if (ImGui::InputInt (cbuf, &mergeGrp[1])) mergeGrp[1] = std::clamp (mergeGrp[1], 1, maxgrp);
+		if (OkCancel ()) {
+			MergeGroups ();
+			app.InitMesh ();
+		}
+		break;
+	}
+
+	case DLG_NORMALS: {
+		int maxgrp = (int)app.mesh.nGroup();
+		char cbuf[64];
+		ImGui::SeparatorText ("Calculate normals for");
+		ImGui::RadioButton ("All mesh groups", &nmlSelGrp, 0);
+		snprintf (cbuf, sizeof (cbuf), "Only for group (1-%d)", maxgrp);
+		ImGui::RadioButton (cbuf, &nmlSelGrp, 1);
+		ImGui::SameLine ();
+		ImGui::BeginDisabled (nmlSelGrp == 0);
+		ImGui::SetNextItemWidth (FieldWidth ());
+		if (ImGui::InputInt ("##grp", &nmlGroup)) nmlGroup = std::clamp (nmlGroup, 1, maxgrp);
+		ImGui::EndDisabled ();
+		ImGui::SeparatorText ("Static");
+		ImGui::RadioButton ("Normals for all vertices", &nmlSelVtx, 0);
+		ImGui::RadioButton ("Missing normals only", &nmlSelVtx, 1);
+		ImGui::Spacing ();
+		if (ImGui::Button ("Apply", ImVec2 (80 * utilapp::Scale (), 0))) {
+			UINT g1, g2, g;
+			if (nmlSelGrp) g1 = nmlGroup-1, g2 = g1+1;
+			else           g1 = 0, g2 = app.mesh.nGroup();
+			bool missing_only = nmlSelVtx == 1;
+			for (g = g1; g < g2; g++)
+				app.mesh.CalcNormals (g, missing_only);
+			app.InitMesh ();
+		}
+		ImGui::SameLine ();
+		if (ImGui::Button ("Close", ImVec2 (80 * utilapp::Scale (), 0))) ImGui::CloseCurrentPopup ();
+		break;
+	}
+
+	case DLG_ZEROLEVEL:
+		ImGui::SeparatorText ("Zero level");
+		ImGui::TextUnformatted ("Reset vertex coordinates to zero if magnitude below");
+		ImGui::SetNextItemWidth (FieldWidth ());
+		if (ImGui::InputFloat ("##zero", &zeroLevel, 0, 0, "%g")) zeroLevel = std::clamp (zeroLevel, 0.0f, 1.0f);
+		ImGui::SeparatorText ("Apply to");
+		ImGui::Checkbox ("Vertex coordinates", &zeroVtx);
+		ImGui::Checkbox ("Vertex normals", &zeroNml);
+		ImGui::Checkbox ("Texture coordinates", &zeroTex);
+		if (OkCancel ()) {
+			int which = 0;
+			if (zeroVtx) which |= 1;
+			if (zeroNml) which |= 2;
+			if (zeroTex) which |= 4;
+			app.mesh.ZeroThreshold (zeroLevel, which);
+			app.InitMesh ();
+		}
+		break;
+
+	case DLG_GRIDINT: {
+		ImGui::BeginDisabled (gridState != 0);
+		ImGui::SeparatorText ("Grid");
+		ImGui::AlignTextToFramePadding ();
+		ImGui::TextUnformatted ("Grid dimension");
+		ImGui::SameLine ();
+		ImGui::SetNextItemWidth (FieldWidth ());
+		if (ImGui::InputInt ("##dim", &gridDim)) gridDim = std::clamp (gridDim, 10, 1000);
+		ImGui::SameLine ();
+		double mem = (double)gridDim*gridDim*gridDim;
+		if (mem > 1e6) ImGui::Text ("(%0.1f MByte)", mem*1e-6);
+		else           ImGui::Text ("(%0.0f KByte)", mem*1e-3);
+		ImGui::PushTextWrapPos (ImGui::GetCursorPosX () + 360 * utilapp::Scale ());
+		ImGui::TextWrapped ("Warning: A high grid sampling density will improve the accuracy of the result, but require more time and memory.");
+		ImGui::PopTextWrapPos ();
+		ImGui::EndDisabled ();
+
+		ImGui::SeparatorText (gridMsg);
+		if (ImGui::BeginTable ("##gridres", 2)) {
+			ImGui::TableSetupColumn ("##k", ImGuiTableColumnFlags_WidthFixed);
+			ImGui::TableSetupColumn ("##v", ImGuiTableColumnFlags_WidthStretch);
+			const char *keys[4] = {"Volume:", "Centre of mass:", "Cross sections:", "Inertia tensor:"};
+			const char *vals[4] = {gridVol, gridCom, gridCs, gridPmi[0]};
+			for (int i = 0; i < 4; i++) {
+				ImGui::TableNextRow ();
+				ImGui::TableNextColumn (); ImGui::TextUnformatted (keys[i]);
+				ImGui::TableNextColumn (); ImGui::TextUnformatted (vals[i]);
+			}
+			for (int i = 1; i < 3; i++) {
+				ImGui::TableNextRow ();
+				ImGui::TableNextColumn ();
+				ImGui::TableNextColumn (); ImGui::TextUnformatted (gridPmi[i]);
+			}
+			ImGui::EndTable ();
+		}
+		ImGui::Spacing ();
+		ImGui::BeginDisabled (gridState != 0);
+		if (ImGui::Button ("Start", ImVec2 (80 * utilapp::Scale (), 0))) {
+			snprintf (gridMsg, sizeof (gridMsg), "Running (d=%d)", gridDim);
+			gridState = 1;
+		}
+		ImGui::SameLine ();
+		if (ImGui::Button ("Close", ImVec2 (80 * utilapp::Scale (), 0))) ImGui::CloseCurrentPopup ();
+		ImGui::EndDisabled ();
+		if (gridState == 1) {
+			gridState = 2;
+			utilapp::Defer ([] {
+				RunGridIntegration ();
+				gridState = 0;
+			});
+		}
+		break;
+	}
+
+	case DLG_CHECK:
+		ImGui::TextUnformatted (checkMsg.c_str ());
+		ImGui::Spacing ();
+		if (ImGui::Button ("OK", ImVec2 (80 * utilapp::Scale (), 0))) ImGui::CloseCurrentPopup ();
+		break;
+
+	case DLG_ABOUT:
+		ImGui::TextUnformatted ("Shipedit version 1.0");
+		ImGui::Spacing ();
+		if (ImGui::Button ("OK", ImVec2 (80 * utilapp::Scale (), 0))) ImGui::CloseCurrentPopup ();
+		break;
+
+	default:
+		break;
+	}
+	ImGui::EndPopup ();
+}
+
+void DrawMenu ()
+{
+	if (!ImGui::BeginMenuBar ()) return;
+	if (ImGui::BeginMenu ("File")) {
+		if (ImGui::MenuItem ("Load mesh...")) OnLoad ();
+		if (ImGui::MenuItem ("Save as...")) OnSaveAs ();
+		ImGui::Separator ();
+		if (ImGui::MenuItem ("Exit")) utilapp::Quit ();
+		ImGui::EndMenu ();
+	}
+	if (ImGui::BeginMenu ("Calc")) {
+		if (ImGui::MenuItem ("Start/continue MC integration") && HaveMesh ()) app.bBackgroundOp = true;
+		if (ImGui::MenuItem ("Stop MC integration")) app.bBackgroundOp = false;
+		ImGui::Separator ();
+		if (ImGui::MenuItem ("Grid integration...") && HaveMesh ()) {
+			ResetGridDialog ();
+			OpenDialog (DLG_GRIDINT);
+		}
+		ImGui::Separator ();
+		if (ImGui::MenuItem ("Check mesh")) OnCheck ();
+		ImGui::EndMenu ();
+	}
+	if (ImGui::BeginMenu ("Transform")) {
+		if (ImGui::MenuItem ("Translate") && HaveMesh ()) {
+			translate[0] = translate[1] = translate[2] = 0.0f;
+			OpenDialog (DLG_TRANSLATE);
+		}
+		if (ImGui::MenuItem ("Rotate") && HaveMesh ()) {
+			rot[0] = rot[1] = rot[2] = 0.0;
+			OpenDialog (DLG_ROTATE);
+		}
+		if (ImGui::MenuItem ("Mirror") && HaveMesh ()) {
+			mirrorDir = 0;
+			OpenDialog (DLG_MIRROR);
+		}
+		if (ImGui::MenuItem ("Scale") && HaveMesh ()) {
+			scale[0] = scale[1] = scale[2] = 1.0;
+			OpenDialog (DLG_SCALE);
+		}
+		ImGui::Separator ();
+		if (ImGui::MenuItem ("Merge groups...") && HaveMesh ()) {
+			mergeGrp[0] = mergeGrp[1] = 1;
+			OpenDialog (DLG_MERGE);
+		}
+		if (ImGui::MenuItem ("Generate normals...") && HaveMesh ()) {
+			nmlSelGrp = nmlSelVtx = 0;
+			nmlGroup = 1;
+			OpenDialog (DLG_NORMALS);
+		}
+		ImGui::Separator ();
+		if (ImGui::MenuItem ("Zero level")) {
+			zeroLevel = 1e-5f;
+			zeroVtx = zeroNml = zeroTex = false;
+			OpenDialog (DLG_ZEROLEVEL);
+		}
+		ImGui::EndMenu ();
+	}
+	if (ImGui::BeginMenu ("Help")) {
+		if (ImGui::MenuItem ("About Shipedit")) OpenDialog (DLG_ABOUT);
+		ImGui::EndMenu ();
+	}
+	ImGui::EndMenuBar ();
+}
+
+void Row (const char *key, const char *value)
+{
+	ImGui::TableNextRow ();
+	ImGui::TableNextColumn ();
+	ImGui::TextUnformatted (key);
+	ImGui::TableNextColumn ();
+	ImGui::TextUnformatted (value);
+}
+
+void DrawInfo ()
 {
 	char cbuf[256];
-	double dim;
-	GetDlgItem (IDC_GRIDINT_DIM)->GetWindowText (cbuf, 256);
-	if (sscanf (cbuf, "%lf", &dim) && dim >= 0) {
-		double mem = dim*dim*dim;
-		if (mem > 1e6) sprintf (cbuf, "(%0.1f MByte)", mem*1e-6);
-		else           sprintf (cbuf, "(%0.0f KByte)", mem*1e-3);
-		GetDlgItem (IDC_GRIDINT_MEM)->SetWindowText (cbuf);
+	bool have = HaveMesh ();
+	ImGui::SeparatorText ("Mesh info");
+	if (ImGui::BeginTable ("##info", 2)) {
+		ImGui::TableSetupColumn ("##k", ImGuiTableColumnFlags_WidthFixed, 110 * utilapp::Scale ());
+		ImGui::TableSetupColumn ("##v", ImGuiTableColumnFlags_WidthStretch);
+		snprintf (cbuf, sizeof (cbuf), "%u", (unsigned)app.ngrp);
+		Row ("Groups:", have ? cbuf : "-");
+		snprintf (cbuf, sizeof (cbuf), "%u", (unsigned)app.nvtx);
+		Row ("Vertices:", have ? cbuf : "-");
+		snprintf (cbuf, sizeof (cbuf), "%u", (unsigned)app.ntri);
+		Row ("Triangles:", have ? cbuf : "-");
+		snprintf (cbuf, sizeof (cbuf), "[%0.2f %0.2f %0.2f] [%0.2f %0.2f %0.2f]",
+			app.bbmin.x, app.bbmin.y, app.bbmin.z, app.bbmax.x, app.bbmax.y, app.bbmax.z);
+		Row ("Bounding box:", have ? cbuf : "-");
+		ImGui::EndTable ();
+	}
+
+	bool calc = app.bCalcValid;
+	if (calc) snprintf (cbuf, sizeof (cbuf), "Parameters (%d samples)", app.nop);
+	else      snprintf (cbuf, sizeof (cbuf), "Parameters");
+	ImGui::SeparatorText (cbuf);
+	if (ImGui::BeginTable ("##calc", 4)) {
+		ImGui::TableSetupColumn ("##k", ImGuiTableColumnFlags_WidthFixed, 110 * utilapp::Scale ());
+		ImGui::TableSetupColumn ("##x", ImGuiTableColumnFlags_WidthStretch);
+		ImGui::TableSetupColumn ("##y", ImGuiTableColumnFlags_WidthStretch);
+		ImGui::TableSetupColumn ("##z", ImGuiTableColumnFlags_WidthStretch);
+		auto vec = [&](const char *key, const double *v, int n) {
+			ImGui::TableNextRow ();
+			ImGui::TableNextColumn ();
+			ImGui::TextUnformatted (key);
+			for (int i = 0; i < 3; i++) {
+				ImGui::TableNextColumn ();
+				if (i < n) {
+					if (calc) ImGui::Text ("%0.2f", v[i]);
+					else if (i == 0) ImGui::TextUnformatted ("-");
+				}
+			}
+		};
+		vec ("Volume:", &app.vol, 1);
+		double cgv[3] = {app.cg.x, app.cg.y, app.cg.z};
+		vec ("Centre of mass:", cgv, 3);
+		double csv[3] = {app.cs.x, app.cs.y, app.cs.z};
+		vec ("Cross sections:", csv, 3);
+		double j1[3] = {app.J.m11, app.J.m12, app.J.m13};
+		double j2[3] = {app.J.m12, app.J.m22, app.J.m23};
+		double j3[3] = {app.J.m13, app.J.m23, app.J.m33};
+		vec ("Inertia tensor:", j1, 3);
+		vec ("", j2, calc ? 3 : 0);
+		vec ("", j3, calc ? 3 : 0);
+		ImGui::EndTable ();
 	}
 }
-/////////////////////////////////////////////////////////////////////////////
-// AddMeshDlg dialog
 
-
-AddMeshDlg::AddMeshDlg(CWnd* pParent /*=NULL*/)
-	: CDialog(AddMeshDlg::IDD, pParent)
+void Frame ()
 {
-	//{{AFX_DATA_INIT(AddMeshDlg)
-	m_AddMode = 0;
-	//}}AFX_DATA_INIT
+	if (app.bBackgroundOp) {
+		auto t0 = std::chrono::steady_clock::now ();
+		do {
+			app.ProcessPackage ();
+		} while (app.bBackgroundOp && std::chrono::steady_clock::now () - t0 < std::chrono::milliseconds (12));
+	}
+	utilapp::BeginMainWindow (true);
+	DrawMenu ();
+	DrawInfo ();
+	DrawDialog ();
+	utilapp::EndMainWindow ();
 }
 
-
-void AddMeshDlg::DoDataExchange(CDataExchange* pDX)
-{
-	CDialog::DoDataExchange(pDX);
-	//{{AFX_DATA_MAP(AddMeshDlg)
-	DDX_Radio(pDX, IDC_RADIO1, m_AddMode);
-	//}}AFX_DATA_MAP
 }
 
-
-BEGIN_MESSAGE_MAP(AddMeshDlg, CDialog)
-	//{{AFX_MSG_MAP(AddMeshDlg)
-		// NOTE: the ClassWizard will add message map macros here
-	//}}AFX_MSG_MAP
-END_MESSAGE_MAP()
-
-/////////////////////////////////////////////////////////////////////////////
-// AddMeshDlg message handlers
+int main ()
+{
+	utilapp::AppDesc desc;
+	desc.title = "Shipedit";
+	desc.width = 480;
+	desc.height = 380;
+	int res = utilapp::Run (desc, Frame, [] { return app.bBackgroundOp; });
+	MessageBeep (-1);
+	return res;
+}

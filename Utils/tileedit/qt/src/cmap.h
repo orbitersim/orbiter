@@ -1,7 +1,7 @@
 #ifndef CMAP_H
 #define CMAP_H
 
-#include <windows.h>
+#include <cstdint>
 
 enum CmapName {
 	CMAP_GREY,
@@ -10,7 +10,7 @@ enum CmapName {
 	CMAP_TOPO2
 };
 
-typedef DWORD Cmap[256];
+typedef uint32_t Cmap[256];
 
 const Cmap &cmap(CmapName name);
 

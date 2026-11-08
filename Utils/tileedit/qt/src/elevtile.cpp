@@ -4,8 +4,9 @@
 #include "cmap.h"
 #include <iostream>
 #include <algorithm>
-#define _USE_MATH_DEFINES
-#include <math.h>
+#include <cmath>
+#include <cstdio>
+#include <cstring>
 
 
 // ==================================================================================
@@ -59,7 +60,7 @@ void ElevData::RescanLimits()
 	}
 }
 
-ElevData ElevData::SubTile(const std::pair<DWORD, DWORD> &xrange, const std::pair<DWORD, DWORD> &yrange)
+ElevData ElevData::SubTile(const std::pair<uint32_t, uint32_t> &xrange, const std::pair<uint32_t, uint32_t> &yrange)
 {
 	ElevData sub;
 	sub.width = xrange.second - xrange.first + 3;
@@ -172,12 +173,12 @@ void ElevTile::LoadData(ElevData &edata, int lvl, int ilat, int ilng)
 {
 	if (s_openMode & 0x1) { // try cache
 		char path[1024];
-		sprintf(path, "%s/%s/%02d/%06d/%06d.elv", s_root.c_str(), Layer().c_str(), lvl, ilat, ilng);
+		snprintf(path, sizeof(path), "%s/%s/%02d/%06d/%06d.elv", s_root.c_str(), Layer().c_str(), lvl, ilat, ilng);
 		edata = elvread(path);
 	}
 	if (edata.data.size() == 0 && s_openMode & 0x2 && s_treeMgr) { // try archive
-		BYTE *buf;
-		DWORD ndata = s_treeMgr->ReadData(lvl, ilat, ilng, &buf);
+		uint8_t *buf;
+		uint32_t ndata = s_treeMgr->ReadData(lvl, ilat, ilng, &buf);
 		if (ndata) {
 			edata = elvscan(buf, ndata);
 			s_treeMgr->ReleaseData(buf);
@@ -190,12 +191,12 @@ void ElevTile::LoadModData(ElevData &edata, int lvl, int ilat, int ilng)
 	bool found = false;
 	if (s_openMode & 0x1) { // try cache
 		char path[1024];
-		sprintf(path, "%s/%s_mod/%02d/%06d/%06d.elv", s_root.c_str(), Layer().c_str(), m_lvl, m_ilat, m_ilng);
+		snprintf(path, sizeof(path), "%s/%s_mod/%02d/%06d/%06d.elv", s_root.c_str(), Layer().c_str(), m_lvl, m_ilat, m_ilng);
 		found = elvmodread(path, edata);
 	}
 	if (!found && s_openMode & 0x2 && s_treeModMgr) { // try archive
-		BYTE *buf;
-		DWORD ndata = s_treeModMgr->ReadData(lvl, ilat, ilng, &buf);
+		uint8_t *buf;
+		uint32_t ndata = s_treeModMgr->ReadData(lvl, ilat, ilng, &buf);
 		if (ndata) {
 			elvmodscan(buf, ndata, edata);
 			s_treeModMgr->ReleaseData(buf);
@@ -239,7 +240,7 @@ void ElevTile::Save()
 {
 	if (m_modified) {
 		char path[1024];
-		sprintf(path, "%s/%s/%02d/%06d/%06d.elv", s_root.c_str(), Layer().c_str(), m_lvl, m_ilat, m_ilng);
+		snprintf(path, sizeof(path), "%s/%s/%02d/%06d/%06d.elv", s_root.c_str(), Layer().c_str(), m_lvl, m_ilat, m_ilng);
 		int nlat = (m_lvl < 4 ? 1 : 1 << (m_lvl - 4));
 		int nlng = (m_lvl < 4 ? 1 : 1 << (m_lvl - 3));
 		double latmax = (1.0 - (double)m_ilat / (double)nlat) * M_PI - 0.5*M_PI;
@@ -258,9 +259,9 @@ void ElevTile::SaveMod()
 {
 	if (m_modified) {
 		char path[1024];
-		sprintf(path, "%s_mod", Layer().c_str());
+		snprintf(path, sizeof(path), "%s_mod", Layer().c_str());
 		::ensureLayerDir(s_root.c_str(), path, m_lvl, m_ilat);
-		sprintf(path, "%s/%s_mod/%02d/%06d/%06d.elv", s_root.c_str(), Layer().c_str(), m_lvl, m_ilat, m_ilng);
+		snprintf(path, sizeof(path), "%s/%s_mod/%02d/%06d/%06d.elv", s_root.c_str(), Layer().c_str(), m_lvl, m_ilat, m_ilng);
 		int nlat = (m_lvl < 4 ? 1 : 1 << (m_lvl - 4));
 		int nlng = (m_lvl < 4 ? 1 : 1 << (m_lvl - 3));
 		double latmax = (1.0 - (double)m_ilat / (double)nlat) * M_PI - 0.5*M_PI;

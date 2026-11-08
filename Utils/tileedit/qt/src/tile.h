@@ -1,7 +1,9 @@
 #ifndef TILE_H
 #define TILE_H
 
-#include <windows.h>
+#include <cstdint>
+#include <string>
+#include <utility>
 #include <vector>
 #include "ddsread.h"
 #include "ZTreeMgr.h"
@@ -27,6 +29,8 @@ enum TileLoadMode {
 inline int nLat(int lvl) { return (lvl < 4 ? 1 : 1 << (lvl - 4)); }
 inline int nLng(int lvl) { return (lvl < 4 ? 1 : 1 << (lvl - 3)); }
 
+class TileBlock;
+
 void ensureLayerDir(const char *rootDir, const char *layer, int lvl, int ilat);
 
 
@@ -35,6 +39,7 @@ class Tile
 public:
     Tile(int lvl, int ilat, int ilng);
 	Tile(const Tile &tile);
+	virtual ~Tile() {}
     int Level() const { return m_lvl; }
     int iLat() const { return m_ilat; }
     int iLng() const { return m_ilng; }
@@ -71,8 +76,8 @@ protected:
     int m_sublvl;
     int m_subilat;
     int m_subilng;
-    std::pair<DWORD, DWORD> lat_subrange;
-    std::pair<DWORD, DWORD> lng_subrange;
+    std::pair<uint32_t, uint32_t> lat_subrange;
+    std::pair<uint32_t, uint32_t> lng_subrange;
 
 	static std::string s_root;
 	static int s_openMode;

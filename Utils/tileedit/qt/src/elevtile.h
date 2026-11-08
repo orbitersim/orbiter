@@ -8,8 +8,8 @@
 #define TILE_ELEVSTRIDE (TILE_FILERES+3)
 
 struct ElevData {
-	DWORD width;              // elevation grid width (including padding)
-	DWORD height;             // elevation grid height (including padding)
+	uint32_t width;              // elevation grid width (including padding)
+	uint32_t height;             // elevation grid height (including padding)
 	std::vector<double> data; // elevation grid data [m]
 	double dmin, dmax;        // min, max tile elevation [m]
 	double dres;              // target elevation resolution [m] (must be 2^n with integer n)
@@ -18,7 +18,7 @@ struct ElevData {
 	ElevData &operator=(const ElevData &edata);
 	double nodeValue(int ix, int iy) const;
 	void setNodeValue(int ix, int iy, double v);
-	ElevData SubTile(const std::pair<DWORD, DWORD> &xrange, const std::pair<DWORD, DWORD> &yrange);
+	ElevData SubTile(const std::pair<uint32_t, uint32_t> &xrange, const std::pair<uint32_t, uint32_t> &yrange);
 	void RescanLimits();
 };
 

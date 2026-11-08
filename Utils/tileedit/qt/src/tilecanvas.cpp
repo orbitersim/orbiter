@@ -1,8 +1,10 @@
-#include <iostream>
+#include <algorithm>
+#include <cstdio>
 #include "tilecanvas.h"
 #include "tileedit.h"
-#include "QPainter"
-#include "QResizeEvent"
+#include <QCursor>
+#include <QPainter>
+#include <QResizeEvent>
 
 TileCanvas::TileCanvas(QWidget *parent)
 	: QWidget(parent)
@@ -38,13 +40,17 @@ void TileCanvas::paintEvent(QPaintEvent *event)
     painter.drawRect(rect());
 
     if (m_tileBlock) {
-        const BYTE *data = (const BYTE*)m_img.data.data();
+        const uint8_t *data = (const uint8_t*)m_img.data.data();
         QImage qimg(data, m_img.width, m_img.height, QImage::Format_ARGB32);
         painter.drawImage(rect(), qimg);
     }
 }
 
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
+void TileCanvas::enterEvent(QEnterEvent *event)
+#else
 void TileCanvas::enterEvent(QEvent *event)
+#endif
 {
 	emit tileEntered(this);
 }
@@ -56,7 +62,8 @@ void TileCanvas::leaveEvent(QEvent *event)
 
 void TileCanvas::mouseMoveEvent(QMouseEvent *event)
 {
-    updateGlyph(event->x(), event->y());
+    QPoint pos = mouseEventPos(event);
+    updateGlyph(pos.x(), pos.y());
 	emit mouseMovedInCanvas(m_canvasIdx, event);
 }
 
@@ -224,13 +231,13 @@ void TileCanvas::setTileBlock(const TileBlock *tileBlock, TileMode mode)
 	else if (m_tileedit) {
 		m_lvl = m_tileedit->m_lvl;
 		m_ilat0 = m_tileedit->m_ilat;
-		m_ilat1 = min(nLat(m_lvl), m_ilat0 + m_tileedit->m_blocksize);
+		m_ilat1 = std::min(nLat(m_lvl), m_ilat0 + m_tileedit->m_blocksize);
 		m_ilng0 = m_tileedit->m_ilng;
-		m_ilng1 = min(nLng(m_lvl), m_ilng0 + m_tileedit->m_blocksize);
+		m_ilng1 = std::min(nLng(m_lvl), m_ilng0 + m_tileedit->m_blocksize);
 	}
 
 	if (m_glyphMode == GLYPHMODE_NAVIGATE) {
-		QPoint pos = mapFromGlobal(cursor().pos());
+		QPoint pos = mapFromGlobal(QCursor::pos());
 		updateGlyph(pos.x(), pos.y());
 	}
 	overlay->setTileBlock(tileBlock);
@@ -267,8 +274,6 @@ void TileCanvas::showOverlay(bool show)
 	}
 }
 
-
-QFont TileCanvasOverlay::s_font = QFont("Courier", 10);
 
 TileCanvasOverlay::TileCanvasOverlay(QWidget *parent)
 	: QWidget(parent)
@@ -392,7 +397,7 @@ void TileCanvasOverlay::paintEvent(QPaintEvent *event)
 				if (nlatblock == 2)
 					painter.drawLine(0, h / 2, w, h / 2);
 			}
-			painter.setFont(s_font);
+			painter.setFont(QFont("Courier", 10));
 			painter.setPen(QPen(QColor(255,255,255)));
 			painter.setBackgroundMode(Qt::OpaqueMode);
 			painter.setBackground(QBrush(QColor(0, 0, 0, 64)));
@@ -402,15 +407,15 @@ void TileCanvasOverlay::paintEvent(QPaintEvent *event)
 					int x = ((ilng - m_canvas->m_ilng0) * w) / nlngblock + 6;
 					const Tile *tile = (m_tileBlock ? m_tileBlock->getTile(ilat, ilng) : 0);
 					if (tile) {
-						sprintf(cbuf, " %02d/%06d/%06d ", tile->Level(), tile->iLat(), tile->iLng());
+						snprintf(cbuf, sizeof(cbuf), " %02d/%06d/%06d ", tile->Level(), tile->iLat(), tile->iLng());
 						painter.drawText(x, y, QString(cbuf));
 						if (tile->subLevel() < tile->Level()) {
-							sprintf(cbuf, "[%02d/%06d/%06d]", tile->subLevel(), tile->subiLat(), tile->subiLng());
+							snprintf(cbuf, sizeof(cbuf), "[%02d/%06d/%06d]", tile->subLevel(), tile->subiLat(), tile->subiLng());
 							painter.drawText(x, y+16, QString(cbuf));
 						}
 					}
 					else {
-						sprintf(cbuf, " %02d/%06d/%06d ", m_canvas->m_lvl, ilat, ilng);
+						snprintf(cbuf, sizeof(cbuf), " %02d/%06d/%06d ", m_canvas->m_lvl, ilat, ilng);
 						painter.drawText(x, y, QString(cbuf));
 						painter.drawText(x, y + 16, QString("[ not  available ]"));
 					}

@@ -3,17 +3,23 @@
 #include "tile.h"
 #include "elevtile.h"
 #include "tileblock.h"
+#include "tilecanvas.h"
 #include "dlgsurfimport.h"
 #include "dlgconfig.h"
 #include "dlgelevconfig.h"
 #include "dlgelevexport.h"
 #include "dlgelevimport.h"
+#include <algorithm>
+#include <cstdio>
 #include <random>
 
-#include "QFileDialog"
-#include "QResizeEvent"
-#include "QMessageBox"
-#include "QSettings"
+#include <QApplication>
+#include <QButtonGroup>
+#include <QFileDialog>
+#include <QFileInfo>
+#include <QResizeEvent>
+#include <QMessageBox>
+#include <QSettings>
 
 static std::vector<std::pair<int, int> > paintStencil1 = { {0,0} };
 static std::vector<std::pair<int, int> > paintStencil2 = { {0,0}, {1,0}, {0,1}, {1,1} };
@@ -28,11 +34,8 @@ tileedit::tileedit(QWidget *parent)
     : QMainWindow(parent)
     , ui(new Ui::tileedit)
 {
-	char path[1024], drive[16], dir[1024], name[1024], ext[1024];
-	GetModuleFileNameA(NULL, path, 1024);
-	_splitpath(path, drive, dir, name, ext);
-	sprintf(path, "%s%s%s.ini", drive, dir, name);
-	m_settings = new QSettings(path, QSettings::IniFormat);
+	QFileInfo exe(QCoreApplication::applicationFilePath());
+	m_settings = new QSettings(exe.absolutePath() + "/" + exe.completeBaseName() + ".ini", QSettings::IniFormat);
 
 	m_elevDisplayParam.cmName = (CmapName)m_settings->value("elevdisp/cmap", CMAP_GREY).toInt();
 	m_elevDisplayParam.useWaterMask = m_settings->value("elevdisp/wmask", false).toBool();
@@ -90,10 +93,10 @@ tileedit::tileedit(QWidget *parent)
     connect(ui->spinLatidx, SIGNAL(valueChanged(int)), this, SLOT(onLatidxChanged(int)));
     connect(ui->spinLngidx, SIGNAL(valueChanged(int)), this, SLOT(onLngidxChanged(int)));
 
-	connect(ui->bgrpAction, SIGNAL(buttonClicked(int)), this, SLOT(onActionButtonClicked(int)));
+	connect(ui->bgrpAction, &QButtonGroup::idClicked, this, &tileedit::onActionButtonClicked);
 	ui->bgrpAction->setId(ui->btnActionNavigate, 0);
 	ui->bgrpAction->setId(ui->btnActionElevEdit, 1);
-	connect(ui->bgrpEdit, SIGNAL(buttonClicked(int)), this, SLOT(onEditButtonClicked(int)));
+	connect(ui->bgrpEdit, &QButtonGroup::idClicked, this, &tileedit::onEditButtonClicked);
 	ui->bgrpEdit->setId(ui->btnElevPaint, 0);
 	ui->bgrpEdit->setId(ui->btnElevRandom, 1);
 	ui->bgrpEdit->setId(ui->btnElevErase, 2);
@@ -216,7 +219,7 @@ void tileedit::elevDisplayParamChanged()
 	m_settings->setValue("elevdisp/rmax", m_elevDisplayParam.rangeMax);
 }
 
-void tileedit::setLoadMode(DWORD mode)
+void tileedit::setLoadMode(uint32_t mode)
 {
 	if (mode != m_openMode) {
 		m_openMode = mode;
@@ -234,7 +237,7 @@ void tileedit::setAncestorMode(TileLoadMode mode)
 	if (mode != m_globalLoadMode) {
 		m_globalLoadMode = mode;
 		Tile::setGlobalLoadMode(m_globalLoadMode);
-		m_settings->setValue("config/queryancestor", m_globalLoadMode);
+		m_settings->setValue("config/queryancestor", (int)m_globalLoadMode);
 
 		// reload current tile
 		if (Tile::root().size())
@@ -248,8 +251,8 @@ void tileedit::setBlockSize(int bsize)
 		m_blocksize = bsize;
 
 		// reload current tile
-		m_ilat = max(0, min(m_ilat, nLat(m_lvl) - bsize));
-		m_ilng = max(0, min(m_ilng, nLng(m_lvl) - bsize));
+		m_ilat = std::max(0, std::min(m_ilat, nLat(m_lvl) - bsize));
+		m_ilng = std::max(0, std::min(m_ilng, nLng(m_lvl) - bsize));
 		if (Tile::root().size())
 			setTile(m_lvl, m_ilat, m_ilng);
 
@@ -274,9 +277,7 @@ void tileedit::openDir()
 		setTile(1, 0, 0);
 		ensureSquareCanvas(rect().width(), rect().height());
 
-		char cbuf[256];
-		sprintf(cbuf, "tileedit [%s]", rootDir.toLatin1().data());
-		setWindowTitle(cbuf);
+		setWindowTitle(QString("tileedit [%1]").arg(rootDir));
 	}
 }
 
@@ -342,8 +343,8 @@ void tileedit::onElevConfigDestroyed(int r)
 
 void tileedit::loadTile(int lvl, int ilat, int ilng)
 {
-	int ilat1 = min(nLat(lvl), ilat + m_blocksize);
-	int ilng1 = min(nLng(lvl), ilng + m_blocksize);
+	int ilat1 = std::min(nLat(lvl), ilat + m_blocksize);
+	int ilng1 = std::min(nLng(lvl), ilng + m_blocksize);
 
     if (m_sTileBlock)
         delete m_sTileBlock;
@@ -566,8 +567,9 @@ void tileedit::OnMouseMovedInCanvas(int canvasIdx, QMouseEvent *event)
 	const TileBlock *tileblock = canvas->tileBlock();
 	const Image &img = canvas->getImage();
 
-	int x = event->x();
-	int y = event->y();
+	QPoint pos = mouseEventPos(event);
+	int x = pos.x();
+	int y = pos.y();
 	int cw = canvas->rect().width();
 	int ch = canvas->rect().height();
 
@@ -586,7 +588,7 @@ void tileedit::OnMouseMovedInCanvas(int canvasIdx, QMouseEvent *event)
 		double lat = latmax - ((double)y + 0.5) / (double)ch * (latmax - latmin);
 
 		char cbuf[1024];
-		sprintf(cbuf, "Lng=%+0.6lf, Lat=%+0.6lf", lng, lat);
+		snprintf(cbuf, sizeof(cbuf), "Lng=%+0.6lf, Lat=%+0.6lf", lng, lat);
 		ui->labelData1->setText(cbuf);
 
 		int mpx = (x*iw) / cw; // pixel coordinates
@@ -595,22 +597,22 @@ void tileedit::OnMouseMovedInCanvas(int canvasIdx, QMouseEvent *event)
 		int mny = (ih - mpy) / 2;
 
 		if (m_panel[canvasIdx].layerType->currentIndex() >= 3) { // elevation
-			sprintf(cbuf, "x=%d/%d, y=%d/%d", mnx, (iw / 2) + 1, mny, (ih / 2) + 1);
+			snprintf(cbuf, sizeof(cbuf), "x=%d/%d, y=%d/%d", mnx, (iw / 2) + 1, mny, (ih / 2) + 1);
 			ui->labelData2->setText(cbuf);
 			double elev = ((ElevTileBlock*)tileblock)->nodeElevation(mnx, mny);
-			sprintf(cbuf, "%+0.1lfm", elev);
+			snprintf(cbuf, sizeof(cbuf), "%+0.1lfm", elev);
 			ui->labelData3->setText(cbuf);
 		}
 		else {
-			sprintf(cbuf, "X=%d/%d, Y=%d/%d", mpx, iw, mpy, ih);
+			snprintf(cbuf, sizeof(cbuf), "X=%d/%d, Y=%d/%d", mpx, iw, mpy, ih);
 			ui->labelData2->setText(cbuf);
 			if (mpx >= 0 && mpx < img.width && mpy >= 0 && mpy < img.height) {
-				DWORD col = img.data[mpx + mpy*img.width];
+				uint32_t col = img.data[mpx + mpy*img.width];
 				if (m_panel[canvasIdx].layerType->currentIndex() == 1) {
 					ui->labelData3->setText(col & 0xFF000000 ? "Diffuse (Land)" : "Specular (Water)");
 				}
 				else {
-					sprintf(cbuf, "R=%d, G=%d, B=%d", (col >> 0x10) & 0xFF, (col >> 0x08) & 0xFF, col & 0xFF);
+					snprintf(cbuf, sizeof(cbuf), "R=%d, G=%d, B=%d", (col >> 0x10) & 0xFF, (col >> 0x08) & 0xFF, col & 0xFF);
 					ui->labelData3->setText(cbuf);
 				}
 			}
@@ -625,7 +627,7 @@ void tileedit::OnMouseMovedInCanvas(int canvasIdx, QMouseEvent *event)
 			else if (m_panel[i].layerType->currentIndex() == 0 || m_panel[i].layerType->currentIndex() == 2) {
 				const Image &img = m_panel[i].canvas->getImage();
 				if (mpx >= 0 && mpx < img.width && mpy >= 0 && mpy < img.height) {
-					DWORD col = img.data[mpx + mpy*img.width];
+					uint32_t col = img.data[mpx + mpy*img.width];
 					m_panel[i].colorbar->setRGBValue((col >> 0x10) & 0xFF, (col >> 0x08) & 0xFF, col & 0xFF);
 				}
 			}
@@ -645,7 +647,7 @@ void tileedit::OnMouseMovedInCanvas(int canvasIdx, QMouseEvent *event)
 
 	if (m_actionMode == ACTION_ELEVEDIT && m_eTileBlock) {
 		if (m_mouseDown)
-			editElevation(canvasIdx, event->x(), event->y());
+			editElevation(canvasIdx, x, y);
 		for (int i = 0; i < 3; i++) {
 			int toolrad;
 			switch (m_elevEditMode) {
@@ -696,10 +698,11 @@ void tileedit::OnMousePressedInCanvas(int canvasIdx, QMouseEvent *event)
 		m_eTileBlockRef = new ElevTileBlock(*m_eTileBlock);
 		if (m_elevEditMode == ELEVEDIT_RANDOM) {
 			double mean = (double)ui->spinElevRandomValue->value();
-			double std = ui->dspinElevRandomStd->value();
-			m_rndn = new std::normal_distribution<double>(mean, std);
+			double sd = ui->dspinElevRandomStd->value();
+			m_rndn = new std::normal_distribution<double>(mean, sd);
 		}
-		editElevation(canvasIdx, event->x(), event->y());
+		QPoint pos = mouseEventPos(event);
+		editElevation(canvasIdx, pos.x(), pos.y());
 	}
 	m_mouseDown = true;
 }
@@ -735,7 +738,7 @@ void tileedit::editElevation(int canvasIdx, int x, int y)
 				ui->spinElevPaintSize->value() :
 				ui->spinElevRandomSize->value()
 				);
-			sz = min(sz, 5);
+			sz = std::min(sz, 5);
 			int mode = (m_elevEditMode == ELEVEDIT_PAINT ?
 				ui->comboElevPaintMode->currentIndex() :
 				ui->comboElevRandomMode->currentIndex()
@@ -749,21 +752,21 @@ void tileedit::editElevation(int canvasIdx, int x, int y)
 					v = (int)(*m_rndn)(generator);
 				int idx = (ny + pady + (*stencil)[i].second)*edata.width + (nx + padx + (*stencil)[i].first);
 				if (idx >= 0 && idx < edata.data.size()) {
-					INT16 vold = edata.data[idx];
+					int16_t vold = edata.data[idx];
 					switch (mode) {
 					case 0:
-						edata.data[idx] = (INT16)v;
+						edata.data[idx] = (int16_t)v;
 						break;
 					case 1:
-						edata.data[idx] = m_eTileBlockRef->getData().data[idx] + (INT16)v;
+						edata.data[idx] = m_eTileBlockRef->getData().data[idx] + (int16_t)v;
 						break;
 					case 2:
-						if (edata.data[idx] < (INT16)v)
-							edata.data[idx] = (INT16)v;
+						if (edata.data[idx] < (int16_t)v)
+							edata.data[idx] = (int16_t)v;
 						break;
 					case 3:
-						if (edata.data[idx] > (INT16)v)
-							edata.data[idx] = (INT16)v;
+						if (edata.data[idx] > (int16_t)v)
+							edata.data[idx] = (int16_t)v;
 						break;
 					}
 					if (edata.data[idx] != vold) {
@@ -805,7 +808,7 @@ void tileedit::editElevation(int canvasIdx, int x, int y)
 	case ELEVEDIT_ERASE:
 		{
 			int sz = ui->spinElevEraseSize->value();
-			sz = min(sz, 5);
+			sz = std::min(sz, 5);
 			std::vector<std::pair<int, int>> *stencil = paintStencil[sz - 1];
 			ElevData &edata = m_eTileBlock->getData();
 			ElevData &edataBase = m_eTileBlock->getBaseData();
@@ -895,17 +898,17 @@ void tileedit::setTile(int lvl, int ilat, int ilng)
 		ui->spinLngidx->blockSignals(false);
 	}
 	char cbuf[256];
-	sprintf(cbuf, "%+0.10lf", latmin);
+	snprintf(cbuf, sizeof(cbuf), "%+0.10lf", latmin);
 	ui->labelLatmin->setText(cbuf);
-	sprintf(cbuf, "%+0.10lf", latmax);
+	snprintf(cbuf, sizeof(cbuf), "%+0.10lf", latmax);
 	ui->labelLatmax->setText(cbuf);
-	sprintf(cbuf, "%+0.10lf", lngmin);
+	snprintf(cbuf, sizeof(cbuf), "%+0.10lf", lngmin);
 	ui->labelLngmin->setText(cbuf);
-	sprintf(cbuf, "%+0.10lf", lngmax);
+	snprintf(cbuf, sizeof(cbuf), "%+0.10lf", lngmax);
 	ui->labelLngmax->setText(cbuf);
 }
 
-void tileedit::setupTreeManagers(std::string &root)
+void tileedit::setupTreeManagers(const std::string &root)
 {
 	releaseTreeManagers();
 

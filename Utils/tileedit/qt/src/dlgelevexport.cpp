@@ -4,9 +4,16 @@
 #include "tileblock.h"
 #include "cmap.h"
 
+#include <algorithm>
+#include <climits>
+#include <cstdio>
+#include <cstring>
+
 #include <QFileDialog>
+#include <QFileInfo>
 #include <QMessageBox>
 #include <QPainter>
+#include <QSettings>
 
 DlgElevExport::DlgElevExport(tileedit *parent)
 	: QDialog(parent)
@@ -59,7 +66,7 @@ DlgElevExport::DlgElevExport(tileedit *parent)
 	QSettings *settings = m_tileedit->settings();
 	QString path = settings->value("export/path", ".").toString();
 	char fname[1024];
-	sprintf(fname, "/elev_%02d_%06d_%06d.png", m_lvl, m_ilat0, m_ilng0);
+	snprintf(fname, sizeof(fname), "/elev_%02d_%06d_%06d.png", m_lvl, m_ilat0, m_ilng0);
 	path.append(fname);
 	ui->editPath->setText(path);
 }
@@ -222,9 +229,9 @@ void DlgElevExport::RescanLimits()
 	}
 
 	char cbuf[1024];
-	sprintf(cbuf, "%+0.2lf m", m_elevMin);
+	snprintf(cbuf, sizeof(cbuf), "%+0.2lf m", m_elevMin);
 	ui->labelDataMin->setText(cbuf);
-	sprintf(cbuf, "%+0.2lf m", m_elevMax);
+	snprintf(cbuf, sizeof(cbuf), "%+0.2lf m", m_elevMax);
 	ui->labelDataMax->setText(cbuf);
 
 	if (ui->radioScaleAuto->isChecked()) {
@@ -282,11 +289,11 @@ void DlgElevExportColorbar::paintEvent(QPaintEvent *event)
 	QPainter painter(this);
 
 	const Cmap &cm = cmap(CMAP_GREY);
-	DWORD data[256];
-	memcpy(data, cm, 256 * sizeof(DWORD));
+	uint32_t data[256];
+	memcpy(data, cm, 256 * sizeof(uint32_t));
 	for (int i = 0; i < 256; i++)
 		data[i] |= 0xff000000;
-	QImage qimg((BYTE*)data, 256, 1, QImage::Format_ARGB32);
+	QImage qimg((uint8_t*)data, 256, 1, QImage::Format_ARGB32);
 
 	int w = rect().width() - 1;
 	int h = rect().height() - 1;
@@ -298,8 +305,8 @@ void DlgElevExportColorbar::paintEvent(QPaintEvent *event)
 			painter.drawRect(r);
 			painter.setBrush(Qt::NoBrush);
 		}
-		double smin = min(m_dmin, m_vmin);
-		double smax = max(m_dmax, m_vmax);
+		double smin = std::min(m_dmin, m_vmin);
+		double smax = std::max(m_dmax, m_vmax);
 		if (m_dmin < m_vmin) {
 			r.setLeft((int)((m_vmin - smin) / (smax - smin) * w));
 		}
@@ -311,8 +318,8 @@ void DlgElevExportColorbar::paintEvent(QPaintEvent *event)
 	painter.drawRect(r);
 
 	if (m_paintDataRange) {
-		int xmin = max(0, min(w, (int)(w * (m_dmin - m_vmin) / (m_vmax - m_vmin))));
-		int xmax = max(0, min(w, (int)(w * (m_dmax - m_vmin) / (m_vmax - m_vmin))));
+		int xmin = std::max(0, std::min(w, (int)(w * (m_dmin - m_vmin) / (m_vmax - m_vmin))));
+		int xmax = std::max(0, std::min(w, (int)(w * (m_dmax - m_vmin) / (m_vmax - m_vmin))));
 		painter.setPen(QColor(255, 0, 0));
 		painter.drawRect(xmin, 0, xmax - xmin, h);
 	}

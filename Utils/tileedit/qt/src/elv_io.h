@@ -18,8 +18,8 @@ struct ElevPatchMetaInfo
 ElevData elvread(const char *fname);
 bool elvmodread(const char *fname, ElevData &edata);
 
-ElevData elvscan(const BYTE *data, int ndata);
-bool elvmodscan(const BYTE *data, int ndata, ElevData &edata);
+ElevData elvscan(const uint8_t *data, int ndata);
+bool elvmodscan(const uint8_t *data, int ndata, ElevData &edata);
 
 void elvwrite(const char *fname, const ElevData &edata, double latmin, double latmax, double lngmin, double lngmax);
 void elvmodwrite(const char *fname, const ElevData &edata, const ElevData &ebasedata, double latmin, double latmax, double lngmin, double lngmax);

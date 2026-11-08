@@ -1,8 +1,8 @@
 #ifndef COLORBAR_H
 #define COLORBAR_H
 
-#include "QWidget"
-#include "QPen"
+#include <QWidget>
+#include <QPen>
 #include "cmap.h"
 #include "elevtile.h"
 
@@ -19,7 +19,7 @@ public:
 	void setElevDisplayParam(const ElevDisplayParam &elevDisplayParam);
 	void displayParamChanged();
 	void setScalarValue(double val);
-	void setRGBValue(BYTE r, BYTE g, BYTE b);
+	void setRGBValue(uint8_t r, uint8_t g, uint8_t b);
 
 protected:
 	void paintEvent(QPaintEvent *event);
@@ -41,7 +41,7 @@ public:
 	void setTileMode(TileMode mode);
 	void setRange(double vmin, double vmax);
 	void setScalarValue(double val);
-	void setRGBValue(BYTE r, BYTE g, BYTE b);
+	void setRGBValue(uint8_t r, uint8_t g, uint8_t b);
 
 protected:
 	void paintEvent(QPaintEvent *event);
@@ -50,7 +50,7 @@ private:
 	TileMode m_mode;
 	double m_vmin, m_vmax;
 	double m_val;
-	BYTE m_r, m_g, m_b;
+	uint8_t m_r, m_g, m_b;
 	QPen m_penIndicator0;
 	QPen m_penIndicator1;
 };

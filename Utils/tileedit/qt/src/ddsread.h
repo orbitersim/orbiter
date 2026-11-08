@@ -4,6 +4,6 @@
 #include "imagetools.h"
 
 Image ddsread(const char *fname);
-Image ddsscan(const BYTE *data, int ndata);
+Image ddsscan(const uint8_t *data, int ndata);
 
 #endif // !DDSREAD_H

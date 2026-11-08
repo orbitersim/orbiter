@@ -12,16 +12,13 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <io.h>
-#include <conio.h>
-#include <fcntl.h>
-#include <process.h>
-#include <direct.h>
+#include <unistd.h>
+#include <termios.h>
 #include <windows.h>
 #include <math.h>
-#include <ddraw.h>
-#include <shlobj.h>
-#include <wincodec.h>
+#include <filesystem>
+#include <vector>
+#include "DDSWrite.h"
 
 using namespace std;
 
@@ -38,13 +35,10 @@ bool operator!= (const BGR &c1, const BGR &c2)
 typedef BYTE Alpha;
 
 int PS = 512; // patch size: size of patch textures
-const char *dxtex = ".\\dxtex.exe";
 
 char g_cwd[256];
 double g_tol = 0.0;        // tolerance for suppressing opaque/transparent pixels in a tile
 int g_nsuppressed = 0;     // number of opacity/transparency suppressed tiles
-
-IWICImagingFactory *g_pIWICFactory;
 
 void ReadBMP_header (char *fname, LONG &mapw, LONG &maph, WORD &bpp);
 // Read image width, height, and bit depth from BMP file
@@ -55,15 +49,10 @@ BGR *ReadBMP (char *fname, LONG &mapw, LONG &maph, WORD &bpp);
 Alpha *ReadBMPAlpha (char *fname, LONG &mapw, LONG &maph, WORD &bpp);
 // Read water mask from blue channel of bitmap
 
-BGR *ReadPNG (char *fname, LONG &mapw, LONG &maph, WORD &bpp);
-// Read bitmap PNG file into BGR buffer and return dimensions and max texture level
-
 DWORD WriteDDS (BGR *img, Alpha *aimg, LONG imgw, LONG imgh, const char *root,
 				const char *layer, int res, int ilng, int ilat, bool mipmap = false, bool binary_alpha = true);
 
-void SetOutputHeader (BITMAPFILEHEADER &bmfh, BITMAPINFOHEADER &bmih, LONG w, LONG h);
-
-void FatalError (char *msg);
+void FatalError (const char *msg);
 void InitProgress (int ntot, int len);
 void SetProgress (int p);
 void IncProgress ();
@@ -77,19 +66,9 @@ void SplitBitmap_cloud ();
 
 int main (int argc, char *argv[])
 {
-	if (!_getcwd (g_cwd, 256)) FatalError ("Cannot get working directory");
-	strcat (g_cwd, "\\");
+	if (!getcwd (g_cwd, 256)) FatalError ("Cannot get working directory");
+	strcat (g_cwd, "/");
 
-    // Create WIC factory for formatted image output
-    HRESULT hr = CoCreateInstance (
-        CLSID_WICImagingFactory,
-        NULL,
-        CLSCTX_INPROC_SERVER,
-        IID_PPV_ARGS(&g_pIWICFactory)
-    );
-	if (hr != S_OK)
-		g_pIWICFactory = NULL;
-		
 	char cmd;
 
 	std::cout << "plsplit: Orbiter planetary texture generation tool.\n\n";
@@ -255,68 +234,23 @@ Alpha *ReadBMPAlpha (char *fname, LONG &mapw, LONG &maph, WORD &bpp)
 
 // ==============================================================================
 
-BGR *ReadPNG (char *fname, LONG &mapw, LONG &maph, WORD &bpp)
+void FatalError (const char *msg)
 {
-	HRESULT hr;
-	wchar_t wfname[256];
-	mbstowcs (wfname, fname, 256);
-	IWICBitmapDecoder *pIDecoder;
-    IWICBitmapFrameDecode *pFrame = NULL;
-	BGR *img = NULL;
-
-	hr = g_pIWICFactory->CreateDecoderFromFilename (wfname, NULL, GENERIC_READ,
-		WICDecodeMetadataCacheOnDemand, &pIDecoder);
-
-    if (SUCCEEDED(hr)) {
-       hr = pIDecoder->GetFrame(0, &pFrame);
-    }
-
-	if (SUCCEEDED(hr)) {
-		UINT mapw, maph;
-		pFrame->GetSize (&mapw, &maph);
-		UINT imgsize = mapw*maph;
-		img = new BGR[imgsize];
-		pFrame->CopyPixels (NULL, mapw*3, imgsize*3, (BYTE*)img);
+	cerr << endl << "plsplit ERROR: " << msg << endl;
+	if (isatty (STDIN_FILENO)) {
+		cerr << "Press a key to terminate." << endl;
+		termios oldt, rawt;
+		tcgetattr (STDIN_FILENO, &oldt);
+		rawt = oldt;
+		rawt.c_lflag &= ~(ICANON | ECHO);
+		rawt.c_cc[VMIN] = 1;
+		rawt.c_cc[VTIME] = 0;
+		tcsetattr (STDIN_FILENO, TCSANOW, &rawt);
+		tcflush (STDIN_FILENO, TCIFLUSH);
+		char ch;
+		if (read (STDIN_FILENO, &ch, 1) < 0) ch = 0;
+		tcsetattr (STDIN_FILENO, TCSANOW, &oldt);
 	}
-
-	pIDecoder->Release();
-
-	return img;
-}
-
-// ==============================================================================
-
-void SetOutputHeader (BITMAPFILEHEADER &bmfh, BITMAPINFOHEADER &bmih, LONG w, LONG h)
-{
-	char *id = (char*)&bmfh.bfType;
-	id[0] = 'B';
-	id[1] = 'M';
-	bmfh.bfSize = sizeof (BITMAPFILEHEADER) + sizeof (BITMAPINFOHEADER) + w*h*3;
-	bmfh.bfReserved1 = 0;
-	bmfh.bfReserved2 = 0;
-	bmfh.bfOffBits = sizeof (BITMAPINFOHEADER) + sizeof (BITMAPFILEHEADER);
-
-	bmih.biSize = sizeof (BITMAPINFOHEADER);
-	bmih.biWidth = w;
-	bmih.biHeight = h;
-	bmih.biPlanes = 1;
-	bmih.biBitCount = 24;
-	bmih.biCompression = BI_RGB;
-	bmih.biSizeImage = 0;
-	bmih.biXPelsPerMeter = 1;
-	bmih.biYPelsPerMeter = 1;
-	bmih.biClrUsed = 0;
-	bmih.biClrImportant = 0;
-}
-
-// ==============================================================================
-
-void FatalError (char *msg)
-{
-	cerr << endl << "pltex ERROR: " << msg << endl;
-	cerr << "Press a key to terminate." << endl;
-	while (_kbhit()) _getch();
-	while (!_kbhit());
 	exit (1);
 }
 
@@ -359,19 +293,11 @@ void IncProgress ()
 
 bool MakePath (const char *fname)
 {
-	char cbuf[256];
-	size_t i, len = strlen(fname);
-	for (i = len; i > 0; i--)
-		if (fname[i-1] == '\\') break;
-	if (!i) return false;
-	if (fname[0] != '\\' && fname[1] != ':') {
-		GetCurrentDirectory (256, cbuf);
-		len = strlen(cbuf);
-		cbuf[len++] = '\\';
-	} else len = 0;
-	strncpy_s (cbuf+len, 256-len, fname, i);
-	int res = SHCreateDirectoryEx (NULL, cbuf, NULL);
-	return res == ERROR_SUCCESS;
+	std::filesystem::path dir = std::filesystem::path (fname).parent_path ();
+	if (dir.empty ()) return false;
+	std::error_code ec;
+	std::filesystem::create_directories (dir, ec);
+	return !ec;
 }
 
 // ==============================================================================
@@ -425,10 +351,8 @@ bool PureDiffuse (const Alpha *apatch)
 DWORD WriteDDS (BGR *img, Alpha *aimg, LONG imgw, LONG imgh, const char *root, const char *layer, int lvl, int ilng, int ilat,
 				bool mipmap, bool binary_alpha)
 {
-	const char *bmpname  = "tmp.bmp";
-	const char *abmpname = "tmp_a.bmp";
 	char ddsname[256];
-	sprintf (ddsname, "%s\\%s\\%02d\\%06d\\%06d.dds", root, layer, lvl, ilat, ilng);
+	sprintf (ddsname, "%s/%s/%02d/%06d/%06d.dds", root, layer, lvl, ilat, ilng);
 	MakePath (ddsname);
 	cout << "Writing  patch  " << ddsname << endl;
 
@@ -441,28 +365,10 @@ DWORD WriteDDS (BGR *img, Alpha *aimg, LONG imgw, LONG imgh, const char *root, c
 		img = bgrdummy;
 	}
 
-	FILE *bmpf;
-	BITMAPFILEHEADER bmfh;
-	BITMAPINFOHEADER bmih;
-	int i, ddssize = 0;
-	intptr_t res;
-	bool bopaque = false, btransparent = false;
+	int i;
 	int nopaque, ntransparent;
 
-	SetOutputHeader (bmfh, bmih, imgw, imgh);
-	bmpf = fopen (bmpname, "wb");
-	if (!bmpf) FatalError ("Could not open temporary bitmap file.");
-	fwrite (&bmfh, sizeof(BITMAPFILEHEADER), 1, bmpf);
-	fwrite (&bmih, sizeof(BITMAPINFOHEADER), 1, bmpf);
-	fwrite (img, 3, imgw*imgh, bmpf);
-	fclose (bmpf);
-
 	if (aimg) { // add an alpha layer to the patch
-		bmpf = fopen (abmpname, "wb");
-		if (!bmpf) FatalError ("Could not open temporary alpha file.");
-		fwrite (&bmfh, sizeof(BITMAPFILEHEADER), 1, bmpf);
-		fwrite (&bmih, sizeof(BITMAPINFOHEADER), 1, bmpf);
-
 		// make alpha binary black/white, and count opaque/transparent pixels 
 		for (i = nopaque = ntransparent = 0; i < imgw*imgh; i++) {
 			if (binary_alpha) {
@@ -474,22 +380,15 @@ DWORD WriteDDS (BGR *img, Alpha *aimg, LONG imgw, LONG imgh, const char *root, c
 				else               nopaque++;
 			}
 		}
-		for (i = 0; i < imgw*imgh; i++) {
-			BGR bgr;
-			bgr.r = bgr.g = bgr.b = aimg[i];
-			fwrite (&bgr, 3, 1, bmpf);
-		}
-		fclose (bmpf);
-
-		res = _spawnl (_P_WAIT, dxtex, dxtex, bmpname, "-a", abmpname, mipmap ? "-m" : "", binary_alpha ? "DXT1" : "DXT5", ddsname, NULL);
-	} else {
-		res = _spawnl (_P_WAIT, dxtex, dxtex, bmpname, mipmap ? "-m" : "", "DXT1", ddsname, NULL);
 	}
-	if (res != 0) FatalError ("Executing dxtex failed.");
 
-	remove (bmpname);
-	if (aimg) remove (abmpname);
-	return (DWORD)ddssize;
+	std::vector<BYTE> rgba = ddsw::FromBottomUpBGR ((const BYTE*)img, aimg, imgw, imgh);
+	std::vector<BYTE> dds = ddsw::Encode (rgba.data(), imgw, imgh, (aimg && !binary_alpha) ? ddsw::DXT5 : ddsw::DXT1, mipmap);
+	FILE *f = fopen (ddsname, "wb");
+	if (!f) FatalError ("Could not open output file.");
+	fwrite (dds.data(), 1, dds.size(), f);
+	fclose (f);
+	return (DWORD)dds.size();
 }
 
 // ==============================================================================
@@ -656,7 +555,7 @@ void SplitBitmap ()
 					nwritten++;
 				} else {
 					char cbuf[256];
-					sprintf (cbuf, "%s\\%s\\%02d\\%06d\\%06d.dds", root, "Mask", level, ilat0+py, ilng0+px);
+					sprintf (cbuf, "%s/%s/%02d/%06d/%06d.dds", root, "Mask", level, ilat0+py, ilng0+px);
 					cout << "Skipping patch  " << cbuf << endl;
 					nskipped++;
 				}
@@ -666,7 +565,7 @@ void SplitBitmap ()
 				nwritten++;
 			} else {
 				char cbuf[256];
-				sprintf (cbuf, "%s\\%s\\%02d\\%06d\\%06d.dds", root, "Surf", level, ilat0+py, ilng0+px);
+				sprintf (cbuf, "%s/%s/%02d/%06d/%06d.dds", root, "Surf", level, ilat0+py, ilng0+px);
 				cout << "Skipping patch  " << cbuf << endl;
 				nskipped++;
 			}
