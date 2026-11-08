@@ -6,6 +6,7 @@ set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -SAFESEH:NO")
 FetchContent_MakeAvailable(imgui)
 FetchContent_MakeAvailable(implot)
 FetchContent_MakeAvailable(SDL3)
+FetchContent_MakeAvailable(nodeedit)
 
 # Sources for all Orbiter executable targets
 set(common_src
@@ -111,6 +112,7 @@ set(common_src
 	D3d7util.cpp
 	D3dmath.cpp
     Input/Controller.cpp
+    Input/Editor.cpp
 # Utils
 	Log.cpp
 	Memstat.cpp
@@ -120,6 +122,11 @@ set(common_src
 	Orbiter.rc
 	Orbiter.ico
 	${imgui_SOURCE_DIR}/backends/imgui_impl_win32.cpp
+# Node editor
+#	${nodeedit_SOURCE_DIR}/imgui_node_editor.cpp
+#	${nodeedit_SOURCE_DIR}/crude_json.cpp
+#	${nodeedit_SOURCE_DIR}/imgui_canvas.cpp
+#	${nodeedit_SOURCE_DIR}/imgui_node_editor_api.cpp
 )
 
 set(Orbiter_includes
@@ -141,6 +148,7 @@ set(Orbiter_common_libs
 	$<TARGET_FILE:Orbitersdk>
 	$<TARGET_FILE:DlgCtrl>
     SDL3::SDL3
+    nodeedit
 )
 set(Orbiter_libs
 	dxguid.lib
@@ -152,7 +160,7 @@ set(Orbiter_depends
 )
 
 # Orbiter executable (graphics server version)
-add_executable(Orbiter ${common_src})
+add_executable(Orbiter ${common_src} "Input/Editor.h")
 
 set_target_properties(Orbiter
 	PROPERTIES
@@ -164,7 +172,7 @@ set_target_properties(Orbiter
 	FOLDER Core
 )
 
-target_include_directories(Orbiter PUBLIC ${Orbiter_includes} ${TRACY_CLIENT_INCLUDE} ${imgui_SOURCE_DIR}/ ${imgui_SOURCE_DIR}/backends ${implot_SOURCE_DIR}/)
+target_include_directories(Orbiter PUBLIC ${Orbiter_includes} ${TRACY_CLIENT_INCLUDE} ${nodeedit_SOURCE_DIR}/ ${imgui_SOURCE_DIR}/ ${imgui_SOURCE_DIR}/backends ${implot_SOURCE_DIR}/)
 
 target_link_libraries(Orbiter ${Orbiter_common_libs} ${Orbiter_libs} ${TRACY_CLIENT})
 

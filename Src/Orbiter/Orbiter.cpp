@@ -55,6 +55,7 @@
 #define SDL_DISABLE_OLD_NAMES
 #include <SDL3/SDL.h>
 #include "Input/Controller.h"
+#include "Input/Editor.h"
 
 namespace fs = std::filesystem;
 
@@ -237,6 +238,7 @@ INT WINAPI WinMain (HINSTANCE hInstance, HINSTANCE, LPSTR strCmdLine, INT nCmdSh
 	}
 
 	setlocale (LC_CTYPE, "");
+	static InputEditor *ed = new InputEditor();
 
 	g_pOrbiter->Run ();
 	delete g_pOrbiter;
@@ -375,7 +377,6 @@ Orbiter::Orbiter ()
 		});
 	RegisterMenuCmd("Save",     "MenuInfoBar/save.png",     [](void *) {g_pOrbiter->Quicksave();});
 	RegisterMenuCmd("Exit",     "MenuInfoBar/exit.png",     [](void *) {PostMessage(g_pOrbiter->GetRenderWnd(), WM_CLOSE, 0, 0);});
-
 }
 
 //-----------------------------------------------------------------------------
