@@ -12,7 +12,7 @@ FetchContent_MakeAvailable(Catch2)
 function(add_test_file test_name)
 	add_executable(${test_name} "${test_name}.cpp")
 
-	set_target_properties( ${test_name} PROPERTIES RUNTIME_OUTPUT_DIRECTORY "${ORBITER_BINARY_ROOT_DIR}" )
+	set_target_properties( ${test_name} PROPERTIES RUNTIME_OUTPUT_DIRECTORY "${ORBITER_BINARY_ROOT_DIR}" OUTPUT_NAME "${test_name}.test" )
 
 	target_include_directories(${test_name}
 		PRIVATE ${ORBITER_SOURCE_SDK_INCLUDE_DIR}
@@ -47,7 +47,7 @@ endfunction()
 function(add_core_test_file test_name)
 	add_executable(${test_name} "${test_name}.cpp" ${ARGN})
 
-	set_target_properties( ${test_name} PROPERTIES RUNTIME_OUTPUT_DIRECTORY "${ORBITER_BINARY_ROOT_DIR}" )
+	set_target_properties( ${test_name} PROPERTIES RUNTIME_OUTPUT_DIRECTORY "${ORBITER_BINARY_ROOT_DIR}" OUTPUT_NAME "${test_name}.test" )
 
 	target_include_directories(${test_name}
 		PRIVATE ${ORBITER_SOURCE_SDK_INCLUDE_DIR}
@@ -111,7 +111,7 @@ if (BUILD_ORBITER_SERVER)
 endif()
 
 add_executable(Metal9.Device Metal9.Device.cpp)
-set_target_properties(Metal9.Device PROPERTIES RUNTIME_OUTPUT_DIRECTORY "${ORBITER_BINARY_ROOT_DIR}")
+set_target_properties(Metal9.Device PROPERTIES RUNTIME_OUTPUT_DIRECTORY "${ORBITER_BINARY_ROOT_DIR}" OUTPUT_NAME "Metal9.Device.test")
 target_include_directories(Metal9.Device PRIVATE ${ORBITER_SOURCE_ROOT_DIR}/Src/Platform/include)
 target_link_libraries(Metal9.Device Metal9 OrbiterPlatform Catch2::Catch2WithMain)
 add_custom_command(TARGET Metal9.Device POST_BUILD
