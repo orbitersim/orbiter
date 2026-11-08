@@ -146,18 +146,42 @@ target_compile_options(OrbiterCore PRIVATE "$<$<COMPILE_LANGUAGE:OBJCXX>:-fobjc-
 set_property(SOURCE ${imgui_SOURCE_DIR}/backends/imgui_impl_metal.mm PROPERTY COMPILE_OPTIONS "-fobjc-arc")
 add_dependencies(OrbiterCore ${Orbiter_depends})
 
-add_executable(Orbiter Main.cpp)
+set(ORBITER_ICONSET ${CMAKE_CURRENT_BINARY_DIR}/Orbiter.iconset)
+set(ORBITER_ICNS ${CMAKE_CURRENT_BINARY_DIR}/Orbiter.icns)
+add_custom_command(OUTPUT ${ORBITER_ICNS}
+	COMMAND ${CMAKE_COMMAND} -E make_directory ${ORBITER_ICONSET}
+	COMMAND sips -s format png ${CMAKE_CURRENT_SOURCE_DIR}/Orbiter.ico --out ${ORBITER_ICONSET}/icon_256x256.png > /dev/null
+	COMMAND sips -z 16 16 ${ORBITER_ICONSET}/icon_256x256.png --out ${ORBITER_ICONSET}/icon_16x16.png > /dev/null
+	COMMAND sips -z 32 32 ${ORBITER_ICONSET}/icon_256x256.png --out ${ORBITER_ICONSET}/icon_16x16@2x.png > /dev/null
+	COMMAND sips -z 32 32 ${ORBITER_ICONSET}/icon_256x256.png --out ${ORBITER_ICONSET}/icon_32x32.png > /dev/null
+	COMMAND sips -z 64 64 ${ORBITER_ICONSET}/icon_256x256.png --out ${ORBITER_ICONSET}/icon_32x32@2x.png > /dev/null
+	COMMAND sips -z 128 128 ${ORBITER_ICONSET}/icon_256x256.png --out ${ORBITER_ICONSET}/icon_128x128.png > /dev/null
+	COMMAND ${CMAKE_COMMAND} -E copy ${ORBITER_ICONSET}/icon_256x256.png ${ORBITER_ICONSET}/icon_128x128@2x.png
+	COMMAND iconutil -c icns ${ORBITER_ICONSET} -o ${ORBITER_ICNS}
+	DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/Orbiter.ico
+)
+set_source_files_properties(${ORBITER_ICNS} PROPERTIES MACOSX_PACKAGE_LOCATION Resources)
+
+string(TIMESTAMP ORBITER_BUNDLE_VERSION "%y.%m.%d")
+configure_file(${CMAKE_SOURCE_DIR}/cmake/Info.plist.in ${CMAKE_CURRENT_BINARY_DIR}/Info.plist @ONLY)
+
+add_executable(Orbiter MACOSX_BUNDLE Main.cpp ${ORBITER_ICNS})
 set_target_properties(Orbiter
 	PROPERTIES
 	RUNTIME_OUTPUT_DIRECTORY ${ORBITER_BINARY_ROOT_DIR}
 	OUTPUT_NAME Orbiter
-	BUILD_RPATH "@executable_path"
-	INSTALL_RPATH "@executable_path"
+	MACOSX_BUNDLE_INFO_PLIST ${CMAKE_CURRENT_BINARY_DIR}/Info.plist
+	BUILD_RPATH "@executable_path/../../.."
+	INSTALL_RPATH "@executable_path/../../.."
 	FOLDER Core
 )
 target_link_libraries(Orbiter OrbiterCore)
+add_custom_command(TARGET Orbiter POST_BUILD
+	COMMAND ${CMAKE_COMMAND} -E create_symlink Orbiter.app/Contents/MacOS/Orbiter ${ORBITER_BINARY_ROOT_DIR}/Orbiter
+	COMMAND codesign --force --sign - ${ORBITER_BINARY_ROOT_DIR}/Orbiter.app > /dev/null 2>&1 || true
+)
 
-install(TARGETS Orbiter RUNTIME DESTINATION ${ORBITER_INSTALL_ROOT_DIR})
+install(TARGETS Orbiter BUNDLE DESTINATION ${ORBITER_INSTALL_ROOT_DIR})
 install(TARGETS OrbiterCore LIBRARY DESTINATION ${ORBITER_INSTALL_ROOT_DIR})
 
 string(TIMESTAMP DATE "%d %b %Y")

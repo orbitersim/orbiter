@@ -150,7 +150,7 @@ static void SetRootDirectory ()
 	if (fs::exists("Config") && fs::exists("Modules"))
 		return;
 	fs::path exe = fs::path(ExecutablePath()).parent_path();
-	for (fs::path dir : { exe, exe / ".." / "Resources" / "Orbiter" }) {
+	for (fs::path dir : { exe, exe / ".." / ".." / "..", exe / ".." / "Resources" / "Orbiter" }) {
 		std::error_code ec;
 		if (fs::exists(dir / "Config", ec) && fs::exists(dir / "Modules", ec)) {
 			fs::current_path(dir, ec);
@@ -382,6 +382,9 @@ HRESULT Orbiter::Create (HINSTANCE hInstance)
 		OpenVideoTab();
 
 	// Create the "launchpad" main dialog window
+	if (pConfig->CfgDemoPrm.bBkImage)
+		m_hBackdrop = oplat::OpenBackdropWindow();
+
 	m_pLaunchpad = new orbiter::LaunchpadDialog (this); TRACENEW
 	m_pLaunchpad->Create (bStartVideoTab);
 
@@ -421,6 +424,10 @@ VOID Orbiter::CloseApp (bool fast_shutdown)
 {
 	SaveConfig();
 	while (m_Plugin.size()) UnloadModule (m_Plugin.begin()->hDLL);
+	if (m_hBackdrop) {
+		DestroyWindow(m_hBackdrop);
+		m_hBackdrop = NULL;
+	}
 
 	if (!fast_shutdown) {
 		delete pDI;

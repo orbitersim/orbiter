@@ -341,6 +341,7 @@ private:
 	Config         *pConfig;
 	State          *pState;
 	orbiter::LaunchpadDialog *m_pLaunchpad;
+	HWND m_hBackdrop = NULL;
 	DialogManager  *pDlgMgr;
 	orbiter::ConsoleNG* m_pConsole;    // The console window opened when Orbiter server is launched without a graphics client
 	InputManager   *pDI;

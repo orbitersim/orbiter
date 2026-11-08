@@ -111,7 +111,7 @@ add_compile_options(
 )
 
 set(CMAKE_BUILD_WITH_INSTALL_RPATH TRUE)
-set(CMAKE_INSTALL_RPATH "@executable_path;@executable_path/Modules")
+set(CMAKE_INSTALL_RPATH "@executable_path;@executable_path/Modules;@executable_path/../../..;@executable_path/../../../Modules")
 set(CMAKE_SHARED_LIBRARY_SUFFIX ".dylib")
 set(CMAKE_SHARED_LIBRARY_PREFIX "")
 
