@@ -129,7 +129,7 @@ vertex OutputVS Sketch3DVS(InputVS v [[stage_in]], constant Globals &g [[buffer(
 	float fSide = round(v.fnc[SSW] * 2.0f - 1.0f);
 	float fPosD = dot(posN, posW);
 
-	posW += latN * (fSide * fPosD * g.gFov);
+	if (fSide != 0.0f) posW += latN * (fSide * fPosD * g.gFov);
 
 	outVS.color.rgba = v.clr.bgra;
 	outVS.posW = float4(posW, fPosD);
@@ -157,10 +157,11 @@ vertex OutputVS OrthoVS(InputVS v [[stage_in]], constant Globals &g [[buffer(0)]
 
 	outVS.posW = 0.0f;
 
-	if (g.gWide) {
+	float fSide = round(v.fnc[SSW] * 2.0f - 1.0f);
+
+	if (g.gWide && fSide != 0.0f) {
 
 		float4 nxtH = g.gWVP * float4(v.dir.xy, 0.0f, 1.0f);
-		float fSide = round(v.fnc[SSW] * 2.0f - 1.0f);
 		float2 pixH = g.gTarget.xy * g.gWidth.z * abs(fSide);
 
 		nxtH.xy -= pixH;
