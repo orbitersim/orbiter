@@ -3,20 +3,19 @@ set(TEXTURE_SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/Textures)
 set(TEXTURE2_SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/Textures2)
 set(CONFIG_SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/Config)
 set(THUMBNAIL_SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/Thumbnail)
-
-if(OPENGL_FOUND) # OpenGL is required for this target
+set(BITMAP_SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/Bitmaps)
 
 add_library(Dragonfly SHARED
 	Dragonfly.cpp
 	Internal.cpp
 	instruments.cpp
+	panel.cpp
 	Matrix.cpp
 	quaternion.cpp
 	vectors.cpp
 	Hsystems.cpp
 	Thermal.cpp
 	Esystems.cpp
-	panel.rc
 )
 
 set_target_properties(Dragonfly
@@ -31,8 +30,6 @@ target_include_directories(Dragonfly
 target_link_libraries(Dragonfly
 	${ORBITER_LIB}
 	${ORBITER_SDK_LIB}
-	OpenGL::GL
-	OpenGL::GLU
 )
 
 add_dependencies(Dragonfly
@@ -47,12 +44,17 @@ add_custom_command(
 
 add_custom_command(
 	TARGET Dragonfly PRE_BUILD
-	COMMAND ${CMAKE_COMMAND} -E copy_directory ${MESH_SOURCE_DIR}/ ${CMAKE_BINARY_DIR}/Meshes
+	COMMAND ${CMAKE_COMMAND} -E copy_directory ${MESH_SOURCE_DIR}/ ${CMAKE_BINARY_DIR}/Meshes/Dragonfly
 )
 
 add_custom_command(
 	TARGET Dragonfly PRE_BUILD
 	COMMAND ${CMAKE_COMMAND} -E copy_directory ${TEXTURE_SOURCE_DIR}/ ${ORBITER_BINARY_TEXTURES_DIR}/Dragonfly
+)
+
+add_custom_command(
+	TARGET Dragonfly PRE_BUILD
+	COMMAND ${CMAKE_COMMAND} -E copy_directory ${BITMAP_SOURCE_DIR}/ ${ORBITER_BINARY_TEXTURES_DIR}/Dragonfly/Bitmaps
 )
 
 add_custom_command(
@@ -78,15 +80,12 @@ install(DIRECTORY ${MESH_SOURCE_DIR}/
 install(DIRECTORY ${TEXTURE_SOURCE_DIR}/
 	DESTINATION ${ORBITER_INSTALL_TEXTURES_DIR}/Dragonfly
 )
+install(DIRECTORY ${BITMAP_SOURCE_DIR}/
+	DESTINATION ${ORBITER_INSTALL_TEXTURES_DIR}/Dragonfly/Bitmaps
+)
 install(DIRECTORY ${TEXTURE2_SOURCE_DIR}/
 	DESTINATION ${ORBITER_INSTALL_TEXTURES2_DIR}/Dragonfly
 )
 install(DIRECTORY ${THUMBNAIL_SOURCE_DIR}/
 	DESTINATION ${ORBITER_INSTALL_ROOT_DIR}/Images/Vessels/Default
 )
-
-else()
-
-message(WARNING "OpenGL libraries not found. Skipping Dragonfly build.")
-
-endif()

@@ -5,7 +5,7 @@
 #define __INSTRUMENTS_H_
 
 #include <stdlib.h>
-#include <windows.h>
+#include <vector>
 #include "vectors.h"
 #include "orbitersdk.h"
 
@@ -72,8 +72,7 @@ class SFSwitch:public Switch
 	void RBD(int x, int y);
 	void LBD(int x, int y);
 private:
-	SURFHANDLE temps;
-	HDC hTEMPDC;			//SFSwitch needs a back-surface
+	SURFHANDLE temps;		//SFSwitch needs a back-surface
 	int safed;				//is the switch safed or not?
 };
 
@@ -273,7 +272,6 @@ class ADI:public instrument
    float sphere_tex[256][2];
    unsigned int sphere_index[600];
    int tri; //number of triangle strip
-   int list_name; //we store the rendering into a display list
    double radius;
    int function_mode;	//reference / GDC / Horizon
    int orbital_ecliptic;//orbital GDC or ecliptic
@@ -282,15 +280,17 @@ class ADI:public instrument
    vector3 now;
    vector3 target;
    float over_rate;
-   //some stuff for OpenGL
-   HDC		   hDC2;
-   HGLRC       hRC;
-   HBITMAP	   hBMP;
-   HBITMAP hBMP_old;
+   double rot[3][3];	//ball orientation in eye space
+   int tex_w,tex_h;
+   std::vector<unsigned char> tex; //RGB texels, bottom row first
+   std::vector<DWORD> frame;
+   std::vector<float> depth;
    ADI(int x,int y,Panel *i_parent);
    virtual ~ADI();
    void InitGL();
+   void SetView();
    void MoveBall();
+   void RenderBall();
    void SetOrbital();
    void SetEcliptic();
    void SetEquatorial();

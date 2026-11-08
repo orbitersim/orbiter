@@ -2,16 +2,16 @@
 // Licensed under the MIT License
 
 #include "instruments.h"
-#include < GL\gl.h >                                
-#include < GL\glu.h >
 #include "vectors.h"        
-#include "panel.cpp"
-#include "math.h"
-#include "resource.h"
+#include "panel.h"
+#include <math.h>
+#include <stdio.h>
+#include <string.h>
 #include "orbitersdk.h"
 #include "dragonfly.h"
 
 using std::min;
+using std::max;
 
 
 
@@ -35,28 +35,7 @@ idx=index;
 
 }
 void TB::PaintMe()
-{ /*
-	HDC hDC=oapiGetDC(parent->surf);
- SelectObject(hDC,hPEN_Black);
- SelectObject(hDC,hBRUSH_Background);
- Rectangle(hDC,0,0,21,21);
- SelectObject(hDC,hPEN_Gray);
- MoveTo(hDC,17,3);LineTo(hDC,3,3);
- LineTo(hDC,3,17);
- SelectObject(hDC, hPEN_White);
- LineTo(hDC,17,17);LineTo(hDC,17,3);
- SelectObject(hDC,hPEN_NULL);SetBkColor(hDC,RGB(255,0,0));
- //if ((*SRC) || (!powered())) 
- last_d=0;
- if (*SRC)
-				{ last_d=1;
-					SelectObject(hDC,hBRUSH_Red);
-					Rectangle(hDC,4,4,17,17);
-					SelectObject(hDC,hBRUSH_StrpWht); 
-				}  
- Rectangle(hDC,4,4,17,17);
- oapiReleaseDC(parent->surf,hDC);
-*/
+{
 if (*SRC)
 {oapiBlt(parent->surf,hTbSRF,0,0,20,0,20,20);
 last_d=1;}
@@ -169,7 +148,6 @@ if (!(*SRC)&&(am_i<42)) {
 SFSwitch::SFSwitch(int x, int y, int i_pos,int i_num_pos,int i_safed,Panel *i_parent):Switch(x,y,i_pos,i_num_pos,0,NULL,i_parent)
 { safed=i_safed;
  temps=oapiCreateSurface(50,61);
- hTEMPDC=oapiGetDC(temps);
 type=36;//SFSwitch
 };
 void SFSwitch::RegisterMe(int index)
@@ -179,54 +157,59 @@ void SFSwitch::RegisterMe(int index)
 void SFSwitch::PaintMe()
 { int lng=24/sqrt(3.0);
 
-HDC hDC=oapiGetDC(parent->surf);
-SelectObject(hDC,hBRUSH_Background);SelectObject(hDC,hPEN_NULL);
-Rectangle(hDC,0,0,51,50);
-SelectObject(hDC,hPEN_Black);
-Rectangle(hDC,5-5,4,5,4+40);Rectangle(hDC,5+40,4,5+45,4+40);
-SelectObject(hDC,hBRUSH_LBkg);
-Rectangle(hDC,5,4,5+40,4+40);
-MoveTo(hDC,5+20-lng/2,4+8);LineTo(hDC,5+20+lng/2,4+8);
-LineTo(hDC,5+20+lng,4+20);LineTo(hDC,5+20+lng/2,4+32);
-LineTo(hDC,5+20-lng/2,4+32);LineTo(hDC,5+20-lng,4+20);
-LineTo(hDC,5+20-lng/2,4+8);
-Ellipse(hDC,5+10,4+10,5+31,4+31);
-SelectObject(hDC,hBRUSH_FYellow);
-Ellipse(hDC,5+12,4+12,5+29,4+29);
-SelectObject(hDC,hPEN_NULL);
-SelectObject(hDC,hBRUSH_LBkg);
-Rectangle(hDC,5+20-4*pos,4+20,5+20+4*pos,4+20-7*pos);
-Ellipse(hDC,5+17,4+17,5+24,4+24);
-SelectObject(hDC,hPEN_Black);
-MoveTo(hDC,5+20-4*pos,4+20);LineTo(hDC,5+20-4*pos,4+20-7*pos);
-MoveTo(hDC,5+20+4*pos,4+20);LineTo(hDC,5+20+4*pos,4+20-7*pos);
-Arc(hDC,5+20-4,4+20-4,5+25,4+25,5+20-4*pos,4+20,5+20+4*pos,4+20);
+oapi::Sketchpad *skp=oapiGetSketchpad(parent->surf);
+skp->SetBrush(hBRUSH_Background);skp->SetPen(NULL);
+skp->Rectangle(0,0,51,50);
+skp->SetPen(hPEN_Black);
+skp->Rectangle(5-5,4,5,4+40);skp->Rectangle(5+40,4,5+45,4+40);
+skp->SetBrush(hBRUSH_LBkg);
+skp->Rectangle(5,4,5+40,4+40);
+skp->MoveTo(5+20-lng/2,4+8);skp->LineTo(5+20+lng/2,4+8);
+skp->LineTo(5+20+lng,4+20);skp->LineTo(5+20+lng/2,4+32);
+skp->LineTo(5+20-lng/2,4+32);skp->LineTo(5+20-lng,4+20);
+skp->LineTo(5+20-lng/2,4+8);
+skp->Ellipse(5+10,4+10,5+31,4+31);
+skp->SetBrush(hBRUSH_FYellow);
+skp->Ellipse(5+12,4+12,5+29,4+29);
+skp->SetPen(NULL);
+skp->SetBrush(hBRUSH_LBkg);
+skp->Rectangle(5+20-4*pos,4+20,5+20+4*pos,4+20-7*pos);
+skp->Ellipse(5+17,4+17,5+24,4+24);
+skp->SetPen(hPEN_Black);
+skp->MoveTo(5+20-4*pos,4+20);skp->LineTo(5+20-4*pos,4+20-7*pos);
+skp->MoveTo(5+20+4*pos,4+20);skp->LineTo(5+20+4*pos,4+20-7*pos);
+PanelArc(skp,5+20-4,4+20-4,5+25,4+25,5+20-4*pos,4+20,5+20+4*pos,4+20);
 
-Rectangle(hDC,5+12,4+15-7*pos,5+29,4+25-7*pos-(3-num_pos)*2);
-if (num_pos==3) Rectangle(hDC,5+12,4+18-9*pos,5+29,4+23-9*pos);
+skp->Rectangle(5+12,4+15-7*pos,5+29,4+25-7*pos-(3-num_pos)*2);
+if (num_pos==3) skp->Rectangle(5+12,4+18-9*pos,5+29,4+23-9*pos);
+oapiReleaseSketchpad(skp);
 
-
-BitBlt(hTEMPDC,0,0,51,50,hDC,0,0,SRCCOPY);
-SelectObject(hDC,hBRUSH_Red);
+oapiBlt(temps,parent->surf,0,0,0,0,50,48);
+skp=oapiGetSketchpad(parent->surf);
+skp->SetPen(hPEN_Black);
+skp->SetBrush(hBRUSH_Red);
 if (safed)
 {
-Rectangle(hDC,05,0,45,59);
+skp->Rectangle(05,0,45,59);
+oapiReleaseSketchpad(skp);
 
-BitBlt(hDC,10,15,30,15,hTEMPDC,10,15,SRCCOPY);
-BitBlt(hDC,10,40,30,10,hTEMPDC,10,40,SRCCOPY);
-MoveTo(hDC,10,15);LineTo(hDC,40,15);
-LineTo(hDC,40,30);LineTo(hDC,10,30);LineTo(hDC,10,15);
-MoveTo(hDC,10,48);LineTo(hDC,10,40);
-LineTo(hDC,40,40);LineTo(hDC,40,48);
+oapiBlt(parent->surf,temps,10,15,10,15,30,15);
+oapiBlt(parent->surf,temps,10,40,10,40,30,8);
+skp=oapiGetSketchpad(parent->surf);
+skp->SetPen(hPEN_Black);
+skp->MoveTo(10,15);skp->LineTo(40,15);
+skp->LineTo(40,30);skp->LineTo(10,30);skp->LineTo(10,15);
+skp->MoveTo(10,48);skp->LineTo(10,40);
+skp->LineTo(40,40);skp->LineTo(40,48);
+oapiReleaseSketchpad(skp);
 }   
 else
-{  Rectangle(hDC,5,0,45,25);
-   BitBlt(hDC,10,15,30,15,hTEMPDC,10,15,SRCCOPY);
-   BitBlt(hDC,10,0,30,4,hTEMPDC,10,0,SRCCOPY);
+{  skp->Rectangle(5,0,45,25);
+   oapiReleaseSketchpad(skp);
+   oapiBlt(parent->surf,temps,10,15,10,15,30,15);
+   oapiBlt(parent->surf,temps,10,0,10,0,30,4);
 
 }                                             
-
-oapiReleaseDC(parent->surf,hDC);                                       
 
 }
 
@@ -253,7 +236,6 @@ else {
 };
  SFSwitch::~SFSwitch()
 { 
-  oapiReleaseDC(temps,hTEMPDC);
   oapiDestroySurface(temps);
 };
 
@@ -266,12 +248,12 @@ else {
 type=37;//Egauge
  };
 
-void screwdraw(HDC h,int x, int y)
+void screwdraw(oapi::Sketchpad *skp,int x, int y)
 {int di=5*sqrt(2.0)/2;
- SelectObject(h,hPEN_White);
- SelectObject(h,hBRUSH_Background);
- Ellipse(h,x-5,y-5,x+5,y+5);
- MoveTo(h,x-di,y-di);LineTo(h,x+di,y+di);
+ skp->SetPen(hPEN_White);
+ skp->SetBrush(hBRUSH_Background);
+ skp->Ellipse(x-5,y-5,x+5,y+5);
+ skp->MoveTo(x-di,y-di);skp->LineTo(x+di,y+di);
  }
 
 void EGauge::RegisterMe(int index)
@@ -281,40 +263,40 @@ void EGauge::RegisterMe(int index)
 
  void EGauge::PaintMe()
  {float Pi=3.1415;
-  char intst[10];
+  char intst[16];
   float ang=-Pi/4+Pi/8;
   int i;
-  POINT TR[3];
+  oapi::IVECTOR2 TR[3];
  oapiBlt(parent->surf,hEgaugeSRF,0,0,0,0,100,100); //copy the backgorund
 
-HDC hDC=oapiGetDC(parent->surf);
-SelectObject(hDC,hBRUSH_Gray);
-SelectObject(hDC,hPEN_LGray);			// some of the circles
+oapi::Sketchpad *skp=oapiGetSketchpad(parent->surf);
+skp->SetBrush(hBRUSH_Gray);
+skp->SetPen(hPEN_LGray);			// some of the circles
 for (i=0;i<16;i++) {
-MoveTo(hDC,50+cos(ang)*20,50-sin(ang)*20);// now put the small scales
-LineTo(hDC,50+cos(ang)*24,50-sin(ang)*24);
+skp->MoveTo(50+cos(ang)*20,50-sin(ang)*20);// now put the small scales
+skp->LineTo(50+cos(ang)*24,50-sin(ang)*24);
 ang+=Pi/12;
 };ang=-Pi/4+Pi/8;
 for (i=0;i<6;i++) {
-MoveTo(hDC,50+cos(ang)*20,50-sin(ang)*20); //now the big scales
-LineTo(hDC,50+cos(ang)*28,50-sin(ang)*28);
-gcvt((int)(i*(MaxV-MinV)/5+MinV) ,6,intst); //convert number to char
-SelectObject(hDC,hFNT_Panel);
-SetTextAlign(hDC,TA_CENTER);SetBkMode(hDC,TRANSPARENT); 
-SetTextColor(hDC,RGB(140,49,49));
-TextOut(hDC,50+cos(ang)*35,45-sin(ang)*35,intst,sizeof(char)*strlen(intst)); // and scale numbers
+skp->MoveTo(50+cos(ang)*20,50-sin(ang)*20); //now the big scales
+skp->LineTo(50+cos(ang)*28,50-sin(ang)*28);
+snprintf(intst,sizeof(intst),"%d.",(int)(i*(MaxV-MinV)/5+MinV)); //convert number to char
+skp->SetFont(hFNT_Panel);
+skp->SetTextAlign(oapi::Sketchpad::CENTER);skp->SetBackgroundMode(oapi::Sketchpad::BK_TRANSPARENT); 
+skp->SetTextColor(RGB(140,49,49));
+skp->Text(50+cos(ang)*35,45-sin(ang)*35,intst,strlen(intst)); // and scale numbers
 ang+=Pi/4;
 };
-SelectObject(hDC,hPEN_NULL);
-Ellipse(hDC,30,30,70,70);
-SelectObject(hDC,hBRUSH_Black);
-Ellipse(hDC,40,40,59,59);	// the rest of the circles
+skp->SetPen(NULL);
+skp->Ellipse(30,30,70,70);
+skp->SetBrush(hBRUSH_Black);
+skp->Ellipse(40,40,59,59);	// the rest of the circles
 TR[0].x=50;TR[0].y=45;		// a black triangle on the bottom
 TR[1].x=20;TR[1].y=75;
 TR[2].x=80;TR[2].y=75;
-Polygon(hDC,TR,3);
-TextOut(hDC,50,70,unit,sizeof(char)*strlen(unit));
-oapiReleaseDC(parent->surf,hDC);
+skp->Polygon(TR,3);
+skp->Text(50,70,unit,strlen(unit));
+oapiReleaseSketchpad(skp);
 oapiBlt(temps,parent->surf,0,0,30,30,40,40); //save this onto a back-surf
 
  };
@@ -323,17 +305,17 @@ oapiBlt(temps,parent->surf,0,0,30,30,40,40); //save this onto a back-surf
 void EGauge::RefreshMe()
 {
  oapiBlt(parent->surf,temps,30,30,0,0,40,40);//clean the surface 
-HDC hDC=oapiGetDC(parent->surf);				// then get a DC to draw new pointer
+oapi::Sketchpad *skp=oapiGetSketchpad(parent->surf);	// then get a DC to draw new pointer
 float ang;
 float Pi=3.1415;
 //check for need to redraw ?
 ang= -(((*SRC/scale)-MinV)/(MaxV-MinV)* 5*Pi/4)+5*Pi/8;          // get turn angle for the indicator
 if (ang>5*Pi/8) ang=5*Pi/8;	// if too large
 if (ang<-5*Pi/8) ang = -5*Pi/8;  // or too small
-if (abs(ang-lastdraw)>0.3) ang=lastdraw+(ang>lastdraw?0.3:-0.3)+(ang-lastdraw)/100;//slowly move to the value 
+if (fabsf(ang-lastdraw)>0.3) ang=lastdraw+(ang>lastdraw?0.3:-0.3)+(ang-lastdraw)/100;//slowly move to the value 
 lastdraw=ang;
 
-POINT S[3],TR[3];
+oapi::IVECTOR2 S[3],TR[3];
 TR[0].x=0;TR[0].y=-20;
 TR[1].x=5;TR[1].y=0;
 TR[2].x=-6;TR[2].y=0;
@@ -342,11 +324,11 @@ for (int i=0;i<3;i++) // rotate the pointer by 'ang'
    S[i].x=50 + TR[i].x*cos(ang)-TR[i].y*sin(ang);
    S[i].y=50 + TR[i].x*sin(ang)+TR[i].y*cos(ang);
 }
-SelectObject(hDC,hBRUSH_Black);
-SelectObject(hDC,hPEN_NULL);
+skp->SetBrush(hBRUSH_Black);
+skp->SetPen(NULL);
 
-Polygon(hDC,S,3);// then the pointer
-oapiReleaseDC(parent->surf,hDC);
+skp->Polygon(S,3);// then the pointer
+oapiReleaseSketchpad(skp);
  };
 //----------------------------------- HGAUGE ------------------------------------------
 HGauge::HGauge(int x,int y, int i_w,int i_h,float* i_SRC1,float* i_SRC2,const char i_unit[15],int i_min,int i_max, float i_scale,int i_fig,int i_lin,Panel *parent):instrument(x,y,parent)
@@ -362,48 +344,49 @@ void HGauge::RegisterMe(int index)
 };
 void HGauge::PaintMe()
 {
- char intst[10];
+ char intst[16];
 
 
  oapiBlt(parent->surf,hHgaugeSRF,0,0,0,0,85,190); //copy the backgorund
 
- HDC hDC=oapiGetDC(parent->surf);
+ oapi::Sketchpad *skp=oapiGetSketchpad(parent->surf);
    //Put the texts where they're supposed to be*/
- SelectObject(hDC,hFNT_Panel);
- SetTextAlign(hDC,TA_CENTER);  SetBkMode(hDC,TRANSPARENT); 
- SetTextColor(hDC,RGB(140,49,49));
- TextOut(hDC,(int)85/2,15,unit,sizeof(char)*strlen(unit)); // the unit of msrm.
- int k,j,i=0;//SetBkMode(hDC,OPAQUE);SetBkColor(hDC,RGB(0,0,0));
+ skp->SetFont(hFNT_Panel);
+ skp->SetTextAlign(oapi::Sketchpad::CENTER);  skp->SetBackgroundMode(oapi::Sketchpad::BK_TRANSPARENT); 
+ skp->SetTextColor(RGB(140,49,49));
+ skp->Text((int)85/2,15,unit,strlen(unit)); // the unit of msrm.
+ int k,j,i=0;
  do  {
-      gcvt((int)(i*(MaxV-MinV)/NrFig+MinV) ,6,intst); //convert number to char
+      snprintf(intst,sizeof(intst),"%d.",(int)(i*(MaxV-MinV)/NrFig+MinV)); //convert number to char
       k=(int)(190-(40+(190-85)*i/NrFig));;          // calculate the y coord.
-      SelectObject(hDC,hPEN_Gray);
+      skp->SetPen(hPEN_Gray);
       if (i<NrFig) for(j=1;j<NrLin+1;j++) { // then the scale (three lines between the numbers)
-			MoveTo(hDC,23,k-(int)(190-85)*j/(NrFig*NrLin));
-			LineTo(hDC,85-23,k-(int)(190-85)*j/(NrFig*NrLin));
+			skp->MoveTo(23,k-(int)(190-85)*j/(NrFig*NrLin));
+			skp->LineTo(85-23,k-(int)(190-85)*j/(NrFig*NrLin));
 			};
-      TextOut(hDC,(int)85/2,k-5,intst,sizeof(char)*strlen(intst));// write the numbers
+      skp->Text((int)85/2,k-5,intst,strlen(intst));// write the numbers
       i++; 
       } while (i<NrFig+1);
  
  
- oapiReleaseDC(parent->surf,hDC);
+ oapiReleaseSketchpad(skp);
   
  oapiBlt(temps,parent->surf,0,0,12,0,9,190);	//save the two empty stripes
  oapiBlt(temps,parent->surf,10,0,85-22,0,9,190);
 
  //draw the arrows
- hDC=oapiGetDC(temps);
- SelectObject(hDC,hBRUSH_White);
- Rectangle(hDC,19,0,31,21);
- POINT arrow1[3],arrow2[3];
+ skp=oapiGetSketchpad(temps);
+ skp->SetBrush(hBRUSH_White);
+ skp->SetPen(hPEN_TotalBlack);
+ skp->Rectangle(19,0,31,21);
+ oapi::IVECTOR2 arrow1[3],arrow2[3];
  arrow1[0].x=21;arrow1[0].y=1; arrow2[0].x=28;arrow2[0].y=11;
  arrow1[1].x=21;arrow1[1].y=9;arrow2[1].x=28;arrow2[1].y=19;
  arrow1[2].x=29;arrow1[2].y=5;arrow2[2].x=20;arrow2[2].y=15;
- SelectObject(hDC,hBRUSH_Black);SelectObject(hDC,hPEN_NULL);
- Polygon(hDC,arrow1,3);
- Polygon(hDC,arrow2,3);
- oapiReleaseDC(temps,hDC);
+ skp->SetBrush(hBRUSH_Black);skp->SetPen(NULL);
+ skp->Polygon(arrow1,3);
+ skp->Polygon(arrow2,3);
+ oapiReleaseSketchpad(skp);
 
 
 
@@ -446,26 +429,25 @@ void Rotary::RegisterMe(int index)
  idx=index;
 };
 void Rotary::PaintMe()
-{// POINT td[6];
-//  POINT E1,E2;
+{
   float ang;
 float Pi=3.1415;
-HDC hDC=oapiGetDC(parent->surf);
-SelectObject(hDC,hPEN_NULL);
-SelectObject(hDC,hBRUSH_Background);
-Rectangle(hDC,0,0,0+162,0+142); 
-SelectObject(hDC,hFNT_Panel);
-SetTextAlign(hDC,TA_CENTER);
-SetTextColor(hDC,RGB(255,100,100));	// text color for powered/ unpowered
-SetBkMode(hDC,TRANSPARENT); 
-TextOut(hDC,85,10,screentext,sizeof(char)*strlen(screentext));	// name of rotary
+oapi::Sketchpad *skp=oapiGetSketchpad(parent->surf);
+skp->SetPen(NULL);
+skp->SetBrush(hBRUSH_Background);
+skp->Rectangle(0,0,0+162,0+142); 
+skp->SetFont(hFNT_Panel);
+skp->SetTextAlign(oapi::Sketchpad::CENTER);
+skp->SetTextColor(RGB(255,100,100));	// text color for powered/ unpowered
+skp->SetBackgroundMode(oapi::Sketchpad::BK_TRANSPARENT); 
+skp->Text(85,10,screentext,strlen(screentext));	// name of rotary
 ang = (int)poznr/2; ang =Pi/2-ang*Pi/6;				// calculate the starting angle depending on poznr
 for (int i=0; i<poznr;i++)					// now put all texts arround the circle
-{ TextOut(hDC,85-cos(ang)*70,90-sin(ang)*70,names[i],sizeof(char)*strlen(names[i]));
+{ skp->Text(85-cos(ang)*70,90-sin(ang)*70,names[i],strlen(names[i]));
   ang+=Pi/6;
 }
 
- oapiReleaseDC(parent->surf,hDC);
+ oapiReleaseSketchpad(skp);
  oapiBlt(parent->surf,hRotarySRF,36,41,400+(set-(int)(poznr/2))*100,0,100,100); //copy the backgorund
 };
 void Rotary::LBD(int x,int y)
@@ -512,7 +494,6 @@ DigClock::DigClock(int x, int y, char *i_SRC,int i_lng,Panel *i_parent):instrume
  init=false;
  local[0] = '\0';
   //strcpy(local,SRC);
- //temps= oapiCreateSurface (LoadBitmap(parent->hModule,MAKEINTRESOURCE(IDB_BITMAP1)));
  type=40;//digclock
  local_srf=oapiCreateSurface(2+len*22,44);
 powered=0;
@@ -527,14 +508,14 @@ void DigClock::RegisterMe(int index)
 
 void DigClock::PaintMe()
 {
-HDC hDC=oapiGetDC(local_srf);
-SelectObject(hDC,hPEN_White);
-MoveTo(hDC,0,43);LineTo(hDC,len*22+1,43);
-LineTo(hDC,len*22+1,0);
-SelectObject(hDC,hPEN_Gray);
-LineTo(hDC,0,0);LineTo(hDC,0,43);
+oapi::Sketchpad *skp=oapiGetSketchpad(local_srf);
+skp->SetPen(hPEN_White);
+skp->MoveTo(0,43);skp->LineTo(len*22+1,43);
+skp->LineTo(len*22+1,0);
+skp->SetPen(hPEN_Gray);
+skp->LineTo(0,0);skp->LineTo(0,43);
 
-oapiReleaseDC(local_srf,hDC);
+oapiReleaseSketchpad(skp);
 
 for (int i=0;i<len;i++)
 {	oapiBlt(local_srf,hClockSRF,22*i+1,1,220,0,22,42);//all blanc
@@ -583,18 +564,16 @@ CW::CW(int x,int y,const char *i_text,Panel *i_parent):instrument(x,y,i_parent)
  strcpy(text,i_text);alarm=1;
  temps=oapiCreateSurface(100,31);
 //
-HDC hDC2=oapiGetDC(temps);
-HDC hDC=oapiGetDC(hCwSRF);
-BitBlt(hDC2,0,0,100,31,hDC,0,0,SRCCOPY);
+oapiBlt(temps,hCwSRF,0,0,0,0,100,31);
    //Put the texts where they're supposed to be*/
- SelectObject(hDC2,hFNT_Panel);
- SetTextAlign(hDC2,TA_CENTER);  SetBkMode(hDC2,TRANSPARENT); 
- SetTextColor(hDC2,RGB(255,100,100));
- TextOut(hDC2,25,10,text,sizeof(char)*strlen(text)); 
- SetTextColor(hDC2,RGB(149,48,48));
- TextOut(hDC2,75,10,text,sizeof(char)*strlen(text)); 
- oapiReleaseDC(hCwSRF,hDC);
-oapiReleaseDC(temps,hDC2);
+ oapi::Sketchpad *skp=oapiGetSketchpad(temps);
+ skp->SetFont(hFNT_Panel);
+ skp->SetTextAlign(oapi::Sketchpad::CENTER);  skp->SetBackgroundMode(oapi::Sketchpad::BK_TRANSPARENT); 
+ skp->SetTextColor(RGB(255,100,100));
+ skp->Text(25,10,text,strlen(text)); 
+ skp->SetTextColor(RGB(149,48,48));
+ skp->Text(75,10,text,strlen(text)); 
+oapiReleaseSketchpad(skp);
 
 };
 CW::~CW()
@@ -638,24 +617,21 @@ oapiRegisterMFD(type,mfdspecs);
 };
 void inst_MFD::PaintMe()
 {
-//oapiBlt(parent->surf,hMFDSRF,0,0,0,0,310,296); 
-HDC hDC=oapiGetDC(parent->surf);
-HDC hDC2=oapiGetDC(hMFDSRF);
-BitBlt(hDC,0,0,350,296,hDC2,0,0,SRCCOPY);
-SelectObject(hDC, hFNT_Panel);
-SetTextColor (hDC, RGB(20, 20, 20));
-SetTextAlign (hDC, TA_CENTER);
-SetBkMode (hDC, TRANSPARENT);
+oapiBlt(parent->surf,hMFDSRF,0,0,0,0,350,296);
+oapi::Sketchpad *skp=oapiGetSketchpad(parent->surf);
+skp->SetFont(hFNT_Panel);
+skp->SetTextColor (RGB(20, 20, 20));
+skp->SetTextAlign (oapi::Sketchpad::CENTER);
+skp->SetBackgroundMode (oapi::Sketchpad::BK_TRANSPARENT);
 
 const char *label;
 	for (int bt = 0; bt < 12; bt++) {
-		if (label = oapiMFDButtonLabel (type, bt))
-			{if (bt<6) TextOut (hDC, 31, 58+34*bt, label, strlen(label));
-			else TextOut (hDC, 322, 58+34*(bt-6), label, strlen(label));}
+		if ((label = oapiMFDButtonLabel (type, bt)))
+			{if (bt<6) skp->Text (31, 58+34*bt, label, strlen(label));
+			else skp->Text (322, 58+34*(bt-6), label, strlen(label));}
 		else break;
 	}
-oapiReleaseDC(parent->surf,hDC);
-oapiReleaseDC(hMFDSRF,hDC2);
+oapiReleaseSketchpad(skp);
 
 };
 
@@ -743,52 +719,53 @@ void Docker::PaintMe()
 oapiBlt(parent->surf,hDockBSRF,0,0,0,0,202,179);
 cgofs=((Dragonfly*)(parent->v))->cgofs;
 SURFHANDLE temps=oapiCreateSurface(202,179);
-HDC hDC=oapiGetDC(temps);
-SelectObject(hDC, hBRUSH_TotalBlack);
-Rectangle(hDC,0,0,202,179);
-SetTextColor(hDC,RGB(0,255,0));
-SetTextAlign(hDC,TA_CENTER);
-SelectObject(hDC,hFNT_Panel);
-SetBkMode(hDC,TRANSPARENT); 
-char text[30];
+oapi::Sketchpad *skp=oapiGetSketchpad(temps);
+skp->SetBrush(hBRUSH_TotalBlack);
+skp->SetPen(hPEN_TotalBlack);
+skp->Rectangle(0,0,202,179);
+skp->SetTextColor(RGB(0,255,0));
+skp->SetTextAlign(oapi::Sketchpad::CENTER);
+skp->SetFont(hFNT_Panel);
+skp->SetBackgroundMode(oapi::Sketchpad::BK_TRANSPARENT); 
+char text[300];
 sprintf(text, "%0.1f m", cgofs);
-TextOut (hDC, 140, 95, text, strlen (text));
+skp->Text (140, 95, text, strlen (text));
 int loc = 102+min ((int)(cgofs*3.784), 74);
-SelectObject (hDC, hPEN_BYellow);
-MoveToEx (hDC, loc, 93, NULL); LineTo (hDC, loc-3, 86); LineTo (hDC, loc+3, 86); LineTo (hDC, loc, 93);
+skp->SetPen (hPEN_BYellow);
+skp->MoveTo (loc, 93); skp->LineTo (loc-3, 86); skp->LineTo (loc+3, 86); skp->LineTo (loc, 93);
 
 VESSEL *vessel;
 int docked_port=0;
 if (sensormode) 
 	{vessel=oapiGetVesselInterface(vs->vs);
 	  strcpy(text,vessel->GetName());
-	 TextOut(hDC,130,137,text,strlen(text));
+	 skp->Text(130,137,text,strlen(text));
 	 sprintf(text,"PORT %i",vs->port);
-	 TextOut(hDC,130,147,text,strlen(text));
+	 skp->Text(130,147,text,strlen(text));
 	 if (vessel->GetDockStatus(vessel->GetDockHandle(vs->port)))
 		{docked_port=1;
 		strcpy(text,"ENG");
-		SetTextColor (hDC, 0);
-		SetBkColor (hDC, RGB(255,255,0));
-		SetBkMode (hDC, OPAQUE);
-        TextOut(hDC,160,147,text,strlen(text));
+		skp->SetTextColor (0);
+		skp->SetBackgroundColor (RGB(255,255,0));
+		skp->SetBackgroundMode (oapi::Sketchpad::BK_OPAQUE);
+        skp->Text(160,147,text,strlen(text));
 		}
 	}
 else {strcpy(text,"LOCAL");
-      TextOut(hDC,130,137,text,strlen(text));
+      skp->Text(130,137,text,strlen(text));
 	 sprintf(text,"PORT %i",portnr);
-	 TextOut(hDC,130,147,text,strlen(text));
+	 skp->Text(130,147,text,strlen(text));
 	 if (parent->v->GetDockStatus(parent->v->GetDockHandle(portnr)))
 		{docked_port=1;
 		strcpy(text,"ENG");
-		SetTextColor (hDC, 0);
-		SetBkColor (hDC, RGB(255,255,0));
-		SetBkMode (hDC, OPAQUE);
-        TextOut(hDC,160,147,text,strlen(text));
+		skp->SetTextColor (0);
+		skp->SetBackgroundColor (RGB(255,255,0));
+		skp->SetBackgroundMode (oapi::Sketchpad::BK_OPAQUE);
+        skp->Text(160,147,text,strlen(text));
 		}
 	 }
 
-oapiReleaseDC(temps,hDC);
+oapiReleaseSketchpad(skp);
 if (dockflap){
 		if (docked_port)
 					oapiBlt(parent->surf,hDockSW1SRF,128,11,74,0,66,46);//a button you can push}
@@ -943,20 +920,21 @@ if (frswitch)
 	oapiBlt(parent->surf,hDockSW2SRF,18,39,(frswitch+1)*27,0,27,16);
 if (*(((Dragonfly*)parent->v)->DC_power)>0)  {
 SURFHANDLE temps=oapiCreateSurface(101,26);
-HDC hDC=oapiGetDC(temps);
-SelectObject(hDC, hBRUSH_TotalBlack);
-Rectangle(hDC,0,0,100,25);
+oapi::Sketchpad *skp=oapiGetSketchpad(temps);
+skp->SetBrush(hBRUSH_TotalBlack);
+skp->SetPen(hPEN_TotalBlack);
+skp->Rectangle(0,0,100,25);
 
-SetTextColor(hDC,RGB(0,255,0));
-SetTextAlign(hDC,TA_CENTER);
-SelectObject(hDC,hFNT_Panel);
-SetBkMode(hDC,TRANSPARENT); 
-char text[30];
+skp->SetTextColor(RGB(0,255,0));
+skp->SetTextAlign(oapi::Sketchpad::CENTER);
+skp->SetFont(hFNT_Panel);
+skp->SetBackgroundMode(oapi::Sketchpad::BK_TRANSPARENT); 
+char text[64];
 sprintf(text, "NAV1: %5.2f MHz", 108.0+(0.05*frq1));
-TextOut (hDC, 10, 2, text, strlen (text));
+skp->Text (10, 2, text, strlen (text));
 sprintf(text, "NAV2: %5.2f MHz", 108.0+(0.05*frq2));
-TextOut (hDC, 10, 13, text, strlen (text));
-oapiReleaseDC(temps,hDC);
+skp->Text (10, 13, text, strlen (text));
+oapiReleaseSketchpad(skp);
 oapiBlt(parent->surf,temps,80,20,0,0,80,25);
 oapiDestroySurface(temps);
 }
@@ -998,6 +976,9 @@ ADI::ADI(int x,int y, Panel *i_parent):instrument(x,y,i_parent)
 {
 type= 44; //ADI ball
 init=0;
+ref_handle=0;
+over_rate=0;
+tex_w=tex_h=0;
 radius=10;
 int i;
 float trad;
@@ -1039,118 +1020,151 @@ for (i=0;i<16;i++)
 
 		 
 };
+static bool LoadADITexture(const char *fname, std::vector<unsigned char> &rgb, int &w, int &h)
+{
+	FILE *file=fopen(fname,"rb");
+	if (!file) return false;
+	std::vector<unsigned char> d;
+	unsigned char buf[65536];
+	size_t n;
+	while ((n=fread(buf,1,sizeof(buf),file))>0) d.insert(d.end(),buf,buf+n);
+	fclose(file);
+	if (d.size()<54 || d[0]!='B' || d[1]!='M') return false;
+	auto u16=[&](size_t o) { return (unsigned)(d[o] | (d[o+1]<<8)); };
+	auto u32=[&](size_t o) { return (uint32_t)d[o] | ((uint32_t)d[o+1]<<8) | ((uint32_t)d[o+2]<<16) | ((uint32_t)d[o+3]<<24); };
+	size_t off=u32(10);
+	int bw=(int32_t)u32(18), bh=(int32_t)u32(22);
+	if (u16(28)!=24 || bw<=0 || bh==0) return false;
+	bool topdown=(bh<0);
+	if (topdown) bh=-bh;
+	size_t stride=((size_t)bw*3+3)&~(size_t)3;
+	if (off+stride*bh>d.size()) return false;
+	rgb.resize((size_t)bw*bh*3);
+	for (int y=0;y<bh;y++) {
+		const unsigned char *src=&d[off+stride*(topdown?bh-1-y:y)];
+		unsigned char *dst=&rgb[(size_t)y*bw*3];
+		for (int x=0;x<bw;x++) {
+			dst[3*x]=src[3*x+2];
+			dst[3*x+1]=src[3*x+1];
+			dst[3*x+2]=src[3*x];
+		}
+	}
+	w=bw; h=bh;
+	return true;
+}
+
 void ADI::InitGL()
 {
-
-GLuint      PixelFormat;  
-BITMAPINFOHEADER BIH;
-int iSize=sizeof(BITMAPINFOHEADER);
-BIH.biSize=iSize;
-BIH.biWidth=160;				//size of the sphere is 160x160
-BIH.biHeight=160;
-BIH.biPlanes=1;
-BIH.biBitCount=16;//default is 16.
-BIH.biCompression=BI_RGB;
-BIH.biSizeImage=0;
-void* m_pBits;
-hDC2=CreateCompatibleDC(NULL);//we make a new DC and DIbitmap for OpenGL to draw onto
-static  PIXELFORMATDESCRIPTOR pfd2;
-DescribePixelFormat(hDC2,1,sizeof(PIXELFORMATDESCRIPTOR),&pfd2);//just get a random pixel format.. 
-BIH.biBitCount=pfd2.cColorBits;//to get the current bit depth.. !?
-hBMP=CreateDIBSection(hDC2,(BITMAPINFO*)&BIH,DIB_RGB_COLORS,&m_pBits,NULL,0);
-hBMP_old=(HBITMAP)SelectObject(hDC2,hBMP);
-
-static  PIXELFORMATDESCRIPTOR pfd={                             // pfd Tells Windows How We Want Things To Be
-															   
-        sizeof(PIXELFORMATDESCRIPTOR),                              // Size Of This Pixel Format Descriptor
-        1,                                                          // Version Number
-		PFD_DRAW_TO_BITMAP |                                        // Format Must Support Bitmap Rendering
-        PFD_SUPPORT_OPENGL |									
-		PFD_SUPPORT_GDI,											// Format Must Support OpenGL,                                           
-		0,//        PFD_TYPE_RGBA,                                              // Request An RGBA Format
-        16,															// Select Our Color Depth
-        0, 0, 0, 0, 0, 0,                                           // Color Bits Ignored
-        0,//1,                                                          // No Alpha Buffer
-        0,                                                          // Shift Bit Ignored
-        0,                                                          // No Accumulation Buffer
-        0, 0, 0, 0,                                                 // Accumulation Bits Ignored
-        0,//16,                                                         // 16Bit Z-Buffer (Depth Buffer)  
-        0,                                                          // No Stencil Buffer
-        0,                                                          // No Auxiliary Buffer
-        0,//PFD_MAIN_PLANE,                                             // Main Drawing Layer
-        0,                                                          // Reserved
-        0, 0, 0                                                     // Layer Masks Ignored
-    };
-pfd.cColorBits=pfd2.cColorBits;//same color depth needed.
-DWORD code;
-code=GetLastError();
-
-PixelFormat=ChoosePixelFormat(hDC2,&pfd);// now pretend we want a new format
-int ret;
-ret=SetPixelFormat(hDC2,PixelFormat,&pfd);
-code=GetLastError();
-hRC=wglCreateContext(hDC2);
-ret=wglMakeCurrent(hDC2,hRC);					//all standard OpenGL init so far
-
-//We load the texture
-int texture_index=LoadOGLBitmap("Textures\\adi.dds");
-if (texture_index>0) glEnable(GL_TEXTURE_2D);
-
-
-glShadeModel(GL_SMOOTH);                        // Enable Smooth Shading
-glClearColor(0.0f, 0.0f, 0.0f, 0.0f);           // Panel Background color
-glClearDepth(1.0f);                             // Depth Buffer Setup
-glEnable(GL_DEPTH_TEST);                        // Enables Depth Testing
-glDepthFunc(GL_LESS);                           // The Type Of Depth Testing To Do
-glViewport(0,0,160,160);                       // Reset The Current Viewport
-glMatrixMode(GL_PROJECTION);                        // Select The Projection Matrix
-glLoadIdentity();                                   // Reset The Projection Matrix
-gluPerspective(45.0f,1.0,1.0f,1000.0f);      
-glMatrixMode(GL_MODELVIEW);                         // Select The Modelview Matrix          
-glLoadIdentity();                                   // Reset The Projection Matrix
-
-//some ambiental setup
-GLfloat light_position[]={10.0,20.0,10.0,0.0};
-GLfloat light_diffuse[]={1.0,0.2,0.2,1.0};
-GLfloat light_ambient[]={0.8,0.6,0.6,1.0};
-GLfloat mat_specular[]={0.3,0.3,0.3,1.0};
-GLfloat mat_shin[]={5.0};
-glMaterialfv(GL_FRONT,GL_SPECULAR,mat_specular);
-glEnable(GL_LIGHTING);
-glLightfv(GL_LIGHT0,GL_DIFFUSE,light_diffuse);
-glLightfv(GL_LIGHT0,GL_POSITION,light_position);
-glLightfv(GL_LIGHT0,GL_AMBIENT,light_ambient);
-glLightfv(GL_LIGHT0,GL_SPECULAR,mat_specular);
-glEnable(GL_LIGHT0);
-
-
-//defining our geometry and composing a display list;
-glEnableClientState(GL_NORMAL_ARRAY);
-if (texture_index>0) glEnableClientState(GL_TEXTURE_COORD_ARRAY);
-glEnableClientState(GL_VERTEX_ARRAY);
-glVertexPointer(3,GL_FLOAT,0,sphere_vert);
-glNormalPointer(GL_FLOAT,0,sphere_norm);
-if (texture_index>0) glTexCoordPointer(2,GL_FLOAT,0,sphere_tex);
-list_name=glGenLists(1);
-glNewList(list_name,GL_COMPILE);
-	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);             // Clear The Screen And The Depth Buffer        
-	glColor3f(1.0,1.0,1.0);   
-    glDrawElements(GL_TRIANGLE_STRIP,tri,GL_UNSIGNED_INT,sphere_index);
-glEndList();
-
-init=1;		//that's it. If we made it so far, we can use OpenGL
+if (!LoadADITexture("Textures/adi.dds",tex,tex_w,tex_h)) {
+	tex.clear();
+	tex_w=tex_h=0;
+}
+frame.assign(130*130,0);
+depth.assign(130*130,0.0f);
+SetView();
+init=1;
 };
 
 ADI::~ADI()
 {
-wglMakeCurrent(NULL,NULL);	//standard OpenGL release
-wglDeleteContext(hRC);
-hRC=NULL;
-SelectObject(hDC2,hBMP_old);//remember to delete DC and bitmap memory we created
-DeleteObject(hBMP);
-DeleteDC(hDC2);
-
 };
+
+void ADI::SetView()
+{
+	double cz=cos(-now.z),sz=sin(-now.z);
+	double cy=cos(now.y),sy=sin(now.y);
+	double cx=cos(now.x),sx=sin(now.x);
+	double Ry[3][3]={{cz,0,sz},{0,1,0},{-sz,0,cz}};
+	double Rx[3][3]={{1,0,0},{0,cy,-sy},{0,sy,cy}};
+	double Rz[3][3]={{cx,-sx,0},{sx,cx,0},{0,0,1}};
+	double L[3][3]={{1,0,0},{0,0,1},{0,-1,0}};
+	double A[3][3],B[3][3];
+	int i,j,k;
+	for (i=0;i<3;i++) for (j=0;j<3;j++) {
+		A[i][j]=0; for (k=0;k<3;k++) A[i][j]+=L[i][k]*Ry[k][j];
+	}
+	for (i=0;i<3;i++) for (j=0;j<3;j++) {
+		B[i][j]=0; for (k=0;k<3;k++) B[i][j]+=A[i][k]*Rx[k][j];
+	}
+	for (i=0;i<3;i++) for (j=0;j<3;j++) {
+		rot[i][j]=0; for (k=0;k<3;k++) rot[i][j]+=B[i][k]*Rz[k][j];
+	}
+}
+
+void ADI::RenderBall()
+{
+	const int W=130;
+	const double f=1.0/tan(22.5*PI/180.0);
+	double Ll=sqrt(10.0*10.0+20.0*20.0+10.0*10.0);
+	const double Lx=10.0/Ll,Ly=20.0/Ll,Lz=10.0/Ll;
+	struct PV { double x,y,iw,r,g,b,s,t; } pv[256];
+	for (int k=0;k<256;k++) {
+		const float *p=sphere_vert[k],*nm=sphere_norm[k];
+		double ex=rot[0][0]*p[0]+rot[0][1]*p[1]+rot[0][2]*p[2];
+		double ey=rot[1][0]*p[0]+rot[1][1]*p[1]+rot[1][2]*p[2];
+		double ez=rot[2][0]*p[0]+rot[2][1]*p[1]+rot[2][2]*p[2]-35.0;
+		double nx=rot[0][0]*nm[0]+rot[0][1]*nm[1]+rot[0][2]*nm[2];
+		double ny=rot[1][0]*nm[0]+rot[1][1]*nm[1]+rot[1][2]*nm[2];
+		double nz=rot[2][0]*nm[0]+rot[2][1]*nm[1]+rot[2][2]*nm[2];
+		double w=-ez;
+		pv[k].x=(f*ex/w+1.0)*80.0-15.0;
+		pv[k].y=160.0-(f*ey/w+1.0)*80.0-15.0;
+		pv[k].iw=1.0/w;
+		double dif=nx*Lx+ny*Ly+nz*Lz;
+		double spc=0.0;
+		if (dif>0.0) spc=0.09; else dif=0.0;
+		pv[k].r=min(1.0,0.2+0.8*dif+spc);
+		pv[k].g=pv[k].b=min(1.0,0.16+0.16*dif+spc);
+		pv[k].s=sphere_tex[k][0];
+		pv[k].t=sphere_tex[k][1];
+	}
+	std::fill(frame.begin(),frame.end(),0);
+	std::fill(depth.begin(),depth.end(),0.0f);
+	bool textured=(tex_w>0);
+	for (int k=0;k+2<tri;k++) {
+		const PV &a=pv[sphere_index[k]],&b=pv[sphere_index[k+1]],&c=pv[sphere_index[k+2]];
+		double area=(b.x-a.x)*(c.y-a.y)-(b.y-a.y)*(c.x-a.x);
+		if (area==0.0) continue;
+		int x0=max(0,(int)floor(min(a.x,min(b.x,c.x))));
+		int x1=min(W-1,(int)ceil(max(a.x,max(b.x,c.x))));
+		int y0=max(0,(int)floor(min(a.y,min(b.y,c.y))));
+		int y1=min(W-1,(int)ceil(max(a.y,max(b.y,c.y))));
+		for (int py=y0;py<=y1;py++) {
+			double qy=py+0.5;
+			for (int px=x0;px<=x1;px++) {
+				double qx=px+0.5;
+				double l0=((c.x-b.x)*(qy-b.y)-(c.y-b.y)*(qx-b.x))/area;
+				double l1=((a.x-c.x)*(qy-c.y)-(a.y-c.y)*(qx-c.x))/area;
+				double l2=1.0-l0-l1;
+				if (l0<0.0 || l1<0.0 || l2<0.0) continue;
+				double iw=l0*a.iw+l1*b.iw+l2*c.iw;
+				int idx=py*W+px;
+				if (iw<=depth[idx]) continue;
+				depth[idx]=(float)iw;
+				double q0=l0*a.iw/iw,q1=l1*b.iw/iw,q2=l2*c.iw/iw;
+				double r=q0*a.r+q1*b.r+q2*c.r;
+				double g=q0*a.g+q1*b.g+q2*c.g;
+				double bl=q0*a.b+q1*b.b+q2*c.b;
+				if (textured) {
+					double u=(q0*a.s+q1*b.s+q2*c.s)*tex_w-0.5;
+					double v=(q0*a.t+q1*b.t+q2*c.t)*tex_h-0.5;
+					double fu=floor(u),fv=floor(v);
+					double au=u-fu,av=v-fv;
+					int u0=((int)fu%tex_w+tex_w)%tex_w,u1=(u0+1)%tex_w;
+					int v0=((int)fv%tex_h+tex_h)%tex_h,v1=(v0+1)%tex_h;
+					const unsigned char *t00=&tex[((size_t)v0*tex_w+u0)*3],*t10=&tex[((size_t)v0*tex_w+u1)*3];
+					const unsigned char *t01=&tex[((size_t)v1*tex_w+u0)*3],*t11=&tex[((size_t)v1*tex_w+u1)*3];
+					double tc[3];
+					for (int ch=0;ch<3;ch++)
+						tc[ch]=((1-au)*(1-av)*t00[ch]+au*(1-av)*t10[ch]+(1-au)*av*t01[ch]+au*av*t11[ch])/255.0;
+					r*=tc[0]; g*=tc[1]; bl*=tc[2];
+				}
+				frame[idx]=RGB((int)(r*255.0+0.5),(int)(g*255.0+0.5),(int)(bl*255.0+0.5));
+			}
+		}
+	}
+}
+
 void ADI::RegisterMe(int index)
 {oapiRegisterPanelArea(index,_R(ScrX,ScrY,ScrX+141,ScrY+141),PANEL_REDRAW_ALWAYS,PANEL_MOUSE_IGNORE,PANEL_MAP_CURRENT);
  idx=index;
@@ -1282,40 +1296,12 @@ void ADI::MoveBall()
 						now.x-=0.05;over_rate=1.;}
 	else now.x+=delta;
 
-	glLoadIdentity(); 
-	gluLookAt(0.0,-35.0,0.0, 0.0,0.0,0.0,0.0,0.0,1.0);
-	glRotatef(-now.z/Pi*180.0,0.0,1.0,0.0);
-	glRotatef(now.y/Pi*180.0,1.0,0.0,0.0);
-	glRotatef(now.x/Pi*180.0,0.0,0.0,1.0);
+	SetView();
 
 }
 void ADI::PaintMe()
 {
 	if (!init) InitGL();
-/*	float temp;
-	float sign;
-	float Pi=acos(-1);
-	vector3 me;
-	vector3 up;
-	VESSELSTATUS vstat;parent->v->GetStatus(vstat);
-	vstat.arot.z+=acos(-1)/2;
-	me.z=35*sin(vstat.arot.y);
-	me.x=35*cos(vstat.arot.y);
-	me.y=me.x*cos(vstat.arot.x);
-	me.x=me.x*sin(vstat.arot.x);
-	
-	up.z=cos(vstat.arot.z);//project the up onto the me plane
-//	up.z*=cos(vstat.arot.y);//then further project this onto the z axis
-	//temp=sqrt(1-up.z*up.z);//extract the other projection
-	temp=sin(vstat.arot.z);
-	up.x=temp*cos(vstat.arot.x);//project this onto the axis
-	up.y=temp*sin(vstat.arot.x);
-	//problem is this type of projection will not lead to a unit vector;
-    temp=sqrt(up.z*up.z+up.x*up.x+up.y*up.y);
-	sprintf(oapiDebugString(),"%0.4f %0.4f %0.4f %0.4f %0.4f %0.4f %0.4f",vstat.arot.x,vstat.arot.y,vstat.arot.z,up.x,up.y,up.z,temp);
-	gluLookAt(me.x,me.y,me.z, 0.0,0.0,0.0,up.x,up.y,up.z);
-	*/
-  
 	if (ref_handle) {GetReference();ref_handle=0;};
 	switch (function_mode)
 	{case 0:if (orbital_ecliptic>0)
@@ -1331,14 +1317,28 @@ void ADI::PaintMe()
 	};
 	if(*((Dragonfly*)parent->v)->DC_power>0){ MoveBall();}
 	else {over_rate=1;};
-	glCallList(list_name);	//render
-	glFlush();
-	glFinish();
+	RenderBall();
 
-HDC hDC=oapiGetDC(parent->surf);
-
-BitBlt(hDC,5,5,130,130,hDC2,15,15,SRCCOPY);//then we bitblt onto the panel. wish there
-oapiReleaseDC(parent->surf,hDC);		// was a faster way ...
+oapi::Sketchpad *skp=oapiGetSketchpad(parent->surf);
+skp->QuickPen(0);
+skp->SetPen(NULL);
+skp->QuickBrush(0xFF000000);
+skp->Rectangle(5,5,136,136);
+for (int y=0;y<130;y++) {
+	const DWORD *row=&frame[y*130];
+	int x=0;
+	while (x<130) {
+		DWORD col=row[x];
+		int xe=x+1;
+		while (xe<130 && row[xe]==col) xe++;
+		if (col) {
+			skp->QuickBrush(col|0xFF000000);
+			skp->Rectangle(5+x,5+y,5+xe+1,5+y+2);
+		}
+		x=xe;
+	}
+}
+oapiReleaseSketchpad(skp);
 
 oapiBlt(parent->surf,hADIBorder,0,0,0,0,140,140,0x0);
 
@@ -1368,24 +1368,22 @@ void Radar::RegisterMe(int index)
 };
 void Radar::PaintMe()
 {
-HDC hDC=oapiGetDC(parent->surf);
-HDC hDC2=oapiGetDC(hRadSrfSRF);
-BitBlt(hDC,0,0,350,296,hDC2,0,0,SRCCOPY);
+oapiBlt(parent->surf,hRadSrfSRF,0,0,0,0,350,193);
 
 char label[5];
-SelectObject(hDC, hFNT_Panel);
-SetBkMode(hDC,TRANSPARENT); 
-SetTextColor(hDC,RGB(0,0,0));
-SetTextAlign(hDC,TA_CENTER);
+oapi::Sketchpad *skp=oapiGetSketchpad(parent->surf);
+skp->SetFont(hFNT_Panel);
+skp->SetBackgroundMode(oapi::Sketchpad::BK_TRANSPARENT); 
+skp->SetTextColor(RGB(0,0,0));
+skp->SetTextAlign(oapi::Sketchpad::CENTER);
 
-strcpy(label,"R+");TextOut(hDC,31,58,label,strlen(label));
-strcpy(label,"R-");TextOut(hDC,31,92,label,strlen(label));
-strcpy(label,"VS");TextOut(hDC,31,129,label,strlen(label));
-strcpy(label,"AT1");TextOut(hDC,322,58,label,strlen(label));
-strcpy(label,"AT2");TextOut(hDC,322,92,label,strlen(label));
+strcpy(label,"R+");skp->Text(31,58,label,strlen(label));
+strcpy(label,"R-");skp->Text(31,92,label,strlen(label));
+strcpy(label,"VS");skp->Text(31,129,label,strlen(label));
+strcpy(label,"AT1");skp->Text(322,58,label,strlen(label));
+strcpy(label,"AT2");skp->Text(322,92,label,strlen(label));
 
-oapiReleaseDC(parent->surf,hDC);
-oapiReleaseDC(hRadSrfSRF,hDC2);
+oapiReleaseSketchpad(skp);
   
 
 }
@@ -1394,7 +1392,7 @@ void Radar::RefreshMe()
 {
 if (*(((Dragonfly*)parent->v)->DC_power)>0) 
 {powered=1;
-	HDC hDC;
+	oapi::Sketchpad *skp;
 	int num_ob=oapiGetVesselCount();
 	OBJHANDLE object_us=parent->v->GetHandle();
 	OBJHANDLE object;
@@ -1402,24 +1400,25 @@ if (*(((Dragonfly*)parent->v)->DC_power)>0)
 	VECTOR3 dist;
 	VECTOR3 pos;
 	if (new_range){new_range=0;
-		hDC=oapiGetDC(parent->surf);
-		char label[10];
+		skp=oapiGetSketchpad(parent->surf);
+		char label[16];
 		sprintf(label,"R:%im",range);
-		SelectObject(hDC,hBRUSH_TotalBlack);
-		Rectangle(hDC,220,20,270,31);
-		SelectObject(hDC, hFNT_Panel);
-		SetBkMode(hDC,TRANSPARENT); 
-		SetTextColor(hDC,RGB(0,255,0));
-		SetTextAlign(hDC,TA_CENTER);
-		TextOut(hDC,255,20,label,strlen(label));
-		oapiReleaseDC(parent->surf,hDC);
+		skp->SetBrush(hBRUSH_TotalBlack);
+		skp->SetPen(hPEN_TotalBlack);
+		skp->Rectangle(220,20,270,31);
+		skp->SetFont(hFNT_Panel);
+		skp->SetBackgroundMode(oapi::Sketchpad::BK_TRANSPARENT); 
+		skp->SetTextColor(RGB(0,255,0));
+		skp->SetTextAlign(oapi::Sketchpad::CENTER);
+		skp->Text(255,20,label,strlen(label));
+		oapiReleaseSketchpad(skp);
 	};	//draw a new range 
 	if (((Dragonfly*)parent->v)->UY_pos!=last_antena_yaw) {
-		hDC=oapiGetDC(radar_background);
-		SelectObject(hDC,hBRUSH_TotalBlack);
-		SelectObject(hDC,hPEN_NULL);
+		skp=oapiGetSketchpad(radar_background);
+		skp->SetBrush(hBRUSH_TotalBlack);
+		skp->SetPen(NULL);
 
-		Rectangle(hDC,0,0,101,101);
+		skp->Rectangle(0,0,101,101);
 		last_antena_yaw=((Dragonfly*)parent->v)->UY_pos;
 		float yaw=150.0 - ((Dragonfly*)parent->v)->UY_pos*300+15.0;
 		yaw=yaw/180.0*acos(-1.0);
@@ -1430,9 +1429,9 @@ if (*(((Dragonfly*)parent->v)->DC_power)>0)
 		float py2=cos(yaw1)*45;
 		float  px2=sin(yaw1)*45;
 
-		SelectObject(hDC,hBRUSH_FYellow);
-		Pie(hDC,0,0,100,100,50+px1,50-py1,50+px2,50-py2);
-		oapiReleaseDC(radar_background,hDC);
+		skp->SetBrush(hBRUSH_FYellow);
+		PanelPie(skp,0,0,100,100,50+px1,50-py1,50+px2,50-py2);
+		oapiReleaseSketchpad(skp);
 		oapiBlt(radar_background,hRadBkSRF,0,0,0,0,100,100,0x0);
 	};//new yawed background
 
@@ -1518,32 +1517,32 @@ if ((old_fuel>0)||(parent->v->GetPropellantFlowrate (((Dragonfly*)(parent->v))->
 	fuel = fuel / 4e3; //percentage of qty left;
 //	sprintf(oapiDebugString(),"%f %f",fuel,old_fuel);
 
-	HDC hDC=oapiGetDC(parent->surf);
-	SelectObject(hDC, hFNT_Panel);
-	SetBkMode(hDC,TRANSPARENT); 
-	SetTextColor(hDC,RGB(0,255,0));
-	SetTextAlign(hDC,TA_CENTER);
-	SelectObject(hDC,hPEN_NULL);
-	SelectObject(hDC,hBRUSH_Red);
+	oapi::Sketchpad *skp=oapiGetSketchpad(parent->surf);
+	skp->SetFont(hFNT_Panel);
+	skp->SetBackgroundMode(oapi::Sketchpad::BK_TRANSPARENT); 
+	skp->SetTextColor(RGB(0,255,0));
+	skp->SetTextAlign(oapi::Sketchpad::CENTER);
+	skp->SetPen(NULL);
+	skp->SetBrush(hBRUSH_Red);
 
-	Rectangle(hDC,22,35,44,45);
-	Rectangle(hDC,22,56,44,66);
+	skp->Rectangle(22,35,44,45);
+	skp->Rectangle(22,56,44,66);
 
 
-	char cbuf[10];
+	char cbuf[32];
 	int i;
 
 	i = (int)(143.0*fuel);
 
-	Rectangle (hDC, 23, 84, 39, 228-i);
-	SelectObject(hDC,hBRUSH_Green);
-	Rectangle (hDC, 23, 228-i, 39, 228);
-	SelectObject(hDC,hBRUSH_Green);
+	skp->Rectangle (23, 84, 39, 228-i);
+	skp->SetBrush(hBRUSH_Green);
+	skp->Rectangle (23, 228-i, 39, 228);
+	skp->SetBrush(hBRUSH_Green);
     sprintf (cbuf, "%3.1f", 100.0*fuel);
-	TextOut (hDC, 32, 35, cbuf, strlen(cbuf));
+	skp->Text (32, 35, cbuf, strlen(cbuf));
 	sprintf (cbuf, "%3.2f",old_fuel=parent->v->GetPropellantFlowrate (((Dragonfly*)(parent->v))->ph_main));
-	TextOut (hDC, 32, 56, cbuf, strlen(cbuf));
-	oapiReleaseDC(parent->surf,hDC);
+	skp->Text (32, 56, cbuf, strlen(cbuf));
+	oapiReleaseSketchpad(skp);
 	}
 }
 else

@@ -9,18 +9,15 @@
 // Reference implementation of "Dragonfly" class space tug
 // ==============================================================
 
-#define STRICT
-
 #include "Dragonfly.h"
 #include <stdio.h>
 #include <math.h>
+#include <string.h>
 #include "internal.h"
-//#include "glstuff.cpp"
 
 using std::min;
 using std::max;
 
-HINSTANCE hDLL; 
 double Lsim;
 
 // ==============================================================
@@ -48,7 +45,6 @@ Dragonfly::Dragonfly (OBJHANDLE hObj, int fmodel)
 	Kill_rot=0;
 	Dock_target_object=NULL;
 	RegisterAnimations();
-//	openGLhDC=hDC;
 }
 
 void Dragonfly::RegisterAnimations()
@@ -796,51 +792,48 @@ void Dragonfly::RedrawPanel_SensorInfo (SURFHANDLE surf)
 {
 	bool engaged = false;
 	OBJHANDLE hObj = GetDockStatus (GetDockHandle (0));
-	HDC hDC = oapiGetDC (surf);
-//	SelectObject (hDC, g_Param.font[1]);
-	SetTextColor (hDC, RGB(0,255,0));
-	SetBkMode (hDC, TRANSPARENT);
+	oapi::Sketchpad *skp = oapiGetSketchpad (surf);
+	skp->SetTextColor (RGB(0,255,0));
+	skp->SetBackgroundMode (oapi::Sketchpad::BK_TRANSPARENT);
 	if (!sensormode) {
-		TextOut (hDC, 0, 0, "LOCAL", 5);
+		skp->Text (0, 0, "LOCAL", 5);
 		engaged = (hObj != NULL);
 	} else {
-		TextOut (hDC, 0, 0, "REMOTE", 6);
+		skp->Text (0, 0, "REMOTE", 6);
 		if (remoteport >= 0) {
 			char cbuf[20];
 			sprintf (cbuf, "DOCK %d", remoteport+1);
-			TextOut (hDC, 0, 10, cbuf, strlen(cbuf));
+			skp->Text (0, 10, cbuf, strlen(cbuf));
 			engaged = (GetDockStatus (oapiGetDockHandle (hObj, remoteport)) != NULL);
 		} else 
-			TextOut (hDC, 0, 10, "NO DATA", 7);
+			skp->Text (0, 10, "NO DATA", 7);
 	}
 	if (engaged) {
-		SetTextColor (hDC, 0);
-		SetBkColor (hDC, RGB(255,255,0));
-		SetBkMode (hDC, OPAQUE);
-		TextOut (hDC, 50, 0, "ENG", 3);
+		skp->SetTextColor (0);
+		skp->SetBackgroundColor (RGB(255,255,0));
+		skp->SetBackgroundMode (oapi::Sketchpad::BK_OPAQUE);
+		skp->Text (50, 0, "ENG", 3);
 	}
-	oapiReleaseDC (surf, hDC);
+	oapiReleaseSketchpad (skp);
 };
 
 void Dragonfly::RedrawPanel_CGIndicator (SURFHANDLE surf)
 {
-	char cbuf[20];
-	HDC hDC = oapiGetDC (surf);
-//	SelectObject (hDC, g_Param.font[1]);
-	SetTextColor (hDC, RGB(0,255,0));
-	SetBkMode (hDC, TRANSPARENT);
+	char cbuf[32];
+	oapi::Sketchpad *skp = oapiGetSketchpad (surf);
+	skp->SetTextColor (RGB(0,255,0));
+	skp->SetBackgroundMode (oapi::Sketchpad::BK_TRANSPARENT);
 	sprintf (cbuf, "%0.1f m", cgofs);
-	TextOut (hDC, 30, 0, cbuf, strlen (cbuf));
+	skp->Text (30, 0, cbuf, strlen (cbuf));
 	int loc = 4+min ((int)(cgofs*3.784), 74);
-//	SelectObject (hDC, g_Param.pen[0]);
-	MoveToEx (hDC, loc, 15, NULL); LineTo (hDC, loc-3, 22); LineTo (hDC, loc+3, 22); LineTo (hDC, loc, 15);
-	oapiReleaseDC (surf, hDC);
+	skp->SetPen (hPEN_TotalBlack);
+	skp->MoveTo (loc, 15); skp->LineTo (loc-3, 22); skp->LineTo (loc+3, 22); skp->LineTo (loc, 15);
+	oapiReleaseSketchpad (skp);
 };
 
 void Dragonfly::LoadPanel(int id)
 { 
-	Internals.PanelList[id].MakeYourBackground();
-	oapiRegisterPanelBackground(Internals.PanelList[id].hBitmap,Internals.PanelList[id].ATT_mode,0xFFFFFF);
+	oapiRegisterPanelBackground(Internals.PanelList[id].MakeYourBackground(),Internals.PanelList[id].ATT_mode,0xFFFFFF);
 	oapiSetPanelNeighbours(Internals.PanelList[id].neighbours[0],Internals.PanelList[id].neighbours[1],Internals.PanelList[id].neighbours[2],Internals.PanelList[id].neighbours[3]);
 	Internals.PanelList[id].RegisterYourInstruments();
     CurrentPANEL=id;
@@ -991,39 +984,12 @@ bool Dragonfly::clbkPanelMouseEvent (int id, int event, int mx, int my)
 
 // Initialisation
 DLLCLBK VESSEL *ovcInit (OBJHANDLE hvessel, int flightmodel)
-{	PANEL_InitGDIResources(hDLL);
+{	PANEL_InitResources();
 	return new Dragonfly (hvessel, flightmodel);
 }
 
 // Cleanup
 DLLCLBK void ovcExit (VESSEL *vessel)
-{   PANEL_ReleaseGDIResources();
-	if (vessel) delete (Dragonfly*)vessel;
-}
-
-BOOL WINAPI DllMain (HINSTANCE hModule,
-					 DWORD ul_reason_for_call,
-					 LPVOID lpReserved)
-{
-	switch (ul_reason_for_call) {
-	case DLL_PROCESS_ATTACH:
-	    hDLL = hModule;
-		// allocate GDI resources
-		
-		PANEL_DLLAtach();
-	//	hInstance=hDLL;
-//		CreateGLWindow("no title", 200, 200, 16);
-
-	//	PANEL_InitGDIResources(hModule);
-	
-	//	Internals.Init();
-	//	Internals.MakePanels();
-
-			break;
-	case DLL_PROCESS_DETACH:
-		// deallocate GDI resources
-//		CloseGLWindow();
-		break;
-	}
-	return TRUE;
+{	if (vessel) delete (Dragonfly*)vessel;
+	PANEL_ReleaseResources();
 }

@@ -101,7 +101,6 @@ public:
 	PROPELLANT_HANDLE ph_main;
 	float *AC_power;
 	float *DC_power;
-	HDC openGLhDC;
 
 	// overloaded VESSEL2 callback functions
 	void clbkSetClassCaps (FILEHANDLE cfg);
