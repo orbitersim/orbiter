@@ -457,7 +457,14 @@ void *_aligned_malloc(size_t size, size_t align)
 
 void _aligned_free(void *p) { free(p); }
 
-int MultiByteToWideChar(UINT, DWORD, const char *src, int srclen, wchar_t *dst, int dstlen)
+static const uint16_t kCp1252[32] = {
+	0x20AC, 0x0081, 0x201A, 0x0192, 0x201E, 0x2026, 0x2020, 0x2021, 0x02C6, 0x2030, 0x0160, 0x2039, 0x0152, 0x008D, 0x017D, 0x008F,
+	0x0090, 0x2018, 0x2019, 0x201C, 0x201D, 0x2022, 0x2013, 0x2014, 0x02DC, 0x2122, 0x0161, 0x203A, 0x0153, 0x009D, 0x017E, 0x0178};
+
+static bool IsUtf8Page(UINT cp) { return cp == 65001 || cp == 0 || cp == 1 || cp == 2 || cp == 3; }
+static bool IsLatin1Page(UINT cp) { return cp == 28591; }
+
+int MultiByteToWideChar(UINT cp, DWORD flags, const char *src, int srclen, wchar_t *dst, int dstlen)
 {
 	if (!src) return 0;
 	size_t n = srclen < 0 ? strlen(src) + 1 : (size_t)srclen;
@@ -465,12 +472,25 @@ int MultiByteToWideChar(UINT, DWORD, const char *src, int srclen, wchar_t *dst, 
 	int count = 0;
 	while (p < end) {
 		uint32_t c = *p++;
-		if (c >= 0xC0) {
-			int extra = c >= 0xF0 ? 3 : c >= 0xE0 ? 2 : 1;
-			c &= (0x3F >> extra);
-			while (extra-- && p < end && (*p & 0xC0) == 0x80) c = (c << 6) | (*p++ & 0x3F);
-		} else if (c >= 0x80) {
-			c = 0xFFFD;
+		if (IsUtf8Page(cp)) {
+			if (c >= 0x80) {
+				int extra = c >= 0xF0 && c < 0xF8 ? 3 : c >= 0xE0 ? 2 : c >= 0xC2 ? 1 : -1;
+				if (c >= 0xF8) extra = -1;
+				bool bad = extra < 0;
+				if (!bad) {
+					c &= (0x3F >> extra);
+					for (int k = 0; k < extra; k++) {
+						if (p >= end || (*p & 0xC0) != 0x80) { bad = true; break; }
+						c = (c << 6) | (*p++ & 0x3F);
+					}
+				}
+				if (bad) {
+					if (flags & 0x08) return 0;
+					c = 0xFFFD;
+				}
+			}
+		} else if (!IsLatin1Page(cp) && c >= 0x80 && c < 0xA0) {
+			c = kCp1252[c - 0x80];
 		}
 		if (dst && dstlen) {
 			if (count >= dstlen) return 0;
@@ -481,7 +501,7 @@ int MultiByteToWideChar(UINT, DWORD, const char *src, int srclen, wchar_t *dst, 
 	return count;
 }
 
-int WideCharToMultiByte(UINT, DWORD, const wchar_t *src, int srclen, char *dst, int dstlen, const char *, WINBOOL *useddef)
+int WideCharToMultiByte(UINT cp, DWORD, const wchar_t *src, int srclen, char *dst, int dstlen, const char *defchar, WINBOOL *useddef)
 {
 	if (useddef) *useddef = FALSE;
 	if (!src) return 0;
@@ -495,13 +515,28 @@ int WideCharToMultiByte(UINT, DWORD, const wchar_t *src, int srclen, char *dst, 
 		count++;
 		return true;
 	};
+	char def = defchar && *defchar ? *defchar : '?';
 	for (size_t i = 0; i < n; i++) {
 		uint32_t c = (uint32_t)src[i];
 		bool ok;
-		if (c < 0x80) ok = put((char)c);
-		else if (c < 0x800) ok = put((char)(0xC0 | (c >> 6))) && put((char)(0x80 | (c & 0x3F)));
-		else if (c < 0x10000) ok = put((char)(0xE0 | (c >> 12))) && put((char)(0x80 | ((c >> 6) & 0x3F))) && put((char)(0x80 | (c & 0x3F)));
-		else ok = put((char)(0xF0 | (c >> 18))) && put((char)(0x80 | ((c >> 12) & 0x3F))) && put((char)(0x80 | ((c >> 6) & 0x3F))) && put((char)(0x80 | (c & 0x3F)));
+		if (IsUtf8Page(cp)) {
+			if (c < 0x80) ok = put((char)c);
+			else if (c < 0x800) ok = put((char)(0xC0 | (c >> 6))) && put((char)(0x80 | (c & 0x3F)));
+			else if (c < 0x10000) ok = put((char)(0xE0 | (c >> 12))) && put((char)(0x80 | ((c >> 6) & 0x3F))) && put((char)(0x80 | (c & 0x3F)));
+			else ok = put((char)(0xF0 | (c >> 18))) && put((char)(0x80 | ((c >> 12) & 0x3F))) && put((char)(0x80 | ((c >> 6) & 0x3F))) && put((char)(0x80 | (c & 0x3F)));
+		} else {
+			int b = -1;
+			if (c < 0x80 || (c >= 0xA0 && c < 0x100)) b = (int)c;
+			else if (IsLatin1Page(cp) && c < 0x100) b = (int)c;
+			else if (!IsLatin1Page(cp)) {
+				for (int k = 0; k < 32; k++) if (kCp1252[k] == c) { b = 0x80 + k; break; }
+			}
+			if (b < 0) {
+				b = (unsigned char)def;
+				if (useddef) *useddef = TRUE;
+			}
+			ok = put((char)b);
+		}
 		if (!ok) return 0;
 	}
 	return count;
