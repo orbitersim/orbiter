@@ -143,7 +143,7 @@ public:
 	inline double Mass() const { return mass; }
 	// Returns supervessel mass (sum of component masses)
 
-	void SetStateFromComponent (const StateVectors *scomp, int comp) const;
+	void SetStateFromComponent (const StateVectors *scomp, int comp);
 	// Set the supervessel state from one of its component states
 
 	void SetFlightStatus (FlightStatus fstatus);

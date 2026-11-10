@@ -119,8 +119,8 @@ public:
 	// Return cosine of angle between surface normal and direction to
 	// the sun (which is assumed in the centre of the global coord system)
 
-	inline Vector SunDirection () const
-	{ return (s1 ? tmul(s1->R, -s1->pos.unit()) : tmul (s0->R, -s0->pos.unit())); }
+	inline Vector SunDirection() const
+	{ return (S1() ? tmul(S1()->R, -S1()->pos.unit()) : tmul(S0()->R, -S0()->pos.unit())); }
 	// Return vector pointing towards sun (= world coordiate origin) in
 	// base local coordinates
 

@@ -123,7 +123,7 @@ const Elements *RigidBody::Els () const
 	if (cbody && el) {
 		if (!el_valid) {
 			el->Calculate (cpos, cvel, g_bStateUpdate ? td.SimT1 : td.SimT0);
-			//el->Calculate (s0->pos-cbody->GPos(), s0->vel-cbody->GVel(), td.SimT0);
+			//el->Calculate (S0()->pos-cbody->GPos(), S0()->vel-cbody->GVel(), td.SimT0);
 			el_valid = true;
 		}
 		return el;
@@ -169,7 +169,7 @@ void RigidBody::SetPropagator (int &plevel, int &nstep) const
 		if (td.SimDT < PropMode[plevel].tlim)
 			break;
 	// 2. Angle step limit
-	double astep = s0->omega.length()*td.SimDT; // angular step size
+	double astep = S0()->omega.length()*td.SimDT; // angular step size
 	for (; plevel < nPropLevel-1; plevel++)
 		if (astep < PropMode[plevel].alim)
 			break;
@@ -220,22 +220,22 @@ void RigidBody::Update (bool force)
 			double dt = td.SimDT/nPropSubsteps;
 
 			// Update linear state with Encke's method
-			s1->Set (*s0);
+			S1()->Set (*S0());
 			if (!bOrbitStabilised) {
 				FlushRPos();
 				FlushRVel();
-				s1->pos.Set (cpos);
-				s1->vel.Set (cvel);
-				GetIntermediateMoments_pert (acc_pert, tau, *s0, 0, dt, cbody);
+				S1()->pos.Set (cpos);
+				S1()->vel.Set (cvel);
+				GetIntermediateMoments_pert (acc_pert, tau, *S0(), 0, dt, cbody);
 				el->Calculate (cpos, cvel, td.SimT0); // get elements from previous step
 			}
 			Encke();
-			s1->pos.Set (cpos + cbody->s1->pos);
-			s1->vel.Set (cvel + cbody->s1->vel);
+			S1()->pos.Set (cpos + cbody->S1()->pos);
+			S1()->vel.Set (cvel + cbody->S1()->vel);
 			FlushRPos();
 			FlushRVel();
-			s1->R.Set (s1->Q);
-			GetIntermediateMoments (acc, tau, *s1, 1, dt);
+			S1()->R.Set (S1()->Q);
+			GetIntermediateMoments (acc, tau, *S1(), 1, dt);
 			el_valid = bOrbitStabilised = true;
 
 		} else { // do a dynamic state vector integration
@@ -248,19 +248,19 @@ void RigidBody::Update (bool force)
 				double dt = td.SimDT/nPropSubsteps;
 
 				// Perform step propagation with sub-steps
-				s1->Set (*s0);
+				S1()->Set (*S0());
 				acc = acc0, arot = arot0;
 				rpos_add = rpos_add0, rvel_add = rvel_add0;
 				for (i = 0; i < nPropSubsteps; i++) {
 					((*this).*(PropMode[PropLevel].propagator)) (dt, nPropSubsteps, i);
-					s1->pos = rpos_base + rpos_add;
-					s1->vel = rvel_base + rvel_add;
-					s1->R.Set (s1->Q);
-					GetIntermediateMoments (acc, tau, *s1, (i+1.0)/nPropSubsteps, dt);
-					arot.Set (EulerInv_full (tau, s1->omega));
+					S1()->pos = rpos_base + rpos_add;
+					S1()->vel = rvel_base + rvel_add;
+					S1()->R.Set (S1()->Q);
+					GetIntermediateMoments (acc, tau, *S1(), (i+1.0)/nPropSubsteps, dt);
+					arot.Set (EulerInv_full (tau, S1()->omega));
 				}
-			} while (!ValidateStateUpdate (s1));
-			//s1->R.Set (s1->Q);
+			} while (!ValidateStateUpdate (S1()));
+			//S1()->R.Set (S1()->Q);
 
 			if (updcount++ == 1000) { // flush increments
 				rpos_base += rpos_add;
@@ -279,15 +279,15 @@ void RigidBody::Update (bool force)
 		const double vmag_max = 100.0*Pi; // limit angular velocities to 100Hz - make user-definable!
 		extern int errno;
 		errno = 0;
-		double vmag = s1->omega.length();
+		double vmag = S1()->omega.length();
 		if (vmag > vmag_max || errno) {
 			if (errno) {                  // fatal error - reset to arbitrary values
-				s1->omega.Set (0,0,vmag_max);
+				S1()->omega.Set (0,0,vmag_max);
 				vmag = vmag_max;
-				s1->Q.Set (0,0,0,1);
-				s1->R.Set (s0->Q);
+				S1()->Q.Set (0,0,0,1);
+				S1()->R.Set (S0()->Q);
 			} else {
-				s1->omega *= vmag_max/vmag;
+				S1()->omega *= vmag_max/vmag;
 				vmag = vmag_max;
 			}
 			arot.Set(0,0,0);
@@ -296,8 +296,8 @@ void RigidBody::Update (bool force)
 	Body::Update (force);
 
 	if (cbody) {
-		cpos = s1->pos - cbody->s1->pos;
-		cvel = s1->vel - cbody->s1->vel;
+		cpos = S1()->pos - cbody->S1()->pos;
+		cvel = S1()->vel - cbody->S1()->vel;
 	}
 }
 
@@ -305,14 +305,14 @@ void RigidBody::Update (bool force)
 
 void RigidBody::ScanGFieldSources (const PlanetarySystem *psys)
 {
-	psys->ScanGFieldSources (&s0->pos, this, &gfielddata);
+	psys->ScanGFieldSources (&S0()->pos, this, &gfielddata);
 }
 
 // =======================================================================
 
 void RigidBody::UpdateGFieldSources (const PlanetarySystem *psys)
 {
-	psys->UpdateGFieldSources (&s0->pos, this, &gfielddata);
+	psys->UpdateGFieldSources (&S0()->pos, this, &gfielddata);
 }
 
 // =======================================================================
@@ -428,7 +428,7 @@ Vector RigidBody::GetTorque () const
 	Vector R0;
 
 	// map cbody into vessel frame
-	R0.Set (tmul (s0->R, cbody->s0->pos - s0->pos));
+	R0.Set (tmul (S0()->R, cbody->S0()->pos - S0()->pos));
 	double r0 = R0.length();
 	Vector Re = R0/r0;
 	double mag = 3.0 * Ggrav * cbody->Mass() / pow(r0,3.0);
@@ -438,9 +438,9 @@ Vector RigidBody::GetTorque () const
 	if (tidaldamp) {
 		double damp  = tidaldamp * mag;
 		double scale = min (damp, td.iSimDT*0.1);
-		if (s0->omega.x) M.x -= scale * pmi.x*s0->omega.x;
-		if (s0->omega.y) M.y -= scale * pmi.y*s0->omega.y;
-		if (s0->omega.z) M.z -= scale * pmi.z*s0->omega.z;
+		if (S0()->omega.x) M.x -= scale * pmi.x*S0()->omega.x;
+		if (S0()->omega.y) M.y -= scale * pmi.y*S0()->omega.y;
+		if (S0()->omega.z) M.z -= scale * pmi.z*S0()->omega.z;
 	}
 
 	return M;
@@ -450,7 +450,7 @@ Vector RigidBody::GetTorque () const
 
 void RigidBody::SetAngVel (const Vector &omega)
 {
-	s0->omega.Set (omega);
+	S0()->omega.Set (omega);
 }
 
 // =======================================================================
@@ -516,7 +516,7 @@ void RigidBody::SetDynamicUpdate (bool dynamic)
 {
 	if (bDynamicPosVel == dynamic) return; // nothing to do
 	if (bDynamicPosVel = dynamic) {
-		rpos_base.Set (s0->pos);
+		rpos_base.Set (S0()->pos);
 		rpos_add.Set (0,0,0);
 	} else {
 	}

@@ -117,14 +117,11 @@ public:
 	// Returns mass-normalised torque vector for state s0. This only consists of
 	// gravity gradient torque, and only if enabled.
 
-	inline const Vector &AngularVelocity () const { return s0->omega; }
-	// angular velocity - should be moved to Body class!
-
 	virtual void SetAngVel (const Vector &omega);
 	// set angular velocity to 'omega'
 
-	inline Vector AngularMomentum () const
-	{ return Vector(pmi.x*s0->omega.x, pmi.y*s0->omega.y, pmi.z*s0->omega.z); }
+	Vector AngularMomentum() const
+	{ return Vector(pmi.x * S0()->omega.x, pmi.y * S0()->omega.y, pmi.z * S0()->omega.z); }
 	// returns the vessel's current angular momentum (in local vessel coordinates)
 
 	Vector Euler_full (const Vector &omegadot, const Vector &omega) const;

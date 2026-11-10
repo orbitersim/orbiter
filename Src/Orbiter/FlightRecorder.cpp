@@ -127,8 +127,8 @@ void Vessel::FRecorder_Save (bool force)
 
 	for (iter = 0; iter < niter; iter++) {
 		if (ref) {
-			Vector pos = s0->pos-ref->GPos();
-			Vector vel = s0->vel-ref->GVel();
+			Vector pos = S0()->pos-ref->GPos();
+			Vector vel = S0()->vel-ref->GVel();
 			if (frec_last.frm == 1) { // map to equatorial
 				//vel = tmul (cbody->GRot(), vel);
 				double lng, lat, rad, vref;
@@ -149,10 +149,10 @@ void Vessel::FRecorder_Save (bool force)
 				//frec_last.rpos    = *gpos-cbody->GPos();
 				switch (frec_last.frm) {
 					case 0:  // ecliptic frame
-						frec_last.rpos = s0->pos-ref->GPos();
+						frec_last.rpos = S0()->pos-ref->GPos();
 						break;
 					case 1:  // equatorial frame
-						frec_last.rpos = ref->GlobalToLocal (s0->pos);
+						frec_last.rpos = ref->GlobalToLocal (S0()->pos);
 						break;
 				}
 				frec_last.rvel    = vel;
@@ -196,21 +196,21 @@ void Vessel::FRecorder_Save (bool force)
 			Quaternion q;
 			switch (frec_att_last.frm) {
 			case 0:
-				a[0] = atan2 (s0->R.m23, s0->R.m33);
-				a[1] = -asin (s0->R.m13);
-				a[2] = atan2 (s0->R.m12, s0->R.m11);
-				q.Set (s0->Q);
+				a[0] = atan2 (S0()->R.m23, S0()->R.m33);
+				a[1] = -asin (S0()->R.m13);
+				a[2] = atan2 (S0()->R.m12, S0()->R.m11);
+				q.Set (S0()->Q);
 				break;
 			case 1: {
 				double lng, lat, rad, slng, slat, clng, clat;
-				ref->GlobalToEquatorial (s0->pos, lng, lat, rad);
+				ref->GlobalToEquatorial (S0()->pos, lng, lat, rad);
 				slng = sin(lng), clng = cos(lng), slat = sin(lat), clat = cos(lat);
 				Matrix rot (-slng, clat*clng, -slat*clng, // horizon->local
 					         0   , slat,       clat,
 							 clng, clat*slng, -slat*slng);
 				//Matrix rot (sp.Hor2Local());
 				rot.premul (ref->GRot());
-				rot.tpremul (s0->R);
+				rot.tpremul (S0()->R);
 
 				if (fabs(rot.m32) > 1.0-EPS) { // apply tiny tilt when pitch=+/-90 to avoid instability
 					static const double sineps=sin(1e-6), coseps=cos(1e-6);
@@ -478,8 +478,8 @@ bool Vessel::FRecorder_Read (const char *scname)
 
 void Vessel::FRecorder_Play ()
 {
-	dCHECK(s1, "Update state not available.")
-	StateVectors *sv = s1;
+	dCHECK(S1(), "Update state not available.")
+	StateVectors *sv = S1();
 
 	if (fstatus == FLIGHTSTATUS_FREEFLIGHT) {
 
@@ -500,7 +500,7 @@ void Vessel::FRecorder_Play ()
 			s.x =  P0.x*cosd + P0.z*sind;
 			s.z = -P0.x*sind + P0.z*cosd;
 			s.y =  P0.y;
-			P0.Set (mul (frec[cfrec].ref->s1->R, s));
+			P0.Set (mul (frec[cfrec].ref->S1()->R, s));
 
 			// Needs to be fixed!
 			frec[cfrec].ref->LocalToEquatorial (s, lng, lat, rad);
@@ -508,20 +508,20 @@ void Vessel::FRecorder_Play ()
 			s.x =  V0.x*cosd + V0.z*sind;
 			s.z = -V0.x*sind + V0.z*cosd;
 			s.y =  V0.y;
-			V0.Set (mul (frec[cfrec].ref->s1->R, s + Vector (-vref*sin(lng),0,vref*cos(lng))));
+			V0.Set (mul (frec[cfrec].ref->S1()->R, s + Vector (-vref*sin(lng),0,vref*cos(lng))));
 		}
 		if (frec[cfrec+1].frm == 1) { // map from equatorial frame
 			double dlng = Pi2*(dt-dT)/frec[cfrec+1].ref->RotT(), sind = sin(dlng), cosd = cos(dlng);
 			s.x =  P1.x*cosd + P1.z*sind;
 			s.z = -P1.x*sind + P1.z*cosd;
 			s.y =  P1.y;
-			P1.Set (mul (frec[cfrec+1].ref->s1->R, s));
+			P1.Set (mul (frec[cfrec+1].ref->S1()->R, s));
 			frec[cfrec+1].ref->LocalToEquatorial (s, lng, lat, rad);
 			vref = Pi2/frec[cfrec+1].ref->RotT() * rad * cos(lat);
 			s.x =  V1.x*cosd + V1.z*sind;
 			s.z = -V1.x*sind + V1.z*cosd;
 			s.y =  V1.y;
-			V1.Set (mul (frec[cfrec].ref->s1->R, s + Vector (-vref*sin(lng),0,vref*cos(lng))));
+			V1.Set (mul (frec[cfrec].ref->S1()->R, s + Vector (-vref*sin(lng),0,vref*cos(lng))));
 		}
 
 		for (i = 0; i < 3; i++) {
@@ -533,8 +533,8 @@ void Vessel::FRecorder_Play ()
 			sv->pos.data[i] = r0 + v0*dt + 0.5*a0*dt*dt + b*dt*dt*dt/6.0;
 		}
 
-		sv->pos += frec[cfrec].ref->s1->pos;
-		sv->vel += frec[cfrec].ref->s1->vel;
+		sv->pos += frec[cfrec].ref->S1()->pos;
+		sv->vel += frec[cfrec].ref->S1()->vel;
 	
 		// attitude
 		if (td.SimT1 < frec_att[nfrec_att-1].simt) {
@@ -559,13 +559,13 @@ void Vessel::FRecorder_Play ()
 				Q.interp (frec_att[cfrec_att].q, frec_att[cfrec_att+1].q, w1);
 				sv->R.Set (Q);
 				double lng, lat, rad, slng, clng, slat, clat;
-				Vector loc = tmul (frec_att[cfrec_att].ref->s1->R, sv->pos - frec_att[cfrec_att].ref->s1->pos);
+				Vector loc = tmul (frec_att[cfrec_att].ref->S1()->R, sv->pos - frec_att[cfrec_att].ref->S1()->pos);
 				frec_att[cfrec_att].ref->LocalToEquatorial (loc, lng, lat, rad);
 				slng = sin(lng), clng = cos(lng), slat = sin(lat), clat = cos(lat);
 				sv->R.postmul (Matrix (-slng,      0,     clng,
 					                    clat*clng, slat,  clat*slng,
 									   -slat*clng, clat, -slat*slng));
-				sv->R.tpostmul (frec_att[cfrec_att].ref->s1->R);
+				sv->R.tpostmul (frec_att[cfrec_att].ref->S1()->R);
 				//rrot.postmul (sp.Local2Hor());
 				//rrot.tpostmul (cbody->GRot());
 				sv->SetRot (transp (sv->R));
@@ -623,8 +623,8 @@ void Vessel::FRecorder_PlayEvent ()
 					Planet *p = g_psys->GetPlanet (s+7, true);
 					if (supervessel) {
 						double alt = supervessel->Altitude(); //rad - proxybody->Size();
-						Matrix lrot (supervessel->s0->R);
-						lrot.tpremul (p->s0->R);
+						Matrix lrot (supervessel->S0()->R);
+						lrot.tpremul (p->S0()->R);
 						supervessel->InitLanded (p, supervessel->sp.lng, supervessel->sp.lat, supervessel->sp.dir, &lrot, alt);
 					} else
 						InitLanded (g_psys->GetPlanet (s+7, true), sp.lng, sp.lat, sp.dir);
@@ -749,11 +749,11 @@ void Vessel::FRecorder_EndPlayback ()
 	if (bFRplayback) {
 		bFRplayback = false;
 		Amom_add.Set(0,0,0);
-		rvel_base.Set (s0->vel);
+		rvel_base.Set (S0()->vel);
 		rvel_add.Set(0,0,0);
-		rpos_base.Set (s0->pos);
+		rpos_base.Set (S0()->pos);
 		rpos_add.Set(0,0,0);
-		s0->Q.Set (s0->R);
+		S0()->Q.Set (S0()->R);
 		if (supervessel && supervessel->GetVessel(0) == this)
 			supervessel->FRecorder_EndPlayback();
 	}

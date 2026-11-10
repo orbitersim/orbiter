@@ -376,7 +376,7 @@ void Base::Attach (Planet *_parent)
 	rad = cbody->Size(); // dist from planet centre
 	elev = 0.0;
 	cbody->EquatorialToLocal (slng, clng, slat, clat, rad, rpos);
-	s0->vel.Set (0,0,0);                         // base is fixed to ground
+	S0()->vel.Set (0,0,0);                         // base is fixed to ground
 	rrot.Set ( clng*slat, clng*clat, -slng,   // rotate from local
 		      -clat,      slat,       0,      // base to local
 			   slng*slat, slng*clat,  clng);  // planet coords
@@ -589,14 +589,14 @@ void Base::ScanObjectMeshes () const
 }
 void Base::Update (bool force)
 {
-	s1->R.Set (rrot);
-	s1->R.premul (cbody->s1->R);
-	s1->Q.Set (s1->R);
+	S1()->R.Set (rrot);
+	S1()->R.premul (cbody->S1()->R);
+	S1()->Q.Set (S1()->R);
 	// WARNING: this should work the other way round: combine the
 	// two quaternions and extract grot
 
-	s1->pos.Set (mul (cbody->s1->R, rpos) + cbody->s1->pos);
-	s1->vel.Set (mul (cbody->s1->R, rotvel) + cbody->s1->vel);
+	S1()->pos.Set (mul (cbody->S1()->R, rpos) + cbody->S1()->pos);
+	S1()->vel.Set (mul (cbody->S1()->R, rotvel) + cbody->S1()->vel);
 
 	// periodically update some secondary parameters
 	if (td.SimT1 > sundir_updt || force) {
@@ -787,5 +787,5 @@ int Base::ReportTouchdown (VesselBase *vessel, double vlng, double vlat)
 
 double Base::CosSunAlt () const
 {
-	return (s0->R.m12*s0->pos.x + s0->R.m22*s0->pos.y + s0->R.m32*s0->pos.z) / (-s0->pos.length());
+	return (S0()->R.m12*S0()->pos.x + S0()->R.m22*S0()->pos.y + S0()->R.m32*S0()->pos.z) / (-S0()->pos.length());
 }

@@ -54,13 +54,21 @@ public:
 	inline const Vector &Albedo () const { return albedo; }
 	// object albedo (RGB, 0-1)
 
-	inline const Vector &GPos() const { return s0->pos; }
-	inline const Vector &GVel() const { return s0->vel; }
-	inline const Matrix &GRot() const { return s0->R; }
-	inline const Quaternion &GQ() const { return s0->Q; }
+	const StateVectors *S0() const { return m_svS0; }
+	const StateVectors *S1() const { return m_svS1; }
+	StateVectors *S0() { return m_svS0; }
+	StateVectors *S1() { return m_svS1; }
+
+	inline const Vector &GPos() const { return m_svS0->pos; }
+	inline const Vector &GVel() const { return m_svS0->vel; }
+	inline const Matrix &GRot() const { return m_svS0->R; }
+	inline const Quaternion &GQ() const { return m_svS0->Q; }
 	// Object position, velocity and orientation in global coords. To transform
 	// a point between local object coords p_loc and global coords p_glob:
 	// p_glob = GRot * p_loc + GPos
+
+	const Vector &AngularVelocity() const { return m_svS0->omega; }
+	// Object angular velocity
 
 	void SetRPos (const Vector &p);
 	void AddRPos (const Vector &dp);
@@ -71,15 +79,15 @@ public:
 	void FlushRVel ();
 
 	inline Vector GlobalToLocal (const Vector &glob) const
-	{ return tmul (s0->R, glob - s0->pos); }
+	{ return tmul (m_svS0->R, glob - m_svS0->pos); }
 	// Convert global position glob into body's local coordinate system
 
 	inline void GlobalToLocal (const Vector &glob, Vector &loc) const
-	{ loc.Set (tmul (s0->R, glob - s0->pos)); }
+	{ loc.Set (tmul (m_svS0->R, glob - m_svS0->pos)); }
 	// same with different interface
 
 	inline void LocalToGlobal (const Vector &loc, Vector &glob) const
-	{ glob.Set (mul (s0->R, loc) + s0->pos); }
+	{ glob.Set (mul (m_svS0->R, loc) + m_svS0->pos); }
 
 	void LocalToEquatorial (const Vector &loc, double &lng, double &lat, double &rad) const;
 	inline void GlobalToEquatorial (const Vector &glob, double &lng, double &lat, double &rad) const
@@ -143,22 +151,19 @@ public:
 
 	inline const VISHANDLE *GetVishandlePtr() const { return &hVis; }
 
-	StateVectors* s0 { nullptr };    // body state at time t0
-	StateVectors* s1 { nullptr };    // new body state at time t0+dt during update phase
-
 	// Operations on updated state vectors (only accessible during update phase
 	// AFTER the object has been updated)
 
 	inline Vector GlobalToLocal_t1 (const Vector &glob) const
-	{ return tmul (s1->R, glob - s1->pos); }
+	{ return tmul (m_svS1->R, glob - m_svS1->pos); }
 	// Convert global position glob into body's local coordinate system
 
 	inline void GlobalToLocal_t1 (const Vector &glob, Vector &loc) const
-	{ loc.Set (tmul (s1->R, glob - s1->pos)); }
+	{ loc.Set (tmul (m_svS1->R, glob - m_svS1->pos)); }
 	// same with different interface
 
 	inline void LocalToGlobal_t1 (const Vector &loc, Vector &glob) const
-	{ glob.Set (mul (s1->R, loc) + s1->pos); }
+	{ glob.Set (mul (m_svS1->R, loc) + m_svS1->pos); }
 
 	inline const Vector &Acceleration() const { return acc; };
 
@@ -185,7 +190,10 @@ protected:
 private:
 	void SetName (char *_name = 0);
 
-	StateVectors sv[2];  // State vectors for current and updated state - don't use directly
+	StateVectors* m_svS0{ nullptr }; // body state at time t0
+	StateVectors* m_svS1{ nullptr }; // new body state at time t0+dt during update phase
+
+	StateVectors m_svContainer[2];   // State vectors for current and updated state - don't use directly
 };
 
 #endif // !__BODY_H

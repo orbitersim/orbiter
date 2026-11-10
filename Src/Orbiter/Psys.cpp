@@ -683,12 +683,12 @@ Vector PlanetarySystem::Gacc (const Vector &gpos, const Body *exclude, const GFi
 		for (j = 0; j < gfd->ngrav; j++) {
 			i = gfd->gravidx[j];
 			if (exclude == celestials[i]) continue;
-			acc += SingleGacc (celestials[i]->s0->pos - gpos, celestials[i]);
+			acc += SingleGacc (celestials[i]->GPos() - gpos, celestials[i]);
 		}
 	} else {
 		for (i = 0; i < celestials.size(); i++) {
 			if (exclude == celestials[i]) continue;
-			acc += SingleGacc (celestials[i]->s0->pos - gpos, celestials[i]);
+			acc += SingleGacc (celestials[i]->GPos() - gpos, celestials[i]);
 		}
 	}
 	return acc;
