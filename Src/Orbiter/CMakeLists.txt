@@ -113,6 +113,7 @@ set(common_src
 	D3dmath.cpp
     Input/Controller.cpp
     Input/Editor.cpp
+    Input/Icon.cpp
 # Utils
 	Log.cpp
 	Memstat.cpp
@@ -122,11 +123,6 @@ set(common_src
 	Orbiter.rc
 	Orbiter.ico
 	${imgui_SOURCE_DIR}/backends/imgui_impl_win32.cpp
-# Node editor
-#	${nodeedit_SOURCE_DIR}/imgui_node_editor.cpp
-#	${nodeedit_SOURCE_DIR}/crude_json.cpp
-#	${nodeedit_SOURCE_DIR}/imgui_canvas.cpp
-#	${nodeedit_SOURCE_DIR}/imgui_node_editor_api.cpp
 )
 
 set(Orbiter_includes
@@ -160,7 +156,7 @@ set(Orbiter_depends
 )
 
 # Orbiter executable (graphics server version)
-add_executable(Orbiter ${common_src} "Input/Editor.h")
+add_executable(Orbiter ${common_src})
 
 set_target_properties(Orbiter
 	PROPERTIES
