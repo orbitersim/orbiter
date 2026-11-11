@@ -1199,7 +1199,7 @@ public:
 	inline Vessel *ProxyVessel() const { return proxyvessel; }
 
 	inline SuperVessel *SuperStruct() const { return supervessel; }
-	inline void SetSuperStruct (SuperVessel *sv) { supervessel = sv; }
+	void SetSuperStruct(SuperVessel *sv, const StateVectors *s = nullptr);
 
 	bool GetSuperStructCG (Vector &cg) const;
 	// If vessel is part of a superstructure: set 'cg' to coordinates of

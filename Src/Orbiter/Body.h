@@ -178,6 +178,9 @@ protected:
 	StateVectors *S1() { return m_svS1; }
 	StateVectors *S0() { return m_svS0; }
 
+	void PublishStateVectors();
+	// copy update state (m_svS1) back to public state (m_svS0)
+
 	VISHANDLE hVis { nullptr };      // visual identifier passed to messages (NULL=no visual)
 
 	const CelestialBody* cbody { nullptr }; // orbit reference body
@@ -192,8 +195,8 @@ protected:
 private:
 	void SetName (char *_name = 0);
 
-	StateVectors* m_svS0{ nullptr }; // body state at time t0
-	StateVectors* m_svS1{ nullptr }; // new body state at time t0+dt during update phase
+	StateVectors* m_svS0{ nullptr }; // body state at time td.SimT0 (current frame)
+	StateVectors* m_svS1{ nullptr }; // body state at time td.SimT1 (next frame) during update phase
 
 	StateVectors m_svContainer[2];   // State vectors for current and updated state - don't use directly
 };

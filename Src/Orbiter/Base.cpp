@@ -376,7 +376,6 @@ void Base::Attach (const Planet *_parent)
 	rad = cbody->Size(); // dist from planet centre
 	elev = 0.0;
 	cbody->EquatorialToLocal (slng, clng, slat, clat, rad, rpos);
-	S0()->vel.Set (0,0,0);                         // base is fixed to ground
 	rrot.Set ( clng*slat, clng*clat, -slng,   // rotate from local
 		      -clat,      slat,       0,      // base to local
 			   slng*slat, slng*clat,  clng);  // planet coords
@@ -587,16 +586,17 @@ void Base::ScanObjectMeshes () const
 	}
 	objmsh_valid = true;
 }
-void Base::Update (bool force)
+
+void Base::Update(bool force)
 {
-	S1()->R.Set (rrot);
-	S1()->R.premul (cbody->S1()->R);
-	S1()->Q.Set (S1()->R);
+	S1()->R.Set(rrot);
+	S1()->R.premul(cbody->S1()->R);
+	S1()->Q.Set(S1()->R);
 	// WARNING: this should work the other way round: combine the
 	// two quaternions and extract grot
 
-	S1()->pos.Set (mul (cbody->S1()->R, rpos) + cbody->S1()->pos);
-	S1()->vel.Set (mul (cbody->S1()->R, rotvel) + cbody->S1()->vel);
+	S1()->pos.Set(mul(cbody->S1()->R, rpos) + cbody->S1()->pos);
+	S1()->vel.Set(mul(cbody->S1()->R, rotvel) + cbody->S1()->vel);
 
 	// periodically update some secondary parameters
 	if (td.SimT1 > sundir_updt || force) {

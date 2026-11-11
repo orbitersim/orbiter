@@ -37,36 +37,34 @@ SuperVessel::SuperVessel (Vessel *vessel)
 	vlist[0].rrot.Set (1,0,0, 0,1,0, 0,0,1); // identity
 	vlist[0].rpos.Set (0,0,0);
 	cg.Set (0,0,0);
-	S0()->vel.Set (vessel->GVel());
-	rvel_base.Set (S0()->vel);
+	S1()->vel.Set(vessel->GVel());
+	rvel_base.Set(S1()->vel);
 	rvel_add.Set (0,0,0);
-	S0()->R.Set (vessel->GRot());
-	S0()->Q.Set (vessel->GQ());
+	S1()->R.Set(vessel->GRot());
+	S1()->Q.Set(vessel->GQ());
 	bOrbitStabilised = false;
 	cbody = 0;
 	size = vessel->Size();
 	el = new Elements; TRACENEW
-	S0()->omega.Set (vessel->AngularVelocity());
-	S0()->pos.Set (vessel->GPos());
-	rpos_base.Set (S0()->pos);
-	rpos_add.Set (0,0,0);
-	rvel_base.Set (S0()->vel);
-	rvel_add.Set (0,0,0);
+	S1()->omega.Set(vessel->AngularVelocity());
+	S1()->pos.Set(vessel->GPos());
+	rpos_base.Set(S1()->pos);
+	rpos_add.Set(0,0,0);
+	rvel_base.Set(S1()->vel);
+	rvel_add.Set(0,0,0);
 	gfielddata.ngrav = 0;
-	updcount = irand (100);
-	acc = g_psys->Gacc (S0()->pos, 0, &gfielddata);
+	updcount = irand(100);
+	acc = g_psys->Gacc(S1()->pos, 0, &gfielddata);
 
+	PublishStateVectors();
 	UpdateProxies();
-	cpos = S0()->pos - cbody->GPos();
-	cvel = S0()->vel - cbody->GVel();
+
+	cpos = S1()->pos - cbody->GPos();
+	cvel = S1()->vel - cbody->GVel();
 	proxyT    = -(double)rand()*100.0/(double)RAND_MAX - 1.0;
 
 	// register with vessel
 	vessel->SetSuperStruct (this);
-	//if (S1()) { // is this necessary?
-	//	vessel->FlushRPos();
-	//	vessel->FlushRVel();
-	//}
 
 	SetDefaultState();
 }
@@ -101,23 +99,25 @@ SuperVessel::SuperVessel (Vessel *vessel1, Vessel *vessel2, int port1, int port2
 	cg /= mass;
 
 	// supervessel orientation
-	S0()->R.Set (vessel1->S0()->R);
-	S0()->Q.Set (vessel1->S0()->Q);
+	S1()->R.Set(vessel1->S1()->R);
+	S1()->Q.Set(vessel1->S1()->Q);
 	bOrbitStabilised = false;
 	cbody = 0;
 	el = new Elements; TRACENEW
 
 	// add up linear momentae
 	if (mixmoments) {
-		S0()->vel.Set(0,0,0);
-		for (i = 0; i < 2; i++) S0()->vel += vlist[i].vessel->S0()->vel * vlist[i].vessel->mass;
-		S0()->vel /= mass;
-	} else S0()->vel.Set (vlist[0].vessel->S0()->vel);
-	rvel_base.Set (S0()->vel);
-	rvel_add.Set (0,0,0);
+		S1()->vel.Set(0,0,0);
+		for (i = 0; i < 2; i++)
+			S1()->vel += vlist[i].vessel->S1()->vel * vlist[i].vessel->mass;
+		S1()->vel /= mass;
+	} else
+		S1()->vel.Set(vlist[0].vessel->S1()->vel);
+	rvel_base.Set(S1()->vel);
+	rvel_add.Set(0,0,0);
 
 	// total principal axes of inertia
-	CalcPMI ();
+	CalcPMI();
 
 	// add up angular momentae
 	if (mixmoments) {
@@ -127,41 +127,39 @@ SuperVessel::SuperVessel (Vessel *vessel1, Vessel *vessel2, int port1, int port2
 			// individual spin of each vessel
 			am += mul (vlist[i].rrot, vlist[i].vessel->AngularMomentum()) * vlist[i].vessel->mass;
 			// contribution of vessel motion to angular momentum
-			am += crossp (tmul (S0()->R, vlist[i].vessel->S0()->vel - S0()->vel), vlist[i].rpos-cg) * vlist[i].vessel->mass;
+			am += crossp(tmul(S1()->R, vlist[i].vessel->S1()->vel - S1()->vel), vlist[i].rpos - cg) * vlist[i].vessel->mass;
 		}
-		S0()->omega.Set (am.x/pmi.x, am.y/pmi.y, am.z/pmi.z);
-		S0()->omega /= mass;
+		S1()->omega.Set(am.x/pmi.x, am.y/pmi.y, am.z/pmi.z);
+		S1()->omega /= mass;
 	} else {
 		// set linear/angular velocity directly from reference vessel
-		S0()->omega.Set (vlist[0].vessel->AngularVelocity());
+		S1()->omega.Set(vlist[0].vessel->AngularVelocity());
 	}
 
 	// supervessel position
-	S0()->pos.Set (vessel1->S0()->pos + mul (S0()->R, cg));
-	rpos_base.Set (S0()->pos);
-	rpos_add.Set (0,0,0);
+	S1()->pos.Set(vessel1->S1()->pos + mul (S1()->R, cg));
+	rpos_base.Set(S1()->pos);
+	rpos_add.Set(0,0,0);
 	gfielddata.ngrav = 0;
-	updcount = irand (100); // spread update times
+	updcount = irand(100); // spread update times
 
-	acc = g_psys->Gacc (S0()->pos, 0, &gfielddata);
+	acc = g_psys->Gacc(S1()->pos, 0, &gfielddata);
 	// init acc and gfielddata
 
-	UpdateProxies();
-	if (cbody) cpos = S0()->pos - cbody->S0()->pos; else cpos = { 0, 0, 0 };
-	if (cbody) cvel = S0()->vel - cbody->S0()->vel; else cvel = { 0, 0, 0 };
+	if (cbody) cpos = S1()->pos - cbody->S1()->pos; else cpos = { 0, 0, 0 };
+	if (cbody) cvel = S1()->vel - cbody->S1()->vel; else cvel = { 0, 0, 0 };
 	proxyT = -(double)rand()*100.0/(double)RAND_MAX - 1.0;
 
 	// register with vessels
 	for (i = 0; i < 2; i++) {
 		Vessel *v = vlist[i].vessel;
-		v->SetSuperStruct (this);
-		ComponentStateVectors (S0(), v->S0(), i);
-		v->rpos_base = v->S0()->pos; v->rpos_add.Set (0,0,0);
-		v->rvel_base = v->S0()->vel; v->rvel_add.Set (0,0,0);
-		if (v->S1()) v->S1()->Set(*v->S0());
-		v->UpdateSurfParams();
+		StateVectors csv;
+		ComponentStateVectors(S1(), &csv, i);
+		v->SetSuperStruct(this, &csv);
 	}
 
+	PublishStateVectors();
+	UpdateProxies();
 	SetDefaultState();
 	ResetSize();
 	Activate (true);
@@ -183,7 +181,7 @@ void SuperVessel::SetDefaultState ()
 
 	bActivationPending = false;
 	next_hullvessel = 0;
-	sp.is_in_atm        = false;
+	sp.is_in_atm = false;
 }
 
 // =======================================================================
@@ -939,13 +937,13 @@ bool SuperVessel::ThrustEngaged () const
 
 // =======================================================================
 
-void SuperVessel::ComponentStateVectors (const StateVectors *s, StateVectors *scomp, int comp) const
+void SuperVessel::ComponentStateVectors(const StateVectors *s, StateVectors *scomp, int comp) const
 {
-	scomp->vel.Set (s->vel + mul (s->R, crossp (vlist[comp].rpos-cg, s->omega)));
-	scomp->pos.Set (s->pos + mul (s->R, vlist[comp].rpos-cg));
-	scomp->omega.Set (tmul (vlist[comp].rrot, s->omega));
-	scomp->Q.Set (s->Q * vlist[comp].rq);
-	scomp->R.Set (scomp->Q);
+	scomp->vel.Set(s->vel + mul(s->R, crossp(vlist[comp].rpos-cg, s->omega)));
+	scomp->pos.Set(s->pos + mul(s->R, vlist[comp].rpos - cg));
+	scomp->omega.Set(tmul(vlist[comp].rrot, s->omega));
+	scomp->Q.Set(s->Q * vlist[comp].rq);
+	scomp->R.Set(scomp->Q);
 }
 
 // =======================================================================

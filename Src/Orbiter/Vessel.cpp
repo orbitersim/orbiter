@@ -766,6 +766,7 @@ void Vessel::Setup ()
 		//if (!playbackdir) playbackdir = ScenarioName;
 		FRecorder_Read (playbackdir);
 	}
+	PublishStateVectors();
 }
 
 // ==============================================================
@@ -3564,24 +3565,21 @@ void Vessel::InitLanded (const Planet *planet, double lng, double lat, double di
 	}
 
 	double vground = Pi2 * sp.rad * sp.clat / planet->RotT();
-	S0()->vel.Set (-vground*sp.slng, 0.0, vground*sp.clng);
-	S0()->pos.Set (mul (planet->GRot(), sp.ploc) + planet->GPos());
-	S0()->vel.Set (mul (planet->GRot(), S0()->vel) + planet->GVel());
-	rvel_base.Set (S0()->vel);
-	rvel_add.Set (0,0,0);
-	Amom.Set (0,0,0); // this is not quite true since the planet rotates ...
-	S0()->Q.Set (land_rot);
-	S0()->Q.premul (planet->GQ());
-	S0()->R.Set (S0()->Q);
-	if (S1()) { // should we allow this?
-		S1()->Set(*S0());
-	}
+	S1()->vel.Set(-vground * sp.slng, 0.0, vground * sp.clng);
+	S1()->pos.Set(mul(planet->GRot(), sp.ploc) + planet->GPos());
+	S1()->vel.Set(mul(planet->GRot(), S1()->vel) + planet->GVel());
+	rvel_base.Set(S1()->vel);
+	rvel_add.Set(0,0,0);
+	Amom.Set(0,0,0); // this is not quite true since the planet rotates ...
+	S1()->Q.Set(land_rot);
+	S1()->Q.premul(planet->GQ());
+	S1()->R.Set(S1()->Q);
 
 	//RPlace (S0()->pos, S0()->vel);
 	// Needs thought! Calling RPlace causes problems with orientation of Atlantis on pad
 	// Leaving it out causes problems elsewhere (?)
-	cpos = S0()->pos - cbody->GPos();
- 	cvel = S0()->vel - cbody->GVel();
+	cpos = S1()->pos - cbody->GPos();
+ 	cvel = S1()->vel - cbody->GVel();
 	UpdateSurfParams();
 	g_psys->ScanGFieldSources(&S0()->pos, this, &gfielddata);
 
@@ -3671,10 +3669,11 @@ void Vessel::InitOrbiting (const Vector &relr, const Vector &relv, const Vector 
 	el->Calculate (cpos, cvel, td.SimT0);
 
 	// set rotation matrix from axis rotation vector
-	S0()->R.Set (rot);
-	S0()->Q.Set (S0()->R);
+	S1()->R.Set(rot);
+	S1()->Q.Set(S1()->R);
 
-	if (_vrot) S0()->omega.Set (*_vrot);
+	if (_vrot)
+		S1()->omega.Set(*_vrot);
 
 	RPlace(cpos + cbody->GPos(), cvel + cbody->GVel());
 }
@@ -3846,6 +3845,19 @@ int Vessel::ConsumeBufferedKey (DWORD key, bool down, char *kstate)
 
 	}
 	return 0;
+}
+
+void Vessel::SetSuperStruct(SuperVessel *sv, const StateVectors *s)
+{
+	supervessel = sv;
+	if (s) {
+		S1()->Set(*s);
+		rpos_base = S1()->pos;
+		rpos_add.Set(0, 0, 0);
+		rvel_base = S1()->vel;
+		rvel_add.Set(0, 0, 0);
+		UpdateSurfParams();
+	}
 }
 
 // =======================================================================

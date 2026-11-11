@@ -168,12 +168,12 @@ protected:
 	// external module.
 	// Returns false if not supported by module
 
-	int ExternState (double *res);
+	int TryExternEphemeris(double *res);
 	// Try to obtain current ephemeris data (true and barycentric) from external
 	// module. This tries first FastEphemeris, then Ephemeris. Return value
 	// contains data flags returned by the ephemeris functions
 
-	int ExternPosition ();
+	int TryExternState();
 	// Try to obtain current ephemeris data (true and barycentric) from external
 	// module. This tries first FastEphemeris, then Ephemeris. Return value
 	// indicates which data could be updated

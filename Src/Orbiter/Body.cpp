@@ -35,7 +35,7 @@ Body::Body ()
 {
 	extern bool g_bStateUpdate;
 	m_svS0 = m_svContainer;
-	m_svS1 = (g_bStateUpdate ? m_svContainer + 1 : m_svContainer);
+	m_svS1 = m_svContainer + 1;
 	updcount = irand(100); // spread update times
 }
 
@@ -161,15 +161,14 @@ void Body::BroadcastVisMsg (DWORD msg, DWORD_PTR content)
 
 void Body::BeginStateUpdate ()
 {
-	// enable the update state
-	m_svS1 = (m_svS0 == m_svContainer ? m_svContainer + 1 : m_svContainer);
 }
 
 void Body::EndStateUpdate ()
 {
-	// disable the update state, to avoid it being addressed outside the update phase
-	m_svS1 = m_svS0 = (m_svS0 == m_svContainer ? m_svContainer + 1 : m_svContainer);
+	PublishStateVectors();
+}
 
-	// Flush update state to published state
-	//m_svS0->Set(*m_svS1);
+void Body::PublishStateVectors()
+{
+	m_svS0->Set(*m_svS1);
 }

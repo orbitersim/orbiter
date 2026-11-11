@@ -236,29 +236,29 @@ void CelestialBody::Attach (CelestialBody *_parent)
 		// we add ourselves to the parent's list of secondaries
 		el->Setup (mass, cbody->Mass(), td.MJD_ref);
 
-		int flg = ExternPosition ();
+		int flg = TryExternState();
 		if (flg) {
-			if (!(flg & EPHEM_TRUEPOS)) S0()->pos = bpos;   // forcing true pos == barycentre:
-			if (!(flg & EPHEM_TRUEVEL)) S0()->vel = bvel;   // not good! should do better
-			if (!(flg & EPHEM_BARYPOS)) bpos = S0()->pos;
-			if (!(flg & EPHEM_BARYVEL)) bvel = S0()->vel;
+			if (!(flg & EPHEM_TRUEPOS)) S1()->pos = bpos;   // forcing true pos == barycentre:
+			if (!(flg & EPHEM_TRUEVEL)) S1()->vel = bvel;   // not good! should do better
+			if (!(flg & EPHEM_BARYPOS)) bpos = S1()->pos;
+			if (!(flg & EPHEM_BARYVEL)) bvel = S1()->vel;
 		} else if (bInitFromElements) {
-			el->PosVel (S0()->pos, S0()->vel, td.SimT0);
+			el->PosVel(S1()->pos, S1()->vel, td.SimT1);
 			if (elframe == ELFRAME_PARENTEQU) {         // convert to ecliptic frame
-				S0()->pos.Set (mul (cbody->R_ecl, S0()->pos));  // rotate radius vector by planet's obliquity
-				S0()->vel.Set (mul (cbody->R_ecl, S0()->vel));  // rotate velocity vector by planet's obliquity
-				el->Calculate (S0()->pos, S0()->vel, td.SimT0); // update elements with modified state vectors
+				S1()->pos.Set(mul(cbody->R_ecl, S1()->pos));  // rotate radius vector by planet's obliquity
+				S1()->vel.Set(mul(cbody->R_ecl, S1()->vel));  // rotate velocity vector by planet's obliquity
+				el->Calculate(S1()->pos, S1()->vel, td.SimT1); // update elements with modified state vectors
 			}
-			bpos = S0()->pos;
-			bvel = S0()->vel;
+			bpos = S1()->pos;
+			bvel = S1()->vel;
 		}
-		S0()->pos += cbody->GPos();
-		S0()->vel += cbody->GVel();
+		S1()->pos += cbody->GPos();
+		S1()->vel += cbody->GVel();
 		bpos += cbody->GPos();
 		bvel += cbody->GVel();
 	} 
 
-	RPlace (S0()->pos, S0()->vel);
+	RPlace (S1()->pos, S1()->vel);
 
 #ifdef UNDEF
 	// temporary, for debugging
@@ -330,7 +330,7 @@ int CelestialBody::RelTrueAndBaryState()
 		secondary[i]->RelTrueAndBaryState();
 
 	if (!bDynamicPosVel) { // analytic state update
-		if (flg = ExternState (state)) { // state updated by module
+		if (flg = TryExternEphemeris(state)) { // state updated by module
 			if (flg & EPHEM_BARYISTRUE) {
 				if (flg & EPHEM_TRUEPOS) {
 					s = state;
@@ -585,27 +585,27 @@ int CelestialBody::ExternFastEphemeris (double simt, int req, double *res) const
 	return 0;
 }
 
-int CelestialBody::ExternPosition ()
+int CelestialBody::TryExternEphemeris(double *res)
 {
-	static double res[12];
 	static int req = EPHEM_TRUEPOS | EPHEM_TRUEVEL | EPHEM_BARYPOS | EPHEM_BARYVEL;
 	int flg;
 
-	flg = ExternFastEphemeris (td.SimT1, req, res);
-	if (!flg) flg = ExternEphemeris (td.MJD1, req, res);
-
-	if (flg) InterpretEphemeris (res, flg, &S0()->pos, &S0()->vel, &bpos, &bvel);
+	flg = ExternFastEphemeris(td.SimT1, req, res);
+	if (!flg)
+		flg = ExternEphemeris(td.MJD1, req, res);
 
 	return flg;
 }
 
-int CelestialBody::ExternState (double *res)
+int CelestialBody::TryExternState()
 {
+	static double res[12];
 	static int req = EPHEM_TRUEPOS | EPHEM_TRUEVEL | EPHEM_BARYPOS | EPHEM_BARYVEL;
-	int flg;
+	int flg = TryExternEphemeris(res);
 
-	flg = ExternFastEphemeris (td.SimT1, req, res);
-	if (!flg) flg = ExternEphemeris (td.MJD1, req, res);
+	if (flg)
+		InterpretEphemeris(res, flg, &S1()->pos, &S1()->vel, &bpos, &bvel);
+
 	return flg;
 }
 

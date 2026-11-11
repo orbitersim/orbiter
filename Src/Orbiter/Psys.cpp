@@ -25,6 +25,9 @@ extern char DBG_MSG[256];
 PlanetarySystem::PlanetarySystem (char *fname, const Config* config, OutputLoadStatusCallback outputLoadStatus, void* callbackContext)
 {
 	Read (fname, config, outputLoadStatus, callbackContext);
+
+	for (int i = 0; i < bodies.size(); i++)
+		bodies[i]->PublishStateVectors(); // make sure initial celestial body states are available
 }
 
 PlanetarySystem::~PlanetarySystem ()
@@ -816,21 +819,23 @@ Vector PlanetarySystem::GetMomentumFlux (const Vector &gpos) const
 void PlanetarySystem::Update (bool force)
 {
 	DWORD i;
-	for (i = 0; i < bodies      .size(); i++) bodies      [i]->BeginStateUpdate ();
+	for (i = 0; i < bodies      .size(); i++) bodies      [i]->BeginStateUpdate();
+	for (i = 0; i < supervessels.size(); i++) supervessels[i]->BeginStateUpdate();
 	for (i = 0; i < stars       .size(); i++) stars       [i]->RelTrueAndBaryState();
 	for (i = 0; i < stars       .size(); i++) stars       [i]->AbsTrueState();
 	for (i = 0; i < celestials  .size(); i++) celestials  [i]->Update (force);
-	for (i = 0; i < vessels     .size(); i++) vessels     [i]->UpdateBodyForces ();
-	for (i = 0; i < supervessels.size(); i++) supervessels[i]->Update (force);
-	for (i = 0; i < vessels     .size(); i++) vessels     [i]->Update (force);
+	for (i = 0; i < vessels     .size(); i++) vessels     [i]->UpdateBodyForces();
+	for (i = 0; i < supervessels.size(); i++) supervessels[i]->Update(force);
+	for (i = 0; i < vessels     .size(); i++) vessels     [i]->Update(force);
 }
 
 void PlanetarySystem::FinaliseUpdate ()
 {
 	DWORD i;
-	for (i = 0; i < bodies.size(); i++) bodies[i]->EndStateUpdate ();
-	for (i = 0; i < supervessels.size(); i++) supervessels[i]->PostUpdate ();
-	for (i = 0; i < vessels.size(); i++) vessels[i]->PostUpdate ();
+	for (i = 0; i < bodies.size(); i++) bodies[i]->EndStateUpdate();
+	for (i = 0; i < supervessels.size(); i++) supervessels[i]->EndStateUpdate();
+	for (i = 0; i < supervessels.size(); i++) supervessels[i]->PostUpdate();
+	for (i = 0; i < vessels.size(); i++) vessels[i]->PostUpdate();
 }
 
 void PlanetarySystem::Timejump (const TimeJumpData& jump)
