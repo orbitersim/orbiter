@@ -4,6 +4,7 @@
 #include <vector>
 
 class Node;
+class ControllerGraph;
 
 class InputEditor: public ImGuiDialog {
 public:
@@ -11,5 +12,5 @@ public:
 	~InputEditor();
 	void OnDraw() override;
 	DWORD m_cmd;
-	std::vector<Node *>nodes;
+	ControllerGraph *graph;
 };

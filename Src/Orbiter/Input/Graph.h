@@ -1,0 +1,32 @@
+#pragma once
+#include <vector>
+#include <string>
+#include <list>
+#include <unordered_map>
+#include <imgui_node_editor.h>
+namespace ed = ax::NodeEditor;
+
+struct Link
+{
+    ed::LinkId Id;
+    ed::PinId  InputId;
+    ed::PinId  OutputId;
+};
+
+class Node;
+class Pin;
+
+// The graph owns the Nodes and the links
+// The Nodes own the Pins
+class ControllerGraph final {
+    public:
+    std::vector<Link> links;
+    std::vector<Node *> nodes;
+	std::unordered_map<void *, Pin *> pins; // Map between ed::PinId and Pins
+	int linkidgen = 1;
+    ControllerGraph();
+    ~ControllerGraph();
+    void Draw();
+	void AddNode(Node *node);
+	Pin &PinFromId(ed::PinId id) { return *pins.at(id.AsPointer()); }
+};
