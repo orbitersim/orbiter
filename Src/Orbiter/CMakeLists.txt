@@ -114,6 +114,7 @@ set(common_src
     Input/Controller.cpp
     Input/Editor.cpp
     Input/Icon.cpp
+    Input/Pin.cpp
 # Utils
 	Log.cpp
 	Memstat.cpp

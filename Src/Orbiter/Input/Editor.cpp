@@ -3,28 +3,18 @@
 #include <imgui.h>
 #include <imgui_node_editor.h>
 #include "Icon.h"
+#include "Pin.h"
 
 namespace ed = ax::NodeEditor;
 ed::EditorContext* m_Context = nullptr;
-
-class Pin {
-public:
-	std::string name;
-	int id;
-	static inline int g_id = 0;
-	Pin(const char *n) {
-		name = n;
-		id = g_id++;
-	}
-};
 
 class Node {
 	std::vector<Pin> inputs;
 	std::vector<Pin> outputs;
 	std::string name;
-	float widthName;
-	float maxWidthInput;
-	float maxWidthOutput;
+	float widthName = 0.0f;
+	float maxWidthInput = 0.0f;
+	float maxWidthOutput = 0.0f;
 	int id;
 	bool dirty;
 	static inline int g_id = 0;
@@ -34,13 +24,13 @@ public:
 		name = n;
 		id = g_id++;
 	}
-	void AddInput(const char *n) {
+	void AddInput(const char *n, Pin::type type) {
 		dirty = true;
-		inputs.push_back(n);
+		inputs.emplace_back(n, type, Pin::kind::Input, g_id++);
 	}
-	void AddOutput(const char *n) {
+	void AddOutput(const char *n, Pin::type type) {
 		dirty = true;
-		outputs.push_back(n);
+		outputs.emplace_back(n, type, Pin::kind::Output, g_id++);
 	}
 	void ComputeLayout() {
 		widthName = ImGui::CalcTextSize(name.c_str()).x;
@@ -72,14 +62,7 @@ public:
 		if(inputs.size() > 0) {
 			ImGui::BeginGroup();
 			for(auto &input:inputs) {
-				ed::BeginPin(input.id, ed::PinKind::Input);
-				if(input.id & 1)
-					Icon(ImVec2(ImGui::GetTextLineHeight(), ImGui::GetTextLineHeight()), IconType::ButtonDown, true, ImColor(230, 159,   0, 255), ImColor(32, 32, 32, 255));
-				else
-					Icon(ImVec2(ImGui::GetTextLineHeight(), ImGui::GetTextLineHeight()), IconType::ButtonUp, true, ImColor(230, 159,   0, 255), ImColor(32, 32, 32, 255));
-				ed::EndPin();
-					ImGui::SameLine();
-					ImGui::TextUnformatted(input.name.c_str());
+				input.Draw();
 			}
 			ImGui::EndGroup();
 
@@ -102,16 +85,7 @@ public:
 		for(auto &output:outputs) {
 			ImGui::Dummy(ImVec2(maxWidthOutput - ImGui::CalcTextSize(output.name.c_str()).x,0));
 			ImGui::SameLine();
-				ImGui::TextUnformatted(output.name.c_str());
-				ImGui::SameLine();
-			ed::BeginPin(output.id, ed::PinKind::Output);
-				if(output.id & 1)
-				Axis(ImVec2(ImGui::GetTextLineHeight(), ImGui::GetTextLineHeight()), -1.0f, ImColor(230, 159,   0, 255));
-				else
-				Axis(ImVec2(ImGui::GetTextLineHeight(), ImGui::GetTextLineHeight()), 1.0f, ImColor(230, 159,   0, 255));
-
-				//Icon(ImVec2(ImGui::GetTextLineHeight(), ImGui::GetTextLineHeight()), IconType::Plus, true, ImColor(230, 159,   0, 255), ImColor(32, 32, 32, 255));
-			ed::EndPin();
+			output.Draw();
 		}
 		ImGui::EndGroup();
 		
@@ -130,73 +104,73 @@ InputEditor::InputEditor():ImGuiDialog("Editor")
 {
 	ed::Config config;
 	config.SettingsFile = "control.json";
-//	m_Context = ed::CreateEditor(&config);
-	m_Context = ed::CreateEditor();
+	m_Context = ed::CreateEditor(&config);
+//	m_Context = ed::CreateEditor();
 
-	m_cmd = oapiRegisterCustomCmd((char*)"Editor", (char*)"This dialog allows to visualize active sound instances", OpenDlgClbk, this);
+	m_cmd = oapiRegisterCustomCmd((char*)"Joystick configuration", (char*)"Advanced joystick configuration", OpenDlgClbk, this);
 
 	
 
 	Node *n = new Node("test Looooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooong");
-	n->AddInput("a");
-	n->AddInput("ab");
-	n->AddInput("a");
-	n->AddInput("accc");
-	n->AddInput("3");
+	n->AddInput("a", Pin::type::Button);
+	n->AddInput("ab", Pin::type::Button);
+	n->AddInput("a", Pin::type::Button);
+	n->AddInput("accc", Pin::type::Button);
+	n->AddInput("3", Pin::type::Button);
 
-	n->AddOutput("x");
-	n->AddOutput("yy");
-	n->AddOutput("x");
-	n->AddOutput("zzzzzz");
-	n->AddOutput("3");
+	n->AddOutput("x", Pin::type::Button);
+	n->AddOutput("yy", Pin::type::Button);
+	n->AddOutput("x", Pin::type::Button);
+	n->AddOutput("zzzzzz", Pin::type::Button);
+	n->AddOutput("3", Pin::type::Button);
 
 	nodes.push_back(n);
 
 	Node *n2 = new Node("test");
-	n2->AddInput("xa");
-	n2->AddInput("xab");
-	n2->AddInput("xa");
-	n2->AddInput("xaccc");
-	n2->AddInput("x3");
+	n2->AddInput("xa", Pin::type::Button);
+	n2->AddInput("xab", Pin::type::Button);
+	n2->AddInput("xa", Pin::type::Button);
+	n2->AddInput("xaccc", Pin::type::HalfAxis);
+	n2->AddInput("x3", Pin::type::Button);
 
-	n2->AddOutput("xx");
-	n2->AddOutput("xyy");
-	n2->AddOutput("xx");
-	n2->AddOutput("xzzzzzz");
-	n2->AddOutput("x3");
+	n2->AddOutput("xx", Pin::type::Button);
+	n2->AddOutput("xyy", Pin::type::Hat);
+	n2->AddOutput("xx", Pin::type::Axis);
+	n2->AddOutput("xzzzzzz", Pin::type::Button);
+	n2->AddOutput("x3", Pin::type::Button);
 
 	nodes.push_back(n2);
 
 	Node *n3 = new Node("Inputs");
-	n3->AddInput("xa");
-	n3->AddInput("xab");
-	n3->AddInput("xa");
-	n3->AddInput("xaccc");
-	n3->AddInput("x3");
+	n3->AddInput("xa", Pin::type::Button);
+	n3->AddInput("xab", Pin::type::Button);
+	n3->AddInput("xa", Pin::type::Button);
+	n3->AddInput("xaccc", Pin::type::Button);
+	n3->AddInput("x3", Pin::type::Button);
 	nodes.push_back(n3);
 
 	Node *n3b = new Node("Inputs loooooooooooooooong");
-	n3b->AddInput("xa");
-	n3b->AddInput("xab");
-	n3b->AddInput("xa");
-	n3b->AddInput("xaccc");
-	n3b->AddInput("x3");
+	n3b->AddInput("xa", Pin::type::Button);
+	n3b->AddInput("xab", Pin::type::Button);
+	n3b->AddInput("xa", Pin::type::Button);
+	n3b->AddInput("xaccc", Pin::type::Button);
+	n3b->AddInput("x3", Pin::type::Button);
 	nodes.push_back(n3b);
 
 	Node *n4 = new Node("Ouputs");
-	n4->AddOutput("xa");
-	n4->AddOutput("xab");
-	n4->AddOutput("xa");
-	n4->AddOutput("xaccc");
-	n4->AddOutput("x3");
+	n4->AddOutput("xa", Pin::type::Button);
+	n4->AddOutput("xab", Pin::type::Button);
+	n4->AddOutput("xa", Pin::type::Button);
+	n4->AddOutput("xaccc", Pin::type::Button);
+	n4->AddOutput("x3", Pin::type::Button);
 	nodes.push_back(n4);
 
 	Node *n5 = new Node("Ouputs looooooooooooooong");
-	n5->AddOutput("xa");
-	n5->AddOutput("xab");
-	n5->AddOutput("xa");
-	n5->AddOutput("xaccc");
-	n5->AddOutput("x3");
+	n5->AddOutput("xa", Pin::type::Button);
+	n5->AddOutput("xab", Pin::type::Button);
+	n5->AddOutput("xa", Pin::type::Button);
+	n5->AddOutput("xaccc", Pin::type::Button);
+	n5->AddOutput("x3", Pin::type::Button);
 	nodes.push_back(n5);
 }
 
@@ -218,40 +192,7 @@ void InputEditor::OnDraw()
 	for(Node *n: nodes) {
 		n->Draw();
 	}
-	/*
-	Node n("tesvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv");
-	n.AddInput("a");
-	n.AddInput("ab");
-	n.AddInput("a");
-	n.AddInput("accc");
-	n.AddInput("3");
 
-	n.AddOutput("x");
-	n.AddOutput("yy");
-	n.AddOutput("x");
-	n.AddOutput("zzzzzz");
-	n.AddOutput("3");
-	n.ComputeLayout();
-
-	n.Draw();
-
-
-	Node n2("test");
-	n2.AddInput("xa");
-	n2.AddInput("xab");
-	n2.AddInput("xa");
-	n2.AddInput("xaccc");
-	n2.AddInput("x3");
-
-	n2.AddOutput("xx");
-	n2.AddOutput("xyy");
-	n2.AddOutput("xx");
-	n2.AddOutput("xzzzzzz");
-	n2.AddOutput("x3");
-	n2.ComputeLayout();
-
-	n2.Draw();
-	*/
 	ed::End();
     ed::SetCurrentEditor(nullptr);
 }
