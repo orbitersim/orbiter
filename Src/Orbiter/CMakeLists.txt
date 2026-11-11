@@ -115,6 +115,8 @@ set(common_src
     Input/Editor.cpp
     Input/Icon.cpp
     Input/Pin.cpp
+    Input/Node.cpp
+    Input/Graph.cpp
 # Utils
 	Log.cpp
 	Memstat.cpp

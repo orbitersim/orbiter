@@ -118,7 +118,7 @@ void Pin::Draw()
 		Icon(ImVec2(ImGui::GetTextLineHeight(), ImGui::GetTextLineHeight()), icon, true, color, ImColor(32, 32, 32, 255));
 		ed::EndPin();
 	} else {
-		ed::BeginPin(id, ed::PinKind::Output);
+		ed::BeginPin(id, ed::PinKind::Input);
 		Icon(ImVec2(ImGui::GetTextLineHeight(), ImGui::GetTextLineHeight()), icon, true, color, ImColor(32, 32, 32, 255));
 		ed::EndPin();
 		ImGui::SameLine();
