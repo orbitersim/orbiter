@@ -8,11 +8,11 @@ Node::Node(const char *n, int i) {
 }
 void Node::AddInput(const char *n, Pin::type type) {
 	dirty = true;
-	inputs.emplace_back(n, type, Pin::kind::Input, pinidgen++);
+	inputs.emplace_back(n, type, Pin::kind::Input, this, pinidgen++);
 }
 void Node::AddOutput(const char *n, Pin::type type) {
 	dirty = true;
-	outputs.emplace_back(n, type, Pin::kind::Output, pinidgen++);
+	outputs.emplace_back(n, type, Pin::kind::Output, this, pinidgen++);
 }
 void Node::ComputeLayout() {
 	widthName = ImGui::CalcTextSize(name.c_str()).x;
@@ -29,7 +29,7 @@ void Node::ComputeLayout() {
 	dirty = false;
 }
 
-void Node::Draw() {
+void Node::Draw(std::function<bool(const Pin *)> filter) {
 	if(dirty) {
 		ComputeLayout();
 	}
@@ -44,7 +44,7 @@ void Node::Draw() {
 	if(inputs.size() > 0) {
 		ImGui::BeginGroup();
 		for(auto &input:inputs) {
-			input.Draw();
+			input.Draw(filter);
 		}
 		ImGui::EndGroup();
 
@@ -69,7 +69,7 @@ void Node::Draw() {
 	for(auto &output:outputs) {
 		ImGui::Dummy(ImVec2(maxWidthOutput - ImGui::CalcTextSize(output.name.c_str()).x,0));
 		ImGui::SameLine();
-		output.Draw();
+		output.Draw(filter);
 	}
 	ImGui::EndGroup();
 		

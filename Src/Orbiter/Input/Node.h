@@ -21,5 +21,5 @@ public:
 	void AddInput(const char *n, Pin::type type);
 	void AddOutput(const char *n, Pin::type type);
 	void ComputeLayout();
-	void Draw();
+	void Draw(std::function<bool(const Pin *)> filter);
 };

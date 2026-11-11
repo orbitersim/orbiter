@@ -11,6 +11,7 @@ Pin::Pin(Pin &&from) noexcept {
     fVal = from.fVal;
     bVal = from.bVal;
     hVal = from.hVal;
+    parent = from.parent;
     inputs = std::move(from.inputs);
     from.id = ed::PinId::Invalid;
 }
@@ -23,19 +24,21 @@ Pin& Pin::operator=(Pin&&from) noexcept {
     fVal = from.fVal;
     bVal = from.bVal;
     hVal = from.hVal;
+    parent = from.parent;
     inputs = std::move(from.inputs);
     from.id = ed::PinId::Invalid;
     return *this;
 }
 
-Pin::Pin(std::string n, enum Pin::type t, enum Pin::kind k, ed::PinId i) {
-	id = i;
+Pin::Pin(std::string n, enum Pin::type t, enum Pin::kind k, Node *p, ed::PinId i) {
+    id = i;
     name = n;
     ptype = t;
     pkind = k;
     fVal = 0.0;
     bVal = false;
     hVal = 0;
+    parent = p;
 }
 
 bool Pin::operator==(const Pin &other) {
@@ -48,7 +51,7 @@ Pin::~Pin() {
 void Pin::ReadInputs()
 {
     switch(ptype) {
-		case Pin::type::Button:
+        case Pin::type::Button:
             bVal = false;
             for(auto &p: inputs) {
                 bVal |= p->bVal;
@@ -107,21 +110,27 @@ IconType GetIconType(enum Pin::type type)
     }
 }
 
-void Pin::Draw()
+void Pin::Draw(std::function<bool(const Pin *)> filter)
 {
-	IconType icon = GetIconType(ptype);
-	ImColor color = GetIconColor(ptype);
-	if(pkind == Pin::kind::Output) {
-		ImGui::TextUnformatted(name.c_str());
-		ImGui::SameLine();
-		ed::BeginPin(id, ed::PinKind::Output);
-		Icon(ImVec2(ImGui::GetTextLineHeight(), ImGui::GetTextLineHeight()), icon, true, color, ImColor(32, 32, 32, 255));
-		ed::EndPin();
-	} else {
-		ed::BeginPin(id, ed::PinKind::Input);
-		Icon(ImVec2(ImGui::GetTextLineHeight(), ImGui::GetTextLineHeight()), icon, true, color, ImColor(32, 32, 32, 255));
-		ed::EndPin();
-		ImGui::SameLine();
-		ImGui::TextUnformatted(name.c_str());
-	}
+    float alpha = ImGui::GetStyle().Alpha;
+    if(!filter(this)) {
+            alpha = alpha * (48.0f / 255.0f);
+    }
+    ImGui::PushStyleVar(ImGuiStyleVar_Alpha, alpha);
+    IconType icon = GetIconType(ptype);
+    ImColor color = GetIconColor(ptype);
+    if(pkind == Pin::kind::Output) {
+        ImGui::TextUnformatted(name.c_str());
+        ImGui::SameLine();
+        ed::BeginPin(id, ed::PinKind::Output);
+        Icon(ImVec2(ImGui::GetTextLineHeight(), ImGui::GetTextLineHeight()), icon, true, color, ImColor(32, 32, 32, 255));
+        ed::EndPin();
+    } else {
+        ed::BeginPin(id, ed::PinKind::Input);
+        Icon(ImVec2(ImGui::GetTextLineHeight(), ImGui::GetTextLineHeight()), icon, true, color, ImColor(32, 32, 32, 255));
+        ed::EndPin();
+        ImGui::SameLine();
+        ImGui::TextUnformatted(name.c_str());
+    }
+    ImGui::PopStyleVar();
 }

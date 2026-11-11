@@ -2,6 +2,7 @@
 
 #include <list>
 #include <string>
+#include <functional>
 #include <imgui_node_editor.h>
 
 namespace ed = ax::NodeEditor;
@@ -11,6 +12,7 @@ namespace ed = ax::NodeEditor;
 // They have a type that defines what value they can take
 // An input Pin knows which other Pins are connected to it, this is
 // used to update its value on demand via the ReadInputs method.
+class Node;
 class Pin final
 {
 public:
@@ -29,15 +31,16 @@ public:
     Pin(Pin &&from) noexcept;
     Pin& operator=(Pin&& from) noexcept;
     ~Pin();
-    Pin(std::string n, Pin::type t, Pin::kind k, ed::PinId id = ed::PinId::Invalid);
+    Pin(std::string n, Pin::type t, Pin::kind k, Node *p, ed::PinId id = ed::PinId::Invalid);
     bool operator==(const Pin &other);
     void ReadInputs();
     bool hasInputs() { return !inputs.empty(); }
-	void Draw();
+    void Draw(std::function<bool(const Pin *)> filter);
     ed::PinId id;
     std::string name;
     Pin::type ptype;
     Pin::kind pkind;
+    Node *parent;
 
     float fVal;     // Axis/HalfAxis
     bool bVal;      // Button
