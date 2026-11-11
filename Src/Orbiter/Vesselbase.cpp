@@ -326,7 +326,7 @@ void VesselBase::UpdateProxies ()
 {
 	DWORD i, ng = g_psys->nGrav();
 	double dist2, proxydist2, proxypdist2;
-	CelestialBody *grav;
+	const CelestialBody *grav;
 	Planet *pl = 0;
 
 	// Check for closest celestial body and planet
@@ -348,7 +348,7 @@ void VesselBase::UpdateProxies ()
 	proxybase = 0;
 	if (proxyplanet) {
 		for (i = 0, proxydist2 = 1e100; i < proxyplanet->nBase(); i++) {
-			Base *base = (Base*)proxyplanet->GetBase(i);
+			const Base *base = (const Base*)proxyplanet->GetBase(i);
 			if ((dist2 = S0()->pos.dist2 (base->S0()->pos)) < proxydist2) {
 				proxydist2 = dist2;
 				proxybase = base;

@@ -677,7 +677,7 @@ int Base::OccupyPad (Vessel *vessel, int pad, bool forcepad)
 	return -1;
 }
 
-int Base::OccupyPad (Vessel *vessel, double _lng, double _lat)
+int Base::OccupyPad (Vessel *vessel, double _lng, double _lat) const
 {
 	const double padrad = 20.0; // landing pad size
 	double plng, plat, dist, bdir;
@@ -697,7 +697,7 @@ int Base::OccupyPad (Vessel *vessel, double _lng, double _lat)
 	return -1; // failure: pad not free
 }
 
-void Base::ClearPad (Vessel *vessel)
+void Base::ClearPad (Vessel *vessel) const
 {
 	for (DWORD i = 0; i < npad; i++)
 		if (lspec[i].status && lspec[i].vessel == vessel) {
@@ -715,7 +715,7 @@ int Base::LandedAtPad (const Vessel *vessel) const
 	return -1;
 }
 
-int Base::RequestLanding (Vessel *vessel, DWORD &padno)
+int Base::RequestLanding(Vessel *vessel, DWORD &padno) const
 {
 	if (rand() < RAND_MAX/2) return 2; // keep pending
 	if (!padfree) return 1;     // deny
@@ -735,13 +735,13 @@ int Base::RequestLanding (Vessel *vessel, DWORD &padno)
 	return 2;
 }
 
-int Base::RequestTakeoff ()
+int Base::RequestTakeoff() const
 {
 	if (rand() < RAND_MAX/2) return 3; // keep pending
 	return 5;                   // grant clearance
 }
 
-void Base::ReportTakeoff (Vessel *vessel)
+void Base::ReportTakeoff (Vessel *vessel) const
 {
 	for (DWORD i = 0; i < npad; i++) {
 		if (lspec[i].status == 1 && lspec[i].vessel == vessel) {
@@ -752,7 +752,7 @@ void Base::ReportTakeoff (Vessel *vessel)
 	}
 }
 
-int Base::ReportTouchdown (VesselBase *vessel, double vlng, double vlat)
+int Base::ReportTouchdown (VesselBase *vessel, double vlng, double vlat) const
 {
 	const double padrad = 30.0; // landing pad size
 	double plng, plat, dist, bdir;

@@ -588,9 +588,9 @@ void Vessel::SetState2 (const void *status)
 			Matrix lrot;
 			lrot.Set (MakeVector(vs->arot));
 			double alt = vs->vrot.x;
-			InitLanded ((Planet*)cbody, vs->surf_lng, vs->surf_lat, vs->surf_hdg, &lrot, alt);
+			InitLanded ((const Planet*)cbody, vs->surf_lng, vs->surf_lat, vs->surf_hdg, &lrot, alt);
 		} else {
-			InitLanded ((Planet*)cbody, vs->surf_lng, vs->surf_lat, vs->surf_hdg);
+			InitLanded ((const Planet*)cbody, vs->surf_lng, vs->surf_lat, vs->surf_hdg);
 		}
 		if (proxybase = landtgt)
 			proxybase->ReportTouchdown (this, vs->surf_lng, vs->surf_lat);
@@ -638,7 +638,7 @@ void Vessel::GetState (VESSELSTATUS &status)
 	if (!status.eng_main) status.eng_main = -GetThrusterGroupLevel (THGROUP_RETRO);
 	status.eng_hovr = GetThrusterGroupLevel (THGROUP_HOVER);
 	status.port     = nport;
-	status.base     = landtgt; // should also include docking target
+	status.base     = (Base*)landtgt; // should also include docking target
 	switch (fstatus) {
 	case FLIGHTSTATUS_FREEFLIGHT:
 		status.status = 0;
@@ -670,7 +670,7 @@ void Vessel::GetState2 (void *status)
 	DWORD i;
 
 	vs->rbody = (OBJHANDLE)cbody;
-	vs->base  = proxybase;
+	vs->base  = (Base*)proxybase;
 	vs->port  = nport;
 	Vector dp (GPos() - cbody->GPos());
 	Vector dv (GVel() - cbody->GVel());

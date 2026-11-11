@@ -89,12 +89,12 @@ public:
 
 	virtual void PostUpdate ();
 
-	inline CelestialBody *ProxyBody() { return proxybody; }
-	inline Planet *ProxyPlanet() { return proxyplanet; }
+	inline const CelestialBody *ProxyBody() const { return proxybody; }
+	//inline Planet *ProxyPlanet() { return proxyplanet; }
 	inline const Planet *ProxyPlanet() const { return proxyplanet; }
 	// closest celestial object (star, planet, moon)
 
-	inline Base *ProxyBase () const { return proxybase; }
+	inline const Base *ProxyBase () const { return proxybase; }
 	// closest surface base
 
 	virtual void RPlace (const Vector &rpos, const Vector &rvel) {}
@@ -138,7 +138,7 @@ protected:
 	void UpdateSurfParams ();
 	// update surface parameters
 
-	virtual void InitLanded (Planet *planet, double lng, double lat, double dir,
+	virtual void InitLanded (const Planet *planet, double lng, double lat, double dir,
 		const Matrix *hrot=0, double cgelev=0.0, bool asComponent=false) {}
 	// init vessel position on ground
 	// Note: InitLanded must be called after the update phase (after EndStateUpdate)
@@ -195,10 +195,10 @@ protected:
 
 	// Status flags
 	FlightStatus fstatus;
-	CelestialBody *proxybody;    // closest 'massive' object (star, planet, moon)
-	Planet *proxyplanet;         // closest 'landable' object (planet or moon)
-	Base *proxybase;             // closest surface base
-	bool bSurfaceContact;        // signal vessel is in contact with planet surface
+	const CelestialBody *proxybody; // closest 'massive' object (star, planet, moon)
+	const Planet *proxyplanet;      // closest 'landable' object (planet or moon)
+	const Base *proxybase;          // closest surface base
+	bool bSurfaceContact;           // signal vessel is in contact with planet surface
 
 	SurfParam sp;      // ship parameters concerning planet surface
 	Matrix land_rot;   // rotates ship's local into planet's local coords so that grot = grot(planet) * land_rot

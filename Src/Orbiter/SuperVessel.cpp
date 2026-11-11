@@ -882,7 +882,7 @@ bool SuperVessel::CheckSurfaceContact () const
 
 // =======================================================================
 
-void SuperVessel::InitLanded (Planet *planet, double lng, double lat, double dir, const Matrix *hrot, double cgelev, bool asComponent)
+void SuperVessel::InitLanded (const Planet *planet, double lng, double lat, double dir, const Matrix *hrot, double cgelev, bool asComponent)
 {
 	dCHECK(!g_bStateUpdate, "SuperVessel::InitLanded must not be called during state update") // not valid during update phase
 	dCHECK(hrot, "hrot parameter for SuperVessel::InitLanded must be supplied")               // only support dynamic impact model for now

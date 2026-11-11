@@ -55,9 +55,6 @@ public:
 	// object albedo (RGB, 0-1)
 
 	const StateVectors *S0() const { return m_svS0; }
-	const StateVectors *S1() const { return m_svS1; }
-	StateVectors *S0() { return m_svS0; }
-	StateVectors *S1() { return m_svS1; }
 
 	inline const Vector &GPos() const { return m_svS0->pos; }
 	inline const Vector &GVel() const { return m_svS0->vel; }
@@ -167,6 +164,8 @@ public:
 
 	inline const Vector &Acceleration() const { return acc; };
 
+	const StateVectors *S1() const { return m_svS1; }
+
 protected:
 	double mass { 0.0 };         // current body mass [kg]
 	double size { 0.0 };         // (mean) body radius [m]
@@ -175,6 +174,9 @@ protected:
 	double spotlimit { 1e-3 };   // spot visibility limit (in units of viewport vertical)
 
 	Vector acc;          // current acceleration vector
+
+	StateVectors *S1() { return m_svS1; }
+	StateVectors *S0() { return m_svS0; }
 
 	VISHANDLE hVis { nullptr };      // visual identifier passed to messages (NULL=no visual)
 

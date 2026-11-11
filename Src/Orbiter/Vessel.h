@@ -1188,8 +1188,8 @@ public:
 	void MFDchanged (int mfd, int mode) const;
 	// Called after a change of MFD mode. 'mfd': MFD id, 'mode': new MFD mode
 
-	inline void SetLandingTarget (Base *target) { landtgt = target; }
-	inline Base *LandingTarget () const { return landtgt; }
+	inline void SetLandingTarget (const Base *target) { landtgt = target; }
+	inline const Base *LandingTarget () const { return landtgt; }
 	inline DWORD PortNo () const { return nport; }
 	inline int   LCommsStatus() const { return lstatus; }
 	//inline int   DCommsStatus() const { return dstatus; }
@@ -1476,7 +1476,7 @@ private:
 	void SetProxyplanet (Planet *pp);
 	// set proxy planet
 
-	void InitLanded (Planet *planet, double lng, double lat, double dir, const Matrix *hrot=0, double cgelev=0.0, bool asComponent=false);
+	void InitLanded (const Planet *planet, double lng, double lat, double dir, const Matrix *hrot=0, double cgelev=0.0, bool asComponent=false);
 	// init vessel position on ground
 	// Note: InitLanded must be called after the update phase (after EndStateUpdate)
 
@@ -1646,7 +1646,7 @@ private:
 
 	Vessel *proxyvessel;      // closest vessel
 	SuperVessel *supervessel; // vessel superstructure (docking complex)
-	Base    *landtgt;         // landing target (base)
+	const Base *landtgt;      // landing target (base)
 	int   lstatus;            // landing/docking comms status (0=no contact, 1=contact,
 	DWORD nport;              // allocated landing pad/docking port no (>=0, (DWORD)-1=none)
 	UINT  scanvessel;         // next vessel to check for docking event
@@ -1777,13 +1777,13 @@ protected:
 	bool m_hullVisualValid;             // true if m_convexHullIdx is valid for current animation state
 	bool m_overlapStateDirty;           // true if spawn/state-edit overlap state needs refresh
 	bool m_overlapPoseValid;            // true if m_overlapCheckedPosP/RotP hold a valid checked pose
-	Planet *m_overlapRefPlanet;         // planet frame of last checked overlap pose (or nullptr)
+	const Planet *m_overlapRefPlanet;   // planet frame of last checked overlap pose (or nullptr)
 	Vector m_overlapCheckedPosP;        // planet-local position at last overlap check
 	Matrix m_overlapCheckedRotP;        // planet-local rotation at last overlap check
 	void InvalidateHullCache();
 	void UpdateDockClearZones();
 	bool AnimationCompAffectsCollider(const ANIMATIONCOMP *comp) const;
-	bool ComputePlanetLocalPose(Planet *&refPlanet, Vector &posP, Matrix &rotP) const;
+	bool ComputePlanetLocalPose(const Planet *&refPlanet, Vector &posP, Matrix &rotP) const;
 	bool MatchesLastOverlapPose() const;
 	void MarkCollisionOverlapDirty();
 	static void FlushPendingCollisionOverlapStates();
@@ -1791,7 +1791,7 @@ protected:
 	void RebuildConvexHullVisual();     // rebuild m_convexHullIdx from m_hullCache
 	void ApplyAnimationToHullCache();   // animate m_hullCacheStatic to m_hullCache
 	void UpdateHullCacheP();            // update m_hullCacheP from m_hullCache
-	void CheckBaseCollisions(class Planet *pp);
+	void CheckBaseCollisions(const class Planet *pp);
 	void ResolveCollisionWith(Vessel *v);
 	bool CheckMeshCollision(const class Mesh *m, const Matrix &M_mesh2planet, const VECTOR3 &vPosPlanet, const Vector &vRelPlanet, BaseCollisionResult &res, const std::vector<Vector>* dockPtsP = nullptr);
 	bool CheckVesselOverlap(Vessel *v, double margin = 0.0);

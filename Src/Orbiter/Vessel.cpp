@@ -3505,7 +3505,7 @@ int Vessel::MeshModified (MESHHANDLE hMesh, UINT grp, DWORD modflag)
 	return 0;
 }
 
-void Vessel::InitLanded (Planet *planet, double lng, double lat, double dir, const Matrix *hrot, double cgelev, bool asComponent)
+void Vessel::InitLanded (const Planet *planet, double lng, double lat, double dir, const Matrix *hrot, double cgelev, bool asComponent)
 {
 	dCHECK(!g_bStateUpdate, "Vessel::InitLanded must not be called during state update") // not valid during update phase
 
@@ -5195,7 +5195,7 @@ void Vessel::RebuildConvexHullVisual() {
   }
 }
 
-void Vessel::CheckBaseCollisions(Planet *pp) {
+void Vessel::CheckBaseCollisions(const Planet *pp) {
 	if (!pp) return;
 	UpdateHullCacheP();
 	if (m_hullCacheP.empty()) return;
@@ -5210,7 +5210,7 @@ void Vessel::CheckBaseCollisions(Planet *pp) {
 	VECTOR3 vPosP = { (float)localPosV.x, (float)localPosV.y, (float)localPosV.z };
 
 	for (DWORD i = 0; i < pp->nBase(); i++) {
-		Base *base = pp->GetBase(i);
+		const Base *base = pp->GetBase(i);
 		if (!base) continue;
 
 		Vector basePosV(base->S1()->pos - pp->S1()->pos);
@@ -5739,7 +5739,7 @@ void Vessel::UpdateHullCacheP() {
 	RebuildHullCache();
     ApplyAnimationToHullCache();
 
-	Planet *refPlanet = (Planet*)(proxyplanet ? proxyplanet : (cbody && cbody->Type() == OBJTP_PLANET ? cbody : nullptr));
+	const Planet *refPlanet = (const Planet*)(proxyplanet ? proxyplanet : (cbody && cbody->Type() == OBJTP_PLANET ? cbody : nullptr));
 	if (m_hullCache.empty() || !refPlanet) {
 		m_hullCacheP.clear();
 		return;
@@ -5849,14 +5849,14 @@ namespace {
 	}
 }
 
-bool Vessel::ComputePlanetLocalPose(Planet *&refPlanet, Vector &posP, Matrix &rotP) const {
+bool Vessel::ComputePlanetLocalPose(const Planet *&refPlanet, Vector &posP, Matrix &rotP) const {
 	if (fstatus == FLIGHTSTATUS_LANDED && !attach && proxyplanet) {
-		refPlanet = (Planet*)proxyplanet;
+		refPlanet = proxyplanet;
 		posP = sp.ploc;
 		rotP = land_rot;
 		return true;
 	}
-	refPlanet = (Planet*)(proxyplanet ? proxyplanet : (cbody && cbody->Type() == OBJTP_PLANET ? cbody : nullptr));
+	refPlanet = (const Planet*)(proxyplanet ? proxyplanet : (cbody && cbody->Type() == OBJTP_PLANET ? cbody : nullptr));
 	if (!refPlanet || !S0() || !refPlanet->S0()) return false;
 
 	const StateVectors *svV = (S1() && S1()->pos.length2() > 0.0 ? S1() : S0());
@@ -5870,7 +5870,7 @@ bool Vessel::ComputePlanetLocalPose(Planet *&refPlanet, Vector &posP, Matrix &ro
 
 bool Vessel::MatchesLastOverlapPose() const {
 	if (!m_overlapPoseValid) return false;
-	Planet *refPlanet = nullptr;
+	const Planet *refPlanet = nullptr;
 	Vector posP;
 	Matrix rotP;
 	if (!ComputePlanetLocalPose(refPlanet, posP, rotP)) {
@@ -5977,8 +5977,8 @@ void Vessel::RemoveVesselFromDisabledCollisionPairs(const Vessel *v) {
 bool Vessel::CheckVesselOverlap(Vessel *v, double margin) {
 	if (!v || v == this) return false;
 
-	Planet *ppA = (Planet*)(proxyplanet ? proxyplanet : (cbody && cbody->Type() == OBJTP_PLANET ? cbody : nullptr));
-	Planet *ppB = (Planet*)(v->proxyplanet ? v->proxyplanet : (v->cbody && v->cbody->Type() == OBJTP_PLANET ? v->cbody : nullptr));
+	const Planet *ppA = (const Planet*)(proxyplanet ? proxyplanet : (cbody && cbody->Type() == OBJTP_PLANET ? cbody : nullptr));
+	const Planet *ppB = (const Planet*)(v->proxyplanet ? v->proxyplanet : (v->cbody && v->cbody->Type() == OBJTP_PLANET ? v->cbody : nullptr));
 	if (!ppA || ppA != ppB) return false;
 
 	Vessel *v_root = v;
@@ -6232,7 +6232,7 @@ void Vessel::ResolveCollisionWith(Vessel *v) {
 
 	// Anti-tunneling is now handled by ray-triangle CCD in CheckMeshCollision
 
-	Planet* pp = (Planet*)proxyplanet;
+	const Planet* pp = proxyplanet;
 	std::vector<Vector> dockPtsA;
 	for (DWORD i = 0; i < ndock; i++) {
 		Vector dP = S1()->pos - pp->S1()->pos + mul(S1()->R, dock[i]->ref);
@@ -6525,10 +6525,10 @@ void Vessel::ResolveCollisionWith(Vessel *v) {
 			rawContactPtGlobal = S1()->pos + mul(S1()->R, Vector(bestRes.contactPtLocal.x, bestRes.contactPtLocal.y, bestRes.contactPtLocal.z));
 		}
 
-		VesselBase *bodyA = svA ? (VesselBase*)svA : (VesselBase*)my_root;
-		VesselBase *bodyB = svB ? (VesselBase*)svB : (VesselBase*)v_root;
-		StateVectors *sA = bodyA->S1();
-		StateVectors *sB = bodyB->S1();
+		const VesselBase *bodyA = svA ? (VesselBase*)svA : (VesselBase*)my_root;
+		const VesselBase *bodyB = svB ? (VesselBase*)svB : (VesselBase*)v_root;
+		const StateVectors *sA = bodyA->S1();
+		const StateVectors *sB = bodyB->S1();
 		double massA = bodyA->Mass();
 		double massB = bodyB->Mass();
 		const Vector &pmiA = bodyA->PMI();

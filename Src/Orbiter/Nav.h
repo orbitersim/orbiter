@@ -157,7 +157,7 @@ public:
 	void AddNav (Nav *_nav);
 	DWORD nNav() const { return nnav; }
 	inline const Nav *GetNav (DWORD i) const { return nav[i]; }
-	inline Nav **GetNavlist () { return nav; }
+	inline Nav **GetNavlist() const { return nav; }
 	DWORD Read (std::ifstream &ifs, const Planet *planet = NULL, bool append = false);
 	
 private:

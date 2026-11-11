@@ -96,23 +96,23 @@ public:
 	// return actual pad number, or -1 if no free pad
 	// if forcepad=false and pad is occupied, pick random free pad
 
-	int OccupyPad (Vessel *vessel, double _lng, double _lat);
+	int OccupyPad (Vessel *vessel, double _lng, double _lat) const;
 	// select pad containing point (_lng,_lat) and mark as occupied.
 	// return pad no, or -1 if pad not free or point not owned by any pad
 
-	void ClearPad (Vessel *vessel);
+	void ClearPad (Vessel *vessel) const;
 	// mark the pad occupied by or reserved for 'vessel' as free
 
-	int RequestLanding (Vessel *vessel, DWORD &padno);
-	int RequestTakeoff ();
+	int RequestLanding(Vessel *vessel, DWORD &padno) const;
+	int RequestTakeoff() const;
 	// Request for landing/takeoff. Return value is result:
 	// 1=denied, 2=still pending, 3=granted.
 	// if landing clearance is given, padno contains allocated landing pad
 
-	void ReportTakeoff (Vessel *vessel);
+	void ReportTakeoff (Vessel *vessel) const;
 	// 'vessel' reports lift-off
 
-	int ReportTouchdown (VesselBase *vessel, double vlng, double vlat);
+	int ReportTouchdown (VesselBase *vessel, double vlng, double vlat) const;
 	// 'vessel' reports touchdown at position (vlng,vlat)
 
 	double CosSunAlt () const;
@@ -182,7 +182,7 @@ private:
 	Vector rotvel;                 // base velocity as result of planet rotation in local planet coords (rotvel.y=0)
 
 	DWORD npad;                    // number of landing pads
-	int padfree;                   // number of available (unoccupied) pads
+	mutable int padfree;           // number of available (unoccupied) pads
 	LpadSpec *lspec;               // list of landing pads
 
 	DWORD nrwy;                    // number of runways

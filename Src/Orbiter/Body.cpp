@@ -37,7 +37,6 @@ Body::Body ()
 	m_svS0 = m_svContainer;
 	m_svS1 = (g_bStateUpdate ? m_svContainer + 1 : m_svContainer);
 	updcount = irand(100); // spread update times
-	m_svS0->R = IMatrix();       // align body with its parent's orientation
 }
 
 Body::Body (double _mass, double _size)
@@ -170,4 +169,7 @@ void Body::EndStateUpdate ()
 {
 	// disable the update state, to avoid it being addressed outside the update phase
 	m_svS1 = m_svS0 = (m_svS0 == m_svContainer ? m_svContainer + 1 : m_svContainer);
+
+	// Flush update state to published state
+	//m_svS0->Set(*m_svS1);
 }
