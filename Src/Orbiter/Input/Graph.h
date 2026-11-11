@@ -23,6 +23,7 @@ class ControllerGraph final {
     std::vector<Link> links;
     std::vector<Node *> nodes;
 	std::unordered_map<void *, Pin *> pins; // Map between ed::PinId and Pins
+	Pin *draggedPin = NULL;
 	int linkidgen = 1;
     ControllerGraph();
     ~ControllerGraph();

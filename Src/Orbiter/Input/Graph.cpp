@@ -5,7 +5,7 @@
 ImVec4 GetStateColor(const Pin &pin) {
     ImVec4 color = {0.5,0.5,0.5,1.0};
     switch(pin.ptype) {
-		case Pin::type::Axis:
+        case Pin::type::Axis:
             if(pin.fVal > 0.0f) {
                 color.x = 0.5f * (1.0f-pin.fVal) + 0.902 * pin.fVal;
                 color.y = 0.5f * (1.0f-pin.fVal) + 0.624 * pin.fVal;
@@ -43,20 +43,23 @@ ControllerGraph::~ControllerGraph()
 {
 }
 void ControllerGraph::AddNode(Node *node) { 
-	nodes.push_back(node);
-	for(Pin &pin:node->inputs) {
-		assert(pins.count(pin.id.AsPointer()) == 0);
-		pins[pin.id.AsPointer()] = &pin;
-	}
-	for(Pin &pin:node->outputs) {
-		assert(pins.count(pin.id.AsPointer()) == 0);
-		pins[pin.id.AsPointer()] = &pin;
-	}
+    nodes.push_back(node);
+    for(Pin &pin:node->inputs) {
+        assert(pins.count(pin.id.AsPointer()) == 0);
+        pins[pin.id.AsPointer()] = &pin;
+    }
+    for(Pin &pin:node->outputs) {
+        assert(pins.count(pin.id.AsPointer()) == 0);
+        pins[pin.id.AsPointer()] = &pin;
+    }
 }
 
 bool ControllerGraph::CanLink(const Pin *a, const Pin *b) {
     const Pin *in = a;
     const Pin *out = b;
+
+    if(a->parent == b->parent) return false;
+
     if(a->pkind == Pin::kind::Output) {
         in = b;
         out = a;
@@ -70,43 +73,49 @@ bool ControllerGraph::CanLink(const Pin *a, const Pin *b) {
 
 void ControllerGraph::Draw()
 {
-	for(Node *n: nodes) {
-		n->Draw();
-	}
+    const auto filter = [this](const Pin *pin) {
+        if(!draggedPin) return true;
+        return CanLink(draggedPin, pin);
+    };
+    for(Node *n: nodes) {
+        n->Draw(filter);
+    }
     for (const Link& link : links)
     {
         ImVec4 color = GetStateColor(PinFromId(link.InputId));
         ed::Link(link.Id, link.InputId, link.OutputId, color);
     }
 
-	if (ed::BeginCreate())
+    if (ed::BeginCreate())
     {
         ed::PinId startPinId, endPinId;
+
+        ed::PinId newnodepin;
+        if(ed::QueryNewNode(&newnodepin)) {
+             draggedPin = &PinFromId(newnodepin);
+        }
+
         if (ed::QueryNewLink(&startPinId, &endPinId))
         {
             if(startPinId != ed::PinId::Invalid && endPinId != ed::PinId::Invalid) {
-                auto ip = &PinFromId(startPinId);
-                auto op = &PinFromId(endPinId);
-
-				ed::PinId inputPinId = startPinId;
-				ed::PinId outputPinId = endPinId;
-                if (ip->pkind != Pin::kind::Input) {
+                Pin *ip = &PinFromId(startPinId);
+                Pin *op = &PinFromId(endPinId);
+                // We need startPinId/ip to be the input pin
+                if(ip->pkind != Pin::kind::Input) {
                     std::swap(ip, op);
-                    std::swap(inputPinId, outputPinId);
+                    std::swap(startPinId, endPinId);
                 }
 
                 if(!CanLink(ip, op)) {
                     ed::RejectNewItem(ImColor(255, 0, 0), 2.0f);
-				} else if(ed::AcceptNewItem(ImColor(128, 255, 128), 2.0f)) {
-                       links.push_back({ ed::LinkId(linkidgen++), inputPinId, outputPinId });
+                } else if(ed::AcceptNewItem(ImColor(128, 255, 128), 2.0f)) {
+                       links.push_back({ ed::LinkId(linkidgen++), startPinId, endPinId });
                         ed::Link(links.back().Id, links.back().InputId, links.back().OutputId);
                 }
             }
         }
+    } else {
+        draggedPin = NULL;
     }
-
     ed::EndCreate(); // Wraps up object creation action handling.
-
-
-
 }
