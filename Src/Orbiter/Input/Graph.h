@@ -29,4 +29,5 @@ class ControllerGraph final {
     void Draw();
 	void AddNode(Node *node);
 	Pin &PinFromId(ed::PinId id) { return *pins.at(id.AsPointer()); }
+	bool CanLink(const Pin *a, const Pin *b);
 };
