@@ -93,12 +93,6 @@ public:
 
 	const void *GetParam (DWORD paramtype) const;
 
-	void SetPsys (const PlanetarySystem *_psys)
-	{ psys = _psys; }
-
-	const PlanetarySystem *GetPsys () const
-	{ return psys; }
-
 	inline DWORD nNav() const { return nnav; }
 	inline NavManager &NavMgr() { return navlist; }
 	inline const NavManager &NavMgr() const { return navlist; }
@@ -262,8 +256,6 @@ protected:
 private:
 	void AddObserverSite (double lng, double lat, double alt, char *site, char *addr);
 	// add the position of a surface observer camera to the list
-
-	const PlanetarySystem *psys; // system the planet belongs to
 
 	DWORD nbase;
 	Base **baselist;

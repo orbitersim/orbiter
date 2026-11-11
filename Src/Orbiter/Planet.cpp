@@ -152,7 +152,6 @@ bool Planet::bEnableWind = true;
 Planet::Planet (double _mass, double _mean_radius)
 : CelestialBody (_mass, _mean_radius)
 {
-	psys         = 0;
 	ncloudtex    = 0;
 	cloudtex     = 0;
 	nringtex     = 0;
@@ -196,7 +195,6 @@ Planet::Planet (char *fname)
 	double d;
 	char cbuf[256], *pc;
 
-	psys         = 0;
 	ncloudtex    = 0;
 	cloudtex     = 0;
 	nringtex     = 0;

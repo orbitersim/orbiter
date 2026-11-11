@@ -354,6 +354,7 @@ size_t PlanetarySystem::AddStar (Star *_star)
 	stars.emplace_back(_star);
 	AddGrav (_star); // register in list of massive objects
 	AddBody (_star); // register in general list
+	_star->SetPsys(this);
 	return stars.size();
 }
 

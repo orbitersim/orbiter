@@ -30,7 +30,8 @@ void InterpretEphemeris (double *data, int flg, Vector *pos, Vector *vel, Vector
 // class CelestialBody
 
 CelestialBody::CelestialBody (double _mass, double _size)
-: RigidBody (_mass, _size, Vector (1,1,1)), pinesgrav(NULL)
+	: RigidBody (_mass, _size, Vector (1,1,1)), pinesgrav(NULL)
+	, psys(nullptr)
 {
 	DefaultParam();
 	el = new Elements; TRACENEW
@@ -39,7 +40,8 @@ CelestialBody::CelestialBody (double _mass, double _size)
 }
 
 CelestialBody::CelestialBody (char *fname)
-: RigidBody (fname), pinesgrav(this)
+	: RigidBody (fname), pinesgrav(this)
+	, psys(nullptr)
 {
 	char cbuf[256];
 	int gravcoeff = 0;
@@ -165,6 +167,16 @@ CelestialBody::~CelestialBody ()
 		delete []jcoeff;
 		jcoeff = NULL;
 	}
+}
+
+void CelestialBody::SetPsys(const PlanetarySystem *system)
+{
+	psys = system;
+}
+
+const PlanetarySystem *CelestialBody::GetPsys() const
+{
+	return psys;
 }
 
 void CelestialBody::DefaultParam ()

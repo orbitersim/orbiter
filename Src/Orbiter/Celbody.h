@@ -32,6 +32,9 @@ public:
 	CelestialBody (char *fname);
 	virtual ~CelestialBody ();
 
+	void SetPsys(const PlanetarySystem *system);
+	const PlanetarySystem *GetPsys() const;
+
 	void DefaultParam ();
 	virtual void Setup ();
 	virtual int Type() const { return OBJTP_CBODY; }
@@ -197,6 +200,8 @@ protected:
 	} modIntf;
 
 private:
+	const PlanetarySystem *psys; // system the planet belongs to
+
 	HINSTANCE hMod;          // module handle, if available
 	
 	double eps_ref;          // precession reference axis: obliquity against ecliptic normal

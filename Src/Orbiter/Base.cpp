@@ -366,7 +366,7 @@ void Base::DestroySurfaceTiles ()
 	}
 }
 
-void Base::Attach (Planet *_parent)
+void Base::Attach (const Planet *_parent)
 {
 	cbody = _parent;
 

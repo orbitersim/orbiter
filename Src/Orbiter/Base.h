@@ -52,7 +52,7 @@ public:
 
 	virtual void Update (bool force = false);
 
-	virtual void Attach (Planet *_parent);
+	virtual void Attach (const Planet *_parent);
 	// Add *this as a child to "_parent"
 
 	const Planet *RefPlanet () const { return (Planet*)cbody; }
