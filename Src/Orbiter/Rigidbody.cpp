@@ -220,7 +220,6 @@ void RigidBody::Update (bool force)
 			double dt = td.SimDT/nPropSubsteps;
 
 			// Update linear state with Encke's method
-			S1()->Set (*S0());
 			if (!bOrbitStabilised) {
 				FlushRPos();
 				FlushRVel();
@@ -248,7 +247,6 @@ void RigidBody::Update (bool force)
 				double dt = td.SimDT/nPropSubsteps;
 
 				// Perform step propagation with sub-steps
-				S1()->Set (*S0());
 				acc = acc0, arot = arot0;
 				rpos_add = rpos_add0, rvel_add = rvel_add0;
 				for (i = 0; i < nPropSubsteps; i++) {
@@ -260,7 +258,6 @@ void RigidBody::Update (bool force)
 					arot.Set (EulerInv_full (tau, S1()->omega));
 				}
 			} while (!ValidateStateUpdate (S1()));
-			//S1()->R.Set (S1()->Q);
 
 			if (updcount++ == 1000) { // flush increments
 				rpos_base += rpos_add;
@@ -448,9 +445,9 @@ Vector RigidBody::GetTorque () const
 
 // =======================================================================
 
-void RigidBody::SetAngVel (const Vector &omega)
+void RigidBody::SetAngVel(const Vector &omega)
 {
-	S0()->omega.Set (omega);
+	S1()->omega.Set(omega);
 }
 
 // =======================================================================

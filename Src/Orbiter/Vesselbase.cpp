@@ -333,7 +333,7 @@ void VesselBase::UpdateProxies ()
 	// Check for closest celestial body and planet
 	for (i = 0, proxydist2 = proxypdist2 = 1e100; i < ng; i++) {
 		grav = g_psys->GetGravObj(i);
-		dist2 = S0()->pos.dist2 (grav->S0()->pos) - grav->Size(); // distance squared from body surface
+		dist2 = S1()->pos.dist2 (grav->S1()->pos) - grav->Size(); // distance squared from body surface
 		if (dist2 < proxydist2) {
 			proxydist2 = dist2;
 			proxybody = grav;
@@ -350,7 +350,7 @@ void VesselBase::UpdateProxies ()
 	if (proxyplanet) {
 		for (i = 0, proxydist2 = 1e100; i < proxyplanet->nBase(); i++) {
 			const Base *base = (const Base*)proxyplanet->GetBase(i);
-			if ((dist2 = S0()->pos.dist2 (base->S0()->pos)) < proxydist2) {
+			if ((dist2 = S1()->pos.dist2 (base->S1()->pos)) < proxydist2) {
 				proxydist2 = dist2;
 				proxybase = base;
 			}
@@ -359,7 +359,7 @@ void VesselBase::UpdateProxies ()
 
 	// check for orbit reference body
 	double gfrac;
-	SetOrbitReference (g_psys->GetDominantGravitySource (S0()->pos, gfrac));
+	SetOrbitReference (g_psys->GetDominantGravitySource (S1()->pos, gfrac));
 }
 
 // ==============================================================
@@ -416,7 +416,7 @@ bool VesselBase::ValidateStateUpdate (StateVectors *s)
 			if (vs < vsmax) {
 				Vector gv(sp.groundvel_ship * (vsmax/vs)); // rescaled surface-relative velocity
 				gv = mul (GRot(), gv);                    // map to global
-				S0()->vel += (gv - sp.groundvel_glob);
+				S1()->vel += (gv - sp.groundvel_glob);
 				rvel_base += (gv - sp.groundvel_glob);
 				return false;
 			}

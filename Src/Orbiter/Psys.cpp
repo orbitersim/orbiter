@@ -780,7 +780,7 @@ CelestialBody *PlanetarySystem::GetDominantGravitySource (const Vector &gpos, do
 	CelestialBody *body = 0;
 
 	for (i = 0; i < celestials.size(); i++) {
-		Vector r(celestials[i]->GPos() - gpos);
+		Vector r(celestials[i]->S1()->pos - gpos);
 		gtot += (g = celestials[i]->Mass() / r.length2());
 		if (g > gmax) {
 			gmax = g;
@@ -845,10 +845,9 @@ void PlanetarySystem::Timejump (const TimeJumpData& jump)
 	for (i = 0; i < stars.size(); i++) stars[i]->RelTrueAndBaryState();
 	for (i = 0; i < stars.size(); i++) stars[i]->AbsTrueState();
 	for (i = 0; i < celestials.size(); i++) celestials[i]->Update (true);
-	for (i = 0; i < bodies.size(); i++) bodies[i]->EndStateUpdate ();
-
 	for (i = 0; i < vessels.size(); i++)
 		vessels[i]->Timejump(jump.dt, jump.mode);
+	for (i = 0; i < bodies.size(); i++) bodies[i]->EndStateUpdate();
 }
 
 void PlanetarySystem::InitDeviceObjects ()

@@ -181,6 +181,10 @@ protected:
 	void PublishStateVectors();
 	// copy update state (m_svS1) back to public state (m_svS0)
 
+	void SyncStateVectors();
+	// Force synchronisation of m_svS0 with m_svS1 outside update phase
+	// Has no effect during update phase
+
 	VISHANDLE hVis { nullptr };      // visual identifier passed to messages (NULL=no visual)
 
 	const CelestialBody* cbody { nullptr }; // orbit reference body

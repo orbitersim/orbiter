@@ -753,7 +753,6 @@ void Vessel::FRecorder_EndPlayback ()
 		rvel_add.Set(0,0,0);
 		rpos_base.Set (S0()->pos);
 		rpos_add.Set(0,0,0);
-		S0()->Q.Set (S0()->R);
 		if (supervessel && supervessel->GetVessel(0) == this)
 			supervessel->FRecorder_EndPlayback();
 	}

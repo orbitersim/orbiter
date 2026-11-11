@@ -1480,9 +1480,6 @@ private:
 	// init vessel position on ground
 	// Note: InitLanded must be called after the update phase (after EndStateUpdate)
 
-	void InitDocked (const Vessel *vessel, int port);
-	// init vessel docked in orbit to another vessel
-
 	void InitOrbiting (const Vector &relr, const Vector &relv, const Vector &rot, const Vector *_vrot = 0);
 	// init vessel as orbiting around cbody with rel. position relr, rel. velocity relv and
 	// orientation rot (all w.r.t. ecliptic axis orientation). _vrot is rotation vector (rad/s) around the

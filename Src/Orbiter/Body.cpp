@@ -10,6 +10,7 @@
 #include "Orbiter.h"
 #include "Config.h"
 #include "Psys.h"
+#include "Pane.h"
 #include "Body.h"
 #include "Element.h"
 #include "Log.h"
@@ -171,4 +172,15 @@ void Body::EndStateUpdate ()
 void Body::PublishStateVectors()
 {
 	m_svS0->Set(*m_svS1);
+}
+
+void Body::SyncStateVectors()
+{
+	extern bool g_bStateUpdate;
+
+	if (!g_bStateUpdate) {
+		PublishStateVectors();
+		g_psys->BroadcastVessel(MSG_EDITSTATE, this);
+		// tell everybody that we have edited our state vectors out of turn
+	}
 }
