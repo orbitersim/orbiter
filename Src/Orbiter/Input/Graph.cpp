@@ -54,6 +54,20 @@ void ControllerGraph::AddNode(Node *node) {
 	}
 }
 
+bool ControllerGraph::CanLink(const Pin *a, const Pin *b) {
+    const Pin *in = a;
+    const Pin *out = b;
+    if(a->pkind == Pin::kind::Output) {
+        in = b;
+        out = a;
+    }
+    if(in->pkind == out->pkind) return false;
+
+    if(in->ptype != out->ptype) return false;
+
+    return true;
+}
+
 void ControllerGraph::Draw()
 {
 	for(Node *n: nodes) {
@@ -81,7 +95,9 @@ void ControllerGraph::Draw()
                     std::swap(inputPinId, outputPinId);
                 }
 
-                if(ed::AcceptNewItem(ImColor(128, 255, 128), 2.0f)) {
+                if(!CanLink(ip, op)) {
+                    ed::RejectNewItem(ImColor(255, 0, 0), 2.0f);
+				} else if(ed::AcceptNewItem(ImColor(128, 255, 128), 2.0f)) {
                        links.push_back({ ed::LinkId(linkidgen++), inputPinId, outputPinId });
                         ed::Link(links.back().Id, links.back().InputId, links.back().OutputId);
                 }
