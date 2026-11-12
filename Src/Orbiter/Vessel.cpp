@@ -3583,7 +3583,7 @@ void Vessel::InitLanded (const Planet *planet, double lng, double lat, double di
 	cpos = S1()->pos - cbody->GPos();
  	cvel = S1()->vel - cbody->GVel();
 	UpdateSurfParams();
-	g_psys->ScanGFieldSources(&S0()->pos, this, &gfielddata);
+	g_psys->ScanGFieldSources(&S1()->pos, this, &gfielddata);
 
 	fstatus = FLIGHTSTATUS_LANDED;
 	sp.SetLanded (lng, lat, cgelev, dir, nml, planet);
