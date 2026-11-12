@@ -182,6 +182,8 @@ class PlaybackAnnotation: public ScreenAnnotation
 INT WINAPI WinMain (HINSTANCE hInstance, HINSTANCE, LPSTR strCmdLine, INT nCmdShow)
 {
 #ifdef _CRTDBG_MAP_ALLOC
+	// Detect memory leaks. Use _CrtSetBreakAlloc(<memblock>) at the beginning
+	// of WinMain to set a breakpoint at a memory block flagged by this.
 	_CrtSetDbgFlag(_CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF);
 #endif
 
@@ -333,9 +335,7 @@ Orbiter::Orbiter ()
 	bFastExit       = false;
 	bRoughType      = false;
 	bStartVideoTab  = false;
-	//lstatus.bkgDC   = 0;
 	cfglen          = 0;
-	ncustomcmd      = 0;
 	D3DMathSetup();
 	script          = NULL;
 	memstat = nullptr;
@@ -492,14 +492,7 @@ VOID Orbiter::CloseApp (bool fast_shutdown)
 		if (hBk) DestroyWindow (hBk);
 		if (pState)   delete pState;
 		if (script) delete script;
-		if (ncustomcmd) {
-			for (DWORD i = 0; i < ncustomcmd; i++) {
-				delete []customcmd[i].label;
-				customcmd[i].label = NULL;
-			}
-			delete []customcmd;
-			customcmd = NULL;
-		}
+		m_vCustomCmd.clear();
 		oapiUnregisterCustomControls (hInst);
 	}
 	timeEndPeriod (1);
@@ -1852,42 +1845,19 @@ void Orbiter::Resume (void)
 
 DWORD Orbiter::RegisterCustomCmd (char *label, char *desc, CustomFunc func, void *context)
 {
-	DWORD id;
-	CUSTOMCMD *tmp = new CUSTOMCMD[ncustomcmd+1]; TRACENEW
-	if (ncustomcmd) {
-		memcpy (tmp, customcmd, ncustomcmd*sizeof(CUSTOMCMD));
-		delete []customcmd;
-	}
-	customcmd = tmp;
-
-	customcmd[ncustomcmd].label = new char[strlen(label)+1]; TRACENEW
-	strcpy (customcmd[ncustomcmd].label, label);
-	customcmd[ncustomcmd].func = func;
-	customcmd[ncustomcmd].context = context;
-	customcmd[ncustomcmd].desc = desc;
-	id = customcmd[ncustomcmd].id = g_customcmdid++;
-	ncustomcmd++;
-	return id;
+	m_vCustomCmd.push_back(CUSTOMCMD(label, desc, g_customcmdid, func, context));
+	return g_customcmdid++;
 }
 
 bool Orbiter::UnregisterCustomCmd (int cmdId)
 {
-	DWORD i;
-	CUSTOMCMD *tmp = 0;
-
-	for (i = 0; i < ncustomcmd; i++)
-		if (customcmd[i].id == cmdId) break;
-	if (i == ncustomcmd) return false;
-
-	if (ncustomcmd > 1) {
-		tmp = new CUSTOMCMD[ncustomcmd-1]; TRACENEW
-		memcpy (tmp, customcmd, i*sizeof(CUSTOMCMD));
-		memcpy (tmp+i, customcmd+i+1, (ncustomcmd-i-1)*sizeof(CUSTOMCMD));
+	for (auto it = m_vCustomCmd.begin(); it != m_vCustomCmd.end(); it++) {
+		if (it->id == cmdId) {
+			m_vCustomCmd.erase(it);
+			return true;
+		}
 	}
-	delete []customcmd;
-	customcmd = tmp;
-	ncustomcmd--;
-	return true;
+	return false;
 }
 
 int Orbiter::RegisterMenuCmd (const char *label, const char *imagepath, CustomFunc func, void *context)

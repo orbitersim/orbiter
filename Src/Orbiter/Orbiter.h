@@ -238,13 +238,15 @@ public:
 	void FRecorder_ToggleEditor ();
 	// toggle the playback editor
 
-	typedef struct {
-		char *label;
-		char *desc;
+	struct CUSTOMCMD {
+		std::string label;
+		std::string desc;
 		int id;
 		CustomFunc func;
 		void *context;
-	} CUSTOMCMD;
+
+		CUSTOMCMD(const char *lbl, const char *dsc, int n, CustomFunc f, void *ctx): label(lbl), desc(dsc), id(n), func(f), context(ctx) {}
+	};
 
 	struct CUSTOMMENUCMD {
 		std::string label;
@@ -447,8 +449,7 @@ private:
 	// returns address of a procedure in a plugin module, or NULL if procedure not found
 
 	// list of custom commands
-	CUSTOMCMD *customcmd;
-	DWORD ncustomcmd;
+	std::vector<CUSTOMCMD> m_vCustomCmd;
 	friend class DlgFunction;
 
 	// list of custom menu items
