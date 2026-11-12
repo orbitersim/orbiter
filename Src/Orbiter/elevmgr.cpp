@@ -5,7 +5,9 @@
 #include "Celbody.h"
 #include "Planet.h"
 #include "Orbiter.h"
+#include <algorithm>
 #include <filesystem>
+#include <type_traits>
 
 using std::min;
 using std::max;
@@ -68,6 +70,15 @@ ElevationManager::ElevationManager (const CelestialBody *_cbody)
 	g_pOrbiter->Cfg()->PTexPath(path, fname);
 	auto y = std::filesystem::status(path);
 	bModExists = std::filesystem::is_directory(y);
+
+	bFlats = g_pOrbiter->Cfg()->CfgVisualPrm.bFlats;
+	if (auto gc = g_pOrbiter->GetGraphicsClient()) {
+		DWORD val;
+		if (gc->clbkGetRenderParam(RP_TERRAINFLATS, &val))
+			bFlats = (val != 0);
+	}
+	if (bFlats)
+		LoadFlats();
 }
 
 ElevationManager::~ElevationManager ()
@@ -400,6 +411,7 @@ double ElevationManager::Elevation (double lat, double lng, int reqlvl, std::vec
 					//oapiWriteLogV("LoadTile[0x%X]: lvl=%d, flags=0x%X, q=%d, i(%d, %d)", t, lvl, t->quadrants, q, ilng, ilat);
 
 					// still need to store emin and emax
+					FilterElevation(ilat, ilng, lvl, elev_res, t->data);
 					auto gc = g_pOrbiter->GetGraphicsClient();
 					if (gc) gc->clbkFilterElevation((OBJHANDLE)cbody, ilat, ilng, lvl, elev_res, t->data);
 					break;
@@ -609,6 +621,13 @@ void ElevationManager::ElevationGrid (int ilat, int ilng, int lvl, int pilat, in
 	}
 	if (emean && nmean)
 		*emean /= nmean;
+	if (FilterElevation(ilat, ilng, lvl, elev_res, elev) && emean) {
+		double sum = 0.0;
+		for (i = 0; i <= elev_grid; i++)
+			for (j = 0; j <= elev_grid; j++)
+				sum += elev_base[i*elev_stride+j];
+		*emean = sum / ((elev_grid + 1) * (elev_grid + 1));
+	}
 }
 
 
@@ -715,4 +734,260 @@ void ElevationManager::ElevationGrid(int ilat, int ilng, int lvl, int pilat, int
 	}
 	if (emean && nmean)
 		*emean /= nmean;
+	if (FilterElevation(ilat, ilng, lvl, elev_res, elev) && emean) {
+		double sum = 0.0;
+		for (i = 0; i <= elev_grid; i++)
+			for (j = 0; j <= elev_grid; j++)
+				sum += elev_base[i*elev_stride+j];
+		*emean = sum / ((elev_grid + 1) * (elev_grid + 1));
+	}
+}
+
+namespace {
+struct TilePixelPosition {
+	int iLat;
+	int iLng;
+	int X;
+	int Y;
+	bool operator==(const TilePixelPosition &other) const {
+		return iLat == other.iLat && iLng == other.iLng && X == other.X && Y == other.Y;
+	}
+};
+
+void GetTilePixelPosition (int lvl, double lat, double lng, TilePixelPosition &pos)
+{
+	if (lat < -90.0) lat = -90.0;
+	if (lat > 90.0) lat = 90.0;
+	while (lng < -180.0) lng += 360.0;
+	while (lng > 180.0) lng -= 360.0;
+
+	double bands = (double)(1 << lvl);
+	double width = 180.0 / bands;
+	pos.iLat = (int)((-lat + 90.0) / width);
+	if (pos.iLat >= (1 << lvl)) pos.iLat = (1 << lvl) - 1;
+	pos.iLng = (int)((lng + 180.0) / width);
+	if (pos.iLng >= (2 << lvl)) pos.iLng = 0;
+	double latmin = 90.0 - width * (pos.iLat + 1);
+	double lngmin = -180.0 + width * pos.iLng;
+	pos.X = (int)((lng - lngmin) / width * 256.0);
+	pos.Y = (int)(-(lat - latmin) / width * 256.0 + 256.0);
+}
+}
+
+void ElevationManager::LoadFlats ()
+{
+	char flatRel[MAX_PATH], flatDir[MAX_PATH];
+	snprintf(flatRel, sizeof(flatRel), "%s\\Flat", cbody->Name());
+
+	bool foundDir = false;
+	if (g_pOrbiter->Cfg()->CfgDirPrm.HightexDir[0]) {
+		snprintf(flatDir, sizeof(flatDir), "%s%s", g_pOrbiter->Cfg()->CfgDirPrm.HightexDir, flatRel);
+		if (std::filesystem::is_directory(flatDir))
+			foundDir = true;
+	}
+	if (!foundDir) {
+		g_pOrbiter->Cfg()->PTexPath(flatDir, flatRel);
+		if (flatDir[0] && std::filesystem::is_directory(flatDir))
+			foundDir = true;
+	}
+	if (!foundDir) {
+		g_pOrbiter->Cfg()->TexPath(flatDir, flatRel);
+		if (flatDir[0] && std::filesystem::is_directory(flatDir))
+			foundDir = true;
+	}
+	if (!foundDir)
+		return;
+
+	std::vector<std::filesystem::path> files;
+	std::error_code ec;
+	for (const auto &entry : std::filesystem::directory_iterator(flatDir, ec)) {
+		if (!entry.is_regular_file(ec)) continue;
+		std::string ext = entry.path().extension().string();
+		if (_stricmp(ext.c_str(), ".flt") == 0)
+			files.push_back(entry.path());
+	}
+	if (files.empty())
+		return;
+
+	std::sort(files.begin(), files.end());
+
+	const double radius = cbody->Size();
+	if (radius <= 0.0)
+		return;
+
+	char line[512], shapeType[256];
+	for (const auto &file : files) {
+		FILE *f = fopen(file.string().c_str(), "r");
+		if (!f) continue;
+		while (fgets(line, sizeof(line), f)) {
+			char *p = line;
+			while (*p == ' ' || *p == '\t') p++;
+			if (*p == '\0' || *p == '\r' || *p == '\n' || (p[0] == '/' && p[1] == '/'))
+				continue;
+			if (char *comment = strstr(p, "//"))
+				*comment = '\0';
+
+			int height = 0, dim1 = 0, dim2 = 0, falloff = 0;
+			double lat = 0.0, lng = 0.0, phi = 0.0;
+			int read = sscanf(p, "%255s %d %lf %lf %d %d %lf %d",
+				shapeType, &height, &lng, &lat, &dim1, &dim2, &phi, &falloff);
+			if (read < 5) continue;
+			if (read < 6) dim2 = dim1;
+			if (read < 7) phi = 0.0;
+			if (read < 8) falloff = 0;
+
+			double cosLat = cos(lat * RAD);
+			if (dim1 <= 0 || dim2 <= 0 || fabs(cosLat) < 1e-9)
+				continue;
+
+			double decdeg = 360.0 / (radius * cosLat * Pi2);
+			if (_stricmp(shapeType, "ellipse") == 0) {
+				flatShapes.push_back(FlatShape{
+					lat, lng,
+					(double)dim1 * decdeg, (double)dim2 * decdeg,
+					cos(-phi * RAD), sin(-phi * RAD),
+					(double)falloff / 100.0, height, 1
+				});
+			} else if (_stricmp(shapeType, "rect") == 0) {
+				flatShapes.push_back(FlatShape{
+					lat, lng,
+					(double)dim1 * decdeg * 0.5, (double)dim2 * decdeg * 0.5,
+					cos(-phi * RAD), sin(-phi * RAD),
+					(double)falloff / 100.0, height, 4
+				});
+			}
+		}
+		fclose(f);
+	}
+
+	if (flatShapes.empty())
+		return;
+
+	flatTiles.resize(MAXLVL_LIMIT + 1);
+	for (size_t idx = 0; idx < flatShapes.size(); idx++) {
+		const FlatShape &shape = flatShapes[idx];
+		double offset = sqrt(shape.Dim1 * shape.Dim1 + shape.Dim2 * shape.Dim2);
+		double latmin = shape.Lat - offset;
+		double latmax = shape.Lat + offset;
+		double lngmin = shape.Lng - offset;
+		double lngmax = shape.Lng + offset;
+		TilePixelPosition leftUpper, rightUpper, leftLower, rightLower;
+		for (int lvl = MAXLVL_LIMIT; lvl >= 0; lvl--) {
+			int latBands = 1 << lvl;
+			int lngBands = latBands * 2;
+
+			GetTilePixelPosition(lvl, latmax, lngmin, leftUpper);
+			GetTilePixelPosition(lvl, latmax, lngmax, rightUpper);
+			GetTilePixelPosition(lvl, latmin, lngmin, leftLower);
+			rightLower.iLat = leftLower.iLat;
+			rightLower.iLng = rightUpper.iLng;
+			rightLower.X = rightUpper.X;
+			rightLower.Y = leftLower.Y;
+
+			if (leftUpper == rightUpper || leftLower == rightLower || leftUpper == leftLower || rightUpper == rightLower)
+				break;
+
+			if (leftUpper.iLng > rightUpper.iLng) {
+				leftUpper.iLng -= lngBands;
+				leftLower.iLng -= lngBands;
+			}
+			if (leftUpper.X == 0) {
+				leftUpper.iLng--;
+				leftLower.iLng--;
+			}
+			if (rightUpper.X == 255) {
+				rightUpper.iLng++;
+				rightLower.iLng++;
+			}
+			if (leftUpper.Y == 0 && leftUpper.iLat > 0) {
+				leftUpper.iLat--;
+				rightUpper.iLat--;
+			}
+			if (leftLower.Y == 255 && leftLower.iLat < latBands - 1) {
+				leftLower.iLat++;
+				rightLower.iLat++;
+			}
+
+			int latStart = max(0, leftUpper.iLat);
+			int latEnd = min(latBands - 1, leftLower.iLat);
+			for (int ilat = latStart; ilat <= latEnd; ilat++) {
+				for (int ilng = leftUpper.iLng; ilng <= rightUpper.iLng; ilng++) {
+					int wrappedLng = ((ilng % lngBands) + lngBands) % lngBands;
+					uint64_t key = ((uint64_t)(uint32_t)ilat << 32) | (uint32_t)wrappedLng;
+					flatTiles[lvl][key].push_back(idx);
+				}
+			}
+		}
+	}
+}
+
+template<typename T>
+bool ElevationManager::FilterElevationImpl (int ilat, int ilng, int lvl, double res, T *elev) const
+{
+	if (!bFlats || !elev || res <= 0.0 || flatShapes.empty() || lvl < 0 || lvl >= (int)flatTiles.size())
+		return false;
+
+	uint64_t key = ((uint64_t)(uint32_t)ilat << 32) | (uint32_t)ilng;
+	const auto &lvlMap = flatTiles[lvl];
+	auto it = lvlMap.find(key);
+	if (it == lvlMap.end())
+		return false;
+
+	const auto &shapeIndices = it->second;
+	double bands = (double)(1 << lvl);
+	double width = 180.0 / bands;
+	double step = width / 256.0;
+	double latmin = 90.0 - width * (ilat + 1) - step * 1.5;
+	double lngmin = -180.0 + width * ilng - step * 1.5;
+	const int ndat = elev_stride * elev_stride;
+	bool modified = false;
+
+	for (int i = 0; i < ndat; i++) {
+		double ptLat = latmin + (i / elev_stride) * step;
+		double ptLng = lngmin + (i % elev_stride) * step;
+		for (size_t idx : shapeIndices) {
+			const FlatShape &shape = flatShapes[idx];
+			double y = ptLat - shape.Lat;
+			double x = ptLng - shape.Lng;
+			if (x < -180.0) x += 360.0;
+			else if (x > 180.0) x -= 360.0;
+			double x1 = (x * shape.Cos - y * shape.Sin) / shape.Dim1;
+			double y1 = (x * shape.Sin + y * shape.Cos) / shape.Dim2;
+			for (int pot = 0; pot < shape.Type; pot++) {
+				x1 *= x1;
+				y1 *= y1;
+			}
+			double dist = x1 + y1;
+			if (dist <= 1.0) {
+				double target = (double)shape.Height / res;
+				double elevation = target;
+				if (shape.Falloff > 0.0) {
+					for (int pot = 0; pot < shape.Type; pot++)
+						dist = sqrt(dist);
+					if (dist >= 1.0 - shape.Falloff) {
+						double alpha = (dist - 1.0 + shape.Falloff) / shape.Falloff;
+						elevation = (double)elev[i] * alpha + target * (1.0 - alpha);
+					}
+				}
+				if constexpr (std::is_same_v<T, INT16>) {
+					elevation = max(-32768.0, min(32767.0, elevation));
+					elev[i] = (INT16)elevation;
+				} else {
+					elev[i] = (T)elevation;
+				}
+				modified = true;
+			}
+		}
+	}
+	return modified;
+}
+
+bool ElevationManager::FilterElevation (int ilat, int ilng, int lvl, double res, INT16 *elev) const
+{
+	return FilterElevationImpl<INT16>(ilat, ilng, lvl, res, elev);
+}
+
+bool ElevationManager::FilterElevation (int ilat, int ilng, int lvl, double res, float *elev) const
+{
+	return FilterElevationImpl<float>(ilat, ilng, lvl, res, elev);
 }

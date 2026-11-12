@@ -24,7 +24,6 @@
 #include "D3D9Surface.h"
 
 // =======================================================================
-extern void FilterElevationGraphics(OBJHANDLE hPlanet, int lvl, int ilat, int ilng, float *elev);
 
 #pragma pack(push, 4)
 struct LightF
@@ -390,7 +389,12 @@ INT16 *SurfTile::ReadElevationFile (const char *name, int lvl, int ilat, int iln
 				smgr->ZTreeManager(3)->ReleaseData(buf);
 			}
 		}
-		if (Config->bFlats) FilterElevationGraphics(mgr->GetPlanet()->Object(), lvl - 4, ilat, ilng, elev);
+		if (Config->bFlats) {
+			if (mgr->GetClient()->FilterElevation(mgr->ElevMgr(), ilat, ilng, lvl - 4, tgt_res, e)) {
+				for (i = 0; i < ndat; i++) elev[i] = float(e[i]) * float(tgt_res);
+				LogClr("Coral", "FilterElevation[Graphics][%s]: Level=%d, ilat=%d, ilng=%d", name, lvl - 4, ilat, ilng);
+			}
+		}
 	}
 	return e;
 }
@@ -554,6 +558,7 @@ bool SurfTile::LoadElevationData ()
 			if (parent &&  parent->Entry()->elev) {
 				elev = g_pMemgr_f->New(ndat);
 				InterpolateElevationGrid(parent->Entry()->elev, elev);
+				if (Config->bFlats) mgr->GetClient()->FilterElevation(hElev, ilat, ilng, lvl, 1.0, elev);
 			}
 		}
 	}
