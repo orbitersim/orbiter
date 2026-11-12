@@ -9,6 +9,7 @@
 #include "Camera.h"
 #include "Dialogs.h"
 #include "DlgMenuCfg.h"
+#include <algorithm>
 
 // =======================================================================
 // Externs

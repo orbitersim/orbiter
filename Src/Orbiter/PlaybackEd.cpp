@@ -5,6 +5,7 @@
 #include "Camera.h"
 #include "Log.h"
 #include "imgui_extras.h"
+#include "VFS.h"
 
 using namespace std;
 
@@ -201,7 +202,7 @@ void DlgPlaybackEditor::Load(const char *ScnName) {
 void DlgPlaybackEditor::ScanEventFile ()
 {
 	char line[2048];
-	ifstream ifs (m_sysfname);
+	VFS::ifstream ifs (m_sysfname);
 	while (ifs.getline (line, 2048)) {
 		PlaybackEvent *pe = PlaybackEvent::Create (line);
 		if (pe) {
@@ -213,7 +214,7 @@ void DlgPlaybackEditor::ScanEventFile ()
 void DlgPlaybackEditor::SaveEventFile ()
 {
 	g_pOrbiter->FRecorder_SuspendPlayback();
-	ofstream ofs (m_sysfname);
+	VFS::ofstream ofs (m_sysfname);
 	for (auto &e: m_Events) {
 		e->Write (ofs);
 	}

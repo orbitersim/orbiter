@@ -27,6 +27,7 @@
 
 #include "Vesselbase.h"
 #include "Log.h"
+#include "VFS.h"
 
 class Elements;
 class CelestialBody;
@@ -1293,7 +1294,7 @@ public:
 	// read/write vessel status from/to stream
 
 protected:
-	bool OpenConfigFile (std::ifstream &cfgfile) const;
+	bool OpenConfigFile (VFS::ifstream &cfgfile) const;
 	// returns configuration file for the vessel
 	// This first looks in Config\Vessels, then in Config
 

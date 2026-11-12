@@ -1522,7 +1522,9 @@ bool Execute(HWND hWnd, LPOPENFILENAME pOF)
 		LPDIRECT3DTEXTURE9 pSave = NULL;
 		D3DXIMAGE_INFO info;
 
-		HR(D3DXCreateTextureFromFileExA(pDevice, pOF->lpstrFile, D3DX_DEFAULT_NONPOW2, D3DX_DEFAULT_NONPOW2, 0, 0, D3DFMT_A8R8G8B8, D3DPOOL_SYSTEMMEM, D3DX_DEFAULT, D3DX_DEFAULT, 0, &info, NULL, &pTex));
+		char rpath[MAX_PATH];
+		VFS::resolve_path(rpath, pOF->lpstrFile);
+		HR(D3DXCreateTextureFromFileExA(pDevice, rpath, D3DX_DEFAULT_NONPOW2, D3DX_DEFAULT_NONPOW2, 0, 0, D3DFMT_A8R8G8B8, D3DPOOL_SYSTEMMEM, D3DX_DEFAULT, D3DX_DEFAULT, 0, &info, NULL, &pTex));
 
 		if (!pTex) {
 			LogErr("Failed to open a file [%s]", pOF->lpstrFile); 

@@ -81,8 +81,6 @@ typedef union {
 	};
 } TILEBOUNDS;
 
-bool FileExists(const char* path);
-
 // =======================================================================
 
 /**

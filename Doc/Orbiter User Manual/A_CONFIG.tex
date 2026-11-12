@@ -58,6 +58,12 @@ write all configuration entries to the file.
 	ScenarioDir & String & Subdirectory for scenarios. Default: .\textbackslash
 		Scenarios\textbackslash\\
 	\hline
+	Overlay & Bool & Enable overlay subsystem. Default: FALSE\\
+	\hline
+	WorkDir & String & Subdirectory where modified files are written to when the overlay is enabled.\\
+	\hline
+	Overlays & List & List of directories to overlay on top of the base installation. Wildcards accepted in the form Directory\textbackslash*\\
+	\hline
 	\multicolumn{3}{ c }{\textbf{\textit{Logical parameters}}}\\
 	\hline
 	StartPaused & Bool & Suspend simulation on launch. Default: FALSE\\

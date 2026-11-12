@@ -45,11 +45,11 @@
 #include "ConsoleManager.h"
 #include "imgui.h"
 #include "imgui_impl_win32.h"
+#include "VFSAPI.h"
+#include "VFS.h"
 #include <filesystem>
 
 #include "Tracy.hpp"
-
-namespace fs = std::filesystem;
 
 using namespace std;
 using namespace oapi;
@@ -204,12 +204,29 @@ INT WINAPI WinMain (HINSTANCE hInstance, HINSTANCE, LPSTR strCmdLine, INT nCmdSh
 	orbiter::CommandLine::Parse(g_pOrbiter, strCmdLine);
 
 	// Initialise the log
-	INITLOG("Orbiter.log", g_pOrbiter->Cfg()->CfgCmdlinePrm.bAppendLog); // init log file
+
+	// The VFS is not yet initialized.
+	// Parse the config ourselves here so that the Orbiter.log file ends up in the work dir
+	char logname[MAX_PATH];
+	CFG_DIRPRM &dirprm = g_pOrbiter->Cfg()->CfgDirPrm;
+	if(dirprm.bOverlay && dirprm.WorkDir.size()) {
+		std::error_code ec;
+		std::filesystem::create_directories(dirprm.WorkDir.c_str(), ec);
+		snprintf(logname, sizeof(logname), "%s/Orbiter.log", dirprm.WorkDir.c_str());
+	} else {
+		strcpy (logname, "Orbiter.log");
+	}
+
+	INITLOG(logname, g_pOrbiter->Cfg()->CfgCmdlinePrm.bAppendLog); // init log file
+
 #ifdef ISBETA
 	LOGOUT("Build %s BETA [v.%06d]", __DATE__, GetVersion());
 #else
 	LOGOUT("Build %s [v.%06d]", __DATE__, GetVersion());
 #endif
+
+	VFS::InitVFS();
+
 
 	// Initialise random number generator
 	//srand ((unsigned)time (NULL));
@@ -347,6 +364,9 @@ Orbiter::Orbiter ()
 
 	memset (simkstate, 0, 256);
 
+	// parameter manager - parses from master config file
+	pConfig->Load(MasterConfigFile);
+	strcpy (cfgpath, pConfig->CfgDirPrm.ConfigDir);   cfglen = strlen (cfgpath);
 
 	RegisterMenuCmd("Ship",     "MenuInfoBar/ship.png",     [](void *) {g_pOrbiter->DlgMgr()->EnsureEntry<DlgFocus>();});
 	RegisterMenuCmd("Camera",   "MenuInfoBar/camera.png",   [](void *) {g_pOrbiter->DlgMgr()->EnsureEntry<DlgCamera>();});
@@ -391,10 +411,7 @@ HRESULT Orbiter::Create (HINSTANCE hInstance)
 	InitCommonControls();
 	LoadLibrary ("riched20.dll");
 
-	// parameter manager - parses from master config file
 	hInst = hInstance;
-	pConfig->Load(MasterConfigFile);
-	strcpy (cfgpath, pConfig->CfgDirPrm.ConfigDir);   cfglen = strlen (cfgpath);
 
 	if (FAILED (hr = pDI->Create (hInstance))) return hr;
 
@@ -530,7 +547,7 @@ int Orbiter::GetVersion () const
 static bool FindStandaloneDll(const char *path, const char *name, char* cbufOut)
 {
 	sprintf (cbufOut, "%s\\%s.dll", path, name);
-	return fs::exists(cbufOut);
+	return VFS::exists(cbufOut);
 }
 
 //! Finds module consisting of a plugin DLL inside a plugin-specific folder
@@ -539,7 +556,7 @@ static bool FindStandaloneDll(const char *path, const char *name, char* cbufOut)
 static bool FindDllInPluginFolder(const char *path, const char *name, char* cbufOut)
 {
 	sprintf(cbufOut, "%s\\%s\\%s.dll", path, name, name);
-	return fs::exists(cbufOut);
+	return VFS::exists(cbufOut);
 }
 
 void Orbiter::LoadModules(const std::string& path, const std::list<std::string>& names)
@@ -550,12 +567,12 @@ void Orbiter::LoadModules(const std::string& path, const std::list<std::string>&
 
 void Orbiter::LoadModules(const std::string& path)
 {
-	for (const auto& entry : fs::directory_iterator(path)) {
-		auto fpath = entry.path();
-		if (fpath.extension().string() == ".dll") {
-			LoadModule(path.c_str(), fpath.stem().string().c_str());
+	VFS::enumerate(path.c_str(), [&](const char *entry) {
+		if (VFS::has_extension(entry, "dll", false)) {
+			char stem[MAX_PATH];
+			LoadModule(path.c_str(), VFS::stem(stem, entry));
 		}
-	}
+	});
 }
 
 //-----------------------------------------------------------------------------
@@ -580,7 +597,7 @@ HINSTANCE Orbiter::LoadModule (const char *path, const char *name)
 	char cbuf[256];
 	if (FindStandaloneDll(path, name, cbuf)) // try to find standalone plugin file
 	{
-		hDLL = LoadLibrary (cbuf);
+		hDLL = (HINSTANCE)VFS::LoadModule(cbuf);
 	}
 	else // try to find plugin in a plugin folder
 	{
@@ -589,8 +606,13 @@ HINSTANCE Orbiter::LoadModule (const char *path, const char *name)
 		{
 			// Convert to absolute path, otherwise LoadLibraryEx fails with error code 87.
 			// See https://stackoverflow.com/questions/36275535/loadlibraryex-error-87-the-parameter-is-incorrect
-			sprintf(cbuf, "%s\\%s", cwd, cbuf2);
-			hDLL = LoadLibraryEx(cbuf, NULL, LOAD_LIBRARY_SEARCH_DLL_LOAD_DIR | LOAD_LIBRARY_SEARCH_DEFAULT_DIRS);
+			char rpath[MAX_PATH];
+			if(VFS::resolve_path(rpath, cbuf)) {
+				snprintf(cbuf2, sizeof(cbuf2), "%s\\%s", cwd, rpath);
+				hDLL = LoadLibraryEx(rpath, NULL, LOAD_LIBRARY_SEARCH_DLL_LOAD_DIR | LOAD_LIBRARY_SEARCH_DEFAULT_DIRS);
+			} else {
+				LOGOUT_ERR("Could not resolve path for %s.", cbuf);
+			}
 		}
 		else
 		{
@@ -815,7 +837,7 @@ HWND Orbiter::CreateRenderWindow (Config *pCfg, const char *scenario)
 	for (auto it = m_Plugin.begin(); it != m_Plugin.end(); it++) {
 		void (*opcLoadState)(FILEHANDLE) = (void(*)(FILEHANDLE))FindModuleProc(it->hDLL, "opcLoadState");
 		if (opcLoadState) {
-			ifstream ifs(ScnPath(scenario));
+			VFS::ifstream ifs(ScnPath(scenario));
 			std::string str = "BEGIN_" + it->sName;
 			if (FindLine(ifs, str.c_str())) {
 				opcLoadState((FILEHANDLE)&ifs);
@@ -1454,7 +1476,7 @@ bool Orbiter::SaveScenario (const char *fname, const char *desc, int desc_type)
 {
 	pState->Update ();
 
-	ofstream ofs (ScnPath (fname));
+	VFS::ofstream ofs (ScnPath (fname));
 	if (ofs) {
 		// save scenario state
 		pState->Write(ofs, desc, desc_type, 0);
@@ -1684,13 +1706,13 @@ FILE *Orbiter::OpenTextureFile (const char *name, const char *ext)
 {
 	FILE *ftex = 0;
 	char *pch = HTexPath (name, ext); // first try high-resolution directory
-	if (pch && (ftex = fopen (pch, "rb"))) {
+	if (pch && (ftex = VFS::fopen (pch, "rb"))) {
 		LOGOUT_FINE("Texture load: %s", pch);
 		return ftex;
 	}
 	pch = TexPath (name, ext);        // try standard texture directory
 	LOGOUT_FINE("Texture load: %s", pch);
-	return fopen (pch, "rb");
+	return VFS::fopen (pch, "rb");
 }
 
 SURFHANDLE Orbiter::RegisterExhaustTexture (char *name)

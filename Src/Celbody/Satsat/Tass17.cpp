@@ -189,7 +189,7 @@ void ReadData (const char *fname, int res)
 
     static double radsdg = atan(1.) / 45.;
 
-    FILE *f = fopen (fname, "rt");
+    FILE *f = VFS::fopen (fname, "rt");
     fscanf (f, "%lf", &gk);
     fscanf (f, "%lf", &tas);
     gk1 = pow (gk*365.25, 2.0) / tas;

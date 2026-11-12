@@ -55,6 +55,9 @@ struct CFG_DIRPRM {
 	char   HightexDir[256];		// location of highres planet textures
 	char   PlanetTexDir[256];   // location for planetary textures (version-2 textures)
 	char   ScnDir[256];			// location of scenario files
+	bool bOverlay;				// overlay enabled
+	std::list<std::string> Overlays;
+	std::string WorkDir;		// where we put modified files when overlay is enabled
 };
 
 struct CFG_PHYSICSPRM {
