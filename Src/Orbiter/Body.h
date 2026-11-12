@@ -54,7 +54,8 @@ public:
 	inline const Vector &Albedo () const { return albedo; }
 	// object albedo (RGB, 0-1)
 
-	const StateVectors *S0() const { return m_svS0; }
+	const StateVectors *S0() const { return m_svS0; } // current state (at time td.SimT0)
+	const StateVectors *S1() const { return m_svS1; } // update state (during update phase, refers to td.SimT1. Past update phase this is the same as S0)
 
 	inline const Vector &GPos() const { return m_svS0->pos; }
 	inline const Vector &GVel() const { return m_svS0->vel; }
@@ -164,8 +165,6 @@ public:
 
 	inline const Vector &Acceleration() const { return acc; };
 
-	const StateVectors *S1() const { return m_svS1; }
-
 protected:
 	double mass { 0.0 };         // current body mass [kg]
 	double size { 0.0 };         // (mean) body radius [m]
@@ -175,8 +174,7 @@ protected:
 
 	Vector acc;          // current acceleration vector
 
-	StateVectors *S1() { return m_svS1; }
-	StateVectors *S0() { return m_svS0; }
+	StateVectors *S1() { return m_svS1; } // write access to S1. Note that S0 is read-only
 
 	void PublishStateVectors();
 	// copy update state (m_svS1) back to public state (m_svS0)

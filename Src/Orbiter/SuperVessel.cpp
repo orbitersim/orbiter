@@ -290,12 +290,12 @@ bool SuperVessel::Activate (bool force)
 		for (int i = 0; i < nv; i++) {
 			vlist[i].vessel->fstatus = FLIGHTSTATUS_FREEFLIGHT;
 			// none of the following should be necessary
-			vlist[i].vessel->rpos_base = vlist[i].vessel->S0()->pos;
-			vlist[i].vessel->rpos_add.Set (0,0,0);
-			vlist[i].vessel->S0()->vel += vlist[i].vessel->rvel_add;
-			vlist[i].vessel->rvel_base = vlist[i].vessel->S0()->vel;
-			vlist[i].vessel->rvel_add.Set (0,0,0);
-			vlist[i].vessel->S0()->omega.Set (0,0,0);
+			//vlist[i].vessel->rpos_base = vlist[i].vessel->S0()->pos;
+			//vlist[i].vessel->rpos_add.Set (0,0,0);
+			//vlist[i].vessel->S0()->vel += vlist[i].vessel->rvel_add;
+			//vlist[i].vessel->rvel_base = vlist[i].vessel->S0()->vel;
+			//vlist[i].vessel->rvel_add.Set (0,0,0);
+			//vlist[i].vessel->S0()->omega.Set (0,0,0);
 		}
 		return true;
 	} else
@@ -306,22 +306,25 @@ bool SuperVessel::Activate (bool force)
 
 void SuperVessel::RPlace (const Vector &_rpos, const Vector &_rvel, const Vessel *ref)
 {
+	dASSERT(!g_bStateUpdate, "SuperVessel::RPlace cannot be called during update phase");
+
 	DWORD i;
-	Vector dp = _rpos-S0()->pos;
+	Vector dp = _rpos - S0()->pos;
 	if (ref)
 		for (i = 0; i < nv; i++)
 			if (vlist[i].vessel == ref) {
-				dp -= mul (S0()->R, vlist[i].rpos-cg);
+				dp -= mul(S0()->R, vlist[i].rpos - cg);
 				break;
 			}
-	rpos_base = S0()->pos += dp;
-	rpos_add.Set (0,0,0);
-	rvel_base = S0()->vel = _rvel;
-	rvel_add.Set (0,0,0);
-	cpos = S0()->pos - vlist[0].vessel->cbody->GPos();
-	cvel = S0()->vel - vlist[0].vessel->cbody->GVel();
+	rpos_base = S1()->pos = S0()->pos + dp;
+	rpos_add.Set(0,0,0);
+	rvel_base = S1()->vel = _rvel;
+	rvel_add.Set(0,0,0);
+	cpos = S1()->pos - vlist[0].vessel->cbody->S1()->pos;
+	cvel = S1()->vel - vlist[0].vessel->cbody->S1()->vel;
 	for (i = 0; i < nv; i++) // update component states
-		vlist[i].vessel->RPlace_individual (vlist[i].vessel->S0()->pos + dp, S0()->vel);
+		vlist[i].vessel->RPlace_individual (vlist[i].vessel->S0()->pos + dp, S1()->vel);
+	SyncStateVectors();
 	fstatus = FLIGHTSTATUS_FREEFLIGHT;
 	bOrbitStabilised = false;
 	UpdateProxies();
@@ -336,53 +339,57 @@ void SuperVessel::SetGlobalOrientation (const Vector &arot, const Vessel *ref)
 	double sinx = sin(arot.x), cosx = cos(arot.x);
 	double siny = sin(arot.y), cosy = cos(arot.y);
 	double sinz = sin(arot.z), cosz = cos(arot.z);
-	S0()->R.Set (cosy*cosz,                cosy*sinz,               -siny,
-	           sinx*siny*cosz-cosx*sinz, sinx*siny*sinz+cosx*cosz, sinx*cosy,
-			   cosx*siny*cosz+sinx*sinz, cosx*siny*sinz-sinx*cosz, cosx*cosy);
+	S1()->R.Set(cosy*cosz,                cosy*sinz,               -siny,
+	            sinx*siny*cosz-cosx*sinz, sinx*siny*sinz+cosx*cosz, sinx*cosy,
+			    cosx*siny*cosz+sinx*sinz, cosx*siny*sinz-sinx*cosz, cosx*cosy);
 	if (ref) {
 		for (i = 0; i < nv; i++)
 			if (vlist[i].vessel == ref) {
-				S0()->R.tpostmul (vlist[i].rrot);
+				S1()->R.tpostmul(vlist[i].rrot);
 				break;
 			}
 	}
-	S0()->Q.Set (S0()->R);
+	S1()->Q.Set(S1()->R);
 
 	// update rotation for all sub-vessels
 	for (i = 0; i < nv; i++) {
 		Vessel *v = vlist[i].vessel;
-		v->S0()->pos.Set (mul (S0()->R, vlist[i].rpos-cg) + S0()->pos);
-		v->S0()->Q.Set (S0()->Q);
-		v->S0()->Q.postmul (vlist[i].rq);
-		v->S0()->R.Set (v->S0()->Q);
+		v->S1()->pos.Set(mul (S1()->R, vlist[i].rpos - cg) + S1()->pos);
+		v->S1()->Q.Set(S1()->Q);
+		v->S1()->Q.postmul(vlist[i].rq);
+		v->S1()->R.Set(v->S1()->Q);
 		v->UpdateAttachments();
 	}
+
+	SyncStateVectors();
 }
 
 // =======================================================================
 
-void SuperVessel::SetRotationMatrix (const Matrix &R, const Vessel *ref)
+void SuperVessel::SetRotationMatrix(const Matrix &R, const Vessel *ref)
 {
 	DWORD i;
-	S0()->R.Set (R);
+	S1()->R.Set(R);
 	if (ref) {
 		for (i = 0; i < nv; i++)
 			if (vlist[i].vessel == ref) {
-				S0()->R.tpostmul (vlist[i].rrot);
+				S1()->R.tpostmul(vlist[i].rrot);
 				break;
 			}
 	}
-	S0()->Q.Set (S0()->R);
+	S1()->Q.Set(S1()->R);
 
 	// update rotation for all sub-vessels
 	for (i = 0; i < nv; i++) {
 		Vessel *v = vlist[i].vessel;
-		v->S0()->pos.Set (mul (S0()->R, vlist[i].rpos-cg) + S0()->pos);
-		v->S0()->R.Set (S0()->R);
-		v->S0()->R.postmul (vlist[i].rrot);
-		v->S0()->Q.Set (v->S0()->R);
+		v->S1()->pos.Set(mul (S1()->R, vlist[i].rpos - cg) + S1()->pos);
+		v->S1()->R.Set(S1()->R);
+		v->S1()->R.postmul(vlist[i].rrot);
+		v->S1()->Q.Set(v->S1()->R);
 		v->UpdateAttachments();
 	}
+
+	SyncStateVectors();
 }
 
 // =======================================================================
@@ -390,19 +397,22 @@ void SuperVessel::SetRotationMatrix (const Matrix &R, const Vessel *ref)
 void SuperVessel::SetAngVel (const Vector &omega, const Vessel *ref)
 {
 	DWORD i;
-	S0()->omega.Set (omega);
+	S1()->omega.Set(omega);
 	if (ref) {
 		for (i = 0; i < nv; i++)
 			if (vlist[i].vessel == ref) {
-				S0()->omega.Set (mul (vlist[i].rrot, omega));		
+				S1()->omega.Set(mul(vlist[i].rrot, omega));
+				break;
 			}
 	}
 
 	// update spin for all sub-vessels
 	for (i = 0; i < nv; i++) {
 		Vessel *v = vlist[i].vessel;
-		v->SetAngVel_individual (tmul (vlist[i].rrot, S0()->omega));
+		v->SetAngVel_individual(tmul(vlist[i].rrot, S1()->omega));
 	}
+
+	SyncStateVectors();
 }
 
 // ==============================================================
@@ -529,18 +539,18 @@ void SuperVessel::SoftDockUpdate(Vessel* vessel2, PortSpec *pD)
 
 	vessel2->SetSuperStruct(this);
 	// flush the state increments
-	vessel2->rpos_base = vessel2->S0()->pos; vessel2->rpos_add.Set(0, 0, 0);
-	vessel2->rvel_base = vessel2->S0()->vel; vessel2->rvel_add.Set(0, 0, 0);
-	vessel2->S0()->Q.Set(S0()->Q);
-	vessel2->S0()->Q.postmul(vlist[idx2].rq);
-	vessel2->S0()->R.Set(vessel2->S0()->Q);
+	vessel2->rpos_base = vessel2->S1()->pos; vessel2->rpos_add.Set(0, 0, 0);
+	vessel2->rvel_base = vessel2->S1()->vel; vessel2->rvel_add.Set(0, 0, 0);
+	vessel2->S1()->Q.Set(S1()->Q);
+	vessel2->S1()->Q.postmul(vlist[idx2].rq);
+	vessel2->S1()->R.Set(vessel2->S1()->Q);
 
 	ResetMassAndCG();
 	ResetSize();
 	CalcPMI();
 	bOrbitStabilised = false;
 
-	vessel2->S0()->omega.Set(tmul(vlist[idx2].rrot, S0()->omega));
+	vessel2->S1()->omega.Set(tmul(vlist[idx2].rrot, S1()->omega));
 	vessel2->UpdateSurfParams();
 }
 
@@ -611,11 +621,11 @@ bool SuperVessel::Add (Vessel *vessel1, int port1, Vessel *vessel2, int port2, b
 
 	vessel2->SetSuperStruct (this);
 	// flush the state increments
-	vessel2->rpos_base = vessel2->S0()->pos; vessel2->rpos_add.Set(0,0,0);
-	vessel2->rvel_base = vessel2->S0()->vel; vessel2->rvel_add.Set(0,0,0);
-	vessel2->S0()->Q.Set (S0()->Q);
-	vessel2->S0()->Q.postmul (vlist[nv].rq);
-	vessel2->S0()->R.Set (vessel2->S0()->Q);
+	vessel2->rpos_base = vessel2->S1()->pos; vessel2->rpos_add.Set(0,0,0);
+	vessel2->rvel_base = vessel2->S1()->vel; vessel2->rvel_add.Set(0,0,0);
+	vessel2->S1()->Q.Set(S1()->Q);
+	vessel2->S1()->Q.postmul(vlist[nv].rq);
+	vessel2->S1()->R.Set(vessel2->S1()->Q);
 
 	nv++;
 	ResetMassAndCG();
@@ -630,13 +640,13 @@ bool SuperVessel::Add (Vessel *vessel1, int port1, Vessel *vessel2, int port2, b
 			// individual spin of each vessel
 			am += mul (vlist[i].rrot, vlist[i].vessel->AngularMomentum()) * vlist[i].vessel->mass;
 			// contribution of vessel motion to angular momentum
-			am += crossp (tmul (S0()->R, vlist[i].vessel->GVel()-S0()->vel), vlist[i].rpos-cg) * vlist[i].vessel->mass;
+			am += crossp(tmul(S1()->R, vlist[i].vessel->S1()->vel - S1()->vel), vlist[i].rpos-cg) * vlist[i].vessel->mass;
 		}
-		S0()->omega.Set (am.x/pmi.x, am.y/pmi.y, am.z/pmi.z);
-		S0()->omega /= mass;
+		S1()->omega.Set (am.x/pmi.x, am.y/pmi.y, am.z/pmi.z);
+		S1()->omega /= mass;
 	}
 
-	vessel2->S0()->omega.Set (tmul (vlist[nv-1].rrot, S0()->omega));
+	vessel2->S1()->omega.Set(tmul(vlist[nv-1].rrot, S1()->omega));
 	vessel2->UpdateSurfParams();
 
 	return true;
@@ -705,8 +715,8 @@ bool SuperVessel::Merge (Vessel *vessel1, int port1, Vessel *vessel2, int port2)
 		     bt.z * (as.y*cs.x - as.x*cs.y) +
 			 at.z * (bs.x*cs.y - bs.y*cs.x)) / den;
 
-	R.premul (vlist[idx1].rrot);             // vessel2->supervessel1
-	R.tpostmul (sv2->vlist[idx2].rrot);      // supervessel2->supervessel1
+	R.premul(vlist[idx1].rrot);             // vessel2->supervessel1
+	R.tpostmul(sv2->vlist[idx2].rrot);      // supervessel2->supervessel1
 
 	for (i = 0; i < nv2; i++) {
 		vlist[nv+i].vessel = sv2->vlist[i].vessel;
@@ -718,9 +728,9 @@ bool SuperVessel::Merge (Vessel *vessel1, int port1, Vessel *vessel2, int port2)
 		vlist[nv+i].vessel->SetSuperStruct (this);
 		vlist[nv+i].vessel->FlushRPos();
 		vlist[nv+i].vessel->FlushRVel();
-		vlist[nv+i].vessel->S0()->Q.Set (S0()->Q);
-		vlist[nv+i].vessel->S0()->Q.postmul (vlist[nv+i].rq);
-		vlist[nv+i].vessel->S0()->R.Set (vlist[nv+i].vessel->S0()->Q);
+		vlist[nv+i].vessel->S1()->Q.Set(S1()->Q);
+		vlist[nv+i].vessel->S1()->Q.postmul(vlist[nv+i].rq);
+		vlist[nv+i].vessel->S1()->R.Set(vlist[nv+i].vessel->S1()->Q);
 		vlist[nv + i].vessel->UpdateSurfParams();
 	}
 	nv += nv2;
@@ -894,13 +904,13 @@ void SuperVessel::InitLanded (const Planet *planet, double lng, double lat, doub
 	sp.SetLanded (lng, lat, cgelev, dir, nml, planet);
 
 	double vground = Pi2 * /*sp.rad*/planet->Size() * sp.clat / planet->RotT();
-	S0()->vel.Set (-vground*sp.slng, 0.0, vground*sp.clng);
-	S0()->pos.Set (mul (planet->GRot(), sp.ploc) + planet->GPos());
-	S0()->vel.Set (mul (planet->GRot(), S0()->vel) + planet->GVel());
-	land_rot.Set (*hrot);
-	S0()->Q.Set (land_rot);
-	S0()->Q.premul (planet->GQ());
-	S0()->R.Set (S0()->Q);
+	S1()->vel.Set(-vground * sp.slng, 0.0, vground * sp.clng);
+	S1()->pos.Set(mul(planet->GRot(), sp.ploc) + planet->GPos());
+	S1()->vel.Set(mul(planet->GRot(), S1()->vel) + planet->GVel());
+	land_rot.Set(*hrot);
+	S1()->Q.Set(land_rot);
+	S1()->Q.premul(planet->GQ());
+	S1()->R.Set(S1()->Q);
 
 	fstatus = FLIGHTSTATUS_LANDED;
 	bSurfaceContact = true;
@@ -915,6 +925,7 @@ void SuperVessel::InitLanded (const Planet *planet, double lng, double lat, doub
 		hrotcomp.postmul (vlist[comp].rrot);
 		vlist[comp].vessel->InitLanded (planet, lng, lat, dir, &hrotcomp, rad-elev-planet->Size(), true);
 	}
+	SyncStateVectors();
 }
 
 // =======================================================================
@@ -950,12 +961,12 @@ void SuperVessel::ComponentStateVectors(const StateVectors *s, StateVectors *sco
 
 void SuperVessel::SetStateFromComponent (const StateVectors *scomp, int comp)
 {
-	S0()->R.Set (scomp->R);
-	S0()->R.postmul (vlist[comp].rrot);
-	S0()->Q.Set (S0()->R);
-	S0()->omega.Set (mul (vlist[comp].rrot, scomp->omega));
-	S0()->vel.Set (scomp->vel - mul (S0()->R, crossp (vlist[comp].rpos-cg, S0()->omega)));
-	S0()->pos.Set (scomp->pos - mul (S0()->R, vlist[comp].rpos-cg));
+	S1()->R.Set(scomp->R);
+	S1()->R.postmul(vlist[comp].rrot);
+	S1()->Q.Set(S1()->R);
+	S1()->omega.Set(mul(vlist[comp].rrot, scomp->omega));
+	S1()->vel.Set(scomp->vel - mul(S1()->R, crossp(vlist[comp].rpos - cg, S1()->omega)));
+	S1()->pos.Set(scomp->pos - mul(S1()->R, vlist[comp].rpos - cg));
 }
 
 // =======================================================================
@@ -1053,7 +1064,7 @@ void SuperVessel::ResetMassAndCG ()
 
 	// shift CG
 	Vector dp = mul (S0()->R, cg_new-cg);
-	S0()->pos += dp;
+	S1()->pos += dp;
 	rpos_add += dp;
 	cpos += dp;
 	cg = cg_new;
