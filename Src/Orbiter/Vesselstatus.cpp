@@ -401,8 +401,8 @@ DWORD Vessel::PackDefaultState (char **data, DWORD flag)
 	case FLIGHTSTATUS_FREEFLIGHT:
 		sd->rpos = cpos;
 		sd->rvel = cvel;
-		EulerAngles (s0->R, sd->arot);
-		sd->vrot = s0->omega;
+		EulerAngles (S0()->R, sd->arot);
+		sd->vrot = S0()->omega;
 		break;
 	case FLIGHTSTATUS_LANDED:
 		sd->lng = sp.lng;
@@ -588,9 +588,9 @@ void Vessel::SetState2 (const void *status)
 			Matrix lrot;
 			lrot.Set (MakeVector(vs->arot));
 			double alt = vs->vrot.x;
-			InitLanded ((Planet*)cbody, vs->surf_lng, vs->surf_lat, vs->surf_hdg, &lrot, alt);
+			InitLanded ((const Planet*)cbody, vs->surf_lng, vs->surf_lat, vs->surf_hdg, &lrot, alt);
 		} else {
-			InitLanded ((Planet*)cbody, vs->surf_lng, vs->surf_lat, vs->surf_hdg);
+			InitLanded ((const Planet*)cbody, vs->surf_lng, vs->surf_lat, vs->surf_hdg);
 		}
 		if (proxybase = landtgt)
 			proxybase->ReportTouchdown (this, vs->surf_lng, vs->surf_lat);
@@ -627,10 +627,10 @@ void Vessel::GetState (VESSELSTATUS &status)
 		status.vrot.z = 0.0;
 		EulerAngles (land_rot, status.arot);
 	} else {
-		status.vrot.x   = s0->omega.x;
-		status.vrot.y   = s0->omega.y;
-		status.vrot.z   = s0->omega.z;
-		EulerAngles (s0->R, status.arot);
+		status.vrot.x   = S0()->omega.x;
+		status.vrot.y   = S0()->omega.y;
+		status.vrot.z   = S0()->omega.z;
+		EulerAngles (S0()->R, status.arot);
 	}
 	TankSpec *ts = PropellantHandle(0);
 	status.fuel     = (ts ? GetPropellantLevel(ts) : 0.0);
@@ -638,7 +638,7 @@ void Vessel::GetState (VESSELSTATUS &status)
 	if (!status.eng_main) status.eng_main = -GetThrusterGroupLevel (THGROUP_RETRO);
 	status.eng_hovr = GetThrusterGroupLevel (THGROUP_HOVER);
 	status.port     = nport;
-	status.base     = landtgt; // should also include docking target
+	status.base     = (Base*)landtgt; // should also include docking target
 	switch (fstatus) {
 	case FLIGHTSTATUS_FREEFLIGHT:
 		status.status = 0;
@@ -670,14 +670,14 @@ void Vessel::GetState2 (void *status)
 	DWORD i;
 
 	vs->rbody = (OBJHANDLE)cbody;
-	vs->base  = proxybase;
+	vs->base  = (Base*)proxybase;
 	vs->port  = nport;
 	Vector dp (GPos() - cbody->GPos());
 	Vector dv (GVel() - cbody->GVel());
 	vs->rpos  = _V(dp.x, dp.y, dp.z);
 	vs->rvel  = _V(dv.x, dv.y, dv.z);
-	vs->vrot  = (fstatus == FLIGHTSTATUS_LANDED ? _V(sp.alt, 0, 0) : _V(s0->omega.x, s0->omega.y, s0->omega.z));
-	EulerAngles (fstatus == FLIGHTSTATUS_LANDED ? land_rot : s0->R, vs->arot);
+	vs->vrot  = (fstatus == FLIGHTSTATUS_LANDED ? _V(sp.alt, 0, 0) : _V(S0()->omega.x, S0()->omega.y, S0()->omega.z));
+	EulerAngles (fstatus == FLIGHTSTATUS_LANDED ? land_rot : S0()->R, vs->arot);
 	vs->surf_lng = sp.lng;
 	vs->surf_lat = sp.lat;
 	vs->surf_hdg = sp.dir;

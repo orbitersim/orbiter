@@ -212,9 +212,9 @@ bool VesselBase::Activate (bool force)
 {
 	if (fstatus == FLIGHTSTATUS_LANDED || force) {
 		fstatus = FLIGHTSTATUS_FREEFLIGHT;
-		rpos_base = s0->pos;
+		rpos_base = S0()->pos;
 		rpos_add.Set (0,0,0);
-		rvel_base = s0->vel;
+		rvel_base = S0()->vel;
 		rvel_add.Set (0,0,0);
 		return true;
 	} else
@@ -243,7 +243,8 @@ void VesselBase::PostUpdate ()
 
 void VesselBase::UpdateSurfParams ()
 {
-	if (proxybody) sp.Set (s1 ? *s1 : *s0, proxybody->s1 ? *proxybody->s1 : *proxybody->s0, proxybody, &etile, &windp);
+	if (proxybody)
+		sp.Set (*S1(), *proxybody->S1(), proxybody, &etile, &windp);
 }
 
 // =======================================================================
@@ -255,13 +256,13 @@ void VesselBase::CheckLanded ()
 			LandingTest.testing = false;
 		else {
 			static const double eps = 1e-4;
-			Vector prel (tmul(proxybody->s0->R, s0->pos - proxybody->s0->pos)); // vessel position in planet local coords
+			Vector prel (tmul(proxybody->S0()->R, S0()->pos - proxybody->S0()->pos)); // vessel position in planet local coords
 			double dt = td.SimT0 - LandingTest.testt;
 			if (dt < 0.1) return;
 			double dst2 = prel.dist2 (LandingTest.surfpos);
-			double dangle = angle (s0->Q, LandingTest.surfrot);
+			double dangle = angle (S0()->Q, LandingTest.surfrot);
 			LandingTest.surfpos = prel;
-			LandingTest.surfrot.Set (s0->Q);
+			LandingTest.surfrot.Set (S0()->Q);
 			if (dst2/dt > 1e-4 || dangle/dt > 1e-4) {
 				LandingTest.testt = td.SimT0; // still moving -> reset timer
 			} else if (td.SimT0 - LandingTest.testt > 5.0) {
@@ -272,8 +273,8 @@ void VesselBase::CheckLanded ()
 
 				if (bDynamicGroundContact) {
 					double alt = Altitude(); //rad - proxybody->Size();
-					Matrix lrot (s0->R);
-					lrot.tpremul (proxyplanet->s0->R);
+					Matrix lrot (S0()->R);
+					lrot.tpremul (proxyplanet->S0()->R);
 					InitLanded (proxyplanet, lng, lat, dir, &lrot, alt);
 				} else {
 					InitLanded (proxyplanet, lng, lat, dir);
@@ -287,8 +288,8 @@ void VesselBase::CheckLanded ()
 		if (bSurfaceContact && !ThrustEngaged()) {
 			LandingTest.testing = true;
 			LandingTest.testt = td.SimT0;
-			LandingTest.surfpos.Set (tmul(proxybody->s0->R, s0->pos - proxybody->s0->pos));
-			LandingTest.surfrot.Set (s0->Q); // should really subtract proxybody rotation here
+			LandingTest.surfpos.Set (tmul(proxybody->S0()->R, S0()->pos - proxybody->S0()->pos));
+			LandingTest.surfrot.Set (S0()->Q); // should really subtract proxybody rotation here
 		}
 	}
 }
@@ -302,11 +303,11 @@ double VesselBase::LandedHeading (double lng, double lat) const
 	double slng = sin(lng), clng = cos(lng);
 	double slat = sin(lat), clat = cos(lat);
 	Matrix L2H (-slng,0,clng, clat*clng,slat,clat*slng, -slat*clng,clat,-slat*slng);
-	Vector RZloc = mul(L2H, tmul (proxybody->s0->R, Vector (s0->R.m13, s0->R.m23, s0->R.m33)));
+	Vector RZloc = mul(L2H, tmul (proxybody->S0()->R, Vector (S0()->R.m13, S0()->R.m23, S0()->R.m33)));
 	if (fabs(RZloc.x) > eps || fabs(RZloc.z) > eps)
 		dir = atan2(RZloc.x, RZloc.z);
 	else {
-		Vector RYloc = mul(L2H, tmul(proxybody->s0->R, Vector(-s0->R.m12, -s0->R.m22, -s0->R.m32)));
+		Vector RYloc = mul(L2H, tmul(proxybody->S0()->R, Vector(-S0()->R.m12, -S0()->R.m22, -S0()->R.m32)));
 		dir = atan2(RYloc.x, RYloc.z);
 	}
 	if (dir < 0.0) dir += Pi2;
@@ -326,13 +327,13 @@ void VesselBase::UpdateProxies ()
 {
 	DWORD i, ng = g_psys->nGrav();
 	double dist2, proxydist2, proxypdist2;
-	CelestialBody *grav;
+	const CelestialBody *grav;
 	Planet *pl = 0;
 
 	// Check for closest celestial body and planet
 	for (i = 0, proxydist2 = proxypdist2 = 1e100; i < ng; i++) {
 		grav = g_psys->GetGravObj(i);
-		dist2 = s0->pos.dist2 (grav->s0->pos) - grav->Size(); // distance squared from body surface
+		dist2 = S1()->pos.dist2 (grav->S1()->pos) - grav->Size(); // distance squared from body surface
 		if (dist2 < proxydist2) {
 			proxydist2 = dist2;
 			proxybody = grav;
@@ -348,8 +349,8 @@ void VesselBase::UpdateProxies ()
 	proxybase = 0;
 	if (proxyplanet) {
 		for (i = 0, proxydist2 = 1e100; i < proxyplanet->nBase(); i++) {
-			Base *base = (Base*)proxyplanet->GetBase(i);
-			if ((dist2 = s0->pos.dist2 (base->s0->pos)) < proxydist2) {
+			const Base *base = (const Base*)proxyplanet->GetBase(i);
+			if ((dist2 = S1()->pos.dist2 (base->S1()->pos)) < proxydist2) {
 				proxydist2 = dist2;
 				proxybase = base;
 			}
@@ -358,7 +359,7 @@ void VesselBase::UpdateProxies ()
 
 	// check for orbit reference body
 	double gfrac;
-	SetOrbitReference (g_psys->GetDominantGravitySource (s0->pos, gfrac));
+	SetOrbitReference (g_psys->GetDominantGravitySource (S1()->pos, gfrac));
 }
 
 // ==============================================================
@@ -370,13 +371,13 @@ bool VesselBase::SurfaceProximity () const
 	if (!proxybody) return false;
 	//if (bTouchdown) return true;  // TODO
 	double rad = proxybody->Size();
-	double dist = s0->pos.dist (proxybody->s0->pos);
+	double dist = S0()->pos.dist (proxybody->S0()->pos);
 	double alt = dist-rad-Elevation();
 	if (alt < 3.0*size) return true;
 	return false;
 	// now extrapolate to end of time step
-	Vector sp1 = s0->pos + (s0->vel + acc * 0.5*td.SimDT)*td.SimDT;
-	dist = sp1.dist (proxybody->s1->pos);
+	Vector sp1 = S0()->pos + (S0()->vel + acc * 0.5*td.SimDT)*td.SimDT;
+	dist = sp1.dist (proxybody->S1()->pos);
 	alt = dist-rad;
 	return (alt < 3.0*size);
 #endif
@@ -415,7 +416,7 @@ bool VesselBase::ValidateStateUpdate (StateVectors *s)
 			if (vs < vsmax) {
 				Vector gv(sp.groundvel_ship * (vsmax/vs)); // rescaled surface-relative velocity
 				gv = mul (GRot(), gv);                    // map to global
-				s0->vel += (gv - sp.groundvel_glob);
+				S1()->vel += (gv - sp.groundvel_glob);
 				rvel_base += (gv - sp.groundvel_glob);
 				return false;
 			}

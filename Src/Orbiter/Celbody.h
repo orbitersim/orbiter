@@ -32,6 +32,9 @@ public:
 	CelestialBody (char *fname);
 	virtual ~CelestialBody ();
 
+	void SetPsys(const PlanetarySystem *system);
+	const PlanetarySystem *GetPsys() const;
+
 	void DefaultParam ();
 	virtual void Setup ();
 	virtual int Type() const { return OBJTP_CBODY; }
@@ -165,12 +168,12 @@ protected:
 	// external module.
 	// Returns false if not supported by module
 
-	int ExternState (double *res);
+	int TryExternEphemeris(double *res);
 	// Try to obtain current ephemeris data (true and barycentric) from external
 	// module. This tries first FastEphemeris, then Ephemeris. Return value
 	// contains data flags returned by the ephemeris functions
 
-	int ExternPosition ();
+	int TryExternState();
 	// Try to obtain current ephemeris data (true and barycentric) from external
 	// module. This tries first FastEphemeris, then Ephemeris. Return value
 	// indicates which data could be updated
@@ -197,6 +200,8 @@ protected:
 	} modIntf;
 
 private:
+	const PlanetarySystem *psys; // system the planet belongs to
+
 	HINSTANCE hMod;          // module handle, if available
 	
 	double eps_ref;          // precession reference axis: obliquity against ecliptic normal

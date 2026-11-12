@@ -52,7 +52,7 @@ public:
 
 	virtual void Update (bool force = false);
 
-	virtual void Attach (Planet *_parent);
+	virtual void Attach (const Planet *_parent);
 	// Add *this as a child to "_parent"
 
 	const Planet *RefPlanet () const { return (Planet*)cbody; }
@@ -96,31 +96,31 @@ public:
 	// return actual pad number, or -1 if no free pad
 	// if forcepad=false and pad is occupied, pick random free pad
 
-	int OccupyPad (Vessel *vessel, double _lng, double _lat);
+	int OccupyPad (Vessel *vessel, double _lng, double _lat) const;
 	// select pad containing point (_lng,_lat) and mark as occupied.
 	// return pad no, or -1 if pad not free or point not owned by any pad
 
-	void ClearPad (Vessel *vessel);
+	void ClearPad (Vessel *vessel) const;
 	// mark the pad occupied by or reserved for 'vessel' as free
 
-	int RequestLanding (Vessel *vessel, DWORD &padno);
-	int RequestTakeoff ();
+	int RequestLanding(Vessel *vessel, DWORD &padno) const;
+	int RequestTakeoff() const;
 	// Request for landing/takeoff. Return value is result:
 	// 1=denied, 2=still pending, 3=granted.
 	// if landing clearance is given, padno contains allocated landing pad
 
-	void ReportTakeoff (Vessel *vessel);
+	void ReportTakeoff (Vessel *vessel) const;
 	// 'vessel' reports lift-off
 
-	int ReportTouchdown (VesselBase *vessel, double vlng, double vlat);
+	int ReportTouchdown (VesselBase *vessel, double vlng, double vlat) const;
 	// 'vessel' reports touchdown at position (vlng,vlat)
 
 	double CosSunAlt () const;
 	// Return cosine of angle between surface normal and direction to
 	// the sun (which is assumed in the centre of the global coord system)
 
-	inline Vector SunDirection () const
-	{ return (s1 ? tmul(s1->R, -s1->pos.unit()) : tmul (s0->R, -s0->pos.unit())); }
+	inline Vector SunDirection() const
+	{ return (S1() ? tmul(S1()->R, -S1()->pos.unit()) : tmul(S0()->R, -S0()->pos.unit())); }
 	// Return vector pointing towards sun (= world coordiate origin) in
 	// base local coordinates
 
@@ -182,7 +182,7 @@ private:
 	Vector rotvel;                 // base velocity as result of planet rotation in local planet coords (rotvel.y=0)
 
 	DWORD npad;                    // number of landing pads
-	int padfree;                   // number of available (unoccupied) pads
+	mutable int padfree;           // number of available (unoccupied) pads
 	LpadSpec *lspec;               // list of landing pads
 
 	DWORD nrwy;                    // number of runways

@@ -366,7 +366,7 @@ void Base::DestroySurfaceTiles ()
 	}
 }
 
-void Base::Attach (Planet *_parent)
+void Base::Attach (const Planet *_parent)
 {
 	cbody = _parent;
 
@@ -376,7 +376,6 @@ void Base::Attach (Planet *_parent)
 	rad = cbody->Size(); // dist from planet centre
 	elev = 0.0;
 	cbody->EquatorialToLocal (slng, clng, slat, clat, rad, rpos);
-	s0->vel.Set (0,0,0);                         // base is fixed to ground
 	rrot.Set ( clng*slat, clng*clat, -slng,   // rotate from local
 		      -clat,      slat,       0,      // base to local
 			   slng*slat, slng*clat,  clng);  // planet coords
@@ -587,16 +586,17 @@ void Base::ScanObjectMeshes () const
 	}
 	objmsh_valid = true;
 }
-void Base::Update (bool force)
+
+void Base::Update(bool force)
 {
-	s1->R.Set (rrot);
-	s1->R.premul (cbody->s1->R);
-	s1->Q.Set (s1->R);
+	S1()->R.Set(rrot);
+	S1()->R.premul(cbody->S1()->R);
+	S1()->Q.Set(S1()->R);
 	// WARNING: this should work the other way round: combine the
 	// two quaternions and extract grot
 
-	s1->pos.Set (mul (cbody->s1->R, rpos) + cbody->s1->pos);
-	s1->vel.Set (mul (cbody->s1->R, rotvel) + cbody->s1->vel);
+	S1()->pos.Set(mul(cbody->S1()->R, rpos) + cbody->S1()->pos);
+	S1()->vel.Set(mul(cbody->S1()->R, rotvel) + cbody->S1()->vel);
 
 	// periodically update some secondary parameters
 	if (td.SimT1 > sundir_updt || force) {
@@ -677,7 +677,7 @@ int Base::OccupyPad (Vessel *vessel, int pad, bool forcepad)
 	return -1;
 }
 
-int Base::OccupyPad (Vessel *vessel, double _lng, double _lat)
+int Base::OccupyPad (Vessel *vessel, double _lng, double _lat) const
 {
 	const double padrad = 20.0; // landing pad size
 	double plng, plat, dist, bdir;
@@ -697,7 +697,7 @@ int Base::OccupyPad (Vessel *vessel, double _lng, double _lat)
 	return -1; // failure: pad not free
 }
 
-void Base::ClearPad (Vessel *vessel)
+void Base::ClearPad (Vessel *vessel) const
 {
 	for (DWORD i = 0; i < npad; i++)
 		if (lspec[i].status && lspec[i].vessel == vessel) {
@@ -715,7 +715,7 @@ int Base::LandedAtPad (const Vessel *vessel) const
 	return -1;
 }
 
-int Base::RequestLanding (Vessel *vessel, DWORD &padno)
+int Base::RequestLanding(Vessel *vessel, DWORD &padno) const
 {
 	if (rand() < RAND_MAX/2) return 2; // keep pending
 	if (!padfree) return 1;     // deny
@@ -735,13 +735,13 @@ int Base::RequestLanding (Vessel *vessel, DWORD &padno)
 	return 2;
 }
 
-int Base::RequestTakeoff ()
+int Base::RequestTakeoff() const
 {
 	if (rand() < RAND_MAX/2) return 3; // keep pending
 	return 5;                   // grant clearance
 }
 
-void Base::ReportTakeoff (Vessel *vessel)
+void Base::ReportTakeoff (Vessel *vessel) const
 {
 	for (DWORD i = 0; i < npad; i++) {
 		if (lspec[i].status == 1 && lspec[i].vessel == vessel) {
@@ -752,7 +752,7 @@ void Base::ReportTakeoff (Vessel *vessel)
 	}
 }
 
-int Base::ReportTouchdown (VesselBase *vessel, double vlng, double vlat)
+int Base::ReportTouchdown (VesselBase *vessel, double vlng, double vlat) const
 {
 	const double padrad = 30.0; // landing pad size
 	double plng, plat, dist, bdir;
@@ -787,5 +787,5 @@ int Base::ReportTouchdown (VesselBase *vessel, double vlng, double vlat)
 
 double Base::CosSunAlt () const
 {
-	return (s0->R.m12*s0->pos.x + s0->R.m22*s0->pos.y + s0->R.m32*s0->pos.z) / (-s0->pos.length());
+	return (S0()->R.m12*S0()->pos.x + S0()->R.m22*S0()->pos.y + S0()->R.m32*S0()->pos.z) / (-S0()->pos.length());
 }

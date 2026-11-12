@@ -398,7 +398,7 @@ DLLEXPORT void oapiSetEmptyMass (OBJHANDLE hVessel, double mass)
 
 DLLEXPORT void oapiGetGlobalPos (OBJHANDLE hObj, VECTOR3 *pos)
 {
-	if (((Body*)hObj)->s0) {
+	if (((const Body*)hObj)->S0()) {
 		Vector gp(((Body*)hObj)->GPos());
 		pos->x = gp.x, pos->y = gp.y, pos->z = gp.z;
 	}
@@ -406,7 +406,7 @@ DLLEXPORT void oapiGetGlobalPos (OBJHANDLE hObj, VECTOR3 *pos)
 
 DLLEXPORT void oapiGetGlobalVel (OBJHANDLE hObj, VECTOR3 *vel)
 {
-	if (((Body*)hObj)->s0) {
+	if (((const Body*)hObj)->S0()) {
 		Vector gv(((Body*)hObj)->GVel());
 		vel->x = gv.x, vel->y = gv.y, vel->z = gv.z;
 	}
@@ -426,101 +426,101 @@ DLLEXPORT void oapiGetFocusGlobalVel (VECTOR3 *vel)
 
 DLLEXPORT void oapiGetRelativePos (OBJHANDLE hObj, OBJHANDLE hRef, VECTOR3 *pos)
 {
-	if (((Body*)hObj)->s0 && ((Body*)hRef)->s0) {
-		Vector dp(((Body*)hObj)->GPos()-((Body*)hRef)->GPos());
+	if (((const Body*)hObj)->S0() && ((const Body*)hRef)->S0()) {
+		Vector dp(((const Body*)hObj)->GPos()-((const Body*)hRef)->GPos());
 		pos->x = dp.x, pos->y = dp.y, pos->z = dp.z;
 	}
 }
 
 DLLEXPORT void oapiGetRelativeVel (OBJHANDLE hObj, OBJHANDLE hRef, VECTOR3 *vel)
 {
-	if (((Body*)hObj)->s0 && ((Body*)hRef)->s0) {
-		Vector dv(((Body*)hObj)->GVel() - ((Body*)hRef)->GVel());
+	if (((const Body*)hObj)->S0() && ((const Body*)hRef)->S0()) {
+		Vector dv(((const Body*)hObj)->GVel() - ((const Body*)hRef)->GVel());
 		vel->x = dv.x, vel->y = dv.y, vel->z = dv.z;
 	}
 }
 
 DLLEXPORT void oapiGetFocusRelativePos (OBJHANDLE hRef, VECTOR3 *pos)
 {
-	if (((Body*)hRef)->s0) {
-		Vector dp(g_focusobj->GPos() - ((Body*)hRef)->GPos());
+	if (((const Body*)hRef)->S0()) {
+		Vector dp(g_focusobj->GPos() - ((const Body*)hRef)->GPos());
 		pos->x = dp.x, pos->y = dp.y, pos->z = dp.z;
 	}
 }
 
 DLLEXPORT void oapiGetFocusRelativeVel (OBJHANDLE hRef, VECTOR3 *vel)
 {
-	if (((Body*)hRef)->s0) {
-		Vector dv(g_focusobj->GVel() - ((Body*)hRef)->GVel());
+	if (((const Body*)hRef)->S0()) {
+		Vector dv(g_focusobj->GVel() - ((const Body*)hRef)->GVel());
 		vel->x = dv.x, vel->y = dv.y, vel->z = dv.z;
 	}
 }
 
 DLLEXPORT void oapiGetBarycentre (OBJHANDLE hObj, VECTOR3 *bary)
 {
-	if (((Body*)hObj)->s0) {
-		Vector b(((CelestialBody*)hObj)->Barycentre());
+	if (((const Body*)hObj)->S0()) {
+		Vector b(((const CelestialBody*)hObj)->Barycentre());
 		bary->x = b.x, bary->y = b.y, bary->z = b.z;
 	}
 }
 
 DLLEXPORT void oapiGetRotationMatrix (OBJHANDLE hObj, MATRIX3 *mat)
 {
-	if (((Body*)hObj)->s0) {
-		const Matrix& m = ((Body*)hObj)->GRot();
+	if (((const Body*)hObj)->S0()) {
+		const Matrix& m = ((const Body*)hObj)->GRot();
 		for (int i = 0; i < 9; i++) mat->data[i] = m.data[i];
 	}
 }
 
 DLLEXPORT void oapiGlobalToLocal (OBJHANDLE hObj, const VECTOR3 *glob, VECTOR3 *loc)
 {
-	if (((Body*)hObj)->s0) {
+	if (((const Body*)hObj)->S0()) {
 		Vector vloc;
-		((Body*)hObj)->GlobalToLocal(Vector(glob->x, glob->y, glob->z), vloc);
+		((const Body*)hObj)->GlobalToLocal(Vector(glob->x, glob->y, glob->z), vloc);
 		loc->x = vloc.x, loc->y = vloc.y, loc->z = vloc.z;
 	}
 }
 
 DLLEXPORT void oapiLocalToGlobal (OBJHANDLE hObj, const VECTOR3 *loc, VECTOR3 *glob)
 {
-	if (((Body*)hObj)->s0) {
+	if (((const Body*)hObj)->S0()) {
 		Vector vglob;
-		((Body*)hObj)->LocalToGlobal(Vector(loc->x, loc->y, loc->z), vglob);
+		((const Body*)hObj)->LocalToGlobal(Vector(loc->x, loc->y, loc->z), vglob);
 		glob->x = vglob.x, glob->y = vglob.y, glob->z = vglob.z;
 	}
 }
 
 DLLEXPORT void oapiEquToLocal (OBJHANDLE hObj, double lng, double lat, double rad, VECTOR3 *loc)
 {
-	if (((Body*)hObj)->s0) {
+	if (((const Body*)hObj)->S0()) {
 		Vector vloc;
-		((Body*)hObj)->EquatorialToLocal(lng, lat, rad, vloc);
+		((const Body*)hObj)->EquatorialToLocal(lng, lat, rad, vloc);
 		loc->x = vloc.x, loc->y = vloc.y, loc->z = vloc.z;
 	}
 }
 
 DLLEXPORT void oapiLocalToEqu (OBJHANDLE hObj, const VECTOR3 &loc, double *lng, double *lat, double *rad)
 {
-	if (((Body*)hObj)->s0) {
+	if (((const Body*)hObj)->S0()) {
 		Vector vloc(loc.x, loc.y, loc.z);
-		((Body*)hObj)->LocalToEquatorial(vloc, *lng, *lat, *rad);
+		((const Body*)hObj)->LocalToEquatorial(vloc, *lng, *lat, *rad);
 	}
 }
 
 DLLEXPORT void oapiEquToGlobal (OBJHANDLE hObj, double lng, double lat, double rad, VECTOR3 *glob)
 {
-	if (((Body*)hObj)->s0) {
+	if (((const Body*)hObj)->S0()) {
 		Vector vglob;
-		((Body*)hObj)->EquatorialToGlobal(lng, lat, rad, vglob);
+		((const Body*)hObj)->EquatorialToGlobal(lng, lat, rad, vglob);
 		glob->x = vglob.x, glob->y = vglob.y, glob->z = vglob.z;
 	}
 }
 
 DLLEXPORT void oapiGlobalToEqu (OBJHANDLE hObj, const VECTOR3 &glob, double *lng, double *lat, double *rad)
 {
-	if (((Body*)hObj)->s0) {
+	if (((const Body*)hObj)->S0()) {
 		Vector vglob(glob.x, glob.y, glob.z);
-		((Body*)hObj)->GlobalToEquatorial(vglob, *lng, *lat, *rad);
+		((const Body*)hObj)->GlobalToEquatorial(vglob, *lng, *lat, *rad);
 	}
 }
 

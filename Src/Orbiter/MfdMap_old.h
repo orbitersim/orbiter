@@ -35,7 +35,7 @@ protected:
 	void WriteParams (std::ostream &ofs) const;
 
 private:
-	void LoadMap (Planet *p);
+	void LoadMap (const Planet *p);
 	SURFHANDLE LoadBitmap (const char *cbuf, int *w, int *h);
 	void SetZoom (bool _zoom);
 	void ToggleTrack ();
@@ -47,7 +47,7 @@ private:
 	bool SelectMap (char *str);
 	char title[50];
 	char datastr[2][50];
-	Planet *refplanet;
+	const Planet *refplanet;
 	const RigidBody *otgt;// target orbiter
 	const Base *btgt;     // target base
 	SURFHANDLE map, bgmap;
@@ -68,7 +68,7 @@ private:
 
 	static struct SavePrm { // instrument exit status
 		Vessel *usr;
-		Planet *ref;
+		const Planet *ref;
 		const Base *btgt;
 		const RigidBody *otgt;
 		bool zoom;

@@ -25,6 +25,9 @@ extern char DBG_MSG[256];
 PlanetarySystem::PlanetarySystem (char *fname, const Config* config, OutputLoadStatusCallback outputLoadStatus, void* callbackContext)
 {
 	Read (fname, config, outputLoadStatus, callbackContext);
+
+	for (int i = 0; i < bodies.size(); i++)
+		bodies[i]->PublishStateVectors(); // make sure initial celestial body states are available
 }
 
 PlanetarySystem::~PlanetarySystem ()
@@ -354,6 +357,7 @@ size_t PlanetarySystem::AddStar (Star *_star)
 	stars.emplace_back(_star);
 	AddGrav (_star); // register in list of massive objects
 	AddBody (_star); // register in general list
+	_star->SetPsys(this);
 	return stars.size();
 }
 
@@ -683,12 +687,12 @@ Vector PlanetarySystem::Gacc (const Vector &gpos, const Body *exclude, const GFi
 		for (j = 0; j < gfd->ngrav; j++) {
 			i = gfd->gravidx[j];
 			if (exclude == celestials[i]) continue;
-			acc += SingleGacc (celestials[i]->s0->pos - gpos, celestials[i]);
+			acc += SingleGacc (celestials[i]->GPos() - gpos, celestials[i]);
 		}
 	} else {
 		for (i = 0; i < celestials.size(); i++) {
 			if (exclude == celestials[i]) continue;
-			acc += SingleGacc (celestials[i]->s0->pos - gpos, celestials[i]);
+			acc += SingleGacc (celestials[i]->GPos() - gpos, celestials[i]);
 		}
 	}
 	return acc;
@@ -776,7 +780,7 @@ CelestialBody *PlanetarySystem::GetDominantGravitySource (const Vector &gpos, do
 	CelestialBody *body = 0;
 
 	for (i = 0; i < celestials.size(); i++) {
-		Vector r(celestials[i]->GPos() - gpos);
+		Vector r(celestials[i]->S1()->pos - gpos);
 		gtot += (g = celestials[i]->Mass() / r.length2());
 		if (g > gmax) {
 			gmax = g;
@@ -815,21 +819,23 @@ Vector PlanetarySystem::GetMomentumFlux (const Vector &gpos) const
 void PlanetarySystem::Update (bool force)
 {
 	DWORD i;
-	for (i = 0; i < bodies      .size(); i++) bodies      [i]->BeginStateUpdate ();
+	for (i = 0; i < bodies      .size(); i++) bodies      [i]->BeginStateUpdate();
+	for (i = 0; i < supervessels.size(); i++) supervessels[i]->BeginStateUpdate();
 	for (i = 0; i < stars       .size(); i++) stars       [i]->RelTrueAndBaryState();
 	for (i = 0; i < stars       .size(); i++) stars       [i]->AbsTrueState();
 	for (i = 0; i < celestials  .size(); i++) celestials  [i]->Update (force);
-	for (i = 0; i < vessels     .size(); i++) vessels     [i]->UpdateBodyForces ();
-	for (i = 0; i < supervessels.size(); i++) supervessels[i]->Update (force);
-	for (i = 0; i < vessels     .size(); i++) vessels     [i]->Update (force);
+	for (i = 0; i < vessels     .size(); i++) vessels     [i]->UpdateBodyForces();
+	for (i = 0; i < supervessels.size(); i++) supervessels[i]->Update(force);
+	for (i = 0; i < vessels     .size(); i++) vessels     [i]->Update(force);
 }
 
 void PlanetarySystem::FinaliseUpdate ()
 {
 	DWORD i;
-	for (i = 0; i < bodies.size(); i++) bodies[i]->EndStateUpdate ();
-	for (i = 0; i < supervessels.size(); i++) supervessels[i]->PostUpdate ();
-	for (i = 0; i < vessels.size(); i++) vessels[i]->PostUpdate ();
+	for (i = 0; i < bodies.size(); i++) bodies[i]->EndStateUpdate();
+	for (i = 0; i < supervessels.size(); i++) supervessels[i]->EndStateUpdate();
+	for (i = 0; i < supervessels.size(); i++) supervessels[i]->PostUpdate();
+	for (i = 0; i < vessels.size(); i++) vessels[i]->PostUpdate();
 }
 
 void PlanetarySystem::Timejump (const TimeJumpData& jump)
@@ -839,10 +845,9 @@ void PlanetarySystem::Timejump (const TimeJumpData& jump)
 	for (i = 0; i < stars.size(); i++) stars[i]->RelTrueAndBaryState();
 	for (i = 0; i < stars.size(); i++) stars[i]->AbsTrueState();
 	for (i = 0; i < celestials.size(); i++) celestials[i]->Update (true);
-	for (i = 0; i < bodies.size(); i++) bodies[i]->EndStateUpdate ();
-
 	for (i = 0; i < vessels.size(); i++)
 		vessels[i]->Timejump(jump.dt, jump.mode);
+	for (i = 0; i < bodies.size(); i++) bodies[i]->EndStateUpdate();
 }
 
 void PlanetarySystem::InitDeviceObjects ()

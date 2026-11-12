@@ -10,6 +10,7 @@
 #include "Orbiter.h"
 #include "Config.h"
 #include "Psys.h"
+#include "Pane.h"
 #include "Body.h"
 #include "Element.h"
 #include "Log.h"
@@ -34,10 +35,9 @@ extern char DBG_MSG[256];
 Body::Body ()
 {
 	extern bool g_bStateUpdate;
-	s0 = sv;
-	s1 = (g_bStateUpdate ? sv + 1 : sv);
+	m_svS0 = m_svContainer;
+	m_svS1 = m_svContainer + 1;
 	updcount = irand(100); // spread update times
-	s0->R = IMatrix();       // align body with its parent's orientation
 }
 
 Body::Body (double _mass, double _size)
@@ -69,11 +69,11 @@ Body::Body(char* fname)
 
 	if (!GetItemVector (ifs, "AlbedoRGB", albedo)) albedo.Set (1,1,1);
 
-	GetItemVector (ifs, "InitPos", s0->pos);
-	GetItemVector (ifs, "InitVel", s0->vel);
+	GetItemVector (ifs, "InitPos", m_svS0->pos);
+	GetItemVector (ifs, "InitVel", m_svS0->vel);
 
-	rpos_base.Set (s0->pos); rpos_add.Set (0,0,0);
-	rvel_base.Set (s0->vel); rvel_add.Set (0,0,0);
+	rpos_base.Set (m_svS0->pos); rpos_add.Set (0,0,0);
+	rvel_base.Set (m_svS0->vel); rvel_add.Set (0,0,0);
 }
 
 void Body::SetName (char *_name)
@@ -92,47 +92,47 @@ void Body::SetSize (double newsize)
 void Body::RPlace (const Vector &rpos, const Vector &rvel)
 {
 	// should RPlace be allowed outside update phase?
-	s1->pos = rpos_base = rpos;
+	m_svS1->pos = rpos_base = rpos;
 	rpos_add.Set (0,0,0);
-	s1->vel = rvel_base = rvel;
+	m_svS1->vel = rvel_base = rvel;
 	rvel_add.Set (0,0,0);
 }
 
 void Body::SetRPos (const Vector &p)
 {
-	dCHECK(s1 != s0, "Update state not available")
-	rpos_base = s1->pos = p;
+	dCHECK(m_svS1 != m_svS0, "Update state not available")
+	rpos_base = m_svS1->pos = p;
 	rpos_add.Set (0,0,0);
 }
 
 void Body::AddRPos (const Vector &dp) {
 	rpos_base += dp;
-	s1->pos = rpos_base + rpos_add;
+	m_svS1->pos = rpos_base + rpos_add;
 }
 
 void Body::FlushRPos ()
 {
-	rpos_base = s1->pos;
+	rpos_base = m_svS1->pos;
 	rpos_add.Set(0,0,0);
 }
 
 void Body::SetRVel (const Vector &v)
 {
-	dCHECK(s1 != s0, "Update state not available")
-	rvel_base = s1->vel = v;
+	dCHECK(m_svS1 != m_svS0, "Update state not available")
+	rvel_base = m_svS1->vel = v;
 	rvel_add.Set (0,0,0);
 }
 
 void Body::AddRVel (const Vector &dv)
 {
-	dCHECK(s1 != s0, "Update state not available")
+	dCHECK(m_svS1 != m_svS0, "Update state not available")
 	rvel_base += dv;
-	s1->vel = rvel_base + rvel_add;
+	m_svS1->vel = rvel_base + rvel_add;
 }
 
 void Body::FlushRVel ()
 {
-	rvel_base = s1->vel;
+	rvel_base = m_svS1->vel;
 	rvel_add.Set(0,0,0);
 }
 
@@ -162,12 +162,25 @@ void Body::BroadcastVisMsg (DWORD msg, DWORD_PTR content)
 
 void Body::BeginStateUpdate ()
 {
-	// enable the update state
-	s1 = (s0 == sv ? sv + 1 : sv);
 }
 
 void Body::EndStateUpdate ()
 {
-	// disable the update state, to avoid it being addressed outside the update phase
-	s1 = s0 = (s0 == sv ? sv + 1 : sv);
+	PublishStateVectors();
+}
+
+void Body::PublishStateVectors()
+{
+	m_svS0->Set(*m_svS1);
+}
+
+void Body::SyncStateVectors()
+{
+	extern bool g_bStateUpdate;
+
+	if (!g_bStateUpdate) {
+		PublishStateVectors();
+		g_psys->BroadcastVessel(MSG_EDITSTATE, this);
+		// tell everybody that we have edited our state vectors out of turn
+	}
 }
