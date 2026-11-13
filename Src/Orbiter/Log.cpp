@@ -285,29 +285,6 @@ void LogOut_DDErr (HRESULT hr, const char *func, const char *file, int line) {
 	LogOut ("---------------------------------------------------------------");
 }
 
-void LogOut_DIErr (HRESULT hr, const char *func, const char *file, int line) {
-	static char errmsg[256] = ">>> ERROR: DInput error ";
-	static char *err = errmsg+24;
-	switch (hr) {
-	case DIERR_INPUTLOST:                   strcpy (err, "DIERR_INPUTLOST"); break;
-	case DIERR_INVALIDPARAM:				strcpy (err, "DIERR_INVALIDPARAM"); break;
-	case DIERR_NOTACQUIRED:                 strcpy (err, "DIERR_NOTACQUIRED"); break;
-	case DIERR_NOTINITIALIZED:				strcpy (err, "DIERR_NOTINITIALIZED"); break;
-	case DIERR_OBJECTNOTFOUND:				strcpy (err, "DIERR_OBJECTNOTFOUND"); break;
-	case DIERR_REPORTFULL:                  strcpy (err, "DIERR_REPORTFULL"); break;
-	case DIERR_UNPLUGGED:					strcpy (err, "DIERR_UNPLUGGED"); break;
-	case DIERR_UNSUPPORTED:					strcpy (err, "DIERR_UNSUPPORTED"); break;
-	case E_HANDLE:                          strcpy (err, "E_HANDLE"); break;
-	case E_PENDING:                         strcpy (err, "E_PENDING"); break;
-	default:								sprintf (err, "DIERR CODE %ld", hr); break;
-	}
-	LogOut ("---------------------------------------------------------------");
-	LogOut (errmsg);
-	sprintf (logs, ">>> [%s | %s | %d]", func, file, line);
-	LogOut();
-	LogOut ("---------------------------------------------------------------");
-}
-
 void LogOut_WarningFormat(const char* func, const char* file, int line, const char* msg, ...)
 {
 	va_list ap;

@@ -5,7 +5,6 @@
 #define ORBITER_H
 
 #include "Config.h"
-#include "Input.h"
 #include "Select.h"
 #include "Keymap.h"
 #include <stdio.h>
@@ -14,7 +13,6 @@
 #include "TimeData.h"
 #include <chrono>
 
-class DInput;
 class Config;
 class State;
 class Body;
@@ -91,6 +89,8 @@ public:
 	void TogglePlanetariumMode();
 	void ToggleLabelDisplay();
 	const char *KeyState() const;
+	void HandleKeyDown(WPARAM wParam, LPARAM lParam);
+	void HandleKeyUp(WPARAM wParam, LPARAM lParam);
 
 	// dialog box processing
 	HWND OpenDialog (int id, DLGPROC pDlg, void *context = 0); // This version expects the dialog resource in the Orbiter instance
@@ -171,11 +171,6 @@ public:
 	inline bool    UseStencil() const { return bUseStencil; }
 	inline void    SetFastExit (bool fexit) { bFastExit = fexit; }
 	inline bool    UseHtmlInline() { return (pConfig->CfgDebugPrm.bHtmlScnDesc == 1 || pConfig->CfgDebugPrm.bHtmlScnDesc == 2 && !bWINEenv); }
-
-	// DirectInput components
-	inline CDIFramework7 *GetDInput() const { return pDI->GetDIFrame(); }
-	inline LPDIRECTINPUTDEVICE8 GetKbdDevice() const { return pDI->GetKbdDevice(); }
-	inline LPDIRECTINPUTDEVICE8 GetJoyDevice() const { return pDI->GetJoyDevice(); }
 
 	// memory monitor
 	MemStat *memstat;
@@ -319,14 +314,14 @@ protected:
 	HRESULT UserInput ();
 	void KbdInputImmediate_System    (char *kstate);
 	void KbdInputImmediate_OnRunning (char *buffer);
-	void KbdInputBuffered_System     (char *kstate, DIDEVICEOBJECTDATA *dod, DWORD n);
-	void KbdInputBuffered_OnRunning  (char *kstate, DIDEVICEOBJECTDATA *dod, DWORD n);
-	void UserJoyInput_System (DIJOYSTATE2 *js);
-	void UserJoyInput_OnRunning (DIJOYSTATE2 *js);
+	void KbdInputBuffered_System     (char *kstate, uint8_t key);
+	void KbdInputBuffered_OnRunning  (char *kstate, uint8_t key);
+	void UserJoyInput_System ();
+	void UserJoyInput_OnRunning ();
 	bool MouseEvent (UINT event, DWORD state, DWORD x, DWORD y);
 	bool BroadcastMouseEvent (UINT event, DWORD state, DWORD x, DWORD y);
 	bool BroadcastImmediateKeyboardEvent (char *kstate);
-	void BroadcastBufferedKeyboardEvent (char *kstate, DIDEVICEOBJECTDATA *dod, DWORD n);
+	void BroadcastBufferedKeyboardEvent (char *kstate, uint8_t key);
 
 	void BroadcastGlobalInit();
 
@@ -362,7 +357,6 @@ private:
 	orbiter::LaunchpadDialog *m_pLaunchpad;
 	DialogManager  *pDlgMgr;
 	orbiter::ConsoleNG* m_pConsole;    // The console window opened when Orbiter server is launched without a graphics client
-	DInput         *pDI;
 	HINSTANCE       hInst;         // orbiter instance handle
 	HWND            hRenderWnd;    // render window handle (NULL if no render support)
 	HWND            hBk;           // background window handle (demo mode only)

@@ -3793,7 +3793,7 @@ int Vessel::ConsumeDirectKey (char *buffer)
 	}
 }
 
-int Vessel::ConsumeBufferedKey (DWORD key, bool down, char *kstate)
+int Vessel::ConsumeBufferedKey (uint8_t key, bool down, char *kstate)
 {
 	int res;
 	const Keymap &keymap = g_pOrbiter->keymap;
