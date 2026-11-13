@@ -99,36 +99,37 @@ ImColor GetIconColor(enum Pin::type type)
     }
 };
 
-IconType GetIconType(enum Pin::type type)
+void Pin::DrawIcon()
 {
-    switch (type)
-    {
-        case Pin::type::Button:   return IconType::Circle;
-        case Pin::type::HalfAxis: return IconType::Flow;
-        case Pin::type::Axis:     return IconType::Diamond;
-        case Pin::type::Hat:      return IconType::Grid;
-    }
+    ImColor color = GetIconColor(ptype);
+    ed::BeginPin(id, ed::PinKind::Output);
+	switch(ptype) {
+		case Pin::type::Axis:
+			Axis(ImVec2(ImGui::GetTextLineHeight(), ImGui::GetTextLineHeight()), fVal, color);
+			break;
+		case Pin::type::Button:
+			Icon(ImVec2(ImGui::GetTextLineHeight(), ImGui::GetTextLineHeight()), bVal?IconType::ButtonDown:IconType::ButtonUp, true, color, ImColor(32, 32, 32, 255));
+			break;
+		case Pin::type::Hat:
+			Icon(ImVec2(ImGui::GetTextLineHeight(), ImGui::GetTextLineHeight()), IconType::Grid, true, color, ImColor(32, 32, 32, 255));
+			break;
+	}
+    ed::EndPin();
 }
 
 void Pin::Draw(std::function<bool(const Pin *)> filter)
 {
     float alpha = ImGui::GetStyle().Alpha;
     if(!filter(this)) {
-            alpha = alpha * (48.0f / 255.0f);
+        alpha = alpha * (48.0f / 255.0f);
     }
     ImGui::PushStyleVar(ImGuiStyleVar_Alpha, alpha);
-    IconType icon = GetIconType(ptype);
-    ImColor color = GetIconColor(ptype);
     if(pkind == Pin::kind::Output) {
         ImGui::TextUnformatted(name.c_str());
         ImGui::SameLine();
-        ed::BeginPin(id, ed::PinKind::Output);
-        Icon(ImVec2(ImGui::GetTextLineHeight(), ImGui::GetTextLineHeight()), icon, true, color, ImColor(32, 32, 32, 255));
-        ed::EndPin();
+		DrawIcon();
     } else {
-        ed::BeginPin(id, ed::PinKind::Input);
-        Icon(ImVec2(ImGui::GetTextLineHeight(), ImGui::GetTextLineHeight()), icon, true, color, ImColor(32, 32, 32, 255));
-        ed::EndPin();
+		DrawIcon();
         ImGui::SameLine();
         ImGui::TextUnformatted(name.c_str());
     }

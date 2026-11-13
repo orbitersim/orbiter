@@ -27,6 +27,7 @@ class ControllerGraph final {
 	int linkidgen = 1;
     ControllerGraph();
     ~ControllerGraph();
+	void Update(bool dryrun);
     void Draw();
 	void AddNode(Node *node);
 	Pin &PinFromId(ed::PinId id) { return *pins.at(id.AsPointer()); }
