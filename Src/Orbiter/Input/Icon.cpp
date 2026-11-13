@@ -24,8 +24,13 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 
-# include "Icon.h"
-# include <imgui_internal.h>
+#include "Icon.h"
+#include <imgui_internal.h>
+#define SDL_DISABLE_OLD_NAMES
+#include <SDL3/SDL.h>
+void DrawHat(ImDrawList* drawList, const ImVec2& a, const ImVec2& b, unsigned char mask, ImU32 color);
+void DrawAxisGauge(ImDrawList* drawList, const ImVec2& a, const ImVec2& b, float value, ImU32 color);
+void DrawIcon(ImDrawList* drawList, const ImVec2& a, const ImVec2& b, IconType type, bool filled, ImU32 color, ImU32 innerColor);
 
 void Icon(const ImVec2& size, IconType type, bool filled, const ImVec4& color/* = ImVec4(1, 1, 1, 1)*/, const ImVec4& innerColor/* = ImVec4(0, 0, 0, 0)*/)
 {
@@ -47,6 +52,18 @@ void Axis(const ImVec2& size, float value, const ImVec4& color) {
         auto cursorPos = ImGui::GetCursorScreenPos();
         auto drawList  = ImGui::GetWindowDrawList();
         DrawAxisGauge(drawList, cursorPos, cursorPos + size, value, ImColor(color));
+    }
+
+    ImGui::Dummy(size);
+}
+
+void Hat(const ImVec2& size, unsigned char mask, const ImVec4& color) {
+
+    if (ImGui::IsRectVisible(size))
+    {
+        auto cursorPos = ImGui::GetCursorScreenPos();
+        auto drawList  = ImGui::GetWindowDrawList();
+        DrawHat(drawList, cursorPos, cursorPos + size, mask, ImColor(color));
     }
 
     ImGui::Dummy(size);
@@ -382,4 +399,49 @@ void DrawAxisGauge(ImDrawList* drawList, const ImVec2& a, const ImVec2& b,
         ImVec2(x, cy),
         h * 0.22f,
         color);
+}
+
+void DrawHat(ImDrawList* drawList, const ImVec2& a, const ImVec2& b,
+             unsigned char hat, ImU32 color)
+{
+    const ImVec2 c = (a + b) * 0.5f;
+    const float size = b.x - a.x;
+    const float r = size * 0.32f;
+    const float dotR = size * 0.10f;
+
+    const ImU32 inactive = IM_COL32(85, 85, 85, 255);
+
+	const float d = 0.70710678f; // 1 / sqrt(2)
+
+	const ImVec2 dirs[] =
+	{
+		ImVec2( 0, -1),
+		ImVec2( d, -d),
+		ImVec2( 1,  0),
+		ImVec2( d,  d),
+		ImVec2( 0,  1),
+		ImVec2(-d,  d),
+		ImVec2(-1,  0),
+		ImVec2(-d, -d)
+	};
+
+    const Uint8 masks[] =
+    {
+        SDL_HAT_UP,
+        SDL_HAT_UP | SDL_HAT_RIGHT,
+        SDL_HAT_RIGHT,
+        SDL_HAT_RIGHT | SDL_HAT_DOWN,
+        SDL_HAT_DOWN,
+        SDL_HAT_DOWN | SDL_HAT_LEFT,
+        SDL_HAT_LEFT,
+        SDL_HAT_LEFT | SDL_HAT_UP
+    };
+
+    for (int i = 0; i < 8; ++i)
+    {
+		const ImVec2 p = c + dirs[i] * r;
+		drawList->AddCircleFilled(p, dotR, hat == masks[i] ? color : inactive);
+	}
+
+    drawList->AddCircleFilled(c, dotR, hat == SDL_HAT_CENTERED ? color : inactive);
 }

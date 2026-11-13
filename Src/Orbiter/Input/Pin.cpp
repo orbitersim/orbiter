@@ -111,7 +111,7 @@ void Pin::DrawIcon()
 			Icon(ImVec2(ImGui::GetTextLineHeight(), ImGui::GetTextLineHeight()), bVal?IconType::ButtonDown:IconType::ButtonUp, true, color, ImColor(32, 32, 32, 255));
 			break;
 		case Pin::type::Hat:
-			Icon(ImVec2(ImGui::GetTextLineHeight(), ImGui::GetTextLineHeight()), IconType::Grid, true, color, ImColor(32, 32, 32, 255));
+			Hat(ImVec2(ImGui::GetTextLineHeight(), ImGui::GetTextLineHeight()), hVal, color);
 			break;
 	}
     ed::EndPin();
