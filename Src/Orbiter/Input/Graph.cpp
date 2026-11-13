@@ -1,6 +1,9 @@
 #include "Graph.h"
 #include "Node.h"
 #include "Pin.h"
+#include "NodeJoystick.h"
+#define SDL_DISABLE_OLD_NAMES
+#include <SDL3/SDL.h>
 
 ImVec4 GetStateColor(const Pin &pin) {
     ImVec4 color = {0.5,0.5,0.5,1.0};
@@ -37,6 +40,15 @@ ImVec4 GetStateColor(const Pin &pin) {
 
 ControllerGraph::ControllerGraph()
 {
+	int count = 0;
+	SDL_JoystickID* ids = SDL_GetJoysticks(&count);
+	
+	for (int i = 0; i < count; ++i) {
+		Node *n = new NodeJoystick(ids[i], i);
+		AddNode(n);
+	}
+
+	SDL_free(ids);
 }
 
 ControllerGraph::~ControllerGraph()
@@ -118,4 +130,11 @@ void ControllerGraph::Draw()
         draggedPin = NULL;
     }
     ed::EndCreate(); // Wraps up object creation action handling.
+}
+
+void ControllerGraph::Update(bool dryrun)
+{
+	for(Node *n: nodes) {
+		n->Update(dryrun);
+	}
 }

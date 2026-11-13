@@ -21,5 +21,6 @@ public:
 	void AddInput(const char *n, Pin::type type);
 	void AddOutput(const char *n, Pin::type type);
 	void ComputeLayout();
-	void Draw(std::function<bool(const Pin *)> filter);
+	virtual void Draw(std::function<bool(const Pin *)> filter);
+	virtual void Update(bool dryrun) = 0;
 };

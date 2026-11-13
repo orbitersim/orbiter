@@ -36,6 +36,7 @@ public:
     void ReadInputs();
     bool hasInputs() { return !inputs.empty(); }
     void Draw(std::function<bool(const Pin *)> filter);
+	void DrawIcon();
     ed::PinId id;
     std::string name;
     Pin::type ptype;

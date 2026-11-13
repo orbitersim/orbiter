@@ -2019,7 +2019,7 @@ HRESULT Orbiter::UserInput ()
 
 	for (int i = 0; i < 15; i++) ctrlKeyboard[i] = ctrlJoystick[i] = 0.0f; // reset keyboard and joystick attitude requests
 
-	InputController::PollDevices();
+	InputController::GetJoystickCtrl(ctrlJoystick);
 
 	// skip keyboard if dialogs are open
 	if ((g_input && g_input->IsActive()) ||
