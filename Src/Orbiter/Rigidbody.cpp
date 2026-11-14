@@ -223,13 +223,13 @@ void RigidBody::Update (bool force)
 			if (!bOrbitStabilised) {
 				FlushRPos();
 				FlushRVel();
-				S1()->pos.Set (cpos);
+				S1()->SetPos(cpos);
 				S1()->vel.Set (cvel);
 				GetIntermediateMoments_pert (acc_pert, tau, *S0(), 0, dt, cbody);
 				el->Calculate (cpos, cvel, td.SimT0); // get elements from previous step
 			}
 			Encke();
-			S1()->pos.Set (cpos + cbody->S1()->pos);
+			S1()->SetPos(cpos + cbody->S1()->Pos());
 			S1()->vel.Set (cvel + cbody->S1()->vel);
 			FlushRPos();
 			FlushRVel();
@@ -251,7 +251,7 @@ void RigidBody::Update (bool force)
 				rpos_add = rpos_add0, rvel_add = rvel_add0;
 				for (i = 0; i < nPropSubsteps; i++) {
 					((*this).*(PropMode[PropLevel].propagator)) (dt, nPropSubsteps, i);
-					S1()->pos = rpos_base + rpos_add;
+					S1()->SetPos(rpos_base + rpos_add);
 					S1()->vel = rvel_base + rvel_add;
 					S1()->R.Set (S1()->Q);
 					GetIntermediateMoments (acc, tau, *S1(), (i+1.0)/nPropSubsteps, dt);
@@ -293,7 +293,7 @@ void RigidBody::Update (bool force)
 	Body::Update (force);
 
 	if (cbody) {
-		cpos = S1()->pos - cbody->S1()->pos;
+		cpos = S1()->Pos() - cbody->S1()->Pos();
 		cvel = S1()->vel - cbody->S1()->vel;
 	}
 }
@@ -302,14 +302,14 @@ void RigidBody::Update (bool force)
 
 void RigidBody::ScanGFieldSources (const PlanetarySystem *psys)
 {
-	psys->ScanGFieldSources (&S0()->pos, this, &gfielddata);
+	psys->ScanGFieldSources(&S0()->Pos(), this, &gfielddata);
 }
 
 // =======================================================================
 
 void RigidBody::UpdateGFieldSources (const PlanetarySystem *psys)
 {
-	psys->UpdateGFieldSources (&S0()->pos, this, &gfielddata);
+	psys->UpdateGFieldSources(&S0()->Pos(), this, &gfielddata);
 }
 
 // =======================================================================
@@ -336,14 +336,14 @@ void RigidBody::GetIntermediateMoments (Vector &acc, Vector &tau,
 	const StateVectors &state, double tfrac, double dt)
 {
 	// linear acceleration due to graviational field
-	acc = g_psys->Gacc_intermediate (state.pos, tfrac, this, &gfielddata);
+	acc = g_psys->Gacc_intermediate(state.Pos(), tfrac, this, &gfielddata);
 
 	// angular acceleration due to gravity gradient torque
 	if (!cbody || bIgnoreGravTorque) {
 		tau.Set (0,0,0);
 	} else {
 		// map cbody into vessel frame
-		Vector R0 (tmul (state.Q, cbody->InterpolatePosition (tfrac) - state.pos));
+		Vector R0(tmul(state.Q, cbody->InterpolatePosition(tfrac) - state.Pos()));
 		double r0 = R0.length();
 		Vector Re = R0/r0;
 		double mag = 3.0 * Ggrav * cbody->Mass() / pow(r0,3.0);
@@ -425,7 +425,7 @@ Vector RigidBody::GetTorque () const
 	Vector R0;
 
 	// map cbody into vessel frame
-	R0.Set (tmul (S0()->R, cbody->S0()->pos - S0()->pos));
+	R0.Set (tmul (S0()->R, cbody->S0()->Pos() - S0()->Pos()));
 	double r0 = R0.length();
 	Vector Re = R0/r0;
 	double mag = 3.0 * Ggrav * cbody->Mass() / pow(r0,3.0);
@@ -513,7 +513,7 @@ void RigidBody::SetDynamicUpdate (bool dynamic)
 {
 	if (bDynamicPosVel == dynamic) return; // nothing to do
 	if (bDynamicPosVel = dynamic) {
-		rpos_base.Set (S0()->pos);
+		rpos_base.Set (S0()->Pos());
 		rpos_add.Set (0,0,0);
 	} else {
 	}

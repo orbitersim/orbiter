@@ -780,7 +780,7 @@ CelestialBody *PlanetarySystem::GetDominantGravitySource (const Vector &gpos, do
 	CelestialBody *body = 0;
 
 	for (i = 0; i < celestials.size(); i++) {
-		Vector r(celestials[i]->S1()->pos - gpos);
+		Vector r(celestials[i]->S1()->Pos() - gpos);
 		gtot += (g = celestials[i]->Mass() / r.length2());
 		if (g > gmax) {
 			gmax = g;

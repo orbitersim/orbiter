@@ -996,7 +996,7 @@ public:
 	inline const PortSpec *GetDockParams (DWORD did) const { return dock[did]; }
 
 	Vector GetDockGPos(const PortSpec *dock) const
-	{ return (mul(S0()->R, dock->ref) + S0()->pos); }
+	{ return (mul(S0()->R, dock->ref) + S0()->Pos()); }
 	// Dock position in global coordinates
 
 	void SetDockIDS (PortSpec *dock, float freq, float range = 2e4);

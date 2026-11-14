@@ -236,29 +236,30 @@ void CelestialBody::Attach (CelestialBody *_parent)
 		// we add ourselves to the parent's list of secondaries
 		el->Setup (mass, cbody->Mass(), td.MJD_ref);
 
+		Vector pos(S1()->Pos());
 		int flg = TryExternState();
 		if (flg) {
-			if (!(flg & EPHEM_TRUEPOS)) S1()->pos = bpos;   // forcing true pos == barycentre:
+			if (!(flg & EPHEM_TRUEPOS)) pos = bpos; // forcing true pos == barycentre:
 			if (!(flg & EPHEM_TRUEVEL)) S1()->vel = bvel;   // not good! should do better
-			if (!(flg & EPHEM_BARYPOS)) bpos = S1()->pos;
+			if (!(flg & EPHEM_BARYPOS)) bpos = pos;
 			if (!(flg & EPHEM_BARYVEL)) bvel = S1()->vel;
 		} else if (bInitFromElements) {
-			el->PosVel(S1()->pos, S1()->vel, td.SimT1);
+			el->PosVel(pos, S1()->vel, td.SimT1);
 			if (elframe == ELFRAME_PARENTEQU) {         // convert to ecliptic frame
-				S1()->pos.Set(mul(cbody->R_ecl, S1()->pos));  // rotate radius vector by planet's obliquity
+				pos.Set(mul(cbody->R_ecl, pos));  // rotate radius vector by planet's obliquity
 				S1()->vel.Set(mul(cbody->R_ecl, S1()->vel));  // rotate velocity vector by planet's obliquity
-				el->Calculate(S1()->pos, S1()->vel, td.SimT1); // update elements with modified state vectors
+				el->Calculate(pos, S1()->vel, td.SimT1); // update elements with modified state vectors
 			}
-			bpos = S1()->pos;
+			bpos = pos;
 			bvel = S1()->vel;
 		}
-		S1()->pos += cbody->GPos();
+		S1()->SetPos(pos + cbody->GPos());
 		S1()->vel += cbody->GVel();
 		bpos += cbody->GPos();
 		bvel += cbody->GVel();
 	} 
 
-	RPlace (S1()->pos, S1()->vel);
+	RPlace (S1()->Pos(), S1()->vel);
 
 #ifdef UNDEF
 	// temporary, for debugging
@@ -279,8 +280,10 @@ void CelestialBody::AddSecondary (CelestialBody *sec)
 const Elements *CelestialBody::Els () const
 {
 	if (!bFixedElements) {
-		if (cbody) el->Calculate (S0()->pos-cbody->GPos(), S0()->vel-cbody->GVel(), td.SimT0);
-		else       el->Calculate (S0()->pos, S0()->vel, td.SimT0);
+		if (cbody)
+			el->Calculate(S0()->Pos() - cbody->GPos(), S0()->vel-cbody->GVel(), td.SimT0);
+		else
+			el->Calculate(S0()->Pos(), S0()->vel, td.SimT0);
 	}
 	return el;
 }
@@ -425,12 +428,13 @@ void CelestialBody::AbsTrueState()
 
 	int i;
 
-	S1()->pos = cpos;
+	Vector pos(cpos);
 	S1()->vel = cvel;
 	if (cbody) {
-		S1()->pos += cbody->S1()->pos;
+		pos += cbody->S1()->Pos();
 		S1()->vel += cbody->S1()->vel;
 	}
+	S1()->SetPos(pos);
 	for (i = 0; i < nsecondary; i++)
 		secondary[i]->AbsTrueState();
 }
@@ -494,7 +498,7 @@ void CelestialBody::Update (bool force)
 	RigidBody::Update (force);   // dynamic update
 
 	if (bDynamicPosVel) {
-		bpos = (nsecondary ? Pos2Barycentre (S1()->pos) : S1()->pos);
+		bpos = (nsecondary ? Pos2Barycentre(S1()->Pos()) : S1()->Pos());
 		bvel = S1()->vel;
 	}
 
@@ -603,9 +607,11 @@ int CelestialBody::TryExternState()
 	static int req = EPHEM_TRUEPOS | EPHEM_TRUEVEL | EPHEM_BARYPOS | EPHEM_BARYVEL;
 	int flg = TryExternEphemeris(res);
 
-	if (flg)
-		InterpretEphemeris(res, flg, &S1()->pos, &S1()->vel, &bpos, &bvel);
-
+	if (flg) {
+		Vector pos;
+		InterpretEphemeris(res, flg, &pos, &S1()->vel, &bpos, &bvel);
+		S1()->SetPos(pos);
+	}
 	return flg;
 }
 
@@ -656,22 +662,22 @@ Vector CelestialBody::InterpolatePosition (double n) const
 {
 	// Interpolate global position of body by iterative bisection
 
-	if      (n == 0)   return S0()->pos;
-	else if (n == 1.0) return S1()->pos;
+	if      (n == 0)   return S0()->Pos();
+	else if (n == 1.0) return S1()->Pos();
 
 	Vector refp0, refp1, refpm;
 	const CelestialBody *ref = ElRef();
 	if (ref) {
 		// otherwise assume that reference position is origin
-		refp0.Set (ref->S0()->pos);
-		refp1.Set (ref->S1()->pos);
-		refpm = ref->InterpolatePosition (n);
+		refp0.Set(ref->S0()->Pos());
+		refp1.Set(ref->S1()->Pos());
+		refpm = ref->InterpolatePosition(n);
 		// recursively get reference position at fractional step n
 	}
 
 	const double eps = 1e-2;
-	Vector rp0 (S0()->pos-refp0);        // rel. position at current step
-	Vector rp1 (S1()->pos-refp1);        // rel. position at next step
+	Vector rp0(S0()->Pos() - refp0);   // rel. position at current step
+	Vector rp1(S1()->Pos() - refp1);   // rel. position at next step
 	double rd0 = rp0.length();         // radius at current step
 	double rd1 = rp1.length();         // radius at next step
 	double n0 = 0.0;                   // lower bound of search bracket
@@ -715,7 +721,7 @@ StateVectors CelestialBody::InterpolateState (double n) const
 	if (n == 1.0) return *S1();
 
 	StateVectors sv;
-	sv.pos = InterpolatePosition (n);
+	sv.SetPos(InterpolatePosition(n));
 	sv.vel = S0()->vel*(1.0-n) + S1()->vel*n; // may need a better interpolation
 	GetRotation (td.SimT0 + td.SimDT*n, sv.R);
 	sv.Q.Set (sv.R);

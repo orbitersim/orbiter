@@ -51,6 +51,7 @@ Body::Body(char* fname)
 	: Body()
 {
 	char *cpath = g_pOrbiter->ConfigPath (fname);
+	Vector v;
 
 	//g_pOrbiter->OutputLoadStatus (fname, 0);
 	g_pOrbiter->OutputLoadStatus (cpath, 1);
@@ -69,10 +70,10 @@ Body::Body(char* fname)
 
 	if (!GetItemVector (ifs, "AlbedoRGB", albedo)) albedo.Set (1,1,1);
 
-	GetItemVector (ifs, "InitPos", m_svS0->pos);
+	GetItemVector(ifs, "InitPos", v); m_svS0->SetPos(v);
 	GetItemVector (ifs, "InitVel", m_svS0->vel);
 
-	rpos_base.Set (m_svS0->pos); rpos_add.Set (0,0,0);
+	rpos_base.Set (m_svS0->Pos()); rpos_add.Set (0,0,0);
 	rvel_base.Set (m_svS0->vel); rvel_add.Set (0,0,0);
 }
 
@@ -92,7 +93,7 @@ void Body::SetSize (double newsize)
 void Body::RPlace (const Vector &rpos, const Vector &rvel)
 {
 	// should RPlace be allowed outside update phase?
-	m_svS1->pos = rpos_base = rpos;
+	m_svS1->SetPos(rpos_base = rpos);
 	rpos_add.Set (0,0,0);
 	m_svS1->vel = rvel_base = rvel;
 	rvel_add.Set (0,0,0);
@@ -101,18 +102,18 @@ void Body::RPlace (const Vector &rpos, const Vector &rvel)
 void Body::SetRPos (const Vector &p)
 {
 	dCHECK(m_svS1 != m_svS0, "Update state not available")
-	rpos_base = m_svS1->pos = p;
+	m_svS1->SetPos(rpos_base = p);
 	rpos_add.Set (0,0,0);
 }
 
 void Body::AddRPos (const Vector &dp) {
 	rpos_base += dp;
-	m_svS1->pos = rpos_base + rpos_add;
+	m_svS1->SetPos(rpos_base + rpos_add);
 }
 
 void Body::FlushRPos ()
 {
-	rpos_base = m_svS1->pos;
+	rpos_base = m_svS1->Pos();
 	rpos_add.Set(0,0,0);
 }
 

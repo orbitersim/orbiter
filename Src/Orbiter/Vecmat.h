@@ -417,6 +417,9 @@ public:
 	// Set state vectors to linear velocity v, position p, angular velocity av and
 	// orientation ap.
 
+	const Vector &Pos() const { return pos; }
+	void SetPos(const Vector &p) { pos = p; }
+
 	void SetRot (const Matrix &r);     // set rotation state from a rotation matrix
 	void SetRot (const Quaternion &q); // set rotation state from a quaternion
 
@@ -424,11 +427,13 @@ public:
 	// Advance the state vectors by dt, given linear acceleration a, linear velocity v,
 	// angular acceleration aa and angular velocity av.
 
-	Vector pos;      // position in associated frame
 	Vector vel;      // linear velocity in associated frame
 	Matrix R;        // rotation matrix in associated frame
 	Quaternion Q;    // orientation in associated frame
 	Vector omega;    // angular velocity components in associated frame
+
+protected:
+	Vector pos;      // position in associated frame
 };
 
 // =======================================================================

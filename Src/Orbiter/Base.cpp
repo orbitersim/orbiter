@@ -595,7 +595,7 @@ void Base::Update(bool force)
 	// WARNING: this should work the other way round: combine the
 	// two quaternions and extract grot
 
-	S1()->pos.Set(mul(cbody->S1()->R, rpos) + cbody->S1()->pos);
+	S1()->SetPos(mul(cbody->S1()->R, rpos) + cbody->S1()->Pos());
 	S1()->vel.Set(mul(cbody->S1()->R, rotvel) + cbody->S1()->vel);
 
 	// periodically update some secondary parameters
@@ -787,5 +787,5 @@ int Base::ReportTouchdown (VesselBase *vessel, double vlng, double vlat) const
 
 double Base::CosSunAlt () const
 {
-	return (S0()->R.m12*S0()->pos.x + S0()->R.m22*S0()->pos.y + S0()->R.m32*S0()->pos.z) / (-S0()->pos.length());
+	return (S0()->R.m12*S0()->Pos().x + S0()->R.m22*S0()->Pos().y + S0()->R.m32*S0()->Pos().z) / (-S0()->Pos().length());
 }

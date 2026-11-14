@@ -25,7 +25,7 @@ void SurfParam::Set (const StateVectors &s, const StateVectors &s_ref, const Cel
 	ref = _ref;
 	Planet *planet = (ref->Type() == OBJTP_PLANET ? (Planet*)ref : 0);
 
-	Vector Prel = s.pos - s_ref.pos;
+	Vector Prel = s.Pos() - s_ref.Pos();
 	ploc = tmul (s_ref.R, Prel);
 	ref->LocalToEquatorial (ploc, lng, lat, rad);
 	slng = sin(lng), clng = cos(lng);
@@ -109,7 +109,7 @@ double SurfParam::ComputeAltitude(const StateVectors &s, const StateVectors &s_r
 	static const double alt_max = 1e5; // for now
 
 	double _lng, _lat, _rad;
-	Vector ploc = tmul (s_ref.R, s.pos - s_ref.pos);
+	Vector ploc = tmul(s_ref.R, s.Pos() - s_ref.Pos());
 	_ref->LocalToEquatorial (ploc, _lng, _lat, _rad);
 	double _alt = _rad - _ref->Size();
 	if (etilecache && _alt < alt_max && _ref->Type() == OBJTP_PLANET) {
@@ -212,7 +212,7 @@ bool VesselBase::Activate (bool force)
 {
 	if (fstatus == FLIGHTSTATUS_LANDED || force) {
 		fstatus = FLIGHTSTATUS_FREEFLIGHT;
-		rpos_base = S0()->pos;
+		rpos_base = S0()->Pos();
 		rpos_add.Set (0,0,0);
 		rvel_base = S0()->vel;
 		rvel_add.Set (0,0,0);
@@ -256,7 +256,7 @@ void VesselBase::CheckLanded ()
 			LandingTest.testing = false;
 		else {
 			static const double eps = 1e-4;
-			Vector prel (tmul(proxybody->S0()->R, S0()->pos - proxybody->S0()->pos)); // vessel position in planet local coords
+			Vector prel(tmul(proxybody->S0()->R, S0()->Pos() - proxybody->S0()->Pos())); // vessel position in planet local coords
 			double dt = td.SimT0 - LandingTest.testt;
 			if (dt < 0.1) return;
 			double dst2 = prel.dist2 (LandingTest.surfpos);
@@ -288,7 +288,7 @@ void VesselBase::CheckLanded ()
 		if (bSurfaceContact && !ThrustEngaged()) {
 			LandingTest.testing = true;
 			LandingTest.testt = td.SimT0;
-			LandingTest.surfpos.Set (tmul(proxybody->S0()->R, S0()->pos - proxybody->S0()->pos));
+			LandingTest.surfpos.Set(tmul(proxybody->S0()->R, S0()->Pos() - proxybody->S0()->Pos()));
 			LandingTest.surfrot.Set (S0()->Q); // should really subtract proxybody rotation here
 		}
 	}
@@ -333,7 +333,7 @@ void VesselBase::UpdateProxies ()
 	// Check for closest celestial body and planet
 	for (i = 0, proxydist2 = proxypdist2 = 1e100; i < ng; i++) {
 		grav = g_psys->GetGravObj(i);
-		dist2 = S1()->pos.dist2 (grav->S1()->pos) - grav->Size(); // distance squared from body surface
+		dist2 = S1()->Pos().dist2 (grav->S1()->Pos()) - grav->Size(); // distance squared from body surface
 		if (dist2 < proxydist2) {
 			proxydist2 = dist2;
 			proxybody = grav;
@@ -350,7 +350,7 @@ void VesselBase::UpdateProxies ()
 	if (proxyplanet) {
 		for (i = 0, proxydist2 = 1e100; i < proxyplanet->nBase(); i++) {
 			const Base *base = (const Base*)proxyplanet->GetBase(i);
-			if ((dist2 = S1()->pos.dist2 (base->S1()->pos)) < proxydist2) {
+			if ((dist2 = S1()->Pos().dist2(base->S1()->Pos())) < proxydist2) {
 				proxydist2 = dist2;
 				proxybase = base;
 			}
@@ -359,7 +359,7 @@ void VesselBase::UpdateProxies ()
 
 	// check for orbit reference body
 	double gfrac;
-	SetOrbitReference (g_psys->GetDominantGravitySource (S1()->pos, gfrac));
+	SetOrbitReference(g_psys->GetDominantGravitySource(S1()->Pos(), gfrac));
 }
 
 // ==============================================================

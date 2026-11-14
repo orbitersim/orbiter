@@ -160,7 +160,7 @@ void RigidBody::RK2_LinAng (double h, int nsub, int isub)
 
 	Vector acc1, tau;
 	StateVectors s;
-	s.pos.Set (S1()->pos+S1()->vel*h05);
+	s.SetPos(S1()->Pos() + S1()->vel * h05);
 	s.vel.Set (S1()->vel+acc*h05);
 	s.SetRot (S1()->Q.Rot(S1()->omega*h05));
 	s.omega.Set (S1()->omega+arot*h05);
@@ -184,21 +184,21 @@ void RigidBody::RK4_LinAng (double h, int nsub, int isub)
 
 	Vector tau, acc1, aacc1, acc2, aacc2, acc3, aacc3;
 	StateVectors sa, sb, sc;
-	sa.pos.Set (S1()->pos+S1()->vel*h05);
+	sa.SetPos(S1()->Pos() + S1()->vel * h05);
 	sa.vel.Set (S1()->vel+acc*h05);
 	sa.SetRot (S1()->Q.Rot(S1()->omega*h05));
 	sa.omega.Set (S1()->omega+arot*h05);
 	GetIntermediateMoments (acc1, tau, sa, (isub+0.5)/nsub, h);
 	aacc1.Set (EulerInv_full (tau, sa.omega));
 
-	sb.pos.Set (S1()->pos+sa.vel*h05);
+	sb.SetPos(S1()->Pos() + sa.vel * h05);
 	sb.vel.Set (S1()->vel+acc1*h05);
 	sb.SetRot (S1()->Q.Rot(sa.omega*h05));
 	sb.omega.Set (S1()->omega+aacc1*h05);
 	GetIntermediateMoments (acc2, tau, sb, (isub+0.5)/nsub, h);
 	aacc2.Set (EulerInv_full (tau, sb.omega));
 
-	sc.pos.Set (S1()->pos+sb.vel*h);
+	sc.SetPos(S1()->Pos() + sb.vel * h);
 	sc.vel.Set (S1()->vel+acc2*h);
 	sc.SetRot (S1()->Q.Rot(sb.omega*h));
 	sc.omega.Set (S1()->omega+aacc2*h);
@@ -235,12 +235,12 @@ void RigidBody::RKdrv_LinAng (double h, int nsub, int isub, int n, const double 
 		nbuf = n;
 	}
 
-	s[0].Set (S1()->vel, S1()->pos, S1()->omega, S1()->Q);
-	a[0].Set (acc);
-	d[0].Set (arot);
+	s[0].Set(*S1());
+	a[0].Set(acc);
+	d[0].Set(arot);
 
 	for (i = 1; i < n; i++) {
-		s[i].Set (S1()->vel, S1()->pos, S1()->omega, S1()->Q);
+		s[i].Set(*S1());
 		for (j = 0; j < i; j++)
 			s[i].Advance (beta[j]*h, a[j], s[j].vel, d[j], s[j].omega);
 		GetIntermediateMoments (a[i],tau,s[i],(isub+alpha[i-1])/nsub, h);
@@ -589,9 +589,9 @@ void RigidBody::Encke ()
 
 		tfrac = (ti-t0)/(tf-t0);
 		for (i = 0; i < 3; i++) {
-			s.pos.data[i] = cpos.data[i]+x[i];
 			s.vel.data[i] = cvel.data[i]+x[i+3];
 		}
+		s.SetPos(cpos + Vector(x[0], x[1], x[2]));
 		GetIntermediateMoments_pert (acc_pert, tau, s, tfrac, dt, cbody);
 
 		for (i = 0; i < 3; i++) {
@@ -620,9 +620,9 @@ void RigidBody::Encke ()
 			tfrac = (ti-t0)/(tf-t0);
 			el->PosVel (cpos, cvel, ti);
 			for (i = 0; i < 3; i++) {
-				s.pos.data[i] = cpos.data[i]+x[i];
 				s.vel.data[i] = cvel.data[i]+x[i+3];
 			}
+			s.SetPos(cpos + Vector(x[0], x[1], x[2]));
 			GetIntermediateMoments_pert (acc_pert, tau, s, tfrac, dt, cbody);
 			for (i = 0; i < 3; i++) {
 				f[i][k] = x[i+3];

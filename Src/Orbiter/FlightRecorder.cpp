@@ -127,7 +127,7 @@ void Vessel::FRecorder_Save (bool force)
 
 	for (iter = 0; iter < niter; iter++) {
 		if (ref) {
-			Vector pos = S0()->pos-ref->GPos();
+			Vector pos = S0()->Pos() - ref->GPos();
 			Vector vel = S0()->vel-ref->GVel();
 			if (frec_last.frm == 1) { // map to equatorial
 				//vel = tmul (cbody->GRot(), vel);
@@ -149,10 +149,10 @@ void Vessel::FRecorder_Save (bool force)
 				//frec_last.rpos    = *gpos-cbody->GPos();
 				switch (frec_last.frm) {
 					case 0:  // ecliptic frame
-						frec_last.rpos = S0()->pos-ref->GPos();
+						frec_last.rpos = S0()->Pos() - ref->GPos();
 						break;
 					case 1:  // equatorial frame
-						frec_last.rpos = ref->GlobalToLocal (S0()->pos);
+						frec_last.rpos = ref->GlobalToLocal(S0()->Pos());
 						break;
 				}
 				frec_last.rvel    = vel;
@@ -203,7 +203,7 @@ void Vessel::FRecorder_Save (bool force)
 				break;
 			case 1: {
 				double lng, lat, rad, slng, slat, clng, clat;
-				ref->GlobalToEquatorial (S0()->pos, lng, lat, rad);
+				ref->GlobalToEquatorial (S0()->Pos(), lng, lat, rad);
 				slng = sin(lng), clng = cos(lng), slat = sin(lat), clat = cos(lat);
 				Matrix rot (-slng, clat*clng, -slat*clng, // horizon->local
 					         0   , slat,       clat,
@@ -524,18 +524,19 @@ void Vessel::FRecorder_Play ()
 			V1.Set (mul (frec[cfrec].ref->S1()->R, s + Vector (-vref*sin(lng),0,vref*cos(lng))));
 		}
 
+		Vector pos;
 		for (i = 0; i < 3; i++) {
 			r0 = P0.data[i]; r1 = P1.data[i];
 			v0 = V0.data[i]; v1 = V1.data[i];
 			a0 = 2.0*(3.0*(r1-r0) - dT*(2.0*v0+v1)) / (dT*dT);
 			b  = 6.0*(2.0*(r0-r1) + dT*(v0+v1)) / (dT*dT*dT);
 			sv->vel.data[i] = v0 + a0*dt + 0.5*b*dt*dt;
-			sv->pos.data[i] = r0 + v0*dt + 0.5*a0*dt*dt + b*dt*dt*dt/6.0;
+			pos.data[i] = r0 + v0*dt + 0.5*a0*dt*dt + b*dt*dt*dt/6.0;
 		}
-
-		sv->pos += frec[cfrec].ref->S1()->pos;
+		pos += frec[cfrec].ref->S1()->Pos();
 		sv->vel += frec[cfrec].ref->S1()->vel;
-	
+		sv->SetPos(pos);
+
 		// attitude
 		if (td.SimT1 < frec_att[nfrec_att-1].simt) {
 
@@ -559,7 +560,7 @@ void Vessel::FRecorder_Play ()
 				Q.interp (frec_att[cfrec_att].q, frec_att[cfrec_att+1].q, w1);
 				sv->R.Set (Q);
 				double lng, lat, rad, slng, clng, slat, clat;
-				Vector loc = tmul (frec_att[cfrec_att].ref->S1()->R, sv->pos - frec_att[cfrec_att].ref->S1()->pos);
+				Vector loc = tmul (frec_att[cfrec_att].ref->S1()->R, sv->Pos() - frec_att[cfrec_att].ref->S1()->Pos());
 				frec_att[cfrec_att].ref->LocalToEquatorial (loc, lng, lat, rad);
 				slng = sin(lng), clng = cos(lng), slat = sin(lat), clat = cos(lat);
 				sv->R.postmul (Matrix (-slng,      0,     clng,
@@ -751,7 +752,7 @@ void Vessel::FRecorder_EndPlayback ()
 		Amom_add.Set(0,0,0);
 		rvel_base.Set (S0()->vel);
 		rvel_add.Set(0,0,0);
-		rpos_base.Set (S0()->pos);
+		rpos_base.Set(S0()->Pos());
 		rpos_add.Set(0,0,0);
 		if (supervessel && supervessel->GetVessel(0) == this)
 			supervessel->FRecorder_EndPlayback();

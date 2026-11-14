@@ -891,11 +891,11 @@ void Vessel::RPlace_individual (const Vector &rpos, const Vector &rvel)
 	fstatus = FLIGHTSTATUS_FREEFLIGHT;
 	bSurfaceContact = false;
 	RigidBody::RPlace (rpos, rvel);
-	cpos = S1()->pos - cbody->S1()->pos;
+	cpos = S1()->Pos() - cbody->S1()->Pos();
  	cvel = S1()->vel - cbody->S1()->vel;
 
-	g_psys->ScanGFieldSources(&S1()->pos, this, &gfielddata);
-	acc = g_psys->Gacc(S1()->pos, this, &gfielddata); // init acceleration due to G-field
+	g_psys->ScanGFieldSources(&S1()->Pos(), this, &gfielddata);
+	acc = g_psys->Gacc(S1()->Pos(), this, &gfielddata); // init acceleration due to G-field
 	el_valid = bOrbitStabilised = false; // force update of osculating elements
 
 	// Now update all passively attached child vessels
@@ -962,7 +962,7 @@ void Vessel::GetIntermediateMoments_pert (Vector &acc, Vector &tau,
 	const StateVectors &state_rel, double tfrac, double dt, const CelestialBody *cbody)
 {
 	StateVectors state(state_rel);
-	state.pos += cbody->InterpolatePosition (tfrac);
+	state.SetPos(state.Pos() + cbody->InterpolatePosition(tfrac));
 
 	Vector F(Flin_add); // linear forces excluding gravitational and ground contact forces
 	Vector M(Amom_add); // angular momentum excluding gravity gradient torque and ground contact torques
@@ -990,7 +990,7 @@ Vector Vessel::GetTorque () const
 Vector Vessel::GetMomentumFlux () const
 {
 	// map momentum flux into vessel frame
-	return tmul (S0()->R, g_psys->GetMomentumFlux (S0()->pos));
+	return tmul (S0()->R, g_psys->GetMomentumFlux (S0()->Pos()));
 }
 
 // ==============================================================
@@ -1270,7 +1270,7 @@ void Vessel::SetSurfaceFrictionCoeff (double mlng, double mlat)
 bool Vessel::GetWeightVector (Vector &G) const
 {
 	if (!weight_valid) {
-		Weight.Set (tmul (S0()->R, g_psys->Gacc (S0()->pos, this, &gfielddata)) * mass);
+		Weight.Set(tmul(S0()->R, g_psys->Gacc(S0()->Pos(), this, &gfielddata)) * mass);
 		weight_valid = true;
 	}
 	G.Set (Weight);
@@ -2761,11 +2761,11 @@ PortSpec* Vessel::GetProxyDock(PortSpec *pD)
 		if (v->proxybody != proxybody) continue;
 		if (v->ndock == 0) continue;
 		
-		double dst = S0()->pos.dist(v->GPos());
+		double dst = S0()->Pos().dist(v->GPos());
 		if ((dst < 1.5 * (size + v->Size()) || (dst < size + v->Size() + 1e3))) { // valid candidate		
 			for (int k = 0; k < v->ndock; k++) { // loop over vessel's docks
 				if (v->dock[k]->mate) continue; // dock already busy
-				Vector dref = tmul(v->GRot(), dofs + S0()->pos - v->GPos());
+				Vector dref = tmul(v->GRot(), dofs + S0()->Pos() - v->GPos());
 				dref = dref - v->dock[k]->ref;
 				double d = dref.length();
 				if (d < maxd) {
@@ -2816,7 +2816,7 @@ int Vessel::Dock (Vessel *target, DWORD mydid, DWORD tgtdid, DWORD mode)
 
 		if (mode == 1) { // drag target to our current position
 			RelDockingPos (target, mydid, tgtdid, P, R);
-			target->RPlace (S0()->pos + mul(S0()->R, P), S0()->vel);
+			target->RPlace(S0()->Pos() + mul(S0()->R, P), S0()->vel);
 			R.premul (S0()->R);
 			target->fstatus = fstatus;
 			target->SetRotationMatrix (R);
@@ -3147,9 +3147,9 @@ bool Vessel::DetachFromParent (double v)
 		vel += mul (S0()->R, tmul (attach_rrot, attach->mate_attach->dir)) * v;
 	}
 	//fstatus = FLIGHTSTATUS_FREEFLIGHT;
-	RPlace (S0()->pos, vel);
+	RPlace(S0()->Pos(), vel);
 	UpdateProxies ();
-	sp.alt = S0()->pos.dist (proxybody->GPos()) - proxybody->Size();
+	sp.alt = S0()->Pos().dist(proxybody->GPos()) - proxybody->Size();
 	UpdateSurfParams ();
 	bSurfaceContact = CheckSurfaceContact();
 	attach->mate = 0;
@@ -3568,7 +3568,7 @@ void Vessel::InitLanded (const Planet *planet, double lng, double lat, double di
 
 	double vground = Pi2 * sp.rad * sp.clat / planet->RotT();
 	S1()->vel.Set(-vground * sp.slng, 0.0, vground * sp.clng);
-	S1()->pos.Set(mul(planet->GRot(), sp.ploc) + planet->GPos());
+	S1()->SetPos(mul(planet->GRot(), sp.ploc) + planet->GPos());
 	S1()->vel.Set(mul(planet->GRot(), S1()->vel) + planet->GVel());
 	rvel_base.Set(S1()->vel);
 	rvel_add.Set(0,0,0);
@@ -3580,10 +3580,10 @@ void Vessel::InitLanded (const Planet *planet, double lng, double lat, double di
 	//RPlace (S0()->pos, S0()->vel);
 	// Needs thought! Calling RPlace causes problems with orientation of Atlantis on pad
 	// Leaving it out causes problems elsewhere (?)
-	cpos = S1()->pos - cbody->GPos();
- 	cvel = S1()->vel - cbody->GVel();
+	cpos = S1()->Pos() - cbody->S1()->Pos();
+ 	cvel = S1()->vel - cbody->S1()->vel;
 	UpdateSurfParams();
-	g_psys->ScanGFieldSources(&S1()->pos, this, &gfielddata);
+	g_psys->ScanGFieldSources(&S1()->Pos(), this, &gfielddata);
 
 	fstatus = FLIGHTSTATUS_LANDED;
 	sp.SetLanded (lng, lat, cgelev, dir, nml, planet);
@@ -3804,7 +3804,7 @@ void Vessel::SetSuperStruct(SuperVessel *sv, const StateVectors *s)
 	supervessel = sv;
 	if (s) {
 		S1()->Set(*s);
-		rpos_base = S1()->pos;
+		rpos_base = S1()->Pos();
 		rpos_add.Set(0, 0, 0);
 		rvel_base = S1()->vel;
 		rvel_add.Set(0, 0, 0);
@@ -4333,7 +4333,7 @@ bool Vessel::AddSurfaceForces (Vector *F, Vector *M, const StateVectors *s, doub
 	if (!dt) dt = td.SimDT;
 
 	if (!s) { // full step, based on pre-step vessel position (but new planet position!)
-		ls.pos.Set (S0()->pos);
+		ls.SetPos(S0()->Pos());
 		ls.vel.Set (S0()->vel);
 		ls.Q.Set (S0()->Q);
 		ls.omega.Set (S0()->omega);
@@ -4341,7 +4341,7 @@ bool Vessel::AddSurfaceForces (Vector *F, Vector *M, const StateVectors *s, doub
 	} else {    // partial step, based on intermediate position
 		// we need to propagate the gravbody backwards, since it has been updated already
 	}
-	alt = s->pos.dist (ps.pos) - proxybody->Size(); // altitude over normal zero
+	alt = s->Pos().dist(ps.Pos()) - proxybody->Size(); // altitude over normal zero
 	if (alt > sp.elev + 1e4) return false; // add safety margin
 
 	surfp.Set (*s, ps, proxybody, &etile, &windp); // intermediate surface parameters
@@ -4374,7 +4374,7 @@ bool Vessel::AddSurfaceForces (Vector *F, Vector *M, const StateVectors *s, doub
 	int reslvl = 1;
 	if (emgr) reslvl = (int)(32.0-log(max(alt,100.0))*LOG2);
 
-	Vector shift = tmul(ps.R, s->pos - ps.pos);
+	Vector shift = tmul(ps.R, s->Pos() - ps.Pos());
 	for (i = 0; i < ntouchdown_vtx; i++) {
 		Vector p (mul (T, touchdown_vtx[i].pos) + shift);
 		double lng, lat, rad, elev = 0.0;
@@ -5164,7 +5164,7 @@ void Vessel::CheckBaseCollisions(const Planet *pp) {
 	UpdateHullCacheP();
 	if (m_hullCacheP.empty()) return;
 
-	Vector localPosV(S1()->pos - pp->S1()->pos);
+	Vector localPosV(S1()->Pos() - pp->S1()->Pos());
 	localPosV.Set(tmul(pp->S1()->R, localPosV));
 
 	Matrix V2P;
@@ -5177,7 +5177,7 @@ void Vessel::CheckBaseCollisions(const Planet *pp) {
 		const Base *base = pp->GetBase(i);
 		if (!base) continue;
 
-		Vector basePosV(base->S1()->pos - pp->S1()->pos);
+		Vector basePosV(base->S1()->Pos() - pp->S1()->Pos());
 		basePosV.Set(tmul(pp->S1()->R, basePosV));
 		double dist2 = (localPosV - basePosV).length2();
 		if (dist2 > 2000.0 * 2000.0) continue;
@@ -5222,7 +5222,7 @@ void Vessel::CheckBaseCollisions(const Planet *pp) {
 
 			// Resolve penetration
 			Vector pushOut = normGlobal * (bestRes.depth * 1.0);
-			S1()->pos += pushOut;
+			S1()->SetPos(S1()->Pos() + pushOut);
 			rpos_base += pushOut;
 			// We MUST NOT zero rpos_add! It destroys the symplectic integrator's fractional precision.
 
@@ -5709,13 +5709,13 @@ void Vessel::UpdateHullCacheP() {
 		return;
 	}
 
-	const StateVectors *svV = (S1()->pos.length2() > 0.0 ? S1() : S0());
-	const StateVectors *svP = (refPlanet->S1()->pos.length2() > 0.0 ? refPlanet->S1() : refPlanet->S0());
+	const StateVectors *svV = (S1()->Pos().length2() > 0.0 ? S1() : S0());
+	const StateVectors *svP = (refPlanet->S1()->Pos().length2() > 0.0 ? refPlanet->S1() : refPlanet->S0());
 
 	Matrix V2P;
 	V2P.Set(svV->R);
 	V2P.tpremul(svP->R);
-	Vector localPosV(svV->pos - svP->pos);
+	Vector localPosV(svV->Pos() - svP->Pos());
 	localPosV.Set(tmul(svP->R, localPosV));
 
 	m_hullCacheP.resize(m_hullCache.size());
@@ -5759,10 +5759,10 @@ void Vessel::UpdateHullCacheP() {
 		size_t tdStart = m_hullCacheP.size();
 		for (DWORD i = 0; i < ntouchdown_vtx; i++) {
 			// Transform local Touchdown Point to Global space
-			Vector tdpGlobal = svV->pos + mul(svV->R, touchdown_vtx[i].pos);
+			Vector tdpGlobal = svV->Pos() + mul(svV->R, touchdown_vtx[i].pos);
 
 			// Transform to the Planet's rotating reference frame
-			Vector tdpPlanet = tdpGlobal - svP->pos;
+			Vector tdpPlanet = tdpGlobal - svP->Pos();
 			tdpPlanet.Set(tmul(svP->R, tdpPlanet));
 
 			// Append to our cache
@@ -5823,12 +5823,12 @@ bool Vessel::ComputePlanetLocalPose(const Planet *&refPlanet, Vector &posP, Matr
 	refPlanet = (const Planet*)(proxyplanet ? proxyplanet : (cbody && cbody->Type() == OBJTP_PLANET ? cbody : nullptr));
 	if (!refPlanet || !S0() || !refPlanet->S0()) return false;
 
-	const StateVectors *svV = (S1() && S1()->pos.length2() > 0.0 ? S1() : S0());
-	const StateVectors *svP = (refPlanet->S1() && refPlanet->S1()->pos.length2() > 0.0 ? refPlanet->S1() : refPlanet->S0());
+	const StateVectors *svV = (S1() && S1()->Pos().length2() > 0.0 ? S1() : S0());
+	const StateVectors *svP = (refPlanet->S1() && refPlanet->S1()->Pos().length2() > 0.0 ? refPlanet->S1() : refPlanet->S0());
 
 	rotP.Set(svV->R);
 	rotP.tpremul(svP->R);
-	posP.Set(tmul(svP->R, svV->pos - svP->pos));
+	posP.Set(tmul(svP->R, svV->Pos() - svP->Pos()));
 	return true;
 }
 
@@ -5953,12 +5953,12 @@ bool Vessel::CheckVesselOverlap(Vessel *v, double margin) {
 
 	if (my_root->supervessel && my_root->supervessel == v_root->supervessel) return false;
 
-	const StateVectors *svA = (S1()->pos.length2() > 0.0 ? S1() : S0());
-	const StateVectors *svB = (v->S1()->pos.length2() > 0.0 ? v->S1() : v->S0());
-	const StateVectors *svP = (ppA->S1()->pos.length2() > 0.0 ? ppA->S1() : ppA->S0());
+	const StateVectors *svA = (S1()->Pos().length2() > 0.0 ? S1() : S0());
+	const StateVectors *svB = (v->S1()->Pos().length2() > 0.0 ? v->S1() : v->S0());
+	const StateVectors *svP = (ppA->S1()->Pos().length2() > 0.0 ? ppA->S1() : ppA->S0());
 
 	double maxDist = size + v->Size() + margin + 5.0;
-	if ((svB->pos - svA->pos).length2() > maxDist * maxDist) return false;
+	if ((svB->Pos() - svA->Pos()).length2() > maxDist * maxDist) return false;
 
 	UpdateHullCacheP();
 	v->UpdateHullCacheP();
@@ -6009,12 +6009,12 @@ bool Vessel::CheckVesselOverlap(Vessel *v, double margin) {
 	} else if (bIsConvexCollider || v->bIsConvexCollider) {
 		Vessel *conv = bIsConvexCollider ? this : v;
 		Vessel *conc = bIsConvexCollider ? v : this;
-		const StateVectors *svConc = (conc->S1()->pos.length2() > 0.0 ? conc->S1() : conc->S0());
+		const StateVectors *svConc = (conc->S1()->Pos().length2() > 0.0 ? conc->S1() : conc->S0());
 
 		Matrix M_conc2p;
 		M_conc2p.Set(svConc->R);
 		M_conc2p.tpremul(svP->R);
-		Vector posConc_P(svConc->pos - svP->pos);
+		Vector posConc_P(svConc->Pos() - svP->Pos());
 		posConc_P.Set(tmul(svP->R, posConc_P));
 
 		CollisionCore::Simplex simplex;
@@ -6069,7 +6069,7 @@ bool Vessel::CheckVesselOverlap(Vessel *v, double margin) {
 		Matrix M_B2p;
 		M_B2p.Set(svB->R);
 		M_B2p.tpremul(svP->R);
-		Vector posB_P(svB->pos - svP->pos);
+		Vector posB_P(svB->Pos() - svP->Pos());
 		posB_P.Set(tmul(svP->R, posB_P));
 		Vector vRel_AvsB = svA->vel - svB->vel;
 
@@ -6086,7 +6086,7 @@ bool Vessel::CheckVesselOverlap(Vessel *v, double margin) {
 		Matrix M_A2p;
 		M_A2p.Set(svA->R);
 		M_A2p.tpremul(svP->R);
-		Vector posA_P(svA->pos - svP->pos);
+		Vector posA_P(svA->Pos() - svP->Pos());
 		posA_P.Set(tmul(svP->R, posA_P));
 		Vector vRel_BvsA = svB->vel - svA->vel;
 
@@ -6165,7 +6165,7 @@ void Vessel::ResolveCollisionWith(Vessel *v) {
 	}
 
 	// Relative velocity and position
-	Vector pRel = v->S1()->pos - S1()->pos;
+	Vector pRel = v->S1()->Pos() - S1()->Pos();
 	Vector vRel = v->S1()->vel - S1()->vel;
 	double rsum = size + v->Size();
 
@@ -6199,14 +6199,14 @@ void Vessel::ResolveCollisionWith(Vessel *v) {
 	const Planet* pp = proxyplanet;
 	std::vector<Vector> dockPtsA;
 	for (DWORD i = 0; i < ndock; i++) {
-		Vector dP = S1()->pos - pp->S1()->pos + mul(S1()->R, dock[i]->ref);
+		Vector dP = S1()->Pos() - pp->S1()->Pos() + mul(S1()->R, dock[i]->ref);
 		dP.Set(tmul(pp->S1()->R, dP));
 		dockPtsA.push_back(dP);
 	}
 
 	std::vector<Vector> dockPtsB;
 	for (DWORD i = 0; i < v->ndock; i++) {
-		Vector dP = v->S1()->pos - pp->S1()->pos + mul(v->S1()->R, v->dock[i]->ref);
+		Vector dP = v->S1()->Pos() - pp->S1()->Pos() + mul(v->S1()->R, v->dock[i]->ref);
 		dP.Set(tmul(pp->S1()->R, dP));
 		dockPtsB.push_back(dP);
 	}
@@ -6230,10 +6230,10 @@ void Vessel::ResolveCollisionWith(Vessel *v) {
 		bool dockingApproach = false;
 		if (ndock > 0 && v->ndock > 0) {
 			for (DWORD i = 0; i < ndock; i++) {
-				Vector dockPosA = S1()->pos + mul(S1()->R, dock[i]->ref);
+				Vector dockPosA = S1()->Pos() + mul(S1()->R, dock[i]->ref);
 				Vector dockDirA = mul(S1()->R, dock[i]->dir);
 				for (DWORD j = 0; j < v->ndock; j++) {
-					Vector dockPosB = v->S1()->pos + mul(v->S1()->R, v->dock[j]->ref);
+					Vector dockPosB = v->S1()->Pos() + mul(v->S1()->R, v->dock[j]->ref);
 					Vector dockDirB = mul(v->S1()->R, v->dock[j]->dir);
 					if (dockPosA.dist(dockPosB) < 5.0 && dotp(dockDirA, dockDirB) < -0.8) {
 						dockingApproach = true;
@@ -6285,8 +6285,8 @@ void Vessel::ResolveCollisionWith(Vessel *v) {
 							bestRes.normal = { (float)-normal.x, (float)-normal.y, (float)-normal.z };
 
 							// contactPtGlobal is in Planet Local space
-							Vector cGlobal = pp->S1()->pos + mul(pp->S1()->R, contactPtGlobal);
-							Vector cLocal = cGlobal - S1()->pos;
+							Vector cGlobal = pp->S1()->Pos() + mul(pp->S1()->R, contactPtGlobal);
+							Vector cLocal = cGlobal - S1()->Pos();
 							cLocal.Set(tmul(S1()->R, cLocal)); // convert to local frame of A
 							bestRes.contactPtLocal = { (float)cLocal.x, (float)cLocal.y, (float)cLocal.z };
 							bestResFromB = false;
@@ -6305,15 +6305,15 @@ void Vessel::ResolveCollisionWith(Vessel *v) {
 		Matrix M_conc2p;
 		M_conc2p.Set(conc->S1()->R);
 		M_conc2p.tpremul(pp->S1()->R);
-		Vector posConc_P(conc->S1()->pos - pp->S1()->pos);
+		Vector posConc_P(conc->S1()->Pos() - pp->S1()->Pos());
 		posConc_P.Set(tmul(pp->S1()->R, posConc_P));
 		bool dockingApproach = false;
 		if (conv->ndock > 0 && conc->ndock > 0) {
 			for (DWORD i = 0; i < conv->ndock; i++) {
-				Vector dockPosA = conv->S1()->pos + mul(conv->S1()->R, conv->dock[i]->ref);
+				Vector dockPosA = conv->S1()->Pos() + mul(conv->S1()->R, conv->dock[i]->ref);
 				Vector dockDirA = mul(conv->S1()->R, conv->dock[i]->dir);
 				for (DWORD j = 0; j < conc->ndock; j++) {
-					Vector dockPosB = conc->S1()->pos + mul(conc->S1()->R, conc->dock[j]->ref);
+					Vector dockPosB = conc->S1()->Pos() + mul(conc->S1()->R, conc->dock[j]->ref);
 					Vector dockDirB = mul(conc->S1()->R, conc->dock[j]->dir);
 					if (dockPosA.dist(dockPosB) < 5.0 && dotp(dockDirA, dockDirB) < -0.8) {
 						dockingApproach = true;
@@ -6363,7 +6363,7 @@ void Vessel::ResolveCollisionWith(Vessel *v) {
 						if (dockingApproach && sliceA.isDockClearZone) {
 							bool nearDock = false;
 							for (DWORD d = 0; d < conc->ndock; d++) {
-								Vector dockPosP = conc->S1()->pos - pp->S1()->pos + mul(conc->S1()->R, conc->dock[d]->ref);
+								Vector dockPosP = conc->S1()->Pos() - pp->S1()->Pos() + mul(conc->S1()->R, conc->dock[d]->ref);
 								dockPosP.Set(tmul(pp->S1()->R, dockPosP));
 								if (t0.dist2(dockPosP) < 9.0 || t1.dist2(dockPosP) < 9.0 || t2.dist2(dockPosP) < 9.0) {
 									nearDock = true;
@@ -6388,8 +6388,8 @@ void Vessel::ResolveCollisionWith(Vessel *v) {
 										// normal points out of A (conv) towards B (conc). We need B to A.
 										bestRes.normal = { (float)-normal.x, (float)-normal.y, (float)-normal.z };
 										// contactPtGlobal is in Planet Local space. Convert it correctly.
-										Vector cGlobal = pp->S1()->pos + mul(pp->S1()->R, contactPtGlobal);
-										Vector cLocal = cGlobal - S1()->pos;
+										Vector cGlobal = pp->S1()->Pos() + mul(pp->S1()->R, contactPtGlobal);
+										Vector cLocal = cGlobal - S1()->Pos();
 										cLocal.Set(tmul(S1()->R, cLocal));
 										bestRes.contactPtLocal = { (float)cLocal.x, (float)cLocal.y, (float)cLocal.z };
 										bestResFromB = false;
@@ -6401,8 +6401,8 @@ void Vessel::ResolveCollisionWith(Vessel *v) {
 										// normal points out of B (conv) towards A (conc). We need B to A.
 										bestRes.normal = { (float)normal.x, (float)normal.y, (float)normal.z };
 										// contactPtGlobal is in Planet Local space. Convert it correctly.
-										Vector cGlobal = pp->S1()->pos + mul(pp->S1()->R, contactPtGlobal);
-										Vector cLocal = cGlobal - v->S1()->pos;
+										Vector cGlobal = pp->S1()->Pos() + mul(pp->S1()->R, contactPtGlobal);
+										Vector cLocal = cGlobal - v->S1()->Pos();
 										cLocal.Set(tmul(v->S1()->R, cLocal));
 										bestRes.contactPtLocal = { (float)cLocal.x, (float)cLocal.y, (float)cLocal.z };
 										bestResFromB = true;
@@ -6420,7 +6420,7 @@ void Vessel::ResolveCollisionWith(Vessel *v) {
 		Matrix M_B2p;
 		M_B2p.Set(v->S1()->R);
 		M_B2p.tpremul(pp->S1()->R);
-		Vector posB_P(v->S1()->pos - pp->S1()->pos);
+		Vector posB_P(v->S1()->Pos() - pp->S1()->Pos());
 		posB_P.Set(tmul(pp->S1()->R, posB_P));
 		Vector vRel_AvsB = S1()->vel - v->S1()->vel;
 
@@ -6445,7 +6445,7 @@ void Vessel::ResolveCollisionWith(Vessel *v) {
 			Matrix M_A2p;
 			M_A2p.Set(S1()->R);
 			M_A2p.tpremul(pp->S1()->R);
-			Vector posA_P(S1()->pos - pp->S1()->pos);
+			Vector posA_P(S1()->Pos() - pp->S1()->Pos());
 			posA_P.Set(tmul(pp->S1()->R, posA_P));
 			Vector vRel_BvsA = v->S1()->vel - S1()->vel;
 
@@ -6484,9 +6484,9 @@ void Vessel::ResolveCollisionWith(Vessel *v) {
 		// (whose CoM may be far from the contact point on A's surface).
 		Vector rawContactPtGlobal;
 		if (bestResFromB) {
-			rawContactPtGlobal = v->S1()->pos + mul(v->S1()->R, Vector(bestRes.contactPtLocal.x, bestRes.contactPtLocal.y, bestRes.contactPtLocal.z));
+			rawContactPtGlobal = v->S1()->Pos() + mul(v->S1()->R, Vector(bestRes.contactPtLocal.x, bestRes.contactPtLocal.y, bestRes.contactPtLocal.z));
 		} else {
-			rawContactPtGlobal = S1()->pos + mul(S1()->R, Vector(bestRes.contactPtLocal.x, bestRes.contactPtLocal.y, bestRes.contactPtLocal.z));
+			rawContactPtGlobal = S1()->Pos() + mul(S1()->R, Vector(bestRes.contactPtLocal.x, bestRes.contactPtLocal.y, bestRes.contactPtLocal.z));
 		}
 
 		const VesselBase *bodyA = svA ? (VesselBase*)svA : (VesselBase*)my_root;
@@ -6498,14 +6498,14 @@ void Vessel::ResolveCollisionWith(Vessel *v) {
 		const Vector &pmiA = bodyA->PMI();
 		const Vector &pmiB = bodyB->PMI();
 
-		Vector rA = rawContactPtGlobal - sA->pos;
-		Vector rB = rawContactPtGlobal - sB->pos;
+		Vector rA = rawContactPtGlobal - sA->Pos();
+		Vector rB = rawContactPtGlobal - sB->Pos();
 
 		double rA_len = rA.length();
 		double rB_len = rB.length();
 
 		// For the contact point used in force-vector display, use the midpoint
-		Vector contactPtGlobal = (sA->pos + rA + sB->pos + rB) * 0.5;
+		Vector contactPtGlobal = (sA->Pos() + rA + sB->Pos() + rB) * 0.5;
 
 		Vector omegaA_global = mul(sA->R, sA->omega);
 		Vector omegaB_global = mul(sB->R, sB->omega);
@@ -6703,7 +6703,7 @@ void Vessel::ResolveCollisionWith(Vessel *v) {
 		// Debug visualization data for both vessels
 		{
 			Vector nLocal = tmul(S1()->R, normGlobal);
-			Vector rAlocal = tmul(S1()->R, rawContactPtGlobal - S1()->pos);
+			Vector rAlocal = tmul(S1()->R, rawContactPtGlobal - S1()->Pos());
 			Vector impLocal = tmul(S1()->R, impulse);
 			m_colDebug.active = true;
 			m_colDebug.contactPt = {rAlocal.x, rAlocal.y, rAlocal.z};
@@ -6716,7 +6716,7 @@ void Vessel::ResolveCollisionWith(Vessel *v) {
 		}
 		{
 			Vector nLocalB = tmul(v->S1()->R, -normGlobal);
-			Vector rBlocal = tmul(v->S1()->R, rawContactPtGlobal - v->S1()->pos);
+			Vector rBlocal = tmul(v->S1()->R, rawContactPtGlobal - v->S1()->Pos());
 			Vector impLocalB = tmul(v->S1()->R, -impulse);
 			v->m_colDebug.active = true;
 			v->m_colDebug.contactPt = {rBlocal.x, rBlocal.y, rBlocal.z};
@@ -6734,20 +6734,20 @@ void Vessel::ResolveCollisionWith(Vessel *v) {
 			if (sv) {
 				if (sv->fstatus == FLIGHTSTATUS_LANDED)
 					sv->Activate(true);
-				sv->S1()->pos += dPos;
+				sv->S1()->SetPos(sv->S1()->Pos() + dPos);
 				sv->S1()->vel += dVel;
 				sv->S1()->omega += dOmega;
-				sv->rpos_base = sv->S1()->pos; sv->rpos_add.Set(0,0,0);
+				sv->rpos_base = sv->S1()->Pos(); sv->rpos_add.Set(0,0,0);
 				sv->rvel_base = sv->S1()->vel; sv->rvel_add.Set(0,0,0);
 				sv->bOrbitStabilised = false;
 				if (sv->cbody) {
-					sv->cpos = sv->S1()->pos - sv->cbody->S1()->pos;
+					sv->cpos = sv->S1()->Pos() - sv->cbody->S1()->Pos();
 					sv->cvel = sv->S1()->vel - sv->cbody->S1()->vel;
 				}
 				for (DWORD i = 0; i < sv->nv; i++) {
 					Vessel *vj = sv->vlist[i].vessel;
 					sv->ComponentStateVectors(sv->S1(), vj->S1(), i);
-					vj->rpos_base = vj->S1()->pos; vj->rpos_add.Set(0,0,0);
+					vj->rpos_base = vj->S1()->Pos(); vj->rpos_add.Set(0,0,0);
 					vj->rvel_base = vj->S1()->vel; vj->rvel_add.Set(0,0,0);
 					vj->UpdateSurfParams();
 					vj->bOrbitStabilised = false;
@@ -6757,13 +6757,13 @@ void Vessel::ResolveCollisionWith(Vessel *v) {
 					if (cooldownEnd > vj->collisionCooldownT)
 						vj->collisionCooldownT = cooldownEnd;
 					if (vj->cbody) {
-						vj->cpos = vj->S1()->pos - vj->cbody->S1()->pos;
+						vj->cpos = vj->S1()->Pos() - vj->cbody->S1()->Pos();
 						vj->cvel = vj->S1()->vel - vj->cbody->S1()->vel;
 					}
 					if (vj->nforcevec_col < 10 && td.SimDT > 0.0) {
 						Vector F_global = dVel * (vj->Mass() / td.SimDT);
 						vj->col_forcevec[vj->nforcevec_col] = tmul(vj->S1()->R, F_global);
-						vj->col_forcepos[vj->nforcevec_col] = tmul(vj->S1()->R, contactPtGlobal - vj->S1()->pos);
+						vj->col_forcepos[vj->nforcevec_col] = tmul(vj->S1()->R, contactPtGlobal - vj->S1()->Pos());
 						vj->nforcevec_col++;
 					}
 					vj->UpdateAttachments();
@@ -6780,15 +6780,15 @@ void Vessel::ResolveCollisionWith(Vessel *v) {
 						vj->bSurfaceContact = false;
 						if (vj->proxybase) vj->proxybase->ReportTakeoff (vj);
 						if (vj->lstatus == 3 || vj->lstatus == 5) vj->lstatus = 1;
-						vj->rpos_base = vj->S1()->pos; vj->rpos_add.Set(0,0,0);
+						vj->rpos_base = vj->S1()->Pos(); vj->rpos_add.Set(0,0,0);
 						vj->S1()->vel += vj->rvel_add;
 						vj->rvel_base = vj->S1()->vel; vj->rvel_add.Set(0,0,0);
 						vj->S1()->omega.Set(0,0,0);
 					}
-					vj->S1()->pos += dPos;
+					vj->S1()->SetPos(vj->S1()->Pos() + dPos);
 					vj->S1()->vel += dVel;
 					vj->S1()->omega += dOmega;
-					vj->rpos_base = vj->S1()->pos; vj->rpos_add.Set(0,0,0);
+					vj->rpos_base = vj->S1()->Pos(); vj->rpos_add.Set(0,0,0);
 					vj->rvel_base = vj->S1()->vel; vj->rvel_add.Set(0,0,0);
 					vj->UpdateSurfParams();
 					vj->bOrbitStabilised = false;
@@ -6798,13 +6798,13 @@ void Vessel::ResolveCollisionWith(Vessel *v) {
 					if (cooldownEnd > vj->collisionCooldownT)
 						vj->collisionCooldownT = cooldownEnd;
 					if (vj->cbody) {
-						vj->cpos = vj->S1()->pos - vj->cbody->S1()->pos;
+						vj->cpos = vj->S1()->Pos() - vj->cbody->S1()->Pos();
 						vj->cvel = vj->S1()->vel - vj->cbody->S1()->vel;
 					}
 					if (vj->nforcevec_col < 10 && td.SimDT > 0.0) {
 						Vector F_global = dVel * (vj->Mass() / td.SimDT);
 						vj->col_forcevec[vj->nforcevec_col] = tmul(vj->S1()->R, F_global);
-						vj->col_forcepos[vj->nforcevec_col] = tmul(vj->S1()->R, contactPtGlobal - vj->S1()->pos);
+						vj->col_forcepos[vj->nforcevec_col] = tmul(vj->S1()->R, contactPtGlobal - vj->S1()->Pos());
 						vj->nforcevec_col++;
 					}
 				}
@@ -6844,14 +6844,16 @@ void Vessel::Update (bool force)
 	} else if (fstatus == FLIGHTSTATUS_LANDED) {
 
 		// simplified state update for idle vessels
-		proxyplanet->LocalToGlobal_t1 (sp.ploc, S1()->pos);
+		Vector pos;
+		proxyplanet->LocalToGlobal_t1 (sp.ploc, pos);
+		S1()->SetPos(pos);
 		double vground = Pi2 * proxyplanet->Size() * sp.clat / proxyplanet->RotT();
 		S1()->vel.Set (-vground*sp.slng, 0.0, vground*sp.clng);
 		S1()->vel.Set (mul (proxyplanet->S1()->R, S1()->vel) + proxyplanet->S1()->vel);
 		S1()->R.Set (land_rot);
 		S1()->R.premul (proxyplanet->S1()->R);
 		S1()->Q.Set (S1()->R);
-		acc = proxyplanet->Acceleration() + (proxyplanet->S1()->pos-S1()->pos) * (vground * Pi2/(proxyplanet->Size()*proxyplanet->RotT()));
+		acc = proxyplanet->Acceleration() + (proxyplanet->S1()->Pos() - S1()->Pos()) * (vground * Pi2/(proxyplanet->Size()*proxyplanet->RotT()));
 		el_valid = false;
 
 		if (bForceActive) {
@@ -6864,7 +6866,7 @@ void Vessel::Update (bool force)
 			if (lstatus == 3 || lstatus == 5) lstatus = 1;
 
 			// need to synchronise state vectors - DO WE NEED THIS?
-			rpos_base = S1()->pos; rpos_add.Set (0,0,0);
+			rpos_base = S1()->Pos(); rpos_add.Set (0,0,0);
 			S1()->vel += rvel_add; // MS-071005: rvel_add included to fix "stuck at latitude 90" bug
 			rvel_base = S1()->vel; rvel_add.Set (0,0,0);
 			S1()->omega.Set (0,0,0);
@@ -6978,9 +6980,9 @@ void Vessel::Update (bool force)
 					sp.alt -= pymin;
 					Vector loc;
 					proxyplanet->EquatorialToLocal (sp.slng, sp.clng, sp.slat, sp.clat, sp.rad, loc);
-					Vector pgpos(S1()->pos);
-					SetRPos (mul (proxyplanet->S1()->R, loc) + proxyplanet->S1()->pos);
-					Vector dv ((S1()->pos-pgpos)*td.iSimDT);
+					Vector pgpos(S1()->Pos());
+					SetRPos(mul(proxyplanet->S1()->R, loc) + proxyplanet->S1()->Pos());
+					Vector dv((S1()->Pos() - pgpos) * td.iSimDT);
 					double ay = mul (sp.L2H, tmul (proxyplanet->S1()->R, acc)).y;
 					if (ay < 0) dv -= mul (proxyplanet->S1()->R, tmul(sp.L2H, Vector (0, ay, 0)))*0.5*td.SimDT;
 					AddRVel (dv);
@@ -7035,7 +7037,7 @@ void Vessel::Update (bool force)
 	}
 
 	// state vectors w.r.t. reference body
-	cpos = S1()->pos - cbody->S1()->pos;
+	cpos = S1()->Pos() - cbody->S1()->Pos();
  	cvel = S1()->vel - cbody->S1()->vel;
 
 	// module interface calls
@@ -7067,8 +7069,8 @@ void Vessel::UpdatePassive ()
 	AttachmentSpec *pa = attach->mate_attach;
 	StateVectors *ps = prnt->S1();
 
-	s->pos.Set (mul (ps->R, attach_rpos) + ps->pos);
-	rpos_base = s->pos;
+	s->SetPos(mul (ps->R, attach_rpos) + ps->Pos());
+	rpos_base = s->Pos();
 	rpos_add.Set (0,0,0);
 	s->vel.Set (ps->vel);
 	rvel_base = s->vel;
@@ -7139,7 +7141,7 @@ void Vessel::PostUpdate ()
 			if (++scanvessel >= g_psys->nVessel()) scanvessel = 0;
 			Vessel *v = g_psys->GetVessel(scanvessel);
 			if (v != this && v->ndock && v->proxybody == proxybody) {
-				double dst = S0()->pos.dist (v->GPos());
+				double dst = S0()->Pos().dist (v->GPos());
 
 				if ((dst < 1.5 * (size + v->Size()) || (dst < size + v->Size() + 1e3))) { // valid candidate
 					Vector dref, gref, vref;
@@ -7149,7 +7151,7 @@ void Vessel::PostUpdate ()
 							if (dotp (S0()->vel - v->GVel(), mul (S0()->R, dock[j]->dir)) < -0.01) continue; // moving away from dock
 							for (k = 0; k < v->ndock; k++) { // loop over other vessel's docks
 								if (v->dock[k]->mate) continue; // dock already busy
-								dref.Set (tmul (v->GRot(), mul (S0()->R, dock[j]->ref) + S0()->pos - v->GPos()));
+								dref.Set(tmul(v->GRot(), mul(S0()->R, dock[j]->ref) + S0()->Pos() - v->GPos()));
 								double d = dref.dist (v->dock[k]->ref);
 								if (d < MIN_DOCK_DIST) {
 									if (dock[j]->autodock && v->dock[k]->autodock)
@@ -7159,7 +7161,7 @@ void Vessel::PostUpdate ()
 						} else { // new docking mode
 							for (k = 0; k < v->ndock; k++) { // loop over other vessel's docks
 								if (v->dock[k]->mate) continue; // dock already busy
-								gref.Set (mul (S0()->R, dock[j]->ref) + S0()->pos);            // my dock in global frame
+								gref.Set(mul(S0()->R, dock[j]->ref) + S0()->Pos());            // my dock in global frame
 								vref.Set (mul (v->GRot(), v->dock[k]->ref) + v->GPos()); // target dock in global frame
 								//dref.Set (tmul (v->GRot(), mul (*grot, dock[j]->ref) + *gpos - v->GPos())); // my dock in the target's frame
 								double d = gref.dist(vref); //dref.dist (v->dock[k]->ref);
@@ -7176,14 +7178,14 @@ void Vessel::PostUpdate ()
 					}
 					// update information about closest dock in range of our dock 0
 					if (closedock.vessel && closedock.vessel->ndock && closedock.dock < closedock.vessel->ndock) {
-						dref.Set (tmul (closedock.vessel->GRot(), mul (S0()->R, dock[0]->ref) + S0()->pos - closedock.vessel->GPos()));
+						dref.Set(tmul(closedock.vessel->GRot(), mul(S0()->R, dock[0]->ref) + S0()->Pos() - closedock.vessel->GPos()));
 						closedock.dist = dref.dist (closedock.vessel->dock[closedock.dock]->ref);
 					} else {
 						closedock.dist = 1e50;
 					}
 					for (k = 0; k < v->ndock; k++) {
 						if (v->dock[k]->mate) continue;
-						dref.Set (tmul (v->GRot(), mul (S0()->R, dock[0]->ref) + S0()->pos - v->GPos()));
+						dref.Set(tmul(v->GRot(), mul(S0()->R, dock[0]->ref) + S0()->Pos() - v->GPos()));
 						double d = dref.dist (v->dock[k]->ref);
 						if (d < closedock.dist) {
 							closedock.dist = d;
@@ -7234,7 +7236,7 @@ void Vessel::Timejump (double dt, int mode)
 			// fall through
 		case PROP_ORBITAL_FIXEDSTATE:
 		case PROP_SORBITAL_FIXEDSTATE:
-			RPlace(cpos + cbody->S1()->pos, cvel + cbody->S1()->vel);
+			RPlace(cpos + cbody->S1()->Pos(), cvel + cbody->S1()->vel);
 			break;
 		case PROP_ORBITAL_FIXEDSURF:
 		case PROP_SORBITAL_FIXEDSURF: {
@@ -7244,7 +7246,7 @@ void Vessel::Timejump (double dt, int mode)
 			double dphi = Pi2*dt/ref->RotT(), cphi = cos(dphi), sphi = sin(dphi);
 			Matrix Rb (cphi,0,-sphi,  0,1,0,  sphi,0,cphi);
 			const Matrix &ppR = ref->S1()->R;
-			Vector cpos(S0()->pos - ref->S0()->pos);
+			Vector cpos(S0()->Pos() - ref->S0()->Pos());
 			Vector cvel(S0()->vel - ref->S0()->vel);
 			Vector cp = mul(ppR, mul(Rb, tmul(ppR, cpos)));
 			Vector cv = mul(ppR, mul(Rb, tmul(ppR, cvel)));
@@ -7252,7 +7254,7 @@ void Vessel::Timejump (double dt, int mode)
 			S1()->R.premul(Rb);
 			S1()->R.premul(ppR);
 			S1()->Q.Set(S1()->R);
-			RPlace(cp + ref->S1()->pos, cv + ref->S1()->vel);
+			RPlace(cp + ref->S1()->Pos(), cv + ref->S1()->vel);
 			if (supervessel)
 				supervessel->SetRotationMatrix(S1()->R, this);
 			} break;
@@ -7266,7 +7268,7 @@ void Vessel::Timejump (double dt, int mode)
 
 	} else if (fstatus == FLIGHTSTATUS_LANDED) {
 
-		S1()->pos.Set(mul(proxyplanet->S1()->R, sp.ploc) + proxyplanet->S1()->pos);
+		S1()->SetPos(mul(proxyplanet->S1()->R, sp.ploc) + proxyplanet->S1()->Pos());
 		double vground = Pi2 * proxyplanet->Size() * sp.clat / proxyplanet->RotT();
 		S1()->vel.Set(-vground * sp.slng, 0.0, vground * sp.clng);
 		S1()->vel.Set(mul(proxyplanet->S1()->R, S1()->vel) + proxyplanet->S1()->vel);
@@ -7351,7 +7353,7 @@ void Vessel::UpdateProxies ()
 	for (i = g_psys->nVessel()-1, proxydist2 = 1e100; i >= 0; i--) {
 		Vessel *vessel = g_psys->GetVessel(i);
 		if (vessel == this) continue;
-		if ((dist2 = S0()->pos.dist2 (vessel->GPos())) < proxydist2) {
+		if ((dist2 = S0()->Pos().dist2(vessel->GPos())) < proxydist2) {
 			proxydist2 = dist2;
 			proxyvessel = vessel;
 		}
@@ -7395,7 +7397,7 @@ void Vessel::UpdateReceiverStatus (DWORD idx)
 				nav[n].dbidx = ++r0;
 			} else r0 = nav[n].dbidx;
 			for (; r0 < nn && nlist[r0]->GetStep() == step; r0++) {
-				sig = nlist[r0]->FieldStrength (S0()->pos);
+				sig = nlist[r0]->FieldStrength(S0()->Pos());
 				if (sig > 0.9 && sig > navsig[n]) {
 					navsig[n] = sig;
 					nav[n].sender = nlist[r0]; break;
@@ -7407,12 +7409,12 @@ void Vessel::UpdateReceiverStatus (DWORD idx)
 	// scan surface-base related signal transmitters
 	for (i = 0; i < proxyplanet->nBase(); i++) {
 		Base *base = proxyplanet->GetBase(i);
-		if ((S0()->pos.dist2 (base->GPos()) < 1e12) && (nn = base->nNav())) {
+		if ((S0()->Pos().dist2(base->GPos()) < 1e12) && (nn = base->nNav())) {
 			for (n = 0; n < nn; n++) {
 				const Nav *navsend = base->NavMgr().GetNav (n);
 				for (m = n0; m < n1; m++) {
 					if (navsend->GetStep() == nav[m].step) { // && navsend->InRange (*gpos))
-						sig = navsend->FieldStrength (S0()->pos);
+						sig = navsend->FieldStrength(S0()->Pos());
 						if (sig > 0.9 && sig > navsig[m]) {
 							navsig[m] = sig;
 							nav[m].sender = navsend;
@@ -7427,11 +7429,11 @@ void Vessel::UpdateReceiverStatus (DWORD idx)
 	for (i = g_psys->nVessel()-1; i >= 0; i--) {
 		Vessel *vessel = g_psys->GetVessel(i);
 		if (vessel == this) continue;
-		if ((dist2 = S0()->pos.dist2 (vessel->GPos())) < 1e12) { // max XPDR range 1000 km
+		if ((dist2 = S0()->Pos().dist2(vessel->GPos())) < 1e12) { // max XPDR range 1000 km
 
 			for (n = n0; n < n1; n++) {
 				if (vessel->xpdr && vessel->xpdr->GetStep() == nav[n].step) {
-					sig = vessel->xpdr->FieldStrength (S0()->pos);
+					sig = vessel->xpdr->FieldStrength(S0()->Pos());
 					if (sig > 0.9 && sig > navsig[n]) {
 						navsig[n] =  sig;
 						nav[n].sender = vessel->xpdr;
@@ -7445,7 +7447,7 @@ void Vessel::UpdateReceiverStatus (DWORD idx)
 					if (ps->ids) {
 						for (n = n0; n < n1; n++)
 							if (ps->ids->GetStep() == nav[n].step) {
-								sig = ps->ids->FieldStrength (S0()->pos);
+								sig = ps->ids->FieldStrength(S0()->Pos());
 								if (sig > 0.9 && sig > navsig[n]) {
 									navsig[n] = sig;
 									nav[n].sender = ps->ids;
@@ -7482,13 +7484,13 @@ double Vessel::IlluminationFactor () const
 		lightfac_T1 = lightfac_T0+updt;
 		return lightfac;
 	}
-	Vector S(sun->GPos() - S0()->pos);
+	Vector S(sun->GPos() - S0()->Pos());
 	double s = S.length();
 	double as = asin (sun->Size()/s);
 	int i;
 
 	for (i = 0;; i++) {
-		Vector P(cb->GPos() - S0()->pos);
+		Vector P(cb->GPos() - S0()->Pos());
 		double p = P.length();
 		if (p < s) {   // shadow only if planet closer than sun
 			double phi = acos (dotp(S,P)/(s*p));
@@ -8694,9 +8696,9 @@ const OBJHANDLE VESSEL::GetAtmRef () const
 
 void VESSEL::GetGlobalPos (VECTOR3 &pos) const
 {
-	pos.x = vessel->S0()->pos.x;
-	pos.y = vessel->S0()->pos.y;
-	pos.z = vessel->S0()->pos.z;
+	pos.x = vessel->S0()->Pos().x;
+	pos.y = vessel->S0()->Pos().y;
+	pos.z = vessel->S0()->Pos().z;
 }
 
 void VESSEL::GetGlobalVel (VECTOR3 &vel) const

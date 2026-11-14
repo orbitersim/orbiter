@@ -57,7 +57,7 @@ public:
 	const StateVectors *S0() const { return m_svS0; } // current state (at time td.SimT0)
 	const StateVectors *S1() const { return m_svS1; } // update state (during update phase, refers to td.SimT1. Past update phase this is the same as S0)
 
-	inline const Vector &GPos() const { return m_svS0->pos; }
+	inline const Vector &GPos() const { return m_svS0->Pos(); }
 	inline const Vector &GVel() const { return m_svS0->vel; }
 	inline const Matrix &GRot() const { return m_svS0->R; }
 	inline const Quaternion &GQ() const { return m_svS0->Q; }
@@ -76,16 +76,16 @@ public:
 	void AddRVel (const Vector &dv);
 	void FlushRVel ();
 
-	inline Vector GlobalToLocal (const Vector &glob) const
-	{ return tmul (m_svS0->R, glob - m_svS0->pos); }
+	inline Vector GlobalToLocal(const Vector &glob) const
+	{ return tmul(m_svS0->R, glob - m_svS0->Pos()); }
 	// Convert global position glob into body's local coordinate system
 
-	inline void GlobalToLocal (const Vector &glob, Vector &loc) const
-	{ loc.Set (tmul (m_svS0->R, glob - m_svS0->pos)); }
+	inline void GlobalToLocal(const Vector &glob, Vector &loc) const
+	{ loc.Set(tmul(m_svS0->R, glob - m_svS0->Pos())); }
 	// same with different interface
 
-	inline void LocalToGlobal (const Vector &loc, Vector &glob) const
-	{ glob.Set (mul (m_svS0->R, loc) + m_svS0->pos); }
+	inline void LocalToGlobal(const Vector &loc, Vector &glob) const
+	{ glob.Set(mul(m_svS0->R, loc) + m_svS0->Pos()); }
 
 	void LocalToEquatorial (const Vector &loc, double &lng, double &lat, double &rad) const;
 	inline void GlobalToEquatorial (const Vector &glob, double &lng, double &lat, double &rad) const
@@ -152,16 +152,16 @@ public:
 	// Operations on updated state vectors (only accessible during update phase
 	// AFTER the object has been updated)
 
-	inline Vector GlobalToLocal_t1 (const Vector &glob) const
-	{ return tmul (m_svS1->R, glob - m_svS1->pos); }
+	inline Vector GlobalToLocal_t1(const Vector &glob) const
+	{ return tmul(m_svS1->R, glob - m_svS1->Pos()); }
 	// Convert global position glob into body's local coordinate system
 
-	inline void GlobalToLocal_t1 (const Vector &glob, Vector &loc) const
-	{ loc.Set (tmul (m_svS1->R, glob - m_svS1->pos)); }
+	inline void GlobalToLocal_t1(const Vector &glob, Vector &loc) const
+	{ loc.Set(tmul(m_svS1->R, glob - m_svS1->Pos())); }
 	// same with different interface
 
-	inline void LocalToGlobal_t1 (const Vector &loc, Vector &glob) const
-	{ glob.Set (mul (m_svS1->R, loc) + m_svS1->pos); }
+	inline void LocalToGlobal_t1(const Vector &loc, Vector &glob) const
+	{ glob.Set(mul(m_svS1->R, loc) + m_svS1->Pos()); }
 
 	inline const Vector &Acceleration() const { return acc; };
 
