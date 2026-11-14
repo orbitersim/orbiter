@@ -115,9 +115,10 @@ set(common_src
     Input/Editor.cpp
     Input/Icon.cpp
     Input/Pin.cpp
+    Input/Graph.cpp
     Input/Node.cpp
     Input/NodeJoystick.cpp
-    Input/Graph.cpp
+    Input/NodeLegacyControls.cpp
 # Utils
 	Log.cpp
 	Memstat.cpp

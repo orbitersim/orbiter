@@ -23,6 +23,7 @@ class ControllerGraph final {
     std::vector<Link> links;
     std::vector<Node *> nodes;
 	std::unordered_map<void *, Pin *> pins; // Map between ed::PinId and Pins
+    std::list<Node *> nodesSorted;
 	Pin *draggedPin = NULL;
 	int linkidgen = 1;
     ControllerGraph();
@@ -30,6 +31,7 @@ class ControllerGraph final {
 	void Update(bool dryrun);
     void Draw();
 	void AddNode(Node *node);
-	Pin &PinFromId(ed::PinId id) { return *pins.at(id.AsPointer()); }
+	Pin *PinFromId(ed::PinId id) { return pins.at(id.AsPointer()); }
 	bool CanLink(const Pin *a, const Pin *b);
+	void TopologicalSort();
 };

@@ -411,7 +411,7 @@ void DrawHat(ImDrawList* drawList, const ImVec2& a, const ImVec2& b,
 
     const ImU32 inactive = IM_COL32(85, 85, 85, 255);
 
-	const float d = 0.70710678f; // 1 / sqrt(2)
+	const float d = 0.70710678f;
 
 	const ImVec2 dirs[] =
 	{
