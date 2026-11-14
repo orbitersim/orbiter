@@ -102,7 +102,7 @@ ImColor GetIconColor(enum Pin::type type)
 void Pin::DrawIcon()
 {
     ImColor color = GetIconColor(ptype);
-    ed::BeginPin(id, ed::PinKind::Output);
+    ed::BeginPin(id, pkind == Pin::kind::Output ? ed::PinKind::Output : ed::PinKind::Input);
 	switch(ptype) {
 		case Pin::type::Axis:
 			Axis(ImVec2(ImGui::GetTextLineHeight(), ImGui::GetTextLineHeight()), fVal, color);

@@ -2,35 +2,38 @@
 #include "Node.h"
 #include "Pin.h"
 #include "NodeJoystick.h"
+#include "NodeLegacyControls.h"
 #define SDL_DISABLE_OLD_NAMES
 #include <SDL3/SDL.h>
+#include <set>
+#include "OrbiterAPI.h"
 
-ImVec4 GetStateColor(const Pin &pin) {
+ImVec4 GetStateColor(const Pin *pin) {
     ImVec4 color = {0.5,0.5,0.5,1.0};
-    switch(pin.ptype) {
+    switch(pin->ptype) {
         case Pin::type::Axis:
-            if(pin.fVal > 0.0f) {
-                color.x = 0.5f * (1.0f-pin.fVal) + 0.902 * pin.fVal;
-                color.y = 0.5f * (1.0f-pin.fVal) + 0.624 * pin.fVal;
-                color.z = 0.5f * (1.0f-pin.fVal) + 0.000 * pin.fVal;
+            if(pin->fVal > 0.0f) {
+                color.x = 0.5f * (1.0f-pin->fVal) + 0.902 * pin->fVal;
+                color.y = 0.5f * (1.0f-pin->fVal) + 0.624 * pin->fVal;
+                color.z = 0.5f * (1.0f-pin->fVal) + 0.000 * pin->fVal;
             } else {
-                color.x = 0.5f * (1.0f+pin.fVal) - 0.337 * pin.fVal;
-                color.y = 0.5f * (1.0f+pin.fVal) - 0.706 * pin.fVal;
-                color.z = 0.5f * (1.0f+pin.fVal) - 0.914 * pin.fVal;
+                color.x = 0.5f * (1.0f+pin->fVal) - 0.337 * pin->fVal;
+                color.y = 0.5f * (1.0f+pin->fVal) - 0.706 * pin->fVal;
+                color.z = 0.5f * (1.0f+pin->fVal) - 0.914 * pin->fVal;
             }
             break;
         case Pin::type::HalfAxis:
-            color.x = 0.5f * (1.0f-pin.fVal) + 0.902 * pin.fVal;
-            color.y = 0.5f * (1.0f-pin.fVal) + 0.624 * pin.fVal;
-            color.z = 0.5f * (1.0f-pin.fVal) + 0.000 * pin.fVal;
+            color.x = 0.5f * (1.0f-pin->fVal) + 0.902 * pin->fVal;
+            color.y = 0.5f * (1.0f-pin->fVal) + 0.624 * pin->fVal;
+            color.z = 0.5f * (1.0f-pin->fVal) + 0.000 * pin->fVal;
             break;
         case Pin::type::Button:
-            if(pin.bVal) {
+            if(pin->bVal) {
                 color = {0.902,0.624,0.000,1.0};
             }
             break;
         case Pin::type::Hat:
-            if(pin.hVal) {
+            if(pin->hVal) {
                 color = {0.902,0.624,0.000,1.0};
             }
             break;
@@ -42,12 +45,12 @@ ControllerGraph::ControllerGraph()
 {
 	int count = 0;
 	SDL_JoystickID* ids = SDL_GetJoysticks(&count);
-	
-	for (int i = 0; i < count; ++i) {
+	int i;
+	for (i = 0; i < count; ++i) {
 		Node *n = new NodeJoystick(ids[i], i);
 		AddNode(n);
 	}
-
+	AddNode(new NodeLegacyControls(i++));
 	SDL_free(ids);
 }
 
@@ -56,14 +59,15 @@ ControllerGraph::~ControllerGraph()
 }
 void ControllerGraph::AddNode(Node *node) { 
     nodes.push_back(node);
-    for(Pin &pin:node->inputs) {
+    for(Pin &pin: node->inputs) {
         assert(pins.count(pin.id.AsPointer()) == 0);
         pins[pin.id.AsPointer()] = &pin;
     }
-    for(Pin &pin:node->outputs) {
+    for(Pin &pin: node->outputs) {
         assert(pins.count(pin.id.AsPointer()) == 0);
         pins[pin.id.AsPointer()] = &pin;
     }
+	TopologicalSort();
 }
 
 bool ControllerGraph::CanLink(const Pin *a, const Pin *b) {
@@ -92,26 +96,22 @@ void ControllerGraph::Draw()
     for(Node *n: nodes) {
         n->Draw(filter);
     }
-    for (const Link& link : links)
-    {
-        ImVec4 color = GetStateColor(PinFromId(link.InputId));
+    for (const Link& link : links) {
+        ImVec4 color = GetStateColor(PinFromId(link.OutputId));
         ed::Link(link.Id, link.InputId, link.OutputId, color);
     }
 
-    if (ed::BeginCreate())
-    {
-        ed::PinId startPinId, endPinId;
-
+    if (ed::BeginCreate()) {
         ed::PinId newnodepin;
         if(ed::QueryNewNode(&newnodepin)) {
-             draggedPin = &PinFromId(newnodepin);
+             draggedPin = PinFromId(newnodepin);
         }
 
-        if (ed::QueryNewLink(&startPinId, &endPinId))
-        {
+        ed::PinId startPinId, endPinId;
+        if (ed::QueryNewLink(&startPinId, &endPinId)) {
             if(startPinId != ed::PinId::Invalid && endPinId != ed::PinId::Invalid) {
-                Pin *ip = &PinFromId(startPinId);
-                Pin *op = &PinFromId(endPinId);
+                Pin *ip = PinFromId(startPinId);
+                Pin *op = PinFromId(endPinId);
                 // We need startPinId/ip to be the input pin
                 if(ip->pkind != Pin::kind::Input) {
                     std::swap(ip, op);
@@ -121,8 +121,9 @@ void ControllerGraph::Draw()
                 if(!CanLink(ip, op)) {
                     ed::RejectNewItem(ImColor(255, 0, 0), 2.0f);
                 } else if(ed::AcceptNewItem(ImColor(128, 255, 128), 2.0f)) {
-                       links.push_back({ ed::LinkId(linkidgen++), startPinId, endPinId });
-                        ed::Link(links.back().Id, links.back().InputId, links.back().OutputId);
+                    links.push_back({ ed::LinkId(linkidgen++), startPinId, endPinId });
+                    ed::Link(links.back().Id, links.back().InputId, links.back().OutputId);
+					TopologicalSort();
                 }
             }
         }
@@ -134,7 +135,77 @@ void ControllerGraph::Draw()
 
 void ControllerGraph::Update(bool dryrun)
 {
-	for(Node *n: nodes) {
+	for(Node *n: nodesSorted) {
+		n->UpdateInputs();
 		n->Update(dryrun);
 	}
+}
+
+// Kahn's algorithm from https://en.wikipedia.org/wiki/Topological_sorting
+void ControllerGraph::TopologicalSort()
+{
+retry:
+    // For the algorithm we need the incoming/outgoing edges for each node
+    // but we only know links between pins from the links container.
+    // We temporarily reconstruct that information here because we only
+    // need it when updating the graph and it's not used anywhere else.
+    // We also update here the list of predecessors for each input Pin
+    // since the information is handy.
+
+    nodesSorted.clear();
+    std::set<Node *> noincoming;
+
+    struct NodeInfo {
+        std::set<Node*> children;
+        std::set<Node*> parents;
+    };
+
+    std::unordered_map<Node*, NodeInfo> nodeInfo;
+	std::unordered_map<Pin*, Node*> pinOwners;
+
+    for(Node *n: nodes) {
+		for (Pin& i : n->inputs) {
+			i.inputs.clear();
+			pinOwners[&i] = n;
+		}
+
+		for (Pin& o : n->outputs) {
+			pinOwners[&o] = n;
+		}
+	
+	}
+    for(const Link &l: links) {
+        Pin *to = PinFromId(l.InputId);
+        Pin *from = PinFromId(l.OutputId);
+        Node *parent = pinOwners[from];
+        Node *child = pinOwners[to];
+        nodeInfo[parent].children.insert(child);
+        nodeInfo[child].parents.insert(parent);
+		to->inputs.emplace_back(from);
+	}
+
+	// Actual algorithm
+	for(Node *n: nodes) {
+        if(nodeInfo[n].parents.empty())
+            noincoming.insert(n);
+    }
+
+    while(!noincoming.empty()) {
+        const auto &n = noincoming.begin();
+        Node *node = *n;
+        noincoming.erase(n);
+        nodesSorted.push_back(node);
+        for(Node *child: nodeInfo[node].children) {
+            nodeInfo[child].parents.erase(node);
+            if(nodeInfo[child].parents.empty())
+                noincoming.insert(child);
+        }
+    }
+
+	// If a cycle was introduced by the last added link, remove it
+	if(nodesSorted.size() != nodes.size()) {
+        oapiAddNotification(OAPINOTIF_ERROR, "Cannot link back to an ancestor node");
+		links.pop_back();
+		goto retry;
+    }
 }

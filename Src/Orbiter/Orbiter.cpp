@@ -2371,10 +2371,10 @@ void Orbiter::KbdInputBuffered_OnRunning (char *kstate, uint8_t key)
 //-----------------------------------------------------------------------------
 void Orbiter::UserJoyInput_System ()
 {
+	return;
 	float x,y,z,Rz,throttle;
 	int hat, alt;
 	InputController::GetInputs(&x, &y, &Rz, &hat, &throttle, &alt);
-
 //	if (LOWORD (js->rgdwPOV[0]) != 0xFFFF) {
 	if (LOWORD (hat) != 0xFFFF) {
 		DWORD dir = hat;
@@ -2412,6 +2412,17 @@ void Orbiter::UserJoyInput_System ()
 //-----------------------------------------------------------------------------
 void Orbiter::UserJoyInput_OnRunning ()
 {
+	InputController::GetJoystickCtrl(ctrlJoystick);
+	float throttle = ctrlJoystick[THGROUP_MAIN];
+	if(throttle < 0.0f) throttle = 0.0f;
+	if (throttle != plZ4) {
+		plZ4 = throttle;
+		g_focusobj->SetThrusterGroupLevel (THGROUP_MAIN, throttle);
+		g_focusobj->SetThrusterGroupLevel (THGROUP_RETRO, 0.0);
+	}
+	return;
+
+	/*
 	float x,y,z,Rz,throttle;
 	int alt, hat;
 	InputController::GetInputs(&x, &y, &Rz, &hat, &throttle, &alt);
@@ -2442,6 +2453,7 @@ void Orbiter::UserJoyInput_OnRunning ()
 		g_focusobj->SetThrusterGroupLevel (THGROUP_MAIN, throttle);
 		g_focusobj->SetThrusterGroupLevel (THGROUP_RETRO, 0.0);
 	}
+	*/
 }
 
 bool Orbiter::MouseEvent (UINT event, DWORD state, DWORD x, DWORD y)

@@ -17,16 +17,23 @@ void Node::AddOutput(const char *n, Pin::type type) {
 void Node::ComputeLayout() {
 	widthName = ImGui::CalcTextSize(name.c_str()).x;
 	maxWidthInput = 0;
-	for(auto &input: inputs) {
+	for(Pin &input: inputs) {
 		float sz = ImGui::CalcTextSize(input.name.c_str()).x;
 		if(sz > maxWidthInput) maxWidthInput = sz;
 	}
 	maxWidthOutput = 0;
-	for(auto &output: outputs) {
+	for(Pin &output: outputs) {
 		float sz = ImGui::CalcTextSize(output.name.c_str()).x;
 		if(sz > maxWidthOutput) maxWidthOutput = sz;
 	}
 	dirty = false;
+}
+
+void Node::UpdateInputs()
+{
+	for(Pin &input: inputs) {
+		input.ReadInputs();
+	}
 }
 
 void Node::Draw(std::function<bool(const Pin *)> filter) {
@@ -43,7 +50,7 @@ void Node::Draw(std::function<bool(const Pin *)> filter) {
 
 	if(inputs.size() > 0) {
 		ImGui::BeginGroup();
-		for(auto &input:inputs) {
+		for(Pin &input:inputs) {
 			input.Draw(filter);
 		}
 		ImGui::EndGroup();
@@ -66,7 +73,7 @@ void Node::Draw(std::function<bool(const Pin *)> filter) {
 	}
 
 	ImGui::BeginGroup();
-	for(auto &output:outputs) {
+	for(Pin &output:outputs) {
 		ImGui::Dummy(ImVec2(maxWidthOutput - ImGui::CalcTextSize(output.name.c_str()).x,0));
 		ImGui::SameLine();
 		output.Draw(filter);
