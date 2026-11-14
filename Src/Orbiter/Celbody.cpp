@@ -237,35 +237,30 @@ void CelestialBody::Attach (CelestialBody *_parent)
 		el->Setup (mass, cbody->Mass(), td.MJD_ref);
 
 		Vector pos(S1()->Pos());
+		Vector vel(S1()->Vel());
 		int flg = TryExternState();
 		if (flg) {
 			if (!(flg & EPHEM_TRUEPOS)) pos = bpos; // forcing true pos == barycentre:
-			if (!(flg & EPHEM_TRUEVEL)) S1()->vel = bvel;   // not good! should do better
+			if (!(flg & EPHEM_TRUEVEL)) vel = bvel;   // not good! should do better
 			if (!(flg & EPHEM_BARYPOS)) bpos = pos;
-			if (!(flg & EPHEM_BARYVEL)) bvel = S1()->vel;
+			if (!(flg & EPHEM_BARYVEL)) bvel = vel;
 		} else if (bInitFromElements) {
-			el->PosVel(pos, S1()->vel, td.SimT1);
+			el->PosVel(pos, vel, td.SimT1);
 			if (elframe == ELFRAME_PARENTEQU) {         // convert to ecliptic frame
 				pos.Set(mul(cbody->R_ecl, pos));  // rotate radius vector by planet's obliquity
-				S1()->vel.Set(mul(cbody->R_ecl, S1()->vel));  // rotate velocity vector by planet's obliquity
-				el->Calculate(pos, S1()->vel, td.SimT1); // update elements with modified state vectors
+				vel.Set(mul(cbody->R_ecl, vel));  // rotate velocity vector by planet's obliquity
+				el->Calculate(pos, vel, td.SimT1); // update elements with modified state vectors
 			}
 			bpos = pos;
-			bvel = S1()->vel;
+			bvel = vel;
 		}
 		S1()->SetPos(pos + cbody->GPos());
-		S1()->vel += cbody->GVel();
+		S1()->SetVel(vel + cbody->GVel());
 		bpos += cbody->GPos();
 		bvel += cbody->GVel();
 	} 
 
-	RPlace (S1()->Pos(), S1()->vel);
-
-#ifdef UNDEF
-	// temporary, for debugging
-	if (!strcmp (name, "Jupiter"))
-		bDynamicPosVel = true;
-#endif
+	RPlace (S1()->Pos(), S1()->Vel());
 }
 
 void CelestialBody::AddSecondary (CelestialBody *sec)
@@ -281,9 +276,9 @@ const Elements *CelestialBody::Els () const
 {
 	if (!bFixedElements) {
 		if (cbody)
-			el->Calculate(S0()->Pos() - cbody->GPos(), S0()->vel-cbody->GVel(), td.SimT0);
+			el->Calculate(S0()->Pos() - cbody->GPos(), S0()->Vel() - cbody->GVel(), td.SimT0);
 		else
-			el->Calculate(S0()->Pos(), S0()->vel, td.SimT0);
+			el->Calculate(S0()->Pos(), S0()->Vel(), td.SimT0);
 	}
 	return el;
 }
@@ -426,16 +421,14 @@ void CelestialBody::AbsTrueState()
 	// parent state and its own relative state.
 	// Recursively updates all secondary body states.
 
-	int i;
-
-	Vector pos(cpos);
-	S1()->vel = cvel;
+	S1()->SetPos(cpos);
+	S1()->SetVel(cvel);
 	if (cbody) {
-		pos += cbody->S1()->Pos();
-		S1()->vel += cbody->S1()->vel;
+		S1()->AddPos(cbody->S1()->Pos());
+		S1()->AddVel(cbody->S1()->Vel());
 	}
-	S1()->SetPos(pos);
-	for (i = 0; i < nsecondary; i++)
+
+	for (int i = 0; i < nsecondary; i++)
 		secondary[i]->AbsTrueState();
 }
 
@@ -499,7 +492,7 @@ void CelestialBody::Update (bool force)
 
 	if (bDynamicPosVel) {
 		bpos = (nsecondary ? Pos2Barycentre(S1()->Pos()) : S1()->Pos());
-		bvel = S1()->vel;
+		bvel = S1()->Vel();
 	}
 
 	acc = cpos * (-cvel.length2()/cpos.length2());
@@ -608,9 +601,10 @@ int CelestialBody::TryExternState()
 	int flg = TryExternEphemeris(res);
 
 	if (flg) {
-		Vector pos;
-		InterpretEphemeris(res, flg, &pos, &S1()->vel, &bpos, &bvel);
+		Vector pos, vel;
+		InterpretEphemeris(res, flg, &pos, &vel, &bpos, &bvel);
 		S1()->SetPos(pos);
+		S1()->SetVel(vel);
 	}
 	return flg;
 }
@@ -722,7 +716,7 @@ StateVectors CelestialBody::InterpolateState (double n) const
 
 	StateVectors sv;
 	sv.SetPos(InterpolatePosition(n));
-	sv.vel = S0()->vel*(1.0-n) + S1()->vel*n; // may need a better interpolation
+	sv.SetVel(S0()->Vel() * (1.0 - n) + S1()->Vel() * n); // may need a better interpolation
 	GetRotation (td.SimT0 + td.SimDT*n, sv.R);
 	sv.Q.Set (sv.R);
 	sv.omega.Set (S0()->omega*(1.0-n) + S1()->omega*n); // is this ok?

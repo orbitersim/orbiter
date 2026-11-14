@@ -596,7 +596,7 @@ void Base::Update(bool force)
 	// two quaternions and extract grot
 
 	S1()->SetPos(mul(cbody->S1()->R, rpos) + cbody->S1()->Pos());
-	S1()->vel.Set(mul(cbody->S1()->R, rotvel) + cbody->S1()->vel);
+	S1()->SetVel(mul(cbody->S1()->R, rotvel) + cbody->S1()->Vel());
 
 	// periodically update some secondary parameters
 	if (td.SimT1 > sundir_updt || force) {

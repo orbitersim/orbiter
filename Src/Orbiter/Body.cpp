@@ -70,11 +70,11 @@ Body::Body(char* fname)
 
 	if (!GetItemVector (ifs, "AlbedoRGB", albedo)) albedo.Set (1,1,1);
 
-	GetItemVector(ifs, "InitPos", v); m_svS0->SetPos(v);
-	GetItemVector (ifs, "InitVel", m_svS0->vel);
+	GetItemVector(ifs, "InitPos", v); m_svS0->SetPos(v); m_svS1->SetPos(v);
+	GetItemVector(ifs, "InitVel", v); m_svS0->SetVel(v); m_svS1->SetVel(v);
 
 	rpos_base.Set (m_svS0->Pos()); rpos_add.Set (0,0,0);
-	rvel_base.Set (m_svS0->vel); rvel_add.Set (0,0,0);
+	rvel_base.Set (m_svS0->Vel()); rvel_add.Set (0,0,0);
 }
 
 void Body::SetName (char *_name)
@@ -95,7 +95,7 @@ void Body::RPlace (const Vector &rpos, const Vector &rvel)
 	// should RPlace be allowed outside update phase?
 	m_svS1->SetPos(rpos_base = rpos);
 	rpos_add.Set (0,0,0);
-	m_svS1->vel = rvel_base = rvel;
+	m_svS1->SetVel(rvel_base = rvel);
 	rvel_add.Set (0,0,0);
 }
 
@@ -120,7 +120,7 @@ void Body::FlushRPos ()
 void Body::SetRVel (const Vector &v)
 {
 	dCHECK(m_svS1 != m_svS0, "Update state not available")
-	rvel_base = m_svS1->vel = v;
+	m_svS1->SetVel(rvel_base = v);
 	rvel_add.Set (0,0,0);
 }
 
@@ -128,12 +128,12 @@ void Body::AddRVel (const Vector &dv)
 {
 	dCHECK(m_svS1 != m_svS0, "Update state not available")
 	rvel_base += dv;
-	m_svS1->vel = rvel_base + rvel_add;
+	m_svS1->SetVel(rvel_base + rvel_add);
 }
 
 void Body::FlushRVel ()
 {
-	rvel_base = m_svS1->vel;
+	rvel_base = m_svS1->Vel();
 	rvel_add.Set(0,0,0);
 }
 

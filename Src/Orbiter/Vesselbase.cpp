@@ -53,7 +53,7 @@ void SurfParam::Set (const StateVectors &s, const StateVectors &s_ref, const Cel
 		bank = 0.0;
 
 	// ground speed
-	Vector vrel = s.vel - s_ref.vel;
+	Vector vrel = s.Vel() - s_ref.Vel();
 	double vref = Pi2/ref->RotT() * rad * clat; // speed of a point at vessel position fixed in planet frame
 	groundvel_glob.Set (vrel - mul (s_ref.R, Vector(-vref*slng,0.0,vref*clng)));  // ground velocity in global frame
 	groundvel_ship.Set (tmul (s.R, groundvel_glob));  // ground velocity in ship frame
@@ -212,9 +212,9 @@ bool VesselBase::Activate (bool force)
 {
 	if (fstatus == FLIGHTSTATUS_LANDED || force) {
 		fstatus = FLIGHTSTATUS_FREEFLIGHT;
-		rpos_base = S0()->Pos();
+		rpos_base = S1()->Pos();
 		rpos_add.Set (0,0,0);
-		rvel_base = S0()->vel;
+		rvel_base = S1()->Vel();
 		rvel_add.Set (0,0,0);
 		return true;
 	} else
@@ -416,7 +416,7 @@ bool VesselBase::ValidateStateUpdate (StateVectors *s)
 			if (vs < vsmax) {
 				Vector gv(sp.groundvel_ship * (vsmax/vs)); // rescaled surface-relative velocity
 				gv = mul (GRot(), gv);                    // map to global
-				S1()->vel += (gv - sp.groundvel_glob);
+				S1()->AddVel(gv - sp.groundvel_glob);
 				rvel_base += (gv - sp.groundvel_glob);
 				return false;
 			}

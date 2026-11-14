@@ -58,7 +58,7 @@ public:
 	const StateVectors *S1() const { return m_svS1; } // update state (during update phase, refers to td.SimT1. Past update phase this is the same as S0)
 
 	inline const Vector &GPos() const { return m_svS0->Pos(); }
-	inline const Vector &GVel() const { return m_svS0->vel; }
+	inline const Vector &GVel() const { return m_svS0->Vel(); }
 	inline const Matrix &GRot() const { return m_svS0->R; }
 	inline const Quaternion &GQ() const { return m_svS0->Q; }
 	// Object position, velocity and orientation in global coords. To transform

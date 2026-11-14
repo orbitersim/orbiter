@@ -47,7 +47,7 @@ inline double posangle (double angle)
 }
 #endif
 
-// Difference a1-a2, redmoving phase wrap
+// Difference a1-a2, removing phase wrap
 inline double diffangle (double a1, double a2)
 {
 	a1 = fmod (a1, Pi2); if (a1 < 0) a1 += Pi2;
@@ -406,7 +406,7 @@ public:
 // =======================================================================
 // State vector struct
 // Contains the state of a rigid body (position, linear velocity, orientation,
-// angular velocity
+// angular velocity, with respect to a reference frame
 
 class StateVectors {
 public:
@@ -419,6 +419,13 @@ public:
 
 	const Vector &Pos() const { return pos; }
 	void SetPos(const Vector &p) { pos = p; }
+	void AddPos(const Vector &dp) { pos += dp; }
+	void IncPos(const Vector &dp) { pos += dp; }
+
+	const Vector &Vel() const { return vel; }
+	void SetVel(const Vector &v) { vel = v; }
+	void AddVel(const Vector &dv) { vel += dv; }
+	void IncVel(const Vector &dv) { vel += dv; }
 
 	void SetRot (const Matrix &r);     // set rotation state from a rotation matrix
 	void SetRot (const Quaternion &q); // set rotation state from a quaternion
@@ -427,13 +434,13 @@ public:
 	// Advance the state vectors by dt, given linear acceleration a, linear velocity v,
 	// angular acceleration aa and angular velocity av.
 
-	Vector vel;      // linear velocity in associated frame
 	Matrix R;        // rotation matrix in associated frame
 	Quaternion Q;    // orientation in associated frame
 	Vector omega;    // angular velocity components in associated frame
 
 protected:
 	Vector pos;      // position in associated frame
+	Vector vel;      // linear velocity in associated frame
 };
 
 // =======================================================================

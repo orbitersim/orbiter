@@ -890,10 +890,10 @@ Vector Planet::GroundVelocity (double lng, double lat, double alt, int frame)
 {
 	if (frame < 2 || frame > 3) return Vector(0,0,0); // sanity check
 
-	double vground = Pi2 * (size+alt) * cos(lat) / RotT();
-	Vector v(-vground*sin(lng), 0.0, vground*cos(lng));
-	if (frame == 2) return v;
-	else            return mul (S0()->R, v) + S0()->vel;
+	double vground = Pi2 * (size + alt) * cos(lat) / RotT();
+	Vector Vground(-vground * sin(lng), 0.0, vground * cos(lng));
+	if (frame == 2) return Vground;
+	else            return mul (S0()->R, Vground) + S0()->Vel();
 }
 
 Vector Planet::WindVelocity (double lng, double lat, double alt, int frame, WindPrm *prm, double *windspeed)
@@ -982,7 +982,7 @@ Vector Planet::WindVelocity (double lng, double lat, double alt, int frame, Wind
 	case 2: // planet-local non-rotating
 		return wv_loc + GroundVelocity(lng,lat,alt,2);
 	case 3:  // global
-		return mul (S0()->R, wv_loc + GroundVelocity (lng,lat,alt,2)) + S0()->vel;
+		return mul(S0()->R, wv_loc + GroundVelocity(lng, lat, alt, 2)) + S0()->Vel();
 	default:
 		// this should not happen
 		return wv;

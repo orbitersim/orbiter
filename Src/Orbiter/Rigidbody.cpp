@@ -224,13 +224,13 @@ void RigidBody::Update (bool force)
 				FlushRPos();
 				FlushRVel();
 				S1()->SetPos(cpos);
-				S1()->vel.Set (cvel);
+				S1()->SetVel(cvel);
 				GetIntermediateMoments_pert (acc_pert, tau, *S0(), 0, dt, cbody);
 				el->Calculate (cpos, cvel, td.SimT0); // get elements from previous step
 			}
 			Encke();
 			S1()->SetPos(cpos + cbody->S1()->Pos());
-			S1()->vel.Set (cvel + cbody->S1()->vel);
+			S1()->SetVel(cvel + cbody->S1()->Vel());
 			FlushRPos();
 			FlushRVel();
 			S1()->R.Set (S1()->Q);
@@ -252,7 +252,7 @@ void RigidBody::Update (bool force)
 				for (i = 0; i < nPropSubsteps; i++) {
 					((*this).*(PropMode[PropLevel].propagator)) (dt, nPropSubsteps, i);
 					S1()->SetPos(rpos_base + rpos_add);
-					S1()->vel = rvel_base + rvel_add;
+					S1()->SetVel(rvel_base + rvel_add);
 					S1()->R.Set (S1()->Q);
 					GetIntermediateMoments (acc, tau, *S1(), (i+1.0)/nPropSubsteps, dt);
 					arot.Set (EulerInv_full (tau, S1()->omega));
@@ -294,7 +294,7 @@ void RigidBody::Update (bool force)
 
 	if (cbody) {
 		cpos = S1()->Pos() - cbody->S1()->Pos();
-		cvel = S1()->vel - cbody->S1()->vel;
+		cvel = S1()->Vel() - cbody->S1()->Vel();
 	}
 }
 

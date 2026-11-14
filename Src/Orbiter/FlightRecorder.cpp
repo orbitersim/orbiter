@@ -128,7 +128,7 @@ void Vessel::FRecorder_Save (bool force)
 	for (iter = 0; iter < niter; iter++) {
 		if (ref) {
 			Vector pos = S0()->Pos() - ref->GPos();
-			Vector vel = S0()->vel-ref->GVel();
+			Vector vel = S0()->Vel() - ref->GVel();
 			if (frec_last.frm == 1) { // map to equatorial
 				//vel = tmul (cbody->GRot(), vel);
 				double lng, lat, rad, vref;
@@ -524,18 +524,19 @@ void Vessel::FRecorder_Play ()
 			V1.Set (mul (frec[cfrec].ref->S1()->R, s + Vector (-vref*sin(lng),0,vref*cos(lng))));
 		}
 
-		Vector pos;
+		Vector pos, vel;
 		for (i = 0; i < 3; i++) {
 			r0 = P0.data[i]; r1 = P1.data[i];
 			v0 = V0.data[i]; v1 = V1.data[i];
 			a0 = 2.0*(3.0*(r1-r0) - dT*(2.0*v0+v1)) / (dT*dT);
 			b  = 6.0*(2.0*(r0-r1) + dT*(v0+v1)) / (dT*dT*dT);
-			sv->vel.data[i] = v0 + a0*dt + 0.5*b*dt*dt;
+			vel.data[i] = v0 + a0*dt + 0.5*b*dt*dt;
 			pos.data[i] = r0 + v0*dt + 0.5*a0*dt*dt + b*dt*dt*dt/6.0;
 		}
 		pos += frec[cfrec].ref->S1()->Pos();
-		sv->vel += frec[cfrec].ref->S1()->vel;
+		vel += frec[cfrec].ref->S1()->Vel();
 		sv->SetPos(pos);
+		sv->SetVel(vel);
 
 		// attitude
 		if (td.SimT1 < frec_att[nfrec_att-1].simt) {
@@ -750,7 +751,7 @@ void Vessel::FRecorder_EndPlayback ()
 	if (bFRplayback) {
 		bFRplayback = false;
 		Amom_add.Set(0,0,0);
-		rvel_base.Set (S0()->vel);
+		rvel_base.Set (S0()->Vel());
 		rvel_add.Set(0,0,0);
 		rpos_base.Set(S0()->Pos());
 		rpos_add.Set(0,0,0);
