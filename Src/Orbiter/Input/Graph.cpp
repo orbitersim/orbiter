@@ -8,7 +8,7 @@
 #include <set>
 #include "OrbiterAPI.h"
 
-ImVec4 GetStateColor(const Pin *pin) {
+static ImVec4 GetStateColor(const Pin *pin) {
     ImVec4 color = {0.5,0.5,0.5,1.0};
     switch(pin->ptype) {
         case Pin::type::Axis:
@@ -43,20 +43,15 @@ ImVec4 GetStateColor(const Pin *pin) {
 
 ControllerGraph::ControllerGraph()
 {
-	int count = 0;
-	SDL_JoystickID* ids = SDL_GetJoysticks(&count);
-	int i;
-	for (i = 0; i < count; ++i) {
-		Node *n = new NodeJoystick(ids[i], i);
-		AddNode(n);
-	}
-	AddNode(new NodeLegacyControls(i++));
-	SDL_free(ids);
 }
 
 ControllerGraph::~ControllerGraph()
 {
+	for(Node *n: nodes) {
+		delete n;
+	}
 }
+
 void ControllerGraph::AddNode(Node *node) { 
     nodes.push_back(node);
     for(Pin &pin: node->inputs) {
@@ -67,6 +62,34 @@ void ControllerGraph::AddNode(Node *node) {
         assert(pins.count(pin.id.AsPointer()) == 0);
         pins[pin.id.AsPointer()] = &pin;
     }
+	TopologicalSort();
+}
+
+void ControllerGraph::DeleteNode(Node *node) {
+
+	const auto eraseLinks = [this](ed::PinId id) {
+        links.erase(std::remove_if(links.begin(), 
+                        links.end(),
+                        [&](Link &x){return x.InputId == id || x.OutputId == id;}),
+                        links.end());
+	};
+	
+	for(Pin &pin: node->inputs) {
+        assert(pins.count(pin.id.AsPointer()) == 1);
+		eraseLinks(pin.id);
+        pins.erase(pin.id.AsPointer());
+    }
+    for(Pin &pin: node->outputs) {
+        assert(pins.count(pin.id.AsPointer()) == 1);
+		eraseLinks(pin.id);
+        pins.erase(pin.id.AsPointer());
+    }
+
+	auto it = std::find(nodes.begin(), nodes.end(), node);
+	assert(it != nodes.end());
+	nodes.erase(it);
+	delete node;
+
 	TopologicalSort();
 }
 
