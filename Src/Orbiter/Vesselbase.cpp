@@ -14,7 +14,7 @@ extern char DBG_MSG[256];
 
 // =======================================================================
 
-void SurfParam::Set (const StateVectors &s, const StateVectors &s_ref, const CelestialBody *_ref,
+void SurfParam::Set(const StateVectors &s, const StateVectors &s_ref, const CelestialBody *_ref,
 					 std::vector<ElevationTile> *etilecache, WindPrm *windprm)
 {
 	// Calculate surface parameters for arbitrary state of object and reference planet

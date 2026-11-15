@@ -408,39 +408,50 @@ public:
 // Contains the state of a rigid body (position, linear velocity, orientation,
 // angular velocity, with respect to a reference frame
 
-class StateVectors {
+class StateVectors
+{
 public:
-	StateVectors() { SetRot(IMatrix()); }
-	void Set (const StateVectors &s);
+	StateVectors();
 
-	void Set (const Vector &v, const Vector &p, const Vector &av, const Quaternion &ap);
+	void Set(const StateVectors &s);
+	void Set(const Vector &v, const Vector &p, const Vector &av, const Quaternion &ap);
 	// Set state vectors to linear velocity v, position p, angular velocity av and
 	// orientation ap.
 
-	const Vector &Pos() const { return pos; }
-	void SetPos(const Vector &p) { pos = p; }
-	void AddPos(const Vector &dp) { pos += dp; }
-	void IncPos(const Vector &dp) { pos += dp; }
+	const Vector &Pos() const { return m_vPos; }
+	void SetPos(const Vector &p);
+	void AddPos(const Vector &dp); // use this to add position components comparable in magnitude to the state vector value
+	void IncPos(const Vector &dp); // use this to add position components small compared to the state vector value
 
-	const Vector &Vel() const { return vel; }
-	void SetVel(const Vector &v) { vel = v; }
-	void AddVel(const Vector &dv) { vel += dv; }
-	void IncVel(const Vector &dv) { vel += dv; }
+	const Vector &Vel() const { return m_vVel; }
+	void SetVel(const Vector &v);
+	void AddVel(const Vector &dv); // use this to add velocity components comparable in magnitude to the state vector value
+	void IncVel(const Vector &dv); // use this to add velocity components small compared to the state vector value
 
-	void SetRot (const Matrix &r);     // set rotation state from a rotation matrix
-	void SetRot (const Quaternion &q); // set rotation state from a quaternion
+	void SetRot(const Matrix &r);     // set rotation state from a rotation matrix
+	void SetRot(const Quaternion &q); // set rotation state from a quaternion
 
 	void Advance (double dt, const Vector &a, const Vector &v, const Vector &aa, const Vector &av);
 	// Advance the state vectors by dt, given linear acceleration a, linear velocity v,
 	// angular acceleration aa and angular velocity av.
+
+	void FlushPos();
+	void FlushVel();
 
 	Matrix R;        // rotation matrix in associated frame
 	Quaternion Q;    // orientation in associated frame
 	Vector omega;    // angular velocity components in associated frame
 
 protected:
-	Vector pos;      // position in associated frame
-	Vector vel;      // linear velocity in associated frame
+	Vector m_vPos;                    // position in associated frame
+	Vector m_vPos_base, m_vPos_incr;  // position split into base and increment
+	Vector m_vVel;                    // linear velocity in associated frame
+	Vector m_vVel_base, m_vVel_incr;  // velocity split into base and increment
+	int m_nPos_incr;                  // position flush counter
+	int m_nVel_incr;                  // velocity flush counter
+
+private:
+	static const int s_nLimit_incr{ 100000 };
 };
 
 // =======================================================================

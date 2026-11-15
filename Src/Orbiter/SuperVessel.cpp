@@ -65,7 +65,7 @@ SuperVessel::SuperVessel (Vessel *vessel)
 	vessel->SetSuperStruct (this);
 
 	SetDefaultState();
-	PublishStateVectors();
+	SyncStateVectors();
 }
 
 SuperVessel::SuperVessel (Vessel *vessel1, Vessel *vessel2, int port1, int port2, bool mixmoments)
@@ -161,8 +161,7 @@ SuperVessel::SuperVessel (Vessel *vessel1, Vessel *vessel2, int port1, int port2
 
 	SetDefaultState();
 	ResetSize();
-	//Activate(true);
-	PublishStateVectors();
+	SyncStateVectors();
 }
 
 SuperVessel::~SuperVessel()

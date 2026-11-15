@@ -28,7 +28,7 @@ typedef struct { // touchdown vertex specifications
 struct WindPrm;
 
 struct SurfParam {//Surface-relative vessel state
-	void Set (const StateVectors &s, const StateVectors &s_ref, const CelestialBody *ref,
+	void Set(const StateVectors &s, const StateVectors &s_ref, const CelestialBody *ref,
 		std::vector<ElevationTile> *etilecache=NULL, WindPrm *windprm=NULL);
 	// Set surface parameters from object and reference state vectors
 

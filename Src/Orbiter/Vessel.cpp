@@ -766,7 +766,7 @@ void Vessel::Setup ()
 		//if (!playbackdir) playbackdir = ScenarioName;
 		FRecorder_Read (playbackdir);
 	}
-	PublishStateVectors();
+	SyncStateVectors();
 }
 
 // ==============================================================
@@ -3808,9 +3808,9 @@ void Vessel::SetSuperStruct(SuperVessel *sv, const StateVectors *s)
 		rpos_add.Set(0, 0, 0);
 		rvel_base = S1()->Vel();
 		rvel_add.Set(0, 0, 0);
-		PublishStateVectors();
 		UpdateSurfParams();
 		fstatus = FLIGHTSTATUS_FREEFLIGHT;
+		SyncStateVectors();
 	}
 }
 
@@ -4329,7 +4329,7 @@ bool Vessel::AddSurfaceForces (Vector *F, Vector *M, const StateVectors *s, doub
 
 	static StateVectors ls; // local state
 	if (!proxybody) return false;
-	StateVectors ps = proxybody->InterpolateState (tfrac); // intermediate planet state; should probably be passed in as function argument
+	const StateVectors ps = proxybody->InterpolateState(tfrac); // intermediate planet state; should probably be passed in as function argument
 	SurfParam surfp; // intermediate surface parameters; should probably be passed in as function argument
 
 	if (!dt) dt = td.SimDT;

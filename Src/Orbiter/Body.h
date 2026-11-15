@@ -197,7 +197,7 @@ protected:
 private:
 	void SetName (char *_name = 0);
 
-	StateVectors* m_svS0{ nullptr }; // body state at time td.SimT0 (current frame)
+	const StateVectors* m_svS0{ nullptr }; // body state at time td.SimT0 (current frame)
 	StateVectors* m_svS1{ nullptr }; // body state at time td.SimT1 (next frame) during update phase
 
 	StateVectors m_svContainer[2];   // State vectors for current and updated state - don't use directly

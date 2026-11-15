@@ -109,7 +109,7 @@ public:
 	// linear interpolation of position, plus linear interpolation of radius, if
 	// body's element reference exists
 
-	StateVectors InterpolateState (double n) const;
+	const StateVectors InterpolateState(double n) const;
 	// Celestial body state vectors at fractional time n [0..1] between
 	// s0 at td.SimT0 and s1 at td.SimT1
 	// Note: This function can only be called during the state calculation phase, after

@@ -70,11 +70,13 @@ Body::Body(char* fname)
 
 	if (!GetItemVector (ifs, "AlbedoRGB", albedo)) albedo.Set (1,1,1);
 
-	GetItemVector(ifs, "InitPos", v); m_svS0->SetPos(v); m_svS1->SetPos(v);
-	GetItemVector(ifs, "InitVel", v); m_svS0->SetVel(v); m_svS1->SetVel(v);
+	GetItemVector(ifs, "InitPos", v); m_svS1->SetPos(v);
+	GetItemVector(ifs, "InitVel", v); m_svS1->SetVel(v);
 
-	rpos_base.Set (m_svS0->Pos()); rpos_add.Set (0,0,0);
-	rvel_base.Set (m_svS0->Vel()); rvel_add.Set (0,0,0);
+	rpos_base.Set (m_svS1->Pos()); rpos_add.Set (0,0,0);
+	rvel_base.Set (m_svS1->Vel()); rvel_add.Set (0,0,0);
+
+	SyncStateVectors();
 }
 
 void Body::SetName (char *_name)
@@ -172,7 +174,8 @@ void Body::EndStateUpdate ()
 
 void Body::PublishStateVectors()
 {
-	m_svS0->Set(*m_svS1);
+	// Casting away constness. This is the only point where the S0 state is updated.
+	((StateVectors*)m_svS0)->Set(*m_svS1);
 }
 
 void Body::SyncStateVectors()
@@ -181,7 +184,8 @@ void Body::SyncStateVectors()
 
 	if (!g_bStateUpdate) {
 		PublishStateVectors();
-		g_psys->BroadcastVessel(MSG_EDITSTATE, this);
+		if (g_psys)
+			g_psys->BroadcastVessel(MSG_EDITSTATE, this);
 		// tell everybody that we have edited our state vectors out of turn
 	}
 }

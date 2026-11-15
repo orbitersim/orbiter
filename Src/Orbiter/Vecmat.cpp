@@ -693,22 +693,86 @@ double angle (const Quaternion &A, const Quaternion &B)
 // =======================================================================
 // StateVectors
 
-void StateVectors::Set (const StateVectors &s)
+StateVectors::StateVectors()
 {
-	vel.Set (s.vel);
-	pos.Set (s.pos);
-	omega.Set (s.omega);
-	Q.Set (s.Q);
-	R.Set (s.R);
+	R.Set(IMatrix());
+	Q.Set(R);
+	m_nPos_incr = 0;
+	m_nVel_incr = 0;
 }
 
-void StateVectors::Set (const Vector &v, const Vector &p, const Vector &av, const Quaternion &ap)
+void StateVectors::Set(const StateVectors &s)
 {
-	vel.Set (v);
-	pos.Set (p);
-	omega.Set (av);
-	Q.Set (ap);
-	R.Set (ap);
+	SetVel(s.Vel());
+	SetPos(s.Pos());
+	omega.Set(s.omega);
+	Q.Set(s.Q);
+	R.Set(s.R);
+}
+
+void StateVectors::Set(const Vector &v, const Vector &p, const Vector &av, const Quaternion &ap)
+{
+	SetVel(v);
+	SetPos(p);
+	omega.Set(av);
+	Q.Set(ap);
+	R.Set(ap);
+}
+
+void StateVectors::FlushPos()
+{
+	m_vPos_base = m_vPos;
+	m_vPos_incr.Set(0, 0, 0);
+	m_nPos_incr = 0;
+}
+
+void StateVectors::FlushVel()
+{
+	m_vVel_base = m_vVel;
+	m_vVel_incr.Set(0, 0, 0);
+	m_nVel_incr = 0;
+}
+
+void StateVectors::SetPos(const Vector &p)
+{
+	m_vPos = p;
+	FlushPos();
+}
+
+void StateVectors::SetVel(const Vector &v)
+{
+	m_vVel = v;
+	FlushVel();
+}
+
+void StateVectors::AddPos(const Vector &dp)
+{
+	m_vPos += dp;
+	m_vPos_base += dp;
+}
+
+void StateVectors::AddVel(const Vector &dv)
+{
+	m_vVel += dv;
+	m_vVel_base += dv;
+}
+
+void StateVectors::IncPos(const Vector &dp)
+{
+	m_vPos_incr += dp;
+	m_vPos.Set(m_vPos_base + m_vPos_incr);
+
+	if (++m_nPos_incr == s_nLimit_incr)
+		FlushPos();
+}
+
+void StateVectors::IncVel(const Vector &dv)
+{
+	m_vVel_incr += dv;
+	m_vVel.Set(m_vVel_base + m_vVel_incr);
+
+	if (++m_nVel_incr == s_nLimit_incr)
+		FlushVel();
 }
 
 void StateVectors::SetRot (const Matrix &r)
@@ -725,10 +789,10 @@ void StateVectors::SetRot (const Quaternion &q)
 
 void StateVectors::Advance (double dt, const Vector &a, const Vector &v, const Vector &aa, const Vector &av)
 {
-	vel   += a*dt;
-	pos   += v*dt;
-	omega += aa*dt;
-	Q.Rotate (av*dt);
+	IncPos(v * dt);
+	IncVel(a * dt);
+	omega += aa * dt;
+	Q.Rotate (av * dt);
 	R.Set (Q);
 }
 

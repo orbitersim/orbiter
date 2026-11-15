@@ -656,8 +656,14 @@ Vector CelestialBody::InterpolatePosition (double n) const
 {
 	// Interpolate global position of body by iterative bisection
 
-	if      (n == 0)   return S0()->Pos();
-	else if (n == 1.0) return S1()->Pos();
+	if (n == 0)
+		return S0()->Pos();
+
+	extern bool g_bStateUpdate;
+	dCHECK(g_bStateUpdate, "Update state not available")
+
+	if (n == 1.0)
+		return S1()->Pos();
 
 	Vector refp0, refp1, refpm;
 	const CelestialBody *ref = ElRef();
@@ -703,16 +709,21 @@ Vector CelestialBody::InterpolatePosition (double n) const
 	return rpm + refpm;
 }
 
-StateVectors CelestialBody::InterpolateState (double n) const
+const StateVectors CelestialBody::InterpolateState(double n) const
 {
 	// Celestial body state vectors at fractional time n [0..1] between
 	// S0() at td.SimT0 and S1() at td.SimT1
 	// Note: n > 0 is only allowed during the update phase (between 
 	// BeginStateUpdate and EndStateUpdate)
 
-	if (!n) return *S0();
-	dCHECK(S1(), "Update state not available")
-	if (n == 1.0) return *S1();
+	if (!n)
+		return *S0();
+
+	extern bool g_bStateUpdate;
+	dCHECK(g_bStateUpdate, "Update state not available")
+
+	if (n == 1.0)
+		return *S1();
 
 	StateVectors sv;
 	sv.SetPos(InterpolatePosition(n));
