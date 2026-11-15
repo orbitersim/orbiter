@@ -2027,8 +2027,7 @@ HRESULT Orbiter::UserInput ()
 	for (int i = 0; i < 15; i++) ctrlTotal[i] = ctrlKeyboard[i]; // update attitude requests
 
 	// joystick input
-	UserJoyInput_System ();                  // general joystick functions
-	if (bRunning) UserJoyInput_OnRunning (); // joystick vessel control functions
+	UserJoyInput (); // joystick vessel control functions
 	for (int i = 0; i < 15; i++) ctrlTotal[i] += ctrlJoystick[i]; // update thrust requests
 
 	g_camera->UpdateMouse();
@@ -2349,55 +2348,14 @@ void Orbiter::KbdInputBuffered_OnRunning (char *kstate, uint8_t key)
 }
 
 //-----------------------------------------------------------------------------
-// Name: UserJoyInput_System ()
-// Desc: General user joystick input (also functional when paused)
-//-----------------------------------------------------------------------------
-void Orbiter::UserJoyInput_System ()
-{
-/*
-
-	float x,y,z,Rz,throttle;
-	int hat, alt;
-	InputController::GetInputs(&x, &y, &Rz, &hat, &throttle, &alt);
-//	if (LOWORD (js->rgdwPOV[0]) != 0xFFFF) {
-	if (LOWORD (hat) != 0xFFFF) {
-		DWORD dir = hat;
-		if (g_camera->IsExternal()) {  // use the joystick's coolie hat to rotate external camera
-			if (alt) { // shift instrument panel
-				if      (dir <  5000 || dir > 31000) g_camera->Rotate (0,  td.SysDT);
-				else if (dir > 13000 && dir < 23000) g_camera->Rotate (0, -td.SysDT);
-				if      (dir >  4000 && dir < 14000) g_camera->Rotate (-td.SysDT, 0);
-				else if (dir > 22000 && dir < 32000) g_camera->Rotate ( td.SysDT, 0);
-			} else {
-				if      (dir <  5000 || dir > 31000) g_camera->AddTheta (-td.SysDT);
-				else if (dir > 13000 && dir < 23000) g_camera->AddTheta ( td.SysDT);
-				if      (dir >  4000 && dir < 14000) g_camera->AddPhi   ( td.SysDT);
-				else if (dir > 22000 && dir < 32000) g_camera->AddPhi   (-td.SysDT);
-			}
-		} else { // internal view
-			if (alt) { // shift instrument panel
-				if      (dir <  5000 || dir > 31000) g_pane->ShiftPanel (0.0,  td.SysDT*pConfig->CfgLogicPrm.PanelScrollSpeed);
-				else if (dir > 13000 && dir < 23000) g_pane->ShiftPanel (0.0, -td.SysDT*pConfig->CfgLogicPrm.PanelScrollSpeed);
-				if      (dir >  4000 && dir < 14000) g_pane->ShiftPanel (-td.SysDT*pConfig->CfgLogicPrm.PanelScrollSpeed, 0.0);
-				else if (dir > 22000 && dir < 32000) g_pane->ShiftPanel ( td.SysDT*pConfig->CfgLogicPrm.PanelScrollSpeed, 0.0);
-			} else {                 // rotate camera
-				if      (dir <  5000 || dir > 31000) g_camera->Rotate (0,  td.SysDT, true);
-				else if (dir > 13000 && dir < 23000) g_camera->Rotate (0, -td.SysDT, true);
-				if      (dir >  4000 && dir < 14000) g_camera->Rotate (-td.SysDT, 0, true);
-				else if (dir > 22000 && dir < 32000) g_camera->Rotate ( td.SysDT, 0, true);
-			}
-		}
-	}
-	*/
-}
-
-//-----------------------------------------------------------------------------
-// Name: UserJoyInput_OnRunning ()
+// Name: UserJoyInput ()
 // Desc: User joystick input query for running simulation (ship controls etc.)
 //-----------------------------------------------------------------------------
-void Orbiter::UserJoyInput_OnRunning ()
+void Orbiter::UserJoyInput ()
 {
 	InputController::GetJoystickCtrl(ctrlJoystick);
+	if(!bRunning) return;
+
 	float throttle = ctrlJoystick[THGROUP_MAIN];
 	if(throttle < 0.0f) throttle = 0.0f;
 	if (throttle != plZ4) {
@@ -2405,40 +2363,6 @@ void Orbiter::UserJoyInput_OnRunning ()
 		g_focusobj->SetThrusterGroupLevel (THGROUP_MAIN, throttle);
 		g_focusobj->SetThrusterGroupLevel (THGROUP_RETRO, 0.0);
 	}
-	return;
-
-	/*
-	float x,y,z,Rz,throttle;
-	int alt, hat;
-	InputController::GetInputs(&x, &y, &Rz, &hat, &throttle, &alt);
-//	printf("x=%d y=%d Rz=%d hat=%d throttle=%d alt=%d\n", x, y, Rz, hat, throttle, alt);
-
-	if (bEnableAtt) {
-		if (x) {
-			if (alt) { // emulate rudder control
-				if (x > 0) ctrlJoystick[THGROUP_ATT_YAWRIGHT] =   x;
-				else            ctrlJoystick[THGROUP_ATT_YAWLEFT]  =  -x;
-			} else {                 // rotation (bank)
-				if (x > 0) ctrlJoystick[THGROUP_ATT_BANKRIGHT] =  x;
-				else            ctrlJoystick[THGROUP_ATT_BANKLEFT]  = -x;
-			}
-		}
-		if (y) {                // rotation (pitch) or translation (vertical)
-			if (y > 0) ctrlJoystick[THGROUP_ATT_PITCHUP]   = ctrlJoystick[THGROUP_ATT_UP]    =  y;
-			else            ctrlJoystick[THGROUP_ATT_PITCHDOWN] = ctrlJoystick[THGROUP_ATT_DOWN]  = -y;
-		}
-		if (Rz) {               // rotation (yaw) or translation (transversal)
-			if (Rz > 0) ctrlJoystick[THGROUP_ATT_YAWRIGHT] = ctrlJoystick[THGROUP_ATT_RIGHT] =  Rz;
-			else             ctrlJoystick[THGROUP_ATT_YAWLEFT]  = ctrlJoystick[THGROUP_ATT_LEFT]  = -Rz;
-		}
-	}
-
-	if (throttle != plZ4) {
-		plZ4 = throttle;
-		g_focusobj->SetThrusterGroupLevel (THGROUP_MAIN, throttle);
-		g_focusobj->SetThrusterGroupLevel (THGROUP_RETRO, 0.0);
-	}
-	*/
 }
 
 bool Orbiter::MouseEvent (UINT event, DWORD state, DWORD x, DWORD y)
