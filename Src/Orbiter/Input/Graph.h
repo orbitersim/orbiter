@@ -26,12 +26,22 @@ class ControllerGraph final {
     std::list<Node *> nodesSorted;
 	Pin *draggedPin = NULL;
 	int linkidgen = 1;
+	int nodeidgen = 1;
     ControllerGraph();
     ~ControllerGraph();
 	void Update(bool dryrun);
     void Draw();
 	void AddNode(Node *node);
+	void DeleteNode(Node *node);
 	Pin *PinFromId(ed::PinId id) { return pins.at(id.AsPointer()); }
 	bool CanLink(const Pin *a, const Pin *b);
 	void TopologicalSort();
+	template <typename T, typename... Args>
+	T *AddNode(Args&&... args)
+	{
+		static_assert(std::is_base_of<Node, T>::value, "T must derive from Node");
+		T* n = new T(std::forward<Args>(args)..., nodeidgen++);
+		AddNode(static_cast<Node*>(n));
+		return n;
+	}
 };

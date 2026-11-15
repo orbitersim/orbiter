@@ -87,3 +87,7 @@ void NodeLegacyControls::Update(bool dryrun)
 		else             ctrlJoystick[THGROUP_ATT_YAWLEFT]  = ctrlJoystick[THGROUP_ATT_LEFT]  = -Rz;
 	}*/
 }
+
+void NodeLegacyControls::GetJoystickCtrl(float ctrl[15])
+{
+}
