@@ -22,7 +22,6 @@ class InputController {
 public:
     static void GlobalInit();
 	static void GetJoystickCtrl(float ctrl[15]);
-	static void GetInputs(float *x, float *y, float *Rz, int *hat, float *throttle, int *alt);
 	static ControllerGraph *GetGraph() { return graph; }
 	static void ScanControllers();
 };

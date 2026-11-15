@@ -2371,7 +2371,8 @@ void Orbiter::KbdInputBuffered_OnRunning (char *kstate, uint8_t key)
 //-----------------------------------------------------------------------------
 void Orbiter::UserJoyInput_System ()
 {
-	return;
+/*
+
 	float x,y,z,Rz,throttle;
 	int hat, alt;
 	InputController::GetInputs(&x, &y, &Rz, &hat, &throttle, &alt);
@@ -2404,6 +2405,7 @@ void Orbiter::UserJoyInput_System ()
 			}
 		}
 	}
+	*/
 }
 
 //-----------------------------------------------------------------------------

@@ -28,11 +28,11 @@ public:
 	} state;
 public:
 	Joystick(SDL_JoystickID idjoy) {
-		id = idjoy;
-		joy = SDL_OpenJoystick(id);
+		joy = SDL_OpenJoystick(idjoy);
 		if (!joy) {
 			return;
 		}
+		id = idjoy;
 		name     = SDL_GetJoystickName(joy);
 		nbuttons = SDL_GetNumJoystickButtons(joy); 
 		naxis    = SDL_GetNumJoystickAxes(joy); 
