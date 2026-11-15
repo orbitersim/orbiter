@@ -72,7 +72,7 @@ void Pin::ReadInputs()
             fVal = std::clamp(fVal, -1.0f, 1.0f);
             break;
         case Pin::type::Hat:
-            hVal = false;
+            hVal = 0;
             for(auto &p: inputs) {
                 hVal |= p->hVal;
             }

@@ -27,6 +27,7 @@ class ControllerGraph final {
 	Pin *draggedPin = NULL;
 	int linkidgen = 1;
 	int nodeidgen = 1;
+	bool dirty = true;
     ControllerGraph();
     ~ControllerGraph();
 	void Update(bool dryrun);

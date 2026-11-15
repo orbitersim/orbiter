@@ -62,7 +62,8 @@ void ControllerGraph::AddNode(Node *node) {
         assert(pins.count(pin.id.AsPointer()) == 0);
         pins[pin.id.AsPointer()] = &pin;
     }
-	TopologicalSort();
+
+	dirty = true;
 }
 
 void ControllerGraph::DeleteNode(Node *node) {
@@ -90,7 +91,7 @@ void ControllerGraph::DeleteNode(Node *node) {
 	nodes.erase(it);
 	delete node;
 
-	TopologicalSort();
+	dirty = true;
 }
 
 bool ControllerGraph::CanLink(const Pin *a, const Pin *b) {
@@ -154,10 +155,44 @@ void ControllerGraph::Draw()
         draggedPin = NULL;
     }
     ed::EndCreate(); // Wraps up object creation action handling.
+
+    if (ed::BeginDelete()) {
+        ed::LinkId linkId = 0;
+        while (ed::QueryDeletedLink(&linkId)) {
+            if (ed::AcceptDeletedItem()) {
+                auto id = std::find_if(links.begin(), links.end(), [linkId](auto& link) { return link.Id == linkId; });
+                if (id != links.end()) {
+                    dirty = true;
+                    links.erase(id);
+                }
+            }
+        }
+    }
+    ed::EndDelete();
+
+
+	static ed::LinkId contextLinkId;
+    ImVec2 openPopupPosition = ImGui::GetMousePos();
+    ed::Suspend();
+    if (ed::ShowLinkContextMenu(&contextLinkId)) {
+        ImGui::OpenPopup("Link Context Menu");
+    }
+
+    if (ImGui::BeginPopup("Link Context Menu"))
+    {
+        if (ImGui::MenuItem("Delete link")) {
+            ed::DeleteLink(contextLinkId);
+            dirty = true;
+        }
+        ImGui::EndPopup();
+    }
+	ed::Resume();
 }
 
 void ControllerGraph::Update(bool dryrun)
 {
+	if(dirty) TopologicalSort();
+
 	for(Node *n: nodesSorted) {
 		n->UpdateInputs();
 		n->Update(dryrun);
@@ -231,4 +266,5 @@ retry:
 		links.pop_back();
 		goto retry;
     }
+	dirty = false;
 }

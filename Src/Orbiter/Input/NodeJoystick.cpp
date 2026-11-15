@@ -172,22 +172,24 @@ bool NodeJoystick::IsAttached()
 void NodeJoystick::Detach()
 {
 	if(!js) return;
-
-	// Clear the outputs to prevent stale values
-	const auto *state = js->GetState();
-	size_t idx = 0;
-	for(int i=0; i<state->btns.size(); i++) {
-		outputs[idx++].bVal = false;
-	}
-	for(int i=0; i<state->axis.size(); i++) {
-		outputs[idx++].fVal = 0.0f;
-	}
-	for(int i=0; i<state->hats.size(); i++) {
-		outputs[idx++].hVal = SDL_HAT_CENTERED;
-	}
-
 	delete js;
 	js = NULL;
+
+	// Clear the outputs to prevent stale values
+    for (Pin& pin : outputs) {
+        switch (pin.ptype) {
+        case Pin::type::Button:
+            pin.bVal = false;
+            break;
+        case Pin::type::Axis:
+        case Pin::type::HalfAxis:
+            pin.fVal = 0.0f;
+            break;
+        case Pin::type::Hat:
+            pin.hVal = SDL_HAT_CENTERED;
+            break;
+        }
+    }
 }
 
 bool NodeJoystick::Attach(SDL_JoystickID id)

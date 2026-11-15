@@ -44,25 +44,25 @@ void NodeLegacyControls::Update(bool dryrun)
 			if (inputs[ModKey].bVal) { // shift instrument panel
 				if      (hat & SDL_HAT_UP)    g_camera->Rotate (0,  td.SysDT);
 				else if (hat & SDL_HAT_DOWN)  g_camera->Rotate (0, -td.SysDT);
-				if      (hat & SDL_HAT_LEFT)  g_camera->Rotate (-td.SysDT, 0);
-				else if (hat & SDL_HAT_RIGHT) g_camera->Rotate ( td.SysDT, 0);
+				if      (hat & SDL_HAT_RIGHT) g_camera->Rotate (-td.SysDT, 0);
+				else if (hat & SDL_HAT_LEFT)  g_camera->Rotate ( td.SysDT, 0);
 			} else {
 				if      (hat & SDL_HAT_UP)    g_camera->AddTheta (-td.SysDT);
 				else if (hat & SDL_HAT_DOWN)  g_camera->AddTheta ( td.SysDT);
-				if      (hat & SDL_HAT_LEFT)  g_camera->AddPhi   ( td.SysDT);
-				else if (hat & SDL_HAT_RIGHT) g_camera->AddPhi   (-td.SysDT);
+				if      (hat & SDL_HAT_RIGHT) g_camera->AddPhi   ( td.SysDT);
+				else if (hat & SDL_HAT_LEFT)  g_camera->AddPhi   (-td.SysDT);
 			}
 		} else { // internal view
 			if (inputs[ModKey].bVal) { // shift instrument panel
 				if      (hat & SDL_HAT_UP)    g_pane->ShiftPanel (0.0,  td.SysDT*pConfig->CfgLogicPrm.PanelScrollSpeed);
 				else if (hat & SDL_HAT_DOWN)  g_pane->ShiftPanel (0.0, -td.SysDT*pConfig->CfgLogicPrm.PanelScrollSpeed);
-				if      (hat & SDL_HAT_LEFT)  g_pane->ShiftPanel (-td.SysDT*pConfig->CfgLogicPrm.PanelScrollSpeed, 0.0);
-				else if (hat & SDL_HAT_RIGHT) g_pane->ShiftPanel ( td.SysDT*pConfig->CfgLogicPrm.PanelScrollSpeed, 0.0);
+				if      (hat & SDL_HAT_RIGHT) g_pane->ShiftPanel (-td.SysDT*pConfig->CfgLogicPrm.PanelScrollSpeed, 0.0);
+				else if (hat & SDL_HAT_LEFT)  g_pane->ShiftPanel ( td.SysDT*pConfig->CfgLogicPrm.PanelScrollSpeed, 0.0);
 			} else {                 // rotate camera
 				if      (hat & SDL_HAT_UP)    g_camera->Rotate (0,  td.SysDT, true);
 				else if (hat & SDL_HAT_DOWN)  g_camera->Rotate (0, -td.SysDT, true);
-				if      (hat & SDL_HAT_LEFT)  g_camera->Rotate (-td.SysDT, 0, true);
-				else if (hat & SDL_HAT_RIGHT) g_camera->Rotate ( td.SysDT, 0, true);
+				if      (hat & SDL_HAT_RIGHT) g_camera->Rotate (-td.SysDT, 0, true);
+				else if (hat & SDL_HAT_LEFT)  g_camera->Rotate ( td.SysDT, 0, true);
 			}
 		}
 	}
@@ -70,7 +70,7 @@ void NodeLegacyControls::Update(bool dryrun)
 
 void NodeLegacyControls::GetJoystickCtrl(float ctrlJoystick[15])
 {
-	ctrlJoystick[THGROUP_MAIN] = inputs[MainEngine].fVal;
+	ctrlJoystick[THGROUP_MAIN] = -inputs[MainEngine].fVal;
 	
 	float x = inputs[BankYaw].fVal;
 	float y = inputs[PitchVert].fVal;
