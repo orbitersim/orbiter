@@ -13,6 +13,8 @@ Pin::Pin(Pin &&from) noexcept {
     hVal = from.hVal;
     parent = from.parent;
     inputs = std::move(from.inputs);
+    context = from.context;
+	cbContextMenu = std::move(from.cbContextMenu);
     from.id = ed::PinId::Invalid;
 }
 
@@ -26,6 +28,8 @@ Pin& Pin::operator=(Pin&&from) noexcept {
     hVal = from.hVal;
     parent = from.parent;
     inputs = std::move(from.inputs);
+    context = from.context;
+	cbContextMenu = std::move(from.cbContextMenu);
     from.id = ed::PinId::Invalid;
     return *this;
 }
