@@ -66,9 +66,17 @@ void NodeLegacyControls::Update(bool dryrun)
 			}
 		}
 	}
-	/*
+}
+
+void NodeLegacyControls::GetJoystickCtrl(float ctrlJoystick[15])
+{
 	ctrlJoystick[THGROUP_MAIN] = inputs[MainEngine].fVal;
 	
+	float x = inputs[BankYaw].fVal;
+	float y = inputs[PitchVert].fVal;
+	float Rz = inputs[YawLat].fVal;
+	bool alt = inputs[ModKey].bVal;
+
 	if (x) {
 		if (alt) { // emulate rudder control
 			if (x > 0) ctrlJoystick[THGROUP_ATT_YAWRIGHT] =   x;
@@ -85,9 +93,5 @@ void NodeLegacyControls::Update(bool dryrun)
 	if (Rz) {               // rotation (yaw) or translation (transversal)
 		if (Rz > 0) ctrlJoystick[THGROUP_ATT_YAWRIGHT] = ctrlJoystick[THGROUP_ATT_RIGHT] =  Rz;
 		else             ctrlJoystick[THGROUP_ATT_YAWLEFT]  = ctrlJoystick[THGROUP_ATT_LEFT]  = -Rz;
-	}*/
-}
-
-void NodeLegacyControls::GetJoystickCtrl(float ctrl[15])
-{
+	}
 }

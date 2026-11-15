@@ -22,20 +22,6 @@ void InputController::GetJoystickCtrl(float ctrl[15])
 	legacyCtrl->GetJoystickCtrl(ctrl);
 }
 
-void InputController::GetInputs(float *x, float *y, float *Rz, int *hat, float *throttle, int *alt)
-{
-	auto normalize = [](int v) {
-		return  v < 0 ? v / 32768.0f : v / 32767.0f;
-	};
-
-	*x = normalize(state.x);
-	*y = normalize(state.y);
-	*Rz = normalize(state.Rz);
-	*hat = state.hat;
-	*throttle = normalize(state.throttle);
-	*alt = state.alt;
-}
-
 void InputController::ScanControllers()
 {
 	int count;
