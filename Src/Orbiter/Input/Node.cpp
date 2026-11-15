@@ -10,9 +10,10 @@ void Node::AddInput(const char *n, Pin::type type) {
 	dirty = true;
 	inputs.emplace_back(n, type, Pin::kind::Input, this, pinidgen++);
 }
-void Node::AddOutput(const char *n, Pin::type type) {
+Pin *Node::AddOutput(const char *n, Pin::type type) {
 	dirty = true;
 	outputs.emplace_back(n, type, Pin::kind::Output, this, pinidgen++);
+	return &outputs.back();
 }
 void Node::ComputeLayout() {
 	widthName = ImGui::CalcTextSize(name.c_str()).x;

@@ -34,10 +34,11 @@ public:
     Pin(std::string n, Pin::type t, Pin::kind k, Node *p, ed::PinId id = ed::PinId::Invalid);
     bool operator==(const Pin &other);
     void ReadInputs();
-    bool hasInputs() { return !inputs.empty(); }
     void Draw(std::function<bool(const Pin *)> filter);
 	void DrawIcon();
-    ed::PinId id;
+	std::function<void(Pin *)> cbContextMenu;
+
+	ed::PinId id;
     std::string name;
     Pin::type ptype;
     Pin::kind pkind;
@@ -46,6 +47,12 @@ public:
     float fVal;     // Axis/HalfAxis
     bool bVal;      // Button
     int hVal;       // Hat
+
+	struct {
+		float deadzone = 0.0f;
+		bool flip = false;
+		bool rescale = false;
+	} context;
 
     std::list<Pin *> inputs;
 };

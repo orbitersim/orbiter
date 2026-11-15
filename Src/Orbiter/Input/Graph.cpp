@@ -172,11 +172,21 @@ void ControllerGraph::Draw()
 
 
 	static ed::LinkId contextLinkId;
+	static ed::PinId contextPinId;
+
     ImVec2 openPopupPosition = ImGui::GetMousePos();
     ed::Suspend();
-    if (ed::ShowLinkContextMenu(&contextLinkId)) {
+    if (ed::ShowPinContextMenu(&contextPinId)) {
+        Pin *pin = PinFromId(contextPinId);
+        if (pin->cbContextMenu) {
+            ImGui::OpenPopup("Pin Context Menu");
+        }
+    } else if (ed::ShowLinkContextMenu(&contextLinkId)) {
         ImGui::OpenPopup("Link Context Menu");
     }
+
+
+
 
     if (ImGui::BeginPopup("Link Context Menu"))
     {
@@ -186,6 +196,15 @@ void ControllerGraph::Draw()
         }
         ImGui::EndPopup();
     }
+    if (ImGui::BeginPopup("Pin Context Menu"))
+    {
+        Pin *pin = PinFromId(contextPinId);
+
+        if (pin->cbContextMenu) pin->cbContextMenu(pin);
+
+        ImGui::EndPopup();
+    }
+
 	ed::Resume();
 }
 

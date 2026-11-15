@@ -120,11 +120,22 @@ NodeJoystick::NodeJoystick(SDL_JoystickID jsid, int id) : Node(SDL_GetJoystickNa
 {
 	js = new Joystick(jsid);
 
+    const auto cbAxis = [this](Pin *pin) {
+        ImGui::PushItemWidth(80.f);
+		ImGui::TextUnformatted("Output configuration");
+        ImGui::DragFloat("Deadzone", &pin->context.deadzone, 0.01f, 0.0f, 0.9f, "%0.02f");
+		ImGui::Checkbox("Flip axis", &pin->context.flip);
+		ImGui::Checkbox("Rescale [-1;1] -> [0;1]", &pin->context.rescale);
+		ImGui::Text("Output: %f", pin->fVal);
+        ImGui::PopItemWidth();
+    };
+
 	for(auto &btn: js->btnnames) {
 		AddOutput(btn.c_str(), Pin::type::Button);
 	}
 	for(auto &axis: js->axesnames) {
-		AddOutput(axis.c_str(), Pin::type::Axis);
+		Pin *pin = AddOutput(axis.c_str(), Pin::type::Axis);
+		pin->cbContextMenu = cbAxis;
 	}
 	for(size_t hat = 0; hat < js->state.hats.size(); hat++) {
 		char hatname[32];
@@ -151,9 +162,29 @@ void NodeJoystick::Update(bool dryrun)
 	for(int i=0; i<state->btns.size(); i++) {
 		outputs[idx++].bVal = state->btns[i];
 	}
+
 	for(int i=0; i<state->axis.size(); i++) {
-		outputs[idx++].fVal = normalize(state->axis[i]);
+		Pin &out = outputs[idx++];
+
+		float f = normalize(state->axis[i]);
+        float deadzone = out.context.deadzone;
+        if(fabs(f) < deadzone) {
+            f = 0.0f;
+        } else if(f < 0.0) {
+            f = (f + deadzone) / (1.0f - deadzone);
+        } else {
+            f = (f - deadzone) / (1.0f - deadzone);
+        }
+
+		if(out.context.rescale) {
+			f = (f + 1.0f) / 2.0f;
+			if(f < 0.001f) f = 0.0f;
+		}
+		if(out.context.flip) f = -f;
+
+		out.fVal = f;
 	}
+
 	for(int i=0; i<state->hats.size(); i++) {
 		outputs[idx++].hVal = state->hats[i];
 	}

@@ -19,7 +19,7 @@ public:
 	Node(const char *n, int id);
 	virtual ~Node() = default;
 	void AddInput(const char *n, Pin::type type);
-	void AddOutput(const char *n, Pin::type type);
+	Pin *AddOutput(const char *n, Pin::type type);
 	void ComputeLayout();
 	void UpdateInputs();
 	virtual void Draw(std::function<bool(const Pin *)> filter);
