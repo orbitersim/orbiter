@@ -317,8 +317,7 @@ protected:
 	void KbdInputImmediate_OnRunning (char *buffer);
 	void KbdInputBuffered_System     (char *kstate, uint8_t key);
 	void KbdInputBuffered_OnRunning  (char *kstate, uint8_t key);
-	void UserJoyInput_System ();
-	void UserJoyInput_OnRunning ();
+	void UserJoyInput ();
 	bool MouseEvent (UINT event, DWORD state, DWORD x, DWORD y);
 	bool BroadcastMouseEvent (UINT event, DWORD state, DWORD x, DWORD y);
 	bool BroadcastImmediateKeyboardEvent (char *kstate);
