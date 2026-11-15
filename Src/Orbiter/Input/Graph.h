@@ -3,6 +3,7 @@
 #include <string>
 #include <list>
 #include <unordered_map>
+#include <memory>
 #include <imgui_node_editor.h>
 namespace ed = ax::NodeEditor;
 
@@ -21,7 +22,7 @@ class Pin;
 class ControllerGraph final {
     public:
     std::vector<Link> links;
-    std::vector<Node *> nodes;
+    std::vector<std::unique_ptr<Node>> nodes;
 	std::unordered_map<void *, Pin *> pins; // Map between ed::PinId and Pins
     std::list<Node *> nodesSorted;
 	Pin *draggedPin = NULL;

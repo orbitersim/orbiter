@@ -3,37 +3,6 @@
 #include <algorithm>
 #include <imgui_node_editor.h>
 
-Pin::Pin(Pin &&from) noexcept {
-    id = from.id;
-    name = std::move(from.name);
-    ptype = from.ptype;
-    pkind = from.pkind;
-    fVal = from.fVal;
-    bVal = from.bVal;
-    hVal = from.hVal;
-    parent = from.parent;
-    inputs = std::move(from.inputs);
-    context = from.context;
-	cbContextMenu = std::move(from.cbContextMenu);
-    from.id = ed::PinId::Invalid;
-}
-
-Pin& Pin::operator=(Pin&&from) noexcept {
-    id = from.id;
-    name = std::move(from.name);
-    ptype = from.ptype;
-    pkind = from.pkind;
-    fVal = from.fVal;
-    bVal = from.bVal;
-    hVal = from.hVal;
-    parent = from.parent;
-    inputs = std::move(from.inputs);
-    context = from.context;
-	cbContextMenu = std::move(from.cbContextMenu);
-    from.id = ed::PinId::Invalid;
-    return *this;
-}
-
 Pin::Pin(std::string n, enum Pin::type t, enum Pin::kind k, Node *p, ed::PinId i) {
     id = i;
     name = n;

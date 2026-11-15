@@ -2,11 +2,12 @@
 
 #include "Node.h"
 #include <SDL3/SDL.h>
+#include <memory>
 
 class Joystick;
 class NodeJoystick : public Node {
 public:
-	Joystick *js = NULL;
+	std::unique_ptr<Joystick> js;
 	NodeJoystick(SDL_JoystickID jsid, int id);
 	~NodeJoystick();
 	void Update(bool dryrun) override;
