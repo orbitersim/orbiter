@@ -118,7 +118,7 @@ public:
 
 NodeJoystick::NodeJoystick(SDL_JoystickID jsid, int id) : Node(SDL_GetJoystickNameForID(jsid), id)
 {
-	js = new Joystick(jsid);
+	js = std::make_unique<Joystick>(jsid);
 
     const auto cbAxis = [this](Pin *pin) {
         ImGui::PushItemWidth(80.f);
@@ -146,7 +146,6 @@ NodeJoystick::NodeJoystick(SDL_JoystickID jsid, int id) : Node(SDL_GetJoystickNa
 
 NodeJoystick::~NodeJoystick()
 {
-	delete js;
 }
 
 void NodeJoystick::Update(bool dryrun)
@@ -203,8 +202,7 @@ bool NodeJoystick::IsAttached()
 void NodeJoystick::Detach()
 {
 	if(!js) return;
-	delete js;
-	js = NULL;
+	js.reset();
 
 	// Clear the outputs to prevent stale values
     for (Pin& pin : outputs) {
@@ -226,7 +224,7 @@ void NodeJoystick::Detach()
 bool NodeJoystick::Attach(SDL_JoystickID id)
 {
 	assert(!js);
-	js = new Joystick(id);
+	js = std::make_unique<Joystick>(id);
 	if(!js->IsConnected()) {
 		Detach();
 		return false;

@@ -28,8 +28,8 @@ public:
     };
     Pin() = delete;
     Pin(Pin &) = delete;
-    Pin(Pin &&from) noexcept;
-    Pin& operator=(Pin&& from) noexcept;
+    Pin(Pin &&) = delete;
+    Pin& operator=(Pin&&) = delete;
     ~Pin();
     Pin(std::string n, Pin::type t, Pin::kind k, Node *p, ed::PinId id = ed::PinId::Invalid);
     bool operator==(const Pin &other);

@@ -1,6 +1,6 @@
 #pragma once
 
-#include <vector>
+#include <deque>
 #include <string>
 
 #include "Pin.h"
@@ -8,8 +8,9 @@
 class Node {
 public:
 	std::string name;
-	std::vector<Pin> inputs;
-	std::vector<Pin> outputs;
+	// Use dequeue to make sure pointers to Pins stay valid
+	std::deque<Pin> inputs;
+	std::deque<Pin> outputs;
 	float widthName = 0.0f;
 	float maxWidthInput = 0.0f;
 	float maxWidthOutput = 0.0f;

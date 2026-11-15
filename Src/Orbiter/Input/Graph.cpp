@@ -47,13 +47,10 @@ ControllerGraph::ControllerGraph()
 
 ControllerGraph::~ControllerGraph()
 {
-	for(Node *n: nodes) {
-		delete n;
-	}
 }
 
 void ControllerGraph::AddNode(Node *node) { 
-    nodes.push_back(node);
+    nodes.emplace_back(node);
     for(Pin &pin: node->inputs) {
         assert(pins.count(pin.id.AsPointer()) == 0);
         pins[pin.id.AsPointer()] = &pin;
@@ -86,10 +83,10 @@ void ControllerGraph::DeleteNode(Node *node) {
         pins.erase(pin.id.AsPointer());
     }
 
-	auto it = std::find(nodes.begin(), nodes.end(), node);
+	auto it = std::find_if(nodes.begin(), nodes.end(), [node](const std::unique_ptr<Node>& p) { return p.get() == node; });
 	assert(it != nodes.end());
+
 	nodes.erase(it);
-	delete node;
 
 	dirty = true;
 }
@@ -117,7 +114,7 @@ void ControllerGraph::Draw()
         if(!draggedPin) return true;
         return CanLink(draggedPin, pin);
     };
-    for(Node *n: nodes) {
+    for(auto &n: nodes) {
         n->Draw(filter);
     }
     for (const Link& link : links) {
@@ -240,14 +237,14 @@ retry:
     std::unordered_map<Node*, NodeInfo> nodeInfo;
 	std::unordered_map<Pin*, Node*> pinOwners;
 
-    for(Node *n: nodes) {
+    for(auto &n: nodes) {
 		for (Pin& i : n->inputs) {
 			i.inputs.clear();
-			pinOwners[&i] = n;
+			pinOwners[&i] = n.get();
 		}
 
 		for (Pin& o : n->outputs) {
-			pinOwners[&o] = n;
+			pinOwners[&o] = n.get();
 		}
 	
 	}
@@ -262,9 +259,9 @@ retry:
 	}
 
 	// Actual algorithm
-	for(Node *n: nodes) {
-        if(nodeInfo[n].parents.empty())
-            noincoming.insert(n);
+	for(auto &n: nodes) {
+        if(nodeInfo[n.get()].parents.empty())
+            noincoming.insert(n.get());
     }
 
     while(!noincoming.empty()) {
