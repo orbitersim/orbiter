@@ -6,6 +6,8 @@
 #define SDL_DISABLE_OLD_NAMES
 #include <SDL3/SDL.h>
 #include <set>
+#include <algorithm>
+#include <unordered_set>
 #include "OrbiterAPI.h"
 
 static ImVec4 GetStateColor(const Pin *pin) {
@@ -49,8 +51,7 @@ ControllerGraph::~ControllerGraph()
 {
 }
 
-void ControllerGraph::AddNode(Node *node) { 
-    nodes.emplace_back(node);
+void ControllerGraph::AddNode(std::unique_ptr<Node> node) {
     for(Pin &pin: node->inputs) {
         assert(pins.count(pin.id.AsPointer()) == 0);
         pins[pin.id.AsPointer()] = &pin;
@@ -59,6 +60,7 @@ void ControllerGraph::AddNode(Node *node) {
         assert(pins.count(pin.id.AsPointer()) == 0);
         pins[pin.id.AsPointer()] = &pin;
     }
+    nodes.emplace_back(std::move(node));
 
 	dirty = true;
 }
@@ -91,6 +93,7 @@ void ControllerGraph::DeleteNode(Node *node) {
 	dirty = true;
 }
 
+// TODO: profile this thing when we have more nodes to play with
 bool ControllerGraph::CanLink(const Pin *a, const Pin *b) {
     const Pin *in = a;
     const Pin *out = b;
@@ -104,6 +107,35 @@ bool ControllerGraph::CanLink(const Pin *a, const Pin *b) {
     if(in->pkind == out->pkind) return false;
 
     if(in->ptype != out->ptype) return false;
+
+	// Duplicate link
+    if (std::any_of(links.begin(), links.end(),
+        [&](const auto& link) {
+            return link.InputId == in->id && link.OutputId == out->id;
+        }))
+        return false;
+
+	// Check if adding this link would create a cycle
+	// i.e. if the input node can already reach the output node.
+	// Adapted from https://en.wikipedia.org/wiki/Depth-first_search
+    std::vector<Node*> pending = { in->parent };
+    std::unordered_set<Node*> visited;
+
+    while (!pending.empty()) {
+        Node *node = pending.back();
+        pending.pop_back();
+
+        if (node == out->parent) return false;
+        if (!visited.insert(node).second) continue;
+
+        for (const auto& link : links) {
+            Pin *from = PinFromId(link.OutputId);
+            if (from->parent != node) continue;
+
+            Pin *to = PinFromId(link.InputId);
+            pending.push_back(to->parent);
+        }
+    }
 
     return true;
 }
@@ -276,9 +308,9 @@ retry:
         }
     }
 
-	// If a cycle was introduced by the last added link, remove it
+	// This should not happen but just in case...
 	if(nodesSorted.size() != nodes.size()) {
-        oapiAddNotification(OAPINOTIF_ERROR, "Cannot link back to an ancestor node");
+        oapiAddNotification(OAPINOTIF_ERROR, "Cycle detected in controller graph, removing last link");
 		links.pop_back();
 		goto retry;
     }

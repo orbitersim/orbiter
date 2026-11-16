@@ -142,6 +142,8 @@ NodeJoystick::NodeJoystick(SDL_JoystickID jsid, int id) : Node(SDL_GetJoystickNa
 		sprintf(hatname, "Hat%d", hat);
 		AddOutput(hatname, Pin::type::Hat);
 	}
+//	AddInput("testcycle", Pin::type::Button);
+//	AddInput("testcycle2", Pin::type::Button);
 }
 
 NodeJoystick::~NodeJoystick()
