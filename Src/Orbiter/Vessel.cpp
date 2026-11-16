@@ -3570,8 +3570,6 @@ void Vessel::InitLanded (const Planet *planet, double lng, double lat, double di
 	Vector Vground(-vground * sp.slng, 0.0, vground * sp.clng);
 	S1()->SetPos(mul(planet->GRot(), sp.ploc) + planet->GPos());
 	S1()->SetVel(mul(planet->GRot(), Vground) + planet->GVel());
-	rvel_base.Set(S1()->Vel());
-	rvel_add.Set(0,0,0);
 	Amom.Set(0,0,0); // this is not quite true since the planet rotates ...
 	S1()->Q.Set(land_rot);
 	S1()->Q.premul(planet->GQ());
@@ -3804,10 +3802,6 @@ void Vessel::SetSuperStruct(SuperVessel *sv, const StateVectors *s)
 	supervessel = sv;
 	if (s) {
 		S1()->Set(*s);
-		rpos_base = S1()->Pos();
-		rpos_add.Set(0, 0, 0);
-		rvel_base = S1()->Vel();
-		rvel_add.Set(0, 0, 0);
 		UpdateSurfParams();
 		fstatus = FLIGHTSTATUS_FREEFLIGHT;
 		SyncStateVectors();
@@ -5224,8 +5218,7 @@ void Vessel::CheckBaseCollisions(const Planet *pp) {
 
 			// Resolve penetration
 			Vector pushOut = normGlobal * (bestRes.depth * 1.0);
-			S1()->SetPos(S1()->Pos() + pushOut);
-			rpos_base += pushOut;
+			S1()->AddPos(pushOut);
 			// We MUST NOT zero rpos_add! It destroys the symplectic integrator's fractional precision.
 
 			double vground = Pi2 * sp.rad * sp.clat / pp->RotT();
@@ -5261,8 +5254,6 @@ void Vessel::CheckBaseCollisions(const Planet *pp) {
 
 				// Apply final velocity change
 				S1()->AddVel((normGlobal * j_n) + delta_v_t);
-				rvel_base = S1()->Vel();
-				rvel_add.Set(0, 0, 0);
 
 				if (nforcevec_col < 10 && td.SimDT > 0.0) {
 					Vector F_global = ((normGlobal * j_n) + delta_v_t) * (mass / td.SimDT);
@@ -6739,8 +6730,6 @@ void Vessel::ResolveCollisionWith(Vessel *v) {
 				sv->S1()->AddPos(dPos);
 				sv->S1()->AddVel(dVel);
 				sv->S1()->omega += dOmega;
-				sv->rpos_base = sv->S1()->Pos(); sv->rpos_add.Set(0,0,0);
-				sv->rvel_base = sv->S1()->Vel(); sv->rvel_add.Set(0,0,0);
 				sv->bOrbitStabilised = false;
 				if (sv->cbody) {
 					sv->cpos = sv->S1()->Pos() - sv->cbody->S1()->Pos();
@@ -6749,8 +6738,6 @@ void Vessel::ResolveCollisionWith(Vessel *v) {
 				for (DWORD i = 0; i < sv->nv; i++) {
 					Vessel *vj = sv->vlist[i].vessel;
 					sv->ComponentStateVectors(sv->S1(), vj->S1(), i);
-					vj->rpos_base = vj->S1()->Pos(); vj->rpos_add.Set(0,0,0);
-					vj->rvel_base = vj->S1()->Vel(); vj->rvel_add.Set(0,0,0);
 					vj->UpdateSurfParams();
 					vj->bOrbitStabilised = false;
 					vj->el_valid = false;
@@ -6782,16 +6769,11 @@ void Vessel::ResolveCollisionWith(Vessel *v) {
 						vj->bSurfaceContact = false;
 						if (vj->proxybase) vj->proxybase->ReportTakeoff (vj);
 						if (vj->lstatus == 3 || vj->lstatus == 5) vj->lstatus = 1;
-						vj->rpos_base = vj->S1()->Pos(); vj->rpos_add.Set(0,0,0);
-						vj->S1()->AddVel(vj->rvel_add); // must be removed once the state vector increments are implemented!
-						vj->rvel_base = vj->S1()->Vel(); vj->rvel_add.Set(0,0,0);
 						vj->S1()->omega.Set(0,0,0);
 					}
 					vj->S1()->AddPos(dPos);
 					vj->S1()->AddVel(dVel);
 					vj->S1()->omega += dOmega;
-					vj->rpos_base = vj->S1()->Pos(); vj->rpos_add.Set(0,0,0);
-					vj->rvel_base = vj->S1()->Vel(); vj->rvel_add.Set(0,0,0);
 					vj->UpdateSurfParams();
 					vj->bOrbitStabilised = false;
 					vj->el_valid = false;
@@ -6867,10 +6849,6 @@ void Vessel::Update (bool force)
 			if (proxybase) proxybase->ReportTakeoff (this);
 			if (lstatus == 3 || lstatus == 5) lstatus = 1;
 
-			// need to synchronise state vectors - DO WE NEED THIS?
-			rpos_base = S1()->Pos(); rpos_add.Set (0,0,0);
-			S1()->AddVel(rvel_add); // must be removed once state vector increments are implemented!
-			rvel_base = S1()->Vel(); rvel_add.Set (0,0,0);
 			S1()->omega.Set (0,0,0);
 		}
 
@@ -6983,11 +6961,12 @@ void Vessel::Update (bool force)
 					Vector loc;
 					proxyplanet->EquatorialToLocal (sp.slng, sp.clng, sp.slat, sp.clat, sp.rad, loc);
 					Vector pgpos(S1()->Pos());
-					SetRPos(mul(proxyplanet->S1()->R, loc) + proxyplanet->S1()->Pos());
+					S1()->SetPos(mul(proxyplanet->S1()->R, loc) + proxyplanet->S1()->Pos());
 					Vector dv((S1()->Pos() - pgpos) * td.iSimDT);
 					double ay = mul (sp.L2H, tmul (proxyplanet->S1()->R, acc)).y;
-					if (ay < 0) dv -= mul (proxyplanet->S1()->R, tmul(sp.L2H, Vector (0, ay, 0)))*0.5*td.SimDT;
-					AddRVel (dv);
+					if (ay < 0)
+						dv -= mul (proxyplanet->S1()->R, tmul(sp.L2H, Vector (0, ay, 0)))*0.5*td.SimDT;
+					S1()->AddVel(dv);
 				}
 
 				// update surface parameters
@@ -7064,23 +7043,16 @@ void Vessel::Update (bool force)
 
 void Vessel::UpdatePassive ()
 {
-	StateVectors *s = S1();
-
 	if (!attach) return; // should not happen
 	Vessel *prnt = attach->mate;
 	AttachmentSpec *pa = attach->mate_attach;
-	StateVectors *ps = prnt->S1();
+	const StateVectors *ps = prnt->S1();
 
-	s->SetPos(mul (ps->R, attach_rpos) + ps->Pos());
-	rpos_base = s->Pos();
-	rpos_add.Set (0,0,0);
-	s->SetVel(ps->Vel());
-	rvel_base = s->Vel();
-	rvel_add.Set (0,0,0);
-	s->R.Set (ps->R);
-	s->R.postmul (attach_rrot);
-	s->Q.Set (s->R);
-	s->omega.Set (tmul (attach_rrot, ps->omega));
+	S1()->SetPos(mul (ps->R, attach_rpos) + ps->Pos());
+	S1()->SetVel(ps->Vel());
+	S1()->R.Set(ps->R * attach_rrot);
+	S1()->Q.Set (S1()->R);
+	S1()->omega.Set (tmul (attach_rrot, ps->omega));
 	acc.Set (prnt->acc);
 
 	Flin.Set (Flin_add);    // store current linear force
@@ -10051,9 +10023,8 @@ void VESSEL::ShiftCentreOfMass (const VECTOR3 &shift)
 	if (vessel->bFRrecord) vessel->FRecorder_Save (true);
 	Vector dr (shift.x, shift.y, shift.z);
 	Vector gdr (mul (vessel->GRot(), dr));
-	vessel->FlushRPos ();
 	if (!vessel->bFRplayback) {  // ignore during playback
-		vessel->AddRPos (gdr);
+		vessel->S1()->AddPos(gdr);
 		if (vessel->supervessel) vessel->supervessel->NotifyShiftVesselOrigin (vessel, dr);
 	}
 	vessel->m_hullCachePValid = false;

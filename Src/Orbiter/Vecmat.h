@@ -412,6 +412,7 @@ class StateVectors
 {
 public:
 	StateVectors();
+	StateVectors(const StateVectors &s);
 
 	void Set(const StateVectors &s);
 	void Set(const Vector &v, const Vector &p, const Vector &av, const Quaternion &ap);

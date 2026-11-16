@@ -751,10 +751,6 @@ void Vessel::FRecorder_EndPlayback ()
 	if (bFRplayback) {
 		bFRplayback = false;
 		Amom_add.Set(0,0,0);
-		rvel_base.Set (S0()->Vel());
-		rvel_add.Set(0,0,0);
-		rpos_base.Set(S0()->Pos());
-		rpos_add.Set(0,0,0);
 		if (supervessel && supervessel->GetVessel(0) == this)
 			supervessel->FRecorder_EndPlayback();
 	}

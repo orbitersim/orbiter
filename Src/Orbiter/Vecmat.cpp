@@ -697,14 +697,23 @@ StateVectors::StateVectors()
 {
 	R.Set(IMatrix());
 	Q.Set(R);
-	m_nPos_incr = 0;
-	m_nVel_incr = 0;
+	m_nPos_incr = irand(s_nLimit_incr); // spread sync events
+	m_nVel_incr = irand(s_nLimit_incr);
+}
+
+StateVectors::StateVectors(const StateVectors &s)
+{
+	Set(s);
 }
 
 void StateVectors::Set(const StateVectors &s)
 {
-	SetVel(s.Vel());
-	SetPos(s.Pos());
+	m_vPos.Set(s.m_vPos);
+	m_vPos_base.Set(s.m_vPos_base);
+	m_vPos_incr.Set(s.m_vPos_incr);
+	m_vVel.Set(s.m_vVel);
+	m_vVel_base.Set(s.m_vVel_base);
+	m_vVel_incr.Set(s.m_vVel_incr);
 	omega.Set(s.omega);
 	Q.Set(s.Q);
 	R.Set(s.R);

@@ -68,14 +68,6 @@ public:
 	const Vector &AngularVelocity() const { return m_svS0->omega; }
 	// Object angular velocity
 
-	void SetRPos (const Vector &p);
-	void AddRPos (const Vector &dp);
-	void FlushRPos ();
-
-	void SetRVel (const Vector &v);
-	void AddRVel (const Vector &dv);
-	void FlushRVel ();
-
 	inline Vector GlobalToLocal(const Vector &glob) const
 	{ return tmul(m_svS0->R, glob - m_svS0->Pos()); }
 	// Convert global position glob into body's local coordinate system
@@ -189,10 +181,6 @@ protected:
 
 	std::string name;          // object name
 	std::string filename;
-
-	Vector rpos_base { 0, 0, 0 }, rpos_add { 0, 0, 0 }; // base and incremental parts of rpos
-	Vector rvel_base { 0, 0, 0 }, rvel_add { 0, 0, 0 }; // base and incremental parts of rvel
-	int updcount { 0 };               // update counter
 
 private:
 	void SetName (char *_name = 0);

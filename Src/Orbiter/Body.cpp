@@ -37,7 +37,6 @@ Body::Body ()
 	extern bool g_bStateUpdate;
 	m_svS0 = m_svContainer;
 	m_svS1 = m_svContainer + 1;
-	updcount = irand(100); // spread update times
 }
 
 Body::Body (double _mass, double _size)
@@ -73,9 +72,6 @@ Body::Body(char* fname)
 	GetItemVector(ifs, "InitPos", v); m_svS1->SetPos(v);
 	GetItemVector(ifs, "InitVel", v); m_svS1->SetVel(v);
 
-	rpos_base.Set (m_svS1->Pos()); rpos_add.Set (0,0,0);
-	rvel_base.Set (m_svS1->Vel()); rvel_add.Set (0,0,0);
-
 	SyncStateVectors();
 }
 
@@ -92,51 +88,10 @@ void Body::SetSize (double newsize)
 	g_pOrbiter->NotifyObjectSize (this);
 }
 
-void Body::RPlace (const Vector &rpos, const Vector &rvel)
+void Body::RPlace(const Vector &rpos, const Vector &rvel)
 {
-	// should RPlace be allowed outside update phase?
-	m_svS1->SetPos(rpos_base = rpos);
-	rpos_add.Set (0,0,0);
-	m_svS1->SetVel(rvel_base = rvel);
-	rvel_add.Set (0,0,0);
-}
-
-void Body::SetRPos (const Vector &p)
-{
-	dCHECK(m_svS1 != m_svS0, "Update state not available")
-	m_svS1->SetPos(rpos_base = p);
-	rpos_add.Set (0,0,0);
-}
-
-void Body::AddRPos (const Vector &dp) {
-	rpos_base += dp;
-	m_svS1->SetPos(rpos_base + rpos_add);
-}
-
-void Body::FlushRPos ()
-{
-	rpos_base = m_svS1->Pos();
-	rpos_add.Set(0,0,0);
-}
-
-void Body::SetRVel (const Vector &v)
-{
-	dCHECK(m_svS1 != m_svS0, "Update state not available")
-	m_svS1->SetVel(rvel_base = v);
-	rvel_add.Set (0,0,0);
-}
-
-void Body::AddRVel (const Vector &dv)
-{
-	dCHECK(m_svS1 != m_svS0, "Update state not available")
-	rvel_base += dv;
-	m_svS1->SetVel(rvel_base + rvel_add);
-}
-
-void Body::FlushRVel ()
-{
-	rvel_base = m_svS1->Vel();
-	rvel_add.Set(0,0,0);
+	m_svS1->SetPos(rpos);
+	m_svS1->SetVel(rvel);
 }
 
 void Body::LocalToEquatorial (const Vector &loc, double &lng, double &lat, double &rad) const

@@ -212,10 +212,6 @@ bool VesselBase::Activate (bool force)
 {
 	if (fstatus == FLIGHTSTATUS_LANDED || force) {
 		fstatus = FLIGHTSTATUS_FREEFLIGHT;
-		rpos_base = S1()->Pos();
-		rpos_add.Set (0,0,0);
-		rvel_base = S1()->Vel();
-		rvel_add.Set (0,0,0);
 		return true;
 	} else
 		return false;
@@ -417,7 +413,6 @@ bool VesselBase::ValidateStateUpdate (StateVectors *s)
 				Vector gv(sp.groundvel_ship * (vsmax/vs)); // rescaled surface-relative velocity
 				gv = mul (GRot(), gv);                    // map to global
 				S1()->AddVel(gv - sp.groundvel_glob);
-				rvel_base += (gv - sp.groundvel_glob);
 				return false;
 			}
 		}

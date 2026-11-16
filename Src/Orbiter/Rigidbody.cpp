@@ -221,8 +221,6 @@ void RigidBody::Update (bool force)
 
 			// Update linear state with Encke's method
 			if (!bOrbitStabilised) {
-				FlushRPos();
-				FlushRVel();
 				S1()->SetPos(cpos);
 				S1()->SetVel(cvel);
 				GetIntermediateMoments_pert (acc_pert, tau, *S0(), 0, dt, cbody);
@@ -231,8 +229,6 @@ void RigidBody::Update (bool force)
 			Encke();
 			S1()->SetPos(cpos + cbody->S1()->Pos());
 			S1()->SetVel(cvel + cbody->S1()->Vel());
-			FlushRPos();
-			FlushRVel();
 			S1()->R.Set (S1()->Q);
 			GetIntermediateMoments (acc, tau, *S1(), 1, dt);
 			el_valid = bOrbitStabilised = true;
@@ -240,7 +236,8 @@ void RigidBody::Update (bool force)
 		} else { // do a dynamic state vector integration
 
 			Vector acc0(acc), arot0(arot);
-			Vector rpos_add0(rpos_add), rvel_add0(rvel_add);
+			StateVectors s(*S1());
+			bool is_valid = true;
 			do {
 				// Select propagator
 				SetPropagator (PropLevel, nPropSubsteps);
@@ -248,26 +245,18 @@ void RigidBody::Update (bool force)
 
 				// Perform step propagation with sub-steps
 				acc = acc0, arot = arot0;
-				rpos_add = rpos_add0, rvel_add = rvel_add0;
 				for (i = 0; i < nPropSubsteps; i++) {
 					((*this).*(PropMode[PropLevel].propagator)) (dt, nPropSubsteps, i);
-					S1()->SetPos(rpos_base + rpos_add);
-					S1()->SetVel(rvel_base + rvel_add);
 					S1()->R.Set (S1()->Q);
 					GetIntermediateMoments (acc, tau, *S1(), (i+1.0)/nPropSubsteps, dt);
 					arot.Set (EulerInv_full (tau, S1()->omega));
 				}
-			} while (!ValidateStateUpdate (S1()));
+				if (!(is_valid = ValidateStateUpdate(S1()))) {
+					S1()->Set(s);
+				}
+			} while (!is_valid);
 
-			if (updcount++ == 1000) { // flush increments
-				rpos_base += rpos_add;
-				rpos_add.Set (0,0,0);
-				rvel_base += rvel_add;
-				rvel_add.Set (0,0,0);
-				updcount = 0;
-			}
 			el_valid = bOrbitStabilised = false;
-
 		}
 
 		// Limit angular velocity - this code is intended to prevent
@@ -512,11 +501,7 @@ Vector RigidBody::EulerInv_zero (const Vector &tau, const Vector &omega) const
 void RigidBody::SetDynamicUpdate (bool dynamic)
 {
 	if (bDynamicPosVel == dynamic) return; // nothing to do
-	if (bDynamicPosVel = dynamic) {
-		rpos_base.Set (S0()->Pos());
-		rpos_add.Set (0,0,0);
-	} else {
-	}
+	bDynamicPosVel = dynamic;
 }
 
 const char *RigidBody::PropagatorStr (DWORD idx, bool verbose) {
