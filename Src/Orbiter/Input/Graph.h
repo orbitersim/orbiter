@@ -33,7 +33,7 @@ class ControllerGraph final {
     ~ControllerGraph();
 	void Update(bool dryrun);
     void Draw();
-	void AddNode(Node *node);
+	void AddNode(std::unique_ptr<Node> node);
 	void DeleteNode(Node *node);
 	Pin *PinFromId(ed::PinId id) { return pins.at(id.AsPointer()); }
 	bool CanLink(const Pin *a, const Pin *b);
@@ -42,8 +42,9 @@ class ControllerGraph final {
 	T *AddNode(Args&&... args)
 	{
 		static_assert(std::is_base_of<Node, T>::value, "T must derive from Node");
-		T* n = new T(std::forward<Args>(args)..., nodeidgen++);
-		AddNode(static_cast<Node*>(n));
-		return n;
+		auto node = std::make_unique<T>(std::forward<Args>(args)..., nodeidgen++);
+		T* result = node.get();
+		AddNode(std::move(node));
+		return result;
 	}
 };

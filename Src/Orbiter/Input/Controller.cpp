@@ -28,6 +28,7 @@ void InputController::ScanControllers()
 	SDL_JoystickID *ids = SDL_GetJoysticks(&count);
 	// Search for new controllers
 	for (int i = 0; i < count; ++i) {
+		// /!\ FIXME: Won't work if several identical joysticks are plugged in
 		SDL_GUID guid = SDL_GetJoystickGUIDForID(ids[i]);
 		std::string key(reinterpret_cast<const char*>(guid.data), sizeof(guid.data));
 		auto it = joyMap.find(key);
