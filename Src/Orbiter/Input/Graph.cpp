@@ -3,6 +3,7 @@
 #include "Pin.h"
 #include "NodeJoystick.h"
 #include "NodeLegacyControls.h"
+#include "Joystick.h"
 #define SDL_DISABLE_OLD_NAMES
 #include <SDL3/SDL.h>
 #include <set>
@@ -62,35 +63,35 @@ void ControllerGraph::AddNode(std::unique_ptr<Node> node) {
     }
     nodes.emplace_back(std::move(node));
 
-	dirty = true;
+    dirty = true;
 }
 
 void ControllerGraph::DeleteNode(Node *node) {
 
-	const auto eraseLinks = [this](ed::PinId id) {
+    const auto eraseLinks = [this](ed::PinId id) {
         links.erase(std::remove_if(links.begin(), 
                         links.end(),
                         [&](Link &x){return x.InputId == id || x.OutputId == id;}),
                         links.end());
-	};
-	
-	for(Pin &pin: node->inputs) {
+    };
+    
+    for(Pin &pin: node->inputs) {
         assert(pins.count(pin.id.AsPointer()) == 1);
-		eraseLinks(pin.id);
+        eraseLinks(pin.id);
         pins.erase(pin.id.AsPointer());
     }
     for(Pin &pin: node->outputs) {
         assert(pins.count(pin.id.AsPointer()) == 1);
-		eraseLinks(pin.id);
+        eraseLinks(pin.id);
         pins.erase(pin.id.AsPointer());
     }
 
-	auto it = std::find_if(nodes.begin(), nodes.end(), [node](const std::unique_ptr<Node>& p) { return p.get() == node; });
-	assert(it != nodes.end());
+    auto it = std::find_if(nodes.begin(), nodes.end(), [node](const std::unique_ptr<Node>& p) { return p.get() == node; });
+    assert(it != nodes.end());
 
-	nodes.erase(it);
+    nodes.erase(it);
 
-	dirty = true;
+    dirty = true;
 }
 
 // TODO: profile this thing when we have more nodes to play with
@@ -108,16 +109,16 @@ bool ControllerGraph::CanLink(const Pin *a, const Pin *b) {
 
     if(in->ptype != out->ptype) return false;
 
-	// Duplicate link
+    // Duplicate link
     if (std::any_of(links.begin(), links.end(),
         [&](const auto& link) {
             return link.InputId == in->id && link.OutputId == out->id;
         }))
         return false;
 
-	// Check if adding this link would create a cycle
-	// i.e. if the input node can already reach the output node.
-	// Adapted from https://en.wikipedia.org/wiki/Depth-first_search
+    // Check if adding this link would create a cycle
+    // i.e. if the input node can already reach the output node.
+    // Adapted from https://en.wikipedia.org/wiki/Depth-first_search
     std::vector<Node*> pending = { in->parent };
     std::unordered_set<Node*> visited;
 
@@ -176,7 +177,7 @@ void ControllerGraph::Draw()
                 } else if(ed::AcceptNewItem(ImColor(128, 255, 128), 2.0f)) {
                     links.push_back({ ed::LinkId(linkidgen++), startPinId, endPinId });
                     ed::Link(links.back().Id, links.back().InputId, links.back().OutputId);
-					TopologicalSort();
+                    TopologicalSort();
                 }
             }
         }
@@ -200,8 +201,8 @@ void ControllerGraph::Draw()
     ed::EndDelete();
 
 
-	static ed::LinkId contextLinkId;
-	static ed::PinId contextPinId;
+    static ed::LinkId contextLinkId;
+    static ed::PinId contextPinId;
 
     ImVec2 openPopupPosition = ImGui::GetMousePos();
     ed::Suspend();
@@ -234,17 +235,17 @@ void ControllerGraph::Draw()
         ImGui::EndPopup();
     }
 
-	ed::Resume();
+    ed::Resume();
 }
 
 void ControllerGraph::Update(bool dryrun)
 {
-	if(dirty) TopologicalSort();
+    if(dirty) TopologicalSort();
 
-	for(Node *n: nodesSorted) {
-		n->UpdateInputs();
-		n->Update(dryrun);
-	}
+    for(Node *n: nodesSorted) {
+        n->UpdateInputs();
+        n->Update(dryrun);
+    }
 }
 
 // Kahn's algorithm from https://en.wikipedia.org/wiki/Topological_sorting
@@ -267,19 +268,19 @@ retry:
     };
 
     std::unordered_map<Node*, NodeInfo> nodeInfo;
-	std::unordered_map<Pin*, Node*> pinOwners;
+    std::unordered_map<Pin*, Node*> pinOwners;
 
     for(auto &n: nodes) {
-		for (Pin& i : n->inputs) {
-			i.inputs.clear();
-			pinOwners[&i] = n.get();
-		}
+        for (Pin& i : n->inputs) {
+            i.inputs.clear();
+            pinOwners[&i] = n.get();
+        }
 
-		for (Pin& o : n->outputs) {
-			pinOwners[&o] = n.get();
-		}
-	
-	}
+        for (Pin& o : n->outputs) {
+            pinOwners[&o] = n.get();
+        }
+    
+    }
     for(const Link &l: links) {
         Pin *to = PinFromId(l.InputId);
         Pin *from = PinFromId(l.OutputId);
@@ -287,11 +288,11 @@ retry:
         Node *child = pinOwners[to];
         nodeInfo[parent].children.insert(child);
         nodeInfo[child].parents.insert(parent);
-		to->inputs.emplace_back(from);
-	}
+        to->inputs.emplace_back(from);
+    }
 
-	// Actual algorithm
-	for(auto &n: nodes) {
+    // Actual algorithm
+    for(auto &n: nodes) {
         if(nodeInfo[n.get()].parents.empty())
             noincoming.insert(n.get());
     }
@@ -308,11 +309,40 @@ retry:
         }
     }
 
-	// This should not happen but just in case...
-	if(nodesSorted.size() != nodes.size()) {
+    // This should not happen but just in case...
+    if(nodesSorted.size() != nodes.size()) {
         oapiAddNotification(OAPINOTIF_ERROR, "Cycle detected in controller graph, removing last link");
-		links.pop_back();
-		goto retry;
+        links.pop_back();
+        goto retry;
     }
-	dirty = false;
+    dirty = false;
+}
+
+void ControllerGraph::AttachJoystick(Joystick *js)
+{
+    for (auto& node : nodes) {
+        NodeJoystick *jsnode = dynamic_cast<NodeJoystick*>(node.get());
+
+        if (jsnode && !jsnode->IsAttached() && jsnode->CanAttach(js)) {
+            jsnode->Attach(js);
+            oapiAddNotification(OAPINOTIF_INFO, "Joystick reconnected", js->name.c_str());
+            return;
+        }
+    }
+
+    oapiAddNotification(OAPINOTIF_INFO, "New joystick connected", js->name.c_str());
+    AddNode<NodeJoystick>(js);
+}
+
+void ControllerGraph::DetachJoystick(Joystick *js)
+{
+    for (auto& node : nodes) {
+        NodeJoystick *jsnode = dynamic_cast<NodeJoystick*>(node.get());
+
+        if (jsnode && jsnode->GetJoystick() == js) {
+            jsnode->Detach();
+            oapiAddNotification(OAPINOTIF_INFO, "Joystick disconnected", js->name.c_str());
+            return;
+        }
+    }
 }

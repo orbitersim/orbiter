@@ -3,16 +3,20 @@
 #include "Node.h"
 #include <SDL3/SDL.h>
 #include <memory>
+#include <string>
 
 class Joystick;
 class NodeJoystick : public Node {
 public:
-	std::unique_ptr<Joystick> js;
-	NodeJoystick(SDL_JoystickID jsid, int id);
+	Joystick * js;
+	std::string guid;
+	NodeJoystick(Joystick *js, int id);
 	~NodeJoystick();
 	void Update(bool dryrun) override;
 	bool IsConnected();
 	bool IsAttached();
-	bool Attach(SDL_JoystickID id);
+	void Attach(Joystick *id);
 	void Detach();
+	Joystick *GetJoystick() const { return js; }
+	bool CanAttach(Joystick *js);
 };
