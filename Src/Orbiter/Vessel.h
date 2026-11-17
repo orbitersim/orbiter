@@ -1719,6 +1719,10 @@ private:
 		double impulseMag;     // impulse magnitude
 		VECTOR3 leverArm;      // lever arm from CoM to contact in vessel-local frame
 		double showTime;       // simulation time until which this debug data should be rendered
+		int sliceIdx;          // colliding sub-hull slice index (-1 if concave/unknown)
+		int meshIdx;           // colliding mesh index (-1 if unknown)
+		int groupIdx;          // colliding mesh group index (-1 if unknown)
+		OBJHANDLE otherVessel; // handle of other vessel in collision
 	} mutable m_colDebug;
 
 	char *classname;   // vessel class name
@@ -1737,18 +1741,28 @@ private:
 	bool bIsConvexCollider; // If true, uses GJK Convex Hull. If false, uses Point-vs-Triangle mesh collision.
 
 public:
+	static constexpr double DockClearRadius   = 2.2;  // [m] radial clear zone around dock axis
+	static constexpr double DockClearAxialMin = -1.5; // [m] axial clear zone behind dock ref
+	static constexpr double DockClearAxialMax = 2.5;  // [m] axial clear zone in front of dock ref
+
 	// Hull vertex cache for mesh collision (vessel-local coords)
 	struct HullVertex {
 		VECTOR3 pos;
 		UINT meshIdx;
 		DWORD groupIdx;
 		DWORD clusterIdx;
+		int subBucket; // 0=normal, 1..32=clear zone for dock (subBucket-1), >=100=sector split around dock
 	};
 	struct HullGroupSlice {
 		size_t startIdx;
 		size_t count;
 		Vector minP, maxP;
 		bool isDockClearZone;
+		DWORD dockClearMask; // bit d is set if this slice belongs to dock d's clear zone
+		UINT meshIdx;
+		DWORD groupIdx;
+		size_t visualIdxStart = 0; // offset into m_convexHullAllIdx (multiple of 3)
+		size_t visualIdxCount = 0; // index count in m_convexHullAllIdx (multiple of 3)
 	};
 	struct HullIndexRange {
 		size_t startIdx;
@@ -1766,8 +1780,18 @@ protected:
 	std::vector<HullIndexRange> m_hullMeshRanges; // [meshIdx] -> vertex range in m_hullCacheStatic
 	std::vector<HullGroupRange> m_hullGroupRanges; // sorted (meshIdx, groupIdx) -> vertex range
 	std::vector<VECTOR3> m_hullCache;   // cached hull vertices in vessel-local frame (animated)
-	std::vector<WORD> m_convexHullIdx;  // quickhull triangle indices (3 per face) for visualization
+	std::vector<WORD> m_convexHullAllIdx; // quickhull triangle indices (3 per face) across all slices
+	mutable std::vector<WORD> m_convexHullIdx;  // active collider triangle indices (excludes suppressed clear zones)
+	mutable std::vector<WORD> m_convexHullClearIdx; // quickhull triangle indices (3 per face) for all clear-zone slices
+	mutable std::vector<WORD> m_convexHullClearIdleIdx; // idle clear-zone triangle indices
+	mutable std::vector<WORD> m_convexHullClearSuppressedIdx; // suppressed clear-zone triangle indices
+	mutable DWORD m_convexHullBuiltMask = 0xFFFFFFFFu; // activeDockMask last baked into m_convexHullIdx
+	mutable DWORD m_convexHullClearBuiltMask = 0xFFFFFFFFu; // activeDockMask last baked into idle/suppressed clear indices
+	mutable bool m_convexHullClearBuilt = false; // true if m_convexHullClearIdx is up-to-date
 	mutable std::vector<VECTOR3> m_clearZoneCache; // cache for clear zone bounding boxes (min/max pairs)
+	mutable std::vector<VECTOR3> m_clearZoneStateCache; // filtered clear zone bounding boxes (min/max pairs)
+	mutable DWORD m_activeDockApproachMask; // bitmask of ports currently in dockingApproach
+	mutable double m_activeDockApproachTime; // SimT1 when m_activeDockApproachMask was last set
 	std::vector<VECTOR3> m_hullCacheP;  // hull points in planet-local frame
 	Vector m_hullMinP, m_hullMaxP;      // AABB of hull points in planet-local frame
 	bool m_hullStaticValid;             // true if m_hullCacheStatic matches current external meshes
@@ -1788,15 +1812,20 @@ protected:
 	void MarkCollisionOverlapDirty();
 	static void FlushPendingCollisionOverlapStates();
 	void RebuildHullCache();            // (re)build m_hullCacheStatic from meshlist
-	void RebuildConvexHullVisual();     // rebuild m_convexHullIdx from m_hullCache
+	void RebuildConvexHullVisual();     // rebuild m_convexHullAllIdx and per-slice spans from m_hullCache
 	void ApplyAnimationToHullCache();   // animate m_hullCacheStatic to m_hullCache
 	void UpdateHullCacheP();            // update m_hullCacheP from m_hullCache
+	DWORD GetEffectiveDockApproachMask() const;
+	void RebuildFilteredHullIndices(std::vector<WORD>& out, bool includeSolid, bool includeIdleClear, bool includeSuppressedClear, DWORD activeMask) const;
+	void CollectClearZoneAABBs(std::vector<VECTOR3>& out, bool filterByState, bool suppressed, DWORD activeMask) const;
+	static void ComputeDockApproachMasks(const Vessel *a, const Vessel *b, DWORD &maskA, DWORD &maskB);
 	void CheckBaseCollisions(class Planet *pp);
 	void ResolveCollisionWith(Vessel *v);
 	bool CheckMeshCollision(const class Mesh *m, const Matrix &M_mesh2planet, const VECTOR3 &vPosPlanet, const Vector &vRelPlanet, BaseCollisionResult &res, const std::vector<Vector>* dockPtsP = nullptr);
 	bool CheckVesselOverlap(Vessel *v, double margin = 0.0);
 
 public:
+	void ResetDockApproachMask(double simT) { m_activeDockApproachMask = 0; m_activeDockApproachTime = simT; }
 	void RefreshCollisionOverlapState();
 	static DWORD GetDisabledCollisionPairCount();
 	static bool GetDisabledCollisionPair(DWORD index, OBJHANDLE *hVessel1, OBJHANDLE *hVessel2);

@@ -2175,6 +2175,52 @@ public:
 	 * \return Pointer to an array of VECTOR3 pairs (min, max, min, max, ...), or NULL if none
 	 */
 	const VECTOR3 *GetCollisionClearZones (DWORD &nBoxes) const;
+
+	/**
+	 * \brief Returns the generated triangle indices for convex sub-hulls marked as docking clear zones.
+	 * \param nIdx [out] Number of indices (always a multiple of 3)
+	 * \return Pointer to array of WORD indices into the point cloud, or NULL if none
+	 */
+	const WORD *GetCollisionClearZoneHullIndices (DWORD &nIdx) const;
+
+	/**
+	 * \brief Returns extended diagnostic info for docking clear zones and the last collision hit.
+	 * \param[out] activeDockMask bitmask of docking ports on this vessel currently in dockingApproach state
+	 * \param[out] nTotalSlices total number of convex sub-hull slices
+	 * \param[out] nClearSlices number of sub-hull slices marked as docking clear zones
+	 * \param[out] hitSliceA slice index on this vessel from last collision (-1 if none)
+	 * \param[out] hitMeshA mesh index on this vessel from last collision (-1 if none)
+	 * \param[out] hitGroupA mesh group index on this vessel from last collision (-1 if none)
+	 * \param[out] hHitOther handle of the other vessel from last collision (NULL if none)
+	 */
+	void GetDockingCollisionDebug (DWORD &activeDockMask, DWORD &nTotalSlices, DWORD &nClearSlices,
+		int &hitSliceA, int &hitMeshA, int &hitGroupA, OBJHANDLE &hHitOther) const;
+
+	/**
+	 * \brief Returns the clear-zone cylinder dimensions used for docking ports.
+	 * \param[out] radius radial clearance around dock dir [m]
+	 * \param[out] axialMin axial start behind dock ref [m] (negative)
+	 * \param[out] axialMax axial end in front of dock ref [m] (positive)
+	 */
+	void GetDockClearCylinderParams (double &radius, double &axialMin, double &axialMax) const;
+
+	/**
+	 * \brief Returns generated triangle indices for docking clear-zone sub-hulls filtered by suppression state.
+	 * \param suppressed If true, returns only slices whose collision is currently suppressed by an active docking approach;
+	 *                   if false, returns idle clear-zone slices whose collision is currently active.
+	 * \param nIdx [out] Number of indices (always a multiple of 3)
+	 * \return Pointer to array of WORD indices into the point cloud, or NULL if none
+	 */
+	const WORD *GetCollisionClearZoneHullIndicesByState (bool suppressed, DWORD &nIdx) const;
+
+	/**
+	 * \brief Returns AABB (min/max pairs) for docking clear-zone slices filtered by suppression state.
+	 * \param suppressed If true, returns AABBs only for slices currently suppressed by an active docking approach;
+	 *                   if false, returns AABBs for idle clear-zone slices whose collision is currently active.
+	 * \param nBoxes [out] Number of bounding boxes
+	 * \return Pointer to an array of VECTOR3 pairs (min, max, min, max, ...), or NULL if none
+	 */
+	const VECTOR3 *GetCollisionClearZonesByState (bool suppressed, DWORD &nBoxes) const;
 	//@}
 
 

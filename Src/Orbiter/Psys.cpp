@@ -828,6 +828,7 @@ void PlanetarySystem::FinaliseUpdate ()
 {
 	DWORD i;
 	for (i = 0; i < bodies.size(); i++) bodies[i]->EndStateUpdate ();
+	for (i = 0; i < vessels.size(); i++) vessels[i]->ResetDockApproachMask (td.SimT1);
 	for (i = 0; i < supervessels.size(); i++) supervessels[i]->PostUpdate ();
 	for (i = 0; i < vessels.size(); i++) vessels[i]->PostUpdate ();
 }
