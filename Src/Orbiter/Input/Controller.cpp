@@ -3,8 +3,8 @@
 #include "Orbiter.h"
 #include "Config.h"
 #include "Graph.h"
-#include "NodeJoystick.h"
 #include "NodeLegacyControls.h"
+#include "Joystick.h"
 
 extern Orbiter* g_pOrbiter;
 
@@ -22,38 +22,40 @@ void InputController::GetJoystickCtrl(float ctrl[15])
 	legacyCtrl->GetJoystickCtrl(ctrl);
 }
 
+// We scan ourselves for now because we still use the Windows message loop instead of SDL event polling
 void InputController::ScanControllers()
 {
-	int count;
-	SDL_JoystickID *ids = SDL_GetJoysticks(&count);
-	// Search for new controllers
-	for (int i = 0; i < count; ++i) {
-		// /!\ FIXME: Won't work if several identical joysticks are plugged in
-		SDL_GUID guid = SDL_GetJoystickGUIDForID(ids[i]);
-		std::string key(reinterpret_cast<const char*>(guid.data), sizeof(guid.data));
-		auto it = joyMap.find(key);
-		if(it == joyMap.end()) {
-			oapiAddNotification(OAPINOTIF_INFO, "New joystick connected", SDL_GetJoystickNameForID(ids[i]));
-			joyMap[key] = graph->AddNode<NodeJoystick>(ids[i]);
+	int count = 0;
+	SDL_JoystickID* ids = SDL_GetJoysticks(&count);
+
+	if (!ids)
+		return;
+
+	// Check if a known controller has been removed
+	for (auto it = joysticks.begin(); it != joysticks.end(); ) {
+		if (std::find(ids, ids + count, it->first) == ids + count) {
+			graph->DetachJoystick(it->second.get());
+			it = joysticks.erase(it);
 		} else {
-			NodeJoystick *js = it->second;
-			if(!js->IsConnected()) {
-				oapiAddNotification(OAPINOTIF_INFO, "Joystick reconnected", SDL_GetJoystickNameForID(ids[i]));
-				if(!js->Attach(ids[i])) {
-					// If this fails for whatever reason, delete the node and create a new one for this GUID
-					graph->DeleteNode(js);
-					joyMap[key] = graph->AddNode<NodeJoystick>(ids[i]);
-				}
-			}
+			++it;
 		}
 	}
 
-	// Check if a known controller has been removed
-	for(auto &[k, node]: joyMap) {
-		if(node->IsAttached() && !node->IsConnected()) {
-			oapiAddNotification(OAPINOTIF_INFO, "Joystick disconnected", node->name.c_str());
-			node->Detach();
-		}
+	// Search for new controllers
+	for (int i = 0; i < count; ++i) {
+		SDL_JoystickID id = ids[i];
+
+		if (joysticks.find(id) != joysticks.end())
+			continue;
+
+		auto js = std::make_unique<Joystick>(id);
+		if (!js->IsConnected())
+			continue;
+
+		Joystick *ptr = js.get();
+		joysticks.emplace(id, std::move(js));
+		graph->AttachJoystick(ptr);
 	}
+
 	SDL_free(ids);
 }

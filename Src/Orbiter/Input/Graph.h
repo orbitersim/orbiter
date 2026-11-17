@@ -5,6 +5,7 @@
 #include <unordered_map>
 #include <memory>
 #include <imgui_node_editor.h>
+
 namespace ed = ax::NodeEditor;
 
 struct Link
@@ -16,6 +17,7 @@ struct Link
 
 class Node;
 class Pin;
+class Joystick;
 
 // The graph owns the Nodes and the links
 // The Nodes own the Pins
@@ -43,8 +45,10 @@ class ControllerGraph final {
 	{
 		static_assert(std::is_base_of<Node, T>::value, "T must derive from Node");
 		auto node = std::make_unique<T>(std::forward<Args>(args)..., nodeidgen++);
-		T* result = node.get();
+		T *result = node.get();
 		AddNode(std::move(node));
 		return result;
 	}
+	void AttachJoystick(Joystick *joystick);
+	void DetachJoystick(Joystick *joystick);
 };

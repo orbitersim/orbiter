@@ -5,9 +5,9 @@
 
 #include <string>
 #include <unordered_map>
-#include <string>
+#include <memory>
+#include "Joystick.h"
 
-class NodeJoystick;
 class ControllerGraph;
 class NodeLegacyControls;
 class InputController {
@@ -16,8 +16,8 @@ class InputController {
 		float x,y,Rz,throttle;
 		int alt, hat;
 	} state;
-	// Map GUID to joystick instance
-	static inline std::unordered_map<std::string, NodeJoystick *> joyMap;
+
+	static inline std::unordered_map<SDL_JoystickID, std::unique_ptr<Joystick>> joysticks;
 	static inline NodeLegacyControls *legacyCtrl;
 public:
     static void GlobalInit();
