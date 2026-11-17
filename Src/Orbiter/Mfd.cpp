@@ -1028,7 +1028,7 @@ bool Instrument::ClbkSelect_CelBody (Select *menu, int item, char *str, void *da
 		}
 		return true;
 	} else { // submenu
-		CelestialBody *cbody = g_psys->GetGravObj (str, true);
+		const CelestialBody *cbody = g_psys->GetGravObj(str, true);
 		if (cbody) {
 			n = cbody->nSecondary();
 			for (i = 0; i < n; i++) {
@@ -1094,8 +1094,9 @@ bool Instrument::ClbkSelect_Tgt (Select *menu, int item, char *str, void *data)
 		} else if (!strcmp (str, "Celestial bodies")) {
 			// pick bodies orbiting the reference body
 			for (i = j = 0; i < g_psys->nGrav(); i++) {
-				CelestialBody *cbody = g_psys->GetGravObj (i);
-				if (cbody->ElRef() == ref) menu->Append (cbody->Name()), j++;
+				const CelestialBody *cbody = g_psys->GetGravObj(i);
+				if (cbody->ElRef() == ref)
+					menu->Append(cbody->Name()), j++;
 			}
 			if (!j && ref) {
 				strcpy (cbuf, "None orbiting "); strcat (cbuf, ref->Name());

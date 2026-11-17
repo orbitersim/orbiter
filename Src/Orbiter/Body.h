@@ -12,6 +12,8 @@
 #include "OrbiterAPI.h"
 #include "Config.h"
 
+#define S1() S1_restricted(this)
+
 class Elements;
 class CelestialBody;
 class Body;
@@ -54,8 +56,12 @@ public:
 	inline const Vector &Albedo () const { return albedo; }
 	// object albedo (RGB, 0-1)
 
-	const StateVectors *S0() const { return m_svS0; } // current state (at time td.SimT0)
-	const StateVectors *S1() const { return m_svS1; } // update state (during update phase, refers to td.SimT1. Past update phase this is the same as S0)
+	const StateVectors *S0() const { return m_svS0; }
+	// Read access to current state (at time td.SimT0)
+
+	virtual const StateVectors *S1_restricted(const void *caller) const;
+	// Read access to update state S1 (during update phase, refers to td.SimT1. Past update phase this is the same as S0)
+	// Default behaviour: no caller restrictions
 
 	inline const Vector &GPos() const { return m_svS0->Pos(); }
 	inline const Vector &GVel() const { return m_svS0->Vel(); }
@@ -166,7 +172,9 @@ protected:
 
 	Vector acc;          // current acceleration vector
 
-	StateVectors *S1() { return m_svS1; } // write access to S1. Note that S0 is read-only
+	virtual StateVectors *S1_restricted(const void *caller);
+	// Caller-restricted write access to update state S1.
+	// Default behaviour: only instance owning the state vectors can write them (NOT ENFORCED YET)
 
 	void PublishStateVectors();
 	// copy update state (m_svS1) back to public state (m_svS0)

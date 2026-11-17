@@ -49,8 +49,8 @@ public:
 	// etc.) or 0 if not present
 
 	size_t nGrav() const { return celestials.size(); }
-	CelestialBody *GetGravObj (const char *name, bool ignorecase = false) const;
-	inline CelestialBody *GetGravObj (int i) const { return celestials[i]; }
+	const CelestialBody *GetGravObj(const char *name, bool ignorecase = false) const;
+	inline const CelestialBody *GetGravObj(int i) const { return celestials[i]; }
 	// Return pointer to 'massive' object by name or index, or 0 if not present
 
 	size_t nPlanet() const { return planets.size(); }
@@ -167,7 +167,7 @@ public:
 	// this version calculates the gravitational acceleration vector at fractional time n during
 	// current time step for position 'rpos' relative to 'cbody'
 
-	CelestialBody *GetDominantGravitySource (const Vector &gpos, double &gfrac);
+	const CelestialBody *GetDominantGravitySource(const Vector &gpos, double &gfrac) const;
 	// return the dominant object contributing to the gravity field
 	// at position pos. gfrac is the fractional contribution of the
 	// dominant body to the total field

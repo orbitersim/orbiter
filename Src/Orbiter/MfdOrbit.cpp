@@ -187,8 +187,9 @@ void Instrument_Orbit::SetRef (const CelestialBody *ref)
 
 bool Instrument_Orbit::SelectRef (char *str)
 {
-	CelestialBody *obj = g_psys->GetGravObj (str, true);
-	if (!obj) return false;
+	const CelestialBody *obj = g_psys->GetGravObj(str, true);
+	if (!obj)
+		return false;
 	SetRef (obj);
 	return true;
 }

@@ -1136,7 +1136,7 @@ public:
 	// Keyboard handler for buffered keys
 
 	void Update (bool force = false);
-	void UpdatePassive ();
+	void UpdatePassive(const StateVectors *parent_s);
 	void UpdateAttachments();
 	void UpdateBodyForces ();
 	void UpdateThrustForces ();
@@ -1320,6 +1320,9 @@ protected:
 
 	bool IsComponent () const { return supervessel != 0 || attach; }
 	const VesselBase *GetSuperStructure () const;
+
+	void SetComponentState(const StateVectors &csv, const Vector &arot);
+	// Set the vessel state as part of a superstructure
 
 	inline void AddForce (const Vector &F, const Vector &r)
 	{

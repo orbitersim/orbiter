@@ -92,8 +92,8 @@ SuperVessel::SuperVessel (Vessel *vessel1, Vessel *vessel2, int port1, int port2
 	cg /= mass;
 
 	// supervessel orientation
-	S1()->R.Set(vessel1->S1()->R);
-	S1()->Q.Set(vessel1->S1()->Q);
+	S1()->R.Set(vessel1->S0()->R);
+	S1()->Q.Set(vessel1->S0()->Q);
 	bOrbitStabilised = false;
 	cbody = 0;
 	el = new Elements; TRACENEW
@@ -102,9 +102,9 @@ SuperVessel::SuperVessel (Vessel *vessel1, Vessel *vessel2, int port1, int port2
 	if (mixmoments) {
 		S1()->SetVel(Vector());
 		for (i = 0; i < 2; i++)
-			S1()->AddVel(vlist[i].vessel->S1()->Vel() * (vlist[i].vessel->mass / mass));
+			S1()->AddVel(vlist[i].vessel->S0()->Vel() * (vlist[i].vessel->mass / mass));
 	} else
-		S1()->SetVel(vlist[0].vessel->S1()->Vel());
+		S1()->SetVel(vlist[0].vessel->S0()->Vel());
 
 	// total principal axes of inertia
 	CalcPMI();
@@ -117,7 +117,7 @@ SuperVessel::SuperVessel (Vessel *vessel1, Vessel *vessel2, int port1, int port2
 			// individual spin of each vessel
 			am += mul (vlist[i].rrot, vlist[i].vessel->AngularMomentum()) * vlist[i].vessel->mass;
 			// contribution of vessel motion to angular momentum
-			am += crossp(tmul(S1()->R, vlist[i].vessel->S1()->Vel() - S1()->Vel()), vlist[i].rpos - cg) * vlist[i].vessel->mass;
+			am += crossp(tmul(S1()->R, vlist[i].vessel->S0()->Vel() - S1()->Vel()), vlist[i].rpos - cg) * vlist[i].vessel->mass;
 		}
 		S1()->omega.Set(am.x/pmi.x, am.y/pmi.y, am.z/pmi.z);
 		S1()->omega /= mass;
@@ -127,7 +127,7 @@ SuperVessel::SuperVessel (Vessel *vessel1, Vessel *vessel2, int port1, int port2
 	}
 
 	// supervessel position
-	S1()->SetPos(vessel1->S1()->Pos() + mul(S1()->R, cg));
+	S1()->SetPos(vessel1->S0()->Pos() + mul(S1()->R, cg));
 	gfielddata.ngrav = 0;
 	updcount = irand(100); // spread update times
 
@@ -142,9 +142,9 @@ SuperVessel::SuperVessel (Vessel *vessel1, Vessel *vessel2, int port1, int port2
 	// register with vessels
 	for (i = 0; i < 2; i++) {
 		Vessel *v = vlist[i].vessel;
-		StateVectors csv;
-		ComponentStateVectors(S1(), &csv, i);
-		v->SetSuperStruct(this, &csv);
+		v->SetSuperStruct(this);
+		v->SetComponentState(ComponentStateVectors(S1(), i), ComponentAngAcc(arot, i));
+		v->SyncStateVectors();
 	}
 
 	SetDefaultState();
@@ -601,11 +601,6 @@ bool SuperVessel::Add (Vessel *vessel1, int port1, Vessel *vessel2, int port2, b
 	// position of vessel2 in superstructure
 	vlist[nv].rpos.Set (vlist[idx1].rpos + mul (vlist[idx1].rrot, vessel1->dock[port1]->ref) - mul (vlist[nv].rrot, vessel2->dock[port2]->ref));
 
-	vessel2->SetSuperStruct (this);
-	vessel2->S1()->Q.Set(S1()->Q);
-	vessel2->S1()->Q.postmul(vlist[nv].rq);
-	vessel2->S1()->R.Set(vessel2->S1()->Q);
-
 	nv++;
 	ResetMassAndCG();
 	ResetSize();
@@ -619,13 +614,14 @@ bool SuperVessel::Add (Vessel *vessel1, int port1, Vessel *vessel2, int port2, b
 			// individual spin of each vessel
 			am += mul (vlist[i].rrot, vlist[i].vessel->AngularMomentum()) * vlist[i].vessel->mass;
 			// contribution of vessel motion to angular momentum
-			am += crossp(tmul(S1()->R, vlist[i].vessel->S1()->Vel() - S1()->Vel()), vlist[i].rpos-cg) * vlist[i].vessel->mass;
+			am += crossp(tmul(S1()->R, vlist[i].vessel->S0()->Vel() - S1()->Vel()), vlist[i].rpos-cg) * vlist[i].vessel->mass;
 		}
 		S1()->omega.Set (am.x/pmi.x, am.y/pmi.y, am.z/pmi.z);
 		S1()->omega /= mass;
 	}
 
-	vessel2->S1()->omega.Set(tmul(vlist[nv-1].rrot, S1()->omega));
+	vessel2->SetSuperStruct(this);
+	vessel2->SetComponentState(ComponentStateVectors(S1(), nv), ComponentAngAcc(arot, nv));
 	vessel2->UpdateSurfParams();
 
 	return true;
@@ -724,11 +720,10 @@ bool SuperVessel::AddSurfaceForces (Vector *F, Vector *M, const StateVectors *s,
 {
 	bool impact = false;
 	DWORD comp;
-	StateVectors scomp;
 	for (comp = 0; comp < nv; comp++) {
 		Vector Fcomp, Mcomp;
-		ComponentStateVectors (s, &scomp, comp);
-		if (vlist[comp].vessel->AddSurfaceForces (&Fcomp, &Mcomp, &scomp, tfrac, dt)) {
+		const StateVectors csv(ComponentStateVectors (s, comp));
+		if (vlist[comp].vessel->AddSurfaceForces (&Fcomp, &Mcomp, &csv, tfrac, dt)) {
 			AddComponentForceAndMoment (F, M, &Fcomp, &Mcomp, comp);
 			impact = true;
 		}
@@ -753,8 +748,8 @@ void SuperVessel::Update (bool force)
 		SetStateFromComponent (vlist[0].vessel->S1(), 0); // update supervessel from lead vessel
 		arot.Set (mul (vlist[0].rrot, vlist[0].vessel->arot)); // is the vessel arot valid here?
 		for (i = 1; i < nv; i++) {						// update all others from supervessel
-			ComponentStateVectors (S1(), vlist[i].vessel->S1(), i);
-			vlist[i].vessel->arot.Set (tmul (vlist[i].rrot, arot));
+			Vessel *v = vlist[i].vessel;
+			v->SetComponentState(ComponentStateVectors(S1(), i), ComponentAngAcc(arot, i));
 		}
 		for (i = 0; i < nv; i++)
 			vlist[i].vessel->el_valid = false;
@@ -784,9 +779,8 @@ void SuperVessel::Update (bool force)
 
 		// update state parameters for all sub-vessels
 		for (i = 0; i < nv; i++) {
-			ComponentStateVectors (S1(), vlist[i].vessel->S1(), i);
-			vlist[i].vessel->arot.Set (tmul (vlist[i].rrot, arot));
-			vlist[i].vessel->el_valid = false;
+			Vessel *v = vlist[i].vessel;
+			v->SetComponentState(ComponentStateVectors(S1(), i), ComponentAngAcc(arot, i));
 		}
 
 	} else if (fstatus == FLIGHTSTATUS_LANDED) {
@@ -802,7 +796,7 @@ void SuperVessel::Update (bool force)
 		S1()->Q.Set (S1()->R);
 		bActivationPending = false;
 		for (i = 0; i < nv; i++) {
-			ComponentStateVectors (S1(), vlist[i].vessel->S1(), i);
+			vlist[i].vessel->SetComponentState(ComponentStateVectors(S1(), i), ComponentAngAcc(arot, i));
 			bActivationPending = bActivationPending || vlist[i].vessel->bForceActive;
 		}
 	}
@@ -892,7 +886,7 @@ void SuperVessel::InitLanded (const Planet *planet, double lng, double lat, doub
 	for (comp = 0; comp < nv; comp++) {
 		StateVectors scomp;
 		double lng, lat, rad, dir, elev;
-		ComponentStateVectors (S0(), &scomp, comp);
+		vlist[comp].vessel->SetComponentState(ComponentStateVectors(S0(), comp), ComponentAngAcc(arot, comp));
 		planet->GlobalToEquatorial (scomp.Pos(), lng, lat, rad);
 		elev = planet->Elevation (lng, lat);
 		dir = LandedHeading (lng, lat);
@@ -923,13 +917,21 @@ bool SuperVessel::ThrustEngaged () const
 
 // =======================================================================
 
-void SuperVessel::ComponentStateVectors(const StateVectors *s, StateVectors *scomp, int comp) const
+const StateVectors SuperVessel::ComponentStateVectors(const StateVectors *s, int comp) const
 {
-	scomp->SetVel(s->Vel() + mul(s->R, crossp(vlist[comp].rpos-cg, s->omega)));
-	scomp->SetPos(s->Pos() + mul(s->R, vlist[comp].rpos - cg));
-	scomp->omega.Set(tmul(vlist[comp].rrot, s->omega));
-	scomp->Q.Set(s->Q * vlist[comp].rq);
-	scomp->R.Set(scomp->Q);
+	return StateVectors(
+		s->Vel() + mul(s->R, crossp(vlist[comp].rpos - cg, s->omega)), // velocity
+		s->Pos() + mul(s->R, vlist[comp].rpos - cg),                   // position
+		tmul(vlist[comp].rrot, s->omega),                              // angular velocity
+		s->Q * vlist[comp].rq                                          // orientation
+	);
+}
+
+// =======================================================================
+
+const Vector SuperVessel::ComponentAngAcc(const Vector &_arot, int comp) const
+{
+	return tmul(vlist[comp].rrot, _arot);
 }
 
 // =======================================================================

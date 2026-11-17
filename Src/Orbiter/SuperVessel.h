@@ -193,9 +193,13 @@ private:
 	void SetOrbitReference (CelestialBody *body);
 	// reset reference object for element calculation to "body"
 
-	void ComponentStateVectors (const StateVectors *s, StateVectors *scomp, int comp) const;
+	const StateVectors ComponentStateVectors(const StateVectors *s, int comp) const;
 	// Returns state vectors scomp for component vessel comp, given supervessel
 	// state vectors s
+
+	const Vector ComponentAngAcc(const Vector &arot, int comp) const;
+	// Returns angular acceleration vector for component comp, given  supervessel
+	// angular acceleration arot
 
 	void AddComponentForceAndMoment (Vector *F, Vector *M,
 		const Vector *Fcomp, const Vector *Mcomp, int comp) const;

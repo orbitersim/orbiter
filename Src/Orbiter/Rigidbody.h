@@ -72,7 +72,7 @@ public:
 	//virtual void BeginStateUpdate ();
 	//virtual void EndStateUpdate ();
 
-	void SetOrbitReference (CelestialBody *body);
+	void SetOrbitReference(const CelestialBody *body);
 	// reset reference object for element calculation to "body"
 
 	const Elements *Els() const;

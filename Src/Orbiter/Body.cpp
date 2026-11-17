@@ -144,3 +144,16 @@ void Body::SyncStateVectors()
 		// tell everybody that we have edited our state vectors out of turn
 	}
 }
+
+const StateVectors *Body::S1_restricted(const void *caller) const
+{
+	return m_svS1;
+}
+
+StateVectors *Body::S1_restricted(const void *caller)
+{
+	// limit S1 write access to class instance owning the state vectors (runtime check)
+	// NOT ENFORCED YET
+	// ASSERT(caller == this, "Write access to S1 state only granted to class instance.")
+	return m_svS1;
+}

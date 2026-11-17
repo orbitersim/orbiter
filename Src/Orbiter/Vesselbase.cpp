@@ -237,6 +237,19 @@ void VesselBase::PostUpdate ()
 
 // =======================================================================
 
+const StateVectors *VesselBase::S1_restricted(const void *caller) const
+{
+	extern bool g_bStateUpdate;
+	if (g_bStateUpdate) {
+		// limit S1 read access to class instance owning the state vectors during update phase (runtime check)
+		// NOT ENFORCED YET
+		// ASSERT(caller == this, "Read access to S1 state only granted to class instance during update.")
+	}
+	return RigidBody::S1_restricted(caller);
+}
+
+// =======================================================================
+
 void VesselBase::UpdateSurfParams ()
 {
 	if (proxybody)

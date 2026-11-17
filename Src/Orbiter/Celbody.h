@@ -41,6 +41,7 @@ public:
 	virtual void Update (bool force);
 
 	CELBODY *GetModuleInterface() { return module; }
+	const CELBODY *GetModuleInterface() const { return module; }
 	// module interface pointer, if available
 
 	void Attach (CelestialBody *_parent);

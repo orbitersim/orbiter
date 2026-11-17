@@ -706,6 +706,11 @@ StateVectors::StateVectors(const StateVectors &s)
 	Set(s);
 }
 
+StateVectors::StateVectors(const Vector &v, const Vector &p, const Vector &av, const Quaternion &ap)
+{
+	Set(v, p, av, ap);
+}
+
 void StateVectors::Set(const StateVectors &s)
 {
 	m_vPos.Set(s.m_vPos);

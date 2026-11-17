@@ -216,12 +216,12 @@ DLLEXPORT DWORD oapiGetStationCount ()
 
 DLLEXPORT OBJHANDLE oapiGetGbodyByName (char *name)
 {
-	return (g_psys ? g_psys->GetGravObj (name, true) : 0);
+	return (OBJHANDLE)(g_psys ? (g_psys->GetGravObj(name, true)) : nullptr);
 }
 
 DLLEXPORT OBJHANDLE oapiGetGbodyByIndex (int index)
 {
-	return (g_psys ? g_psys->GetGravObj (index) : 0);
+	return (OBJHANDLE)(g_psys ? g_psys->GetGravObj(index) : nullptr);
 }
 
 DLLEXPORT OBJHANDLE oapiGetGbodyParent (OBJHANDLE hBody)

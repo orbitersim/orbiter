@@ -89,6 +89,12 @@ public:
 
 	virtual void PostUpdate ();
 
+	virtual const StateVectors *S1_restricted(const void *caller) const;
+	// Read access to update state S1
+	// Access is restricted to class instance during update phase to avoid race conditions. (NOT ENFORCED YET)
+
+	using RigidBody::S1_restricted; // make the compiler aware that a non-const version exists
+
 	inline const CelestialBody *ProxyBody() const { return proxybody; }
 	//inline Planet *ProxyPlanet() { return proxyplanet; }
 	inline const Planet *ProxyPlanet() const { return proxyplanet; }

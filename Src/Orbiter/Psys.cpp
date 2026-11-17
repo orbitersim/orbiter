@@ -7,6 +7,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <algorithm>
+#include <utility>
 
 #include "Config.h"
 #include "Psys.h"
@@ -107,10 +108,11 @@ Body *PlanetarySystem::GetObj (const char *name, bool ignorecase)
 	return 0;
 }
 
-CelestialBody *PlanetarySystem::GetGravObj (const char *name, bool ignorecase) const
+const CelestialBody *PlanetarySystem::GetGravObj(const char *name, bool ignorecase) const
 {
 	for (DWORD i = 0; i < celestials.size(); i++)
-		if (!StrComp (celestials[i]->Name(), name, ignorecase)) return celestials[i];
+		if (!StrComp (celestials[i]->Name(), name, ignorecase))
+			return celestials[i];
 	return 0;
 }
 
@@ -547,7 +549,7 @@ void PlanetarySystem::UpdateGFieldSources (const Vector *gpos, const Body *exclu
 Vector PlanetarySystem::GaccAt (double t, const Vector &gpos, const Body *exclude) const
 {
 	Vector r, acc, pos, closepos;
-	CelestialBody *closep = 0;
+	const CelestialBody *closep = nullptr;
 	const CelestialBody *sec;
 	DWORD i;
 	double d, dmin = 1e100;
@@ -772,19 +774,20 @@ Vector PlanetarySystem::GaccPn_perturbation (const Vector &gpos, double n, const
 	return SingleGacc_perturbation (cbody->InterpolatePosition (n) - gpos, cbody);
 }
 
-CelestialBody *PlanetarySystem::GetDominantGravitySource (const Vector &gpos, double &gfrac)
+const CelestialBody *PlanetarySystem::GetDominantGravitySource(const Vector &gpos, double &gfrac) const
 {
 	// assumes spherical gravity sources
 	DWORD i;
 	double g, gtot = 0.0, gmax = 0.0;
-	CelestialBody *body = 0;
+	const CelestialBody *body = nullptr;
 
 	for (i = 0; i < celestials.size(); i++) {
-		Vector r(celestials[i]->S1()->Pos() - gpos);
-		gtot += (g = celestials[i]->Mass() / r.length2());
+		const CelestialBody *cb = celestials[i];
+		Vector r(cb->S1()->Pos() - gpos);
+		gtot += (g = cb->Mass() / r.length2());
 		if (g > gmax) {
 			gmax = g;
-			body = celestials[i];
+			body = cb;
 		}
 	}
 	gfrac = (body ? gmax/gtot : 0.0);

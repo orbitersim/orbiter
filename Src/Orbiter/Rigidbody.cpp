@@ -108,7 +108,7 @@ void RigidBody::SetDefaultState ()
 	torque.Set (0,0,0);
 }
 
-void RigidBody::SetOrbitReference (CelestialBody *body)
+void RigidBody::SetOrbitReference(const CelestialBody *body)
 {
 	if (body && body != cbody) { // otherwise nothing to do
 		cbody = body;

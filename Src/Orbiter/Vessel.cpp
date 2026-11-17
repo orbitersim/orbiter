@@ -874,6 +874,15 @@ const VesselBase *Vessel::GetSuperStructure () const
 
 // ==============================================================
 
+void Vessel::SetComponentState(const StateVectors &csv, const Vector &_arot)
+{
+	S1()->Set(csv);
+	arot.Set(_arot);
+	el_valid = false;
+}
+
+// ==============================================================
+
 void Vessel::RPlace (const Vector &rpos, const Vector &rvel)
 {
 	if (supervessel) supervessel->RPlace (rpos, rvel, this);
@@ -3081,7 +3090,7 @@ void Vessel::SetAttachmentParams (AttachmentSpec *as, const Vector &pos, const V
 		if (as->toparent) {
 			// this doesn't currently allow for loose attachment updates
 			InitAttachmentToParent (as);
-			UpdatePassive ();
+			UpdatePassive(S1());
 		} else {
 			Matrix R1(at.x, at.y, at.z,  bt.x, bt.y, bt.z,  ct.x, ct.y, ct.z);
 			at.Set (-as->dir), bt.Set (as->rot), ct.Set (crossp(at,bt));
@@ -3090,7 +3099,7 @@ void Vessel::SetAttachmentParams (AttachmentSpec *as, const Vector &pos, const V
 			as->mate->attach_rrot.premul (R2);
 			as->mate->attach_rrot.orthogonalise (++orthoaxis % 3);
 			as->mate->attach_rpos.Set (as->ref - mul (as->mate->attach_rrot, as->mate_attach->ref));
-			as->mate->UpdatePassive ();
+			as->mate->UpdatePassive(S1());
 		}
 	}
 }
@@ -5946,9 +5955,11 @@ bool Vessel::CheckVesselOverlap(Vessel *v, double margin) {
 
 	if (my_root->supervessel && my_root->supervessel == v_root->supervessel) return false;
 
-	const StateVectors *svA = (S1()->Pos().length2() > 0.0 ? S1() : S0());
-	const StateVectors *svB = (v->S1()->Pos().length2() > 0.0 ? v->S1() : v->S0());
-	const StateVectors *svP = (ppA->S1()->Pos().length2() > 0.0 ? ppA->S1() : ppA->S0());
+	const StateVectors *svA = S0();
+	const StateVectors *svB = v->S0();
+	const StateVectors *svP = ppA->S0();
+	// MS261116: Currently, collision handling is performed after state synchronisation (in PostUpdate), so
+	// using the S0 states is ok. If collision handling is pulled inside the update phase, we may need access to S1 here.
 
 	double maxDist = size + v->Size() + margin + 5.0;
 	if ((svB->Pos() - svA->Pos()).length2() > maxDist * maxDist) return false;
@@ -6133,6 +6144,10 @@ void Vessel::ResolveCollisionWith(Vessel *v) {
 	if (fstatus == FLIGHTSTATUS_LANDED && v->fstatus == FLIGHTSTATUS_LANDED) return;
 	if (!proxyplanet || proxyplanet != v->proxyplanet) return;
 
+	const Vessel *const_v = v;
+	// MS261117: the const version is required to enforce read access to state vectors
+	// (write access is restricted)
+
 	Vessel *v_root = v;
 	while (v_root->attach && v_root->attach->mate) v_root = v_root->attach->mate;
 	Vessel *my_root = this;
@@ -6158,8 +6173,11 @@ void Vessel::ResolveCollisionWith(Vessel *v) {
 	}
 
 	// Relative velocity and position
-	Vector pRel = v->S1()->Pos() - S1()->Pos();
-	Vector vRel = v->S1()->Vel() - S1()->Vel();
+	Vector pRel = v->S0()->Pos() - S0()->Pos();
+	Vector vRel = v->S0()->Vel() - S0()->Vel();
+	// MS261116: Currently, collision handling is performed after state synchronisation (in PostUpdate), so
+	// using the S0 states is ok. If collision handling is pulled inside the update phase, we may need access to S1 here.
+
 	double rsum = size + v->Size();
 
 	// Broad-phase CCD check
@@ -6199,7 +6217,7 @@ void Vessel::ResolveCollisionWith(Vessel *v) {
 
 	std::vector<Vector> dockPtsB;
 	for (DWORD i = 0; i < v->ndock; i++) {
-		Vector dP = v->S1()->Pos() - pp->S1()->Pos() + mul(v->S1()->R, v->dock[i]->ref);
+		Vector dP = const_v->S1()->Pos() - pp->S1()->Pos() + mul(const_v->S1()->R, const_v->dock[i]->ref);
 		dP.Set(tmul(pp->S1()->R, dP));
 		dockPtsB.push_back(dP);
 	}
@@ -6226,8 +6244,8 @@ void Vessel::ResolveCollisionWith(Vessel *v) {
 				Vector dockPosA = S1()->Pos() + mul(S1()->R, dock[i]->ref);
 				Vector dockDirA = mul(S1()->R, dock[i]->dir);
 				for (DWORD j = 0; j < v->ndock; j++) {
-					Vector dockPosB = v->S1()->Pos() + mul(v->S1()->R, v->dock[j]->ref);
-					Vector dockDirB = mul(v->S1()->R, v->dock[j]->dir);
+					Vector dockPosB = const_v->S1()->Pos() + mul(const_v->S1()->R, const_v->dock[j]->ref);
+					Vector dockDirB = mul(const_v->S1()->R, const_v->dock[j]->dir);
 					if (dockPosA.dist(dockPosB) < 5.0 && dotp(dockDirA, dockDirB) < -0.8) {
 						dockingApproach = true;
 						break;
@@ -6708,9 +6726,9 @@ void Vessel::ResolveCollisionWith(Vessel *v) {
 			m_colDebug.showTime = td.SimT1 + 3.0;
 		}
 		{
-			Vector nLocalB = tmul(v->S1()->R, -normGlobal);
-			Vector rBlocal = tmul(v->S1()->R, rawContactPtGlobal - v->S1()->Pos());
-			Vector impLocalB = tmul(v->S1()->R, -impulse);
+			Vector nLocalB = tmul(const_v->S1()->R, -normGlobal);
+			Vector rBlocal = tmul(const_v->S1()->R, rawContactPtGlobal - const_v->S1()->Pos());
+			Vector impLocalB = tmul(const_v->S1()->R, -impulse);
 			v->m_colDebug.active = true;
 			v->m_colDebug.contactPt = {rBlocal.x, rBlocal.y, rBlocal.z};
 			v->m_colDebug.normal = {nLocalB.x, nLocalB.y, nLocalB.z};
@@ -6737,7 +6755,7 @@ void Vessel::ResolveCollisionWith(Vessel *v) {
 				}
 				for (DWORD i = 0; i < sv->nv; i++) {
 					Vessel *vj = sv->vlist[i].vessel;
-					sv->ComponentStateVectors(sv->S1(), vj->S1(), i);
+					vj->SetComponentState(sv->ComponentStateVectors(sv->S1(), i), sv->ComponentAngAcc(sv->arot, i));
 					vj->UpdateSurfParams();
 					vj->bOrbitStabilised = false;
 					vj->el_valid = false;
@@ -7041,18 +7059,17 @@ void Vessel::Update (bool force)
 	UpdateAttachments();
 }
 
-void Vessel::UpdatePassive ()
+void Vessel::UpdatePassive(const StateVectors *parent_s)
 {
 	if (!attach) return; // should not happen
 	Vessel *prnt = attach->mate;
 	AttachmentSpec *pa = attach->mate_attach;
-	const StateVectors *ps = prnt->S1();
 
-	S1()->SetPos(mul (ps->R, attach_rpos) + ps->Pos());
-	S1()->SetVel(ps->Vel());
-	S1()->R.Set(ps->R * attach_rrot);
+	S1()->SetPos(mul (parent_s->R, attach_rpos) + parent_s->Pos());
+	S1()->SetVel(parent_s->Vel());
+	S1()->R.Set(parent_s->R * attach_rrot);
 	S1()->Q.Set (S1()->R);
-	S1()->omega.Set (tmul (attach_rrot, ps->omega));
+	S1()->omega.Set (tmul (attach_rrot, parent_s->omega));
 	acc.Set (prnt->acc);
 
 	Flin.Set (Flin_add);    // store current linear force
@@ -7078,7 +7095,7 @@ void Vessel::UpdatePassive ()
 void Vessel::UpdateAttachments ()
 {
 	for (DWORD j = 0; j < ncattach; j++)
-		if (cattach[j]->mate) cattach[j]->mate->UpdatePassive ();
+		if (cattach[j]->mate) cattach[j]->mate->UpdatePassive(S1());
 }
 
 void Vessel::PostUpdate ()
