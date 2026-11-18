@@ -19,4 +19,9 @@ public:
 	void Detach();
 	Joystick *GetJoystick() const { return js; }
 	bool CanAttach(Joystick *js);
+	void ToJSON(crude_json::value &out) override;
+
+	// Serialization
+	static constexpr const char* TypeName = "NodeJoystick";
+	const char *GetTypeName() const override { return TypeName; }
 };

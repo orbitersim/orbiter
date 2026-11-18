@@ -87,3 +87,39 @@ void Node::Draw(std::function<bool(const Pin *)> filter) {
 		
 	ed::EndNode();
 }
+
+void Node::ToJSON(crude_json::value &out)
+{
+	out["typename"] = GetTypeName();
+	out["id"] = std::to_string(id);
+    ImVec2 pos = ed::GetNodePosition(id);
+
+    if(pos.x == FLT_MAX) pos.x = 0;
+    if(pos.y == FLT_MAX) pos.y = 0;
+
+    out["xpos"] = pos.x;
+    out["ypos"] = pos.y;
+
+    for(auto &n: inputs) {
+        crude_json::value pin;
+        pin["id"] = std::to_string((ptrdiff_t)n.id.AsPointer());
+        pin["name"] = n.name;
+        pin["type"] = std::to_string((int)n.ptype);
+        out["inputs"].push_back(pin);
+    }
+    for(auto &n: outputs) {
+        crude_json::value pin;
+        pin["id"] = std::to_string((ptrdiff_t)n.id.AsPointer());
+        pin["name"] = n.name;
+        pin["type"] = std::to_string((int)n.ptype);
+        if(n.context.deadzone != 0.0f)
+            pin["deadzone"] = n.context.deadzone;
+        if(n.context.saturation != 1.0f)
+            pin["saturation"] = n.context.saturation;
+        if(n.context.flip)
+            pin["flip"] = true;
+        if(n.context.rescale)
+            pin["rescale"] = true;
+        out["outputs"].push_back(pin);
+    }
+}

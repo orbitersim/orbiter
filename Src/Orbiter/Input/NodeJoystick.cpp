@@ -272,3 +272,10 @@ bool NodeJoystick::CanAttach(Joystick *js) {
     }
     return true;
 }
+
+void NodeJoystick::ToJSON(crude_json::value &out)
+{
+	Node::ToJSON(out);
+	out["guid"] = guid;
+	out["lastseenname"] = name;
+}

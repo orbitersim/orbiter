@@ -4,6 +4,7 @@
 #include <string>
 
 #include "Pin.h"
+#include "crude_json.h"
 
 class Node {
 protected:
@@ -27,4 +28,8 @@ public:
 	void UpdateInputs();
 	virtual void Draw(std::function<bool(const Pin *)> filter);
 	virtual void Update(bool dryrun) = 0;
+
+	// Serialization
+	virtual const char* GetTypeName() const = 0;
+	virtual void ToJSON(crude_json::value &out);
 };
