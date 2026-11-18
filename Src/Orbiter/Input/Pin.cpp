@@ -46,8 +46,12 @@ void Pin::ReadInputs()
             break;
         case Pin::type::Hat:
             hVal = 0;
+            // Hat values cannot be combined easily, just stop at the first entry set
             for(auto &p: inputs) {
-                hVal |= p->hVal;
+                if(p->hVal) {
+                    hVal = p->hVal;
+                    break;
+                }
             }
             break;
     }
@@ -70,23 +74,25 @@ ImColor GetIconColor(enum Pin::type type)
         case Pin::type::Axis:     return colAxis;
         case Pin::type::Hat:      return colHat;
     }
+    assert(false);
+    return colBtn;
 };
 
 void Pin::DrawIcon()
 {
     ImColor color = GetIconColor(ptype);
     ed::BeginPin(id, pkind == Pin::kind::Output ? ed::PinKind::Output : ed::PinKind::Input);
-	switch(ptype) {
-		case Pin::type::Axis:
-			Axis(ImVec2(ImGui::GetTextLineHeight(), ImGui::GetTextLineHeight()), fVal, color);
-			break;
-		case Pin::type::Button:
-			Icon(ImVec2(ImGui::GetTextLineHeight(), ImGui::GetTextLineHeight()), bVal?IconType::ButtonDown:IconType::ButtonUp, true, color, ImColor(32, 32, 32, 255));
-			break;
-		case Pin::type::Hat:
-			Hat(ImVec2(ImGui::GetTextLineHeight(), ImGui::GetTextLineHeight()), hVal, color);
-			break;
-	}
+    switch(ptype) {
+        case Pin::type::Axis:
+            Axis(ImVec2(ImGui::GetTextLineHeight(), ImGui::GetTextLineHeight()), fVal, color);
+            break;
+        case Pin::type::Button:
+            Icon(ImVec2(ImGui::GetTextLineHeight(), ImGui::GetTextLineHeight()), bVal?IconType::ButtonDown:IconType::ButtonUp, true, color, ImColor(32, 32, 32, 255));
+            break;
+        case Pin::type::Hat:
+            Hat(ImVec2(ImGui::GetTextLineHeight(), ImGui::GetTextLineHeight()), hVal, color);
+            break;
+    }
     ed::EndPin();
 }
 
@@ -100,9 +106,9 @@ void Pin::Draw(std::function<bool(const Pin *)> filter)
     if(pkind == Pin::kind::Output) {
         ImGui::TextUnformatted(name.c_str());
         ImGui::SameLine();
-		DrawIcon();
+        DrawIcon();
     } else {
-		DrawIcon();
+        DrawIcon();
         ImGui::SameLine();
         ImGui::TextUnformatted(name.c_str());
     }
