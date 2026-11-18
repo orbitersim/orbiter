@@ -8,7 +8,8 @@ Pin::Pin(std::string n, enum Pin::type t, enum Pin::kind k, Node *p, ed::PinId i
     name = n;
     ptype = t;
     pkind = k;
-    fVal = 0.0;
+    fVal = 0.0f;
+    fValRaw = 0.0f;
     bVal = false;
     hVal = 0;
     parent = p;

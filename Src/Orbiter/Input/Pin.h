@@ -35,24 +35,26 @@ public:
     bool operator==(const Pin &other);
     void ReadInputs();
     void Draw(std::function<bool(const Pin *)> filter);
-	void DrawIcon();
-	std::function<void(Pin *)> cbContextMenu;
+    void DrawIcon();
+    std::function<void(Pin *)> cbContextMenu;
 
-	ed::PinId id;
+    ed::PinId id;
     std::string name;
     Pin::type ptype;
     Pin::kind pkind;
     Node *parent;
 
     float fVal;     // Axis/HalfAxis
+    float fValRaw;  // value before deadzone/flipping/rescaling
     bool bVal;      // Button
     int hVal;       // Hat
 
-	struct {
-		float deadzone = 0.0f;
-		bool flip = false;
-		bool rescale = false;
-	} context;
+    struct Context {
+        float deadzone = 0.0f;
+        float saturation = 1.0f;
+        bool flip = false;
+        bool rescale = false;
+    } context;
 
     std::list<Pin *> inputs;
 };
