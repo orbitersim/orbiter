@@ -8,7 +8,7 @@
 class Node {
 public:
 	std::string name;
-	// Use dequeue to make sure pointers to Pins stay valid
+	// Use deque to make sure pointers to Pins stay valid
 	std::deque<Pin> inputs;
 	std::deque<Pin> outputs;
 	float widthName = 0.0f;
