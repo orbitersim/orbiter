@@ -40,6 +40,7 @@ class ControllerGraph final {
 	Pin *PinFromId(ed::PinId id) { return pins.at(id.AsPointer()); }
 	bool CanLink(const Pin *a, const Pin *b);
 	void TopologicalSort();
+	void Save(const char *path);
 	template <typename T, typename... Args>
 	T *AddNode(Args&&... args)
 	{

@@ -10,6 +10,7 @@
 #include <algorithm>
 #include <unordered_set>
 #include "OrbiterAPI.h"
+#include "crude_json.h"
 
 static ImVec4 GetStateColor(const Pin *pin) {
     ImVec4 color = {0.5,0.5,0.5,1.0};
@@ -345,4 +346,25 @@ void ControllerGraph::DetachJoystick(Joystick *js)
             return;
         }
     }
+}
+
+void ControllerGraph::Save(const char *path)
+{
+    crude_json::value out;
+    for(auto &n: nodes) {
+		crude_json::value node;
+		n->ToJSON(node);
+        out["nodes"].push_back(node);
+    }
+    for(auto &l: links) {
+        crude_json::value link;
+        link["id"] = std::to_string((ptrdiff_t)l.Id.AsPointer());
+        link["in"] = std::to_string((ptrdiff_t)l.InputId.AsPointer());
+        link["out"] = std::to_string((ptrdiff_t)l.OutputId.AsPointer());
+        out["links"].push_back(link);
+    }
+
+    out["linkidgen"] = std::to_string(linkidgen);
+    out["nodeidgen"] = std::to_string(nodeidgen);
+    out.save(path, 4);
 }

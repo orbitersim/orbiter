@@ -35,13 +35,16 @@ InputEditor::~InputEditor()
 
 void InputEditor::OnDraw()
 {
-    auto& io = ImGui::GetIO();
+    ed::SetCurrentEditor(m_Context);
+
+	auto& io = ImGui::GetIO();
 
     ImGui::Text("FPS: %.2f (%.2gms)", io.Framerate, io.Framerate ? 1000.0f / io.Framerate : 0.0f);
-
+	if(ImGui::Button("Save")) {
+		graph->Save("graph.json");
+	}
     ImGui::Separator();
 
-    ed::SetCurrentEditor(m_Context);
     ed::Begin("My Editor", ImVec2(0.0, 0.0f));
 	graph->Draw();
 
