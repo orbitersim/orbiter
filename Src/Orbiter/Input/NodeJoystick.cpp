@@ -4,7 +4,7 @@
 #include <SDL3/SDL.h>
 #include "Joystick.h"
 
-NodeJoystick::NodeJoystick(Joystick *joy, int id) : Node(SDL_GetJoystickNameForID(joy->id), id)
+NodeJoystick::NodeJoystick(Joystick *joy, int id) : Node(joy->name.c_str(), id)
 {
 	js = joy;
 
@@ -12,8 +12,8 @@ NodeJoystick::NodeJoystick(Joystick *joy, int id) : Node(SDL_GetJoystickNameForI
         ImGui::PushItemWidth(80.f);
 		ImGui::TextUnformatted("Output configuration");
         ImGui::DragFloat("Deadzone", &pin->context.deadzone, 0.01f, 0.0f, 0.9f, "%0.02f");
-		ImGui::Checkbox("Flip axis", &pin->context.flip);
 		ImGui::Checkbox("Rescale [-1;1] -> [0;1]", &pin->context.rescale);
+		ImGui::Checkbox("Flip axis", &pin->context.flip);
 		ImGui::Text("Output: %f", pin->fVal);
         ImGui::PopItemWidth();
     };
@@ -27,7 +27,7 @@ NodeJoystick::NodeJoystick(Joystick *joy, int id) : Node(SDL_GetJoystickNameForI
 	}
 	for(size_t hat = 0; hat < js->state.hats.size(); hat++) {
 		char hatname[32];
-		sprintf(hatname, "Hat%d", hat);
+		sprintf(hatname, "Hat%zu", hat);
 		AddOutput(hatname, Pin::type::Hat);
 	}
 
