@@ -11,6 +11,7 @@
 #include <unordered_set>
 #include "OrbiterAPI.h"
 #include "crude_json.h"
+#include "Controller.h"
 
 static ImVec4 GetStateColor(const Pin *pin) {
     ImVec4 color = {0.5,0.5,0.5,1.0};
@@ -62,8 +63,10 @@ void ControllerGraph::AddNode(std::unique_ptr<Node> node) {
         assert(pins.count(pin.id.AsPointer()) == 0);
         pins[pin.id.AsPointer()] = &pin;
     }
-    nodes.emplace_back(std::move(node));
+	if(!strcmp(node->GetTypeName(), "NodeLegacyControls"))
+		legacyControls = dynamic_cast<NodeLegacyControls *>(node.get());
 
+	nodes.emplace_back(std::move(node));
     dirty = true;
 }
 
@@ -248,6 +251,10 @@ void ControllerGraph::Update(bool dryrun)
         n->Update(dryrun);
     }
 }
+void ControllerGraph::GetJoystickCtrl(float ctrl[15])
+{
+	if(legacyControls) legacyControls->GetJoystickCtrl(ctrl);
+}
 
 // Kahn's algorithm from https://en.wikipedia.org/wiki/Topological_sorting
 void ControllerGraph::TopologicalSort()
@@ -332,7 +339,9 @@ void ControllerGraph::AttachJoystick(Joystick *js)
     }
 
     oapiAddNotification(OAPINOTIF_INFO, "New joystick connected", js->name.c_str());
-    AddNode<NodeJoystick>(js);
+	auto node = std::make_unique<NodeJoystick>();
+	node->InitFromJoystick(js, nodeidgen++);
+	AddNode(std::move(node));
 }
 
 void ControllerGraph::DetachJoystick(Joystick *js)
@@ -367,4 +376,55 @@ void ControllerGraph::Save(const char *path)
     out["linkidgen"] = std::to_string(linkidgen);
     out["nodeidgen"] = std::to_string(nodeidgen);
     out.save(path, 4);
+}
+
+void ControllerGraph::Load(const char *path)
+{
+    std::pair<crude_json::value, bool> ret = crude_json::value::load(path);
+    if(ret.second) {
+		crude_json::value &json = ret.first;
+		nodes.clear();
+		links.clear();
+		pins.clear();
+		nodesSorted.clear();
+		legacyControls = NULL;
+		linkidgen = std::stoi(json["linkidgen"].get<std::string>());
+		nodeidgen = std::stoi(json["nodeidgen"].get<std::string>());
+        if(json.contains("nodes")) {
+            for(auto &n: json["nodes"].get<crude_json::array>()) {
+				const std::string &name = n["typename"].get<std::string>();
+                Node *node = nodeFactory.MakeNode(name.c_str());
+				node->InitFromJSON(n);
+                ImVec2 pos;
+                pos.x = n["xpos"].get<crude_json::number>();
+                pos.y = n["ypos"].get<crude_json::number>();
+                ed::SetNodePosition(node->id, pos);
+				AddNode(std::unique_ptr<Node>(node));
+                dirty = true;
+            }
+        }
+
+        if(json.contains("links")) {
+            for(auto &l: json["links"].get<crude_json::array>()) {
+                ed::LinkId id = std::stoi(l["id"].get<std::string>());
+                ed::PinId inputPinId = std::stoi(l["in"].get<std::string>());
+                ed::PinId outputPinId = std::stoi(l["out"].get<std::string>());
+                links.push_back({ id, inputPinId, outputPinId });
+                dirty = true;
+            }
+        }
+
+		TopologicalSort();
+
+		// FIXME
+		InputController::DetachControllers();
+	} else {
+        oapiAddNotification(OAPINOTIF_ERROR, "Error loading file", path);
+    }
+
+}
+void ControllerGraph::GlobalInit()
+{
+	nodeFactory.Register<NodeLegacyControls>();
+	nodeFactory.Register<NodeJoystick>();
 }

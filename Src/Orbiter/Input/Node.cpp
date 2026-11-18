@@ -1,20 +1,68 @@
 #include "Node.h"
 
-Node::Node(const char *n, int i) {
+Node::Node(const char *n) {
 	dirty = true;
 	name = n;
-	id = i;
-	pinidgen = (id << 16) + 1;
 }
+
 void Node::AddInput(const char *n, Pin::type type) {
 	dirty = true;
+
+	if(jsonTemplate) {
+		if(jsonTemplate->contains("inputs")) {
+			for(auto &i: (*jsonTemplate)["inputs"].get<crude_json::array>()) {
+				std::string jsonname = i["name"].get<std::string>();
+				enum Pin::type jsontype = (enum Pin::type)stoi(i["type"].get<std::string>());
+				if(type == jsontype && jsonname == n) {
+					ed::PinId id = std::stoi(i["id"].get<std::string>());
+					inputs.emplace_back(n, type, Pin::kind::Input, this, id);
+					return;
+				}
+			}
+		}
+	}
+
 	inputs.emplace_back(n, type, Pin::kind::Input, this, pinidgen++);
 }
 Pin *Node::AddOutput(const char *n, Pin::type type) {
 	dirty = true;
+
+	if(jsonTemplate) {
+		if(jsonTemplate->contains("outputs")) {
+			for(auto &o: (*jsonTemplate)["outputs"].get<crude_json::array>()) {
+				std::string jsonname = o["name"].get<std::string>();
+				enum Pin::type jsontype = (enum Pin::type)stoi(o["type"].get<std::string>());
+				if(type == jsontype && jsonname == n) {
+					ed::PinId id = std::stoi(o["id"].get<std::string>());
+					outputs.emplace_back(n, type, Pin::kind::Output, this, id);
+					Pin *ret = &outputs.back();
+					if(o.contains("deadzone")) {
+						float deadzone = o["deadzone"].get<crude_json::number>();
+						ret->context.deadzone = deadzone;
+					}
+					if(o.contains("saturation")) {
+						float saturation = o["saturation"].get<crude_json::number>();
+						ret->context.deadzone = saturation;
+					}
+					if(o.contains("flip")) {
+						bool flip = o["flip"].get<crude_json::boolean>();
+						ret->context.deadzone = flip;
+					}
+					if(o.contains("rescale")) {
+						bool flip = o["rescale"].get<crude_json::boolean>();
+						ret->context.rescale = flip;
+					}
+
+					return ret;
+				}
+			}
+		}
+	}
+
 	outputs.emplace_back(n, type, Pin::kind::Output, this, pinidgen++);
 	return &outputs.back();
 }
+
 void Node::ComputeLayout() {
 	widthName = ImGui::CalcTextSize(name.c_str()).x;
 	maxWidthInput = 0;
@@ -92,6 +140,8 @@ void Node::ToJSON(crude_json::value &out)
 {
 	out["typename"] = GetTypeName();
 	out["id"] = std::to_string(id);
+	out["pinidgen"] = std::to_string(pinidgen);
+	
     ImVec2 pos = ed::GetNodePosition(id);
 
     if(pos.x == FLT_MAX) pos.x = 0;
@@ -122,4 +172,22 @@ void Node::ToJSON(crude_json::value &out)
             pin["rescale"] = true;
         out["outputs"].push_back(pin);
     }
+}
+
+void Node::InitFromJSON(const crude_json::value &json)
+{
+	jsonTemplate = &json;
+
+	id = std::stoi(json["id"].get<std::string>());
+	pinidgen = std::stoi(json["pinidgen"].get<std::string>());
+	InitPins();
+
+	jsonTemplate = NULL;
+}
+
+void Node::InitDefault(int i)
+{
+	id = i;
+	pinidgen = (id << 16) + 1;
+	InitPins();
 }

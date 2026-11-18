@@ -4,14 +4,17 @@
 #include "Config.h"
 #include "Graph.h"
 #include "NodeLegacyControls.h"
-#include "Joystick.h"
+#include "NodeJoystick.h"
 
 extern Orbiter* g_pOrbiter;
 
 void InputController::GlobalInit()
 {
+	ControllerGraph::GlobalInit();
 	graph = new ControllerGraph();
-	legacyCtrl = graph->AddNode<NodeLegacyControls>();
+	auto node = std::make_unique<NodeLegacyControls>();
+	node->InitDefault(graph->nodeidgen++);
+	graph->AddNode(std::move(node));
 }
 
 void InputController::GetJoystickCtrl(float ctrl[15])
@@ -19,7 +22,7 @@ void InputController::GetJoystickCtrl(float ctrl[15])
 	SDL_UpdateJoysticks();
 	ScanControllers();
 	graph->Update(false);
-	legacyCtrl->GetJoystickCtrl(ctrl);
+	graph->GetJoystickCtrl(ctrl);
 }
 
 // We scan ourselves for now because we still use the Windows message loop instead of SDL event polling
@@ -58,4 +61,9 @@ void InputController::ScanControllers()
 	}
 
 	SDL_free(ids);
+}
+
+void InputController::DetachControllers()
+{
+	joysticks.clear();
 }

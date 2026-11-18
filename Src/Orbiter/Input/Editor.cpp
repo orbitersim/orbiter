@@ -43,7 +43,12 @@ void InputEditor::OnDraw()
 	if(ImGui::Button("Save")) {
 		graph->Save("graph.json");
 	}
-    ImGui::Separator();
+	ImGui::SameLine();
+	if(ImGui::Button("Reload")) {
+		graph->Load("graph.json");
+	}
+
+	ImGui::Separator();
 
     ed::Begin("My Editor", ImVec2(0.0, 0.0f));
 	graph->Draw();

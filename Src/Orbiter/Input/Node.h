@@ -20,16 +20,20 @@ public:
 	int id;
 	bool dirty;
 	int pinidgen;
-	Node(const char *n, int id);
+	Node(const char *n);
 	virtual ~Node() = default;
 	void AddInput(const char *n, Pin::type type);
 	Pin *AddOutput(const char *n, Pin::type type);
 	void ComputeLayout();
 	void UpdateInputs();
+	void InitDefault(int id);
+	virtual void InitPins() = 0;
 	virtual void Draw(std::function<bool(const Pin *)> filter);
 	virtual void Update(bool dryrun) = 0;
 
 	// Serialization
 	virtual const char* GetTypeName() const = 0;
 	virtual void ToJSON(crude_json::value &out);
+	virtual void InitFromJSON(const crude_json::value &in);
+	const crude_json::value *jsonTemplate = NULL;
 };
