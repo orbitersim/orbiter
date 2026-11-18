@@ -10,6 +10,7 @@
 
 class ControllerGraph;
 class NodeLegacyControls;
+class NodeFactory;
 class InputController {
 	static inline ControllerGraph *graph;
 	static inline struct {
@@ -18,10 +19,11 @@ class InputController {
 	} state;
 
 	static inline std::unordered_map<SDL_JoystickID, std::unique_ptr<Joystick>> joysticks;
-	static inline NodeLegacyControls *legacyCtrl;
+	static std::unique_ptr<NodeFactory> nodeFactory;
 public:
     static void GlobalInit();
 	static void GetJoystickCtrl(float ctrl[15]);
 	static ControllerGraph *GetGraph() { return graph; }
 	static void ScanControllers();
+	static void DetachControllers();
 };

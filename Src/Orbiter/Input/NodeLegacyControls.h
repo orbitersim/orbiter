@@ -3,9 +3,10 @@
 
 class NodeLegacyControls : public Node {
 public:
-	NodeLegacyControls(int id);
+	NodeLegacyControls();
 	void Update(bool dryrun) override;
 	void GetJoystickCtrl(float ctrl[15]);
+	void InitPins() override;
 
 	// Serialization
 	static constexpr const char* TypeName = "NodeLegacyControls";

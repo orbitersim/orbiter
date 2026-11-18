@@ -12,7 +12,7 @@ extern TimeData td;
 extern Orbiter *g_pOrbiter;
 extern Vessel *g_focusobj;
 
-// /!\ Must match the order in the constructor
+// /!\ Must match the order in InitPins
 enum {
 	ModKey,
 	MainEngine,
@@ -22,7 +22,11 @@ enum {
 	CamPanel,
 };
 
-NodeLegacyControls::NodeLegacyControls(int id) : Node("Legacy Controller", id)
+NodeLegacyControls::NodeLegacyControls() : Node("Legacy Controller")
+{
+}
+
+void NodeLegacyControls::InitPins()
 {
 	AddInput("ModKey", Pin::type::Button);
 	AddInput("Main engine", Pin::type::Axis);

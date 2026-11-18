@@ -147,8 +147,18 @@ static void TransferFunctionEditor(const char *label, Pin::Context *ctx, float c
     ImGui::EndGroup();
 }
 
-NodeJoystick::NodeJoystick(Joystick *joy, int id) : Node(joy->name.c_str(), id)
+NodeJoystick::NodeJoystick() : Node("Default controller")
 {
+}
+
+NodeJoystick::~NodeJoystick()
+{
+}
+
+void NodeJoystick::InitFromJoystick(Joystick *joy, int i)
+{
+	id = i;
+	pinidgen = (id << 16) + 1;
 	grayed = false;
     js = joy;
 
@@ -170,10 +180,46 @@ NodeJoystick::NodeJoystick(Joystick *joy, int id) : Node(joy->name.c_str(), id)
     }
 
     guid = js->guid;
+	name = js->name;
 }
 
-NodeJoystick::~NodeJoystick()
+void NodeJoystick::InitPins()
 {
+	assert(jsonTemplate);
+	const auto cbAxis = [this](Pin *pin) {
+        TransferFunctionEditor("Axis transfer function", &pin->context, pin->fValRaw);
+    };
+
+	if(jsonTemplate->contains("outputs")) {
+		guid = (*jsonTemplate)["guid"].get<std::string>();
+		name = (*jsonTemplate)["lastseenname"].get<std::string>();
+		for(auto &o: (*jsonTemplate)["outputs"].get<crude_json::array>()) {
+			std::string jsonname = o["name"].get<std::string>();
+			enum Pin::type jsontype = (enum Pin::type)stoi(o["type"].get<std::string>());
+
+			ed::PinId id = std::stoi(o["id"].get<std::string>());
+			outputs.emplace_back(jsonname, jsontype, Pin::kind::Output, this, id);
+			Pin *ret = &outputs.back();
+			if(o.contains("deadzone")) {
+				float deadzone = o["deadzone"].get<crude_json::number>();
+				ret->context.deadzone = deadzone;
+			}
+			if(o.contains("saturation")) {
+				float saturation = o["saturation"].get<crude_json::number>();
+				ret->context.deadzone = saturation;
+			}
+			if(o.contains("flip")) {
+				bool flip = o["flip"].get<crude_json::boolean>();
+				ret->context.deadzone = flip;
+			}
+			if(o.contains("rescale")) {
+				bool flip = o["rescale"].get<crude_json::boolean>();
+				ret->context.rescale = flip;
+			}
+			if(jsontype == Pin::type::Axis)
+				ret->cbContextMenu = cbAxis;
+		}
+	}
 }
 
 void NodeJoystick::Update(bool dryrun)
@@ -241,6 +287,7 @@ void NodeJoystick::Attach(Joystick *joy)
     assert(!js);
     js = joy;
 	grayed = false;
+	name = js->name;
 }
 
 bool NodeJoystick::CanAttach(Joystick *js) {

@@ -8,10 +8,11 @@
 class Joystick;
 class NodeJoystick : public Node {
 public:
-	Joystick * js;
+	Joystick * js = NULL;
 	std::string guid;
-	NodeJoystick(Joystick *js, int id);
+	NodeJoystick();
 	~NodeJoystick();
+	void InitPins() override;
 	void Update(bool dryrun) override;
 	bool IsConnected();
 	bool IsAttached();
@@ -20,6 +21,7 @@ public:
 	Joystick *GetJoystick() const { return js; }
 	bool CanAttach(Joystick *js);
 	void ToJSON(crude_json::value &out) override;
+	void InitFromJoystick(Joystick *, int id);
 
 	// Serialization
 	static constexpr const char* TypeName = "NodeJoystick";
