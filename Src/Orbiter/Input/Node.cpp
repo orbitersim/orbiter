@@ -43,7 +43,11 @@ void Node::Draw(std::function<bool(const Pin *)> filter) {
 	}
 
 	ed::BeginNode(id);
-	ImGui::Text(name.c_str());
+	if(grayed) {
+		ImGui::TextDisabled("%s", name.c_str());
+	} else {
+		ImGui::TextUnformatted(name.c_str());
+	}
 	ImGui::Spacing();
 	ImVec2 hmin = ImGui::GetItemRectMin();
 	ImVec2 hmax = ImGui::GetItemRectMax();

@@ -149,6 +149,7 @@ static void TransferFunctionEditor(const char *label, Pin::Context *ctx, float c
 
 NodeJoystick::NodeJoystick(Joystick *joy, int id) : Node(joy->name.c_str(), id)
 {
+	grayed = false;
     js = joy;
 
     const auto cbAxis = [this](Pin *pin) {
@@ -164,7 +165,7 @@ NodeJoystick::NodeJoystick(Joystick *joy, int id) : Node(joy->name.c_str(), id)
     }
     for(size_t hat = 0; hat < js->state.hats.size(); hat++) {
         char hatname[32];
-        sprintf(hatname, "Hat%zu", hat);
+        sprintf(hatname, "Hat %zu", hat);
         AddOutput(hatname, Pin::type::Hat);
     }
 
@@ -215,6 +216,7 @@ bool NodeJoystick::IsAttached()
 void NodeJoystick::Detach()
 {
     if(!js) return;
+	grayed = true;
     js = NULL;
 
     // Clear the outputs to prevent stale values
@@ -238,6 +240,7 @@ void NodeJoystick::Attach(Joystick *joy)
 {
     assert(!js);
     js = joy;
+	grayed = false;
 }
 
 bool NodeJoystick::CanAttach(Joystick *js) {
