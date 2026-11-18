@@ -6,6 +6,8 @@
 #include "Pin.h"
 
 class Node {
+protected:
+	bool grayed = false;
 public:
 	std::string name;
 	// Use deque to make sure pointers to Pins stay valid
