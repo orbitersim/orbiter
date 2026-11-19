@@ -206,15 +206,15 @@ void NodeJoystick::InitPins()
 			}
 			if(o.contains("saturation")) {
 				float saturation = o["saturation"].get<crude_json::number>();
-				ret->context.deadzone = saturation;
+				ret->context.saturation = saturation;
 			}
 			if(o.contains("flip")) {
 				bool flip = o["flip"].get<crude_json::boolean>();
-				ret->context.deadzone = flip;
+				ret->context.flip = flip;
 			}
 			if(o.contains("rescale")) {
-				bool flip = o["rescale"].get<crude_json::boolean>();
-				ret->context.rescale = flip;
+				bool rescale = o["rescale"].get<crude_json::boolean>();
+				ret->context.rescale = rescale;
 			}
 			if(jsontype == Pin::type::Axis)
 				ret->cbContextMenu = cbAxis;
