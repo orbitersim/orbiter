@@ -826,6 +826,7 @@ void VideoTab::InitSetupDialog(HWND hWnd)
 
 	SendDlgItemMessage(hWnd, IDC_SHOW_BASE_COL, BM_SETCHECK, Config->bShowBaseColliders == 1, 0);
 	SendDlgItemMessage(hWnd, IDC_SHOW_VESSEL_COL, BM_SETCHECK, Config->bShowVesselColliders == 1, 0);
+	SendDlgItemMessage(hWnd, IDC_SHOW_DOCK_DBG, BM_SETCHECK, Config->bShowDockingDebug == 1, 0);
 
 
 	SendDlgItemMessage(hWnd, IDC_NORMALMAPS, BM_SETCHECK, Config->UseNormalMap==1, 0);
@@ -914,6 +915,7 @@ void VideoTab::SaveSetupState(HWND hWnd)
 	Config->MicroBias     = int(SendDlgItemMessage(hWnd, IDC_MICROBIAS,  TBM_GETPOS, 0, 0));
 	Config->bShowBaseColliders = (int)SendDlgItemMessage(hWnd, IDC_SHOW_BASE_COL, BM_GETCHECK, 0, 0);
 	Config->bShowVesselColliders = (int)SendDlgItemMessage(hWnd, IDC_SHOW_VESSEL_COL, BM_GETCHECK, 0, 0);
+	Config->bShowDockingDebug = (int)SendDlgItemMessage(hWnd, IDC_SHOW_DOCK_DBG, BM_GETCHECK, 0, 0);
 
 	// Other things
 	GetWindowText(GetDlgItem(hWnd, IDC_HZ),  cbuf, 32);
