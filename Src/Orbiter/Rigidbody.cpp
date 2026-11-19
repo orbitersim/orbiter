@@ -229,7 +229,6 @@ void RigidBody::Update (bool force)
 			Encke();
 			S1()->SetPos(cpos + cbody->S1()->Pos());
 			S1()->SetVel(cvel + cbody->S1()->Vel());
-			S1()->R.Set (S1()->Q);
 			GetIntermediateMoments (acc, tau, *S1(), 1, dt);
 			el_valid = bOrbitStabilised = true;
 
@@ -247,7 +246,6 @@ void RigidBody::Update (bool force)
 				acc = acc0, arot = arot0;
 				for (i = 0; i < nPropSubsteps; i++) {
 					((*this).*(PropMode[PropLevel].propagator)) (dt, nPropSubsteps, i);
-					S1()->R.Set (S1()->Q);
 					GetIntermediateMoments (acc, tau, *S1(), (i+1.0)/nPropSubsteps, dt);
 					arot.Set (EulerInv_full (tau, S1()->omega));
 				}
@@ -270,8 +268,7 @@ void RigidBody::Update (bool force)
 			if (errno) {                  // fatal error - reset to arbitrary values
 				S1()->omega.Set (0,0,vmag_max);
 				vmag = vmag_max;
-				S1()->Q.Set (0,0,0,1);
-				S1()->R.Set (S0()->Q);
+				S1()->SetRot(Quaternion(0, 0, 0, 1));
 			} else {
 				S1()->omega *= vmag_max/vmag;
 				vmag = vmag_max;
@@ -332,7 +329,7 @@ void RigidBody::GetIntermediateMoments (Vector &acc, Vector &tau,
 		tau.Set (0,0,0);
 	} else {
 		// map cbody into vessel frame
-		Vector R0(tmul(state.Q, cbody->InterpolatePosition(tfrac) - state.Pos()));
+		Vector R0(tmul(state.RotQ(), cbody->InterpolatePosition(tfrac) - state.Pos()));
 		double r0 = R0.length();
 		Vector Re = R0/r0;
 		double mag = 3.0 * Ggrav * cbody->Mass() / pow(r0,3.0);
@@ -414,7 +411,7 @@ Vector RigidBody::GetTorque () const
 	Vector R0;
 
 	// map cbody into vessel frame
-	R0.Set (tmul (S0()->R, cbody->S0()->Pos() - S0()->Pos()));
+	R0.Set(tmul(S0()->Rot(), cbody->S0()->Pos() - S0()->Pos()));
 	double r0 = R0.length();
 	Vector Re = R0/r0;
 	double mag = 3.0 * Ggrav * cbody->Mass() / pow(r0,3.0);

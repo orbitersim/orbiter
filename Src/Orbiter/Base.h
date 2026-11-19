@@ -120,7 +120,7 @@ public:
 	// the sun (which is assumed in the centre of the global coord system)
 
 	inline Vector SunDirection() const
-	{ return (S1() ? tmul(S1()->R, -S1()->Pos().unit()) : tmul(S0()->R, -S0()->Pos().unit())); }
+	{ return (S1() ? tmul(S1()->Rot(), -S1()->Pos().unit()) : tmul(S0()->Rot(), -S0()->Pos().unit())); }
 	// Return vector pointing towards sun (= world coordiate origin) in
 	// base local coordinates
 

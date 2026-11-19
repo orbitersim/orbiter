@@ -374,7 +374,7 @@ public:
 	Quaternion Rot (const Vector &omega) const;
 	// returns the quaternion rotated by angles omega
 
-	friend Vector mul (const Quaternion &q, const Vector &b);
+	friend Vector mul (const Quaternion &q, const Vector &p);
 	// Returns vector p rotated by quaternion
 
 	friend Vector tmul (const Quaternion &q, const Vector &p);
@@ -386,6 +386,8 @@ public:
 	void tpostmul (const Quaternion &Q); // *this = *this * Q^-1
 
 	Quaternion operator* (const Quaternion &Q) const; // returns *this * Q
+
+	Vector operator* (const Vector &p) const { return mul(*this, p); }
 
 	Quaternion conj (const Quaternion &Q) const // returns conjugate of Q
 	{ return Quaternion (-Q.qvx, -Q.qvy, -Q.qvz, Q.qs); }
@@ -430,8 +432,11 @@ public:
 	void AddVel(const Vector &dv); // use this to add velocity components comparable in magnitude to the state vector value
 	void IncVel(const Vector &dv); // use this to add velocity components small compared to the state vector value
 
+	const Matrix &Rot() const;
+	const Quaternion &RotQ() const;
 	void SetRot(const Matrix &r);     // set rotation state from a rotation matrix
 	void SetRot(const Quaternion &q); // set rotation state from a quaternion
+	void Rotate(const Vector &dr);    // rotate by the angles dr
 
 	void Advance (double dt, const Vector &a, const Vector &v, const Vector &aa, const Vector &av);
 	// Advance the state vectors by dt, given linear acceleration a, linear velocity v,
@@ -440,11 +445,9 @@ public:
 	void FlushPos();
 	void FlushVel();
 
-	Matrix R;        // rotation matrix in associated frame
-	Quaternion Q;    // orientation in associated frame
 	Vector omega;    // angular velocity components in associated frame
 
-protected:
+private:
 	Vector m_vPos;                    // position in associated frame
 	Vector m_vPos_base, m_vPos_incr;  // position split into base and increment
 	Vector m_vVel;                    // linear velocity in associated frame
@@ -452,7 +455,9 @@ protected:
 	int m_nPos_incr;                  // position flush counter
 	int m_nVel_incr;                  // velocity flush counter
 
-private:
+	Matrix m_mR;                      // rotation matrix in associated frame
+	Quaternion m_qQ;                  // orientation in associated frame
+
 	static const int s_nLimit_incr{ 100000 };
 };
 

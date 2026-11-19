@@ -162,13 +162,13 @@ void RigidBody::RK2_LinAng (double h, int nsub, int isub)
 	StateVectors s;
 	s.SetPos(S1()->Pos() + S1()->Vel() * h05);
 	s.SetVel(S1()->Vel() + acc * h05);
-	s.SetRot (S1()->Q.Rot(S1()->omega*h05));
+	s.SetRot(S1()->RotQ().Rot(S1()->omega * h05));
 	s.omega.Set (S1()->omega+arot*h05);
 	GetIntermediateMoments(acc1, tau, s, (isub + 0.5)/nsub, h);
 
 	S1()->IncPos(s.Vel() * h);
 	S1()->IncVel(acc1 * h);
-	S1()->Q.Rotate(s.omega*h);
+	S1()->Rotate(s.omega * h);
 	arot = EulerInv_full(tau, s.omega); // may need to allow use of the simplified versions here
 	S1()->omega += arot * h;
 }
@@ -186,28 +186,28 @@ void RigidBody::RK4_LinAng (double h, int nsub, int isub)
 	StateVectors sa, sb, sc;
 	sa.SetPos(S1()->Pos() + S1()->Vel() * h05);
 	sa.SetVel(S1()->Vel() + acc * h05);
-	sa.SetRot (S1()->Q.Rot(S1()->omega*h05));
+	sa.SetRot(S1()->RotQ().Rot(S1()->omega * h05));
 	sa.omega.Set (S1()->omega+arot*h05);
 	GetIntermediateMoments (acc1, tau, sa, (isub+0.5)/nsub, h);
 	aacc1.Set (EulerInv_full (tau, sa.omega));
 
 	sb.SetPos(S1()->Pos() + sa.Vel() * h05);
 	sb.SetVel(S1()->Vel() + acc1 * h05);
-	sb.SetRot (S1()->Q.Rot(sa.omega*h05));
+	sb.SetRot(S1()->RotQ().Rot(sa.omega * h05));
 	sb.omega.Set (S1()->omega+aacc1*h05);
 	GetIntermediateMoments (acc2, tau, sb, (isub+0.5)/nsub, h);
 	aacc2.Set (EulerInv_full (tau, sb.omega));
 
 	sc.SetPos(S1()->Pos() + sb.Vel() * h);
 	sc.SetVel(S1()->Vel() + acc2 * h);
-	sc.SetRot (S1()->Q.Rot(sb.omega*h));
+	sc.SetRot(S1()->RotQ().Rot(sb.omega * h));
 	sc.omega.Set (S1()->omega+aacc2*h);
 	GetIntermediateMoments (acc3, tau, sc, (isub+1.0)/nsub, h);
 	aacc3.Set (EulerInv_full (tau, sc.omega));
 
 	S1()->IncPos((S1()->Vel() + (sa.Vel() + sb.Vel()) * 2.0 + sc.Vel()) * hi6);
 	S1()->IncVel((acc + (acc1 + acc2) * 2.0 + acc3) * hi6);
-	S1()->Q.Rotate ((S1()->omega+(sa.omega+sb.omega)*2.0+sc.omega)*hi6);
+	S1()->Rotate((S1()->omega + (sa.omega + sb.omega) * 2.0 + sc.omega) * hi6);
 	S1()->omega += (arot+(aacc1+aacc2)*2.0+aacc3)*hi6;
 }
 
@@ -251,8 +251,8 @@ void RigidBody::RKdrv_LinAng (double h, int nsub, int isub, int n, const double 
 		bh = gamma[i]*h;
 		S1()->IncVel(a[i] * bh);
 		S1()->IncPos(s[i].Vel() * bh);
-		S1()->Q.Rotate(s[i].omega * bh);
-		S1()->omega += d[i]      * bh;
+		S1()->Rotate(s[i].omega * bh);
+		S1()->omega += d[i] * bh;
 	}
 }
 
@@ -303,13 +303,13 @@ void RigidBody::SY2_LinAng (double h, int nsub, int isub)
 	double h05 = h*0.5;
 	Vector tau;
 	S1()->IncPos(S1()->Vel() * h05);
-	S1()->Q.Rotate (S1()->omega * h05);
+	S1()->Rotate(S1()->omega * h05);
 	GetIntermediateMoments (acc, tau, *S1(), (isub+0.5)/nsub, h);
 	arot.Set (EulerInv_full (tau, S1()->omega));
 	S1()->IncVel(acc * h);
 	S1()->omega += arot * h;
 	S1()->IncPos(S1()->Vel() * h05);
-	S1()->Q.Rotate (S1()->omega * h05);
+	S1()->Rotate(S1()->omega * h05);
 }
 
 // ---------------------------------------------------------------------------
@@ -332,7 +332,7 @@ void RigidBody::SY4_LinAng (double h, int nsub, int isub)
 	for (i = 0; i < 4; i++) {
 		double step = h * c4[i];
 		S1()->IncPos(S1()->Vel() * step);
-		S1()->Q.Rotate(S1()->omega * step);
+		S1()->Rotate(S1()->omega * step);
 		sec += c4[i];
 		if (i != 3) {
 			GetIntermediateMoments(acc, tau, *S1(), (isub + sec)/nsub, h);
@@ -364,7 +364,7 @@ void RigidBody::SY6_LinAng (double h, int nsub, int isub)
 	for (i = 0; i < 8; i++) {
 		double step = h * c6[i];
 		S1()->IncPos(S1()->Vel() * step);
-		S1()->Q.Rotate (S1()->omega*step);
+		S1()->Rotate(S1()->omega * step);
 		sec += c6[i];
 		if (i != 7) {
 			GetIntermediateMoments(acc, tau, *S1(), (isub + sec)/nsub, h);
@@ -405,7 +405,7 @@ void RigidBody::SY8_LinAng (double h, int nsub, int isub)
 	for (i = 0; i < 16; i++) {
 		double step = h * c8[i];
 		S1()->IncPos(S1()->Vel() * step);
-		S1()->Q.Rotate (S1()->omega*step);
+		S1()->Rotate(S1()->omega * step);
 		sec += c8[i];
 		if (i != 15) {
 			GetIntermediateMoments(acc, tau, *S1(), (isub + sec)/nsub, h);
@@ -627,7 +627,7 @@ void RigidBody::Encke ()
 			x[i] = xwrk[i] + dt*temp;
 		}
 		for (k = 0; k < 13; k++) {
-			S1()->Q.Rotate (omega[k] * (ch[k]*dt));
+			S1()->Rotate(omega[k] * (ch[k] * dt));
 			S1()->omega += d[k] * (ch[k]*dt);
 		}
 

@@ -695,8 +695,8 @@ double angle (const Quaternion &A, const Quaternion &B)
 
 StateVectors::StateVectors()
 {
-	R.Set(IMatrix());
-	Q.Set(R);
+	m_mR.Set(IMatrix());
+	m_qQ.Set(m_mR);
 	m_nPos_incr = irand(s_nLimit_incr); // spread sync events
 	m_nVel_incr = irand(s_nLimit_incr);
 }
@@ -720,8 +720,8 @@ void StateVectors::Set(const StateVectors &s)
 	m_vVel_base.Set(s.m_vVel_base);
 	m_vVel_incr.Set(s.m_vVel_incr);
 	omega.Set(s.omega);
-	Q.Set(s.Q);
-	R.Set(s.R);
+	m_qQ.Set(s.m_qQ);
+	m_mR.Set(s.m_mR);
 }
 
 void StateVectors::Set(const Vector &v, const Vector &p, const Vector &av, const Quaternion &ap)
@@ -729,8 +729,8 @@ void StateVectors::Set(const Vector &v, const Vector &p, const Vector &av, const
 	SetVel(v);
 	SetPos(p);
 	omega.Set(av);
-	Q.Set(ap);
-	R.Set(ap);
+	m_qQ.Set(ap);
+	m_mR.Set(ap);
 }
 
 void StateVectors::FlushPos()
@@ -789,25 +789,42 @@ void StateVectors::IncVel(const Vector &dv)
 		FlushVel();
 }
 
+const Matrix &StateVectors::Rot() const
+{
+	return m_mR;
+}
+
+const Quaternion &StateVectors::RotQ() const
+{
+	return m_qQ;
+}
+
 void StateVectors::SetRot (const Matrix &r)
 {
-	R.Set (r);
-	Q.Set (r);
+	m_mR.Set (r);
+	m_qQ.Set (r);
 }
 
 void StateVectors::SetRot (const Quaternion &q)
 {
-	Q.Set (q);
-	R.Set (q);
+	m_qQ.Set (q);
+	m_mR.Set (q);
 }
+
+void StateVectors::Rotate(const Vector &dr)
+{
+	m_qQ.Rotate(dr);
+	m_mR.Set(m_qQ);
+}
+
 
 void StateVectors::Advance (double dt, const Vector &a, const Vector &v, const Vector &aa, const Vector &av)
 {
 	IncPos(v * dt);
 	IncVel(a * dt);
 	omega += aa * dt;
-	Q.Rotate (av * dt);
-	R.Set (Q);
+	m_qQ.Rotate (av * dt);
+	m_mR.Set (m_qQ);
 }
 
 // =======================================================================

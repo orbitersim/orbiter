@@ -401,7 +401,7 @@ DWORD Vessel::PackDefaultState (char **data, DWORD flag)
 	case FLIGHTSTATUS_FREEFLIGHT:
 		sd->rpos = cpos;
 		sd->rvel = cvel;
-		EulerAngles (S0()->R, sd->arot);
+		EulerAngles(S0()->Rot(), sd->arot);
 		sd->vrot = S0()->omega;
 		break;
 	case FLIGHTSTATUS_LANDED:
@@ -630,7 +630,7 @@ void Vessel::GetState (VESSELSTATUS &status)
 		status.vrot.x   = S0()->omega.x;
 		status.vrot.y   = S0()->omega.y;
 		status.vrot.z   = S0()->omega.z;
-		EulerAngles (S0()->R, status.arot);
+		EulerAngles(S0()->Rot(), status.arot);
 	}
 	TankSpec *ts = PropellantHandle(0);
 	status.fuel     = (ts ? GetPropellantLevel(ts) : 0.0);
@@ -677,7 +677,7 @@ void Vessel::GetState2 (void *status)
 	vs->rpos  = _V(dp.x, dp.y, dp.z);
 	vs->rvel  = _V(dv.x, dv.y, dv.z);
 	vs->vrot  = (fstatus == FLIGHTSTATUS_LANDED ? _V(sp.alt, 0, 0) : _V(S0()->omega.x, S0()->omega.y, S0()->omega.z));
-	EulerAngles (fstatus == FLIGHTSTATUS_LANDED ? land_rot : S0()->R, vs->arot);
+	EulerAngles(fstatus == FLIGHTSTATUS_LANDED ? land_rot : S0()->Rot(), vs->arot);
 	vs->surf_lng = sp.lng;
 	vs->surf_lat = sp.lat;
 	vs->surf_hdg = sp.dir;

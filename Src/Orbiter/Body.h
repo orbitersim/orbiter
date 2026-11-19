@@ -65,8 +65,8 @@ public:
 
 	inline const Vector &GPos() const { return m_svS0->Pos(); }
 	inline const Vector &GVel() const { return m_svS0->Vel(); }
-	inline const Matrix &GRot() const { return m_svS0->R; }
-	inline const Quaternion &GQ() const { return m_svS0->Q; }
+	inline const Matrix &GRot() const { return m_svS0->Rot(); }
+	inline const Quaternion &GQ() const { return m_svS0->RotQ(); }
 	// Object position, velocity and orientation in global coords. To transform
 	// a point between local object coords p_loc and global coords p_glob:
 	// p_glob = GRot * p_loc + GPos
@@ -75,15 +75,15 @@ public:
 	// Object angular velocity
 
 	inline Vector GlobalToLocal(const Vector &glob) const
-	{ return tmul(m_svS0->R, glob - m_svS0->Pos()); }
+	{ return tmul(m_svS0->Rot(), glob - m_svS0->Pos()); }
 	// Convert global position glob into body's local coordinate system
 
 	inline void GlobalToLocal(const Vector &glob, Vector &loc) const
-	{ loc.Set(tmul(m_svS0->R, glob - m_svS0->Pos())); }
+	{ loc.Set(tmul(m_svS0->Rot(), glob - m_svS0->Pos())); }
 	// same with different interface
 
 	inline void LocalToGlobal(const Vector &loc, Vector &glob) const
-	{ glob.Set(mul(m_svS0->R, loc) + m_svS0->Pos()); }
+	{ glob.Set(mul(m_svS0->Rot(), loc) + m_svS0->Pos()); }
 
 	void LocalToEquatorial (const Vector &loc, double &lng, double &lat, double &rad) const;
 	inline void GlobalToEquatorial (const Vector &glob, double &lng, double &lat, double &rad) const
@@ -151,15 +151,15 @@ public:
 	// AFTER the object has been updated)
 
 	inline Vector GlobalToLocal_t1(const Vector &glob) const
-	{ return tmul(m_svS1->R, glob - m_svS1->Pos()); }
+	{ return tmul(m_svS1->Rot(), glob - m_svS1->Pos()); }
 	// Convert global position glob into body's local coordinate system
 
 	inline void GlobalToLocal_t1(const Vector &glob, Vector &loc) const
-	{ loc.Set(tmul(m_svS1->R, glob - m_svS1->Pos())); }
+	{ loc.Set(tmul(m_svS1->Rot(), glob - m_svS1->Pos())); }
 	// same with different interface
 
 	inline void LocalToGlobal_t1(const Vector &loc, Vector &glob) const
-	{ glob.Set(mul(m_svS1->R, loc) + m_svS1->Pos()); }
+	{ glob.Set(mul(m_svS1->Rot(), loc) + m_svS1->Pos()); }
 
 	inline const Vector &Acceleration() const { return acc; };
 

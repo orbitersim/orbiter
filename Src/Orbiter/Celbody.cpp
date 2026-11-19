@@ -534,13 +534,10 @@ void CelestialBody::UpdateRotation ()
 
 	rotation = posangle (Dphi + td.SimT1*rot_omega - Lrel*cos_eps + rotation_off);
 	double cosr = cos(rotation), sinr = sin(rotation);
-	S1()->R.Set (cosr, 0.0, -sinr,
-	           0.0,  1.0,  0.0,
-		       sinr, 0.0,  cosr);
-
-	// apply axis tilt
-	S1()->R.premul (R_ecl);
-	S1()->Q.Set (S1()->R);
+	Matrix R_rot(cosr, 0.0, -sinr,
+		         0.0,  1.0,  0.0,
+		         sinr, 0.0,  cosr);
+	S1()->SetRot(R_ecl * R_rot);
 }
 
 void CelestialBody::GetRotation (double t, Matrix &rot) const
@@ -728,8 +725,9 @@ const StateVectors CelestialBody::InterpolateState(double n) const
 	StateVectors sv;
 	sv.SetPos(InterpolatePosition(n));
 	sv.SetVel(S0()->Vel() * (1.0 - n) + S1()->Vel() * n); // may need a better interpolation
-	GetRotation (td.SimT0 + td.SimDT*n, sv.R);
-	sv.Q.Set (sv.R);
+	Matrix R;
+	GetRotation(td.SimT0 + td.SimDT * n, R);
+	sv.SetRot(R);
 	sv.omega.Set (S0()->omega*(1.0-n) + S1()->omega*n); // is this ok?
 	return sv;
 }
