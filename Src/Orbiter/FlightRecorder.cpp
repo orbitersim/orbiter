@@ -196,9 +196,9 @@ void Vessel::FRecorder_Save (bool force)
 			Quaternion q;
 			switch (frec_att_last.frm) {
 			case 0:
-				a[0] = atan2(S0()->Rot().m23, S0()->Rot().m33);
-				a[1] = -asin(S0()->Rot().m13);
-				a[2] = atan2(S0()->Rot().m12, S0()->Rot().m11);
+				a[0] = atan2(S0()->RotM().m23, S0()->RotM().m33);
+				a[1] = -asin(S0()->RotM().m13);
+				a[2] = atan2(S0()->RotM().m12, S0()->RotM().m11);
 				q.Set(S0()->RotQ());
 				break;
 			case 1: {
@@ -210,7 +210,7 @@ void Vessel::FRecorder_Save (bool force)
 							 clng, clat*slng, -slat*slng);
 				//Matrix rot (sp.Hor2Local());
 				rot.premul (ref->GRot());
-				rot.tpremul(S0()->Rot());
+				rot.tpremul(S0()->RotM());
 
 				if (fabs(rot.m32) > 1.0-EPS) { // apply tiny tilt when pitch=+/-90 to avoid instability
 					static const double sineps=sin(1e-6), coseps=cos(1e-6);
@@ -500,7 +500,7 @@ void Vessel::FRecorder_Play ()
 			s.x =  P0.x*cosd + P0.z*sind;
 			s.z = -P0.x*sind + P0.z*cosd;
 			s.y =  P0.y;
-			P0.Set(mul(frec[cfrec].ref->S1()->Rot(), s));
+			P0.Set(mul(frec[cfrec].ref->S1()->RotM(), s));
 
 			// Needs to be fixed!
 			frec[cfrec].ref->LocalToEquatorial (s, lng, lat, rad);
@@ -508,20 +508,20 @@ void Vessel::FRecorder_Play ()
 			s.x =  V0.x*cosd + V0.z*sind;
 			s.z = -V0.x*sind + V0.z*cosd;
 			s.y =  V0.y;
-			V0.Set(mul(frec[cfrec].ref->S1()->Rot(), s + Vector(-vref * sin(lng), 0, vref * cos(lng))));
+			V0.Set(mul(frec[cfrec].ref->S1()->RotM(), s + Vector(-vref * sin(lng), 0, vref * cos(lng))));
 		}
 		if (frec[cfrec+1].frm == 1) { // map from equatorial frame
 			double dlng = Pi2*(dt-dT)/frec[cfrec+1].ref->RotT(), sind = sin(dlng), cosd = cos(dlng);
 			s.x =  P1.x*cosd + P1.z*sind;
 			s.z = -P1.x*sind + P1.z*cosd;
 			s.y =  P1.y;
-			P1.Set(mul(frec[cfrec + 1].ref->S1()->Rot(), s));
+			P1.Set(mul(frec[cfrec + 1].ref->S1()->RotM(), s));
 			frec[cfrec+1].ref->LocalToEquatorial (s, lng, lat, rad);
 			vref = Pi2/frec[cfrec+1].ref->RotT() * rad * cos(lat);
 			s.x =  V1.x*cosd + V1.z*sind;
 			s.z = -V1.x*sind + V1.z*cosd;
 			s.y =  V1.y;
-			V1.Set(mul (frec[cfrec].ref->S1()->Rot(), s + Vector(-vref * sin(lng), 0, vref * cos(lng))));
+			V1.Set(mul (frec[cfrec].ref->S1()->RotM(), s + Vector(-vref * sin(lng), 0, vref * cos(lng))));
 		}
 
 		Vector pos, vel;
@@ -542,9 +542,9 @@ void Vessel::FRecorder_Play ()
 		if (td.SimT1 < frec_att[nfrec_att-1].simt) {
 
 			// store old orientation for calculating angular velocities
-			Vector r1(sv->Rot().m11, sv->Rot().m21, sv->Rot().m31);
-			Vector r2(sv->Rot().m12, sv->Rot().m22, sv->Rot().m32);
-			Vector r3(sv->Rot().m13, sv->Rot().m23, sv->Rot().m33);
+			Vector r1(sv->RotM().m11, sv->RotM().m21, sv->RotM().m31);
+			Vector r2(sv->RotM().m12, sv->RotM().m22, sv->RotM().m32);
+			Vector r3(sv->RotM().m13, sv->RotM().m23, sv->RotM().m33);
 
 			while (cfrec_att+2 < nfrec_att && frec_att[cfrec_att+1].simt < td.SimT1) cfrec_att++;
 			dt = frec_att[cfrec_att+1].simt - frec_att[cfrec_att].simt;
@@ -562,13 +562,13 @@ void Vessel::FRecorder_Play ()
 				Matrix R;
 				R.Set(Q);
 				double lng, lat, rad, slng, clng, slat, clat;
-				Vector loc = tmul(frec_att[cfrec_att].ref->S1()->Rot(), sv->Pos() - frec_att[cfrec_att].ref->S1()->Pos());
+				Vector loc = tmul(frec_att[cfrec_att].ref->S1()->RotM(), sv->Pos() - frec_att[cfrec_att].ref->S1()->Pos());
 				frec_att[cfrec_att].ref->LocalToEquatorial (loc, lng, lat, rad);
 				slng = sin(lng), clng = cos(lng), slat = sin(lat), clat = cos(lat);
 				R.postmul (Matrix (-slng,        0,     clng,
 					                clat * clng, slat,  clat * slng,
 								   -slat * clng, clat, -slat * slng));
-				R.tpostmul (frec_att[cfrec_att].ref->S1()->Rot());
+				R.tpostmul (frec_att[cfrec_att].ref->S1()->RotM());
 				//rrot.postmul (sp.Local2Hor());
 				//rrot.tpostmul (cbody->GRot());
 				sv->SetRot(transp(R));
@@ -578,9 +578,9 @@ void Vessel::FRecorder_Play ()
 			// this may need more thought. The current algorithm may work
 			// in a differential sense, but there should be something more
 			// intelligent in the case of large changes in orientation
-			Vector dx = tmul(sv->Rot(), r1);
-			Vector dy = tmul(sv->Rot(), r2);
-			Vector dz = tmul(sv->Rot(), r3);
+			Vector dx = tmul(sv->RotM(), r1);
+			Vector dy = tmul(sv->RotM(), r2);
+			Vector dz = tmul(sv->RotM(), r3);
 			sv->omega.x =  atan2 (dy.z, dz.z) * td.iSimDT;
 			sv->omega.y = -atan2 (dx.z, dx.x) * td.iSimDT;
 			sv->omega.z =  atan2 (dx.y, dx.x) * td.iSimDT;

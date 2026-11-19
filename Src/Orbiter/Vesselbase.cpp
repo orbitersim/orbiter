@@ -26,7 +26,7 @@ void SurfParam::Set(const StateVectors &s, const StateVectors &s_ref, const Cele
 	Planet *planet = (ref->Type() == OBJTP_PLANET ? (Planet*)ref : 0);
 
 	Vector Prel = s.Pos() - s_ref.Pos();
-	ploc = tmul(s_ref.Rot(), Prel);
+	ploc = tmul(s_ref.RotM(), Prel);
 	ref->LocalToEquatorial (ploc, lng, lat, rad);
 	slng = sin(lng), clng = cos(lng);
 	slat = sin(lat), clat = cos(lat);
@@ -44,7 +44,7 @@ void SurfParam::Set(const StateVectors &s, const StateVectors &s_ref, const Cele
 		}
 	}
 
-	Vector Snm(tmul(s.Rot(), Prel));
+	Vector Snm(tmul(s.RotM(), Prel));
 	Snm.unify(); // planet surface normal below ship in ship's local coords
 	pitch = asin (Snm.z);
 	if (fabs (Snm.x) > eps || fabs (Snm.y) > eps)
@@ -55,8 +55,8 @@ void SurfParam::Set(const StateVectors &s, const StateVectors &s_ref, const Cele
 	// ground speed
 	Vector vrel = s.Vel() - s_ref.Vel();
 	double vref = Pi2/ref->RotT() * rad * clat; // speed of a point at vessel position fixed in planet frame
-	groundvel_glob.Set(vrel - mul(s_ref.Rot(), Vector(-vref * slng, 0.0, vref * clng)));  // ground velocity in global frame
-	groundvel_ship.Set(tmul(s.Rot(), groundvel_glob));  // ground velocity in ship frame
+	groundvel_glob.Set(vrel - mul(s_ref.RotM(), Vector(-vref * slng, 0.0, vref * clng)));  // ground velocity in global frame
+	groundvel_ship.Set(tmul(s.RotM(), groundvel_glob));  // ground velocity in ship frame
 	groundspd = groundvel_glob.length();
 
 	// vertical velocity
@@ -65,10 +65,10 @@ void SurfParam::Set(const StateVectors &s, const StateVectors &s_ref, const Cele
 	// airspeed
 	Vector windvel_glob(0,0,0);
 	if (planet)
-		windvel_glob.Set(mul(s_ref.Rot(), planet->WindVelocity (lng, lat, alt, 1, windprm)));
+		windvel_glob.Set(mul(s_ref.RotM(), planet->WindVelocity (lng, lat, alt, 1, windprm)));
 
 	airvel_glob.Set (groundvel_glob - windvel_glob);
-	airvel_ship.Set(tmul(s.Rot(), airvel_glob));
+	airvel_ship.Set(tmul(s.RotM(), airvel_glob));
 	airspd = airvel_glob.length();
 
 	// rotation from planet local coords to local horizon
@@ -77,11 +77,11 @@ void SurfParam::Set(const StateVectors &s, const StateVectors &s_ref, const Cele
 			 -slat*clng, clat, -slat*slng);
 
 	// map ship's forward axis into local horizon frame
-	Vector RZloc = mul(L2H, tmul(s_ref.Rot(), Vector(s.Rot().m13, s.Rot().m23, s.Rot().m33)));
+	Vector RZloc = mul(L2H, tmul(s_ref.RotM(), Vector(s.RotM().m13, s.RotM().m23, s.RotM().m33)));
 	if (fabs (RZloc.x) > eps || fabs(RZloc.z) > eps)
 		dir = atan2 (RZloc.x, RZloc.z);
 	else {  // ship is pointing vertically up - take ship's negative y-axis for direction
-		Vector RYloc = mul(L2H, tmul(s_ref.Rot(), Vector(-s.Rot().m12, -s.Rot().m22, -s.Rot().m32)));
+		Vector RYloc = mul(L2H, tmul(s_ref.RotM(), Vector(-s.RotM().m12, -s.RotM().m22, -s.RotM().m32)));
 		dir = atan2 (RYloc.x, RYloc.z);
 	}
 	if (dir < 0.0) dir += Pi2;
@@ -109,7 +109,7 @@ double SurfParam::ComputeAltitude(const StateVectors &s, const StateVectors &s_r
 	static const double alt_max = 1e5; // for now
 
 	double _lng, _lat, _rad;
-	Vector ploc = tmul(s_ref.Rot(), s.Pos() - s_ref.Pos());
+	Vector ploc = tmul(s_ref.RotM(), s.Pos() - s_ref.Pos());
 	_ref->LocalToEquatorial (ploc, _lng, _lat, _rad);
 	double _alt = _rad - _ref->Size();
 	if (etilecache && _alt < alt_max && _ref->Type() == OBJTP_PLANET) {
@@ -265,7 +265,7 @@ void VesselBase::CheckLanded ()
 			LandingTest.testing = false;
 		else {
 			static const double eps = 1e-4;
-			Vector prel(tmul(proxybody->S0()->Rot(), S0()->Pos() - proxybody->S0()->Pos())); // vessel position in planet local coords
+			Vector prel(tmul(proxybody->S0()->RotM(), S0()->Pos() - proxybody->S0()->Pos())); // vessel position in planet local coords
 			double dt = td.SimT0 - LandingTest.testt;
 			if (dt < 0.1) return;
 			double dst2 = prel.dist2 (LandingTest.surfpos);
@@ -282,8 +282,8 @@ void VesselBase::CheckLanded ()
 
 				if (bDynamicGroundContact) {
 					double alt = Altitude(); //rad - proxybody->Size();
-					Matrix lrot(S0()->Rot());
-					lrot.tpremul(proxyplanet->S0()->Rot());
+					Matrix lrot(S0()->RotM());
+					lrot.tpremul(proxyplanet->S0()->RotM());
 					InitLanded (proxyplanet, lng, lat, dir, &lrot, alt);
 				} else {
 					InitLanded (proxyplanet, lng, lat, dir);
@@ -297,7 +297,7 @@ void VesselBase::CheckLanded ()
 		if (bSurfaceContact && !ThrustEngaged()) {
 			LandingTest.testing = true;
 			LandingTest.testt = td.SimT0;
-			LandingTest.surfpos.Set(tmul(proxybody->S0()->Rot(), S0()->Pos() - proxybody->S0()->Pos()));
+			LandingTest.surfpos.Set(tmul(proxybody->S0()->RotM(), S0()->Pos() - proxybody->S0()->Pos()));
 			LandingTest.surfrot.Set(S0()->RotQ()); // should really subtract proxybody rotation here
 		}
 	}
@@ -312,11 +312,11 @@ double VesselBase::LandedHeading (double lng, double lat) const
 	double slng = sin(lng), clng = cos(lng);
 	double slat = sin(lat), clat = cos(lat);
 	Matrix L2H (-slng,0,clng, clat*clng,slat,clat*slng, -slat*clng,clat,-slat*slng);
-	Vector RZloc = mul(L2H, tmul(proxybody->S0()->Rot(), Vector(S0()->Rot().m13, S0()->Rot().m23, S0()->Rot().m33)));
+	Vector RZloc = mul(L2H, tmul(proxybody->S0()->RotM(), Vector(S0()->RotM().m13, S0()->RotM().m23, S0()->RotM().m33)));
 	if (fabs(RZloc.x) > eps || fabs(RZloc.z) > eps)
 		dir = atan2(RZloc.x, RZloc.z);
 	else {
-		Vector RYloc = mul(L2H, tmul(proxybody->S0()->Rot(), Vector(-S0()->Rot().m12, -S0()->Rot().m22, -S0()->Rot().m32)));
+		Vector RYloc = mul(L2H, tmul(proxybody->S0()->RotM(), Vector(-S0()->RotM().m12, -S0()->RotM().m22, -S0()->RotM().m32)));
 		dir = atan2(RYloc.x, RYloc.z);
 	}
 	if (dir < 0.0) dir += Pi2;

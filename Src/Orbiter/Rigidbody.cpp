@@ -411,7 +411,7 @@ Vector RigidBody::GetTorque () const
 	Vector R0;
 
 	// map cbody into vessel frame
-	R0.Set(tmul(S0()->Rot(), cbody->S0()->Pos() - S0()->Pos()));
+	R0.Set(tmul(S0()->RotM(), cbody->S0()->Pos() - S0()->Pos()));
 	double r0 = R0.length();
 	Vector Re = R0/r0;
 	double mag = 3.0 * Ggrav * cbody->Mass() / pow(r0,3.0);

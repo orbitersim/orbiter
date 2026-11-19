@@ -589,9 +589,9 @@ void Base::ScanObjectMeshes () const
 
 void Base::Update(bool force)
 {
-	S1()->SetRot(cbody->S1()->Rot() * rrot);
-	S1()->SetPos(mul(cbody->S1()->Rot(), rpos) + cbody->S1()->Pos());
-	S1()->SetVel(mul(cbody->S1()->Rot(), rotvel) + cbody->S1()->Vel());
+	S1()->SetRot(cbody->S1()->RotM() * rrot);
+	S1()->SetPos(mul(cbody->S1()->RotM(), rpos) + cbody->S1()->Pos());
+	S1()->SetVel(mul(cbody->S1()->RotM(), rotvel) + cbody->S1()->Vel());
 
 	// periodically update some secondary parameters
 	if (td.SimT1 > sundir_updt || force) {
@@ -782,7 +782,7 @@ int Base::ReportTouchdown (VesselBase *vessel, double vlng, double vlat) const
 
 double Base::CosSunAlt () const
 {
-	return (S0()->Rot().m12 * S0()->Pos().x +
-		    S0()->Rot().m22 * S0()->Pos().y +
-		    S0()->Rot().m32 * S0()->Pos().z) / (-S0()->Pos().length());
+	return (S0()->RotM().m12 * S0()->Pos().x +
+		    S0()->RotM().m22 * S0()->Pos().y +
+		    S0()->RotM().m32 * S0()->Pos().z) / (-S0()->Pos().length());
 }

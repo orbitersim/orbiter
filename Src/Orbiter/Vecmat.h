@@ -432,7 +432,7 @@ public:
 	void AddVel(const Vector &dv); // use this to add velocity components comparable in magnitude to the state vector value
 	void IncVel(const Vector &dv); // use this to add velocity components small compared to the state vector value
 
-	const Matrix &Rot() const;
+	const Matrix &RotM() const;
 	const Quaternion &RotQ() const;
 	void SetRot(const Matrix &r);     // set rotation state from a rotation matrix
 	void SetRot(const Quaternion &q); // set rotation state from a quaternion
@@ -455,8 +455,10 @@ private:
 	int m_nPos_incr;                  // position flush counter
 	int m_nVel_incr;                  // velocity flush counter
 
-	Matrix m_mR;                      // rotation matrix in associated frame
-	Quaternion m_qQ;                  // orientation in associated frame
+	mutable Matrix m_mRot;            // orientation represented by rotation matrix
+	mutable Quaternion m_qRot;        // orientation represented by quaternion
+	mutable bool m_bMdirty;           // dirty flag for rotation matrix
+	mutable bool m_bQdirty;           // dirty flag for rotation quaternion
 
 	static const int s_nLimit_incr{ 100000 };
 };
