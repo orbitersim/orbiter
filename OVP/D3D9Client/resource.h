@@ -246,3 +246,4 @@
 #define IDC_ATM_PAGE                            4066
 #define IDC_SHOW_BASE_COL                       4084
 #define IDC_SHOW_VESSEL_COL                     4085
+#define IDC_SHOW_DOCK_DBG                       4086

@@ -95,9 +95,8 @@ public:
 class ColDialog: public ImGuiDialog
 {
 public:
-	ColDialog():ImGuiDialog("Collider Visualization") {}
+	ColDialog():ImGuiDialog("Collider Visualization", {520, 460}) {}
 	void OnDraw() override {
-		ImGui::PushItemWidth(150.0);
 		ImGui::SeparatorText("Physics Colliders");
 
 		bool base = Config->bShowBaseColliders == 1;
@@ -108,7 +107,161 @@ public:
 		if (ImGui::Checkbox("Show Vessel Colliders", &vessel))
 			Config->bShowVesselColliders = vessel ? 1 : 0;
 
-		ImGui::PopItemWidth();
+		bool dockDbg = Config->bShowDockingDebug == 1;
+		if (ImGui::Checkbox("Show Docking Clear Zones & Telemetry", &dockDbg))
+			Config->bShowDockingDebug = dockDbg ? 1 : 0;
+
+		if (!dockDbg) return;
+
+		VESSEL *vFocus = oapiGetFocusInterface();
+		if (!vFocus) {
+			ImGui::TextDisabled("No focus vessel available.");
+			return;
+		}
+
+		DWORD activeDockMask = 0, nTotalSlices = 0, nClearSlices = 0;
+		int hitSliceA = -1, hitMeshA = -1, hitGroupA = -1;
+		OBJHANDLE hHitOther = NULL;
+		vFocus->GetDockingCollisionDebug(activeDockMask, nTotalSlices, nClearSlices, hitSliceA, hitMeshA, hitGroupA, hHitOther);
+
+		double cylRad = 2.2, cylZMin = -1.5, cylZMax = 2.5;
+		vFocus->GetDockClearCylinderParams(cylRad, cylZMin, cylZMax);
+
+		ImGui::SeparatorText("Focus Vessel Collider Summary");
+		ImGui::Text("Vessel: %s (%s)", vFocus->GetName(), vFocus->IsConvexCollider() ? "Convex GJK Sub-Hulls" : "Concave Mesh");
+		ImGui::Text("Sub-Hull Slices: %u total | %u solid (green) | %u dock-clear (cyan/gold)",
+			nTotalSlices, nTotalSlices - nClearSlices, nClearSlices);
+		ImGui::Text("Clear Cylinder: R = %.2f m, Axial Z = [%.2f m .. +%.2f m]", cylRad, cylZMin, cylZMax);
+
+		// Last Collision Readout
+		VECTOR3 cPt, cNorm, cImp, cArm;
+		double cDepth = 0.0, cImpMag = 0.0;
+		if (vFocus->GetCollisionDebugData(cPt, cNorm, cImp, cArm, cDepth, cImpMag)) {
+			const char *otherName = (hHitOther && oapiIsVessel(hHitOther)) ? oapiGetVesselInterface(hHitOther)->GetName() : "Base/Unknown";
+			ImGui::TextColored(ImVec4(1.0f, 0.35f, 0.35f, 1.0f),
+				"LAST HIT vs [%s]: Slice #%d (Mesh %d, Grp %d) | Depth: %.4f m | Imp: %.2f Ns",
+				otherName, hitSliceA, hitMeshA, hitGroupA, cDepth, cImpMag);
+		} else {
+			ImGui::TextColored(ImVec4(0.6f, 0.6f, 0.6f, 1.0f), "Last Hit: None");
+		}
+
+		ImGui::SeparatorText("Approach Debug");
+		DWORD nDocks = vFocus->DockCount();
+		if (nDocks == 0) {
+			ImGui::TextDisabled("Focus vessel has no docking ports.");
+			return;
+		}
+
+		ImGui::BeginChild("##DockTelemetryScroll", ImVec2(0, 0), true);
+		for (DWORD i = 0; i < nDocks; i++) {
+			DOCKHANDLE hDockA = vFocus->GetDockHandle(i);
+			if (!hDockA) continue;
+
+			VECTOR3 posA, dirA, rotA;
+			vFocus->GetDockParams(hDockA, posA, dirA, rotA);
+			OBJHANDLE hMate = vFocus->GetDockStatus(hDockA);
+			bool isApproaching = ((activeDockMask & (1u << i)) != 0);
+
+			ImGui::PushID((int)i);
+			if (hMate) {
+				ImGui::TextColored(ImVec4(0.75f, 0.4f, 1.0f, 1.0f),
+					"Port #%u: DOCKED to [%s] | ref=(%.2f, %.2f, %.2f)",
+					i, oapiGetVesselInterface(hMate)->GetName(), posA.x, posA.y, posA.z);
+				ImGui::PopID();
+				ImGui::Separator();
+				continue;
+			}
+
+			if (isApproaching) {
+				ImGui::TextColored(ImVec4(0.2f, 1.0f, 0.2f, 1.0f),
+					"Port #%u: [APPROACH ACTIVE - CLEAR ZONE SUPPRESSED]", i);
+			} else {
+				ImGui::TextColored(ImVec4(0.0f, 0.85f, 1.0f, 1.0f),
+					"Port #%u: [IDLE - ALL COLLIDERS ACTIVE] | ref=(%.2f, %.2f, %.2f)",
+					i, posA.x, posA.y, posA.z);
+			}
+
+			// Find closest free docking port on any other vessel
+			VECTOR3 gPosA, gDirA, gRotA, gVelA;
+			vFocus->Local2Global(posA, gPosA);
+			vFocus->Local2Global(posA + unit(dirA), gDirA); gDirA = unit(gDirA - gPosA);
+			vFocus->Local2Global(posA + unit(rotA), gRotA); gRotA = unit(gRotA - gPosA);
+			vFocus->GetGlobalVel(gVelA);
+
+			double bestDist = 1e30;
+			VESSEL *bestVessel = nullptr;
+			DWORD bestDockIdx = 0;
+			VECTOR3 bestGPosB, bestGDirB, bestGRotB, bestGVelB;
+
+			for (DWORD vi = 0; vi < oapiGetVesselCount(); vi++) {
+				OBJHANDLE hOther = oapiGetVesselByIndex(vi);
+				if (!hOther || hOther == vFocus->GetHandle()) continue;
+				VESSEL *vOther = oapiGetVesselInterface(hOther);
+				if (!vOther) continue;
+
+				for (DWORD j = 0; j < vOther->DockCount(); j++) {
+					DOCKHANDLE hDockB = vOther->GetDockHandle(j);
+					if (!hDockB || vOther->GetDockStatus(hDockB) != NULL) continue;
+					VECTOR3 posB, dirB, rotB, gPosB, gDirB, gRotB;
+					vOther->GetDockParams(hDockB, posB, dirB, rotB);
+					vOther->Local2Global(posB, gPosB);
+					double d = length(gPosB - gPosA);
+					if (d < bestDist) {
+						bestDist = d;
+						bestVessel = vOther;
+						bestDockIdx = j;
+						bestGPosB = gPosB;
+						vOther->Local2Global(posB + unit(dirB), gDirB); bestGDirB = unit(gDirB - gPosB);
+						vOther->Local2Global(posB + unit(rotB), gRotB); bestGRotB = unit(gRotB - gPosB);
+						vOther->GetGlobalVel(bestGVelB);
+					}
+				}
+			}
+
+			if (bestVessel && bestDist < 100.0) {
+				VECTOR3 ab = bestGPosB - gPosA;
+				VECTOR3 abUnit = (bestDist > 1e-6) ? (ab / bestDist) : _V(0, 0, 1);
+				double dirDot = dotp(gDirA, bestGDirB);
+				double fwdA   = dotp(abUnit, gDirA);
+				double fwdB   = -dotp(abUnit, bestGDirB);
+				double rotDot = dotp(gRotA, bestGRotB);
+				double vClose = dotp(gVelA - bestGVelB, abUnit);
+
+				bool passDist  = (bestDist < 5.0);
+				bool passDir   = (dirDot < -0.8);
+				bool passFront = (bestDist < 0.5) || (fwdA > 0.5 && fwdB > 0.5);
+
+				auto badge = [](bool ok) {
+					if (ok) ImGui::TextColored(ImVec4(0.2f, 1.0f, 0.2f, 1.0f), "[PASS]");
+					else    ImGui::TextColored(ImVec4(1.0f, 0.3f, 0.3f, 1.0f), "[FAIL]");
+					ImGui::SameLine();
+				};
+
+				ImGui::Indent(12.0f);
+				ImGui::Text("Nearest Target: %s [Port #%u] (Closing: %.3f m/s)",
+					bestVessel->GetName(), bestDockIdx, vClose);
+
+				badge(passDist);
+				ImGui::Text("Port Distance: %.3f m (Clear < 5.00 m, Capture < 0.30 m)", bestDist);
+
+				badge(passDir);
+				ImGui::Text("Opposing Normals: dot = %.3f (< -0.800 req)", dirDot);
+
+				badge(passFront);
+				ImGui::Text("In-Front Cone: fwdA = %.3f, fwdB = %.3f (> +0.500 req)", fwdA, fwdB);
+
+				ImGui::Text("       Roll Alignment: dot(rotA, rotB) = %.3f", rotDot);
+				ImGui::Unindent(12.0f);
+			} else {
+				ImGui::Indent(12.0f);
+				ImGui::TextDisabled("No free target docking port within 100 m.");
+				ImGui::Unindent(12.0f);
+			}
+
+			ImGui::PopID();
+			ImGui::Separator();
+		}
+		ImGui::EndChild();
 	}
 };
 
