@@ -3,9 +3,12 @@ Include(FetchContent)
 FetchContent_Declare(
   Catch2
   GIT_REPOSITORY https://github.com/catchorg/Catch2.git
-  GIT_TAG        v3.0.0-preview3
+  GIT_TAG        v3.16.1
 )
 
+# cmake/tracy.cmake turns BUILD_SHARED_LIBS on for the whole project. Catch2 honours it, and its
+# DLLs would not be next to the test executables, so keep it static (this only affects Tests/).
+set(BUILD_SHARED_LIBS OFF)
 FetchContent_MakeAvailable(Catch2)
 
 # Utility function
