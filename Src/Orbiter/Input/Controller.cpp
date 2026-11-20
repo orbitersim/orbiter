@@ -62,8 +62,3 @@ void InputController::ScanControllers()
 
 	SDL_free(ids);
 }
-
-void InputController::DetachControllers()
-{
-	joysticks.clear();
-}

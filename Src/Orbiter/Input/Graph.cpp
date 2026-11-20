@@ -382,6 +382,15 @@ void ControllerGraph::Load(const char *path)
 {
     std::pair<crude_json::value, bool> ret = crude_json::value::load(path);
     if(ret.second) {
+		// Save attached joysticks so we can reattach them after the graph is recreated
+		std::vector<Joystick *> joysticks;
+		for(auto &node: nodes) {
+			NodeJoystick *njs = dynamic_cast<NodeJoystick *>(node.get());
+			if(njs && njs->js) {
+				joysticks.push_back(njs->js);
+			}
+		}
+
 		crude_json::value &json = ret.first;
 		nodes.clear();
 		links.clear();
@@ -416,8 +425,9 @@ void ControllerGraph::Load(const char *path)
 
 		TopologicalSort();
 
-		// FIXME
-		InputController::DetachControllers();
+		for(Joystick *js: joysticks) {
+			AttachJoystick(js);
+		}
 	} else {
         oapiAddNotification(OAPINOTIF_ERROR, "Error loading file", path);
     }
