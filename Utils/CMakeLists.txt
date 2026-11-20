@@ -8,7 +8,6 @@ add_subdirectory(meshc)
 add_subdirectory(Pltex)
 add_subdirectory(Shipedit)
 add_subdirectory(texpack)
-#add_subdirectory(tileedit/qt)
 
 # We do this as an external project to invoke x64 toolchain
 ExternalProject_Add(plsplit
@@ -21,14 +20,13 @@ ExternalProject_Add(plsplit
 	INSTALL_COMMAND ""
 )
 # Install project output from here instead from inside the external project
-# to make cpack aware of it
-if (EXISTS ${CMAKE_CURRENT_BINARY_DIR}/plsplit/plsplit.exe)
-	install(PROGRAMS
-		${CMAKE_CURRENT_BINARY_DIR}/plsplit/plsplit.exe
-		plsplit/DxTex.exe
-		DESTINATION ${ORBITER_INSTALL_UTILS_DIR}
-	)
-endif()
+# to make cpack aware of it. The exe only exists after the build, so this must not
+# depend on whether it existed at configure time.
+install(PROGRAMS
+	${CMAKE_CURRENT_BINARY_DIR}/plsplit/plsplit.exe
+	plsplit/DxTex.exe
+	DESTINATION ${ORBITER_INSTALL_UTILS_DIR}
+)
 
 # tileedit is another 64-bit project. This also requires
 # Qt5 so will only be built if that is available
@@ -42,10 +40,9 @@ ExternalProject_Add(tileedit_proj
 	INSTALL_COMMAND ""
 )
 # Install project output from here instead from inside the external project
-# to make cpack aware of it
-if (EXISTS ${CMAKE_CURRENT_BINARY_DIR}/tileedit/qt/src/tmp)
-	install(DIRECTORY
-		${CMAKE_CURRENT_BINARY_DIR}/tileedit/qt/src/tmp/
-		DESTINATION ${ORBITER_INSTALL_UTILS_DIR}
-	)
-endif()
+# to make cpack aware of it. OPTIONAL because tileedit is only built when Qt5 is found.
+install(DIRECTORY
+	${CMAKE_CURRENT_BINARY_DIR}/tileedit/qt/src/tmp/
+	DESTINATION ${ORBITER_INSTALL_UTILS_DIR}
+	OPTIONAL
+)
