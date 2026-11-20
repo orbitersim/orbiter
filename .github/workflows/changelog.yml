@@ -1,24 +1,22 @@
-name: Update Changelog on Merge
+name: Update Changelog on PR
 
 on:
   pull_request:
-    types: [closed]
-    branches:
-      - main
+    types: [opened, synchronize]
+    paths-ignore:
+      - 'CHANGELOG.md' # avoid infinite loop when pushing this
 
 jobs:
   update-changelog:
-    # Only run if the PR was actually merged, not just closed without merging
-    if: github.event.pull_request.merged == true
     runs-on: ubuntu-latest
-
     permissions:
-      contents: write # Allow writes to the repository
+      contents: write
 
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
         with:
+          ref: ${{ github.event.pull_request.head.ref }} # Check out the actual head branch of the PR, not the merge preview
           fetch-depth: 0 # Fetch all history to get the commit message
 
       - name: Append merge commit message to Changelog
@@ -41,4 +39,4 @@ jobs:
           git config --local user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add CHANGELOG.md
           git commit --allow-empty -m "docs: update CHANGELOG.md for PR #${{ github.event.pull_request.number }} [skip ci]"
-          git push origin HEAD:main
+          git push origin HEAD:${{ github.event.pull_request.head.ref }}
