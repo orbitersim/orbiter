@@ -75,12 +75,6 @@ jobs:
         mkdir out\build
         mkdir out\install
 
-    - name: Cache irrKlang package
-      uses: actions/cache@v6
-      with:
-        path: ${{ github.workspace }}/Extern/irrKlang/${{ inputs.architecture }}
-        key: irrKlang-${{ inputs.architecture }}
-
     - name: Cache DirectX SDK
       id:   cache
       uses: actions/cache@v6
