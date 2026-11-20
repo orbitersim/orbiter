@@ -15,6 +15,8 @@ get hooked, others get bored. Finding out for yourself is easy – simply give i
 a try. Orbiter is free, so you don’t need to invest more than a bit of your
 spare time.
 
+[![Nightly](https://github.com/orbitersim/orbiter/actions/workflows/nightly.yml/badge.svg)](https://github.com/orbitersim/orbiter/actions/workflows/nightly.yml)
+
 ## License
 
 Orbiter is now published as an Open Source project under the MIT License (see
