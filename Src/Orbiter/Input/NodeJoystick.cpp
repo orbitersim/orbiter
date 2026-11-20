@@ -191,6 +191,7 @@ void NodeJoystick::InitPins()
     };
 
 	if(jsonTemplate->contains("outputs")) {
+		grayed = true;
 		guid = (*jsonTemplate)["guid"].get<std::string>();
 		name = (*jsonTemplate)["lastseenname"].get<std::string>();
 		for(auto &o: (*jsonTemplate)["outputs"].get<crude_json::array>()) {

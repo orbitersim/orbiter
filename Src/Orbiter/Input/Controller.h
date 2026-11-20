@@ -25,5 +25,4 @@ public:
 	static void GetJoystickCtrl(float ctrl[15]);
 	static ControllerGraph *GetGraph() { return graph; }
 	static void ScanControllers();
-	static void DetachControllers();
 };
