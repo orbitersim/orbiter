@@ -135,7 +135,6 @@ set(Orbiter_common_libs
 	comctl32.lib
 	UxTheme.lib
 	version.lib
-	${HTML_HELP_LIBRARY}
 	zlib
 	${HTMLHELP_LIB}
 	$<TARGET_FILE:Orbitersdk>
