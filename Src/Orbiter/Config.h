@@ -283,8 +283,15 @@ struct CFG_WINDOWPOS {
 
 struct CFG_CMDLINEPRM {
 	bool   bFastExit;           // Terminate Orbiter at session end?
+	bool   bCfgFromCinOnly;     // Read config from stdin instead of Orbiter.cfg?
+	bool   bCfgFromCinAdd;      // Read config from stdin after reading from Orbiter.cfg?
+	bool   bCfgReadOnly;        // Prevent Orbiter.cfg update on exit?
+	bool   bCfgToCoutOnly;      // Write config to stdout instead of Orbiter.cfg?
+	bool   bStartPaused;        // Force pause at simulation start?
+	bool   bStartUnpaused;      // Force unpause at simulation start?
 	bool   bOpenVideoTab;       // Open Launchpad on video tab?
 	bool   bAppendLog;          // Orbiter log: append instead of overwrite?
+	bool   bDiableGraphics;     // Launch Orbiter in console mode without a graphics client?
 	size_t FrameLimit;          // max number of timeframes before session termination (0 = unlimited)
 	double FixedStep;           // fixed time step length (0 = disabled). If != 0, overrides CFG_DEBUGPRM::FixedStep
 	double MaxSysTime;          // Max session runtime (sys time). 0 = unlimited
@@ -343,7 +350,7 @@ class Config {
 public:
 	Config ();
 
-	Config (char *fname);
+	Config (const std::string &fname);
 	// construct from defaults in file "fname"
 
 	~Config ();
@@ -353,11 +360,16 @@ public:
 
 	bool FoundFile() const { return found_config_file; }
 
-	bool Load(const char* fname);
+	bool Read(const std::string &fname);
+	bool Read(std::istream &is);
+	// read config parameters from a named file or an open stream
+	// returns false if read fails
 
-	BOOL Write (const char *fname = 0) const;
-	// write config parameters to file "fname"
-	// returns FALSE if write fails
+	bool Write(const std::string &fname) const;
+	bool Write() const;
+	bool Write(std::ostream &os) const;
+	// write config parameters to a named file or an open stream
+	// returns false if write fails
 
 	char *ConfigPath (const char *name) const;
 	// Return full path for config file name (adds ".cfg" to name)
@@ -383,9 +395,6 @@ public:
 
 	bool bEchoAll;          // echo all configuration parameters (or only non-default ones)?
 	RECT rLaunchpad;        // launchpad dialog position
-
-	// directory information
-	char *Root;             // master config file
 
 	// visual parameters
 	DWORD AmbientColour;         // RGBA value of ambient component
@@ -438,14 +447,6 @@ public:
 	const void *GetParam (DWORD paramtype) const;
 	// return a specific parameter setting (paramtype defined in GraphicsAPI.h)
 
-	// Read items from master config
-	bool GetString (const char *category, char *val);
-	bool GetReal (const char *category, double &val);
-	bool GetInt (const char *category, int &val);
-	bool GetSize (const char* category, size_t& val);
-	bool GetBool (const char *category, bool &val);
-	bool GetVector (const char *category, Vector &val);
-
 private:
 	bool GetString (std::istream &is, const char *category, char *val); // val must hold 512 chars
 	bool GetString (std::istream &is, const char *category, char *val, size_t size);
@@ -454,6 +455,8 @@ private:
 	bool GetSize (std::istream& is, const char* category, size_t& val);
 	bool GetBool (std::istream &is, const char *category, bool &val);
 	bool GetVector (std::istream &is, const char *category, Vector &val);
+
+	std::string m_sRoot;    // master config file
 
 	mutable char cfgpath[256];  // buffer for creating full path names
 	char mshpath[256];
