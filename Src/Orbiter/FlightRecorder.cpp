@@ -581,9 +581,11 @@ void Vessel::FRecorder_Play ()
 			Vector dx = tmul(sv->RotM(), r1);
 			Vector dy = tmul(sv->RotM(), r2);
 			Vector dz = tmul(sv->RotM(), r3);
-			sv->omega.x =  atan2 (dy.z, dz.z) * td.iSimDT;
-			sv->omega.y = -atan2 (dx.z, dx.x) * td.iSimDT;
-			sv->omega.z =  atan2 (dx.y, dx.x) * td.iSimDT;
+			sv->SetAngVel(Vector(
+				atan2(dy.z, dz.z),
+			   -atan2(dx.z, dx.x),
+				atan2(dx.y, dx.x)
+			) * td.iSimDT);
 		}
 		el_valid = false;
 

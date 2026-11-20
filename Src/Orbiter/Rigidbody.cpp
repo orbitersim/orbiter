@@ -169,7 +169,7 @@ void RigidBody::SetPropagator (int &plevel, int &nstep) const
 		if (td.SimDT < PropMode[plevel].tlim)
 			break;
 	// 2. Angle step limit
-	double astep = S0()->omega.length()*td.SimDT; // angular step size
+	double astep = S0()->AngVel().length() * td.SimDT; // angular step size
 	for (; plevel < nPropLevel-1; plevel++)
 		if (astep < PropMode[plevel].alim)
 			break;
@@ -247,7 +247,7 @@ void RigidBody::Update (bool force)
 				for (i = 0; i < nPropSubsteps; i++) {
 					((*this).*(PropMode[PropLevel].propagator)) (dt, nPropSubsteps, i);
 					GetIntermediateMoments (acc, tau, *S1(), (i+1.0)/nPropSubsteps, dt);
-					arot.Set (EulerInv_full (tau, S1()->omega));
+					arot.Set(EulerInv_full(tau, S1()->AngVel()));
 				}
 				if (!(is_valid = ValidateStateUpdate(S1()))) {
 					S1()->Set(s);
@@ -263,14 +263,14 @@ void RigidBody::Update (bool force)
 		const double vmag_max = 100.0*Pi; // limit angular velocities to 100Hz - make user-definable!
 		extern int errno;
 		errno = 0;
-		double vmag = S1()->omega.length();
+		double vmag = S1()->AngVel().length();
 		if (vmag > vmag_max || errno) {
 			if (errno) {                  // fatal error - reset to arbitrary values
-				S1()->omega.Set (0,0,vmag_max);
+				S1()->SetAngVel(Vector(0, 0, vmag_max));
 				vmag = vmag_max;
 				S1()->SetRot(Quaternion(0, 0, 0, 1));
-			} else {
-				S1()->omega *= vmag_max/vmag;
+			} else {                      // rescale
+				S1()->SetAngVel(S1()->AngVel() * (vmag_max / vmag));
 				vmag = vmag_max;
 			}
 			arot.Set(0,0,0);
@@ -339,9 +339,9 @@ void RigidBody::GetIntermediateMoments (Vector &acc, Vector &tau,
 		if (tidaldamp) {
 			double damp  = tidaldamp * mag;
 			double scale = min (damp, dt*0.1);
-			if (state.omega.x) tau.x -= scale * pmi.x*state.omega.x;
-			if (state.omega.y) tau.y -= scale * pmi.y*state.omega.y;
-			if (state.omega.z) tau.z -= scale * pmi.z*state.omega.z;
+			if (state.AngVel().x) tau.x -= scale * pmi.x * state.AngVel().x;
+			if (state.AngVel().y) tau.y -= scale * pmi.y * state.AngVel().y;
+			if (state.AngVel().z) tau.z -= scale * pmi.z * state.AngVel().z;
 		}
 	}
 }
@@ -421,9 +421,9 @@ Vector RigidBody::GetTorque () const
 	if (tidaldamp) {
 		double damp  = tidaldamp * mag;
 		double scale = min (damp, td.iSimDT*0.1);
-		if (S0()->omega.x) M.x -= scale * pmi.x*S0()->omega.x;
-		if (S0()->omega.y) M.y -= scale * pmi.y*S0()->omega.y;
-		if (S0()->omega.z) M.z -= scale * pmi.z*S0()->omega.z;
+		if (S0()->AngVel().x) M.x -= scale * pmi.x * S0()->AngVel().x;
+		if (S0()->AngVel().y) M.y -= scale * pmi.y * S0()->AngVel().y;
+		if (S0()->AngVel().z) M.z -= scale * pmi.z * S0()->AngVel().z;
 	}
 
 	return M;
@@ -433,7 +433,7 @@ Vector RigidBody::GetTorque () const
 
 void RigidBody::SetAngVel(const Vector &omega)
 {
-	S1()->omega.Set(omega);
+	S1()->SetAngVel(omega);
 }
 
 // =======================================================================

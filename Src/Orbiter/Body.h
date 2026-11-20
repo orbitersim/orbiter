@@ -71,7 +71,7 @@ public:
 	// a point between local object coords p_loc and global coords p_glob:
 	// p_glob = GRot * p_loc + GPos
 
-	const Vector &AngularVelocity() const { return m_svS0->omega; }
+	const Vector &AngularVelocity() const { return m_svS0->AngVel(); }
 	// Object angular velocity
 
 	inline Vector GlobalToLocal(const Vector &glob) const

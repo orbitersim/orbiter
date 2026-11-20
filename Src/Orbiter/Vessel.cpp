@@ -2796,7 +2796,7 @@ bool Vessel::GetTargetDockAlignment(PortSpec* pD, PortSpec* pT, Vector* ref, Vec
 	if (ref) *ref = tmul(GRot(), mul(pVT->GRot(), pT->ref) + pVT->GPos() - GPos()) - pD->ref;
 	if (dir) *dir = tmul(GRot(), mul(pVT->GRot(), pT->dir));
 	if (rot) *rot = tmul(GRot(), mul(pVT->GRot(), pT->rot));
-	if (vel) *vel = mul(GRot(), crossp(pD->ref, S0()->omega)) + S0()->Vel() - pVT->S0()->Vel(); // relvel ECL 
+	if (vel) *vel = mul(GRot(), crossp(pD->ref, S0()->AngVel())) + S0()->Vel() - pVT->S0()->Vel(); // relvel ECL 
 	return true;
 }
 
@@ -3151,7 +3151,7 @@ bool Vessel::DetachFromParent (double v)
 
 	Vector vel(S0()->Vel());
 	cbody = prnt->cbody;
-	vel += mul (prnt->GRot(), crossp (attach_rpos, prnt->S0()->omega));
+	vel += mul(prnt->GRot(), crossp(attach_rpos, prnt->S0()->AngVel()));
 	if (v) { // ejection velocity
 		vel += mul(S0()->RotM(), tmul(attach_rrot, attach->mate_attach->dir)) * v;
 	}
@@ -3631,7 +3631,7 @@ void Vessel::InitOrbiting (const Vector &relr, const Vector &relv, const Vector 
 	S1()->SetRot(R);
 
 	if (_vrot)
-		S1()->omega.Set(*_vrot);
+		S1()->SetAngVel(*_vrot);
 
 	RPlace(cpos + cbody->GPos(), cvel + cbody->GVel());
 	SyncStateVectors();
@@ -3914,7 +3914,7 @@ void Vessel::UpdateThrustForces ()
 			double arot_tot, level;
 			bool finished = true;
 			// rotation around x-axis
-			arot_tot = (-S0()->omega.x*fullpmi->x*td.iSimDT + (fullpmi->z-fullpmi->y)*S0()->omega.y*S0()->omega.z)*mass;
+			arot_tot = (-S0()->AngVel().x * fullpmi->x * td.iSimDT + (fullpmi->z - fullpmi->y) * S0()->AngVel().y * S0()->AngVel().z) * mass;
 			if (arot_tot <= 0.0) {
 				if ((level = arot_tot/mam[1]) < -1.0) level = -1.0, finished = false;
 				IncThrusterGroupOverride (THGROUP_ATT_PITCHDOWN, -level);
@@ -3924,7 +3924,7 @@ void Vessel::UpdateThrustForces ()
 			}
 
 			// rotation around y-axis
-			arot_tot = (-S0()->omega.y*fullpmi->y*td.iSimDT + (fullpmi->x-fullpmi->z)*S0()->omega.z*S0()->omega.x)*mass;
+			arot_tot = (-S0()->AngVel().y * fullpmi->y * td.iSimDT + (fullpmi->x - fullpmi->z) * S0()->AngVel().z * S0()->AngVel().x) * mass;
 			if (arot_tot <= 0.0) {
 				if ((level = arot_tot/mam[3]) < -1.0) level = -1.0, finished = false;
 				IncThrusterGroupOverride (THGROUP_ATT_YAWRIGHT, -level);
@@ -3934,7 +3934,7 @@ void Vessel::UpdateThrustForces ()
 			}
 
 			// rotation around z-axis
-			arot_tot = (-S0()->omega.z*fullpmi->z*td.iSimDT + (fullpmi->y-fullpmi->x)*S0()->omega.x*S0()->omega.y)*mass;
+			arot_tot = (-S0()->AngVel().z * fullpmi->z * td.iSimDT + (fullpmi->y - fullpmi->x) * S0()->AngVel().x * S0()->AngVel().y) * mass;
 			if (arot_tot <= 0.0) {
 				if ((level = arot_tot/mam[5]) < -1.0) level = -1.0, finished = false;
 				IncThrusterGroupOverride (THGROUP_ATT_BANKLEFT, -level);
@@ -3944,7 +3944,7 @@ void Vessel::UpdateThrustForces ()
 			}
 
 			//if (finished && ++killrot_delay > 8) // add a delay to improve performance at high time acceleration
-			if (S0()->omega.length() < 1e-5)
+			if (S0()->AngVel().length() < 1e-5)
 				ClrNavMode (NAVMODE_KILLROT);
 
 			//sprintf (DBG_MSG, "vrot: x=%e, y=%e, z=%e", vrot.x, vrot.y, vrot.z);
@@ -3957,7 +3957,7 @@ void Vessel::UpdateThrustForces ()
 			// neutralise pitch
 			r    = sp.pitch;
 			amax = max_angular_moment[r >= 0.0 ? 1:0]/(pmi.x*mass); // max angular acceleration
-			v0   = S0()->omega.x;             // current velocity
+			v0   = S0()->AngVel().x;             // current velocity
 			if (r >= 0.0) v1 = -sqrt ( 0.04*r*amax);
 			else          v1 =  sqrt (-0.04*r*amax);
 			dth  = (v1-v0)*td.iSimDT/amax * 0.2;
@@ -3967,7 +3967,7 @@ void Vessel::UpdateThrustForces ()
 			// neutralise bank
 			r = sp.bank;
 			amax = max_angular_moment[r >= 0.0 ? 5:4]/(pmi.z*mass); // max angular acceleration
-			v0 = S0()->omega.z;
+			v0 = S0()->AngVel().z;
 			if (r >= 0.0) v1 =  sqrt ( 0.04*r*amax);
 			else          v1 = -sqrt (-0.04*r*amax);
 			dth  = (v1-v0)*td.iSimDT/amax * 0.2;
@@ -3992,15 +3992,21 @@ void Vessel::UpdateThrustForces ()
 			const double alpha0 = 20.0*RAD; // angular distance from target at which thrust is being reduced
 			const double f0 = dvmax/alpha0;
 
-			if ((v1 = f0 * asin(tgtdir.y)) >= 0.0) dth = (min(v1, dvmax)-S0()->omega.x)/max_angular_moment[1];
-			else                                   dth = (max(v1,-dvmax)-S0()->omega.x)/max_angular_moment[0];
+			if ((v1 = f0 * asin(tgtdir.y)) >= 0.0)
+				dth = (min(v1, dvmax) - S0()->AngVel().x) / max_angular_moment[1];
+			else
+				dth = (max(v1,-dvmax) - S0()->AngVel().x) / max_angular_moment[0];
+
 			if ((dth *= td.iSimDT*pmi.x*mass) >= 0.0)
 				SetThrusterGroupOverride (THGROUP_ATT_PITCHUP,   min ( dth, 0.4));
 			else
 				SetThrusterGroupOverride (THGROUP_ATT_PITCHDOWN, min (-dth, 0.4));
 
-			if ((v1 = -f0 * atan2 (tgtdir.x, tgtdir.z)) >= 0.0) dth = (min (v1, dvmax)-S0()->omega.y)/max_angular_moment[3];
-			else                                                dth = (max (v1,-dvmax)-S0()->omega.y)/max_angular_moment[2];
+			if ((v1 = -f0 * atan2(tgtdir.x, tgtdir.z)) >= 0.0)
+				dth = (min(v1, dvmax) - S0()->AngVel().y) / max_angular_moment[3];
+			else
+				dth = (max(v1,-dvmax) - S0()->AngVel().y) / max_angular_moment[2];
+
 			if ((dth *= td.iSimDT*pmi.y*mass) >= 0.0)
 				SetThrusterGroupOverride (THGROUP_ATT_YAWLEFT,  min ( dth, 0.4));
 			else
@@ -4009,8 +4015,11 @@ void Vessel::UpdateThrustForces ()
 			tgtdir.Set (tmul (GRot(), GPos()- cbody->GPos()));
 			tgtdir.unify();
 			v1 = asin(tgtdir.y) * ((navmode_core & (NAVBIT_PROGRADE|NAVBIT_NORMAL)) ? -f0:f0);
-			if (v1 >= 0.0) dth = (min (v1, dvmax)-S0()->omega.z)/max_angular_moment[5];
-			else           dth = (max (v1,-dvmax)-S0()->omega.z)/max_angular_moment[4];
+			if (v1 >= 0.0)
+				dth = (min(v1, dvmax) - S0()->AngVel().z) / max_angular_moment[5];
+			else
+				dth = (max(v1, -dvmax) - S0()->AngVel().z) / max_angular_moment[4];
+
 			if ((dth *= td.iSimDT*pmi.z*mass) >= 0.0)
 				SetThrusterGroupOverride (THGROUP_ATT_BANKRIGHT, min ( dth, 0.4));
 			else
@@ -4142,9 +4151,12 @@ void Vessel::UpdateAerodynamicForces ()
 	double fac = dynpm * cs.y;
 #define OLD_AERODAMPING
 #ifdef OLD_AERODAMPING
-	if (S0()->omega.x) Amom_add.x -= min (fac*rdrag.x, pmi.x*mass*td.iSimDT) * S0()->omega.x;
-	if (S0()->omega.y) Amom_add.y -= min (fac*rdrag.y, pmi.y*mass*td.iSimDT) * S0()->omega.y;
-	if (S0()->omega.z) Amom_add.z -= min (fac*rdrag.z, pmi.z*mass*td.iSimDT) * S0()->omega.z;
+	if (S0()->AngVel().x)
+		Amom_add.x -= min(fac * rdrag.x, pmi.x * mass * td.iSimDT) * S0()->AngVel().x;
+	if (S0()->AngVel().y)
+		Amom_add.y -= min(fac * rdrag.y, pmi.y * mass * td.iSimDT) * S0()->AngVel().y;
+	if (S0()->AngVel().z)
+		Amom_add.z -= min(fac * rdrag.z, pmi.z * mass * td.iSimDT) * S0()->AngVel().z;
 #else
 	if (vrot.x || vrot.y || vrot.z) {
 		double adrag, maxdrag;
@@ -4272,9 +4284,12 @@ void Vessel::UpdateAerodynamicForces_OLD ()
 	Amom_add.y -= fac * sp.airspd * cs.x * sin(beta) * bank_moment_scale;
 	// atmospheric friction (rotation deceleration)
 	// linear in vrot - is this correct?
-	if (S0()->omega.x) Amom_add.x -= fac * S0()->omega.x * rdrag.x;
-	if (S0()->omega.y) Amom_add.y -= fac * S0()->omega.y * rdrag.y;
-	if (S0()->omega.z) Amom_add.z -= fac * S0()->omega.z * rdrag.z;
+	if (S0()->AngVel().x)
+		Amom_add.x -= fac * S0()->AngVel().x * rdrag.x;
+	if (S0()->AngVel().y)
+		Amom_add.y -= fac * S0()->AngVel().y * rdrag.y;
+	if (S0()->AngVel().z)
+		Amom_add.z -= fac * S0()->AngVel().z * rdrag.z;
 
 	// lift and drag. Note: this only generates a linear force. Angular momentum is
 	// generated by the hack above.
@@ -4497,7 +4512,7 @@ bool Vessel::AddSurfaceForces (Vector *F, Vector *M, const StateVectors *s, doub
 			if (tdy[i] < 0.0) { // ground contact on point i!
 				tdy[i] = max(tdy[i], -1.0); // DEBUG
 				tidx[ntouch++] = i;
-				Vector gv (surfp.groundvel_ship + crossp(touchdown_vtx[i].pos,s->omega)); // ground velocity of touchdown point in vessel frame
+				Vector gv(surfp.groundvel_ship + crossp(touchdown_vtx[i].pos, s->AngVel())); // ground velocity of touchdown point in vessel frame
 				gv_n   = dotp (gv, hn);                                             // gv projected on horizon normal in vessel frame
 				gv_lon = dotp (gv, d1h);											// longitudinal speed component for touchdown point i
 				gv_lat = dotp (gv, d2h);											// lateral speed component
@@ -4612,7 +4627,7 @@ bool Vessel::AddSurfaceForces (Vector *F, Vector *M, const StateVectors *s, doub
 		}
 
 		// limit the change in angle over the current time step induced by impact forces
-		Vector dA = EulerInv_full (M_surf/mass, s->omega)*dt*dt;
+		Vector dA = EulerInv_full(M_surf / mass, s->AngVel()) * dt * dt;
 		double da = dA.length();
 		static double da_max = 0.0;
 		if (da > da_max) da_max = da;
@@ -4662,7 +4677,7 @@ bool Vessel::AddSurfaceForces (Vector *F, Vector *M, const StateVectors *s, doub
 		double v1, v2;
 		for (i = 0; i < 3; i++) {
 			if (tdy[i] < 0.0) {
-				Vector gv (surfp.groundvel_ship + crossp(touchdown_vtx[i].pos,s->omega)); // ground velocity of touchdown point in vessel frame
+				Vector gv(surfp.groundvel_ship + crossp(touchdown_vtx[i].pos, s->AngVel())); // ground velocity of touchdown point in vessel frame
 				v1 = dotp (gv, d1h); // longitudinal speed component for touchdown point i
 				v2 = dotp (gv, d2h); // lateral speed component
 
@@ -5285,8 +5300,8 @@ void Vessel::CheckBaseCollisions(const Planet *pp) {
 				// multi-point suspension and prevent the ship from jittering or tipping over.
 				if (fabs(v_rel_norm) < 0.5 && bestRes.depth > 0.005) {
 					Vector planet_omega = mul(pp->S1()->RotM(), Vector(0, -Pi2 / pp->RotT(), 0));
-					Vector omega_rel = S1()->omega - planet_omega;
-					S1()->omega = planet_omega + (omega_rel * 0.8);
+					Vector omega_rel = S1()->AngVel() - planet_omega;
+					S1()->SetAngVel(planet_omega + (omega_rel * 0.8));
 				}
 			}
 		}
@@ -6515,8 +6530,8 @@ void Vessel::ResolveCollisionWith(Vessel *v) {
 		// For the contact point used in force-vector display, use the midpoint
 		Vector contactPtGlobal = (sA->Pos() + rA + sB->Pos() + rB) * 0.5;
 
-		Vector omegaA_global = mul(sA->RotM(), sA->omega);
-		Vector omegaB_global = mul(sB->RotM(), sB->omega);
+		Vector omegaA_global = mul(sA->RotM(), sA->AngVel());
+		Vector omegaB_global = mul(sB->RotM(), sB->AngVel());
 
 		// All cross products MUST remain in the left-handed convention to avoid inverse spins and negative effective mass.
 		Vector velA = sA->Vel() + crossp(rA, omegaA_global);
@@ -6603,8 +6618,8 @@ void Vessel::ResolveCollisionWith(Vessel *v) {
 		Vector deltaOmegaB = -(iIT_crossB_local * j);
 
 		// Tangential Friction
-		Vector velA_postNorm = (sA->Vel() + deltaVelA) + crossp(rA, mul(sA->RotM(), sA->omega + deltaOmegaA));
-		Vector velB_postNorm = (sB->Vel() + deltaVelB) + crossp(rB, mul(sB->RotM(), sB->omega + deltaOmegaB));
+		Vector velA_postNorm = (sA->Vel() + deltaVelA) + crossp(rA, mul(sA->RotM(), sA->AngVel() + deltaOmegaA));
+		Vector velB_postNorm = (sB->Vel() + deltaVelB) + crossp(rB, mul(sB->RotM(), sB->AngVel() + deltaOmegaB));
 		Vector vRelContact_postNorm = velA_postNorm - velB_postNorm;
 		Vector vRel_t = vRelContact_postNorm - (normGlobal * dotp(vRelContact_postNorm, normGlobal));
 		double vt_len = vRel_t.length();
@@ -6647,8 +6662,8 @@ void Vessel::ResolveCollisionWith(Vessel *v) {
 		// around the contact normal to avoid killing a legit tumble
 		double closingSpeed = relVelAlongNormal < 0 ? -relVelAlongNormal : 0.0;
 		if (td.SimDT > 0.0 && relVelAlongNormal <= 0.0 && closingSpeed < 0.5) {
-			Vector omA_g = mul(sA->RotM(), sA->omega);
-			Vector omB_g = mul(sB->RotM(), sB->omega);
+			Vector omA_g = mul(sA->RotM(), sA->AngVel());
+			Vector omB_g = mul(sB->RotM(), sB->AngVel());
 			Vector omega_rel_g = omA_g - omB_g;
 
 			double omega_normal = dotp(omega_rel_g, normGlobal);
@@ -6664,12 +6679,12 @@ void Vessel::ResolveCollisionWith(Vessel *v) {
 
 		// Cap angular velocity gain per collision (Relaxed significantly to allow angular momentum transfer)
 		double maxOmegaGain = 10.0; // Flat cap to prevent pure numerical explosions, without killing legit spin
-		Vector newOmA = sA->omega + deltaOmegaA;
-		if (newOmA.length() > sA->omega.length() + maxOmegaGain && newOmA.length() > 1e-6)
-			deltaOmegaA = newOmA.unit() * (sA->omega.length() + maxOmegaGain) - sA->omega;
-		Vector newOmB = sB->omega + deltaOmegaB;
-		if (newOmB.length() > sB->omega.length() + maxOmegaGain && newOmB.length() > 1e-6)
-			deltaOmegaB = newOmB.unit() * (sB->omega.length() + maxOmegaGain) - sB->omega;
+		Vector newOmA = sA->AngVel() + deltaOmegaA;
+		if (newOmA.length() > sA->AngVel().length() + maxOmegaGain && newOmA.length() > 1e-6)
+			deltaOmegaA = newOmA.unit() * (sA->AngVel().length() + maxOmegaGain) - sA->AngVel();
+		Vector newOmB = sB->AngVel() + deltaOmegaB;
+		if (newOmB.length() > sB->AngVel().length() + maxOmegaGain && newOmB.length() > 1e-6)
+			deltaOmegaB = newOmB.unit() * (sB->AngVel().length() + maxOmegaGain) - sB->AngVel();
 
 		// Positional correction: push-out along normal with a small margin
 		// to prevent persistent overlap. Velocity-proportional margin is
@@ -6744,7 +6759,7 @@ void Vessel::ResolveCollisionWith(Vessel *v) {
 					sv->Activate(true);
 				sv->S1()->AddPos(dPos);
 				sv->S1()->AddVel(dVel);
-				sv->S1()->omega += dOmega;
+				sv->S1()->IncAngVel(dOmega);
 				sv->bOrbitStabilised = false;
 				if (sv->cbody) {
 					sv->cpos = sv->S1()->Pos() - sv->cbody->S1()->Pos();
@@ -6784,11 +6799,11 @@ void Vessel::ResolveCollisionWith(Vessel *v) {
 						vj->bSurfaceContact = false;
 						if (vj->proxybase) vj->proxybase->ReportTakeoff (vj);
 						if (vj->lstatus == 3 || vj->lstatus == 5) vj->lstatus = 1;
-						vj->S1()->omega.Set(0,0,0);
+						vj->S1()->SetAngVel(Vector(0, 0, 0));
 					}
 					vj->S1()->AddPos(dPos);
 					vj->S1()->AddVel(dVel);
-					vj->S1()->omega += dOmega;
+					vj->S1()->IncAngVel(dOmega);
 					vj->UpdateSurfParams();
 					vj->bOrbitStabilised = false;
 					vj->el_valid = false;
@@ -6863,7 +6878,7 @@ void Vessel::Update (bool force)
 			if (proxybase) proxybase->ReportTakeoff (this);
 			if (lstatus == 3 || lstatus == 5) lstatus = 1;
 
-			S1()->omega.Set (0,0,0);
+			S1()->SetAngVel(Vector(0, 0, 0));
 		}
 
 		//if (bFRplayback)
@@ -6945,13 +6960,15 @@ void Vessel::Update (bool force)
 
 					// modify angular velocity
 					Vector dv = raxis * (dtilt*td.iSimDT);
-					S1()->omega -= dv;
+					S1()->IncAngVel(-dv);
 
 					// limit angular velocity when we are flat on the ground
 					if (tilt < 5.0*RAD) {
 						double maxv = tilt*tilt*50 + 0.1*RAD;
+						Vector av;
 						for (i = 0; i < 3; i++)
-							S1()->omega.data[i] = min (maxv, max (-maxv, S1()->omega.data[i]));
+							av.data[i] = min(maxv, max(-maxv, S1()->AngVel().data[i]));
+						S1()->SetAngVel(av);
 					}
 
 					// update global rotation matrix
@@ -7064,7 +7081,7 @@ void Vessel::UpdatePassive(const StateVectors *parent_s)
 	S1()->SetPos(mul(parent_s->RotM(), attach_rpos) + parent_s->Pos());
 	S1()->SetVel(parent_s->Vel());
 	S1()->SetRot(parent_s->RotM() * attach_rrot);
-	S1()->omega.Set (tmul (attach_rrot, parent_s->omega));
+	S1()->SetAngVel(tmul(attach_rrot, parent_s->AngVel()));
 	acc.Set (prnt->acc);
 
 	Flin.Set (Flin_add);    // store current linear force
@@ -8304,8 +8321,10 @@ void Vessel::WriteDefault (ostream &ofs) const
 			ofs << "  AROT " << setprecision(3) <<  DEG*atan2 (S0()->RotM().m23, S0()->RotM().m33) << ' '
 												<< -DEG*asin  (S0()->RotM().m13) << ' '
 							                    <<  DEG*atan2 (S0()->RotM().m12, S0()->RotM().m11) << endl;
-			if (S0()->omega.length2() > 1e-8)
-				ofs << "  VROT " << setprecision(4) << DEG*S0()->omega.x << ' ' << DEG*S0()->omega.y << ' ' << DEG*S0()->omega.z << endl;
+			if (S0()->AngVel().length2() > 1e-8)
+				ofs << "  VROT " << setprecision(4) << DEG*S0()->AngVel().x << ' '
+				                                    << DEG*S0()->AngVel().y << ' '
+				                                    << DEG*S0()->AngVel().z << endl;
 		}
 		break;
 	}
@@ -8718,9 +8737,9 @@ void VESSEL::GetLinearMoment (VECTOR3 &F) const
 
 void VESSEL::GetAngularVel (VECTOR3 &avel) const
 {
-	avel.x = vessel->S0()->omega.x;
-	avel.y = vessel->S0()->omega.y;
-	avel.z = vessel->S0()->omega.z;
+	avel.x = vessel->S0()->AngVel().x;
+	avel.y = vessel->S0()->AngVel().y;
+	avel.z = vessel->S0()->AngVel().z;
 }
 
 void VESSEL::SetAngularVel (const VECTOR3 &avel) const

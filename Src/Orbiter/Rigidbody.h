@@ -121,7 +121,7 @@ public:
 	// set angular velocity to 'omega'
 
 	Vector AngularMomentum() const
-	{ return Vector(pmi.x * S0()->omega.x, pmi.y * S0()->omega.y, pmi.z * S0()->omega.z); }
+	{ return Vector(pmi.x * S0()->AngVel().x, pmi.y * S0()->AngVel().y, pmi.z * S0()->AngVel().z); }
 	// returns the vessel's current angular momentum (in local vessel coordinates)
 
 	Vector Euler_full (const Vector &omegadot, const Vector &omega) const;

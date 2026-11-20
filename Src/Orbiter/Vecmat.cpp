@@ -722,7 +722,7 @@ void StateVectors::Set(const StateVectors &s)
 	m_vVel.Set(s.m_vVel);
 	m_vVel_base.Set(s.m_vVel_base);
 	m_vVel_incr.Set(s.m_vVel_incr);
-	omega.Set(s.omega);
+	m_vAngVel.Set(s.m_vAngVel);
 	if (!(m_bQdirty = s.m_bQdirty))
 		m_qRot.Set(s.m_qRot);
 	if (!(m_bMdirty = s.m_bMdirty))
@@ -733,7 +733,7 @@ void StateVectors::Set(const Vector &v, const Vector &p, const Vector &av, const
 {
 	SetVel(v);
 	SetPos(p);
-	omega.Set(av);
+	m_vAngVel.Set(av);
 	m_qRot.Set(ap);
 	m_bQdirty = false;
 	m_bMdirty = true;
@@ -842,7 +842,7 @@ void StateVectors::Advance (double dt, const Vector &a, const Vector &v, const V
 {
 	IncPos(v * dt);
 	IncVel(a * dt);
-	omega += aa * dt;
+	m_vAngVel += aa * dt;
 	if (m_bQdirty) {
 		m_qRot.Set(m_mRot);
 		m_bQdirty = false;

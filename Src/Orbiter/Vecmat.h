@@ -438,14 +438,16 @@ public:
 	void SetRot(const Quaternion &q); // set rotation state from a quaternion
 	void Rotate(const Vector &dr);    // rotate by the angles dr
 
+	const Vector &AngVel() const { return m_vAngVel; }
+	void SetAngVel(const Vector &av) { m_vAngVel = av; }
+	void IncAngVel(const Vector &dav) { m_vAngVel += dav; }
+
 	void Advance (double dt, const Vector &a, const Vector &v, const Vector &aa, const Vector &av);
 	// Advance the state vectors by dt, given linear acceleration a, linear velocity v,
 	// angular acceleration aa and angular velocity av.
 
 	void FlushPos();
 	void FlushVel();
-
-	Vector omega;    // angular velocity components in associated frame
 
 private:
 	Vector m_vPos;                    // position in associated frame
@@ -459,6 +461,8 @@ private:
 	mutable Quaternion m_qRot;        // orientation represented by quaternion
 	mutable bool m_bMdirty;           // dirty flag for rotation matrix
 	mutable bool m_bQdirty;           // dirty flag for rotation quaternion
+
+	Vector m_vAngVel;                 // angular velocity components in associated frame
 
 	static const int s_nLimit_incr{ 100000 };
 };

@@ -43,7 +43,7 @@ SuperVessel::SuperVessel (Vessel *vessel)
 	cbody = 0;
 	size = vessel->Size();
 	el = new Elements; TRACENEW
-	S1()->omega.Set(vessel->AngularVelocity());
+	S1()->SetAngVel(vessel->AngularVelocity());
 	S1()->SetPos(vessel->GPos());
 	gfielddata.ngrav = 0;
 	updcount = irand(100);
@@ -117,11 +117,10 @@ SuperVessel::SuperVessel (Vessel *vessel1, Vessel *vessel2, int port1, int port2
 			// contribution of vessel motion to angular momentum
 			am += crossp(tmul(S1()->RotM(), vlist[i].vessel->S0()->Vel() - S1()->Vel()), vlist[i].rpos - cg) * vlist[i].vessel->mass;
 		}
-		S1()->omega.Set(am.x/pmi.x, am.y/pmi.y, am.z/pmi.z);
-		S1()->omega /= mass;
+		S1()->SetAngVel(Vector(am.x / pmi.x, am.y / pmi.y, am.z / pmi.z) / mass);
 	} else {
 		// set linear/angular velocity directly from reference vessel
-		S1()->omega.Set(vlist[0].vessel->AngularVelocity());
+		S1()->SetAngVel(vlist[0].vessel->AngularVelocity());
 	}
 
 	// supervessel position
@@ -214,13 +213,13 @@ void SuperVessel::Detach (Vessel *vessel, DWORD port, double vsep)
 
 	if (atomic1) {
 		// velocity component from rotation: v = omega x r
-		rotvel = mul(S0()->RotM(), crossp(vlist[idx1].rpos - cg, S0()->omega));
+		rotvel = mul(S0()->RotM(), crossp(vlist[idx1].rpos - cg, S0()->AngVel()));
 		vessel->RPlace_individual(mul(S0()->RotM(), vlist[idx1].rpos - cg) + S0()->Pos(), S0()->Vel() - sepdir * vv + rotvel);
 		//vessel->acc = g_psys->Gacc (vessel->rpos, vessel, &vessel->gfielddata);
 		vessel->SetSuperStruct (NULL);
 		if (atomic2) { // disband superstructure
 			// velocity component from rotation: v = omega x r
-			rotvel = mul(S0()->RotM(), crossp(vlist[idx2].rpos - cg, S0()->omega));
+			rotvel = mul(S0()->RotM(), crossp(vlist[idx2].rpos - cg, S0()->AngVel()));
 			vessel2->RPlace_individual(mul(S0()->RotM(), vlist[idx2].rpos - cg) + S0()->Pos(), S0()->Vel() + sepdir * vs + rotvel);
 			//vessel2->acc = g_psys->Gacc (vessel2->rpos, vessel2, &vessel2->gfielddata);
 			vessel2->SetSuperStruct (NULL);
@@ -239,7 +238,7 @@ void SuperVessel::Detach (Vessel *vessel, DWORD port, double vsep)
 	} else {
 		if (atomic2) {
 			// velocity componet from rotation: v = omega x r
-			rotvel = mul(S0()->RotM(), crossp(vlist[idx2].rpos - cg, S0()->omega));
+			rotvel = mul(S0()->RotM(), crossp(vlist[idx2].rpos - cg, S0()->AngVel()));
 			vessel2->RPlace_individual(mul(S0()->RotM(), vlist[idx2].rpos - cg) + S0()->Pos(), S0()->Vel() + sepdir * vs + rotvel);
 			vessel2->SetSuperStruct (NULL);
 			SubVesselData *tmp = new SubVesselData[nv-1]; TRACENEW
@@ -251,7 +250,7 @@ void SuperVessel::Detach (Vessel *vessel, DWORD port, double vsep)
 			S1()->IncVel(sepdir * -vv);
 		} else {
 			// split into 2 supervessels
-			rotvel = mul(S0()->RotM(), crossp(vlist[idx2].rpos - cg, S0()->omega));
+			rotvel = mul(S0()->RotM(), crossp(vlist[idx2].rpos - cg, S0()->AngVel()));
 			vessel2->RPlace_individual(mul(S0()->RotM(), vlist[idx2].rpos - cg) + S0()->Pos(), S0()->Vel() + sepdir * vs + rotvel);
 			SuperVessel *sv2 = new SuperVessel (vessel2); TRACENEW
 			g_psys->AddSuperVessel (sv2);
@@ -376,11 +375,11 @@ void SuperVessel::SetRotationMatrix(const Matrix &R, const Vessel *ref)
 void SuperVessel::SetAngVel (const Vector &omega, const Vessel *ref)
 {
 	DWORD i;
-	S1()->omega.Set(omega);
+	S1()->SetAngVel(omega);
 	if (ref) {
 		for (i = 0; i < nv; i++)
 			if (vlist[i].vessel == ref) {
-				S1()->omega.Set(mul(vlist[i].rrot, omega));
+				S1()->SetAngVel(mul(vlist[i].rrot, omega));
 				break;
 			}
 	}
@@ -388,7 +387,7 @@ void SuperVessel::SetAngVel (const Vector &omega, const Vessel *ref)
 	// update spin for all sub-vessels
 	for (i = 0; i < nv; i++) {
 		Vessel *v = vlist[i].vessel;
-		v->SetAngVel_individual(tmul(vlist[i].rrot, S1()->omega));
+		v->SetAngVel_individual(tmul(vlist[i].rrot, S1()->AngVel()));
 	}
 
 	SyncStateVectors();
@@ -524,7 +523,7 @@ void SuperVessel::SoftDockUpdate(Vessel* vessel2, PortSpec *pD)
 	CalcPMI();
 	bOrbitStabilised = false;
 
-	vessel2->S1()->omega.Set(tmul(vlist[idx2].rrot, S1()->omega));
+	vessel2->S1()->SetAngVel(tmul(vlist[idx2].rrot, S1()->AngVel()));
 	vessel2->UpdateSurfParams();
 }
 
@@ -608,8 +607,7 @@ bool SuperVessel::Add (Vessel *vessel1, int port1, Vessel *vessel2, int port2, b
 			// contribution of vessel motion to angular momentum
 			am += crossp(tmul(S1()->RotM(), vlist[i].vessel->S0()->Vel() - S1()->Vel()), vlist[i].rpos - cg) * vlist[i].vessel->mass;
 		}
-		S1()->omega.Set (am.x/pmi.x, am.y/pmi.y, am.z/pmi.z);
-		S1()->omega /= mass;
+		S1()->SetAngVel(Vector(am.x / pmi.x, am.y / pmi.y, am.z / pmi.z) / mass);
 	}
 
 	vessel2->SetSuperStruct(this);
@@ -906,10 +904,10 @@ bool SuperVessel::ThrustEngaged () const
 const StateVectors SuperVessel::ComponentStateVectors(const StateVectors *s, int comp) const
 {
 	return StateVectors(
-		s->Vel() + mul(s->RotM(), crossp(vlist[comp].rpos - cg, s->omega)), // velocity
-		s->Pos() + mul(s->RotM(), vlist[comp].rpos - cg),                   // position
-		tmul(vlist[comp].rrot, s->omega),                                  // angular velocity
-		s->RotQ() * vlist[comp].rq                                         // orientation
+		s->Vel() + mul(s->RotM(), crossp(vlist[comp].rpos - cg, s->AngVel())), // velocity
+		s->Pos() + mul(s->RotM(), vlist[comp].rpos - cg),                      // position
+		tmul(vlist[comp].rrot, s->AngVel()),                                   // angular velocity
+		s->RotQ() * vlist[comp].rq                                             // orientation
 	);
 }
 
@@ -925,8 +923,8 @@ const Vector SuperVessel::ComponentAngAcc(const Vector &_arot, int comp) const
 void SuperVessel::SetStateFromComponent (const StateVectors *scomp, int comp)
 {
 	S1()->SetRot(scomp->RotM() * vlist[comp].rrot);
-	S1()->omega.Set(mul(vlist[comp].rrot, scomp->omega));
-	S1()->SetVel(scomp->Vel() - mul(S1()->RotM(), crossp(vlist[comp].rpos - cg, S1()->omega)));
+	S1()->SetAngVel(mul(vlist[comp].rrot, scomp->AngVel()));
+	S1()->SetVel(scomp->Vel() - mul(S1()->RotM(), crossp(vlist[comp].rpos - cg, S1()->AngVel())));
 	S1()->SetPos(scomp->Pos() - mul(S1()->RotM(), vlist[comp].rpos - cg));
 }
 

@@ -728,7 +728,7 @@ const StateVectors CelestialBody::InterpolateState(double n) const
 	Matrix R;
 	GetRotation(td.SimT0 + td.SimDT * n, R);
 	sv.SetRot(R);
-	sv.omega.Set (S0()->omega*(1.0-n) + S1()->omega*n); // is this ok?
+	sv.SetAngVel(S0()->AngVel() * (1.0 - n) + S1()->AngVel() * n); // is this ok?
 	return sv;
 }
 
