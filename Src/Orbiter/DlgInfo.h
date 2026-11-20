@@ -21,7 +21,7 @@ public:
     void DrawTree();
     void DrawInfo();
     void DrawInfoVessel(Vessel *);
-    void DrawInfoCelestialBody(CelestialBody *);
+    void DrawInfoCelestialBody(const CelestialBody *);
     void DrawInfoBase(Base *);
 	void SetBody(Body *);
     std::string m_SelectedTarget;

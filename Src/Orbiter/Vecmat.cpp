@@ -693,43 +693,162 @@ double angle (const Quaternion &A, const Quaternion &B)
 // =======================================================================
 // StateVectors
 
-void StateVectors::Set (const StateVectors &s)
+StateVectors::StateVectors()
 {
-	vel.Set (s.vel);
-	pos.Set (s.pos);
-	omega.Set (s.omega);
-	Q.Set (s.Q);
-	R.Set (s.R);
+	m_mRot.Set(IMatrix());
+	m_qRot.Set(0, 0, 0, 1);
+	m_bMdirty = false;
+	m_bQdirty = false;
+
+	m_nPos_incr = irand(s_nLimit_incr); // spread sync events
+	m_nVel_incr = irand(s_nLimit_incr);
 }
 
-void StateVectors::Set (const Vector &v, const Vector &p, const Vector &av, const Quaternion &ap)
+StateVectors::StateVectors(const StateVectors &s)
 {
-	vel.Set (v);
-	pos.Set (p);
-	omega.Set (av);
-	Q.Set (ap);
-	R.Set (ap);
+	Set(s);
 }
 
-void StateVectors::SetRot (const Matrix &r)
+StateVectors::StateVectors(const Vector &v, const Vector &p, const Vector &av, const Quaternion &ap)
 {
-	R.Set (r);
-	Q.Set (r);
+	Set(v, p, av, ap);
 }
 
-void StateVectors::SetRot (const Quaternion &q)
+void StateVectors::Set(const StateVectors &s)
 {
-	Q.Set (q);
-	R.Set (q);
+	m_vPos.Set(s.m_vPos);
+	m_vPos_base.Set(s.m_vPos_base);
+	m_vPos_incr.Set(s.m_vPos_incr);
+	m_vVel.Set(s.m_vVel);
+	m_vVel_base.Set(s.m_vVel_base);
+	m_vVel_incr.Set(s.m_vVel_incr);
+	m_vAngVel.Set(s.m_vAngVel);
+	if (!(m_bQdirty = s.m_bQdirty))
+		m_qRot.Set(s.m_qRot);
+	if (!(m_bMdirty = s.m_bMdirty))
+		m_mRot.Set(s.m_mRot);
 }
+
+void StateVectors::Set(const Vector &v, const Vector &p, const Vector &av, const Quaternion &ap)
+{
+	SetVel(v);
+	SetPos(p);
+	m_vAngVel.Set(av);
+	m_qRot.Set(ap);
+	m_bQdirty = false;
+	m_bMdirty = true;
+}
+
+void StateVectors::FlushPos()
+{
+	m_vPos_base = m_vPos;
+	m_vPos_incr.Set(0, 0, 0);
+	m_nPos_incr = 0;
+}
+
+void StateVectors::FlushVel()
+{
+	m_vVel_base = m_vVel;
+	m_vVel_incr.Set(0, 0, 0);
+	m_nVel_incr = 0;
+}
+
+void StateVectors::SetPos(const Vector &p)
+{
+	m_vPos = p;
+	FlushPos();
+}
+
+void StateVectors::SetVel(const Vector &v)
+{
+	m_vVel = v;
+	FlushVel();
+}
+
+void StateVectors::AddPos(const Vector &dp)
+{
+	m_vPos += dp;
+	m_vPos_base += dp;
+}
+
+void StateVectors::AddVel(const Vector &dv)
+{
+	m_vVel += dv;
+	m_vVel_base += dv;
+}
+
+void StateVectors::IncPos(const Vector &dp)
+{
+	m_vPos_incr += dp;
+	m_vPos.Set(m_vPos_base + m_vPos_incr);
+
+	if (++m_nPos_incr == s_nLimit_incr)
+		FlushPos();
+}
+
+void StateVectors::IncVel(const Vector &dv)
+{
+	m_vVel_incr += dv;
+	m_vVel.Set(m_vVel_base + m_vVel_incr);
+
+	if (++m_nVel_incr == s_nLimit_incr)
+		FlushVel();
+}
+
+const Matrix &StateVectors::RotM() const
+{
+	if (m_bMdirty) {
+		m_mRot.Set(m_qRot);
+		m_bMdirty = false;
+	}
+	return m_mRot;
+}
+
+const Quaternion &StateVectors::RotQ() const
+{
+	if (m_bQdirty) {
+		m_qRot.Set(m_mRot);
+		m_bQdirty = false;
+	}
+	return m_qRot;
+}
+
+void StateVectors::SetRot(const Matrix &r)
+{
+	m_mRot.Set(r);
+	m_bMdirty = false;
+	m_bQdirty = true;
+}
+
+void StateVectors::SetRot(const Quaternion &q)
+{
+	m_qRot.Set(q);
+	m_bQdirty = false;
+	m_bMdirty = true;
+}
+
+void StateVectors::Rotate(const Vector &dr)
+{
+	if (m_bQdirty) {
+		m_qRot.Set(m_mRot);
+		m_bQdirty = false;
+	}
+	m_qRot.Rotate(dr);
+	m_bMdirty = true;
+}
+
 
 void StateVectors::Advance (double dt, const Vector &a, const Vector &v, const Vector &aa, const Vector &av)
 {
-	vel   += a*dt;
-	pos   += v*dt;
-	omega += aa*dt;
-	Q.Rotate (av*dt);
-	R.Set (Q);
+	IncPos(v * dt);
+	IncVel(a * dt);
+	m_vAngVel += aa * dt;
+	if (m_bQdirty) {
+		m_qRot.Set(m_mRot);
+		m_bQdirty = false;
+	}
+	m_qRot.Rotate(av * dt);
+	m_bMdirty = true;
 }
 
 // =======================================================================

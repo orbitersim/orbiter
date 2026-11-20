@@ -109,7 +109,7 @@ public:
 	// Set angular velocity components to omega [rad/s]
 	// If ref is set, then avel refers to that vessel.
 
-	void InitLanded (Planet *planet, double lng, double lat, double dir, const Matrix *hrot=0, double cgelev=0.0, bool asComponent=false);
+	void InitLanded (const Planet *planet, double lng, double lat, double dir, const Matrix *hrot=0, double cgelev=0.0, bool asComponent=false);
 	// init vessel position on ground
 	// Note: InitLanded must be called after the update phase (after EndStateUpdate)
 
@@ -143,7 +143,7 @@ public:
 	inline double Mass() const { return mass; }
 	// Returns supervessel mass (sum of component masses)
 
-	void SetStateFromComponent (const StateVectors *scomp, int comp) const;
+	void SetStateFromComponent (const StateVectors *scomp, int comp);
 	// Set the supervessel state from one of its component states
 
 	void SetFlightStatus (FlightStatus fstatus);
@@ -193,9 +193,13 @@ private:
 	void SetOrbitReference (CelestialBody *body);
 	// reset reference object for element calculation to "body"
 
-	void ComponentStateVectors (const StateVectors *s, StateVectors *scomp, int comp) const;
+	const StateVectors ComponentStateVectors(const StateVectors *s, int comp) const;
 	// Returns state vectors scomp for component vessel comp, given supervessel
 	// state vectors s
+
+	const Vector ComponentAngAcc(const Vector &arot, int comp) const;
+	// Returns angular acceleration vector for component comp, given  supervessel
+	// angular acceleration arot
 
 	void AddComponentForceAndMoment (Vector *F, Vector *M,
 		const Vector *Fcomp, const Vector *Mcomp, int comp) const;

@@ -756,7 +756,7 @@ bool Instrument_Map::ClbkSubmn_Target (Select *menu, int item, char *str, void *
 			return (j > 0);
 		case 3: // moons
 			for (i = 0, j = 0; i < g_psys->nGrav(); i++) {
-				Body *body = g_psys->GetGravObj(i);
+				const Body *body = g_psys->GetGravObj(i);
 				if (body->Type() == OBJTP_PLANET && body->ElRef() == map->refplanet)
 					menu->Append (body->Name()), j++;
 			}

@@ -47,7 +47,7 @@ inline double posangle (double angle)
 }
 #endif
 
-// Difference a1-a2, redmoving phase wrap
+// Difference a1-a2, removing phase wrap
 inline double diffangle (double a1, double a2)
 {
 	a1 = fmod (a1, Pi2); if (a1 < 0) a1 += Pi2;
@@ -374,7 +374,7 @@ public:
 	Quaternion Rot (const Vector &omega) const;
 	// returns the quaternion rotated by angles omega
 
-	friend Vector mul (const Quaternion &q, const Vector &b);
+	friend Vector mul (const Quaternion &q, const Vector &p);
 	// Returns vector p rotated by quaternion
 
 	friend Vector tmul (const Quaternion &q, const Vector &p);
@@ -386,6 +386,8 @@ public:
 	void tpostmul (const Quaternion &Q); // *this = *this * Q^-1
 
 	Quaternion operator* (const Quaternion &Q) const; // returns *this * Q
+
+	Vector operator* (const Vector &p) const { return mul(*this, p); }
 
 	Quaternion conj (const Quaternion &Q) const // returns conjugate of Q
 	{ return Quaternion (-Q.qvx, -Q.qvy, -Q.qvz, Q.qs); }
@@ -406,28 +408,63 @@ public:
 // =======================================================================
 // State vector struct
 // Contains the state of a rigid body (position, linear velocity, orientation,
-// angular velocity
+// angular velocity, with respect to a reference frame
 
-class StateVectors {
+class StateVectors
+{
 public:
-	void Set (const StateVectors &s);
+	StateVectors();
+	StateVectors(const StateVectors &s);
+	StateVectors(const Vector &v, const Vector &p, const Vector &av, const Quaternion &ap);
 
-	void Set (const Vector &v, const Vector &p, const Vector &av, const Quaternion &ap);
+	void Set(const StateVectors &s);
+	void Set(const Vector &v, const Vector &p, const Vector &av, const Quaternion &ap);
 	// Set state vectors to linear velocity v, position p, angular velocity av and
 	// orientation ap.
 
-	void SetRot (const Matrix &r);     // set rotation state from a rotation matrix
-	void SetRot (const Quaternion &q); // set rotation state from a quaternion
+	const Vector &Pos() const { return m_vPos; }
+	void SetPos(const Vector &p);
+	void AddPos(const Vector &dp); // use this to add position components comparable in magnitude to the state vector value
+	void IncPos(const Vector &dp); // use this to add position components small compared to the state vector value
+
+	const Vector &Vel() const { return m_vVel; }
+	void SetVel(const Vector &v);
+	void AddVel(const Vector &dv); // use this to add velocity components comparable in magnitude to the state vector value
+	void IncVel(const Vector &dv); // use this to add velocity components small compared to the state vector value
+
+	const Matrix &RotM() const;
+	const Quaternion &RotQ() const;
+	void SetRot(const Matrix &r);     // set rotation state from a rotation matrix
+	void SetRot(const Quaternion &q); // set rotation state from a quaternion
+	void Rotate(const Vector &dr);    // rotate by the angles dr
+
+	const Vector &AngVel() const { return m_vAngVel; }
+	void SetAngVel(const Vector &av) { m_vAngVel = av; }
+	void IncAngVel(const Vector &dav) { m_vAngVel += dav; }
 
 	void Advance (double dt, const Vector &a, const Vector &v, const Vector &aa, const Vector &av);
 	// Advance the state vectors by dt, given linear acceleration a, linear velocity v,
 	// angular acceleration aa and angular velocity av.
 
-	Vector pos;      // position in associated frame
-	Vector vel;      // linear velocity in associated frame
-	Matrix R;        // rotation matrix in associated frame
-	Quaternion Q;    // orientation in associated frame
-	Vector omega;    // angular velocity components in associated frame
+	void FlushPos();
+	void FlushVel();
+
+private:
+	Vector m_vPos;                    // position in associated frame
+	Vector m_vPos_base, m_vPos_incr;  // position split into base and increment
+	Vector m_vVel;                    // linear velocity in associated frame
+	Vector m_vVel_base, m_vVel_incr;  // velocity split into base and increment
+	int m_nPos_incr;                  // position flush counter
+	int m_nVel_incr;                  // velocity flush counter
+
+	mutable Matrix m_mRot;            // orientation represented by rotation matrix
+	mutable Quaternion m_qRot;        // orientation represented by quaternion
+	mutable bool m_bMdirty;           // dirty flag for rotation matrix
+	mutable bool m_bQdirty;           // dirty flag for rotation quaternion
+
+	Vector m_vAngVel;                 // angular velocity components in associated frame
+
+	static const int s_nLimit_incr{ 100000 };
 };
 
 // =======================================================================

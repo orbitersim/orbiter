@@ -32,12 +32,16 @@ public:
 	CelestialBody (char *fname);
 	virtual ~CelestialBody ();
 
+	void SetPsys(const PlanetarySystem *system);
+	const PlanetarySystem *GetPsys() const;
+
 	void DefaultParam ();
 	virtual void Setup ();
 	virtual int Type() const { return OBJTP_CBODY; }
 	virtual void Update (bool force);
 
 	CELBODY *GetModuleInterface() { return module; }
+	const CELBODY *GetModuleInterface() const { return module; }
 	// module interface pointer, if available
 
 	void Attach (CelestialBody *_parent);
@@ -106,7 +110,7 @@ public:
 	// linear interpolation of position, plus linear interpolation of radius, if
 	// body's element reference exists
 
-	StateVectors InterpolateState (double n) const;
+	const StateVectors InterpolateState(double n) const;
 	// Celestial body state vectors at fractional time n [0..1] between
 	// s0 at td.SimT0 and s1 at td.SimT1
 	// Note: This function can only be called during the state calculation phase, after
@@ -165,12 +169,12 @@ protected:
 	// external module.
 	// Returns false if not supported by module
 
-	int ExternState (double *res);
+	int TryExternEphemeris(double *res);
 	// Try to obtain current ephemeris data (true and barycentric) from external
 	// module. This tries first FastEphemeris, then Ephemeris. Return value
 	// contains data flags returned by the ephemeris functions
 
-	int ExternPosition ();
+	int TryExternState();
 	// Try to obtain current ephemeris data (true and barycentric) from external
 	// module. This tries first FastEphemeris, then Ephemeris. Return value
 	// indicates which data could be updated
@@ -197,6 +201,8 @@ protected:
 	} modIntf;
 
 private:
+	const PlanetarySystem *psys; // system the planet belongs to
+
 	HINSTANCE hMod;          // module handle, if available
 	
 	double eps_ref;          // precession reference axis: obliquity against ecliptic normal

@@ -48,7 +48,7 @@ void DlgInfo::DrawTree() {
 
     if (ImGui::TreeNode("Spaceports")) {
         for (int i = 0; i < g_psys->nGrav(); i++) {
-            Body *obj = g_psys->GetGravObj (i);
+            const Body *obj = g_psys->GetGravObj(i);
             if (obj->Type() != OBJTP_PLANET) continue;
             Planet *planet = (Planet*)obj;
             if (g_psys->nBase(planet) > 0) {
@@ -88,7 +88,7 @@ void DlgInfo::DrawInfo() {
         DrawInfoVessel(vessel);
         return;
     }
-    CelestialBody *cb = g_psys->GetGravObj(m_SelectedTarget.c_str(), true);
+    const CelestialBody *cb = g_psys->GetGravObj(m_SelectedTarget.c_str(), true);
     if(cb) {
         DrawInfoCelestialBody(cb);
         return;
@@ -481,7 +481,8 @@ void DlgInfo::DrawInfoVessel(Vessel *vessel) {
 }
 
 
-void DlgInfo::DrawInfoCelestialBody(CelestialBody *cbody) {
+void DlgInfo::DrawInfoCelestialBody(const CelestialBody *cbody)
+{
     const Elements *el = nullptr;
     const Planet *planet = nullptr;
     const CELBODY *cb = cbody->GetModuleInterface();
