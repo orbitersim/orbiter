@@ -24,7 +24,8 @@ set_target_properties(lfs PROPERTIES
     RUNTIME_OUTPUT_DIRECTORY ${ORBITER_BINARY_ROOT_DIR}
 )
 
+add_directory_copy(${CMAKE_CURRENT_SOURCE_DIR}/ldoc ${ORBITER_BINARY_ROOT_DIR}/packages/ldoc ldoc_outputs)
+add_directory_copy(${CMAKE_CURRENT_SOURCE_DIR}/Penlight/lua ${ORBITER_BINARY_ROOT_DIR} ldoc_outputs)
 add_custom_target(CopyLDoc ALL
-	COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_CURRENT_SOURCE_DIR}/ldoc/ ${ORBITER_BINARY_ROOT_DIR}/packages/ldoc
-	COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_CURRENT_SOURCE_DIR}/Penlight/lua/ ${ORBITER_BINARY_ROOT_DIR}/
+	DEPENDS ${ldoc_outputs}
 )

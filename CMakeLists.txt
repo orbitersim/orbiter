@@ -116,18 +116,47 @@ else()
   set(CMAKE_BUILD_WITH_INSTALL_RPATH true)
 endif()
 
+# Given a source directory (srcdir) and a target root directory (tgtroot),
+# generate a list of all files found in srcdir (srclist) and a list of output files
+# when the source directory is copied to the target root (tgtlist)
+# For a copy_directory command, srclist can be used as dependencies, and tgtlist as output
+# CONFIGURE_DEPENDS makes the build re-glob, so files added to srcdir are picked up without a manual re-configure
+
+function(srcdir_to_tgtlist srcdir tgtroot srclist tgtlist)
+	file(GLOB_RECURSE infiles
+		CONFIGURE_DEPENDS
+		RELATIVE ${srcdir}
+		${srcdir}/*
+	)
+	set(local_srclist ${infiles})
+	list(TRANSFORM local_srclist PREPEND "${srcdir}/")
+	set(local_tgtlist ${infiles})
+	list(TRANSFORM local_tgtlist PREPEND "${tgtroot}/")
+	set(srclist ${local_srclist} PARENT_SCOPE)
+	set(tgtlist ${local_tgtlist} PARENT_SCOPE)
+endfunction()
+
+# Add a build rule that copies srcdir to tgtdir only when a file in srcdir has changed,
+# and append the copied files to the list variable outvar so a target can depend on them
+
+function(add_directory_copy srcdir tgtdir outvar)
+	srcdir_to_tgtlist(${srcdir} ${tgtdir} srclist tgtlist)
+	add_custom_command(
+		OUTPUT ${tgtlist}
+		COMMAND ${CMAKE_COMMAND} -E copy_directory ${srcdir}/ ${tgtdir}
+		DEPENDS ${srclist}
+	)
+	set(${outvar} ${${outvar}} ${tgtlist} PARENT_SCOPE)
+endfunction()
+
 # Copy data and binary assets from source to binary tree to provide a working Orbiter environment
+add_directory_copy(${CMAKE_SOURCE_DIR}/BinAssets ${CMAKE_BINARY_DIR} copydata_outputs)
+foreach(datadir Scenarios Textures Meshes Script Config GravityModels Kernels Flights)
+	add_directory_copy(${CMAKE_SOURCE_DIR}/${datadir} ${CMAKE_BINARY_DIR}/${datadir} copydata_outputs)
+endforeach()
+file(MAKE_DIRECTORY ${ORBITER_BINARY_SDK_DIR}/lib/Lua)
 add_custom_target(CopyData ALL
-	COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_SOURCE_DIR}/BinAssets/ ${CMAKE_BINARY_DIR}
-	COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_SOURCE_DIR}/Scenarios/ ${CMAKE_BINARY_DIR}/Scenarios
-	COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_SOURCE_DIR}/Textures/ ${ORBITER_BINARY_TEXTURES_DIR}
-	COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_SOURCE_DIR}/Meshes/ ${CMAKE_BINARY_DIR}/Meshes
-	COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_SOURCE_DIR}/Script/ ${CMAKE_BINARY_DIR}/Script
-	COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_SOURCE_DIR}/Config/ ${CMAKE_BINARY_DIR}/Config
-	COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_SOURCE_DIR}/GravityModels/ ${CMAKE_BINARY_DIR}/GravityModels
-	COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_SOURCE_DIR}/Kernels/ ${CMAKE_BINARY_DIR}/Kernels
-	COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_SOURCE_DIR}/Flights/ ${CMAKE_BINARY_DIR}/Flights
-	COMMAND ${CMAKE_COMMAND} -E make_directory ${ORBITER_BINARY_SDK_DIR}/lib/Lua
+	DEPENDS ${copydata_outputs}
 )
 set_target_properties(CopyData
 	PROPERTIES
@@ -245,25 +274,6 @@ include(cmake/sanitizer.cmake)
 if (ORBITER_SANITIZER AND MSVC)
 	enable_sanitizer(${ORBITER_SANITIZER})
 endif()
-
-
-# Given a source directory (srcdir) and a target root directory (tgtroot),
-# generate a list of all files found in srcdir (srclist) and a list of output files
-# when the source directory is copied to the target root (tgtlist)
-# For a copy_directory command, srclist can be used as dependencies, and tgtlist as output
-
-function(srcdir_to_tgtlist srcdir tgtroot srclist tgtlist)
-	file(GLOB_RECURSE infiles
-		RELATIVE ${srcdir}
-		${srcdir}/*
-	)
-	set(local_srclist ${infiles})
-	list(TRANSFORM local_srclist PREPEND "${srcdir}/")
-	set(local_tgtlist ${infiles})
-	list(TRANSFORM local_tgtlist PREPEND "${tgtroot}/")
-	set(srclist ${local_srclist} PARENT_SCOPE)
-	set(tgtlist ${local_tgtlist} PARENT_SCOPE)
-endfunction()
 
 
 # Installation
