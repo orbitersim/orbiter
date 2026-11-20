@@ -821,15 +821,18 @@ Vector PlanetarySystem::GetMomentumFlux (const Vector &gpos) const
 
 void PlanetarySystem::Update (bool force)
 {
+	extern bool g_bVesselUpdate;
 	DWORD i;
 	for (i = 0; i < bodies      .size(); i++) bodies      [i]->BeginStateUpdate();
 	for (i = 0; i < supervessels.size(); i++) supervessels[i]->BeginStateUpdate();
 	for (i = 0; i < stars       .size(); i++) stars       [i]->RelTrueAndBaryState();
 	for (i = 0; i < stars       .size(); i++) stars       [i]->AbsTrueState();
 	for (i = 0; i < celestials  .size(); i++) celestials  [i]->Update (force);
+	g_bVesselUpdate = true; // flag to indicate vessel update phase
 	for (i = 0; i < vessels     .size(); i++) vessels     [i]->UpdateBodyForces();
 	for (i = 0; i < supervessels.size(); i++) supervessels[i]->Update(force);
 	for (i = 0; i < vessels     .size(); i++) vessels     [i]->Update(force);
+	g_bVesselUpdate = false; // end vessel update phase
 }
 
 void PlanetarySystem::FinaliseUpdate ()
