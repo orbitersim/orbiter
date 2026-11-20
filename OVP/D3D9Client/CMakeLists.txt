@@ -168,6 +168,7 @@ add_library(D3D9Client MODULE
 	D3D9Client.rc
 )
 
+target_include_directories(D3D9Client PRIVATE ${CMAKE_CURRENT_BINARY_DIR})
 target_include_directories(D3D9Client PUBLIC
 	${ORBITER_SOURCE_SDK_INCLUDE_DIR}
 	${DXSDK_DIR}/Include
@@ -216,14 +217,19 @@ add_custom_command(
 	COMMAND ${CMAKE_COMMAND} -E copy_directory ${D3D9_SOURCE_DIR}/shaders/ ${ORBITER_BINARY_MODULE_DIR}/D3D9Client
 )
 
-add_custom_command(OUTPUT ${INCLUDE_TARGET_DIR}/gcCoreAPI.h ${INCLUDE_TARGET_DIR}/gcGUI.h
-	DEPENDS ${D3D9_SOURCE_DIR}/gcGUI.h ${D3D9_SOURCE_DIR}/gcCore.h ${D3D9_SOURCE_DIR}/gcCore.cpp
-	COMMAND ${InterfaceBuilder} ${D3D9_SOURCE_DIR}/gcCore.h ${INCLUDE_TARGET_DIR}/gcCoreAPI.h ${D3D9_SOURCE_DIR}/gcCore.cpp
+# InterfaceBuilder fills the lines between binder_start and binder_end of its third argument with the
+# method table that gcCore.cpp includes. It rewrites that file in place, so it starts from a fresh skeleton.
+set(GCCORE_BINDERS ${CMAKE_CURRENT_BINARY_DIR}/gcCoreBinders.inl)
+file(CONFIGURE OUTPUT ${GCCORE_BINDERS}.in CONTENT "#define binder_start\n#define binder_end\n")
+add_custom_command(OUTPUT ${INCLUDE_TARGET_DIR}/gcCoreAPI.h ${INCLUDE_TARGET_DIR}/gcGUI.h ${GCCORE_BINDERS}
+	DEPENDS ${D3D9_SOURCE_DIR}/gcGUI.h ${D3D9_SOURCE_DIR}/gcCore.h
+	COMMAND ${CMAKE_COMMAND} -E copy ${GCCORE_BINDERS}.in ${GCCORE_BINDERS}
+	COMMAND ${InterfaceBuilder} ${D3D9_SOURCE_DIR}/gcCore.h ${INCLUDE_TARGET_DIR}/gcCoreAPI.h ${GCCORE_BINDERS}
 	COMMAND ${CMAKE_COMMAND} -E copy ${D3D9_SOURCE_DIR}/gcGUI.h ${INCLUDE_TARGET_DIR}/gcGUI.h
 	VERBATIM
 )
 add_custom_target(D3D9Client_Interface
-	DEPENDS ${INCLUDE_TARGET_DIR}/gcCoreAPI.h ${INCLUDE_TARGET_DIR}/gcGUI.h
+	DEPENDS ${INCLUDE_TARGET_DIR}/gcCoreAPI.h ${INCLUDE_TARGET_DIR}/gcGUI.h ${GCCORE_BINDERS}
 )
 
 add_dependencies(D3D9Client
