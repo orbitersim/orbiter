@@ -39,3 +39,39 @@ install(FILES ${implot_SOURCE_DIR}/implot.h
 set(IMPLOT_INCLUDE_DIR ${CMAKE_CURRENT_BINARY_DIR}/include)
 file(COPY ${implot_SOURCE_DIR}/implot.h DESTINATION ${IMPLOT_INCLUDE_DIR})
 target_include_directories(implot INTERFACE ${IMPLOT_INCLUDE_DIR})
+
+
+
+### Node editor
+
+FetchContent_Declare(
+  nodeedit
+  GIT_REPOSITORY https://github.com/thedmd/imgui-node-editor.git
+  GIT_TAG 1e0e494f1a86885eb332ca518543108ccd88d13e
+#  UPDATE_DISCONNECTED 1
+)
+FetchContent_MakeAvailable(nodeedit)
+
+set(NODEEDIT_INCLUDE_DIR ${nodeedit_SOURCE_DIR}/include)
+set(IMGUI_NODE_EDITOR_SOURCES
+	"${nodeedit_SOURCE_DIR}/imgui_node_editor.cpp"
+	"${nodeedit_SOURCE_DIR}/imgui_node_editor_api.cpp"
+	"${nodeedit_SOURCE_DIR}/imgui_canvas.cpp"
+	"${nodeedit_SOURCE_DIR}/crude_json.cpp"
+)
+
+set(IMGUI_NODE_EDITOR_HEADERS
+    "${nodeedit_SOURCE_DIR}/imgui_node_editor.h"
+)
+
+set(IMGUI_NODE_EDITOR_INC_PATH "${nodeedit_SOURCE_DIR}/")
+
+add_library(nodeedit OBJECT
+        ${IMGUI_NODE_EDITOR_SOURCES}
+        ${IMGUI_NODE_EDITOR_HEADERS}
+)
+target_include_directories(nodeedit
+    PUBLIC
+	"${imgui_SOURCE_DIR}"
+	"${nodeedit_SOURCE_DIR}"
+)

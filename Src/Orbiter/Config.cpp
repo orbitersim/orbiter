@@ -195,9 +195,13 @@ CFG_DEVPRM CfgDevPrm_default = {
 };
 
 CFG_JOYSTICKPRM CfgJoystickPrm_default = {
-	0,			// Joy_idx (joystick device index, 0=disabled)
+	1,			// Joy_idx (joystick device index, 0=disabled)
 	2500,		// Deadzone (neutralise joystick axes within 20% of central position)
-	1,			// ThrottleAxis (z-axis by default)
+	3,			// ThrottleAxis
+	1,			// XAxis
+	2,			// YAxis
+	4,			// ZAxis
+	1,			// AltButton
 	9500,		// ThrottleSaturation (saturate throttle at the last 5% each end)
 	true		// bThrottleIgnore (ignore throttle setting on simulation start)
 };
@@ -555,9 +559,17 @@ bool Config::Load(const char *fname)
 	if (GetInt (ifs, "JoystickIndex", i))
 		CfgJoystickPrm.Joy_idx = (DWORD)i;
 	if (GetInt (ifs, "JoystickThrottleAxis", i))
-		CfgJoystickPrm.ThrottleAxis = max (0, min (3, i));
+		CfgJoystickPrm.ThrottleAxis = max (0, min (6, i));
 	if (GetInt (ifs, "JoystickThrottleSaturation", i))
 		CfgJoystickPrm.ThrottleSaturation = max (0, min (10000, i));
+	if (GetInt (ifs, "JoystickXAxis", i))
+		CfgJoystickPrm.XAxis = max (0, min (6, i));
+	if (GetInt (ifs, "JoystickYAxis", i))
+		CfgJoystickPrm.YAxis = max (0, min (6, i));
+	if (GetInt (ifs, "JoystickZAxis", i))
+		CfgJoystickPrm.ZAxis = max (0, min (6, i));
+	if (GetInt (ifs, "JoystickAltButton", i))
+		CfgJoystickPrm.AltButton = max (0, min (6, i));
 	if (GetInt (ifs, "JoystickDeadzone", i))
 		CfgJoystickPrm.Deadzone = max (0, min (10000, i));
 	GetBool (ifs, "IgnoreThrottleOnStart", CfgJoystickPrm.bThrottleIgnore);
@@ -1282,6 +1294,14 @@ BOOL Config::Write (const char *fname) const
 			ofs << "JoystickThrottleAxis = " << CfgJoystickPrm.ThrottleAxis << '\n';
 		if (CfgJoystickPrm.ThrottleSaturation != CfgJoystickPrm_default.ThrottleSaturation || bEchoAll)
 			ofs << "JoystickThrottleSaturation = " << CfgJoystickPrm.ThrottleSaturation << '\n';
+		if (CfgJoystickPrm.XAxis != CfgJoystickPrm_default.XAxis || bEchoAll)
+			ofs << "JoystickXAxis = " << CfgJoystickPrm.XAxis << '\n';
+		if (CfgJoystickPrm.YAxis != CfgJoystickPrm_default.YAxis || bEchoAll)
+			ofs << "JoystickYAxis = " << CfgJoystickPrm.YAxis << '\n';
+		if (CfgJoystickPrm.ZAxis != CfgJoystickPrm_default.ZAxis || bEchoAll)
+			ofs << "JoystickZAxis = " << CfgJoystickPrm.ZAxis << '\n';
+		if (CfgJoystickPrm.AltButton != CfgJoystickPrm_default.AltButton || bEchoAll)
+			ofs << "JoystickAltButton = " << CfgJoystickPrm.AltButton << '\n';
 		if (CfgJoystickPrm.Deadzone != CfgJoystickPrm_default.Deadzone || bEchoAll)
 			ofs << "JoystickDeadzone = " << CfgJoystickPrm.Deadzone << '\n';
 		if (CfgJoystickPrm.bThrottleIgnore != CfgJoystickPrm_default.bThrottleIgnore || bEchoAll)
