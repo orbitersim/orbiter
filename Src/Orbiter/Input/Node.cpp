@@ -5,7 +5,7 @@ Node::Node(const char *n) {
 	name = n;
 }
 
-Pin *Node::AddInput(const char *n, Pin::type type) {
+Pin *Node::AddInput(const char *iname, const char *dname, Pin::type type) {
 	dirty = true;
 
 	if(jsonTemplate) {
@@ -13,19 +13,19 @@ Pin *Node::AddInput(const char *n, Pin::type type) {
 			for(auto &i: (*jsonTemplate)["inputs"].get<crude_json::array>()) {
 				std::string jsonname = i["name"].get<std::string>();
 				enum Pin::type jsontype = (enum Pin::type)stoi(i["type"].get<std::string>());
-				if(type == jsontype && jsonname == n) {
+				if(type == jsontype && jsonname == iname) {
 					ed::PinId id = std::stoi(i["id"].get<std::string>());
-					inputs.emplace_back(n, type, Pin::kind::Input, this, id);
+					inputs.emplace_back(iname, dname, type, Pin::kind::Input, this, id);
 					return &inputs.back();;
 				}
 			}
 		}
 	}
 
-	inputs.emplace_back(n, type, Pin::kind::Input, this, pinidgen++);
+	inputs.emplace_back(iname, dname, type, Pin::kind::Input, this, pinidgen++);
 	return &inputs.back();
 }
-Pin *Node::AddOutput(const char *n, Pin::type type) {
+Pin *Node::AddOutput(const char *iname, const char *dname, Pin::type type) {
 	dirty = true;
 
 	if(jsonTemplate) {
@@ -33,9 +33,9 @@ Pin *Node::AddOutput(const char *n, Pin::type type) {
 			for(auto &o: (*jsonTemplate)["outputs"].get<crude_json::array>()) {
 				std::string jsonname = o["name"].get<std::string>();
 				enum Pin::type jsontype = (enum Pin::type)stoi(o["type"].get<std::string>());
-				if(type == jsontype && jsonname == n) {
+				if(type == jsontype && jsonname == iname) {
 					ed::PinId id = std::stoi(o["id"].get<std::string>());
-					outputs.emplace_back(n, type, Pin::kind::Output, this, id);
+					outputs.emplace_back(iname, dname, type, Pin::kind::Output, this, id);
 					Pin *ret = &outputs.back();
 					if(o.contains("deadzone")) {
 						float deadzone = o["deadzone"].get<crude_json::number>();
@@ -60,7 +60,7 @@ Pin *Node::AddOutput(const char *n, Pin::type type) {
 		}
 	}
 
-	outputs.emplace_back(n, type, Pin::kind::Output, this, pinidgen++);
+	outputs.emplace_back(iname, dname, type, Pin::kind::Output, this, pinidgen++);
 	return &outputs.back();
 }
 
@@ -157,6 +157,7 @@ void Node::ToJSON(crude_json::value &out)
         crude_json::value pin;
         pin["id"] = std::to_string((ptrdiff_t)n.id.AsPointer());
         pin["name"] = n.name;
+        pin["displayname"] = n.displayname;
         pin["type"] = std::to_string((int)n.ptype);
         out["inputs"].push_back(pin);
     }
@@ -164,6 +165,7 @@ void Node::ToJSON(crude_json::value &out)
         crude_json::value pin;
         pin["id"] = std::to_string((ptrdiff_t)n.id.AsPointer());
         pin["name"] = n.name;
+        pin["displayname"] = n.displayname;
         pin["type"] = std::to_string((int)n.ptype);
         if(n.context.deadzone != 0.0f)
             pin["deadzone"] = n.context.deadzone;

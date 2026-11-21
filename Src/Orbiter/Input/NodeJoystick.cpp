@@ -168,16 +168,14 @@ void NodeJoystick::InitFromJoystick(Joystick *joy, int i)
     };
 
     for(auto &btn: js->btnnames) {
-        AddOutput(btn.c_str(), Pin::type::Button);
+        AddOutput(btn.name.c_str(),btn.displayname.c_str(), Pin::type::Button);
     }
     for(auto &axis: js->axesnames) {
-        Pin *pin = AddOutput(axis.c_str(), Pin::type::Axis);
+        Pin *pin = AddOutput(axis.name.c_str(), axis.displayname.c_str(), Pin::type::Axis);
         pin->cbContextMenu = cbAxis;
     }
-    for(size_t hat = 0; hat < js->state.hats.size(); hat++) {
-        char hatname[32];
-        sprintf(hatname, "Hat %zu", hat);
-        AddOutput(hatname, Pin::type::Hat);
+    for(auto &hat: js->hatnames) {
+        AddOutput(hat.name.c_str(), hat.displayname.c_str(), Pin::type::Hat);
     }
 
     guid = js->guid;
@@ -197,10 +195,11 @@ void NodeJoystick::RegisterPins()
 		name = (*jsonTemplate)["lastseenname"].get<std::string>();
 		for(auto &o: (*jsonTemplate)["outputs"].get<crude_json::array>()) {
 			std::string jsonname = o["name"].get<std::string>();
+			std::string displayname = o["displayname"].get<std::string>();
 			enum Pin::type jsontype = (enum Pin::type)stoi(o["type"].get<std::string>());
 
 			ed::PinId id = std::stoi(o["id"].get<std::string>());
-			outputs.emplace_back(jsonname, jsontype, Pin::kind::Output, this, id);
+			outputs.emplace_back(jsonname, displayname, jsontype, Pin::kind::Output, this, id);
 			Pin *ret = &outputs.back();
 			if(o.contains("deadzone")) {
 				float deadzone = o["deadzone"].get<crude_json::number>();
@@ -290,6 +289,19 @@ void NodeJoystick::Attach(Joystick *joy)
     js = joy;
 	grayed = false;
 	name = js->name;
+
+	// Reassign names
+    size_t idx = 0;
+    for(int i = 0; i < js->nbuttons; i++) {
+        outputs[idx++].displayname = js->btnnames[i].displayname;
+    }
+    for(int i = 0; i < js->naxis; i++) {
+        outputs[idx++].displayname = js->axesnames[i].displayname;
+    }
+    for(int i = 0; i < js->nhats; i++) {
+        outputs[idx++].displayname = js->hatnames[i].displayname;
+    }
+
 }
 
 bool NodeJoystick::CanAttach(Joystick *js) {

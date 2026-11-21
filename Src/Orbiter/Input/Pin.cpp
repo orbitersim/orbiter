@@ -3,9 +3,10 @@
 #include <algorithm>
 #include <imgui_node_editor.h>
 
-Pin::Pin(std::string n, enum Pin::type t, enum Pin::kind k, Node *p, ed::PinId i) {
+Pin::Pin(std::string iname, std::string dname, enum Pin::type t, enum Pin::kind k, Node *p, ed::PinId i) {
     id = i;
-    name = n;
+    name = std::move(iname);
+    displayname = std::move(dname);
     ptype = t;
     pkind = k;
     fVal = 0.0f;
@@ -105,13 +106,13 @@ void Pin::Draw(std::function<bool(const Pin *)> filter)
     }
     ImGui::PushStyleVar(ImGuiStyleVar_Alpha, alpha);
     if(pkind == Pin::kind::Output) {
-        ImGui::TextUnformatted(name.c_str());
+        ImGui::TextUnformatted(displayname.c_str());
         ImGui::SameLine();
         DrawIcon();
     } else {
         DrawIcon();
         ImGui::SameLine();
-        ImGui::TextUnformatted(name.c_str());
+        ImGui::TextUnformatted(displayname.c_str());
     }
     ImGui::PopStyleVar();
 }
