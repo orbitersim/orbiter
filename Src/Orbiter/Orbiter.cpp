@@ -1916,13 +1916,14 @@ bool Orbiter::UnregisterCustomCmd (int cmdId)
 
 int Orbiter::RegisterMenuCmd (const char *label, const char *imagepath, CustomFunc func, void *context)
 {
+	const int id = g_customcmdid++;
 	// share g_customcmdid for unique id
-	menuitems.emplace_back(label, imagepath, g_customcmdid++, func, context);
+	menuitems.emplace_back(label, imagepath, id, func, context);
 	if(g_pane) {
-		g_pane->MIBar()->RegisterMenuItem(label, imagepath, g_customcmdid, func, context);
+		g_pane->MIBar()->RegisterMenuItem(label, imagepath, id, func, context);
 	}
 
-	return g_customcmdid;
+	return id;
 }
 void Orbiter::UnregisterMenuCmd (int cmdId)
 {
