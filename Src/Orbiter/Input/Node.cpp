@@ -142,13 +142,15 @@ void Node::ToJSON(crude_json::value &out)
 	out["id"] = std::to_string(id);
 	out["pinidgen"] = std::to_string(pinidgen);
 	
-    ImVec2 pos = ed::GetNodePosition(id);
+	if(placed) {
+		ImVec2 pos = ed::GetNodePosition(id);
 
-    if(pos.x == FLT_MAX) pos.x = 0;
-    if(pos.y == FLT_MAX) pos.y = 0;
+		if(pos.x == FLT_MAX) pos.x = 0;
+		if(pos.y == FLT_MAX) pos.y = 0;
 
-    out["xpos"] = pos.x;
-    out["ypos"] = pos.y;
+		out["xpos"] = pos.x;
+		out["ypos"] = pos.y;
+	}
 
     for(auto &n: inputs) {
         crude_json::value pin;
@@ -181,6 +183,7 @@ void Node::InitFromJSON(const crude_json::value &json)
 	id = std::stoi(json["id"].get<std::string>());
 	pinidgen = std::stoi(json["pinidgen"].get<std::string>());
 	InitPins();
+	initialized = true;
 
 	jsonTemplate = NULL;
 }
@@ -190,4 +193,5 @@ void Node::InitDefault(int i)
 	id = i;
 	pinidgen = (id << 16) + 1;
 	InitPins();
+	initialized = true;
 }

@@ -39,6 +39,7 @@ public:
 // The Nodes own the Pins
 class ControllerGraph final {
     public:
+	ed::EditorContext* m_Context = NULL;
     std::vector<Link> links;
     std::vector<std::unique_ptr<Node>> nodes;
 	std::unordered_map<void *, Pin *> pins; // Map between ed::PinId and Pins
@@ -51,13 +52,14 @@ class ControllerGraph final {
     ControllerGraph();
     ~ControllerGraph();
 	void Update(bool dryrun);
-    void Draw();
+    void DrawEditor();
 	void AddNode(std::unique_ptr<Node> node);
 	void DeleteNode(Node *node);
+	bool NodeHasRoom(ImVec2 pos, ImVec2 size);
 	Pin *PinFromId(ed::PinId id) { return pins.at(id.AsPointer()); }
 	bool CanLink(const Pin *a, const Pin *b);
 	void TopologicalSort();
-	void Load(const char *path);
+	bool Load(const char *path);
 	void Save(const char *path);
 	void AttachJoystick(Joystick *joystick);
 	void DetachJoystick(Joystick *joystick);

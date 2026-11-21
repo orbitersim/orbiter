@@ -112,7 +112,6 @@ set(common_src
 	D3d7util.cpp
 	D3dmath.cpp
     Input/Controller.cpp
-    Input/Editor.cpp
     Input/Icon.cpp
     Input/Pin.cpp
     Input/Graph.cpp
@@ -170,7 +169,7 @@ set_target_properties(Orbiter
 	RUNTIME_OUTPUT_DIRECTORY ${ORBITER_BINARY_ROOT_DIR}
 	OUTPUT_NAME Orbiter
 	VS_DEBUGGER_WORKING_DIRECTORY ${ORBITER_BINARY_ROOT_DIR}
-	COMPILE_DEFINITIONS "NOGRAPHICS;DIRECTINPUT_VERSION=0x0800"
+	COMPILE_DEFINITIONS "NOGRAPHICS"
 	FOLDER Core
 )
 

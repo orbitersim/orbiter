@@ -1,5 +1,4 @@
 #include "Controller.h"
-#include "OrbiterSDK.h"
 #include "Orbiter.h"
 #include "Config.h"
 #include "Graph.h"
@@ -8,13 +7,36 @@
 
 extern Orbiter* g_pOrbiter;
 
+static void OpenDlgClbk(void *context)
+{
+    ControllerEditor *ed = (ControllerEditor *)context;
+    oapiOpenDialog(ed);
+}
+
+void ControllerEditor::OnDraw()
+{
+	ControllerGraph *graph = InputController::GetGraph();
+	graph->DrawEditor();
+}
+
 void InputController::GlobalInit()
 {
+	editor = std::make_unique<ControllerEditor>();
 	ControllerGraph::GlobalInit();
 	graph = new ControllerGraph();
-	auto node = std::make_unique<NodeLegacyControls>();
-	node->InitDefault(graph->nodeidgen++);
-	graph->AddNode(std::move(node));
+	if(!graph->legacyControls) {
+		auto node = std::make_unique<NodeLegacyControls>();
+		node->InitDefault(graph->nodeidgen++);
+		graph->AddNode(std::move(node));
+	}
+	m_cmd = oapiRegisterCustomCmd((char*)"Joystick configuration", (char*)"Advanced joystick configuration", OpenDlgClbk, editor.get());
+
+}
+
+void InputController::GlobalExit()
+{
+	editor.reset();
+	delete graph;
 }
 
 void InputController::GetJoystickCtrl(float ctrl[15])
