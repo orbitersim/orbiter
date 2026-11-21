@@ -26,6 +26,7 @@ Joystick::Joystick(uint32_t idjoy) {
 
 	btnnames.resize(nbuttons);
 	axesnames.resize(naxis);
+	hatnames.resize(nhats);
 	state.btns.resize(nbuttons);
 	state.axis.resize(naxis);
 	state.hats.resize(nhats);
@@ -48,10 +49,16 @@ Joystick::Joystick(uint32_t idjoy) {
 	*/
 	{
 		for(int i = 0; i < nbuttons; i++) {
-			btnnames[i] = std::string("Btn ") + std::to_string(i);
+			btnnames[i].name = std::string("b") + std::to_string(i);
+			btnnames[i].displayname = std::string("Btn ") + std::to_string(i);
 		}
 		for(int i = 0; i < naxis; i++) {
-			axesnames[i] = std::string("Axis ") + std::to_string(i);
+			axesnames[i].name = std::string("a") + std::to_string(i);
+			axesnames[i].displayname = std::string("Axis ") + std::to_string(i);
+		}
+		for(int i = 0; i < nhats; i++) {
+			hatnames[i].name = std::string("h") + std::to_string(i);
+			hatnames[i].displayname = std::string("Hat ") + std::to_string(i);
 		}
 	}
 

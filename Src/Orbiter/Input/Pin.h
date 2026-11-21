@@ -31,7 +31,7 @@ public:
     Pin(Pin &&) = delete;
     Pin& operator=(Pin&&) = delete;
     ~Pin();
-    Pin(std::string n, Pin::type t, Pin::kind k, Node *p, ed::PinId id = ed::PinId::Invalid);
+    Pin(std::string iname, std::string dname, Pin::type t, Pin::kind k, Node *p, ed::PinId id = ed::PinId::Invalid);
     bool operator==(const Pin &other);
     void ReadInputs();
     void Draw(std::function<bool(const Pin *)> filter);
@@ -39,7 +39,8 @@ public:
     std::function<void(Pin *)> cbContextMenu;
 
     ed::PinId id;
-    std::string name;
+    std::string name;        // Name in JSON file
+    std::string displayname; // Name in the editor
     Pin::type ptype;
     Pin::kind pkind;
     Node *parent;

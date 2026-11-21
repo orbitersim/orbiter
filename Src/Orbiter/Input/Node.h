@@ -6,6 +6,8 @@
 #include "Pin.h"
 #include "crude_json.h"
 
+#define RegisterPin(name, var) RegisterPinInternal(#var, name, var)
+
 class Node {
 protected:
 	bool grayed = false;
@@ -25,8 +27,8 @@ public:
 	Node(const char *n);
 	virtual ~Node() = default;
 	template<Pin::type Type>
-	void RegisterPin(const char *n, InputPin<Type> &ip) {
-		Pin *p = AddInput(n, Type);
+	void RegisterPinInternal(const char *name, const char *displayname, InputPin<Type> &ip) {
+		Pin *p = AddInput(name, displayname, Type);
 
         if constexpr (Type == Pin::type::Button)
 			ip.Bind(p->bVal);
@@ -36,8 +38,8 @@ public:
 			ip.Bind(p->hVal);
 	}
 	template<Pin::type Type>
-	void RegisterPin(const char *n, OutputPin<Type> &ip) {
-		Pin *p = AddOutput(n, Type);
+	void RegisterPinInternal(const char *name, const char *displayname, OutputPin<Type> &ip) {
+		Pin *p = AddOutput(name, displayname, Type);
 
         if constexpr (Type == Pin::type::Button)
 			ip.Bind(p->bVal);
@@ -46,8 +48,8 @@ public:
         else if constexpr (Type == Pin::type::Hat)
 			ip.Bind(p->hVal);
 	}
-	Pin *AddInput(const char *n, Pin::type type);
-	Pin *AddOutput(const char *n, Pin::type type);
+	Pin *AddInput(const char *iname, const char *dname, Pin::type type);
+	Pin *AddOutput(const char *iname, const char *dname, Pin::type type);
 	void ComputeLayout();
 	void UpdateInputs();
 	void InitDefault(int id);

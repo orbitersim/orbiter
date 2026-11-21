@@ -11,8 +11,15 @@ public:
 	int nhats = 0;
 //	int nballs = 0;
 	std::string name;
-	std::vector<std::string> btnnames;
-	std::vector<std::string> axesnames;
+
+	struct EntryName {
+		std::string name;
+		std::string displayname;
+	};
+
+	std::vector<EntryName> btnnames;
+	std::vector<EntryName> axesnames;
+	std::vector<EntryName> hatnames;
 	std::string guid;
 
 //	struct BallState {
