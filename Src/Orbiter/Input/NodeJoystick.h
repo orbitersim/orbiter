@@ -10,6 +10,7 @@ class NodeJoystick : public Node {
 public:
 	Joystick * js = NULL;
 	std::string guid;
+	std::function<void(Pin *)> cbPin;
 	NodeJoystick();
 	~NodeJoystick();
 	void RegisterPins() override;

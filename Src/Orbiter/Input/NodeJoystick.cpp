@@ -149,6 +149,18 @@ static void TransferFunctionEditor(const char *label, Pin::Context *ctx, float c
 
 NodeJoystick::NodeJoystick() : Node("Default controller")
 {
+    cbPin = [this](Pin *pin) {
+        char name[64];
+        strncpy(name, pin->displayname.c_str(), 64);
+        if(ImGui::InputText("##Name", name, 64, ImGuiInputTextFlags_AutoSelectAll | ImGuiInputTextFlags_EnterReturnsTrue)) {
+            pin->displayname = name;
+            pin->parent->ComputeLayout();
+            ImGui::CloseCurrentPopup();
+        }
+        if(pin->ptype == Pin::type::Axis) {
+            TransferFunctionEditor("Axis transfer function", &pin->context, pin->fValRaw);
+        }
+    };
 }
 
 NodeJoystick::~NodeJoystick()
@@ -157,70 +169,64 @@ NodeJoystick::~NodeJoystick()
 
 void NodeJoystick::InitFromJoystick(Joystick *joy, int i)
 {
-	id = i;
-	pinidgen = (id << 16) + 1;
-	grayed = false;
+    id = i;
+    pinidgen = (id << 16) + 1;
+    grayed = false;
     js = joy;
-	initialized = true;
-
-    const auto cbAxis = [this](Pin *pin) {
-        TransferFunctionEditor("Axis transfer function", &pin->context, pin->fValRaw);
-    };
+    initialized = true;
 
     for(auto &btn: js->btnnames) {
-        AddOutput(btn.name.c_str(),btn.displayname.c_str(), Pin::type::Button);
+        Pin *pin = AddOutput(btn.name.c_str(),btn.displayname.c_str(), Pin::type::Button);
+        pin->cbContextMenu = cbPin;
     }
     for(auto &axis: js->axesnames) {
         Pin *pin = AddOutput(axis.name.c_str(), axis.displayname.c_str(), Pin::type::Axis);
-        pin->cbContextMenu = cbAxis;
+        pin->cbContextMenu = cbPin;
     }
     for(auto &hat: js->hatnames) {
-        AddOutput(hat.name.c_str(), hat.displayname.c_str(), Pin::type::Hat);
+        Pin *pin = AddOutput(hat.name.c_str(), hat.displayname.c_str(), Pin::type::Hat);
+        pin->cbContextMenu = cbPin;
     }
 
     guid = js->guid;
-	name = js->name;
+    name = js->name;
 }
 
 void NodeJoystick::RegisterPins()
 {
-	assert(jsonTemplate);
-	const auto cbAxis = [this](Pin *pin) {
-        TransferFunctionEditor("Axis transfer function", &pin->context, pin->fValRaw);
-    };
+    assert(jsonTemplate);
 
-	if(jsonTemplate->contains("outputs")) {
-		grayed = true;
-		guid = (*jsonTemplate)["guid"].get<std::string>();
-		name = (*jsonTemplate)["lastseenname"].get<std::string>();
-		for(auto &o: (*jsonTemplate)["outputs"].get<crude_json::array>()) {
-			std::string jsonname = o["name"].get<std::string>();
-			std::string displayname = o["displayname"].get<std::string>();
-			enum Pin::type jsontype = (enum Pin::type)stoi(o["type"].get<std::string>());
+    if(jsonTemplate->contains("outputs")) {
+        grayed = true;
+        guid = (*jsonTemplate)["guid"].get<std::string>();
+        name = (*jsonTemplate)["lastseenname"].get<std::string>();
+        for(auto &o: (*jsonTemplate)["outputs"].get<crude_json::array>()) {
+            std::string jsonname = o["name"].get<std::string>();
+            std::string displayname = o["displayname"].get<std::string>();
+            enum Pin::type jsontype = (enum Pin::type)stoi(o["type"].get<std::string>());
 
-			ed::PinId id = std::stoi(o["id"].get<std::string>());
-			outputs.emplace_back(jsonname, displayname, jsontype, Pin::kind::Output, this, id);
-			Pin *ret = &outputs.back();
-			if(o.contains("deadzone")) {
-				float deadzone = o["deadzone"].get<crude_json::number>();
-				ret->context.deadzone = deadzone;
-			}
-			if(o.contains("saturation")) {
-				float saturation = o["saturation"].get<crude_json::number>();
-				ret->context.saturation = saturation;
-			}
-			if(o.contains("flip")) {
-				bool flip = o["flip"].get<crude_json::boolean>();
-				ret->context.flip = flip;
-			}
-			if(o.contains("rescale")) {
-				bool rescale = o["rescale"].get<crude_json::boolean>();
-				ret->context.rescale = rescale;
-			}
-			if(jsontype == Pin::type::Axis)
-				ret->cbContextMenu = cbAxis;
-		}
-	}
+            ed::PinId id = std::stoi(o["id"].get<std::string>());
+            outputs.emplace_back(jsonname, displayname, jsontype, Pin::kind::Output, this, id);
+            Pin *ret = &outputs.back();
+            if(o.contains("deadzone")) {
+                float deadzone = o["deadzone"].get<crude_json::number>();
+                ret->context.deadzone = deadzone;
+            }
+            if(o.contains("saturation")) {
+                float saturation = o["saturation"].get<crude_json::number>();
+                ret->context.saturation = saturation;
+            }
+            if(o.contains("flip")) {
+                bool flip = o["flip"].get<crude_json::boolean>();
+                ret->context.flip = flip;
+            }
+            if(o.contains("rescale")) {
+                bool rescale = o["rescale"].get<crude_json::boolean>();
+                ret->context.rescale = rescale;
+            }
+            ret->cbContextMenu = cbPin;
+        }
+    }
 }
 
 void NodeJoystick::Update(bool dryrun)
@@ -263,7 +269,7 @@ bool NodeJoystick::IsAttached()
 void NodeJoystick::Detach()
 {
     if(!js) return;
-	grayed = true;
+    grayed = true;
     js = NULL;
 
     // Clear the outputs to prevent stale values
@@ -287,21 +293,8 @@ void NodeJoystick::Attach(Joystick *joy)
 {
     assert(!js);
     js = joy;
-	grayed = false;
-	name = js->name;
-
-	// Reassign names
-    size_t idx = 0;
-    for(int i = 0; i < js->nbuttons; i++) {
-        outputs[idx++].displayname = js->btnnames[i].displayname;
-    }
-    for(int i = 0; i < js->naxis; i++) {
-        outputs[idx++].displayname = js->axesnames[i].displayname;
-    }
-    for(int i = 0; i < js->nhats; i++) {
-        outputs[idx++].displayname = js->hatnames[i].displayname;
-    }
-
+    grayed = false;
+    name = js->name;
 }
 
 bool NodeJoystick::CanAttach(Joystick *js) {
@@ -336,7 +329,7 @@ bool NodeJoystick::CanAttach(Joystick *js) {
 
 void NodeJoystick::ToJSON(crude_json::value &out)
 {
-	Node::ToJSON(out);
-	out["guid"] = guid;
-	out["lastseenname"] = name;
+    Node::ToJSON(out);
+    out["guid"] = guid;
+    out["lastseenname"] = name;
 }

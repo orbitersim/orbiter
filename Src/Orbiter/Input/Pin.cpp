@@ -83,7 +83,6 @@ ImColor GetIconColor(enum Pin::type type)
 void Pin::DrawIcon()
 {
     ImColor color = GetIconColor(ptype);
-    ed::BeginPin(id, pkind == Pin::kind::Output ? ed::PinKind::Output : ed::PinKind::Input);
     switch(ptype) {
         case Pin::type::Axis:
             Axis(ImVec2(ImGui::GetTextLineHeight(), ImGui::GetTextLineHeight()), fVal, color);
@@ -95,7 +94,6 @@ void Pin::DrawIcon()
             Hat(ImVec2(ImGui::GetTextLineHeight(), ImGui::GetTextLineHeight()), hVal, color);
             break;
     }
-    ed::EndPin();
 }
 
 void Pin::Draw(std::function<bool(const Pin *)> filter)
@@ -106,13 +104,21 @@ void Pin::Draw(std::function<bool(const Pin *)> filter)
     }
     ImGui::PushStyleVar(ImGuiStyleVar_Alpha, alpha);
     if(pkind == Pin::kind::Output) {
+        ed::BeginPin(id, ed::PinKind::Output);
+        ed::PinPivotAlignment(ImVec2(1.0f, 0.5f));
+        ed::PinPivotSize(ImVec2(0, 0));
         ImGui::TextUnformatted(displayname.c_str());
         ImGui::SameLine();
         DrawIcon();
+        ed::EndPin();
     } else {
+        ed::BeginPin(id, ed::PinKind::Input);
+        ed::PinPivotAlignment(ImVec2(0, 0.5f));
+        ed::PinPivotSize(ImVec2(0, 0));
         DrawIcon();
         ImGui::SameLine();
         ImGui::TextUnformatted(displayname.c_str());
+        ed::EndPin();
     }
     ImGui::PopStyleVar();
 }
