@@ -5,7 +5,7 @@ Node::Node(const char *n) {
 	name = n;
 }
 
-void Node::AddInput(const char *n, Pin::type type) {
+Pin *Node::AddInput(const char *n, Pin::type type) {
 	dirty = true;
 
 	if(jsonTemplate) {
@@ -16,13 +16,14 @@ void Node::AddInput(const char *n, Pin::type type) {
 				if(type == jsontype && jsonname == n) {
 					ed::PinId id = std::stoi(i["id"].get<std::string>());
 					inputs.emplace_back(n, type, Pin::kind::Input, this, id);
-					return;
+					return &inputs.back();;
 				}
 			}
 		}
 	}
 
 	inputs.emplace_back(n, type, Pin::kind::Input, this, pinidgen++);
+	return &inputs.back();
 }
 Pin *Node::AddOutput(const char *n, Pin::type type) {
 	dirty = true;
@@ -182,7 +183,7 @@ void Node::InitFromJSON(const crude_json::value &json)
 
 	id = std::stoi(json["id"].get<std::string>());
 	pinidgen = std::stoi(json["pinidgen"].get<std::string>());
-	InitPins();
+	RegisterPins();
 	initialized = true;
 
 	jsonTemplate = NULL;
@@ -192,6 +193,6 @@ void Node::InitDefault(int i)
 {
 	id = i;
 	pinidgen = (id << 16) + 1;
-	InitPins();
+	RegisterPins();
 	initialized = true;
 }

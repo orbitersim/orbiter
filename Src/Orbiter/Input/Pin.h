@@ -58,3 +58,46 @@ public:
 
     std::list<Pin *> inputs;
 };
+
+
+template<Pin::type Type>
+class InputPin {
+    using ValueType = std::conditional_t<
+        Type == Pin::type::Button, bool,
+        std::conditional_t<
+            Type == Pin::type::Axis, float,
+            int // Hat
+        >
+    >;
+
+    ValueType *value = NULL;
+
+public:
+    InputPin() = default;
+
+    operator ValueType&() { return *value; }
+    operator const ValueType&() const { return *value; }
+
+	void Bind(ValueType &v) { value = &v; }
+};
+
+template<Pin::type Type>
+class OutputPin {
+    using ValueType = std::conditional_t<
+        Type == Pin::type::Button, bool,
+        std::conditional_t<
+            Type == Pin::type::Axis, float,
+            int // Hat
+        >
+    >;
+
+    ValueType *value = NULL;
+
+public:
+    OutputPin() = default;
+
+    operator ValueType&() { return *value; }
+    operator const ValueType&() const { return *value; }
+
+	void Bind(ValueType &v) { value = &v; }
+};

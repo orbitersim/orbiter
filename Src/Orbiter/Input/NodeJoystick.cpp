@@ -184,7 +184,7 @@ void NodeJoystick::InitFromJoystick(Joystick *joy, int i)
 	name = js->name;
 }
 
-void NodeJoystick::InitPins()
+void NodeJoystick::RegisterPins()
 {
 	assert(jsonTemplate);
 	const auto cbAxis = [this](Pin *pin) {
