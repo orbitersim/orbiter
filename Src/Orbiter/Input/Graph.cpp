@@ -48,24 +48,24 @@ static ImVec4 GetStateColor(const Pin *pin) {
 
 ControllerGraph::ControllerGraph()
 {
-	ed::Config config;
-	config.SettingsFile = NULL;
-	m_Context = ed::CreateEditor(&config);
+    ed::Config config;
+    config.SettingsFile = NULL;
+    m_Context = ed::CreateEditor(&config);
 
-	ed::SetCurrentEditor(m_Context);
-	Load("graph.json");
+    ed::SetCurrentEditor(m_Context);
+    Load("graph.json");
 
-	for(auto &node: nodes) {
-	}
+    for(auto &node: nodes) {
+    }
 }
 
 ControllerGraph::~ControllerGraph()
 {
-	ed::DestroyEditor(m_Context);
+    ed::DestroyEditor(m_Context);
 }
 
 void ControllerGraph::AddNode(std::unique_ptr<Node> node) {
-	assert(node->initialized);
+    assert(node->initialized);
     for(Pin &pin: node->inputs) {
         assert(pins.count(pin.id.AsPointer()) == 0);
         pins[pin.id.AsPointer()] = &pin;
@@ -75,7 +75,7 @@ void ControllerGraph::AddNode(std::unique_ptr<Node> node) {
         pins[pin.id.AsPointer()] = &pin;
     }
 
-	nodes.emplace_back(std::move(node));
+    nodes.emplace_back(std::move(node));
     dirty = true;
 }
 
@@ -156,9 +156,9 @@ bool ControllerGraph::CanLink(const Pin *a, const Pin *b) {
 
 bool ControllerGraph::NodeHasRoom(ImVec2 pos, ImVec2 size)
 {
-	const float spacing = 10.0f;
-	for(auto &node: nodes) {
-		if(node->placed) {
+    const float spacing = 10.0f;
+    for(auto &node: nodes) {
+        if(node->placed) {
             ImVec2 otherPos = ed::GetNodePosition(node->id);
             ImVec2 otherSize = ed::GetNodeSize(node->id);
 
@@ -166,28 +166,28 @@ bool ControllerGraph::NodeHasRoom(ImVec2 pos, ImVec2 size)
                 pos.x + size.x + spacing > otherPos.x &&
                 pos.y < otherPos.y + otherSize.y + spacing &&
                 pos.y + size.y + spacing > otherPos.y) {
-				return false;
+                return false;
             }
-		}
-	}
-	return true;
+        }
+    }
+    return true;
 }
 
 void ControllerGraph::DrawEditor()
 {
-	ed::SetCurrentEditor(m_Context);
+    ed::SetCurrentEditor(m_Context);
 
-	if(ImGui::Button("Save")) {
-		Save("graph.json");
-	}
-	ImGui::SameLine();
-	if(ImGui::Button("Reload")) {
-		if(!Load("graph.json")) {
-			oapiAddNotification(OAPINOTIF_ERROR, "Error loading file", "graph.json");
-		}
-	}
+    if(ImGui::Button("Save")) {
+        Save("graph.json");
+    }
+    ImGui::SameLine();
+    if(ImGui::Button("Reload")) {
+        if(!Load("graph.json")) {
+            oapiAddNotification(OAPINOTIF_ERROR, "Error loading file", "graph.json");
+        }
+    }
 
-	ImGui::Separator();
+    ImGui::Separator();
 
     ed::Begin("My Editor", ImVec2(0.0, 0.0f));
 
@@ -196,56 +196,56 @@ void ControllerGraph::DrawEditor()
         return CanLink(draggedPin, pin);
     };
 
-	// By default, all nodes are created at {0,0}
-	// In order not to have a bunch of nodes on top of each other
-	// we check in a circular pattern from the barycenter of existing nodes
-	// until we find enough room to place a new node.
-	// It's not great but better than everything being piled up.
-	bool allplaced = true;
-	ImVec2 barycenter{0.0f,0.0f};
-	int npoints = 0;
+    // By default, all nodes are created at {0,0}
+    // In order not to have a bunch of nodes on top of each other
+    // we check in a circular pattern from the barycenter of existing nodes
+    // until we find enough room to place a new node.
+    // It's not great but better than everything being piled up.
+    bool allplaced = true;
+    ImVec2 barycenter{0.0f,0.0f};
+    int npoints = 0;
     for(auto &n: nodes) {
-		ImVec2 pos = ed::GetNodePosition(n->id);
+        ImVec2 pos = ed::GetNodePosition(n->id);
         n->Draw(filter);
-		if(n->placed) {
-			npoints++;
-			barycenter.x += pos.x;
-			barycenter.y += pos.y;
-		} else {
-			allplaced = false;
-		}
+        if(n->placed) {
+            npoints++;
+            barycenter.x += pos.x;
+            barycenter.y += pos.y;
+        } else {
+            allplaced = false;
+        }
     }
 
-	if(!allplaced) {
-		if(npoints) {
-			barycenter.x /= npoints;
-			barycenter.y /= npoints;
-		}
-		auto fibospiral = [](ImVec2 origin, int index) {
-			float angle = index * 2.39996323f; // Golden angle
-			float radius = 30.0f * sqrt(index);
+    if(!allplaced) {
+        if(npoints) {
+            barycenter.x /= npoints;
+            barycenter.y /= npoints;
+        }
+        auto fibospiral = [](ImVec2 origin, int index) {
+            float angle = index * 2.39996323f; // Golden angle
+            float radius = 30.0f * sqrt(index);
 
-			return ImVec2{
-				origin.x + radius * cos(angle),
-				origin.y + radius * sin(angle)
-			};
-		};
+            return ImVec2{
+                origin.x + radius * cos(angle),
+                origin.y + radius * sin(angle)
+            };
+        };
 
-		for(auto &n: nodes) {
-			if(!n->placed) {
-				for(int i = 0;;i++) {
-					ImVec2 pos = fibospiral(barycenter, i);
-					ImVec2 sz = ed::GetNodeSize(n->id);
-					if(NodeHasRoom(pos, sz)) {
-						ed::SetNodePosition(n->id, pos);
-						n->placed = true;
-						break;
-					}
-				}
-			}
-		}
-		ed::NavigateToContent();
-	}
+        for(auto &n: nodes) {
+            if(!n->placed) {
+                for(int i = 0;;i++) {
+                    ImVec2 pos = fibospiral(barycenter, i);
+                    ImVec2 sz = ed::GetNodeSize(n->id);
+                    if(NodeHasRoom(pos, sz)) {
+                        ed::SetNodePosition(n->id, pos);
+                        n->placed = true;
+                        break;
+                    }
+                }
+            }
+        }
+        ed::NavigateToContent();
+    }
 
     for (const Link& link : links) {
         ImVec4 color = GetStateColor(PinFromId(link.OutputId));
@@ -333,9 +333,9 @@ void ControllerGraph::DrawEditor()
     }
 
     ed::Resume();
-	ed::End();
+    ed::End();
 
-	ed::SetCurrentEditor(NULL);
+    ed::SetCurrentEditor(NULL);
 }
 
 void ControllerGraph::Update(bool dryrun)
@@ -349,7 +349,7 @@ void ControllerGraph::Update(bool dryrun)
 }
 void ControllerGraph::GetJoystickCtrl(float ctrl[15])
 {
-	if(legacyControls) legacyControls->GetJoystickCtrl(ctrl);
+    if(legacyControls) legacyControls->GetJoystickCtrl(ctrl);
 }
 
 // Kahn's algorithm from https://en.wikipedia.org/wiki/Topological_sorting
@@ -435,9 +435,9 @@ void ControllerGraph::AttachJoystick(Joystick *js)
     }
 
     oapiAddNotification(OAPINOTIF_INFO, "New joystick connected", js->name.c_str());
-	auto node = std::make_unique<NodeJoystick>();
-	node->InitFromJoystick(js, nodeidgen++);
-	AddNode(std::move(node));
+    auto node = std::make_unique<NodeJoystick>();
+    node->InitFromJoystick(js, nodeidgen++);
+    AddNode(std::move(node));
 }
 
 void ControllerGraph::DetachJoystick(Joystick *js)
@@ -457,8 +457,8 @@ void ControllerGraph::Save(const char *path)
 {
     crude_json::value out;
     for(auto &n: nodes) {
-		crude_json::value node;
-		n->ToJSON(node);
+        crude_json::value node;
+        n->ToJSON(node);
         out["nodes"].push_back(node);
     }
     for(auto &l: links) {
@@ -478,40 +478,40 @@ bool ControllerGraph::Load(const char *path)
 {
     std::pair<crude_json::value, bool> ret = crude_json::value::load(path);
     if(ret.second) {
-		// Save attached joysticks so we can reattach them after the graph is recreated
-		std::vector<Joystick *> joysticks;
-		for(auto &node: nodes) {
-			NodeJoystick *njs = dynamic_cast<NodeJoystick *>(node.get());
-			if(njs && njs->js) {
-				joysticks.push_back(njs->js);
-			}
-		}
+        // Save attached joysticks so we can reattach them after the graph is recreated
+        std::vector<Joystick *> joysticks;
+        for(auto &node: nodes) {
+            NodeJoystick *njs = dynamic_cast<NodeJoystick *>(node.get());
+            if(njs && njs->js) {
+                joysticks.push_back(njs->js);
+            }
+        }
 
-		crude_json::value &json = ret.first;
-		nodes.clear();
-		links.clear();
-		pins.clear();
-		nodesSorted.clear();
-		legacyControls = NULL;
-		linkidgen = std::stoi(json["linkidgen"].get<std::string>());
-		nodeidgen = std::stoi(json["nodeidgen"].get<std::string>());
+        crude_json::value &json = ret.first;
+        nodes.clear();
+        links.clear();
+        pins.clear();
+        nodesSorted.clear();
+        legacyControls = NULL;
+        linkidgen = std::stoi(json["linkidgen"].get<std::string>());
+        nodeidgen = std::stoi(json["nodeidgen"].get<std::string>());
         if(json.contains("nodes")) {
             for(auto &n: json["nodes"].get<crude_json::array>()) {
-				const std::string &name = n["typename"].get<std::string>();
+                const std::string &name = n["typename"].get<std::string>();
                 Node *node = nodeFactory.MakeNode(name.c_str());
-				node->InitFromJSON(n);
-				if(n.contains("xpos")) {
-					ImVec2 pos;
-					pos.x = n["xpos"].get<crude_json::number>();
-					pos.y = n["ypos"].get<crude_json::number>();
-					ed::SetNodePosition(node->id, pos);
-					node->placed = true;
-				}
-				AddNode(std::unique_ptr<Node>(node));
+                node->InitFromJSON(n);
+                if(n.contains("xpos")) {
+                    ImVec2 pos;
+                    pos.x = n["xpos"].get<crude_json::number>();
+                    pos.y = n["ypos"].get<crude_json::number>();
+                    ed::SetNodePosition(node->id, pos);
+                    node->placed = true;
+                }
+                AddNode(std::unique_ptr<Node>(node));
                 dirty = true;
 
-				if(!strcmp(node->GetTypeName(), "NodeLegacyControls"))
-					legacyControls = dynamic_cast<NodeLegacyControls *>(node);
+                if(!strcmp(node->GetTypeName(), "NodeLegacyControls"))
+                    legacyControls = dynamic_cast<NodeLegacyControls *>(node);
 
             }
         }
@@ -526,21 +526,21 @@ bool ControllerGraph::Load(const char *path)
             }
         }
 
-		TopologicalSort();
+        TopologicalSort();
 
-		for(Joystick *js: joysticks) {
-			AttachJoystick(js);
-		}
+        for(Joystick *js: joysticks) {
+            AttachJoystick(js);
+        }
 
-		ed::NavigateToContent();
-		return true;
-	} else {
-		return false;
+        ed::NavigateToContent();
+        return true;
+    } else {
+        return false;
     }
 
 }
 void ControllerGraph::GlobalInit()
 {
-	nodeFactory.Register<NodeLegacyControls>();
-	nodeFactory.Register<NodeJoystick>();
+    nodeFactory.Register<NodeLegacyControls>();
+    nodeFactory.Register<NodeJoystick>();
 }
