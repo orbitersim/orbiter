@@ -16,23 +16,23 @@ class NodeLegacyControls;
 class ControllerEditor : public ImGuiDialog
 {
 public:
-	ControllerEditor():ImGuiDialog("Joystick Editor") {}
-	void OnDraw() override;
+    ControllerEditor():ImGuiDialog("Joystick Editor") {}
+    void OnDraw() override;
 };
 
 class InputController {
-	static inline ControllerGraph *graph;
-	static inline struct {
-		float x,y,Rz,throttle;
-		int alt, hat;
-	} state;
-	static inline DWORD m_cmd;
-	static inline std::unordered_map<SDL_JoystickID, std::unique_ptr<Joystick>> joysticks;
-	static inline std::unique_ptr<ControllerEditor> editor;
+    static inline ControllerGraph *graph;
+    static inline struct {
+        float x,y,Rz,throttle;
+        int alt, hat;
+    } state;
+    static inline DWORD m_cmd;
+    static inline std::unordered_map<SDL_JoystickID, std::unique_ptr<Joystick>> joysticks;
+    static inline std::unique_ptr<ControllerEditor> editor;
 public:
     static void GlobalInit();
     static void GlobalExit();
-	static void GetJoystickCtrl(float ctrl[15]);
-	static ControllerGraph *GetGraph() { return graph; }
-	static void ScanControllers();
+    static void GetJoystickCtrl(float ctrl[15]);
+    static ControllerGraph *GetGraph() { return graph; }
+    static void ScanControllers();
 };

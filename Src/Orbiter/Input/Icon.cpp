@@ -411,19 +411,19 @@ void DrawHat(ImDrawList* drawList, const ImVec2& a, const ImVec2& b,
 
     const ImU32 inactive = IM_COL32(85, 85, 85, 255);
 
-	const float d = 0.70710678f;
+    const float d = 0.70710678f;
 
-	const ImVec2 dirs[] =
-	{
-		ImVec2( 0, -1),
-		ImVec2( d, -d),
-		ImVec2( 1,  0),
-		ImVec2( d,  d),
-		ImVec2( 0,  1),
-		ImVec2(-d,  d),
-		ImVec2(-1,  0),
-		ImVec2(-d, -d)
-	};
+    const ImVec2 dirs[] =
+    {
+        ImVec2( 0, -1),
+        ImVec2( d, -d),
+        ImVec2( 1,  0),
+        ImVec2( d,  d),
+        ImVec2( 0,  1),
+        ImVec2(-d,  d),
+        ImVec2(-1,  0),
+        ImVec2(-d, -d)
+    };
 
     const Uint8 masks[] =
     {
@@ -439,9 +439,9 @@ void DrawHat(ImDrawList* drawList, const ImVec2& a, const ImVec2& b,
 
     for (int i = 0; i < 8; ++i)
     {
-		const ImVec2 p = c + dirs[i] * r;
-		drawList->AddCircleFilled(p, dotR, hat == masks[i] ? color : inactive);
-	}
+        const ImVec2 p = c + dirs[i] * r;
+        drawList->AddCircleFilled(p, dotR, hat == masks[i] ? color : inactive);
+    }
 
     drawList->AddCircleFilled(c, dotR, hat == SDL_HAT_CENTERED ? color : inactive);
 }

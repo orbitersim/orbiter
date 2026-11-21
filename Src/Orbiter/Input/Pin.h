@@ -79,7 +79,7 @@ public:
     operator ValueType&() { return *value; }
     operator const ValueType&() const { return *value; }
 
-	void Bind(ValueType &v) { value = &v; }
+    void Bind(ValueType &v) { value = &v; }
 };
 
 template<Pin::type Type>
@@ -100,5 +100,5 @@ public:
     operator ValueType&() { return *value; }
     operator const ValueType&() const { return *value; }
 
-	void Bind(ValueType &v) { value = &v; }
+    void Bind(ValueType &v) { value = &v; }
 };
