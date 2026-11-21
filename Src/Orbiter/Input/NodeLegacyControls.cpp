@@ -12,28 +12,18 @@ extern TimeData td;
 extern Orbiter *g_pOrbiter;
 extern Vessel *g_focusobj;
 
-// /!\ Must match the order in InitPins
-enum {
-	ModKey,
-	MainEngine,
-	BankYaw,
-	PitchVert,
-	YawLat,
-	CamPanel,
-};
-
 NodeLegacyControls::NodeLegacyControls() : Node("Legacy Controller")
 {
 }
 
-void NodeLegacyControls::InitPins()
+void NodeLegacyControls::RegisterPins()
 {
-	AddInput("ModKey", Pin::type::Button);
-	AddInput("Main engine", Pin::type::Axis);
-	AddInput("Bank/Yaw", Pin::type::Axis);
-	AddInput("Pitch/Vertical translation", Pin::type::Axis);
-	AddInput("Yaw/Lateral translation", Pin::type::Axis);
-	AddInput("Camera/Panel", Pin::type::Hat);
+	RegisterPin("ModKey", ModKey);
+	RegisterPin("Main engine", MainEngine);
+	RegisterPin("Bank/Yaw", BankYaw);
+	RegisterPin("Pitch/Vertical translation", PitchVert);
+	RegisterPin("Yaw/Lateral translation", YawLat);
+	RegisterPin("Camera/Panel", CamPanel);
 }
 
 void NodeLegacyControls::Update(bool dryrun)
@@ -42,10 +32,10 @@ void NodeLegacyControls::Update(bool dryrun)
 
 	Config *pConfig = g_pOrbiter->Cfg();
 
-	uint8_t hat = inputs[CamPanel].hVal;
+	int hat = CamPanel;
 	if (hat) {
 		if (g_camera->IsExternal()) {  // use the joystick's coolie hat to rotate external camera
-			if (inputs[ModKey].bVal) { // shift instrument panel
+			if (ModKey) { // shift instrument panel
 				if      (hat & SDL_HAT_UP)    g_camera->Rotate (0,  td.SysDT);
 				else if (hat & SDL_HAT_DOWN)  g_camera->Rotate (0, -td.SysDT);
 				if      (hat & SDL_HAT_RIGHT) g_camera->Rotate (-td.SysDT, 0);
@@ -57,7 +47,7 @@ void NodeLegacyControls::Update(bool dryrun)
 				else if (hat & SDL_HAT_LEFT)  g_camera->AddPhi   (-td.SysDT);
 			}
 		} else { // internal view
-			if (inputs[ModKey].bVal) { // shift instrument panel
+			if (ModKey) { // shift instrument panel
 				if      (hat & SDL_HAT_UP)    g_pane->ShiftPanel (0.0,  td.SysDT*pConfig->CfgLogicPrm.PanelScrollSpeed);
 				else if (hat & SDL_HAT_DOWN)  g_pane->ShiftPanel (0.0, -td.SysDT*pConfig->CfgLogicPrm.PanelScrollSpeed);
 				if      (hat & SDL_HAT_RIGHT) g_pane->ShiftPanel (-td.SysDT*pConfig->CfgLogicPrm.PanelScrollSpeed, 0.0);
@@ -74,15 +64,14 @@ void NodeLegacyControls::Update(bool dryrun)
 
 void NodeLegacyControls::GetJoystickCtrl(float ctrlJoystick[15])
 {
-	ctrlJoystick[THGROUP_MAIN] = -inputs[MainEngine].fVal;
+	ctrlJoystick[THGROUP_MAIN] = -MainEngine;
 	
-	float x = inputs[BankYaw].fVal;
-	float y = inputs[PitchVert].fVal;
-	float Rz = inputs[YawLat].fVal;
-	bool alt = inputs[ModKey].bVal;
+	float x = BankYaw;
+	float y = PitchVert;
+	float Rz = YawLat;
 
 	if (x) {
-		if (alt) { // emulate rudder control
+		if (ModKey) { // emulate rudder control
 			if (x > 0) ctrlJoystick[THGROUP_ATT_YAWRIGHT] =   x;
 			else            ctrlJoystick[THGROUP_ATT_YAWLEFT]  =  -x;
 		} else {                 // rotation (bank)

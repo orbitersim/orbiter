@@ -24,12 +24,34 @@ public:
 	bool initialized = false;
 	Node(const char *n);
 	virtual ~Node() = default;
-	void AddInput(const char *n, Pin::type type);
+	template<Pin::type Type>
+	void RegisterPin(const char *n, InputPin<Type> &ip) {
+		Pin *p = AddInput(n, Type);
+
+        if constexpr (Type == Pin::type::Button)
+			ip.Bind(p->bVal);
+        else if constexpr (Type == Pin::type::Axis)
+			ip.Bind(p->fVal);
+        else if constexpr (Type == Pin::type::Hat)
+			ip.Bind(p->hVal);
+	}
+	template<Pin::type Type>
+	void RegisterPin(const char *n, OutputPin<Type> &ip) {
+		Pin *p = AddOutput(n, Type);
+
+        if constexpr (Type == Pin::type::Button)
+			ip.Bind(p->bVal);
+        else if constexpr (Type == Pin::type::Axis)
+			ip.Bind(p->fVal);
+        else if constexpr (Type == Pin::type::Hat)
+			ip.Bind(p->hVal);
+	}
+	Pin *AddInput(const char *n, Pin::type type);
 	Pin *AddOutput(const char *n, Pin::type type);
 	void ComputeLayout();
 	void UpdateInputs();
 	void InitDefault(int id);
-	virtual void InitPins() = 0;
+	virtual void RegisterPins() = 0;
 	virtual void Draw(std::function<bool(const Pin *)> filter);
 	virtual void Update(bool dryrun) = 0;
 

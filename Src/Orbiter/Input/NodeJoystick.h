@@ -12,7 +12,7 @@ public:
 	std::string guid;
 	NodeJoystick();
 	~NodeJoystick();
-	void InitPins() override;
+	void RegisterPins() override;
 	void Update(bool dryrun) override;
 	bool IsConnected();
 	bool IsAttached();
