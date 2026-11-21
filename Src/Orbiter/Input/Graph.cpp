@@ -4,8 +4,6 @@
 #include "NodeJoystick.h"
 #include "NodeLegacyControls.h"
 #include "Joystick.h"
-#define SDL_DISABLE_OLD_NAMES
-#include <SDL3/SDL.h>
 #include <set>
 #include <algorithm>
 #include <unordered_set>
@@ -38,7 +36,7 @@ static ImVec4 GetStateColor(const Pin *pin) {
             }
             break;
         case Pin::type::Hat:
-            if(pin->hVal) {
+            if(pin->hVal != Pin::hat::CENTERED) {
                 color = {0.902,0.624,0.000,1.0};
             }
             break;

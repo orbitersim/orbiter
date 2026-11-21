@@ -1,7 +1,6 @@
 #pragma once
 
 #include "Node.h"
-#include <SDL3/SDL.h>
 #include <memory>
 #include <string>
 

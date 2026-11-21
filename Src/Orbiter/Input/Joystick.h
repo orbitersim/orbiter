@@ -1,6 +1,7 @@
 #pragma once
 #include <vector>
 #include <string>
+#include "Pin.h"
 
 class Joystick {
 public:
@@ -30,7 +31,7 @@ public:
     struct JoyState {
         std::vector<int> btns; // should be bools but we don't want to use a specialized vector<bool>
         std::vector<int> axis;
-        std::vector<int> hats;
+        std::vector<Pin::hat> hats;
 //		std::vector<BallState> balls;
     } state;
 public:

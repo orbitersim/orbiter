@@ -1,8 +1,5 @@
 #pragma once
 
-#define SDL_DISABLE_OLD_NAMES
-#include <SDL3/SDL.h>
-
 #include <string>
 #include <unordered_map>
 #include <memory>
@@ -27,7 +24,9 @@ class InputController {
         int alt, hat;
     } state;
     static inline DWORD m_cmd;
-    static inline std::unordered_map<SDL_JoystickID, std::unique_ptr<Joystick>> joysticks;
+    // The key should be an SDL_JoystickID but we don't want to include SDL headers just for that
+    // There's a static_assert in the .cpp file to detect if SDL_JoystickID changes type.
+    static inline std::unordered_map<uint32_t, std::unique_ptr<Joystick>> joysticks;
     static inline std::unique_ptr<ControllerEditor> editor;
 public:
     static void GlobalInit();

@@ -1,7 +1,5 @@
 #include "NodeJoystick.h"
 #include "Icon.h"
-#define SDL_DISABLE_OLD_NAMES
-#include <SDL3/SDL.h>
 #include "Joystick.h"
 
 #include "implot.h"
@@ -283,7 +281,7 @@ void NodeJoystick::Detach()
             pin.fVal = 0.0f;
             break;
         case Pin::type::Hat:
-            pin.hVal = SDL_HAT_CENTERED;
+            pin.hVal = Pin::hat::CENTERED;
             break;
         }
     }

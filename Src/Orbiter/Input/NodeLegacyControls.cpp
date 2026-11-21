@@ -3,8 +3,6 @@
 #include "Camera.h"
 #include "Pane.h"
 #include "TimeData.h"
-#define SDL_DISABLE_OLD_NAMES
-#include <SDL3/SDL.h>
 
 extern Camera *g_camera;
 extern Pane *g_pane;
@@ -32,31 +30,31 @@ void NodeLegacyControls::Update(bool dryrun)
 
     Config *pConfig = g_pOrbiter->Cfg();
 
-    int hat = CamPanel;
-    if (hat) {
+    Pin::hat hat = CamPanel;
+    if (hat != Pin::hat::CENTERED) {
         if (g_camera->IsExternal()) {  // use the joystick's coolie hat to rotate external camera
             if (ModKey) { // shift instrument panel
-                if      (hat & SDL_HAT_UP)    g_camera->Rotate (0,  td.SysDT);
-                else if (hat & SDL_HAT_DOWN)  g_camera->Rotate (0, -td.SysDT);
-                if      (hat & SDL_HAT_RIGHT) g_camera->Rotate (-td.SysDT, 0);
-                else if (hat & SDL_HAT_LEFT)  g_camera->Rotate ( td.SysDT, 0);
+                if      (hat & Pin::hat::UP)    g_camera->Rotate (0,  td.SysDT);
+                else if (hat & Pin::hat::DOWN)  g_camera->Rotate (0, -td.SysDT);
+                if      (hat & Pin::hat::RIGHT) g_camera->Rotate (-td.SysDT, 0);
+                else if (hat & Pin::hat::LEFT)  g_camera->Rotate ( td.SysDT, 0);
             } else {
-                if      (hat & SDL_HAT_UP)    g_camera->AddTheta (-td.SysDT);
-                else if (hat & SDL_HAT_DOWN)  g_camera->AddTheta ( td.SysDT);
-                if      (hat & SDL_HAT_RIGHT) g_camera->AddPhi   ( td.SysDT);
-                else if (hat & SDL_HAT_LEFT)  g_camera->AddPhi   (-td.SysDT);
+                if      (hat & Pin::hat::UP)    g_camera->AddTheta (-td.SysDT);
+                else if (hat & Pin::hat::DOWN)  g_camera->AddTheta ( td.SysDT);
+                if      (hat & Pin::hat::RIGHT) g_camera->AddPhi   ( td.SysDT);
+                else if (hat & Pin::hat::LEFT)  g_camera->AddPhi   (-td.SysDT);
             }
         } else { // internal view
             if (ModKey) { // shift instrument panel
-                if      (hat & SDL_HAT_UP)    g_pane->ShiftPanel (0.0,  td.SysDT*pConfig->CfgLogicPrm.PanelScrollSpeed);
-                else if (hat & SDL_HAT_DOWN)  g_pane->ShiftPanel (0.0, -td.SysDT*pConfig->CfgLogicPrm.PanelScrollSpeed);
-                if      (hat & SDL_HAT_RIGHT) g_pane->ShiftPanel (-td.SysDT*pConfig->CfgLogicPrm.PanelScrollSpeed, 0.0);
-                else if (hat & SDL_HAT_LEFT)  g_pane->ShiftPanel ( td.SysDT*pConfig->CfgLogicPrm.PanelScrollSpeed, 0.0);
+                if      (hat & Pin::hat::UP)    g_pane->ShiftPanel (0.0,  td.SysDT*pConfig->CfgLogicPrm.PanelScrollSpeed);
+                else if (hat & Pin::hat::DOWN)  g_pane->ShiftPanel (0.0, -td.SysDT*pConfig->CfgLogicPrm.PanelScrollSpeed);
+                if      (hat & Pin::hat::RIGHT) g_pane->ShiftPanel (-td.SysDT*pConfig->CfgLogicPrm.PanelScrollSpeed, 0.0);
+                else if (hat & Pin::hat::LEFT)  g_pane->ShiftPanel ( td.SysDT*pConfig->CfgLogicPrm.PanelScrollSpeed, 0.0);
             } else {                 // rotate camera
-                if      (hat & SDL_HAT_UP)    g_camera->Rotate (0,  td.SysDT, true);
-                else if (hat & SDL_HAT_DOWN)  g_camera->Rotate (0, -td.SysDT, true);
-                if      (hat & SDL_HAT_RIGHT) g_camera->Rotate (-td.SysDT, 0, true);
-                else if (hat & SDL_HAT_LEFT)  g_camera->Rotate ( td.SysDT, 0, true);
+                if      (hat & Pin::hat::UP)    g_camera->Rotate (0,  td.SysDT, true);
+                else if (hat & Pin::hat::DOWN)  g_camera->Rotate (0, -td.SysDT, true);
+                if      (hat & Pin::hat::RIGHT) g_camera->Rotate (-td.SysDT, 0, true);
+                else if (hat & Pin::hat::LEFT)  g_camera->Rotate ( td.SysDT, 0, true);
             }
         }
     }

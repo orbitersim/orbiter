@@ -4,6 +4,10 @@
 #include "Graph.h"
 #include "NodeLegacyControls.h"
 #include "NodeJoystick.h"
+#define SDL_DISABLE_OLD_NAMES
+#include <SDL3/SDL.h>
+
+static_assert(std::is_same_v<SDL_JoystickID, uint32_t>, "SDL_JoystickID is no longer uint32_t");
 
 extern Orbiter* g_pOrbiter;
 

@@ -12,10 +12,25 @@ namespace ed = ax::NodeEditor;
 // They have a type that defines what value they can take
 // An input Pin knows which other Pins are connected to it, this is
 // used to update its value on demand via the ReadInputs method.
+
 class Node;
 class Pin final
 {
 public:
+    // The values are mapped to SDL_HAT_xxx macros
+    // A static_assert is used in Joystick.cpp to make sure we'd detect a breaking change in SDL
+    enum class hat : int {
+        CENTERED  =  0x00u,
+        UP        =  0x01u,
+        RIGHT     =  0x02u,
+        DOWN      =  0x04u,
+        LEFT      =  0x08u,
+        RIGHTUP   =  RIGHT | UP,
+        RIGHTDOWN =  RIGHT | DOWN,
+        LEFTUP    =  LEFT | UP,
+        LEFTDOWN  =  LEFT | DOWN,
+    };
+
     enum class type {
         Button,
         HalfAxis,    // A pin that takes a value in [0;1]
@@ -48,7 +63,7 @@ public:
     float fVal;     // Axis/HalfAxis
     float fValRaw;  // value before deadzone/flipping/rescaling
     bool bVal;      // Button
-    int hVal;       // Hat
+    Pin::hat hVal;       // Hat
 
     struct Context {
         float deadzone = 0.0f;
@@ -60,6 +75,10 @@ public:
     std::list<Pin *> inputs;
 };
 
+constexpr bool operator&(Pin::hat a, Pin::hat b)
+{
+    return (static_cast<uint32_t>(a) & static_cast<uint32_t>(b)) != 0;
+}
 
 template<Pin::type Type>
 class InputPin {
@@ -67,7 +86,7 @@ class InputPin {
         Type == Pin::type::Button, bool,
         std::conditional_t<
             Type == Pin::type::Axis, float,
-            int // Hat
+            Pin::hat
         >
     >;
 

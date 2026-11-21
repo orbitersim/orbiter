@@ -12,7 +12,7 @@ Pin::Pin(std::string iname, std::string dname, enum Pin::type t, enum Pin::kind 
     fVal = 0.0f;
     fValRaw = 0.0f;
     bVal = false;
-    hVal = 0;
+    hVal = hat::CENTERED;
     parent = p;
 }
 
@@ -47,10 +47,10 @@ void Pin::ReadInputs()
             fVal = std::clamp(fVal, -1.0f, 1.0f);
             break;
         case Pin::type::Hat:
-            hVal = 0;
+            hVal = hat::CENTERED;
             // Hat values cannot be combined easily, just stop at the first entry set
             for(auto &p: inputs) {
-                if(p->hVal) {
+                if(p->hVal != hat::CENTERED) {
                     hVal = p->hVal;
                     break;
                 }

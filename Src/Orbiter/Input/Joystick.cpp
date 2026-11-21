@@ -59,22 +59,32 @@ void Joystick::UpdateState() {
     if(!joy || !SDL_JoystickConnected(js)) {
         std::fill(state.btns.begin(), state.btns.end(), 0);
         std::fill(state.axis.begin(), state.axis.end(), 0);
-        std::fill(state.hats.begin(), state.hats.end(), 0);
+        std::fill(state.hats.begin(), state.hats.end(), Pin::hat::CENTERED);
 //			std::fill(state.balls.begin(), state.balls.end(), BallState{0,0});
         return;
     }
-    //printf("State:\n");
+
     for(int i=0; i<state.btns.size(); i++) {
         state.btns[i] = SDL_GetJoystickButton(js, i) ? 1 : 0;
-        //printf("btn%d - %d\n", i, state.btns[i]);
     }
     for(int i=0; i<state.axis.size(); i++) {
         state.axis[i] = SDL_GetJoystickAxis(js, i);
-        //printf("axis%d - %d\n", i, state.axis[i]);
     }
+
+    // Check that SDL still uses the same mapping as us.
+    // If this breaks change the cast below to a switch/case
+    static_assert((int)Pin::hat::CENTERED  == SDL_HAT_CENTERED);
+    static_assert((int)Pin::hat::UP        == SDL_HAT_UP);
+    static_assert((int)Pin::hat::DOWN      == SDL_HAT_DOWN);
+    static_assert((int)Pin::hat::LEFT      == SDL_HAT_LEFT);
+    static_assert((int)Pin::hat::RIGHT     == SDL_HAT_RIGHT);
+    static_assert((int)Pin::hat::LEFTUP    == SDL_HAT_LEFTUP);
+    static_assert((int)Pin::hat::LEFTDOWN  == SDL_HAT_LEFTDOWN);
+    static_assert((int)Pin::hat::RIGHTUP   == SDL_HAT_RIGHTUP);
+    static_assert((int)Pin::hat::RIGHTDOWN == SDL_HAT_RIGHTDOWN);
+
     for(int i=0; i<state.hats.size(); i++) {
-        state.hats[i] = SDL_GetJoystickHat(js, i);
-        //printf("hat%d - %d\n", i, state.hats[i]);
+        state.hats[i] = (Pin::hat)SDL_GetJoystickHat(js, i);
     }
 //		for(int i=0; i<state.balls.size(); i++) {
 //			if(!SDL_GetJoystickBall(js, i, &state.balls[i].dx, &state.balls[i].dy)) {

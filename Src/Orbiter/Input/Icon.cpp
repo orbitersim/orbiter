@@ -26,9 +26,7 @@ SOFTWARE.
 
 #include "Icon.h"
 #include <imgui_internal.h>
-#define SDL_DISABLE_OLD_NAMES
-#include <SDL3/SDL.h>
-void DrawHat(ImDrawList* drawList, const ImVec2& a, const ImVec2& b, unsigned char mask, ImU32 color);
+void DrawHat(ImDrawList* drawList, const ImVec2& a, const ImVec2& b, Pin::hat hat, ImU32 color);
 void DrawAxisGauge(ImDrawList* drawList, const ImVec2& a, const ImVec2& b, float value, ImU32 color);
 void DrawIcon(ImDrawList* drawList, const ImVec2& a, const ImVec2& b, IconType type, bool filled, ImU32 color, ImU32 innerColor);
 
@@ -57,13 +55,13 @@ void Axis(const ImVec2& size, float value, const ImVec4& color) {
     ImGui::Dummy(size);
 }
 
-void Hat(const ImVec2& size, unsigned char mask, const ImVec4& color) {
+void Hat(const ImVec2& size, Pin::hat hat, const ImVec4& color) {
 
     if (ImGui::IsRectVisible(size))
     {
         auto cursorPos = ImGui::GetCursorScreenPos();
         auto drawList  = ImGui::GetWindowDrawList();
-        DrawHat(drawList, cursorPos, cursorPos + size, mask, ImColor(color));
+        DrawHat(drawList, cursorPos, cursorPos + size, hat, ImColor(color));
     }
 
     ImGui::Dummy(size);
@@ -402,7 +400,7 @@ void DrawAxisGauge(ImDrawList* drawList, const ImVec2& a, const ImVec2& b,
 }
 
 void DrawHat(ImDrawList* drawList, const ImVec2& a, const ImVec2& b,
-             unsigned char hat, ImU32 color)
+             Pin::hat hat, ImU32 color)
 {
     const ImVec2 c = (a + b) * 0.5f;
     const float size = b.x - a.x;
@@ -425,16 +423,16 @@ void DrawHat(ImDrawList* drawList, const ImVec2& a, const ImVec2& b,
         ImVec2(-d, -d)
     };
 
-    const Uint8 masks[] =
+    const Pin::hat masks[] =
     {
-        SDL_HAT_UP,
-        SDL_HAT_UP | SDL_HAT_RIGHT,
-        SDL_HAT_RIGHT,
-        SDL_HAT_RIGHT | SDL_HAT_DOWN,
-        SDL_HAT_DOWN,
-        SDL_HAT_DOWN | SDL_HAT_LEFT,
-        SDL_HAT_LEFT,
-        SDL_HAT_LEFT | SDL_HAT_UP
+        Pin::hat::UP,
+        Pin::hat::RIGHTUP,
+        Pin::hat::RIGHT,
+        Pin::hat::RIGHTDOWN,
+        Pin::hat::DOWN,
+        Pin::hat::LEFTDOWN,
+        Pin::hat::LEFT,
+        Pin::hat::LEFTUP
     };
 
     for (int i = 0; i < 8; ++i)
@@ -443,5 +441,5 @@ void DrawHat(ImDrawList* drawList, const ImVec2& a, const ImVec2& b,
         drawList->AddCircleFilled(p, dotR, hat == masks[i] ? color : inactive);
     }
 
-    drawList->AddCircleFilled(c, dotR, hat == SDL_HAT_CENTERED ? color : inactive);
+    drawList->AddCircleFilled(c, dotR, hat == Pin::hat::CENTERED ? color : inactive);
 }
