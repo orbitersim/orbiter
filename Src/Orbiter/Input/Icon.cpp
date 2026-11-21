@@ -358,6 +358,72 @@ void DrawIcon(ImDrawList* drawList, const ImVec2& a, const ImVec2& b, IconType t
                 ImVec2(6.0f * s, ry),
                 color);
         }
+
+        if(type == IconType::ButtonPressed || type == IconType::ButtonReleased) {
+            const float s = rect_w / 24.0f;
+            const ImVec2 c = rect_center;
+
+            const float rx = 9.0f * s;
+            const float ry = 3.0f * s;
+
+            const float baseY = c.y + 2.0f * s;
+            const float capY = c.y -1.0f * s;
+            const float capH = 5.0f * s;
+
+            // Mounting base
+            drawList->AddRectFilled(
+                ImVec2(c.x - rx, baseY),
+                ImVec2(c.x + rx, baseY + 5.0f * s),
+                IM_COL32(90, 90, 90, 255));
+
+            // Button stem
+            drawList->AddRectFilled(
+                ImVec2(c.x - 6.0f * s, capY),
+                ImVec2(c.x + 6.0f * s, capY + capH),
+                color);
+
+            // Button top
+            drawList->AddEllipseFilled(
+                ImVec2(c.x, capY),
+                ImVec2(6.0f * s, ry),
+                color);
+
+            // Direction arrow
+            const float arrowY = c.y - 11.0f * s;
+            const float arrowH = 4.0f * s;
+            const float arrowW = 4.0f * s;
+            const float stemW = 2.0f * s;
+            const float stemH = 3.5f * s;
+
+            if (type == IconType::ButtonPressed)
+            {
+                // Downward arrow
+                drawList->AddRectFilled(
+                    ImVec2(c.x - stemW / 2, arrowY),
+                    ImVec2(c.x + stemW / 2, arrowY + stemH),
+                    IM_COL32(255, 255, 255, 255));
+
+                drawList->AddTriangleFilled(
+                    ImVec2(c.x - arrowW, arrowY + stemH),
+                    ImVec2(c.x + arrowW, arrowY + stemH),
+                    ImVec2(c.x, arrowY + stemH + arrowH),
+                    IM_COL32(255, 255, 255, 255));
+            }
+            else
+            {
+                // Upward arrow
+                drawList->AddRectFilled(
+                    ImVec2(c.x - stemW / 2, arrowY + arrowH),
+                    ImVec2(c.x + stemW / 2, arrowY + arrowH + stemH),
+                    IM_COL32(255, 255, 255, 255));
+
+                drawList->AddTriangleFilled(
+                    ImVec2(c.x - arrowW, arrowY + arrowH),
+                    ImVec2(c.x + arrowW, arrowY + arrowH),
+                    ImVec2(c.x, arrowY),
+                    IM_COL32(255, 255, 255, 255));
+            }
+        }
     }
 }
 

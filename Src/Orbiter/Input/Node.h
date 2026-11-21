@@ -30,7 +30,7 @@ public:
     void RegisterPinInternal(const char *name, const char *displayname, InputPin<Type> &ip) {
         Pin *p = AddInput(name, displayname, Type);
 
-        if constexpr (Type == Pin::type::Button)
+        if constexpr (Type == Pin::type::Button || Type == Pin::type::ButtonPressed || Type == Pin::type::ButtonReleased)
             ip.Bind(p->bVal);
         else if constexpr (Type == Pin::type::Axis)
             ip.Bind(p->fVal);

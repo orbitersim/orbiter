@@ -56,7 +56,11 @@ class ControllerGraph final {
     void AddNode(std::unique_ptr<Node> node);
     void DeleteNode(Node *node);
     bool NodeHasRoom(ImVec2 pos, ImVec2 size);
-    Pin *PinFromId(ed::PinId id) { return pins.at(id.AsPointer()); }
+    Pin *PinFromId(ed::PinId id) {
+        auto it = pins.find(id.AsPointer());
+        if(it == pins.end()) return NULL;
+        return it->second;
+    }
     bool CanLink(const Pin *a, const Pin *b);
     void TopologicalSort();
     bool Load(const char *path);

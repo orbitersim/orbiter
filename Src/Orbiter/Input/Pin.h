@@ -36,6 +36,8 @@ public:
         HalfAxis,    // A pin that takes a value in [0;1]
         Axis,        // A pin that takes a value in [-1;1]
         Hat,
+        ButtonPressed,
+        ButtonReleased,
     };
     enum class kind {
         Input,
@@ -63,6 +65,7 @@ public:
     float fVal;     // Axis/HalfAxis
     float fValRaw;  // value before deadzone/flipping/rescaling
     bool bVal;      // Button
+    bool bValPrev;  // Previous Button value
     Pin::hat hVal;       // Hat
 
     struct Context {
@@ -83,10 +86,10 @@ constexpr bool operator&(Pin::hat a, Pin::hat b)
 template<Pin::type Type>
 class InputPin {
     using ValueType = std::conditional_t<
-        Type == Pin::type::Button, bool,
+        Type == Pin::type::Axis, float,
         std::conditional_t<
-            Type == Pin::type::Axis, float,
-            Pin::hat
+            Type == Pin::type::Hat, Pin::hat,
+            bool // Buttons
         >
     >;
 

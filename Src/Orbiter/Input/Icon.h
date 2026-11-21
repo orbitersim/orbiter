@@ -3,7 +3,7 @@
 #include <imgui.h>
 #include "Pin.h"
 
-enum class IconType: ImU32 { Flow, Circle, Square, Grid, RoundSquare, Diamond, Trigger, Plus, ButtonUp, ButtonDown, };
+enum class IconType: ImU32 { Flow, Circle, Square, Grid, RoundSquare, Diamond, Trigger, Plus, ButtonUp, ButtonDown, ButtonPressed, ButtonReleased };
 
 void Icon(const ImVec2& size, IconType type, bool filled, const ImVec4& color = ImVec4(1, 1, 1, 1), const ImVec4& innerColor = ImVec4(0, 0, 0, 0));
 void Axis(const ImVec2& size, float value, const ImVec4& color);

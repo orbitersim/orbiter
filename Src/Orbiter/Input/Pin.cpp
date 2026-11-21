@@ -12,6 +12,7 @@ Pin::Pin(std::string iname, std::string dname, enum Pin::type t, enum Pin::kind 
     fVal = 0.0f;
     fValRaw = 0.0f;
     bVal = false;
+    bValPrev = false;
     hVal = hat::CENTERED;
     parent = p;
 }
@@ -56,6 +57,34 @@ void Pin::ReadInputs()
                 }
             }
             break;
+        case Pin::type::ButtonPressed:
+        {
+            bool bIn = false;
+            for(auto &p: inputs) {
+                bIn |= p->bVal;
+            }
+            if(!bValPrev && bIn) {
+                bVal = true;
+            } else {
+                bVal = false;
+            }
+            bValPrev = bIn;
+            break;
+        }
+        case Pin::type::ButtonReleased:
+        {
+            bool bIn = false;
+            for(auto &p: inputs) {
+                bIn |= p->bVal;
+            }
+            if(bValPrev && !bIn) {
+                bVal = true;
+            } else {
+                bVal = false;
+            }
+            bValPrev = bIn;
+            break;
+        }
     }
 }
 
@@ -75,6 +104,8 @@ ImColor GetIconColor(enum Pin::type type)
         case Pin::type::HalfAxis: return colHAxis;
         case Pin::type::Axis:     return colAxis;
         case Pin::type::Hat:      return colHat;
+        case Pin::type::ButtonPressed:  return colBtn;
+        case Pin::type::ButtonReleased: return colBtn;
     }
     assert(false);
     return colBtn;
@@ -92,6 +123,12 @@ void Pin::DrawIcon()
             break;
         case Pin::type::Hat:
             Hat(ImVec2(ImGui::GetTextLineHeight(), ImGui::GetTextLineHeight()), hVal, color);
+            break;
+        case Pin::type::ButtonPressed:
+            Icon(ImVec2(ImGui::GetTextLineHeight(), ImGui::GetTextLineHeight()), IconType::ButtonPressed, true, color, ImColor(32, 32, 32, 255));
+            break;
+        case Pin::type::ButtonReleased:
+            Icon(ImVec2(ImGui::GetTextLineHeight(), ImGui::GetTextLineHeight()), IconType::ButtonReleased, true, color, ImColor(32, 32, 32, 255));
             break;
     }
 }

@@ -118,7 +118,10 @@ bool ControllerGraph::CanLink(const Pin *a, const Pin *b) {
     }
     if(in->pkind == out->pkind) return false;
 
-    if(in->ptype != out->ptype) return false;
+    // Button press/released can only be hooks to a Button source
+    bool trigger = ((in->ptype == Pin::type::ButtonPressed || in->ptype == Pin::type::ButtonReleased) && out->ptype == Pin::type::Button);
+
+    if(!trigger && in->ptype != out->ptype) return false;
 
     // Duplicate link
     if (std::any_of(links.begin(), links.end(),
@@ -386,6 +389,13 @@ retry:
     for(const Link &l: links) {
         Pin *to = PinFromId(l.InputId);
         Pin *from = PinFromId(l.OutputId);
+
+        // Protects against JSON files containing links to pins no longer exposed by a Node
+        if(!to || !from) {
+            ed::DeleteLink(l.Id);
+            continue;
+        }
+
         Node *parent = pinOwners[from];
         Node *child = pinOwners[to];
         nodeInfo[parent].children.insert(child);
