@@ -53,7 +53,6 @@
 #define SDL_DISABLE_OLD_NAMES
 #include <SDL3/SDL.h>
 #include "Input/Controller.h"
-#include "Input/Editor.h"
 
 namespace fs = std::filesystem;
 
@@ -180,7 +179,6 @@ INT WINAPI WinMain (HINSTANCE hInstance, HINSTANCE, LPSTR strCmdLine, INT nCmdSh
 #endif
 	SDL_SetHint(SDL_HINT_JOYSTICK_ALLOW_BACKGROUND_EVENTS, "1");
 	SDL_Init(SDL_INIT_JOYSTICK);
-	InputController::GlobalInit();
 
 	// Verify working directory
 	char dir[1024];
@@ -213,6 +211,7 @@ INT WINAPI WinMain (HINSTANCE hInstance, HINSTANCE, LPSTR strCmdLine, INT nCmdSh
 	srand(12345);
 
 	oapiRegisterCustomControls(hInstance);
+	InputController::GlobalInit();
 
 	HRESULT hr;
 	// Create application
@@ -224,10 +223,14 @@ INT WINAPI WinMain (HINSTANCE hInstance, HINSTANCE, LPSTR strCmdLine, INT nCmdSh
 	}
 
 	setlocale (LC_CTYPE, "");
-	static InputEditor *ed = new InputEditor();
 
 	g_pOrbiter->Run ();
+
+	InputController::GlobalExit();
+
 	delete g_pOrbiter;
+	
+	SDL_Quit();
 	return 0;
 }
 
@@ -2021,13 +2024,13 @@ HRESULT Orbiter::UserInput ()
 	bool consume = BroadcastImmediateKeyboardEvent (simkstate);
 	if (!skipkbd && !consume) {
 		KbdInputImmediate_System (simkstate);
-		if (bRunning) KbdInputImmediate_OnRunning (simkstate);
+		if (bRunning) KbdInputImmediate_OnRunning (simkstate); // updates ctrlKeyboard
 	}
 
 	for (int i = 0; i < 15; i++) ctrlTotal[i] = ctrlKeyboard[i]; // update attitude requests
 
 	// joystick input
-	UserJoyInput (); // joystick vessel control functions
+	UserJoyInput (); // joystick vessel control functions, updates ctrlJoystick
 	for (int i = 0; i < 15; i++) ctrlTotal[i] += ctrlJoystick[i]; // update thrust requests
 
 	g_camera->UpdateMouse();

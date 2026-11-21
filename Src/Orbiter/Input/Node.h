@@ -20,6 +20,8 @@ public:
 	int id;
 	bool dirty;
 	int pinidgen;
+	bool placed = false; // Has been positioned in the editor
+	bool initialized = false;
 	Node(const char *n);
 	virtual ~Node() = default;
 	void AddInput(const char *n, Pin::type type);

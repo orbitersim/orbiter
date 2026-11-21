@@ -161,6 +161,7 @@ void NodeJoystick::InitFromJoystick(Joystick *joy, int i)
 	pinidgen = (id << 16) + 1;
 	grayed = false;
     js = joy;
+	initialized = true;
 
     const auto cbAxis = [this](Pin *pin) {
         TransferFunctionEditor("Axis transfer function", &pin->context, pin->fValRaw);

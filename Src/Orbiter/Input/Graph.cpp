@@ -48,13 +48,24 @@ static ImVec4 GetStateColor(const Pin *pin) {
 
 ControllerGraph::ControllerGraph()
 {
+	ed::Config config;
+	config.SettingsFile = NULL;
+	m_Context = ed::CreateEditor(&config);
+
+	ed::SetCurrentEditor(m_Context);
+	Load("graph.json");
+
+	for(auto &node: nodes) {
+	}
 }
 
 ControllerGraph::~ControllerGraph()
 {
+	ed::DestroyEditor(m_Context);
 }
 
 void ControllerGraph::AddNode(std::unique_ptr<Node> node) {
+	assert(node->initialized);
     for(Pin &pin: node->inputs) {
         assert(pins.count(pin.id.AsPointer()) == 0);
         pins[pin.id.AsPointer()] = &pin;
@@ -63,8 +74,6 @@ void ControllerGraph::AddNode(std::unique_ptr<Node> node) {
         assert(pins.count(pin.id.AsPointer()) == 0);
         pins[pin.id.AsPointer()] = &pin;
     }
-	if(!strcmp(node->GetTypeName(), "NodeLegacyControls"))
-		legacyControls = dynamic_cast<NodeLegacyControls *>(node.get());
 
 	nodes.emplace_back(std::move(node));
     dirty = true;
@@ -145,15 +154,99 @@ bool ControllerGraph::CanLink(const Pin *a, const Pin *b) {
     return true;
 }
 
-void ControllerGraph::Draw()
+bool ControllerGraph::NodeHasRoom(ImVec2 pos, ImVec2 size)
 {
+	const float spacing = 10.0f;
+	for(auto &node: nodes) {
+		if(node->placed) {
+            ImVec2 otherPos = ed::GetNodePosition(node->id);
+            ImVec2 otherSize = ed::GetNodeSize(node->id);
+
+            if (pos.x < otherPos.x + otherSize.x + spacing &&
+                pos.x + size.x + spacing > otherPos.x &&
+                pos.y < otherPos.y + otherSize.y + spacing &&
+                pos.y + size.y + spacing > otherPos.y) {
+				return false;
+            }
+		}
+	}
+	return true;
+}
+
+void ControllerGraph::DrawEditor()
+{
+	ed::SetCurrentEditor(m_Context);
+
+	if(ImGui::Button("Save")) {
+		Save("graph.json");
+	}
+	ImGui::SameLine();
+	if(ImGui::Button("Reload")) {
+		if(!Load("graph.json")) {
+			oapiAddNotification(OAPINOTIF_ERROR, "Error loading file", "graph.json");
+		}
+	}
+
+	ImGui::Separator();
+
+    ed::Begin("My Editor", ImVec2(0.0, 0.0f));
+
     const auto filter = [this](const Pin *pin) {
         if(!draggedPin) return true;
         return CanLink(draggedPin, pin);
     };
+
+	// By default, all nodes are created at {0,0}
+	// In order not to have a bunch of nodes on top of each other
+	// we check in a circular pattern from the barycenter of existing nodes
+	// until we find enough room to place a new node.
+	// It's not great but better than everything being piled up.
+	bool allplaced = true;
+	ImVec2 barycenter{0.0f,0.0f};
+	int npoints = 0;
     for(auto &n: nodes) {
+		ImVec2 pos = ed::GetNodePosition(n->id);
         n->Draw(filter);
+		if(n->placed) {
+			npoints++;
+			barycenter.x += pos.x;
+			barycenter.y += pos.y;
+		} else {
+			allplaced = false;
+		}
     }
+
+	if(!allplaced) {
+		if(npoints) {
+			barycenter.x /= npoints;
+			barycenter.y /= npoints;
+		}
+		auto fibospiral = [](ImVec2 origin, int index) {
+			float angle = index * 2.39996323f; // Golden angle
+			float radius = 30.0f * sqrt(index);
+
+			return ImVec2{
+				origin.x + radius * cos(angle),
+				origin.y + radius * sin(angle)
+			};
+		};
+
+		for(auto &n: nodes) {
+			if(!n->placed) {
+				for(int i = 0;;i++) {
+					ImVec2 pos = fibospiral(barycenter, i);
+					ImVec2 sz = ed::GetNodeSize(n->id);
+					if(NodeHasRoom(pos, sz)) {
+						ed::SetNodePosition(n->id, pos);
+						n->placed = true;
+						break;
+					}
+				}
+			}
+		}
+		ed::NavigateToContent();
+	}
+
     for (const Link& link : links) {
         ImVec4 color = GetStateColor(PinFromId(link.OutputId));
         ed::Link(link.Id, link.InputId, link.OutputId, color);
@@ -240,6 +333,9 @@ void ControllerGraph::Draw()
     }
 
     ed::Resume();
+	ed::End();
+
+	ed::SetCurrentEditor(NULL);
 }
 
 void ControllerGraph::Update(bool dryrun)
@@ -378,7 +474,7 @@ void ControllerGraph::Save(const char *path)
     out.save(path, 4);
 }
 
-void ControllerGraph::Load(const char *path)
+bool ControllerGraph::Load(const char *path)
 {
     std::pair<crude_json::value, bool> ret = crude_json::value::load(path);
     if(ret.second) {
@@ -404,12 +500,19 @@ void ControllerGraph::Load(const char *path)
 				const std::string &name = n["typename"].get<std::string>();
                 Node *node = nodeFactory.MakeNode(name.c_str());
 				node->InitFromJSON(n);
-                ImVec2 pos;
-                pos.x = n["xpos"].get<crude_json::number>();
-                pos.y = n["ypos"].get<crude_json::number>();
-                ed::SetNodePosition(node->id, pos);
+				if(n.contains("xpos")) {
+					ImVec2 pos;
+					pos.x = n["xpos"].get<crude_json::number>();
+					pos.y = n["ypos"].get<crude_json::number>();
+					ed::SetNodePosition(node->id, pos);
+					node->placed = true;
+				}
 				AddNode(std::unique_ptr<Node>(node));
                 dirty = true;
+
+				if(!strcmp(node->GetTypeName(), "NodeLegacyControls"))
+					legacyControls = dynamic_cast<NodeLegacyControls *>(node);
+
             }
         }
 
@@ -428,8 +531,11 @@ void ControllerGraph::Load(const char *path)
 		for(Joystick *js: joysticks) {
 			AttachJoystick(js);
 		}
+
+		ed::NavigateToContent();
+		return true;
 	} else {
-        oapiAddNotification(OAPINOTIF_ERROR, "Error loading file", path);
+		return false;
     }
 
 }
