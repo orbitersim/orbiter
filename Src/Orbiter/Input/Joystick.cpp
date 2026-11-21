@@ -31,35 +31,18 @@ Joystick::Joystick(uint32_t idjoy) {
 	state.axis.resize(naxis);
 	state.hats.resize(nhats);
 //		state.balls.resize(nballs);
-	/*
-	// Disable for now since indices between SDL_GetJoystickButton and SDL_GetGamepadButton are not the same...
-	if(SDL_IsGamepad(id)) {
-		printf("Is Gamepad\n");
-		SDL_Gamepad *gamepad = SDL_OpenGamepad(id);
-		SDL_GamepadType type =  SDL_GetGamepadType(gamepad);
-		printf("%s\n", SDL_GetGamepadStringForType(type));
-		for(int i = 0; i < nbuttons; i++) {
-			btnnames[i] = SDL_GetGamepadStringForButton((SDL_GamepadButton)i);
-		}
-		for(int i = 0; i < naxis; i++) {
-			axesnames[i] = SDL_GetGamepadStringForAxis((SDL_GamepadAxis)i);
-		}
-		SDL_CloseGamepad(gamepad);
-	} else
-	*/
-	{
-		for(int i = 0; i < nbuttons; i++) {
-			btnnames[i].name = std::string("b") + std::to_string(i);
-			btnnames[i].displayname = std::string("Btn ") + std::to_string(i);
-		}
-		for(int i = 0; i < naxis; i++) {
-			axesnames[i].name = std::string("a") + std::to_string(i);
-			axesnames[i].displayname = std::string("Axis ") + std::to_string(i);
-		}
-		for(int i = 0; i < nhats; i++) {
-			hatnames[i].name = std::string("h") + std::to_string(i);
-			hatnames[i].displayname = std::string("Hat ") + std::to_string(i);
-		}
+
+	for(int i = 0; i < nbuttons; i++) {
+		btnnames[i].name = std::string("b") + std::to_string(i);
+		btnnames[i].displayname = std::string("Btn ") + std::to_string(i);
+	}
+	for(int i = 0; i < naxis; i++) {
+		axesnames[i].name = std::string("a") + std::to_string(i);
+		axesnames[i].displayname = std::string("Axis ") + std::to_string(i);
+	}
+	for(int i = 0; i < nhats; i++) {
+		hatnames[i].name = std::string("h") + std::to_string(i);
+		hatnames[i].displayname = std::string("Hat ") + std::to_string(i);
 	}
 
 	SDL_GUID sguid = SDL_GetJoystickGUID(js);
