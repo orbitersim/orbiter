@@ -4,6 +4,7 @@
 DECLARE_NODE_SINGLETON(NodeLegacyControls)
 
 class NodeLegacyControls : public Node, public INodeLegacyController {
+    InputPin<Pin::type::Button> Enable;
     InputPin<Pin::type::Button> ModKey;
     InputPin<Pin::type::Axis> MainEngine;
     InputPin<Pin::type::Axis> BankYaw;
