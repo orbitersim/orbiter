@@ -87,6 +87,8 @@ void Node::UpdateInputs()
 }
 
 void Node::Draw(std::function<bool(const Pin *)> filter) {
+    if(!enabled) return;
+
     if(dirty) {
         ComputeLayout();
     }
@@ -141,6 +143,7 @@ void Node::ToJSON(crude_json::value &out)
 {
     out["typename"] = GetTypeName();
     out["id"] = std::to_string(id);
+    out["enabled"] = enabled;
     out["pinidgen"] = std::to_string(pinidgen);
     
     if(placed) {
@@ -185,6 +188,7 @@ void Node::InitFromJSON(const crude_json::value &json)
 
     id = std::stoi(json["id"].get<std::string>());
     pinidgen = std::stoi(json["pinidgen"].get<std::string>());
+    enabled = json["enabled"].get<bool>();
     RegisterPins();
     initialized = true;
 

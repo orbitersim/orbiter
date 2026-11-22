@@ -227,7 +227,7 @@ void NodeJoystick::RegisterPins()
     }
 }
 
-void NodeJoystick::Update(bool dryrun)
+void NodeJoystick::UpdateOutputs(bool dryrun)
 {
     if(!js) return; // No joystick attached to this node
 

@@ -1,7 +1,9 @@
 #pragma once
 #include "Node.h"
 
-class NodeLegacyControls : public Node {
+DECLARE_NODE_SINGLETON(NodeLegacyControls)
+
+class NodeLegacyControls : public Node, public INodeLegacyController {
     InputPin<Pin::type::Button> ModKey;
     InputPin<Pin::type::Axis> MainEngine;
     InputPin<Pin::type::Axis> BankYaw;
@@ -11,11 +13,9 @@ class NodeLegacyControls : public Node {
 
 public:
     NodeLegacyControls();
-    void Update(bool dryrun) override;
-    void GetJoystickCtrl(float ctrl[15]);
     void RegisterPins() override;
+    void UpdateOutputs(bool dryrun) override;
+    void AddJoystickCtrl(float ctrl[15]) override;
 
-    // Serialization
-    static constexpr const char* TypeName = "NodeLegacyControls";
-    const char *GetTypeName() const override { return TypeName; }
+    DECLARE_NODE_TRAITS(NodeLegacyControls)
 };

@@ -2,7 +2,7 @@
 #include <vector>
 #include <string>
 #include <list>
-#include <unordered_map>
+#include <map>
 #include <memory>
 #include <imgui_node_editor.h>
 #include <functional>
@@ -19,18 +19,23 @@ struct Link
 class Node;
 class Pin;
 class Joystick;
-class NodeLegacyControls;
 
 class NodeFactory {
 public:
-    std::unordered_map<std::string, std::function<Node *()>> types;
+    struct NodeInfo {
+        std::function<Node *()> maker;
+        bool isSingleton;
+    };
+    std::map<std::string, NodeInfo> types;
 
     template <typename T> void Register() {
-        types[T::TypeName]=[]()->Node * { return new T(); };
+        types[NodeTraits<T>::TypeName]={[]()->Node * { return new T(); }, NodeTraits<T>::IsSingleton};
     }
 
     Node *MakeNode(const char *type) {
-        return types.at(type)();
+        auto it = types.find(type);
+        if(it == types.end()) return NULL;
+        return it->second.maker();
     }
 };
 
@@ -45,7 +50,6 @@ class ControllerGraph final {
     std::unordered_map<void *, Pin *> pins; // Map between ed::PinId and Pins
     std::list<Node *> nodesSorted;
     Pin *draggedPin = NULL;
-    NodeLegacyControls *legacyControls = NULL;
     int linkidgen = 1;
     int nodeidgen = 1;
     bool dirty = true;
@@ -70,4 +74,6 @@ class ControllerGraph final {
     void GetJoystickCtrl(float ctrl[15]);
     static inline NodeFactory nodeFactory;
     static void GlobalInit();
+    bool HasNodeOfType(const std::string &type);
+    void CreateSingletonNodes();
 };

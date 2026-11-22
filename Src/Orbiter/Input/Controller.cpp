@@ -2,8 +2,7 @@
 #include "Orbiter.h"
 #include "Config.h"
 #include "Graph.h"
-#include "NodeLegacyControls.h"
-#include "NodeJoystick.h"
+#include "NodeCamera.h"
 #define SDL_DISABLE_OLD_NAMES
 #include <SDL3/SDL.h>
 
@@ -28,11 +27,7 @@ void InputController::GlobalInit()
     editor = std::make_unique<ControllerEditor>();
     ControllerGraph::GlobalInit();
     graph = new ControllerGraph();
-    if(!graph->legacyControls) {
-        auto node = std::make_unique<NodeLegacyControls>();
-        node->InitDefault(graph->nodeidgen++);
-        graph->AddNode(std::move(node));
-    }
+
     m_cmd = oapiRegisterCustomCmd((char*)"Joystick configuration", (char*)"Advanced joystick configuration", OpenDlgClbk, editor.get());
 
 }

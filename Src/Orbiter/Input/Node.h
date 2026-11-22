@@ -8,6 +8,35 @@
 
 #define RegisterPin(name, var) RegisterPinInternal(#var, name, var)
 
+#define DECLARE_NODE_SINGLETON(T) \
+class T; \
+    template <> struct NodeTraits<T> { \
+        static constexpr const char* TypeName = #T; \
+        static constexpr bool IsSingleton = true; \
+    };
+
+#define DECLARE_NODE(T) \
+class T; \
+    template <> struct NodeTraits<T> { \
+        static constexpr const char* TypeName = #T; \
+        static constexpr bool IsSingleton = false; \
+    };
+
+#define DECLARE_NODE_TRAITS(T) \
+    const char* GetTypeName() const override { return NodeTraits<T>::TypeName; } \
+    bool IsSingleton() const override { return NodeTraits<T>::IsSingleton; }
+
+template <typename T>
+struct NodeTraits; // Intentionally undefined
+
+
+// For controllers that go through the legacy API
+// It automatically takes into account the Lin/Rot/Off RCS switch and AF control surfaces modes
+class INodeLegacyController {
+public:
+    virtual void AddJoystickCtrl(float ctrl[15]) = 0;
+};
+
 class Node {
 protected:
     bool grayed = false;
@@ -24,6 +53,8 @@ public:
     int pinidgen;
     bool placed = false; // Has been positioned in the editor
     bool initialized = false;
+    bool enabled = true; // if false : not shown on editor and ignored when executing the graph
+    bool singleton = false; // 
     Node(const char *n);
     virtual ~Node() = default;
     template<Pin::type Type>
@@ -55,10 +86,11 @@ public:
     void InitDefault(int id);
     virtual void RegisterPins() = 0;
     virtual void Draw(std::function<bool(const Pin *)> filter);
-    virtual void Update(bool dryrun) = 0;
+    virtual void UpdateOutputs(bool dryrun) = 0;
 
     // Serialization
     virtual const char* GetTypeName() const = 0;
+    virtual bool IsSingleton() const = 0;
     virtual void ToJSON(crude_json::value &out);
     virtual void InitFromJSON(const crude_json::value &in);
     const crude_json::value *jsonTemplate = NULL;

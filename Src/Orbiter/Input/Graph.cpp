@@ -2,6 +2,7 @@
 #include "Node.h"
 #include "Pin.h"
 #include "NodeJoystick.h"
+#include "NodeCamera.h"
 #include "NodeLegacyControls.h"
 #include "Joystick.h"
 #include <set>
@@ -10,6 +11,8 @@
 #include "OrbiterAPI.h"
 #include "crude_json.h"
 #include "Controller.h"
+#include <IconsFontAwesome6.h>
+#include "imgui_extras.h"
 
 static ImVec4 GetStateColor(const Pin *pin) {
     ImVec4 color = {0.5,0.5,0.5,1.0};
@@ -187,6 +190,32 @@ void ControllerGraph::DrawEditor()
             oapiAddNotification(OAPINOTIF_ERROR, "Error loading file", "graph.json");
         }
     }
+    ImGui::SameLine();
+	ImGui::SetNextItemWidth(160.0f);
+	if(ImGui::BeginAnimatedCombo("##joysticks", ICON_FA_GAMEPAD" Joysticks", ImGuiComboFlags_HeightLargest)) {
+        for(auto &n: nodes) {
+            if(dynamic_cast<NodeJoystick *>(n.get())) {
+                if(ImGui::Checkbox(n->name.c_str(), &n->enabled)) {
+                    // Don't take into account for free room checks
+                    if(!n->enabled) n->placed = false;
+                }
+            }
+        }
+        ImGui::EndAnimatedCombo();
+    }
+    ImGui::SameLine();
+	ImGui::SetNextItemWidth(160.0f);
+	if(ImGui::BeginAnimatedCombo("##actions", ICON_FA_SLIDERS" Actions", ImGuiComboFlags_HeightLargest)) {
+        for(auto &n: nodes) {
+            if(n->IsSingleton()) {
+                if(ImGui::Checkbox(n->name.c_str(), &n->enabled)) {
+                    // Don't take into account for free room checks
+                    if(!n->enabled) n->placed = false;
+                }
+            }
+        }
+        ImGui::EndAnimatedCombo();
+    }
 
     ImGui::Separator();
 
@@ -206,14 +235,16 @@ void ControllerGraph::DrawEditor()
     ImVec2 barycenter{0.0f,0.0f};
     int npoints = 0;
     for(auto &n: nodes) {
-        ImVec2 pos = ed::GetNodePosition(n->id);
-        n->Draw(filter);
-        if(n->placed) {
-            npoints++;
-            barycenter.x += pos.x;
-            barycenter.y += pos.y;
-        } else {
-            allplaced = false;
+        if(n->enabled) {
+            ImVec2 pos = ed::GetNodePosition(n->id);
+            n->Draw(filter);
+            if(n->placed) {
+                npoints++;
+                barycenter.x += pos.x;
+                barycenter.y += pos.y;
+            } else {
+                allplaced = false;
+            }
         }
     }
 
@@ -249,8 +280,14 @@ void ControllerGraph::DrawEditor()
     }
 
     for (const Link& link : links) {
-        ImVec4 color = GetStateColor(PinFromId(link.OutputId));
-        ed::Link(link.Id, link.InputId, link.OutputId, color);
+        Pin *pin = PinFromId(link.OutputId);
+        if(!pin) {
+            // Protection against invalid JSON
+            ed::DeleteLink(link.Id);
+        } else {
+            ImVec4 color = GetStateColor(pin);
+            ed::Link(link.Id, link.InputId, link.OutputId, color);
+        }
     }
 
     if (ed::BeginCreate()) {
@@ -344,13 +381,25 @@ void ControllerGraph::Update(bool dryrun)
     if(dirty) TopologicalSort();
 
     for(Node *n: nodesSorted) {
-        n->UpdateInputs();
-        n->Update(dryrun);
+        if(n->enabled) {
+            n->UpdateInputs();
+            n->UpdateOutputs(dryrun);
+        }
     }
 }
 void ControllerGraph::GetJoystickCtrl(float ctrl[15])
 {
-    if(legacyControls) legacyControls->GetJoystickCtrl(ctrl);
+    // ctrl is cleared by Orbiter before calling this
+    // We can just add every legacy controllers outputs and clamp the result
+    for(Node *n: nodesSorted) {
+        if(!n->enabled) continue;
+        if(INodeLegacyController *lc = dynamic_cast<INodeLegacyController *>(n)) {
+            lc->AddJoystickCtrl(ctrl);
+        }
+    }
+    for(int i = 0; i < 15; i++) {
+        ctrl[i] = std::clamp(ctrl[i], -1.0f, 1.0f);
+    }
 }
 
 // Kahn's algorithm from https://en.wikipedia.org/wiki/Topological_sorting
@@ -460,6 +509,27 @@ void ControllerGraph::DetachJoystick(Joystick *js)
         }
     }
 }
+bool ControllerGraph::HasNodeOfType(const std::string &type) {
+    for(auto &n: nodes) {
+        if(type == n->GetTypeName()) {
+            return true;
+        }
+    }
+    return false;
+}
+
+void ControllerGraph::CreateSingletonNodes()
+{
+    for(auto &nodeinfo: nodeFactory.types) {
+        NodeFactory::NodeInfo ni = nodeinfo.second;
+        if(ni.isSingleton && ! HasNodeOfType(nodeinfo.first)) {
+            Node *node = ni.maker();
+            node->InitDefault(nodeidgen++);
+            node->enabled = false;
+            AddNode(std::unique_ptr<Node>(node));
+        }
+    }
+}
 
 void ControllerGraph::Save(const char *path)
 {
@@ -500,13 +570,16 @@ bool ControllerGraph::Load(const char *path)
         links.clear();
         pins.clear();
         nodesSorted.clear();
-        legacyControls = NULL;
         linkidgen = std::stoi(json["linkidgen"].get<std::string>());
         nodeidgen = std::stoi(json["nodeidgen"].get<std::string>());
         if(json.contains("nodes")) {
             for(auto &n: json["nodes"].get<crude_json::array>()) {
                 const std::string &name = n["typename"].get<std::string>();
                 Node *node = nodeFactory.MakeNode(name.c_str());
+                if(node == NULL) {
+                    oapiAddNotification(OAPINOTIF_ERROR, "Unknown node", name.c_str());
+                    continue;
+                }
                 node->InitFromJSON(n);
                 if(n.contains("xpos")) {
                     ImVec2 pos;
@@ -517,9 +590,6 @@ bool ControllerGraph::Load(const char *path)
                 }
                 AddNode(std::unique_ptr<Node>(node));
                 dirty = true;
-
-                if(!strcmp(node->GetTypeName(), "NodeLegacyControls"))
-                    legacyControls = dynamic_cast<NodeLegacyControls *>(node);
 
             }
         }
@@ -534,6 +604,8 @@ bool ControllerGraph::Load(const char *path)
             }
         }
 
+        CreateSingletonNodes();
+
         TopologicalSort();
 
         for(Joystick *js: joysticks) {
@@ -543,6 +615,8 @@ bool ControllerGraph::Load(const char *path)
         ed::NavigateToContent();
         return true;
     } else {
+        CreateSingletonNodes();
+        TopologicalSort();
         return false;
     }
 
@@ -551,4 +625,5 @@ void ControllerGraph::GlobalInit()
 {
     nodeFactory.Register<NodeLegacyControls>();
     nodeFactory.Register<NodeJoystick>();
+    nodeFactory.Register<NodeCamera>();
 }

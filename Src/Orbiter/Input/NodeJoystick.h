@@ -5,6 +5,8 @@
 #include <string>
 
 class Joystick;
+DECLARE_NODE(NodeJoystick)
+
 class NodeJoystick : public Node {
 public:
     Joystick * js = NULL;
@@ -13,7 +15,7 @@ public:
     NodeJoystick();
     ~NodeJoystick();
     void RegisterPins() override;
-    void Update(bool dryrun) override;
+    void UpdateOutputs(bool dryrun) override;
     bool IsConnected();
     bool IsAttached();
     void Attach(Joystick *id);
@@ -23,7 +25,7 @@ public:
     void ToJSON(crude_json::value &out) override;
     void InitFromJoystick(Joystick *, int id);
 
-    // Serialization
-    static constexpr const char* TypeName = "NodeJoystick";
-    const char *GetTypeName() const override { return TypeName; }
+    DECLARE_NODE_TRAITS(NodeJoystick)
+
 };
+

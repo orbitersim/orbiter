@@ -118,6 +118,7 @@ set(common_src
     Input/Node.cpp
     Input/NodeJoystick.cpp
     Input/NodeLegacyControls.cpp
+    Input/NodeCamera.cpp
     Input/Joystick.cpp
 # Utils
 	Log.cpp

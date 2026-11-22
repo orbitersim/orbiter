@@ -24,7 +24,7 @@ void NodeLegacyControls::RegisterPins()
     RegisterPin("Camera/Panel", CamPanel);
 }
 
-void NodeLegacyControls::Update(bool dryrun)
+void NodeLegacyControls::UpdateOutputs(bool dryrun)
 {
     if(dryrun) return;
 
@@ -46,10 +46,10 @@ void NodeLegacyControls::Update(bool dryrun)
             }
         } else { // internal view
             if (ModKey) { // shift instrument panel
-                if      (hat & Pin::hat::UP)    g_pane->ShiftPanel (0.0,  td.SysDT*pConfig->CfgLogicPrm.PanelScrollSpeed);
-                else if (hat & Pin::hat::DOWN)  g_pane->ShiftPanel (0.0, -td.SysDT*pConfig->CfgLogicPrm.PanelScrollSpeed);
-                if      (hat & Pin::hat::RIGHT) g_pane->ShiftPanel (-td.SysDT*pConfig->CfgLogicPrm.PanelScrollSpeed, 0.0);
-                else if (hat & Pin::hat::LEFT)  g_pane->ShiftPanel ( td.SysDT*pConfig->CfgLogicPrm.PanelScrollSpeed, 0.0);
+                if      (hat & Pin::hat::UP)    g_pane->ShiftPanel (0.0,  td.SysDT * pConfig->CfgLogicPrm.PanelScrollSpeed);
+                else if (hat & Pin::hat::DOWN)  g_pane->ShiftPanel (0.0, -td.SysDT * pConfig->CfgLogicPrm.PanelScrollSpeed);
+                if      (hat & Pin::hat::RIGHT) g_pane->ShiftPanel (-td.SysDT * pConfig->CfgLogicPrm.PanelScrollSpeed, 0.0);
+                else if (hat & Pin::hat::LEFT)  g_pane->ShiftPanel ( td.SysDT * pConfig->CfgLogicPrm.PanelScrollSpeed, 0.0);
             } else {                 // rotate camera
                 if      (hat & Pin::hat::UP)    g_camera->Rotate (0,  td.SysDT, true);
                 else if (hat & Pin::hat::DOWN)  g_camera->Rotate (0, -td.SysDT, true);
@@ -60,7 +60,7 @@ void NodeLegacyControls::Update(bool dryrun)
     }
 }
 
-void NodeLegacyControls::GetJoystickCtrl(float ctrlJoystick[15])
+void NodeLegacyControls::AddJoystickCtrl(float ctrlJoystick[15])
 {
     ctrlJoystick[THGROUP_MAIN] = -MainEngine;
     
@@ -70,19 +70,19 @@ void NodeLegacyControls::GetJoystickCtrl(float ctrlJoystick[15])
 
     if (x) {
         if (ModKey) { // emulate rudder control
-            if (x > 0) ctrlJoystick[THGROUP_ATT_YAWRIGHT] =   x;
-            else            ctrlJoystick[THGROUP_ATT_YAWLEFT]  =  -x;
-        } else {                 // rotation (bank)
-            if (x > 0) ctrlJoystick[THGROUP_ATT_BANKRIGHT] =  x;
-            else            ctrlJoystick[THGROUP_ATT_BANKLEFT]  = -x;
+            if (x > 0) ctrlJoystick[THGROUP_ATT_YAWRIGHT]  += x;
+            else       ctrlJoystick[THGROUP_ATT_YAWLEFT]   -= x;
+        } else {      // rotation (bank)
+            if (x > 0) ctrlJoystick[THGROUP_ATT_BANKRIGHT] += x;
+            else       ctrlJoystick[THGROUP_ATT_BANKLEFT]  -= x;
         }
     }
-    if (y) {                // rotation (pitch) or translation (vertical)
-        if (y > 0) ctrlJoystick[THGROUP_ATT_PITCHUP]   = ctrlJoystick[THGROUP_ATT_UP]    =  y;
-        else            ctrlJoystick[THGROUP_ATT_PITCHDOWN] = ctrlJoystick[THGROUP_ATT_DOWN]  = -y;
+    if (y) {          // rotation (pitch) or translation (vertical)
+        if (y > 0)  ctrlJoystick[THGROUP_ATT_PITCHUP]   = (ctrlJoystick[THGROUP_ATT_UP]    += y);
+        else        ctrlJoystick[THGROUP_ATT_PITCHDOWN] = (ctrlJoystick[THGROUP_ATT_DOWN]  -= y);
     }
-    if (Rz) {               // rotation (yaw) or translation (transversal)
-        if (Rz > 0) ctrlJoystick[THGROUP_ATT_YAWRIGHT] = ctrlJoystick[THGROUP_ATT_RIGHT] =  Rz;
-        else             ctrlJoystick[THGROUP_ATT_YAWLEFT]  = ctrlJoystick[THGROUP_ATT_LEFT]  = -Rz;
+    if (Rz) {         // rotation (yaw) or translation (transversal)
+        if (Rz > 0) ctrlJoystick[THGROUP_ATT_YAWRIGHT]  = (ctrlJoystick[THGROUP_ATT_RIGHT] += Rz);
+        else        ctrlJoystick[THGROUP_ATT_YAWLEFT]   = (ctrlJoystick[THGROUP_ATT_LEFT]  -= Rz);
     }
 }
