@@ -1,33 +1,25 @@
 name: Release
 
-on: 
-  workflow_dispatch:
-    inputs:
-      version:
-        required: true
-        type: string
-        default: 2024.1.0
-        description: Release tag. Recommended format year.month.version
+on:
+  push:
+    tags:
+      - "2[0-9][0-9][0-9]"
 
-run-name: Release ${{ inputs.version }}
+run-name: Release ${{ github.ref_name }}
 
 permissions:
   actions: read
   contents: write
 
 env:
-  artifact-name: Orbiter-${{ inputs.version }}.zip
+  artifact-name: Orbiter-${{ github.ref_name }}.zip
 
 jobs:
   build:
     name: Build
     uses: ./.github/workflows/reusable-build.yml
-    strategy:
-      fail-fast: false
-      matrix:
-        architecture: [x64, x86]
     with:
-      architecture: ${{ matrix.architecture }}
+      architecture: x64
       upload: true
       docs: true
 
@@ -41,28 +33,80 @@ jobs:
     steps:
     - uses: actions/download-artifact@v8
       with:
-        name: Orbiter-x86
-        path: Orbiter-x86
-
-    - uses: actions/download-artifact@v8
-      with:
         name: Orbiter-x64
         path: Orbiter-x64
 
     - run: |
         find .
-        mv Orbiter-x86/Orbiter.zip Orbiter-x86.zip
         mv Orbiter-x64/Orbiter.zip Orbiter-x64.zip
 
-    - name: "Create nightly release"
+    - name: Setup Rclone
+      uses: AnimMouse/setup-rclone@v1
+      with:
+        rclone_config: |
+          [orbiter]
+          access_key_id = ${{ secrets.R2_ACCESS_KEY_ID }}
+          acl = private
+          endpoint = https://${{ secrets.R2_BUCKET_ID }}.r2.cloudflarestorage.com/${{ vars.R2_BUCKET_NAME }}
+          no_check_bucket = true
+          provider = Cloudflare
+          region = auto
+          secret_access_key = ${{ secrets.R2_ACCESS_SECRET_KEY }}
+          type = s3
+        disable_base64: true
+
+    - name: Get previous tag as baseline release version
+      id: tags
+      run: |
+        git fetch -a
+        echo "BASELINE=$(git tag --sort "-committerdate" | cut -d$'\n' -f2)" >> $GITHUB_OUTPUT
+
+    - uses: actions/cache@v4
+      id: cache-baseline
+      name: Cache Baseline
+      with:
+        path: ./Orbiter${{ steps.tags.outputs.BASELINE }}.zip
+        key: ${{ runner.os }}-baseline-orbiter${{ steps.tags.outputs.BASELINE }}
+        save-always: true
+
+    - name: Download baseline
+      if: steps.cache-baseline.outputs.cache-hit != 'true'
+      run: curl --silent -O https://cdn.openorbiter.space/orbiter-releases/Orbiter${{ steps.tags.outputs.BASELINE }}.zip
+
+    - run: dir
+    - run: mkdir baseline-temp
+    - run: mkdir orbiter
+
+    - name: Unpack baseline
+      run: unzip Orbiter${{ steps.tags.outputs.BASELINE }}.zip -d baseline-temp
+
+    - name: Extract ${{ steps.tags.outputs.BASELINE }} texture directories
+      run: |
+        move baseline-temp\textures orbiter
+        move baseline-temp\textures2 orbiter
+
+    - name: Overlay build
+      run: unzip -o Orbiter-x64.zip -d orbiter
+
+    - run: dir orbiter
+
+    - name: Create package
+      working-directory: orbiter
+      run: 7z a Orbiter-${{ github.ref_name }}.zip .
+
+    - run: rclone copy -vv ./orbiter/Orbiter-${{ github.ref_name }}.zip orbiter:orbiter-releases/ --s3-disable-checksum --s3-upload-cutoff=5G --max-size=5G --s3-upload-concurrency=1 --transfers=1 --retries=1 --multi-thread-cutoff=0 --multi-thread-streams=1
+
+    - name: "Create Release"
       uses: softprops/action-gh-release@v3
       with:
-        body: https://cdn.openorbiter.space/orbiter-releases/Orbiter-${{ inputs.version }}.zip
-        tag_name: ${{ inputs.version }}
+        body: |
+          # Orbiter ${{ github.ref_name }}
+
+          Orbiter releases are over 2GB in size and therefore cannot be hosted on GitHub directly. Download Orbiter ${{ github.ref_name }} from the CDN link:
+
+          https://cdn.openorbiter.space/orbiter-releases/Orbiter-${{ github.ref_name }}.zip
+        tag_name: ${{ github.ref_name }}
         prerelease: false
         make_latest: true
         target_commitish: ${{ github.sha }}
-        name: Orbiter ${{ inputs.version }}
-        files: |
-          Orbiter-x86.zip
-          Orbiter-x64.zip
+        name: Orbiter ${{ github.ref_name }}
