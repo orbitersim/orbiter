@@ -4,6 +4,7 @@
 #include "NodeJoystick.h"
 #include "NodeCamera.h"
 #include "NodeLegacyControls.h"
+#include "NodeRCSPrograms.h"
 #include "Joystick.h"
 #include <set>
 #include <algorithm>
@@ -646,4 +647,5 @@ void ControllerGraph::GlobalInit()
     nodeFactory.Register<NodeLegacyControls>();
     nodeFactory.Register<NodeJoystick>();
     nodeFactory.Register<NodeCamera>();
+    nodeFactory.Register<NodeRCSPrograms>();
 }

@@ -1,5 +1,4 @@
 #include "NodeCamera.h"
-//#include "OrbiterSDK.h"
 #include "Camera.h"
 #include "TimeData.h"
 
