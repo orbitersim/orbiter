@@ -515,7 +515,10 @@ void encounterplan::wordupdate(oapi::Sketchpad *sketchpad, int width, int height
 			MATRIX3 planetrot;
 			oapiGetRotationMatrix(hmajor, &planetrot);
 			VECTOR3 relposition = mul(getinvmatrix(planetrot), position);
-			double lat = asin(relposition.y / radius) * 180 / PI;
+			// Latitude is asin(y / |r|): normalise by the distance from the planet
+			// centre (ped+10 here), not by the planet radius, otherwise the
+			// argument can exceed 1 and asin() returns NaN.
+			double lat = asin(relposition.y / length(relposition)) * 180 / PI;
 			double lng = (atan2(relposition.z, relposition.x)) * 180 / PI;
 			lng -= 360.0 * craft.GetTimeToRadius(radius, false) / oapiGetPlanetPeriod(hmajor);
 			while(lng < -180)
