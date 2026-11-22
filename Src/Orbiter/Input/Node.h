@@ -7,6 +7,7 @@
 #include "crude_json.h"
 
 #define RegisterPin(name, var) RegisterPinInternal(#var, name, var)
+#define RegisterPinWithDefault(name, var, def) RegisterPinInternal(#var, name, var, def)
 
 #define DECLARE_NODE_SINGLETON(T) \
 class T; \
@@ -67,6 +68,21 @@ public:
             ip.Bind(p->fVal);
         else if constexpr (Type == Pin::type::Hat)
             ip.Bind(p->hVal);
+    }
+    template<Pin::type Type, typename DefaultValue>
+    void RegisterPinInternal(const char *name, const char *displayname, InputPin<Type> &ip, DefaultValue def) {
+        Pin *p = AddInput(name, displayname, Type);
+
+        if constexpr (Type == Pin::type::Button || Type == Pin::type::ButtonPressed || Type == Pin::type::ButtonReleased) {
+            ip.Bind(p->bVal);
+            p->bValDefault = def;
+        } else if constexpr (Type == Pin::type::Axis) {
+            ip.Bind(p->fVal);
+            p->fValDefault = def;
+        } else if constexpr (Type == Pin::type::Hat) {
+            ip.Bind(p->hVal);
+            p->hValDefault = def;
+        }
     }
     template<Pin::type Type>
     void RegisterPinInternal(const char *name, const char *displayname, OutputPin<Type> &ip) {

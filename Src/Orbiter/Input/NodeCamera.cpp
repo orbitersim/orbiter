@@ -8,6 +8,7 @@ extern TimeData td;
 
 void NodeCamera::RegisterPins()
 {
+    RegisterPinWithDefault("Enable", enable, true);
     RegisterPin("Hat", hat);
     RegisterPin("Reset", reset);
     RegisterPin("RotX", rotX);
@@ -16,6 +17,8 @@ void NodeCamera::RegisterPins()
 
 void NodeCamera::UpdateOutputs(bool dryrun)
 {
+    if(!enable) return;
+
     float rX = rotX;
     float rY = rotY;
 

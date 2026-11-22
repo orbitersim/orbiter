@@ -28,32 +28,48 @@ void Pin::ReadInputs()
 {
     switch(ptype) {
         case Pin::type::Button:
-            bVal = false;
-            for(auto &p: inputs) {
-                bVal |= p->bVal;
+            if(inputs.size() == 0) {
+                bVal = bValDefault;
+            } else {
+                bVal = false;
+                for(auto &p: inputs) {
+                    bVal |= p->bVal;
+                }
             }
             break;
         case Pin::type::HalfAxis:
-            fVal = 0.0f;
-            for(auto &p: inputs) {
-                fVal += p->fVal;
+            if(inputs.size() == 0) {
+                fVal = fValDefault;
+            } else {
+                fVal = 0.0f;
+                for(auto &p: inputs) {
+                    fVal += p->fVal;
+                }
+                fVal = std::clamp(fVal, 0.0f, 1.0f);
             }
-            fVal = std::clamp(fVal, 0.0f, 1.0f);
             break;
         case Pin::type::Axis:
-            fVal = 0.0f;
-            for(auto &p: inputs) {
-                fVal += p->fVal;
+            if(inputs.size() == 0) {
+                fVal = fValDefault;
+            } else {
+                fVal = 0.0f;
+                for(auto &p: inputs) {
+                    fVal += p->fVal;
+                }
+                fVal = std::clamp(fVal, -1.0f, 1.0f);
             }
-            fVal = std::clamp(fVal, -1.0f, 1.0f);
             break;
         case Pin::type::Hat:
-            hVal = hat::CENTERED;
-            // Hat values cannot be combined easily, just stop at the first entry set
-            for(auto &p: inputs) {
-                if(p->hVal != hat::CENTERED) {
-                    hVal = p->hVal;
-                    break;
+            if(inputs.size() == 0) {
+                hVal = hValDefault;
+            } else {
+                hVal = hat::CENTERED;
+                // Hat values cannot be combined easily, just stop at the first entry set
+                for(auto &p: inputs) {
+                    if(p->hVal != hat::CENTERED) {
+                        hVal = p->hVal;
+                        break;
+                    }
                 }
             }
             break;

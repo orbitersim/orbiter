@@ -64,9 +64,12 @@ public:
 
     float fVal;     // Axis/HalfAxis
     float fValRaw;  // value before deadzone/flipping/rescaling
+    float fValDefault = 0.0f; // Default value when no input is plugged in
     bool bVal;      // Button
     bool bValPrev;  // Previous Button value
+    bool bValDefault = false;
     Pin::hat hVal;       // Hat
+    Pin::hat hValDefault = Pin::hat::CENTERED;
 
     struct Context {
         float deadzone = 0.0f;

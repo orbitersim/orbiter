@@ -7,6 +7,7 @@ DECLARE_NODE_SINGLETON(NodeCamera)
 class NodeCamera : public Node
 {
 public:
+    InputPin<Pin::type::Button> enable;
     InputPin<Pin::type::Hat> hat;
     InputPin<Pin::type::Axis> rotX;
     InputPin<Pin::type::Axis> rotY;
