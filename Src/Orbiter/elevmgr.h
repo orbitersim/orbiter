@@ -7,6 +7,8 @@
 #include "windows.h"
 #include "vecmat.h"
 #include "ZTreeMgr.h"
+#include <cstdint>
+#include <unordered_map>
 #include <vector>
 
 class CelestialBody;
@@ -68,6 +70,8 @@ public:
 	*/
 	void ElevationGrid (int ilat, int ilng, int lvl, int pilat, int pilng, int plvl, INT16 *pelev, float *elev, double *emean=0) const;
 	void ElevationGrid(int ilat, int ilng, int lvl, int pilat, int pilng, int plvl, INT16* pelev, INT16* elev, double* emean = 0) const;
+	bool FilterElevation (int ilat, int ilng, int lvl, double elev_res, INT16 *elev) const;
+	bool FilterElevation (int ilat, int ilng, int lvl, double elev_res, float *elev) const;
 
 protected:
 	int  Quadrant(double lat, double lng, int lvl) const;
@@ -75,8 +79,23 @@ protected:
 	INT16 *LoadElevationTile (int lvl, int ilat, int ilng, double tgt_res) const;
 	bool LoadElevationTile_mod (int lvl, int ilat, int ilng, double tgt_res, INT16 *elev) const;
 	bool HasElevationTile(int lvl, int ilat, int ilng) const;
+	void LoadFlats ();
+	template<typename T>
+	bool FilterElevationImpl (int ilat, int ilng, int lvl, double elev_res, T *elev) const;
 
 private:
+	struct FlatShape {
+		double Lat;
+		double Lng;
+		double Dim1;
+		double Dim2;
+		double Cos;
+		double Sin;
+		double Falloff;
+		int Height;
+		int Type;
+	};
+
 	const CelestialBody *cbody;
 	int maxlvl = 0;
 	int mode = 0;  // elevation mode (0=no elevation, 1=linear interpolation, 2=cubic interpolation)
@@ -84,6 +103,9 @@ private:
 	DWORD tilesource = 2; // bit 1: try loading from cache, bit 2: try loading from archive
 	ZTreeMgr *treeMgr[5];
 	bool bDirExists, bModExists;
+	bool bFlats = true;
+	std::vector<FlatShape> flatShapes;
+	std::vector<std::unordered_map<uint64_t, std::vector<size_t>>> flatTiles;
 	mutable std::vector<ElevationTile> *local_cache = nullptr;
 };
 

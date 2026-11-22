@@ -904,12 +904,12 @@ public:
 inline gcCore2* gcGetCoreInterface()
 {
 	if (pCoreInterface) return pCoreInterface;
-	HMODULE hModule = GetModuleHandle("D3D9Client.dll");
+	HMODULE hModule = oapiGetGraphicsClientModule();
 	if (hModule) {
 		__gcBindCoreMethod pBindCoreMethod = (__gcBindCoreMethod)GetProcAddress(hModule, "gcBindCoreMethod");
 		if (pBindCoreMethod) return (pCoreInterface = new gcCore2(pBindCoreMethod));
 		else oapiWriteLogV("gcGetCoreInterface() FAILED");
-	} else oapiWriteLogV("gcGetCoreInterface() FAILED. D3D9Client Not Found");
+	} else oapiWriteLogV("gcGetCoreInterface() FAILED. Graphics client Not Found");
 	return NULL;
 }
 
