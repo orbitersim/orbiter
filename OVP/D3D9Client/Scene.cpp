@@ -56,7 +56,7 @@ static const int FONT_SIZES[4] = { 12, 16, 20, 26 };
 
 bool sort_vessels(const vVessel *a, const vVessel *b)
 {
-	return a->CameraTgtDist() < b->CameraTgtDist();
+	return a->CamDist() < b->CamDist();
 }
 
 float Rand()
@@ -952,8 +952,11 @@ float Scene::ComputeNearClipPlane()
 			vObject *obj = pv->vobj;
 
 			if (pv->type==OBJTP_PLANET) {
-				if (obj->Object()==hObj) pl = (vPlanet*)obj;
 				obj->GetMinMaxDistance(&nr, &fr, &dn);
+				if (obj->Object() == hObj) {
+					pl = (vPlanet*)obj;
+					dn = nr = GetCameraElevation();
+				}
 				if (dn<neardist) neardist = dn;
 				if (nr<nearpoint) nearpoint = nr;
 				if (fr>farpoint) farpoint = fr;
@@ -1465,7 +1468,7 @@ void Scene::RenderMainScene()
 
 	// Do we use z-clear render mode or not ?
 	bool bClearZBuffer = false;
-	if ( (GetTargetGroundAltitude() > 2e3) && (oapiCameraInternal() == false)) bClearZBuffer = true;
+	if ( (GetCameraElevation() > 2e3) && (oapiCameraInternal() == false)) bClearZBuffer = true;
 	if (IsProxyMesh()) bClearZBuffer = false;
 
 

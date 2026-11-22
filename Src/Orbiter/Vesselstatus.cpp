@@ -176,7 +176,7 @@ bool Vessel::ParseScenarioLine2 (char *line, void *status)
 			Base *base = ((Planet*)vs->rbody)->GetBase (trim_string(cbuf));
 			if (!base) {
 				char cerr[1024];
-				sprintf (cerr, "Scenario parse error for vessel %s: base '%s' not found on body '%s'.", name.c_str(), trim_string(cbuf), ((Planet*)vs->rbody)->Name());
+				snprintf (cerr, sizeof(cerr), "Scenario parse error for vessel %s: base '%s' not found on body '%s'.", name.c_str(), trim_string(cbuf), ((Planet*)vs->rbody)->Name());
 				LOGOUT_ERR(cerr);
 				g_pOrbiter->TerminateOnError();
 			}
@@ -448,6 +448,8 @@ void Vessel::SetState (const VESSELSTATUS &status)
 {
 	double lng, lat, dir;
 	Vector rpos, rvel, orient, vrot;
+	const bool checkOverlap = (g_psys && g_psys->isVessel(this) && g_pOrbiter && g_pOrbiter->Cfg()->CfgPhysicsPrm.bVesselCollision && !m_overlapStateDirty);
+	const bool preMatch = checkOverlap && MatchesLastOverlapPose();
 
 	cbody = (CelestialBody*)status.rbody;
 	if (!cbody) cbody = g_psys->GetStar(0); // use first sun if no reference is set
@@ -498,8 +500,8 @@ void Vessel::SetState (const VESSELSTATUS &status)
 		break;
 	}
 	m_hullCachePValid = false;
-	if (g_psys && g_psys->isVessel(this))
-		RefreshCollisionOverlapState();
+	if (checkOverlap && !(preMatch && MatchesLastOverlapPose()))
+		MarkCollisionOverlapDirty();
 }
 
 // ==============================================================
@@ -510,6 +512,8 @@ void Vessel::SetState2 (const void *status)
 	VESSELSTATUS2 *vs = (VESSELSTATUS2*)status;
 	DWORD i, idx;
 	double lvl;
+	const bool checkOverlap = (g_psys && g_psys->isVessel(this) && g_pOrbiter && g_pOrbiter->Cfg()->CfgPhysicsPrm.bVesselCollision && !m_overlapStateDirty);
+	const bool preMatch = checkOverlap && MatchesLastOverlapPose();
 
 	cbody = (CelestialBody*)vs->rbody;
 	if (!cbody) cbody = g_psys->GetStar(0); // a rather desparate default to keep things going
@@ -594,8 +598,8 @@ void Vessel::SetState2 (const void *status)
 	}
 	if (xpdr && vs->xpdr) xpdr->SetStep (vs->xpdr);
 	m_hullCachePValid = false;
-	if (g_psys && g_psys->isVessel(this))
-		RefreshCollisionOverlapState();
+	if (checkOverlap && !(preMatch && MatchesLastOverlapPose()))
+		MarkCollisionOverlapDirty();
 }
 
 // ==============================================================

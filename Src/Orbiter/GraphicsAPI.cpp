@@ -168,9 +168,10 @@ ParticleStream *GraphicsClient::clbkCreateReentryStream (PARTICLESTREAMSPEC *pss
 
 // ======================================================================
 
+// Deprecated
 ScreenAnnotation *GraphicsClient::clbkCreateAnnotation ()
 {
-	TRACENEW; return new ScreenAnnotation (this);
+	return NULL;
 }
 
 // ======================================================================
@@ -823,15 +824,20 @@ ScreenAnnotation::ScreenAnnotation (GraphicsClient *_gc)
 	buflen = 0;
 	txtscale = 0;
 	font = NULL;
-	//hFont = NULL;
 	Reset();
+	DialogManager *dlg = g_pOrbiter->DlgMgr();
+	if(dlg) {
+		dlg->RegisterAnnotation(this);
+	}
 }
 
 ScreenAnnotation::~ScreenAnnotation ()
 {
+	DialogManager *dlg = g_pOrbiter->DlgMgr();
+	if(dlg) {
+		dlg->UnregisterAnnotation(this);
+	}
 	if (txt) delete[]txt;
-	if (font) gc->clbkReleaseFont (font);
-	//DeleteObject (hFont);
 }
 
 void ScreenAnnotation::Reset ()
@@ -848,16 +854,77 @@ void ScreenAnnotation::SetPosition (double x1, double y1, double x2, double y2)
 	ny1 = (int)(y1*viewH); ny2 = (int)(y2*viewH); nh = ny2-ny1;
 }
 
-void ScreenAnnotation::SetText (char *str)
+void ScreenAnnotation::SetText(char *str)
 {
-	int len = strlen (str)+1;
-	if (len > buflen) {
-		if (txt) delete []txt;
-		txt = new char[len]; TRACENEW
-		buflen = len;
+	int len = (int)strlen(str);
+	bool validUTF8 = true;
+
+	// Check whether the input is valid UTF-8
+	for (int i = 0; i < len; ) {
+		unsigned char c = (unsigned char)str[i];
+
+		if (c < 0x80) {
+			i++;
+			continue;
+		}
+
+		int n;
+		if ((c & 0xE0) == 0xC0)      n = 2;
+		else if ((c & 0xF0) == 0xE0) n = 3;
+		else if ((c & 0xF8) == 0xF0) n = 4;
+		else {
+			validUTF8 = false;
+			break;
+		}
+
+		if (i + n > len) {
+			validUTF8 = false;
+			break;
+		}
+
+		for (int j = 1; j < n; j++) {
+			if (((unsigned char)str[i + j] & 0xC0) != 0x80) {
+				validUTF8 = false;
+				break;
+			}
+		}
+
+		if (!validUTF8) break;
+		i += n;
 	}
-	strcpy (txt, str);
-	txtlen = len-1;
+
+	std::string converted;
+
+	if (!validUTF8) {
+		// Assume Windows-1252 and convert to UTF-8
+		int wlen = MultiByteToWideChar(1252, 0, str, -1, NULL, 0);
+		if (wlen) {
+			std::vector<wchar_t> wide(wlen);
+			MultiByteToWideChar(1252, 0, str, -1, wide.data(), wlen);
+
+			int ulen = WideCharToMultiByte(CP_UTF8, 0, wide.data(), -1, NULL, 0, NULL, NULL);
+
+			if (ulen) {
+				std::vector<char> utf8(ulen);
+				WideCharToMultiByte(CP_UTF8, 0, wide.data(), -1, utf8.data(), ulen, NULL, NULL);
+				converted.assign(utf8.data());
+			}
+		}
+	}
+
+	const char *src = converted.empty() ? str : converted.c_str();
+	len = (int)strlen(src);
+
+	if (len + 1 > buflen) {
+		delete[] txt;
+		txt = new char[len + 1];
+		TRACENEW
+		buflen = len + 1;
+	}
+
+	strcpy(txt, src);
+	txtlen = len;
+
 	for (int i = 0; i < txtlen-1; i++)
 		if (txt[i] == ' ' && txt[i+1] == ' ') {
 			txt[i] = '\r';
@@ -874,9 +941,9 @@ void ScreenAnnotation::SetSize (double scale)
 {
 	if (scale != txtscale) {
 		txtscale = scale;
-		hf = (int)(viewH*txtscale/35.0);
-		if (font) gc->clbkReleaseFont (font);
-		font = gc->clbkCreateFont (-hf, true, "Sans");
+		// The size in CreateFont was the cell size whereas in ImGui it's the glyph size
+		// We multiply by 1.15 for it to look about the same as before
+		hf = (int)(viewH*txtscale/35.0*1.15);
 	}
 }
 
@@ -885,24 +952,37 @@ void ScreenAnnotation::SetColour (const VECTOR3 &col)
 	int r = min (255, (int)(col.x*256.0));
 	int g = min (255, (int)(col.y*256.0));
 	int b = min (255, (int)(col.z*256.0));
-	txtcol  = r | (g << 8) | (b << 16);
-	txtcol2 = (r/2) | ((g/2) << 8) | ((b/2) << 16);
+	// Reuse COLORREF since it's also 32bit and we don't want to change the API
+	txtcol = IM_COL32(r,g,b,255);
+	txtcol2 = IM_COL32(r/2,g/2,b/2,255);
 }
 
 void ScreenAnnotation::Render ()
 {
 	if (!txtlen) return;
 
-	Sketchpad *skp = gc->clbkGetSketchpad (0);
-	if (skp) {
-		skp->SetFont (font);
-		skp->SetTextColor (txtcol2);
-		skp->SetBackgroundMode (oapi::Sketchpad::BK_TRANSPARENT);
-		skp->TextBox (nx1+1, ny1+1, nx2+1, ny2+1, txt, txtlen);
-		skp->SetTextColor (txtcol);
-		skp->TextBox (nx1, ny1, nx2, ny2, txt, txtlen);
-		gc->clbkReleaseSketchpad (skp);
-	}
+	ImGuiViewport* vp = ImGui::GetMainViewport();
+	ImDrawList* draw = ImGui::GetBackgroundDrawList(vp);
+	ImFont* font = ImGui::GetFont();
+	ImVec2 pos(vp->Pos.x + nx1, vp->Pos.y + ny1);
+
+	// Outline (1px offset)
+	draw->AddText(
+		font,
+		hf,
+		ImVec2(pos.x + 1, pos.y + 1),
+		txtcol2,
+		txt, 0, nw
+	);
+
+	// Normal text
+	draw->AddText(
+		font,
+		hf,
+		pos,
+		txtcol,
+		txt, 0, nw
+	);
 }
 
 // ======================================================================

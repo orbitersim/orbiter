@@ -35,7 +35,7 @@ namespace orbiter {
 	protected:
 		void ShowInterface(HWND hTab, bool show);
 
-		void EnumerateClients(HWND hTab);
+		void EnumerateClients(HWND hTab, bool console_only = false);
 
 		void ScanDir(HWND hTab, const fs::path &dir);
 		// scan directory dir (relative to Orbiter root) for graphics clients

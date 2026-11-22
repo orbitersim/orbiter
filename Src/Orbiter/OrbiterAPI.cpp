@@ -2604,7 +2604,7 @@ DLLEXPORT void InitLib (HINSTANCE hModule)
 		GetModuleFileName (hModule, mname, 256);
 		for (i = 0, mp = mname; mname[i]; i++)
 			if (mname[i] == '\\') mp = mname+i+1;
-		sprintf (cbuf, "Module %s ", mp);
+		snprintf (cbuf, sizeof(cbuf) - 40, "Module %s ", mp); // leave room for the build and API suffix
 		if ((len = strlen(cbuf)) < 30) {
 			for (i = len; i < 30; i++) cbuf[i] = '.';
 			cbuf[i] = '\0';

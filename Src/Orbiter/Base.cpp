@@ -51,7 +51,7 @@ Base::Base (char *fname, Planet *_planet, double _lng, double _lat)
 	ifstream ifs (g_pOrbiter->ConfigPath(fname));
 
 	// read location information from file, if available
-	if (ifs && GetItemString (ifs, "LOCATION", cbuf)) {
+	if (ifs && GetItemString (ifs, "LOCATION", cbuf, sizeof(cbuf))) {
 		sscanf (cbuf, "%lf%lf", &lng, &lat);
 		lng *= RAD; lat *= RAD;
 	}

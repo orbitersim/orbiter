@@ -1750,17 +1750,43 @@ public:
 		Vector minP, maxP;
 		bool isDockClearZone;
 	};
+	struct HullIndexRange {
+		size_t startIdx;
+		size_t endIdx;
+	};
+	struct HullGroupRange {
+		UINT meshIdx;
+		DWORD groupIdx;
+		size_t startIdx;
+		size_t endIdx;
+	};
 protected:
 	std::vector<HullVertex> m_hullCacheStatic; // original untransformed vertices
 	std::vector<HullGroupSlice> m_hullGroupSlices; // groups of vertices by submesh
+	std::vector<HullIndexRange> m_hullMeshRanges; // [meshIdx] -> vertex range in m_hullCacheStatic
+	std::vector<HullGroupRange> m_hullGroupRanges; // sorted (meshIdx, groupIdx) -> vertex range
 	std::vector<VECTOR3> m_hullCache;   // cached hull vertices in vessel-local frame (animated)
 	std::vector<WORD> m_convexHullIdx;  // quickhull triangle indices (3 per face) for visualization
 	mutable std::vector<VECTOR3> m_clearZoneCache; // cache for clear zone bounding boxes (min/max pairs)
-	UINT m_hullCacheMeshCount;          // nmesh when cache was last built
 	std::vector<VECTOR3> m_hullCacheP;  // hull points in planet-local frame
 	Vector m_hullMinP, m_hullMaxP;      // AABB of hull points in planet-local frame
+	bool m_hullStaticValid;             // true if m_hullCacheStatic matches current external meshes
+	bool m_dockClearZonesValid;         // true if isDockClearZone flags match current docks
+	bool m_hullLocalValid;              // true if m_hullCache matches current animation state
 	bool m_hullCachePValid;             // true if m_hullCacheP is valid for current frame
 	bool m_hullVisualValid;             // true if m_convexHullIdx is valid for current animation state
+	bool m_overlapStateDirty;           // true if spawn/state-edit overlap state needs refresh
+	bool m_overlapPoseValid;            // true if m_overlapCheckedPosP/RotP hold a valid checked pose
+	Planet *m_overlapRefPlanet;         // planet frame of last checked overlap pose (or nullptr)
+	Vector m_overlapCheckedPosP;        // planet-local position at last overlap check
+	Matrix m_overlapCheckedRotP;        // planet-local rotation at last overlap check
+	void InvalidateHullCache();
+	void UpdateDockClearZones();
+	bool AnimationCompAffectsCollider(const ANIMATIONCOMP *comp) const;
+	bool ComputePlanetLocalPose(Planet *&refPlanet, Vector &posP, Matrix &rotP) const;
+	bool MatchesLastOverlapPose() const;
+	void MarkCollisionOverlapDirty();
+	static void FlushPendingCollisionOverlapStates();
 	void RebuildHullCache();            // (re)build m_hullCacheStatic from meshlist
 	void RebuildConvexHullVisual();     // rebuild m_convexHullIdx from m_hullCache
 	void ApplyAnimationToHullCache();   // animate m_hullCacheStatic to m_hullCache

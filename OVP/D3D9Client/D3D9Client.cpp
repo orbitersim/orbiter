@@ -1427,14 +1427,6 @@ ParticleStream *D3D9Client::clbkCreateReentryStream (PARTICLESTREAMSPEC *pss,
 
 #pragma endregion
 
-// ==============================================================
-
-ScreenAnnotation* D3D9Client::clbkCreateAnnotation()
-{
-	_TRACE;
-	return GraphicsClient::clbkCreateAnnotation();
-}
-
 #pragma region Mesh functions
 
 // ==============================================================

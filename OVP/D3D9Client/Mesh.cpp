@@ -849,7 +849,10 @@ int D3D9Mesh::EditGroup(DWORD grp, GROUPEDITSPEC *ges)
 
 			if (Config->UseNormalMap) UpdateTangentSpace(vtx, idx, g->nVert, g->nFace, g->TexIdx!=0);
 
-			if (g->nVert>0) BoundingBox(vtx, g->nVert, &g->BBox);
+			if (g->nVert>0) {
+				BoundingBox(vtx, g->nVert, &g->BBox);
+				g->bUpdate = true;
+			}
 			else D9ZeroAABB(&g->BBox);
 		}
 	}

@@ -785,12 +785,8 @@ public:
 		OBJHANDLE hVessel);
 	// @}
 
-	/**
-	 * \brief Create an annotation object for displaying on-screen text.
-	 * \return Pointer to new screen annotation object.
-	 * \default Dynamically allocates a 'ScreenAnnotation' instance and returns
-	 *   a pointer to it.
-	 */
+
+	// Deprecated. Only here for backward compatibility
 	virtual ScreenAnnotation *clbkCreateAnnotation ();
 
 	/**
@@ -2101,7 +2097,7 @@ private:
 	int txtlen, buflen;
 	char *txt;
 	double txtscale;
-	oapi::Font *font;
+	oapi::Font *font; // Deprecated, keep for compatibility
 	COLORREF txtcol, txtcol2;
 };
 

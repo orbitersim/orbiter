@@ -43,7 +43,7 @@ bool XRSoundEngine::InitializeSoundEngine()
     {
         s_SoundEngine = new ISoundEngine();
 
-        char logMsg[256];   // can't use CString easily here b/c Orbiter's oapiWriteLog takes a char * instead of const char * for some bizarre reason.
+        char logMsg[256];
         if (s_SoundEngine)
             sprintf_s(logMsg, "%s initialized using sound driver %s. XRSound UpdateInterval = %.03lf (%.1lf updates per second)", 
                 GetVersionStr(), XRSoundEngine::GetSoundDriverName(),  
@@ -51,7 +51,7 @@ bool XRSoundEngine::InitializeSoundEngine()
         else
             sprintf_s(logMsg, "%s ERROR: could not initialize default sound device.", GetVersionStr());
 
-        oapiWriteLog(logMsg);
+        oapiWriteLogV("%s", logMsg);
         s_globalConfig.WriteLog("----------------------------------------------------------------------------");
         s_globalConfig.WriteLog(logMsg);
 
@@ -70,10 +70,10 @@ bool XRSoundEngine::InitializeSoundEngine()
 // Perform one-time static cleanup of our ISoundEngine singleton.
 void XRSoundEngine::DestroySoundEngine()
 {
-    char logMsg[256];   // can't use CString easily here b/c Orbiter's oapiWriteLog takes a char * instead of const char * for some bizarre reason.
+    char logMsg[256];
     sprintf_s(logMsg, "%s terminating.", GetVersionStr());
 
-    oapiWriteLog(logMsg);
+    oapiWriteLogV("%s", logMsg);
     s_globalConfig.WriteLog(logMsg);
 
     // It is not an error to call this if the engine was never initialized, so we don't check for that here.

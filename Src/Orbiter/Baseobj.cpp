@@ -180,7 +180,7 @@ void BaseObject::MapToAltitude (NTVERTEX *vtx, int nvtx)
 void BaseObject::ParseError (const char *msg) const
 {
 	char errmsg[256];
-	_snprintf (errmsg, 255, "Parse error from base definition file for %s: %s", base->Name(), msg);
+	snprintf (errmsg, sizeof(errmsg), "Parse error from base definition file for %s: %s", base->Name(), msg);
 	LOGOUT_ERR(errmsg);
 }
 

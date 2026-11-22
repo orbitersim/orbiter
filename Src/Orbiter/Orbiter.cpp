@@ -11,7 +11,9 @@
 #include <direct.h>
 #include <stdio.h>
 #include <time.h>
+#include <iostream>
 #include <fstream>
+#include <sstream>
 #include <process.h> 
 #include "cmdline.h"
 #include "D3d7util.h"
@@ -69,7 +71,7 @@ const int MAX_TEXTURE_BUFSIZE = 8000000;
 
 const TCHAR* g_strAppTitle = "OpenOrbiter";
 
-const TCHAR* MasterConfigFile = "Orbiter.cfg";
+const std::string DefaultMasterConfigFile = "Orbiter.cfg";
 
 const TCHAR* CurrentScenario = "(Current state)";
 char ScenarioName[256] = "\0";
@@ -161,6 +163,18 @@ int _matherr(struct _exception *except )
 	return 0;
 }
 
+
+// Hacky class to handle playback annotations without breaking the old ABI
+class PlaybackAnnotation: public ScreenAnnotation
+{
+	public:
+		PlaybackAnnotation(GraphicsClient *_gc): ScreenAnnotation(_gc) {}
+		void Render() override {
+			if(g_pOrbiter->Cfg()->CfgRecPlayPrm.bShowNotes) {
+				ScreenAnnotation::Render();
+			}
+		}
+};
 
 // =======================================================================
 // WinMain()
@@ -292,6 +306,7 @@ Orbiter::Orbiter ()
 	// Initialise timer
 	timeBeginPeriod(1);
 
+	m_sMasterConfigFile = DefaultMasterConfigFile;
 	pDI             = new DInput(this); TRACENEW
 	pConfig         = new Config; TRACENEW
 	pState          = NULL;
@@ -327,7 +342,6 @@ Orbiter::Orbiter ()
 	D3DMathSetup();
 	script          = NULL;
 	memstat = nullptr;
-
 	simheapsize     = 0;
 
 	for (int i = 0; i < 15; i++)
@@ -381,7 +395,17 @@ HRESULT Orbiter::Create (HINSTANCE hInstance)
 
 	// parameter manager - parses from master config file
 	hInst = hInstance;
-	pConfig->Load(MasterConfigFile);
+	if (!pConfig->CfgCmdlinePrm.bCfgFromCinOnly)
+		if (!pConfig->Read(m_sMasterConfigFile)) {
+			LOGOUT_WARN("Configuration file %s not found. Reverting to default settings.",
+				m_sMasterConfigFile.c_str());
+		}
+	if (pConfig->CfgCmdlinePrm.bCfgFromCinOnly || pConfig->CfgCmdlinePrm.bCfgFromCinAdd) {
+		std::stringstream memStream;
+		memStream << std::cin.rdbuf();
+		if (memStream.good())
+			pConfig->Read(memStream);
+	}
 	strcpy (cfgpath, pConfig->CfgDirPrm.ConfigDir);   cfglen = strlen (cfgpath);
 
 	if (FAILED (hr = pDI->Create (hInstance))) return hr;
@@ -456,8 +480,20 @@ HRESULT Orbiter::Create (HINSTANCE hInstance)
 //-----------------------------------------------------------------------------
 void Orbiter::SaveConfig ()
 {
-	pConfig->Write (); // save current settings
-	m_pLaunchpad->WriteExtraParams ();
+	if (pConfig->CfgCmdlinePrm.bCfgToCoutOnly) {
+		pConfig->Write(std::cout);
+	}
+	else if (!pConfig->CfgCmdlinePrm.bCfgReadOnly) {
+		if (!pConfig->Write(m_sMasterConfigFile)) {
+			LOGOUT_WARN("Could not write to configuration file %s. Configuration changes will be lost.",
+				m_sMasterConfigFile.c_str());
+		}
+	}
+
+	// Plugin modules that write config parameters defined in the Launchpad
+	// Extra tab aren't affected by the cout redirection. They still write their
+	// stuff using their default method.
+	m_pLaunchpad->WriteExtraParams();
 }
 
 //-----------------------------------------------------------------------------
@@ -670,8 +706,8 @@ VOID Orbiter::Launch (const char *scenario)
 
 	HCURSOR hCursor = SetCursor (LoadCursor (NULL, IDC_WAIT));
 	bool have_state = false;
-	pConfig->Write (); // save current settings
-	m_pLaunchpad->WriteExtraParams ();
+	if (!pConfig->CfgCmdlinePrm.bCfgToCoutOnly) // we don't want to write to stdout for each launch
+		SaveConfig(); // This should be redundant here, but just in case of a subsequent crash, save parameters on launch.
 
 	if (!have_state && !pState->Read (ScnPath (scenario))) {
 		LOGOUT_ERR ("Scenario not found: %s", scenario);
@@ -734,7 +770,7 @@ HWND Orbiter::CreateRenderWindow (Config *pCfg, const char *scenario)
 		pDlgMgr->AddEntry(g_input);
 
 		// playback screen annotation manager
-		snote_playback = gclient->clbkCreateAnnotation ();
+		snote_playback = new PlaybackAnnotation(gclient);
 	}
 	else {
 		pDlgMgr = new DialogManager(this, m_pConsole->WindowHandle());
@@ -837,7 +873,7 @@ HWND Orbiter::CreateRenderWindow (Config *pCfg, const char *scenario)
 		LOGOUT ("Finished initialising panels");
 	}
 
-	if (pCfg->CfgLogicPrm.bStartPaused) {
+	if (pCfg->CfgCmdlinePrm.bStartPaused || (!pCfg->CfgCmdlinePrm.bStartUnpaused && pCfg->CfgLogicPrm.bStartPaused)) {
 		BeginTimeStep (true);
 		UpdateWorld(); // otherwise it doesn't get initialised during pause
 		EndTimeStep (true);
@@ -1576,7 +1612,7 @@ void Orbiter::EndPlayback ()
 oapi::ScreenAnnotation *Orbiter::CreateAnnotation (bool exclusive, double size, COLORREF col)
 {
 	if (!gclient) return NULL;
-	oapi::ScreenAnnotation *sn = gclient->clbkCreateAnnotation();
+	oapi::ScreenAnnotation *sn = new ScreenAnnotation(gclient);
 	if (!sn) return NULL;
 	
 	sn->SetSize (size);
@@ -1592,22 +1628,6 @@ oapi::ScreenAnnotation *Orbiter::CreateAnnotation (bool exclusive, double size, 
 	snote = tmp;
 	snote[nsnote++] = sn;
 	return sn;
-
-	//DWORD w = oclient->GetFramework()->GetRenderWidth();
-	//DWORD h = oclient->GetFramework()->GetRenderHeight();
-
-	//ScreenNote *sn = new ScreenNote (this, w, h);
-	//sn->SetSize (size);
-	//sn->SetColour (col);
-
-	//ScreenNote **tmp = new ScreenNote*[nsnote+1];
-	//if (nsnote) {
-	//	memcpy (tmp, snote, nsnote*sizeof(ScreenNote*));
-	//	delete []snote;
-	//}
-	//snote = tmp;
-	//snote[nsnote++] = sn;
-	//return sn;
 }
 
 bool Orbiter::DeleteAnnotation (oapi::ScreenAnnotation *sn)
@@ -1737,11 +1757,6 @@ const Mesh *Orbiter::LoadMeshGlobal (const char *fname, LoadMeshClbkFunc fClbk)
 VOID Orbiter::Output2DData ()
 {
 	g_pane->Draw ();
-	if (g_pane) {
-		for (DWORD i = 0; i < nsnote; i++)
-			snote[i]->Render();
-		if (snote_playback && pConfig->CfgRecPlayPrm.bShowNotes) snote_playback->Render();
-	}
 }
 
 //-----------------------------------------------------------------------------
@@ -1903,13 +1918,14 @@ bool Orbiter::UnregisterCustomCmd (int cmdId)
 
 int Orbiter::RegisterMenuCmd (const char *label, const char *imagepath, CustomFunc func, void *context)
 {
+	const int id = g_customcmdid++;
 	// share g_customcmdid for unique id
-	menuitems.emplace_back(label, imagepath, g_customcmdid++, func, context);
+	menuitems.emplace_back(label, imagepath, id, func, context);
 	if(g_pane) {
-		g_pane->MIBar()->RegisterMenuItem(label, imagepath, g_customcmdid, func, context);
+		g_pane->MIBar()->RegisterMenuItem(label, imagepath, id, func, context);
 	}
 
-	return g_customcmdid;
+	return id;
 }
 void Orbiter::UnregisterMenuCmd (int cmdId)
 {
@@ -2703,6 +2719,9 @@ bool Orbiter::DeactivateRoughType ()
 //-----------------------------------------------------------------------------
 bool Orbiter::AttachGraphicsClient (oapi::GraphicsClient *gc)
 {
+	if (pConfig->CfgCmdlinePrm.bDiableGraphics)
+		return false;
+
 	if (gclient) return false; // another client is already attached
 	register_module = gc;
 	gclient = gc;

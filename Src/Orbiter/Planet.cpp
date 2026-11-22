@@ -270,7 +270,7 @@ Planet::Planet (char *fname)
 		if (!GetItemVector (ifs, "AtmHazeColor", hazecol))
 			hazecol.Set (atm.color0.x, atm.color0.y, atm.color0.z);
 
-		if (GetItemString (ifs, "AtmFogParam", cbuf)) {
+		if (GetItemString (ifs, "AtmFogParam", cbuf, sizeof(cbuf))) {
 			i = sscanf (cbuf, "%lf%lf%lf", &fog.dens_0, &fog.dens_ref, &fog.alt_ref);
 			if (GetItemVector (ifs, "AtmFogColor", col0)) fog.col = MakeVECTOR3 (col0);
 			else fog.col = atm.color0;
@@ -316,7 +316,7 @@ Planet::Planet (char *fname)
 			max_cloud_level = min (8, (int)max_patch_level);
 		if (!GetItemBool (ifs, "BrightenClouds", bBrightClouds))
 			bBrightClouds = false;
-		if (GetItemString (ifs, "CloudMicrotextureAlt", cbuf) &&
+		if (GetItemString (ifs, "CloudMicrotextureAlt", cbuf, sizeof(cbuf)) &&
 			sscanf (cbuf, "%lf%lf", &cloud_micro_alt0, &cloud_micro_alt1) == 2 &&
 			cloud_micro_alt0 >= 0 && cloud_micro_alt1 >= cloud_micro_alt0)
 				bCloudMicrotex = true;
@@ -373,8 +373,8 @@ Planet::Planet (char *fname)
 			char bstr[10], cbuf[256], nm[128];
 			double lng, lat;
 			sprintf (bstr, "Base%d", i+1);
-			if (GetItemString (ifs, bstr, cbuf) &&
-				sscanf (cbuf, "%s%lf%lf", nm, &lng, &lat) == 3) {
+			if (GetItemString (ifs, bstr, cbuf, sizeof(cbuf)) &&
+				sscanf (cbuf, "%127s%lf%lf", nm, &lng, &lat) == 3) {
 				Base *base = new Base (nm, this, Rad(lng), Rad(lat)); TRACENEW
 				base->Attach (this);
 			}
@@ -402,7 +402,7 @@ Planet::Planet (char *fname)
 	labellist = 0;
 	nlabellist = 0;
 	labelpath = 0;
-	if (GetItemString (ifs, "MarkerPath", cbuf)) {
+	if (GetItemString (ifs, "MarkerPath", cbuf, sizeof(cbuf)-1)) {
 		if (cbuf[strlen(cbuf)-1] != '\\') strcat (cbuf, "\\");
 		labelpath = new char[strlen(cbuf)+1]; TRACENEW
 		strcpy (labelpath, cbuf);

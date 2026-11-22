@@ -371,6 +371,9 @@ public:
 		}
 	}
 	bool MenuInfoBarItem(MenuItem &item) {
+		// Protects against different items having the same name
+		ImGui::PushID(item.id);
+
 		// Filter button spacing in time to prevent excessive jittering
 		// when modifying MenuButtonSpacing
 		if(animStateSpacing < prm.MenuButtonSpacing) animStateSpacing+=0.1f;
@@ -404,6 +407,7 @@ public:
 				// Button has shrunk away, disable it
 				item.enabled = false;
 				SavePreferedOrder();
+				ImGui::PopID();
 				return false;
 			}
 			buttonSize *= item.animStateScale;
@@ -488,6 +492,7 @@ public:
 		} else if(!dragging) {
 			item.dragging = false;
 		}
+		ImGui::PopID();
 		return ret;
 	}
 
@@ -790,9 +795,6 @@ public:
 			if (g_camera->IsExternal()) {
 				ImGui::SameLine();
 				ImGui::TextColored(white, "   Dst %s", DistStr (g_camera->Distance())+1);
-			} else {
-				ImGui::SameLine();
-				ImGui::TextColored(ImVec4(0,0,0,0), "   Dst %s", DistStr (g_camera->Distance())+1);
 			}
 
 			if(prm.FPS == 1)
