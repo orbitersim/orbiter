@@ -348,10 +348,9 @@ void ControllerGraph::DrawEditor()
         }
     } else if (ed::ShowLinkContextMenu(&contextLinkId)) {
         ImGui::OpenPopup("Link Context Menu");
+    } else if (ed::ShowBackgroundContextMenu()) {
+        ImGui::OpenPopup("Create New Node");
     }
-
-
-
 
     if (ImGui::BeginPopup("Link Context Menu"))
     {
@@ -366,6 +365,27 @@ void ControllerGraph::DrawEditor()
         Pin *pin = PinFromId(contextPinId);
 
         if (pin->cbContextMenu) pin->cbContextMenu(pin);
+
+        ImGui::EndPopup();
+    }
+    if (ImGui::BeginPopup("Create New Node"))
+    {
+        auto newNodePostion = openPopupPosition;
+        Node *node = nullptr;
+        ImGui::TextUnformatted("New Node");
+        ImGui::Separator();
+
+        for(auto &ni: nodeFactory.types) {
+            const std::string &name = ni.first;
+            if(!ni.second.isSingleton) {
+                if(ImGui::MenuItem(name.c_str())) {
+                    node = ni.second.maker();
+                    node->InitDefault(nodeidgen++);
+                    ed::SetNodePosition(node->id, newNodePostion);
+                    AddNode(std::unique_ptr<Node>(node));
+                }
+            }
+        }
 
         ImGui::EndPopup();
     }
