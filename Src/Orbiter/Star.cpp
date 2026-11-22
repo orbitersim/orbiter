@@ -43,7 +43,7 @@ Star::~Star ()
 void Star::Setup ()
 {
 	CelestialBody::Setup ();
-	ExternPosition(); // try to init from module
+	TryExternState(); // try to init from module
 }
 
 void Star::Update (bool force)

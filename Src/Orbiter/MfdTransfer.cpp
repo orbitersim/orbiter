@@ -577,7 +577,7 @@ bool Instrument_Transfer::ClbkNstep (InputBox*, char *str, void *data)
 
 bool Instrument_Transfer::SelectRef (char *str)
 {
-	CelestialBody *obj = g_psys->GetGravObj (str, true);
+	const CelestialBody *obj = g_psys->GetGravObj(str, true);
 	if (!obj) return false;
 	if (obj == elref) return true; // nothing to do
 

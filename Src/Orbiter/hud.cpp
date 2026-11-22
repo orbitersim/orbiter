@@ -1522,7 +1522,7 @@ bool HUD_Orbit::SelectRef (char *str)
 	if (toupper(str[0]) == 'A' && str[1] == '\0') {
 		ref = 0;
 	} else {
-		Body *obj = g_psys->GetGravObj (str, true);
+		const Body *obj = g_psys->GetGravObj(str, true);
 		if (!obj) return false;
 		ref = obj;
 	}

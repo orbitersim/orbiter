@@ -12,6 +12,8 @@
 #include "OrbiterAPI.h"
 #include "Config.h"
 
+#define S1() S1_restricted(this)
+
 class Elements;
 class CelestialBody;
 class Body;
@@ -54,32 +56,34 @@ public:
 	inline const Vector &Albedo () const { return albedo; }
 	// object albedo (RGB, 0-1)
 
-	inline const Vector &GPos() const { return s0->pos; }
-	inline const Vector &GVel() const { return s0->vel; }
-	inline const Matrix &GRot() const { return s0->R; }
-	inline const Quaternion &GQ() const { return s0->Q; }
+	const StateVectors *S0() const { return m_svS0; }
+	// Read access to current state (at time td.SimT0)
+
+	virtual const StateVectors *S1_restricted(const void *caller) const;
+	// Read access to update state S1 (during update phase, refers to td.SimT1. Past update phase this is the same as S0)
+	// Default behaviour: no caller restrictions
+
+	inline const Vector &GPos() const { return m_svS0->Pos(); }
+	inline const Vector &GVel() const { return m_svS0->Vel(); }
+	inline const Matrix &GRot() const { return m_svS0->RotM(); }
+	inline const Quaternion &GQ() const { return m_svS0->RotQ(); }
 	// Object position, velocity and orientation in global coords. To transform
 	// a point between local object coords p_loc and global coords p_glob:
 	// p_glob = GRot * p_loc + GPos
 
-	void SetRPos (const Vector &p);
-	void AddRPos (const Vector &dp);
-	void FlushRPos ();
+	const Vector &AngularVelocity() const { return m_svS0->AngVel(); }
+	// Object angular velocity
 
-	void SetRVel (const Vector &v);
-	void AddRVel (const Vector &dv);
-	void FlushRVel ();
-
-	inline Vector GlobalToLocal (const Vector &glob) const
-	{ return tmul (s0->R, glob - s0->pos); }
+	inline Vector GlobalToLocal(const Vector &glob) const
+	{ return tmul(m_svS0->RotM(), glob - m_svS0->Pos()); }
 	// Convert global position glob into body's local coordinate system
 
-	inline void GlobalToLocal (const Vector &glob, Vector &loc) const
-	{ loc.Set (tmul (s0->R, glob - s0->pos)); }
+	inline void GlobalToLocal(const Vector &glob, Vector &loc) const
+	{ loc.Set(tmul(m_svS0->RotM(), glob - m_svS0->Pos())); }
 	// same with different interface
 
-	inline void LocalToGlobal (const Vector &loc, Vector &glob) const
-	{ glob.Set (mul (s0->R, loc) + s0->pos); }
+	inline void LocalToGlobal(const Vector &loc, Vector &glob) const
+	{ glob.Set(mul(m_svS0->RotM(), loc) + m_svS0->Pos()); }
 
 	void LocalToEquatorial (const Vector &loc, double &lng, double &lat, double &rad) const;
 	inline void GlobalToEquatorial (const Vector &glob, double &lng, double &lat, double &rad) const
@@ -143,22 +147,19 @@ public:
 
 	inline const VISHANDLE *GetVishandlePtr() const { return &hVis; }
 
-	StateVectors* s0 { nullptr };    // body state at time t0
-	StateVectors* s1 { nullptr };    // new body state at time t0+dt during update phase
-
 	// Operations on updated state vectors (only accessible during update phase
 	// AFTER the object has been updated)
 
-	inline Vector GlobalToLocal_t1 (const Vector &glob) const
-	{ return tmul (s1->R, glob - s1->pos); }
+	inline Vector GlobalToLocal_t1(const Vector &glob) const
+	{ return tmul(m_svS1->RotM(), glob - m_svS1->Pos()); }
 	// Convert global position glob into body's local coordinate system
 
-	inline void GlobalToLocal_t1 (const Vector &glob, Vector &loc) const
-	{ loc.Set (tmul (s1->R, glob - s1->pos)); }
+	inline void GlobalToLocal_t1(const Vector &glob, Vector &loc) const
+	{ loc.Set(tmul(m_svS1->RotM(), glob - m_svS1->Pos())); }
 	// same with different interface
 
-	inline void LocalToGlobal_t1 (const Vector &loc, Vector &glob) const
-	{ glob.Set (mul (s1->R, loc) + s1->pos); }
+	inline void LocalToGlobal_t1(const Vector &loc, Vector &glob) const
+	{ glob.Set(mul(m_svS1->RotM(), loc) + m_svS1->Pos()); }
 
 	inline const Vector &Acceleration() const { return acc; };
 
@@ -171,6 +172,17 @@ protected:
 
 	Vector acc;          // current acceleration vector
 
+	virtual StateVectors *S1_restricted(const void *caller);
+	// Caller-restricted write access to update state S1.
+	// Default behaviour: only instance owning the state vectors can write them (NOT ENFORCED YET)
+
+	void PublishStateVectors();
+	// copy update state (m_svS1) back to public state (m_svS0)
+
+	void SyncStateVectors();
+	// Force synchronisation of m_svS0 with m_svS1 outside update phase
+	// Has no effect during update phase
+
 	VISHANDLE hVis { nullptr };      // visual identifier passed to messages (NULL=no visual)
 
 	const CelestialBody* cbody { nullptr }; // orbit reference body
@@ -178,14 +190,13 @@ protected:
 	std::string name;          // object name
 	std::string filename;
 
-	Vector rpos_base { 0, 0, 0 }, rpos_add { 0, 0, 0 }; // base and incremental parts of rpos
-	Vector rvel_base { 0, 0, 0 }, rvel_add { 0, 0, 0 }; // base and incremental parts of rvel
-	int updcount { 0 };               // update counter
-
 private:
 	void SetName (char *_name = 0);
 
-	StateVectors sv[2];  // State vectors for current and updated state - don't use directly
+	const StateVectors* m_svS0{ nullptr }; // body state at time td.SimT0 (current frame)
+	StateVectors* m_svS1{ nullptr }; // body state at time td.SimT1 (next frame) during update phase
+
+	StateVectors m_svContainer[2];   // State vectors for current and updated state - don't use directly
 };
 
 #endif // !__BODY_H

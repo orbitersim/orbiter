@@ -101,6 +101,7 @@ BOOL g_bOutputDim   = TRUE;
 bool g_bForceUpdate = true;
 bool g_bShowGrapple = false;
 bool g_bStateUpdate = false;
+bool g_bVesselUpdate = false;
 
 // Timing parameters
 DWORD  launch_tick;      // counts the first 3 frames

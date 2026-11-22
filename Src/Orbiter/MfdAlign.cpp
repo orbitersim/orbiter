@@ -82,8 +82,9 @@ HELPCONTEXT *Instrument_OPlaneAlign::HelpTopic () const
 
 bool Instrument_OPlaneAlign::SelectRef (char *name)
 {
-	CelestialBody *obj = g_psys->GetGravObj (name, true);
-	if (!obj) return false;
+	const CelestialBody *obj = g_psys->GetGravObj(name, true);
+	if (!obj)
+		return false;
 	SetRef (obj);
 	return true;
 }

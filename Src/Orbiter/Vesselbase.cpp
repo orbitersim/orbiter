@@ -14,7 +14,7 @@ extern char DBG_MSG[256];
 
 // =======================================================================
 
-void SurfParam::Set (const StateVectors &s, const StateVectors &s_ref, const CelestialBody *_ref,
+void SurfParam::Set(const StateVectors &s, const StateVectors &s_ref, const CelestialBody *_ref,
 					 std::vector<ElevationTile> *etilecache, WindPrm *windprm)
 {
 	// Calculate surface parameters for arbitrary state of object and reference planet
@@ -25,8 +25,8 @@ void SurfParam::Set (const StateVectors &s, const StateVectors &s_ref, const Cel
 	ref = _ref;
 	Planet *planet = (ref->Type() == OBJTP_PLANET ? (Planet*)ref : 0);
 
-	Vector Prel = s.pos - s_ref.pos;
-	ploc = tmul (s_ref.R, Prel);
+	Vector Prel = s.Pos() - s_ref.Pos();
+	ploc = tmul(s_ref.RotM(), Prel);
 	ref->LocalToEquatorial (ploc, lng, lat, rad);
 	slng = sin(lng), clng = cos(lng);
 	slat = sin(lat), clat = cos(lat);
@@ -44,7 +44,7 @@ void SurfParam::Set (const StateVectors &s, const StateVectors &s_ref, const Cel
 		}
 	}
 
-	Vector Snm (tmul (s.R, Prel));
+	Vector Snm(tmul(s.RotM(), Prel));
 	Snm.unify(); // planet surface normal below ship in ship's local coords
 	pitch = asin (Snm.z);
 	if (fabs (Snm.x) > eps || fabs (Snm.y) > eps)
@@ -53,10 +53,10 @@ void SurfParam::Set (const StateVectors &s, const StateVectors &s_ref, const Cel
 		bank = 0.0;
 
 	// ground speed
-	Vector vrel = s.vel - s_ref.vel;
+	Vector vrel = s.Vel() - s_ref.Vel();
 	double vref = Pi2/ref->RotT() * rad * clat; // speed of a point at vessel position fixed in planet frame
-	groundvel_glob.Set (vrel - mul (s_ref.R, Vector(-vref*slng,0.0,vref*clng)));  // ground velocity in global frame
-	groundvel_ship.Set (tmul (s.R, groundvel_glob));  // ground velocity in ship frame
+	groundvel_glob.Set(vrel - mul(s_ref.RotM(), Vector(-vref * slng, 0.0, vref * clng)));  // ground velocity in global frame
+	groundvel_ship.Set(tmul(s.RotM(), groundvel_glob));  // ground velocity in ship frame
 	groundspd = groundvel_glob.length();
 
 	// vertical velocity
@@ -65,10 +65,10 @@ void SurfParam::Set (const StateVectors &s, const StateVectors &s_ref, const Cel
 	// airspeed
 	Vector windvel_glob(0,0,0);
 	if (planet)
-		windvel_glob.Set (mul (s_ref.R, planet->WindVelocity (lng, lat, alt, 1, windprm)));
+		windvel_glob.Set(mul(s_ref.RotM(), planet->WindVelocity (lng, lat, alt, 1, windprm)));
 
 	airvel_glob.Set (groundvel_glob - windvel_glob);
-	airvel_ship.Set (tmul (s.R, airvel_glob));
+	airvel_ship.Set(tmul(s.RotM(), airvel_glob));
 	airspd = airvel_glob.length();
 
 	// rotation from planet local coords to local horizon
@@ -77,11 +77,11 @@ void SurfParam::Set (const StateVectors &s, const StateVectors &s_ref, const Cel
 			 -slat*clng, clat, -slat*slng);
 
 	// map ship's forward axis into local horizon frame
-	Vector RZloc = mul(L2H, tmul(s_ref.R, Vector (s.R.m13, s.R.m23, s.R.m33)));
+	Vector RZloc = mul(L2H, tmul(s_ref.RotM(), Vector(s.RotM().m13, s.RotM().m23, s.RotM().m33)));
 	if (fabs (RZloc.x) > eps || fabs(RZloc.z) > eps)
 		dir = atan2 (RZloc.x, RZloc.z);
 	else {  // ship is pointing vertically up - take ship's negative y-axis for direction
-		Vector RYloc = mul(L2H, tmul(s_ref.R, Vector (-s.R.m12, -s.R.m22, -s.R.m32)));
+		Vector RYloc = mul(L2H, tmul(s_ref.RotM(), Vector(-s.RotM().m12, -s.RotM().m22, -s.RotM().m32)));
 		dir = atan2 (RYloc.x, RYloc.z);
 	}
 	if (dir < 0.0) dir += Pi2;
@@ -109,7 +109,7 @@ double SurfParam::ComputeAltitude(const StateVectors &s, const StateVectors &s_r
 	static const double alt_max = 1e5; // for now
 
 	double _lng, _lat, _rad;
-	Vector ploc = tmul (s_ref.R, s.pos - s_ref.pos);
+	Vector ploc = tmul(s_ref.RotM(), s.Pos() - s_ref.Pos());
 	_ref->LocalToEquatorial (ploc, _lng, _lat, _rad);
 	double _alt = _rad - _ref->Size();
 	if (etilecache && _alt < alt_max && _ref->Type() == OBJTP_PLANET) {
@@ -212,10 +212,6 @@ bool VesselBase::Activate (bool force)
 {
 	if (fstatus == FLIGHTSTATUS_LANDED || force) {
 		fstatus = FLIGHTSTATUS_FREEFLIGHT;
-		rpos_base = s0->pos;
-		rpos_add.Set (0,0,0);
-		rvel_base = s0->vel;
-		rvel_add.Set (0,0,0);
 		return true;
 	} else
 		return false;
@@ -241,9 +237,23 @@ void VesselBase::PostUpdate ()
 
 // =======================================================================
 
+const StateVectors *VesselBase::S1_restricted(const void *caller) const
+{
+	extern bool g_bVesselUpdate;
+	if (g_bVesselUpdate) {
+		// limit S1 read access to class instance owning the state vectors during vessel update phase (runtime check)
+		// NOT ENFORCED YET
+		// ASSERT(caller == this, "Read access to S1 state only granted to class instance during update.")
+	}
+	return RigidBody::S1_restricted(caller);
+}
+
+// =======================================================================
+
 void VesselBase::UpdateSurfParams ()
 {
-	if (proxybody) sp.Set (s1 ? *s1 : *s0, proxybody->s1 ? *proxybody->s1 : *proxybody->s0, proxybody, &etile, &windp);
+	if (proxybody)
+		sp.Set (*S1(), *proxybody->S1(), proxybody, &etile, &windp);
 }
 
 // =======================================================================
@@ -255,13 +265,13 @@ void VesselBase::CheckLanded ()
 			LandingTest.testing = false;
 		else {
 			static const double eps = 1e-4;
-			Vector prel (tmul(proxybody->s0->R, s0->pos - proxybody->s0->pos)); // vessel position in planet local coords
+			Vector prel(tmul(proxybody->S0()->RotM(), S0()->Pos() - proxybody->S0()->Pos())); // vessel position in planet local coords
 			double dt = td.SimT0 - LandingTest.testt;
 			if (dt < 0.1) return;
 			double dst2 = prel.dist2 (LandingTest.surfpos);
-			double dangle = angle (s0->Q, LandingTest.surfrot);
+			double dangle = angle(S0()->RotQ(), LandingTest.surfrot);
 			LandingTest.surfpos = prel;
-			LandingTest.surfrot.Set (s0->Q);
+			LandingTest.surfrot.Set(S0()->RotQ());
 			if (dst2/dt > 1e-4 || dangle/dt > 1e-4) {
 				LandingTest.testt = td.SimT0; // still moving -> reset timer
 			} else if (td.SimT0 - LandingTest.testt > 5.0) {
@@ -272,8 +282,8 @@ void VesselBase::CheckLanded ()
 
 				if (bDynamicGroundContact) {
 					double alt = Altitude(); //rad - proxybody->Size();
-					Matrix lrot (s0->R);
-					lrot.tpremul (proxyplanet->s0->R);
+					Matrix lrot(S0()->RotM());
+					lrot.tpremul(proxyplanet->S0()->RotM());
 					InitLanded (proxyplanet, lng, lat, dir, &lrot, alt);
 				} else {
 					InitLanded (proxyplanet, lng, lat, dir);
@@ -287,8 +297,8 @@ void VesselBase::CheckLanded ()
 		if (bSurfaceContact && !ThrustEngaged()) {
 			LandingTest.testing = true;
 			LandingTest.testt = td.SimT0;
-			LandingTest.surfpos.Set (tmul(proxybody->s0->R, s0->pos - proxybody->s0->pos));
-			LandingTest.surfrot.Set (s0->Q); // should really subtract proxybody rotation here
+			LandingTest.surfpos.Set(tmul(proxybody->S0()->RotM(), S0()->Pos() - proxybody->S0()->Pos()));
+			LandingTest.surfrot.Set(S0()->RotQ()); // should really subtract proxybody rotation here
 		}
 	}
 }
@@ -302,11 +312,11 @@ double VesselBase::LandedHeading (double lng, double lat) const
 	double slng = sin(lng), clng = cos(lng);
 	double slat = sin(lat), clat = cos(lat);
 	Matrix L2H (-slng,0,clng, clat*clng,slat,clat*slng, -slat*clng,clat,-slat*slng);
-	Vector RZloc = mul(L2H, tmul (proxybody->s0->R, Vector (s0->R.m13, s0->R.m23, s0->R.m33)));
+	Vector RZloc = mul(L2H, tmul(proxybody->S0()->RotM(), Vector(S0()->RotM().m13, S0()->RotM().m23, S0()->RotM().m33)));
 	if (fabs(RZloc.x) > eps || fabs(RZloc.z) > eps)
 		dir = atan2(RZloc.x, RZloc.z);
 	else {
-		Vector RYloc = mul(L2H, tmul(proxybody->s0->R, Vector(-s0->R.m12, -s0->R.m22, -s0->R.m32)));
+		Vector RYloc = mul(L2H, tmul(proxybody->S0()->RotM(), Vector(-S0()->RotM().m12, -S0()->RotM().m22, -S0()->RotM().m32)));
 		dir = atan2(RYloc.x, RYloc.z);
 	}
 	if (dir < 0.0) dir += Pi2;
@@ -326,13 +336,13 @@ void VesselBase::UpdateProxies ()
 {
 	DWORD i, ng = g_psys->nGrav();
 	double dist2, proxydist2, proxypdist2;
-	CelestialBody *grav;
+	const CelestialBody *grav;
 	Planet *pl = 0;
 
 	// Check for closest celestial body and planet
 	for (i = 0, proxydist2 = proxypdist2 = 1e100; i < ng; i++) {
 		grav = g_psys->GetGravObj(i);
-		dist2 = s0->pos.dist2 (grav->s0->pos) - grav->Size(); // distance squared from body surface
+		dist2 = S1()->Pos().dist2 (grav->S1()->Pos()) - grav->Size(); // distance squared from body surface
 		if (dist2 < proxydist2) {
 			proxydist2 = dist2;
 			proxybody = grav;
@@ -348,8 +358,8 @@ void VesselBase::UpdateProxies ()
 	proxybase = 0;
 	if (proxyplanet) {
 		for (i = 0, proxydist2 = 1e100; i < proxyplanet->nBase(); i++) {
-			Base *base = (Base*)proxyplanet->GetBase(i);
-			if ((dist2 = s0->pos.dist2 (base->s0->pos)) < proxydist2) {
+			const Base *base = (const Base*)proxyplanet->GetBase(i);
+			if ((dist2 = S1()->Pos().dist2(base->S1()->Pos())) < proxydist2) {
 				proxydist2 = dist2;
 				proxybase = base;
 			}
@@ -358,7 +368,7 @@ void VesselBase::UpdateProxies ()
 
 	// check for orbit reference body
 	double gfrac;
-	SetOrbitReference (g_psys->GetDominantGravitySource (s0->pos, gfrac));
+	SetOrbitReference(g_psys->GetDominantGravitySource(S1()->Pos(), gfrac));
 }
 
 // ==============================================================
@@ -370,13 +380,13 @@ bool VesselBase::SurfaceProximity () const
 	if (!proxybody) return false;
 	//if (bTouchdown) return true;  // TODO
 	double rad = proxybody->Size();
-	double dist = s0->pos.dist (proxybody->s0->pos);
+	double dist = S0()->pos.dist (proxybody->S0()->pos);
 	double alt = dist-rad-Elevation();
 	if (alt < 3.0*size) return true;
 	return false;
 	// now extrapolate to end of time step
-	Vector sp1 = s0->pos + (s0->vel + acc * 0.5*td.SimDT)*td.SimDT;
-	dist = sp1.dist (proxybody->s1->pos);
+	Vector sp1 = S0()->pos + (S0()->vel + acc * 0.5*td.SimDT)*td.SimDT;
+	dist = sp1.dist (proxybody->S1()->pos);
 	alt = dist-rad;
 	return (alt < 3.0*size);
 #endif
@@ -415,8 +425,7 @@ bool VesselBase::ValidateStateUpdate (StateVectors *s)
 			if (vs < vsmax) {
 				Vector gv(sp.groundvel_ship * (vsmax/vs)); // rescaled surface-relative velocity
 				gv = mul (GRot(), gv);                    // map to global
-				s0->vel += (gv - sp.groundvel_glob);
-				rvel_base += (gv - sp.groundvel_glob);
+				S1()->AddVel(gv - sp.groundvel_glob);
 				return false;
 			}
 		}
