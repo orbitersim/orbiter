@@ -60,9 +60,17 @@ void BodyProvider::InitialiseSolarSystem()
 	for (int i = 0; i < totalbodies; i++)
 	{
 		GBODY *body = new GBODY;
-		body->next = body->previous = NULL;
+		body->parent = body->next = body->previous = NULL;
+		body->soisize2 = 0.0;
+		body->gravbodyratio2 = 0.0;
 
 		body->bodyhandle = oapiGetGbodyByIndex(i);
+		if (body->bodyhandle == NULL) {
+			// Invalid body index: do not leave a half-initialised entry in
+			// the tree, it would be dereferenced later on.
+			delete body;
+			continue;
+		}
 		body->mass = oapiGetMass(body->bodyhandle);
 		bodyMap[body->bodyhandle] = body;
 		if(i == 0)
@@ -77,24 +85,41 @@ void BodyProvider::InitialiseSolarSystem()
 			// gravbodyratio2 and soisize
 			// Find the parent body (what it is orbiting)
 			vector<GBODY*>::iterator it = templist.begin();
-			GBODY* currparent;
-			double currdistance2;
+			GBODY* currparent = NULL;
+			double currdistance2 = 0.0;
 			while(it != templist.end())
 			{
-				char itname[30], name[30];
-				oapiGetObjectName((*it)->bodyhandle, itname, 30);
-				oapiGetObjectName(body->bodyhandle, name, 30);
-
-				VECTOR3 pos;
+				VECTOR3 pos = {0,0,0};
 				oapiGetRelativePos(body->bodyhandle, (*it)->bodyhandle, &pos);
 				double distance2 = dotp(pos, pos);
-				if(distance2 < (*it)->soisize2)
+				// Ignore invalid (NaN/infinite) distances: a single bad body
+				// entry used to make the comparison below false for every
+				// candidate, leaving currparent uninitialised and crashing the
+				// MFD when it was dereferenced.
+				if(distance2 == distance2 && distance2 < (*it)->soisize2)
 				{
 					currparent = *it;
 					currdistance2 = distance2;
 				}
 
 				it++;
+			}
+			if(currparent == NULL)
+			{
+				// No body claimed this object (e.g. because its position data
+				// was unavailable). Attach it to the sun rather than
+				// dereferencing an uninitialised pointer.
+				currparent = sun;
+				VECTOR3 pos = {0,0,0};
+				oapiGetRelativePos(body->bodyhandle, sun->bodyhandle, &pos);
+				currdistance2 = dotp(pos, pos);
+				if(!(currdistance2 > 0.0) || currdistance2 != currdistance2)
+					currdistance2 = 1.0;
+				char bname[64] = "";
+				oapiGetObjectName(body->bodyhandle, bname, 64);
+				char dbgmsg[256];
+				sprintf(dbgmsg, "TransX: no parent body found for [%s]; attaching to sun", bname);
+				oapiWriteLog(dbgmsg);
 			}
 			body->parent = currparent;
 			if(body->parent->satellites.size() > 0)
@@ -103,7 +128,10 @@ void BodyProvider::InitialiseSolarSystem()
 				body->previous->next = body;
 			}
 			body->parent->satellites.push_back(body);
-			body->gravbodyratio2 = pow(body->mass / body->parent->mass, 0.8);
+			if(body->parent->mass > 0.0 && body->mass > 0.0)
+				body->gravbodyratio2 = pow(body->mass / body->parent->mass, 0.8);
+			else
+				body->gravbodyratio2 = 1e-10; // avoid a zero/NaN SOI
 			body->soisize2 = currdistance2 * body->gravbodyratio2;//Internal soi size
 		}
 		templist.push_back(body); // add it to the temp list
