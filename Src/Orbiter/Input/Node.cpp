@@ -65,17 +65,32 @@ Pin *Node::AddOutput(const char *iname, const char *dname, Pin::type type) {
 }
 
 void Node::ComputeLayout() {
-    widthName = ImGui::CalcTextSize(name.c_str()).x;
-    maxWidthInput = 0;
+    float widthName = ImGui::CalcTextSize(name.c_str()).x;
+
+    float maxWidthInput = 0.0f;
     for(Pin &input: inputs) {
         float sz = ImGui::CalcTextSize(input.displayname.c_str()).x;
         if(sz > maxWidthInput) maxWidthInput = sz;
     }
-    maxWidthOutput = 0;
+
+    maxWidthOutput = 0.0f;
     for(Pin &output: outputs) {
         float sz = ImGui::CalcTextSize(output.displayname.c_str()).x;
         if(sz > maxWidthOutput) maxWidthOutput = sz;
     }
+
+    ImGuiStyle& style = ImGui::GetStyle();
+
+    extraspacing = widthName - maxWidthInput - maxWidthOutput;
+
+    if(inputs.size() > 0 && outputs.size() > 0) {
+        extraspacing -= 2.0f * ImGui::GetTextLineHeight() + 3.0f * style.ItemSpacing.x;
+    } else if (inputs.size() > 0) {
+        extraspacing -= ImGui::GetTextLineHeight() + 2.0f * style.ItemSpacing.x;
+    }
+
+    extraspacing = std::max(0.0f, extraspacing);
+
     dirty = false;
 }
 
@@ -114,20 +129,8 @@ void Node::Draw(std::function<bool(const Pin *)> filter) {
         if(outputs.size() > 0) ImGui::SameLine();
     }
 
-    // If the node name is long, we must add some padding before drawing the output nodes so that they line up properly on the right side
-    // This is not pixel perfect but it does the job for now
-    float titlesz = ImGui::CalcTextSize(name.c_str()).x;
-    if(titlesz > maxWidthOutput + maxWidthInput) {
-        float extra = 0.0f;
-        ImGuiStyle& style = ImGui::GetStyle();
-        if(maxWidthOutput != 0.0 && maxWidthInput != 0.0f) {
-            extra = titlesz - maxWidthOutput - maxWidthInput - 2.0f * ImGui::GetTextLineHeight() - 3.0f * style.ItemSpacing.x;
-        } else {
-            extra = titlesz - maxWidthOutput - maxWidthInput - 1.0f * ImGui::GetTextLineHeight() - 2.0f * style.ItemSpacing.x;
-        }
-        ImGui::Dummy(ImVec2(extra, 0));ImGui::SameLine();
-    }
-
+    ImGui::Dummy(ImVec2(extraspacing, 0));ImGui::SameLine();
+    
     ImGui::BeginGroup();
     for(Pin &output:outputs) {
         ImGui::Dummy(ImVec2(maxWidthOutput - ImGui::CalcTextSize(output.displayname.c_str()).x,0));

@@ -5,6 +5,7 @@
 #include "NodeCamera.h"
 #include "NodeLegacyControls.h"
 #include "NodeRCSPrograms.h"
+#include "NodeModSelector.h"
 #include "Joystick.h"
 #include <set>
 #include <algorithm>
@@ -56,9 +57,6 @@ ControllerGraph::ControllerGraph()
 
     ed::SetCurrentEditor(m_Context);
     Load("graph.json");
-
-    for(auto &node: nodes) {
-    }
 }
 
 ControllerGraph::~ControllerGraph()
@@ -378,7 +376,7 @@ void ControllerGraph::DrawEditor()
 
         for(auto &ni: nodeFactory.types) {
             const std::string &name = ni.first;
-            if(!ni.second.isSingleton) {
+            if(!ni.second.isSingleton && name != "NodeJoystick") { // FIXME: don't hardcode NodeJoystick here
                 if(ImGui::MenuItem(name.c_str())) {
                     node = ni.second.maker();
                     node->InitDefault(nodeidgen++);
@@ -462,7 +460,6 @@ retry:
 
         // Protects against JSON files containing links to pins no longer exposed by a Node
         if(!to || !from) {
-            ed::DeleteLink(l.Id);
             continue;
         }
 
@@ -620,8 +617,12 @@ bool ControllerGraph::Load(const char *path)
                 ed::LinkId id = std::stoi(l["id"].get<std::string>());
                 ed::PinId inputPinId = std::stoi(l["in"].get<std::string>());
                 ed::PinId outputPinId = std::stoi(l["out"].get<std::string>());
-                links.push_back({ id, inputPinId, outputPinId });
-                dirty = true;
+                if(PinFromId(inputPinId) && PinFromId(outputPinId)) {
+                    links.push_back({ id, inputPinId, outputPinId });
+                    dirty = true;
+                } else {
+                    oapiAddNotification(OAPINOTIF_ERROR, "Invalid link in JSON file");
+                }
             }
         }
 
@@ -648,4 +649,5 @@ void ControllerGraph::GlobalInit()
     nodeFactory.Register<NodeJoystick>();
     nodeFactory.Register<NodeCamera>();
     nodeFactory.Register<NodeRCSPrograms>();
+    nodeFactory.Register<NodeModSelector>();
 }

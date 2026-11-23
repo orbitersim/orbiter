@@ -120,6 +120,7 @@ set(common_src
     Input/NodeLegacyControls.cpp
     Input/NodeCamera.cpp
     Input/NodeRCSPrograms.cpp
+    Input/NodeModSelector.cpp
     Input/Joystick.cpp
 # Utils
 	Log.cpp

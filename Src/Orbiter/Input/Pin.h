@@ -124,6 +124,9 @@ public:
 
     operator ValueType&() { return *value; }
     operator const ValueType&() const { return *value; }
-
+    OutputPin& operator=(const ValueType& v) {
+        *value = v;
+        return *this;
+    }
     void Bind(ValueType &v) { value = &v; }
 };
