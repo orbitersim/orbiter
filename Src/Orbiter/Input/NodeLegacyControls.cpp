@@ -16,7 +16,7 @@ NodeLegacyControls::NodeLegacyControls() : Node("Legacy Controller")
 
 void NodeLegacyControls::RegisterPins()
 {
-    RegisterPinWithDefault("Enable", Enable, true);
+    RegisterPinWithDefault("Select", select, true);
     RegisterPin("ModKey", ModKey);
     RegisterPin("Main engine", MainEngine);
     RegisterPin("Bank/Yaw", BankYaw);
@@ -27,7 +27,7 @@ void NodeLegacyControls::RegisterPins()
 
 void NodeLegacyControls::UpdateOutputs(bool dryrun)
 {
-    if(dryrun || !Enable) return;
+    if(dryrun || !select) return;
 
     Config *pConfig = g_pOrbiter->Cfg();
 
@@ -63,7 +63,7 @@ void NodeLegacyControls::UpdateOutputs(bool dryrun)
 
 void NodeLegacyControls::AddJoystickCtrl(float ctrlJoystick[15])
 {
-    if(!Enable) return;
+    if(!select) return;
 
     ctrlJoystick[THGROUP_MAIN] = -MainEngine;
     

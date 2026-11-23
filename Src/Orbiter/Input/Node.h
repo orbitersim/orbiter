@@ -46,9 +46,8 @@ public:
     // Use deque to make sure pointers to Pins stay valid
     std::deque<Pin> inputs;
     std::deque<Pin> outputs;
-    float widthName = 0.0f;
-    float maxWidthInput = 0.0f;
-    float maxWidthOutput = 0.0f;
+    float maxWidthOutput = 0.0f; // For right alignment of the text
+    float extraspacing;          // Spacing between input and output groups
     int id;
     bool dirty;
     int pinidgen;

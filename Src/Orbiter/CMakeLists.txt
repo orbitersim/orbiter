@@ -121,6 +121,7 @@ set(common_src
     Input/NodeCamera.cpp
     Input/NodeRCSPrograms.cpp
     Input/NodeModSelector.cpp
+    Input/NodeTimeAccel.cpp
     Input/Joystick.cpp
 # Utils
 	Log.cpp

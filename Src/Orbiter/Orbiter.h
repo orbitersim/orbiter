@@ -311,6 +311,9 @@ public:
 
 	void OnOptionChanged(DWORD cat, DWORD item = 0);
 
+	void IncWarpFactor ();
+	void DecWarpFactor ();
+	// Increment/decrement time acceleration factor to next power of 10
 protected:
 	HRESULT UserInput ();
 	void KbdInputImmediate_System    (char *kstate);
@@ -340,9 +343,6 @@ protected:
 	void ModulePostStep ();
 	VOID UpdateWorld ();
 
-	void IncWarpFactor ();
-	void DecWarpFactor ();
-	// Increment/decrement time acceleration factor to next power of 10
 
 	void ApplyWarpFactor ();
 	// broadcast new warp factor to components and modules

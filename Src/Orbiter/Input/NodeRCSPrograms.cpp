@@ -5,7 +5,7 @@ extern Vessel *g_focusobj;
 
 void NodeRCSPrograms::RegisterPins()
 {
-    RegisterPinWithDefault("Enable", enable, true);
+    RegisterPinWithDefault("Select", select, true);
     RegisterPin("Prograde", prograde);
     RegisterPin("Retrograde", retrograde);
     RegisterPin("Normal +", normal);
@@ -18,7 +18,7 @@ void NodeRCSPrograms::RegisterPins()
 
 void NodeRCSPrograms::UpdateOutputs(bool dryrun)
 {
-    if(!enable || dryrun) return;
+    if(!select || dryrun) return;
 
     if(killrot)    g_focusobj->TglNavMode(NAVMODE_KILLROT);
     if(hlevel)     g_focusobj->TglNavMode(NAVMODE_HLEVEL);

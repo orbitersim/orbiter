@@ -6,6 +6,7 @@
 #include "NodeLegacyControls.h"
 #include "NodeRCSPrograms.h"
 #include "NodeModSelector.h"
+#include "NodeTimeAccel.h"
 #include "Joystick.h"
 #include <set>
 #include <algorithm>
@@ -650,4 +651,5 @@ void ControllerGraph::GlobalInit()
     nodeFactory.Register<NodeCamera>();
     nodeFactory.Register<NodeRCSPrograms>();
     nodeFactory.Register<NodeModSelector>();
+    nodeFactory.Register<NodeTimeAccel>();
 }

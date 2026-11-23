@@ -7,7 +7,7 @@ DECLARE_NODE_SINGLETON(NodeRCSPrograms)
 class NodeRCSPrograms : public Node
 {
 public:
-    InputPin<Pin::type::Button> enable;
+    InputPin<Pin::type::Button> select;
     InputPin<Pin::type::ButtonPressed> prograde;
     InputPin<Pin::type::ButtonPressed> retrograde;
     InputPin<Pin::type::ButtonPressed> normal;
