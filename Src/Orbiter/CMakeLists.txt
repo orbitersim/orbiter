@@ -122,6 +122,7 @@ set(common_src
     Input/NodeRCSPrograms.cpp
     Input/NodeModSelector.cpp
     Input/NodeTimeAccel.cpp
+    Input/NodeRCSMode.cpp
     Input/Joystick.cpp
 # Utils
 	Log.cpp

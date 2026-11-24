@@ -12,6 +12,7 @@ public:
     InputPin<Pin::type::Axis> rotX;
     InputPin<Pin::type::Axis> rotY;
     InputPin<Pin::type::ButtonPressed> reset;
+    InputPin<Pin::type::ButtonPressed> toggleView;
 
     NodeCamera():Node("Camera") {}
     void RegisterPins() override;

@@ -1,9 +1,13 @@
 #include "NodeCamera.h"
 #include "Camera.h"
 #include "TimeData.h"
+#include "Orbiter.h"
+#include "Vessel.h"
 
 extern Camera *g_camera;
 extern TimeData td;
+extern Orbiter *g_pOrbiter;
+extern Vessel *g_focusobj;
 
 void NodeCamera::RegisterPins()
 {
@@ -12,6 +16,7 @@ void NodeCamera::RegisterPins()
     RegisterPin("Reset", reset);
     RegisterPin("RotX", rotX);
     RegisterPin("RotY", rotY);
+    RegisterPin("Toggle internal/external", toggleView);
 }
 
 void NodeCamera::UpdateOutputs(bool dryrun)
@@ -36,4 +41,5 @@ void NodeCamera::UpdateOutputs(bool dryrun)
             g_camera->Rotate (-td.SysDT * rX,  -td.SysDT * rY, true);
         }
     }
+    if(toggleView) g_pOrbiter->SetView(g_focusobj, !g_camera->IsExternal());
 }
