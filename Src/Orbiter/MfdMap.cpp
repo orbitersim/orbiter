@@ -34,7 +34,14 @@ Instrument_Map::Instrument_Map (Pane *_pane, INT_PTR _id, const Spec &spec, Vess
 	VectorMap::OBJTYPE sel = {0,0};
 	dispflag = dispflag_default;
 	DWORD mkrflag = 0;
-	if (_vessel == saveprm.usr) {
+	// The saved parameters are static, so they outlive the planetary system they
+	// refer to: the bodies are recreated for every simulation session. Only
+	// restore them if the saved reference body still belongs to the current
+	// planetary system. Otherwise the cached pointer is dangling (crash in
+	// VectorMap::SetCBody when a relaunched scenario happened to reuse the
+	// previous vessel's address).
+	const bool restore = (_vessel == saveprm.usr && saveprm.ref && g_psys && g_psys->isObject (saveprm.ref));
+	if (restore) {
 		refplanet = saveprm.ref;
 		sel       = saveprm.sel;
 		zoom      = saveprm.zoom;
@@ -60,7 +67,7 @@ Instrument_Map::Instrument_Map (Pane *_pane, INT_PTR _id, const Spec &spec, Vess
 			mkrflag >>= 1;
 		}
 	}
-	if (!track && _vessel == saveprm.usr) {
+	if (!track && restore) {
 		map->SetCenter (saveprm.lng, saveprm.lat);
 	}
 	disp_mode = 0;
