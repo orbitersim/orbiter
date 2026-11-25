@@ -69,6 +69,7 @@ D3D9Text::~D3D9Text()
 	SAFE_DELETEA(FontData);
 	SAFE_RELEASE(pTex);
 	SAFE_RELEASE(wfont);
+	SAFE_RELEASE(sprite);
 }
 
 
@@ -295,6 +296,8 @@ restart:
 		lf.lfFaceName,        // pFacename,
 		&wfont                // ppFont
 	));
+
+	HR(D3DXCreateSprite(pDev, &sprite));
 
 	SetLineSpace(0);
 	SetTextShare(0);
@@ -577,30 +580,87 @@ float D3D9Text::PrintSkp (D3D9Pad *pSkp, float xpos, float ypos, LPCWSTR str, in
 		default: // TOP
 			break;
 	}
-	
-	if (bBox)
-	{
-		pSkp->FillRect(rect.left-2, rect.top+1, rect.right+2, rect.bottom-1, pSkp->bkcolor);
+
+	D3DXMATRIX transform;
+	D3DXMATRIX mBak;
+	bool bTransform = (fabs(rotation) > 1e-3 || fabs(scaling - 1.0f) > 0.001f);
+
+	if (bTransform) {
+		D3DXVECTOR2 center(
+			(rect.left + rect.right) * 0.5f,
+			float(rect.top)
+		);
+
+		D3DXVECTOR2 scale(scaling, scaling);
+
+		center.x = ceil(center.x);
+		center.y = ceil(center.y);
+
+		D3DXMatrixTransformation2D(
+			&transform,
+			&center,
+			0.0f,
+			&scale,
+			&center,
+			-rotation * 0.01745329f,
+			NULL
+		);
 	}
 
-	// Must Flush() pending graphics before using ID3DXFont interface
-	pSkp->Flush();
+	// Draw background box
+	if (bBox) {
+		if (bTransform) {
+			memcpy(&mBak, pSkp->WorldMatrix(), sizeof(D3DXMATRIX));
+
+			D3DXMatrixMultiply(
+				pSkp->WorldMatrix(),
+				&transform,
+				&mBak
+			);
+		}
+
+		pSkp->FillRect(rect.left - 2, rect.top + 1, rect.right + 2, rect.bottom - 1, pSkp->bkcolor);
+
+		if (bTransform) {
+			memcpy(pSkp->WorldMatrix(), &mBak, sizeof(D3DXMATRIX));
+		}
+	}
 
 	// pSkp->textcolor.dclr is in the wrong format
 	DWORD col = pSkp->textcolor.dclr & 0xff00ff00;
 	col |= (pSkp->textcolor.dclr <<16)&0xff0000;
 	col |= (pSkp->textcolor.dclr >>16)&0xff;
 
-	wfont->DrawTextW(
-		NULL,                              // pSprite
-		str,                               // pString
-		len,                               // Count
-		&rect,                             // pRect
-		DT_VCENTER | DT_LEFT | DT_NOCLIP,  // Format
-		col                                // Color
-	);
+	// Draw text
+	if (bTransform) {
+		sprite->Begin(D3DXSPRITE_ALPHABLEND);
+		sprite->SetTransform(&transform);
 
-	return float(rect.right - rect.left);
+		wfont->DrawTextW(
+			sprite,                            // pSprite
+			str,                               // pString
+			len,                               // Count
+			&rect,                             // pRect
+			DT_VCENTER | DT_LEFT | DT_NOCLIP,  // Format
+			col                                // Color
+		);
+
+		sprite->End();
+	} else {
+		wfont->DrawTextW(
+			NULL,                              // pSprite
+			str,                               // pString
+			len,                               // Count
+			&rect,                             // pRect
+			DT_VCENTER | DT_LEFT | DT_NOCLIP,  // Format
+			col                                // Color
+		);
+	}
+
+	// Must Flush() pending graphics before returning
+	pSkp->Flush();
+
+	return float(width) * scaling;
 }
 
 // -----------------------------------------------------------------------------------------------
