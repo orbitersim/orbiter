@@ -18,15 +18,14 @@ DlgFunction::DlgFunction() : ImGuiDialog(ICON_FA_PUZZLE_PIECE " Orbiter: Custom 
 
 void DlgFunction::OnDraw() {
 	ImVec2 button_sz(ImVec2(ImGui::GetContentRegionAvail().x, 20));
-    for (int i = 0; i < g_pOrbiter->ncustomcmd; i++) {
-	    if(ImGui::Button(g_pOrbiter->customcmd[i].label, button_sz)) {
-            g_pOrbiter->customcmd[i].func (g_pOrbiter->customcmd[i].context);
-        }
-        if (ImGui::IsItemHovered())
-        {
+	for (auto it = g_pOrbiter->m_vCustomCmd.begin(); it != g_pOrbiter->m_vCustomCmd.end(); it++) {
+		if (ImGui::Button(it->label.c_str(), button_sz)) {
+			it->func(it->context);
+		}
+        if (ImGui::IsItemHovered()) {
             ImGui::BeginTooltip();
             ImGui::PushTextWrapPos(ImGui::GetFontSize() * 35.0f);
-            ImGui::TextUnformatted(g_pOrbiter->customcmd[i].desc);
+            ImGui::TextUnformatted(it->desc.c_str());
             ImGui::PopTextWrapPos();
             ImGui::EndTooltip();
         }
