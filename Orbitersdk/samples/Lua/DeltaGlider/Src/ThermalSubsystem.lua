@@ -230,14 +230,14 @@ function ThermalSubsystem:SolarRadiation()
 	-- Check if we are in the shadow of the closest celestial body
 	-- For simplicity, assume sun position is at origin
 	local Vpos = self:DG():get_globalpos()
-	local vdist = vec.length(Vpos) -- distance from sun
+	local vdist = Vpos:length() -- distance from sun
 	local hObj = self:DG():get_surfaceref()
 	while hObj and oapi.get_objecttype(hObj) == OBJTP.PLANET do
 		local prad = oapi.get_size(hObj)
 		local Ppos = oapi.get_globalpos(hObj)
-		local pdist = vec.length(Ppos)
+		local pdist = Ppos:length()
 		if vdist > pdist then
-			local d = vec.length(vec.crossp(Ppos, vec.sub(Ppos,Vpos)))/vdist
+			local d = Ppos:crossp(Ppos - Vpos):length()/vdist
 			if d < prad then
 				return 0.0
 			end
@@ -246,7 +246,7 @@ function ThermalSubsystem:SolarRadiation()
 	end
 
 	local Vrot = self:DG():get_rotationmatrix()
-	local sdir = mat.tmul(Vrot, vec.div(Vpos, -vdist))
+	local sdir = mat.tmul(Vrot, Vpos / -vdist)
 
 	local hSun = oapi.get_gbody(0)
 	local srad = oapi.get_size(hSun)
@@ -263,8 +263,8 @@ function ThermalSubsystem:PlanetRadiation()
 	local prad = oapi.get_size(hObj)
 	local Ppos = oapi.get_globalpos(hObj)
 	local Vpos = self:DG():get_globalpos()
-	local pdist = vec.length(vec.sub(Ppos, Vpos))
-	local pdir = vec.div(vec.sub(Ppos, Vpos),pdist)
+	local pdist = (Ppos - Vpos):length()
+	local pdir = (Ppos - Vpos)/pdist
 	local alt_ratio = prad/pdist
 	local Hplanet = 237.0 -- W/m^2; only true for Earth
 	return Hplanet * (alt_ratio*alt_ratio), pdir
@@ -286,8 +286,8 @@ function ThermalSubsystem:AddAlbedoReflection (rPower, dir, compartmentQ)
 	local hObj = self:DG():get_surfaceref()
 	local Ppos = oapi.get_globalpos(hObj)
 	local Vpos = self:DG():get_globalpos()
-	local cosphi = vec.dotp(vec.unit(vec.sub(Vpos,Ppos)), vec.unit(vec.mul(Ppos,-1)))
-	local irelalt = oapi.get_size(hObj)/vec.length(vec.sub(Vpos, Ppos))
+	local cosphi = -vec.dotp((Vpos - Ppos):unit(), Ppos:unit())
+	local irelalt = oapi.get_size(hObj)/(Vpos - Ppos):length()
 	rPower = rPower * albedo * irelalt*irelalt * cosphi
 	self:AddIrradiance (rPower, dir, compartmentQ)
 end
@@ -339,7 +339,7 @@ function ThermalSubsystem:AddRadiatorIrradiance (rPower, dir, compartmentQ)
 	local pprog = math.min(1.0, rstate/0.33)
 	local alpha = (pprog*175.0-100.0)*RAD
 	local paneldir = _V(0, math.sin(alpha), -math.cos(alpha))
-	local cosa = vec.dotp(dir, paneldir) -- irradiance cosine
+	local cosa = dir:dotp(paneldir) -- irradiance cosine
 	if cosa > 0.0 then
 		if pprog < 0.5 then
 			cosa = cosa*pprog*2.0

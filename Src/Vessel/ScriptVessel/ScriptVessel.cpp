@@ -104,56 +104,143 @@ DLLCLBK void ExitModule (HINSTANCE hDLL)
 {
 }
 
-static VECTOR3 lua_tovector(lua_State* L, int idx)
+static void *luaL_tryudata (lua_State *L, int ud, const char *tname) {
+  void *p = lua_touserdata(L, ud);
+  if(p == NULL) return NULL;
+  if(!lua_getmetatable(L, ud)) return NULL;
+
+  lua_getfield(L, LUA_REGISTRYINDEX, tname);
+  
+  if(!lua_rawequal(L, -1, -2)) {
+	p = NULL;
+  }
+  lua_pop(L, 2);
+  return p;
+}
+
+static VECTOR3 *lua_tovector(lua_State* L, int idx, VECTOR3 *tmp)
 {
-	VECTOR3 vec;
-	lua_getfield(L, idx, "x");
-	vec.x = lua_tonumber(L, -1); lua_pop(L, 1);
-	lua_getfield(L, idx, "y");
-	vec.y = lua_tonumber(L, -1); lua_pop(L, 1);
-	lua_getfield(L, idx, "z");
-	vec.z = lua_tonumber(L, -1); lua_pop(L, 1);
-	return vec;
+    VECTOR3* v = (VECTOR3*)luaL_tryudata(L, idx, "vec3");
+    if (v)
+        return v;
+
+    if (!lua_istable(L, idx))
+        luaL_error(L, "bad argument #%d, expected vec3 or {x,y,z} table", idx);
+
+    lua_getfield(L, idx, "x");
+    tmp->x = luaL_checknumber(L, -1);
+    lua_pop(L, 1);
+    lua_getfield(L, idx, "y");
+    tmp->y = luaL_checknumber(L, -1);
+    lua_pop(L, 1);
+    lua_getfield(L, idx, "z");
+    tmp->z = luaL_checknumber(L, -1);
+    lua_pop(L, 1);
+
+    return tmp;
 }
 
 static void lua_pushvector(lua_State* L, const VECTOR3& vec)
 {
-	lua_createtable(L, 0, 3);
-	lua_pushnumber(L, vec.x);
-	lua_setfield(L, -2, "x");
-	lua_pushnumber(L, vec.y);
-	lua_setfield(L, -2, "y");
-	lua_pushnumber(L, vec.z);
-	lua_setfield(L, -2, "z");
+    VECTOR3* u = (VECTOR3*)lua_newuserdata(L, sizeof(VECTOR3));
+    *u = vec;
+
+    luaL_getmetatable(L, "vec3");
+    lua_setmetatable(L, -2);
 }
 
 static int lua_isvector(lua_State* L, int idx)
 {
-	if (!lua_istable(L, idx)) return 0;
-	static char fieldname[3] = { 'x','y','z' };
+	VECTOR3* v = (VECTOR3*)luaL_tryudata(L, idx, "vec3");
+    if (v)
+        return true;
+
+	if (!lua_istable (L, idx)) return 0;
+	static char fieldname[3] = {'x','y','z'};
 	static char field[2] = "x";
 	int i, ii, n;
 	bool fail;
 
 	lua_pushnil(L);
-	ii = (idx >= 0 ? idx : idx - 1);
+	ii = (idx >= 0 ? idx : idx-1);
 	n = 0;
-	while (lua_next(L, ii)) {
-		lua_pop(L, 1);
+	while(lua_next(L,ii)) {
+		lua_pop(L,1);
 		n++;
 	}
 	if (n != 3) return 0;
 
 	for (i = 0; i < 3; i++) {
 		field[0] = fieldname[i];
-		lua_getfield(L, idx, field);
-		fail = (lua_isnil(L, -1));
-		lua_pop(L, 1);
+		lua_getfield (L, idx, field);
+		fail = (lua_isnil (L,-1));
+		lua_pop (L,1);
 		if (fail) return 0;
 	}
 	return 1;
 }
 
+int lua_ismatrix (lua_State *L, int idx)
+{
+    MATRIX3* m = (MATRIX3*)luaL_tryudata(L, idx, "mat3");
+    if (m)
+        return true;
+
+	if (!lua_istable (L, idx)) return 0;
+	static const char *fieldname[9] = {"m11","m12","m13","m21","m22","m23","m31","m32","m33"};
+	int i, ii, n;
+	bool fail;
+
+	lua_pushnil(L);
+	ii = (idx >= 0 ? idx : idx-1);
+	n = 0;
+	while(lua_next(L,ii)) {
+		lua_pop(L,1);
+		n++;
+	}
+	if (n != 9) return 0;
+
+	for (i = 0; i < 9; i++) {
+		lua_getfield (L, idx, fieldname[i]);
+		fail = (lua_isnil (L,-1));
+		lua_pop (L,1);
+		if (fail) return 0;
+	}
+	return 1;
+}
+
+MATRIX3 *lua_tomatrix (lua_State *L, int idx, MATRIX3 *tmp)
+{
+    MATRIX3* m = (MATRIX3*)luaL_tryudata(L, idx, "mat3");
+    if (m)
+        return m;
+
+    if (!lua_istable(L, idx))
+        luaL_error(L, "bad argument #%d, expected mat3 userdata or table", idx);
+
+    const char* k[9] = {
+        "m11","m12","m13",
+        "m21","m22","m23",
+        "m31","m32","m33"
+    };
+
+    for (int i = 0; i < 9; i++)
+    {
+        lua_getfield(L, idx, k[i]);
+        tmp->data[i] = luaL_checknumber(L, -1);
+        lua_pop(L, 1);
+    }
+    return tmp;
+}
+
+static void lua_pushmatrix(lua_State* L, const MATRIX3& m)
+{
+    MATRIX3* u = (MATRIX3*)lua_newuserdata(L, sizeof(MATRIX3));
+    *u = m;
+
+    luaL_getmetatable(L, "mat3");
+    lua_setmetatable(L, -2);
+}
 // ==============================================================
 // ScriptVessel class interface
 // ==============================================================
@@ -718,7 +805,7 @@ static ScriptVessel* lua_toScriptVessel(lua_State* L, int idx)
 
 // Extract the arguments from the original lua state,
 // push them into the target lua state and call the method
-// then finally push back the result fro; the target state to the original state
+// then finally push back the result from the target state to the original state
 static int lua_crosscall(lua_State* L) {
 	ScriptVessel* sh = lua_toScriptVessel(L, 1);
 	if (!sh)
@@ -737,7 +824,7 @@ static int lua_crosscall(lua_State* L) {
 	// Number of arguments pushed in the original lua_State
 	int nargs = lua_gettop(L);
 
-	// "Forward" arguments to the target lua_State (Lto)
+	// "Forward" arguments to the target lua_State (Ltgt)
 	// Warning : only basic types and vectors are supported (no tables/userdata)
 	// we start at 2 to skip the ScriptVessel * that was passed as first argument
 	for (int i = 2; i <= nargs; i++) {
@@ -748,8 +835,13 @@ static int lua_crosscall(lua_State* L) {
 		case LUA_TTABLE:
 		{
 			if (lua_isvector(L, i)) {
-				VECTOR3 v = lua_tovector(L, i);
-				lua_pushvector(Ltgt, v);
+				VECTOR3 tmp;
+				VECTOR3 *v = lua_tovector(L, i, &tmp);
+				lua_pushvector(Ltgt, *v);
+			} else if (lua_ismatrix(L, i)){
+				MATRIX3 tmp;
+				MATRIX3 *m = lua_tomatrix(L, i, &tmp);
+				lua_pushmatrix(Ltgt, *m);
 			} else {
 				lua_pushnil(Ltgt);
 			}
@@ -779,6 +871,21 @@ static int lua_crosscall(lua_State* L) {
 			lua_pushstring(Ltgt, str);
 			break;
 		}
+		case LUA_TUSERDATA:
+		{
+			// vec3 userdata
+			if (VECTOR3* v = (VECTOR3*)luaL_tryudata(L, i, "vec3")) {
+				lua_pushvector(Ltgt, *v);
+			}
+			// mat3 userdata
+			else if (MATRIX3* m = (MATRIX3*)luaL_tryudata(L, i, "mat3")) {
+				lua_pushmatrix(Ltgt, *m);
+			}
+			else {
+				lua_pushnil(Ltgt); // unsupported userdata
+			}
+			break;
+		}
 		default:
 			// Warning : we push nil for unsupported args to simplify processing (no need to clean up)
 			lua_pushnil(Ltgt);
@@ -804,10 +911,14 @@ static int lua_crosscall(lua_State* L) {
 			break;
 		case LUA_TTABLE:
 			if (lua_isvector(Ltgt, -i)) {
-				VECTOR3 v = lua_tovector(Ltgt, -i);
-				lua_pushvector(L, v);
-			}
-			else {
+				VECTOR3 tmp;
+				VECTOR3 *v = lua_tovector(Ltgt, -i, &tmp);
+				lua_pushvector(L, *v);
+			} else if(lua_ismatrix(Ltgt, i)) {
+				MATRIX3 tmp;
+				MATRIX3 *m = lua_tomatrix(Ltgt, -i, &tmp);
+				lua_pushmatrix(L, *m);
+			} else {
 				lua_pushnil(L);
 			}
 			break;
@@ -833,6 +944,17 @@ static int lua_crosscall(lua_State* L) {
 		{
 			const char* str = lua_tostring(Ltgt, -i);
 			lua_pushstring(L, str);
+			break;
+		}
+		case LUA_TUSERDATA:
+		{
+			if (VECTOR3* v = (VECTOR3*)luaL_tryudata(Ltgt, -i, "vec3")) {
+				lua_pushvector(L, *v);
+			} else if (MATRIX3* m = (MATRIX3*)luaL_tryudata(Ltgt, -i, "mat3")) {
+				lua_pushmatrix(L, *m);
+			} else {
+				lua_pushnil(L);
+			}
 			break;
 		}
 		default:
@@ -1016,8 +1138,9 @@ void ScriptVessel::clbkGetRadiationForce (const VECTOR3 &mflux, VECTOR3 &F, VECT
 			F={0,0,0};
 			pos={0,0,0};
 		} else {
-			F = lua_tovector(L, -2);
-			pos = lua_tovector(L, -1);
+			VECTOR3 tmp;
+			F = *lua_tovector(L, -2, &tmp);
+			pos = *lua_tovector(L, -1, &tmp);
 			lua_pop(L, 2);
 		}
 	} else {

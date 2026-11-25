@@ -322,13 +322,13 @@ function clbk_poststep(simt, simdt, mjd)
 	if bGimbalCmd then
 		local dg_max = simdt * SRB_GIMBAL_SPEED
 		local gimbalcur = get_thrust_gimbal()
-		local gdiff = vec.sub(gimbalcmd, gimbalcur)
-		local dg = vec.length(gdiff)
+		local gdiff = gimbalcmd - gimbalcur
+		local dg = gdiff:length()
 		if dg > dg_max then
-			gdiff = vec.mul(gdiff, dg_max / dg)
+			gdiff = gdiff * (dg_max / dg)
 		else
 			bGimbalCmd = false
 		end
-		set_thrust_gimbal(vec.add(gimbalcur, gdiff))
+		set_thrust_gimbal(gimbalcur + gdiff)
 	end
 end

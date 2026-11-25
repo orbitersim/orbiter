@@ -76,10 +76,10 @@ function DGDial1:RedrawVC (hMesh, surf)
 		grs.VtxPerm = vperm
 		oapi.get_meshgroup (hMesh, self.mgrp, grs)
 		for i = 1, nvtx do
-			local p = vec.sub(vtx[i].pos, self.rf)
-			local pt = mat.mul(R,p)
-			vtx[i].pos = vec.add(pt, self.rf)
-			vtx[i].normal = mat.mul(R, vtx[i].normal)
+			local p = vtx[i].pos - self.rf
+			local pt = R * p
+			vtx[i].pos = pt + self.rf
+			vtx[i].normal = R * vtx[i].normal
 		end
 		local ges = {}
 		ges.flags = GRPEDIT.VTXCRD + GRPEDIT.VTXNML
