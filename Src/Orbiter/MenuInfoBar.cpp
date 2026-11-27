@@ -203,7 +203,6 @@ public:
 	}
 	void DelMenuItem(int id) {
 		items.erase(std::remove_if(items.begin(), items.end(), [id](const auto &item) { return item.id == id; }), items.end());
-		SavePreferedOrder();
 	}
 	void SyncPreferedOrder() {
 		// Refresh item state from preferedOrder
