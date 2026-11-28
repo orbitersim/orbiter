@@ -162,6 +162,7 @@ void DlgOptions::DrawUI()
 void DlgOptions::DrawJoystick()
 {
 	ImGui::SeparatorText("Joystick device");
+/*
 	DWORD ndev;
 	DIDEVICEINSTANCE* joylist;
 	g_pOrbiter->GetDInput()->GetJoysticks(&joylist, &ndev);
@@ -222,6 +223,7 @@ void DlgOptions::DrawJoystick()
 			g_pOrbiter->OnOptionChanged(OPTCAT_JOYSTICK, OPTITEM_JOYSTICK_PARAM);
 
 	ImGui::EndDisabled();
+	*/
 }
 void DlgOptions::DrawCelSphere()
 {

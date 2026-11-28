@@ -5,7 +5,6 @@
 #define ORBITER_H
 
 #include "Config.h"
-#include "Input.h"
 #include "Select.h"
 #include "Keymap.h"
 #include <stdio.h>
@@ -14,7 +13,6 @@
 #include "TimeData.h"
 #include <chrono>
 
-class DInput;
 class Config;
 class State;
 class Body;
@@ -92,6 +90,8 @@ public:
 	void TogglePlanetariumMode();
 	void ToggleLabelDisplay();
 	const char *KeyState() const;
+	void HandleKeyDown(WPARAM wParam, LPARAM lParam);
+	void HandleKeyUp(WPARAM wParam, LPARAM lParam);
 
 	// dialog box processing
 	HWND OpenDialog (int id, DLGPROC pDlg, void *context = 0); // This version expects the dialog resource in the Orbiter instance
@@ -135,11 +135,11 @@ public:
 	bool KillVessels();
 	// Kill the vessels that have been marked for deletion in the last time step
 
-	inline double ManCtrlLevel (THGROUP_TYPE thgt, DWORD device) const {
+	inline float ManCtrlLevel (THGROUP_TYPE thgt, DWORD device) const {
 		switch (device) {
-		case MANCTRL_KEYBOARD: return 0.001*ctrlKeyboard[thgt];
-		case MANCTRL_JOYSTICK: return 0.001*ctrlJoystick[thgt];
-		default:               return 0.001*ctrlTotal[thgt];
+		case MANCTRL_KEYBOARD: return ctrlKeyboard[thgt];
+		case MANCTRL_JOYSTICK: return ctrlJoystick[thgt];
+		default:               return ctrlTotal[thgt];
 		}
 	}
 
@@ -172,11 +172,6 @@ public:
 	inline bool    UseStencil() const { return bUseStencil; }
 	inline void    SetFastExit (bool fexit) { bFastExit = fexit; }
 	inline bool    UseHtmlInline() { return (pConfig->CfgDebugPrm.bHtmlScnDesc == 1 || pConfig->CfgDebugPrm.bHtmlScnDesc == 2 && !bWINEenv); }
-
-	// DirectInput components
-	inline CDIFramework7 *GetDInput() const { return pDI->GetDIFrame(); }
-	inline LPDIRECTINPUTDEVICE8 GetKbdDevice() const { return pDI->GetKbdDevice(); }
-	inline LPDIRECTINPUTDEVICE8 GetJoyDevice() const { return pDI->GetJoyDevice(); }
 
 	// memory monitor
 	MemStat *memstat;
@@ -316,18 +311,20 @@ public:
 
 	void OnOptionChanged(DWORD cat, DWORD item = 0);
 
+	void IncWarpFactor ();
+	void DecWarpFactor ();
+	// Increment/decrement time acceleration factor to next power of 10
 protected:
 	HRESULT UserInput ();
 	void KbdInputImmediate_System    (char *kstate);
 	void KbdInputImmediate_OnRunning (char *buffer);
-	void KbdInputBuffered_System     (char *kstate, DIDEVICEOBJECTDATA *dod, DWORD n);
-	void KbdInputBuffered_OnRunning  (char *kstate, DIDEVICEOBJECTDATA *dod, DWORD n);
-	void UserJoyInput_System (DIJOYSTATE2 *js);
-	void UserJoyInput_OnRunning (DIJOYSTATE2 *js);
+	void KbdInputBuffered_System     (char *kstate, uint8_t key);
+	void KbdInputBuffered_OnRunning  (char *kstate, uint8_t key);
+	void UserJoyInput ();
 	bool MouseEvent (UINT event, DWORD state, DWORD x, DWORD y);
 	bool BroadcastMouseEvent (UINT event, DWORD state, DWORD x, DWORD y);
 	bool BroadcastImmediateKeyboardEvent (char *kstate);
-	void BroadcastBufferedKeyboardEvent (char *kstate, DIDEVICEOBJECTDATA *dod, DWORD n);
+	void BroadcastBufferedKeyboardEvent (char *kstate, uint8_t key);
 
 	void BroadcastGlobalInit();
 
@@ -346,9 +343,6 @@ protected:
 	void ModulePostStep ();
 	VOID UpdateWorld ();
 
-	void IncWarpFactor ();
-	void DecWarpFactor ();
-	// Increment/decrement time acceleration factor to next power of 10
 
 	void ApplyWarpFactor ();
 	// broadcast new warp factor to components and modules
@@ -363,7 +357,6 @@ private:
 	orbiter::LaunchpadDialog *m_pLaunchpad;
 	DialogManager  *pDlgMgr;
 	orbiter::ConsoleNG* m_pConsole;    // The console window opened when Orbiter server is launched without a graphics client
-	DInput         *pDI;
 	HINSTANCE       hInst;         // orbiter instance handle
 	HWND            hRenderWnd;    // render window handle (NULL if no render support)
 	HWND            hBk;           // background window handle (demo mode only)
@@ -374,7 +367,7 @@ private:
 	bool            bStartVideoTab; // Open Launchpad dialog on video tab
 	bool            bWINEenv;      // we are running under Linux/WINE
 	bool            ignorefirst;   // flag for first joystick action
-	long            plZ4;          // previous joystick throttle setting
+	float           plZ4;          // previous joystick throttle setting
 	int             video_skip_count; // count skipped frames for frame sequence capturing
 	oapi::ScreenAnnotation **snote;// onscreen annotations
 	DWORD           nsnote;        // number of annotations
@@ -409,9 +402,9 @@ private:
 	bool            bRoughType;    // font-smoothing disabled?
 
 	// Manual joystick/keyboard attitude inputs
-	DWORD ctrlJoystick[15];
-	DWORD ctrlKeyboard[15];
-	DWORD ctrlTotal[15];
+	float ctrlJoystick[15];
+	float ctrlKeyboard[15];
+	float ctrlTotal[15];
 
 	VOID SavePlaybackScn (const char *fname);
 

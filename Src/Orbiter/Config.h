@@ -221,7 +221,11 @@ struct CFG_DEVPRM {
 struct CFG_JOYSTICKPRM {
 	DWORD  Joy_idx;				// joystick device index (0=disabled)
 	int    Deadzone;			// central deadzone range for all axes (0-10000)
-	DWORD  ThrottleAxis;		// joystick throttle axis (0=none, 1=z-axis, 2=slider 0, 3=slider 1)
+	DWORD  ThrottleAxis;		// joystick throttle axis (0=none)
+	DWORD  XAxis;				// joystick x axis (0=none)
+	DWORD  YAxis;				// joystick y axis (0=none)
+	DWORD  ZAxis;				// joystick z axis (0=none)
+	DWORD  AltButton;			// Index of button to use alternate bank/rudder and shift/rotate (0=none)
 	int    ThrottleSaturation;	// saturation level for joystick throttle control (0-10000)
 	bool   bThrottleIgnore;		// ignore joystick throttle setting on start
 };
