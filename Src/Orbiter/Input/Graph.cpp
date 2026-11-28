@@ -238,8 +238,9 @@ void ControllerGraph::DrawEditor()
 
     // By default, all nodes are created at {0,0}
     // In order not to have a bunch of nodes on top of each other
-    // we check in a circular pattern from the barycenter of existing nodes
-    // until we find enough room to place a new node.
+    // we do a conic sweep until we find enough room to place a new node.
+    // Output only nodes are placed on the left, input only to the right
+    // and the remaining at the top.
     // It's not great but better than everything being piled up.
     bool allplaced = true;
     ImVec2 barycenter{0.0f,0.0f};
@@ -263,28 +264,45 @@ void ControllerGraph::DrawEditor()
             barycenter.x /= npoints;
             barycenter.y /= npoints;
         }
-        auto fibospiral = [](ImVec2 origin, int index) {
-            float angle = index * 2.39996323f; // Golden angle
-            float radius = 30.0f * sqrt(index);
 
-            return ImVec2{
-                origin.x + radius * cos(angle),
-                origin.y + radius * sin(angle)
-            };
-        };
+        auto findPosition = [&](ImVec2 origin, ImVec2 size, float startAngle) {
+            const float angleStep = 5.0f * RAD;
+            const float radiusStep = 40.0f;
 
-        for(auto &n: nodes) {
-            if(!n->placed) {
-                for(int i = 0;;i++) {
-                    ImVec2 pos = fibospiral(barycenter, i);
-                    ImVec2 sz = ed::GetNodeSize(n->id);
-                    if(NodeHasRoom(pos, sz)) {
-                        ed::SetNodePosition(n->id, pos);
-                        n->placed = true;
-                        break;
+            for (float radius = 40.0f;; radius += radiusStep) {
+                for (float angle = startAngle - 30.0f * RAD;
+                     angle <= startAngle + 30.0f * RAD;
+                     angle += angleStep) {
+                    ImVec2 pos(origin.x + radius * cosf(angle), origin.y + radius * sinf(angle));
+
+                    if (NodeHasRoom(pos, size)) {
+                        return pos;
                     }
                 }
             }
+        };
+
+        for (auto &n : nodes) {
+            if (!n->enabled || n->placed)
+                continue;
+
+            bool hasOutputs = !n->outputs.empty();
+            bool hasInputs  = !n->inputs.empty();
+
+            float angle;
+
+            if (!hasInputs && hasOutputs)
+                angle = PI;     // Left
+            else if (hasInputs && !hasOutputs)
+                angle = 0.0f;   // Right
+            else
+                angle = -PI05;  // Above
+
+            ImVec2 size = ed::GetNodeSize(n->id);
+            ImVec2 pos = findPosition(barycenter, size, angle);
+
+            ed::SetNodePosition(n->id, pos);
+            n->placed = true;
         }
         ed::NavigateToContent();
     }

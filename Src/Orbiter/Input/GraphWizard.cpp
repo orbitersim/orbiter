@@ -16,7 +16,6 @@
 #include <optional>
 
 extern TimeData td;
-static constexpr float ADI_PI = 3.14159265358979323846f;
 
 static ImVec2 ADIRotate(ImVec2 p, float angle)
 {
@@ -49,6 +48,7 @@ static void ADIDrawCloud(ImDrawList* dl, ImVec2 center, float scale, float bank,
     }
 }
 
+// pitch/bank/yaw are in [-1;1], just treat them as radian for illustration purposes
 static void DrawADI(ImVec2 size, float pitch, float bank, float yaw)
 {
     ImVec2 cursorPos = ImGui::GetCursorScreenPos();
@@ -63,12 +63,6 @@ static void DrawADI(ImVec2 size, float pitch, float bank, float yaw)
     dl->PushClipRect(topleft, bottomright);
 
     bank = -bank;
-
-    // Limit visual pitch and yaw deflection.
-    constexpr float MAX_ANGLE = 45.0f * ADI_PI / 180.0f;
-
-    pitch = std::clamp(pitch, -MAX_ANGLE, MAX_ANGLE);
-    yaw   = std::clamp(yaw,   -MAX_ANGLE, MAX_ANGLE);
 
     const ImU32 sky       = IM_COL32(45, 145, 205, 255);
     const ImU32 ground    = IM_COL32(135, 85, 48, 255);
@@ -793,8 +787,11 @@ void ControllerGraph::DrawWizard()
     static HatDetector hatDetector(nodes);
     static int state = 0;
 
-    auto configureAxis = [this](const char *title, const char *axisDetectText, std::optional<AxisAssignment> &aa, int axis) {
+    auto configureAxis = [this](ImVec2 size, const char *title, const char *axisDetectText, std::optional<AxisAssignment> &aa, int axis) {
         const ImGuiStyle& style = ImGui::GetStyle();
+        float ctrlWidth = (size.x - style.ItemSpacing.x) / 2.0f;
+        ImVec2 ctrlSize(ctrlWidth, ctrlWidth);
+
         ImGui::PushFont(NULL, style.FontSizeBase * 2.0f);
         ImGui::SeparatorText(title);
         ImGui::PopFont();
@@ -826,24 +823,30 @@ void ControllerGraph::DrawWizard()
 
             switch(axis) {
                 case CONFIGURE_PITCH:
-                    DrawADI(ImVec2(300, 300), calibratedVal, 0.0f, 0.0f);
+                    DrawADI(ctrlSize, calibratedVal, 0.0f, 0.0f);
                     break;
                 case CONFIGURE_BANK:
-                    DrawADI(ImVec2(300, 300), 0.0f, calibratedVal, 0.0f);
+                    DrawADI(ctrlSize, 0.0f, calibratedVal, 0.0f);
                     break;
                 case CONFIGURE_YAW:
-                    DrawADI(ImVec2(300, 300), 0.0f, 0.0f, calibratedVal);
+                    DrawADI(ctrlSize, 0.0f, 0.0f, calibratedVal);
                     break;
                 case CONFIGURE_ENGINE:
-                    DrawEngineIndicator(ImVec2(300, 300), calibratedVal);
+                    DrawEngineIndicator(ctrlSize, calibratedVal);
                     break;
             }
             ImGui::SameLine();
-            TransferFunctionEditor(ImVec2(300, 300), "Calibration", &*aa, rawVal);
+            TransferFunctionEditor(ctrlSize, "Calibration", &*aa, rawVal);
         } else {
+            ImGui::Dummy(size);
             const ImGuiStyle& style = ImGui::GetStyle();
             ImGui::PushFont(NULL, style.FontSizeBase * 2.0f);
-            ImGui::TextUnformatted(axisDetectText);
+
+            ImVec2 pos = ImGui::GetItemRectMin();
+            ImVec2 textSize = ImGui::CalcTextSize(axisDetectText);
+
+            ImGui::GetWindowDrawList()->AddText(pos + (size - textSize) * 0.5f, ImGui::GetColorU32(ImGuiCol_Text), axisDetectText);
+
             ImGui::PopFont();
             auto candidate = detector.Update();
             if(candidate) {
@@ -852,12 +855,13 @@ void ControllerGraph::DrawWizard()
                 aa = { candidate->jsnode, candidate->axis, false, false, defaultDeadzone, defaultSaturation };
             }
         }
-
-
     };
 
-    auto configureCamera = [this](const char *title, const char *axisDetectText, std::optional<HatAssignment> &ha) {
+    auto configureCamera = [this](ImVec2 size, const char *title, const char *axisDetectText, std::optional<HatAssignment> &ha) {
         const ImGuiStyle& style = ImGui::GetStyle();
+        float ctrlWidth = (size.x - style.ItemSpacing.x) / 2.0f;
+        ImVec2 ctrlSize(ctrlWidth, ctrlWidth);
+
         ImGui::PushFont(NULL, style.FontSizeBase * 2.0f);
         ImGui::SeparatorText(title);
         ImGui::PopFont();
@@ -882,11 +886,17 @@ void ControllerGraph::DrawWizard()
             if(hat & Pin::hat::UP)    pitch += td.SysDT;
             if(hat & Pin::hat::RIGHT) yaw += td.SysDT;
             if(hat & Pin::hat::LEFT)  yaw -= td.SysDT;
-            DrawStarfield(ImVec2(300,300), yaw, pitch);
+            DrawStarfield(ctrlSize, yaw, pitch);
         } else {
+            ImGui::Dummy(size);
             const ImGuiStyle& style = ImGui::GetStyle();
             ImGui::PushFont(NULL, style.FontSizeBase * 2.0f);
-            ImGui::TextUnformatted(axisDetectText);
+
+            ImVec2 pos = ImGui::GetItemRectMin();
+            ImVec2 textSize = ImGui::CalcTextSize(axisDetectText);
+
+            ImGui::GetWindowDrawList()->AddText(pos + (size - textSize) * 0.5f, ImGui::GetColorU32(ImGuiCol_Text), axisDetectText);
+
             ImGui::PopFont();
             auto candidate = hatDetector.Update();
             if(candidate) {
@@ -897,19 +907,19 @@ void ControllerGraph::DrawWizard()
 
     switch(state) {
         case STATE_PITCH:
-            configureAxis("Pitch configuration", "Move the pitch axis on your controller", wcfg.pitch, CONFIGURE_PITCH);
+            configureAxis(ImVec2(600,300), "Pitch configuration", "Move your pitch control", wcfg.pitch, CONFIGURE_PITCH);
             break;
         case STATE_BANK:
-            configureAxis("Bank configuration", "Move the bank axis on your controller", wcfg.bank, CONFIGURE_BANK);
+            configureAxis(ImVec2(600,300), "Bank configuration", "Move your bank control", wcfg.bank, CONFIGURE_BANK);
             break;
         case STATE_YAW:
-            configureAxis("Yaw configuration", "Move the yaw axis on your controller", wcfg.yaw, CONFIGURE_YAW);
+            configureAxis(ImVec2(600,300), "Yaw configuration", "Move your yaw control", wcfg.yaw, CONFIGURE_YAW);
             break;
         case STATE_MAINENGINE:
-            configureAxis("Engine throttle", "Move the thrust axis on your controller", wcfg.thrusters, CONFIGURE_ENGINE);
+            configureAxis(ImVec2(600,300), "Engine throttle", "Move your thrust control", wcfg.thrusters, CONFIGURE_ENGINE);
             break;
         case STATE_CAMERA:
-            configureCamera("Camera configuration", "Touch the hat/dpad for the camera", wcfg.camera);
+            configureCamera(ImVec2(600,300), "Camera configuration", "Touch the hat/dpad that controls the camera", wcfg.camera);
             break;
         case STATE_ALT:
         {
@@ -918,29 +928,49 @@ void ControllerGraph::DrawWizard()
         }
     }
 
-    const char *prev    = "Previous";
-    const char *next    = "Next";
-    const char *confirm = "Confirm";
+
+    // Position navigation buttons at the bottom of the window
+    const float buttonHeight = ImGui::GetFrameHeight();
+    const float bottomMargin = ImGui::GetStyle().WindowPadding.y;
+    float bottomY = ImGui::GetWindowHeight() - bottomMargin - buttonHeight;
+
+    ImGui::SetCursorPosY(bottomY);
+
+
+    const char *prev  = "Previous";
+    const char *next  = "Next";
+    const char *apply = "Confirm";
+
+    float prevWidth  = ImGui::CalcTextSize(prev).x  + ImGui::GetStyle().FramePadding.x * 2;
+    float nextWidth  = ImGui::CalcTextSize(next).x  + ImGui::GetStyle().FramePadding.x * 2;
+    float applyWidth = ImGui::CalcTextSize(apply).x + ImGui::GetStyle().FramePadding.x * 2;
+
+    float btnWidth = std::max(prevWidth, std::max(nextWidth, applyWidth)) * 2.0f;
+    ImVec2 btnSize(btnWidth, ImGui::GetFrameHeight());
+
+    float totalWidth = ImGui::GetStyle().ItemSpacing.x + btnWidth * 2.0;
+    float startX = (ImGui::GetWindowWidth() - totalWidth) * 0.5f;
+
+    ImGui::SetCursorPosX(startX);
 
     ImGui::BeginDisabled(state == 0);
-    if(ImGui::Button(prev)) {
+    if(ImGui::Button(prev, btnSize)) {
         state--;
         detector.Reset(nodes);
+        hatDetector.Reset(nodes);
     }
     ImGui::EndDisabled();
 
     ImGui::SameLine();
 
-    ImGui::BeginDisabled(state == STATE_ALT);
-    if(ImGui::Button(next)) {
-        state++;
-        detector.Reset(nodes);
-    }
-    ImGui::EndDisabled();
-
-    if(state==STATE_ALT) {
-        ImGui::SameLine();
-        if(ImGui::Button(confirm)) {
+    if(state != STATE_ALT) {
+        if(ImGui::Button(next, btnSize)) {
+            state++;
+            detector.Reset(nodes);
+            hatDetector.Reset(nodes);
+        }
+    } else {
+        if(ImGui::Button(apply, btnSize)) {
             CreateGraphFromWizard();
         }
     }
@@ -982,6 +1012,10 @@ void ControllerGraph::CreateGraphFromWizard()
             int axis = aa->axis;
             Pin *output = jsnode->PinFromAxis(axis);
             assert(output);
+            output->context.deadzone   = aa->deadzone;
+            output->context.saturation = aa->saturation;
+            output->context.rescale    = aa->rescale;
+            output->context.flip       = aa->invert;
 
             Node *n = GetNodeOfType("NodeLegacyControls");
             assert(n);
