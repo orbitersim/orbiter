@@ -96,6 +96,7 @@ public:
     }
     Pin *AddInput(const char *iname, const char *dname, Pin::type type);
     Pin *AddOutput(const char *iname, const char *dname, Pin::type type);
+    Pin *GetInputPinFromName(const char *iname);
     void ComputeLayout();
     void UpdateInputs();
     void InitDefault(int id);

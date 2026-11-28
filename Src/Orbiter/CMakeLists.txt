@@ -115,6 +115,7 @@ set(common_src
     Input/Icon.cpp
     Input/Pin.cpp
     Input/Graph.cpp
+    Input/GraphWizard.cpp
     Input/Node.cpp
     Input/NodeJoystick.cpp
     Input/NodeLegacyControls.cpp

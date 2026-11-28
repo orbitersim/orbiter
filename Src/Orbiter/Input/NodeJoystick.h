@@ -24,6 +24,8 @@ public:
     bool CanAttach(Joystick *js);
     void ToJSON(crude_json::value &out) override;
     void InitFromJoystick(Joystick *, int id);
+    Pin *PinFromAxis(int axis);
+    Pin *PinFromHat(int hat);
 
     DECLARE_NODE_TRAITS(NodeJoystick)
 

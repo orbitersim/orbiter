@@ -190,6 +190,30 @@ void NodeJoystick::InitFromJoystick(Joystick *joy, int i)
     name = js->name;
 }
 
+Pin *NodeJoystick::PinFromAxis(int axis)
+{
+    for(auto &pin: outputs) {
+        if(pin.ptype == Pin::type::Axis) {
+            if(axis-- == 0) {
+                return &pin;
+            }
+        }
+    }
+    return NULL;
+}
+
+Pin *NodeJoystick::PinFromHat(int hat)
+{
+    for(auto &pin: outputs) {
+        if(pin.ptype == Pin::type::Hat) {
+            if(hat-- == 0) {
+                return &pin;
+            }
+        }
+    }
+    return NULL;
+}
+
 void NodeJoystick::RegisterPins()
 {
     assert(jsonTemplate);

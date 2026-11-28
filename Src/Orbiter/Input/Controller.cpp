@@ -19,7 +19,9 @@ static void OpenDlgClbk(void *context)
 void ControllerEditor::OnDraw()
 {
     ControllerGraph *graph = InputController::GetGraph();
-    graph->DrawEditor();
+//    graph->DrawEditor();
+//    graph->DrawWizard();
+    graph->DrawConfiguration();
 }
 
 void InputController::GlobalInit()

@@ -178,8 +178,17 @@ bool ControllerGraph::NodeHasRoom(ImVec2 pos, ImVec2 size)
     return true;
 }
 
+void ControllerGraph::DrawConfiguration()
+{
+    if(wizardMode)
+        DrawWizard();
+    else
+        DrawEditor();
+}
+
 void ControllerGraph::DrawEditor()
 {
+    ImGui::Checkbox("Wizard mode", &wizardMode);
     ed::SetCurrentEditor(m_Context);
 
     if(ImGui::Button("Save")) {
@@ -408,6 +417,7 @@ void ControllerGraph::Update(bool dryrun)
         }
     }
 }
+
 void ControllerGraph::GetJoystickCtrl(float ctrl[15])
 {
     // ctrl is cleared by Orbiter before calling this
@@ -529,6 +539,7 @@ void ControllerGraph::DetachJoystick(Joystick *js)
         }
     }
 }
+
 bool ControllerGraph::HasNodeOfType(const std::string &type) {
     for(auto &n: nodes) {
         if(type == n->GetTypeName()) {
@@ -536,6 +547,16 @@ bool ControllerGraph::HasNodeOfType(const std::string &type) {
         }
     }
     return false;
+}
+
+Node *ControllerGraph::GetNodeOfType(const std::string &type)
+{
+    for(auto &n: nodes) {
+        if(type == n->GetTypeName()) {
+            return n.get();
+        }
+    }
+    return NULL;
 }
 
 void ControllerGraph::CreateSingletonNodes()
@@ -645,6 +666,7 @@ bool ControllerGraph::Load(const char *path)
     }
 
 }
+
 void ControllerGraph::GlobalInit()
 {
     nodeFactory.Register<NodeLegacyControls>();

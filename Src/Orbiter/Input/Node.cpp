@@ -64,6 +64,15 @@ Pin *Node::AddOutput(const char *iname, const char *dname, Pin::type type) {
     return &outputs.back();
 }
 
+Pin *Node::GetInputPinFromName(const char *iname)
+{
+    for(auto &pin: inputs) {
+        if(pin.name == iname)
+            return &pin;
+    }
+    return NULL;
+}
+
 void Node::ComputeLayout() {
     float widthName = ImGui::CalcTextSize(name.c_str()).x;
 
